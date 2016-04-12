@@ -160,6 +160,17 @@ get_file_pos() {
 }
 
 /**
+ * Registers a factory function that is called when an object of the given
+ * type is encountered within the .bam stream.
+ *
+ * @param user_data an optional pointer to be passed along to the function.
+ */
+void BamReader::
+register_factory(TypeHandle handle, WritableFactory::CreateFunc *func, void *user_data) {
+  get_factory()->register_factory(handle, func, user_data);
+}
+
+/**
  * Returns the global WritableFactory for generating TypedWritable objects
  */
 INLINE WritableFactory *BamReader::

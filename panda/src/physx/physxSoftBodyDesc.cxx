@@ -317,11 +317,11 @@ get_solver_iterations() const {
   return _desc.solverIterations;
 }
 
-/*
 /**
  * Used by PhysScene to query the sizes of arrays to allocate for the user
  * buffers in PhysxSoftBodyNode.
  */
+/*
 void PhysxSoftBodyDesc::
 get_mesh_numbers(NxU32 &numVertices, NxU32 &numTriangles) {
 

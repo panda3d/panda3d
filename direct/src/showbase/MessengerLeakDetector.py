@@ -1,7 +1,13 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Job import Job
-import gc, __builtin__
+import gc, sys
+
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
+
 
 class MessengerLeakObject(DirectObject):
     def __init__(self):
@@ -27,7 +33,7 @@ class MessengerLeakDetector(Job):
         # if an object is attached to one of these, it's attached to builtin
         # this cuts down on the amount of searching that needs to be done
         builtinIds = set()
-        builtinIds.add(id(__builtin__.__dict__))
+        builtinIds.add(id(builtins.__dict__))
         try:
             builtinIds.add(id(base))
             builtinIds.add(id(base.cr))
@@ -49,7 +55,7 @@ class MessengerLeakDetector(Job):
 
         while True:
             yield None
-            objects = messenger._Messenger__objectEvents.keys()
+            objects = list(messenger._Messenger__objectEvents.keys())
             assert self.notify.debug('%s objects in the messenger' % len(objects))
             for object in objects:
                 yield None

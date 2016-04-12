@@ -31,8 +31,7 @@ LightLensNode(const string &name, Lens *lens) :
 {
   set_active(false);
   _shadow_caster = false;
-  _sb_xsize = 512;
-  _sb_ysize = 512;
+  _sb_size.set(512, 512);
   _sb_sort = -10;
   // set_initial_state(RenderState::make(ShaderAttrib::make_off(), 1000));
   // Backface culling helps eliminating artifacts.
@@ -57,8 +56,7 @@ LightLensNode(const LightLensNode &copy) :
   Light(copy),
   Camera(copy),
   _shadow_caster(copy._shadow_caster),
-  _sb_xsize(copy._sb_xsize),
-  _sb_ysize(copy._sb_ysize),
+  _sb_size(copy._sb_size),
   _sb_sort(-10)
 {
 }
@@ -126,8 +124,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   Light::write_datagram(manager, dg);
 
   dg.add_bool(_shadow_caster);
-  dg.add_int32(_sb_xsize);
-  dg.add_int32(_sb_ysize);
+  dg.add_int32(_sb_size[0]);
+  dg.add_int32(_sb_size[1]);
   dg.add_int32(_sb_sort);
 }
 

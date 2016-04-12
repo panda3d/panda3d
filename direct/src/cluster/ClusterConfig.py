@@ -1,5 +1,5 @@
 
-from ClusterClient import *
+from .ClusterClient import *
 
 # A dictionary of information for various cluster configurations.
 # Dictionary is keyed on cluster-config string

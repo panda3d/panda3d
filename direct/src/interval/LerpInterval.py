@@ -15,8 +15,8 @@ __all__ = [
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-import Interval
-import LerpBlendHelpers
+from . import Interval
+from . import LerpBlendHelpers
 
 #
 # Most of the intervals defined in this module--the group up here at
@@ -774,17 +774,17 @@ class LerpFunctionNoStateInterval(Interval.Interval):
         if (t >= self.duration):
             # Set to end value
             if (t > self.duration):
-                print "after end"
+                print("after end")
             #apply(self.function, [self.toData] + self.extraArgs)
         elif self.duration == 0.0:
             # Zero duration, just use endpoint
-            apply(self.function, [self.toData] + self.extraArgs)
+            self.function(*[self.toData] + self.extraArgs)
         else:
             # In the middle of the lerp, compute appropriate blended value
             bt = self.blendType(t/self.duration)
             data = (self.fromData * (1 - bt)) + (self.toData * bt)
             # Evaluate function
-            apply(self.function, [data] + self.extraArgs)
+            self.function(*[data] + self.extraArgs)
 
         # Print debug information
 #        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
@@ -841,16 +841,16 @@ class LerpFunctionInterval(Interval.Interval):
         #print "doing priv step",t
         if (t >= self.duration):
             # Set to end value
-            apply(self.function, [self.toData] + self.extraArgs)
+            self.function(*[self.toData] + self.extraArgs)
         elif self.duration == 0.0:
             # Zero duration, just use endpoint
-            apply(self.function, [self.toData] + self.extraArgs)
+            self.function(*[self.toData] + self.extraArgs)
         else:
             # In the middle of the lerp, compute appropriate blended value
             bt = self.blendType(t/self.duration)
             data = (self.fromData * (1 - bt)) + (self.toData * bt)
             # Evaluate function
-            apply(self.function, [data] + self.extraArgs)
+            self.function(*[data] + self.extraArgs)
 
         # Print debug information
 #        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))

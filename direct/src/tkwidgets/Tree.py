@@ -21,13 +21,12 @@ __all__ = ['TreeNode', 'TreeItem']
 
 import os
 from direct.showbase.TkGlobal import *
-from Tkinter import *
 from panda3d.core import *
 
 # Initialize icon directory
 ICONDIR = ConfigVariableSearchPath('model-path').findFile(Filename('icons')).toOsSpecific()
 if not os.path.isdir(ICONDIR):
-    raise RuntimeError, "can't find DIRECT icon directory (%s)" % repr(ICONDIR)
+    raise RuntimeError("can't find DIRECT icon directory (%s)" % repr(ICONDIR))
 
 class TreeNode:
 
@@ -233,7 +232,7 @@ class TreeNode:
             self.kidKeys.append(key)
 
         # Remove unused children
-        for key in self.children.keys():
+        for key in list(self.children.keys()):
             if key not in self.kidKeys:
                 del(self.children[key])
 
@@ -304,14 +303,14 @@ class TreeNode:
             if self.fModeChildrenTag:
                 if self.childrenTag:
                     showThisItem = False
-                    for tagKey in self.childrenTag.keys():
+                    for tagKey in list(self.childrenTag.keys()):
                         if item.nodePath.hasTag(tagKey):
                             showThisItem = self.childrenTag[tagKey]
                     if not showThisItem:
                         self.kidKeys.remove(key)
 
         # Remove unused children
-        for key in self.children.keys():
+        for key in list(self.children.keys()):
             if key not in self.kidKeys:
                 del(self.children[key])
         cx = x+20
@@ -437,7 +436,7 @@ class TreeNode:
             if self.fModeChildrenTag:
                 if self.childrenTag:
                     showThisItem = False
-                    for tagKey in self.childrenTag.keys():
+                    for tagKey in list(self.childrenTag.keys()):
                         if self.item.nodePath.hasTag(tagKey):
                             showThisItem = self.childrenTag[tagKey]
                     if not showThisItem:

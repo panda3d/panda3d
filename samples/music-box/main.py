@@ -41,7 +41,7 @@ class MusicBox(DirectObject):
 
         # Loading sounds is done in a similar way to loading other things
         # Loading the main music box song
-        self.musicBoxSound = base.loadMusic('music/musicbox.ogg')
+        self.musicBoxSound = loader.loadMusic('music/musicbox.ogg')
         self.musicBoxSound.setVolume(.5)  # Volume is a percentage from 0 to 1
         # 0 means loop forever, 1 (default) means
         # play once. 2 or higher means play that many times
@@ -69,7 +69,7 @@ class MusicBox(DirectObject):
         # Loading the open/close effect
         # loadSFX and loadMusic are identical. They are often used for organization
         #(loadMusic is used for background music, loadSfx is used for other effects)
-        self.lidSfx = base.loadSfx('music/openclose.ogg')
+        self.lidSfx = loader.loadSfx('music/openclose.ogg')
         # The open/close file has both effects in it. Fortunatly we can use intervals
         # to easily define parts of a sound file to play
         self.lidOpenSfx = SoundInterval(self.lidSfx, duration=2, startTime=0)

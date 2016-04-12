@@ -1,4 +1,4 @@
-import ForceGroup
+from . import ForceGroup
 
 class GlobalForceGroup(ForceGroup.ForceGroup):
 

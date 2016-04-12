@@ -3,11 +3,9 @@
 """
 from direct.interval.IntervalGlobal import *
 from direct.actor.Actor import *
-from panda3d.core import VBase3,VBase4
-import ObjectGlobals as OG
-import AnimGlobals as AG
+from . import ObjectGlobals as OG
 
-import os,wx, time
+import os, wx
 from wx.lib.embeddedimage import PyEmbeddedImage
 
 #----------------------------------------------------------------------
@@ -895,13 +893,13 @@ class AnimControlUI(wx.Dialog):
                 del self.keys[i]
                 break
 
-        for j in self.editor.animMgr.keyFramesInfo.keys():
+        for j in list(self.editor.animMgr.keyFramesInfo.keys()):
             for k in range(0,len(self.editor.animMgr.keyFramesInfo[j])):
                 if self.curFrame == self.editor.animMgr.keyFramesInfo[j][k][0]:
                     del self.editor.animMgr.keyFramesInfo[j][k]
                     break
 
-        for l in self.editor.animMgr.keyFramesInfo.keys():
+        for l in list(self.editor.animMgr.keyFramesInfo.keys()):
             if len(self.editor.animMgr.keyFramesInfo[l]) == 0:
                 del self.editor.animMgr.keyFramesInfo[l]
 

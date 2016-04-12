@@ -37,7 +37,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             self.setSourceTextureName(fileName)
             return True
         else:
-            print "Couldn't find rendererSpriteTexture file: %s" % fileName
+            print("Couldn't find rendererSpriteTexture file: %s" % fileName)
             return False
 
     def addTextureFromFile(self, fileName = None):
@@ -52,7 +52,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             self.addTexture(t, t.getYSize())
             return True
         else:
-            print "Couldn't find rendererSpriteTexture file: %s" % fileName
+            print("Couldn't find rendererSpriteTexture file: %s" % fileName)
             return False
 
     def getSourceFileName(self):
@@ -86,12 +86,12 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         # Load model and get texture
         m = loader.loadModel(modelName)
         if (m == None):
-            print "SpriteParticleRendererExt: Couldn't find model: %s!" % modelName
+            print("SpriteParticleRendererExt: Couldn't find model: %s!" % modelName)
             return False
 
         np = m.find(nodeName)
         if np.isEmpty():
-            print "SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName
+            print("SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName)
             m.removeNode()
             return False
 
@@ -113,12 +113,12 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         # Load model and get texture
         m = loader.loadModel(modelName)
         if (m == None):
-            print "SpriteParticleRendererExt: Couldn't find model: %s!" % modelName
+            print("SpriteParticleRendererExt: Couldn't find model: %s!" % modelName)
             return False
 
         np = m.find(nodeName)
         if np.isEmpty():
-            print "SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName
+            print("SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName)
             m.removeNode()
             return False
 

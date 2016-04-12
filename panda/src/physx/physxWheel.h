@@ -32,16 +32,15 @@ PUBLISHED:
   INLINE PhysxWheel();
   INLINE ~PhysxWheel();
 
-  // PhysxActor *get_touched_actor() const; PhysxWheelShape *get_wheel_shape()
-  // const;
+  //PhysxActor *get_touched_actor() const;
+  //PhysxWheelShape *get_wheel_shape() const;
 
-  // void attach_node_path(const NodePath &np); void detach_node_path();
-  // NodePath get_node_path() const;
+  //void attach_node_path(const NodePath &np);
+  //void detach_node_path();
+  //NodePath get_node_path() const;
 
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level=0) const;
-
-public:
 
 private:
   PT(PhysxWheelShape) _wheelShape;

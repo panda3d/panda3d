@@ -2640,17 +2640,24 @@ def CopyTree(dstdir, srcdir, omitVCS=True):
         if omitVCS:
             DeleteVCS(dstdir)
 
-def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
+def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[], threads=0):
     if (not os.path.isdir(dstdir)):
         os.mkdir(dstdir)
 
     lib2to3 = None
+    lib2to3_args = ['-w', '-n', '--no-diffs']
+
     if len(lib2to3_fixers) > 0 and sys.version_info >= (3, 0):
         from lib2to3.main import main as lib2to3
-        lib2to3_args = ['-w', '-n', '--no-diffs', '-x', 'buffer', '-x', 'idioms', '-x', 'set_literal', '-x', 'ws_comma']
-        if lib2to3_fixers != ['all']:
+
+        if lib2to3_fixers == ['all']:
+            lib2to3_args += ['-x', 'buffer', '-x', 'idioms', '-x', 'set_literal', '-x', 'ws_comma']
+        else:
             for fixer in lib2to3_fixers:
                 lib2to3_args += ['-f', fixer]
+
+    if threads:
+        lib2to3_args += ['-j', str(threads)]
 
     exclude_files = set(VCS_FILES)
     exclude_files.add('panda3d.py')
@@ -2667,20 +2674,23 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
 
                     if ext == '.py' and not entry.endswith('-extensions.py'):
                         refactor.append((dstpth, srcpth))
+                        lib2to3_args.append(dstpth)
                     else:
                         JustBuilt([dstpth], [srcpth])
 
         elif entry not in VCS_DIRS:
-            CopyPythonTree(dstpth, srcpth, lib2to3_fixers)
+            CopyPythonTree(dstpth, srcpth, lib2to3_fixers, threads=threads)
 
-    for dstpth, srcpth in refactor:
-        if lib2to3 is not None:
-            ret = lib2to3("lib2to3.fixes", lib2to3_args + [dstpth])
-            if ret != 0:
+    if refactor and lib2to3 is not None:
+        ret = lib2to3("lib2to3.fixes", lib2to3_args)
+
+        if ret != 0:
+            for dstpth, srcpth in refactor:
                 os.remove(dstpth)
                 exit("Error in lib2to3.")
-        JustBuilt([dstpth], [srcpth])
-
+        else:
+            for dstpth, srcpth in refactor:
+                JustBuilt([dstpth], [srcpth])
 
 ########################################################################
 ##

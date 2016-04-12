@@ -2,8 +2,8 @@
 DirectNotify module: this module contains the DirectNotify class
 """
 
-import Notifier
-import Logger
+from . import Notifier
+from . import Logger
 
 class DirectNotify:
     """
@@ -35,7 +35,7 @@ class DirectNotify:
         """
         Return list of category dictionary keys
         """
-        return (self.__categories.keys())
+        return list(self.__categories.keys())
 
     def getCategory(self, categoryName):
         """getCategory(self, string)
@@ -97,7 +97,7 @@ class DirectNotify:
             category.setInfo(1)
             category.setDebug(1)
         else:
-            print ("DirectNotify: unknown notify level: " + str(level)
+            print("DirectNotify: unknown notify level: " + str(level)
                    + " for category: " + str(categoryName))
 
 

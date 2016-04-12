@@ -33,6 +33,9 @@ PUBLISHED:
 
   INLINE PandaCompareFunc get_mode() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(mode, get_mode);
+
 public:
   virtual void output(ostream &out) const;
 

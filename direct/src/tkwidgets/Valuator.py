@@ -4,11 +4,14 @@ __all__ = ['Valuator', 'ValuatorGroup', 'ValuatorGroupPanel']
 
 from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-import tkColorChooser
-import WidgetPropertiesDialog
-import string, Pmw
+from . import WidgetPropertiesDialog
+import Pmw
 from direct.directtools.DirectUtil import getTkColorString
+
+if sys.version_info >= (3, 0):
+    from tkinter.colorchooser import askcolor
+else:
+    from tkColorChooser import askcolor
 
 VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'
@@ -204,7 +207,7 @@ class Valuator(Pmw.MegaWidget):
         self._valuator.updateIndicator(value)
         # Execute command if required
         if fCommand and self.fInit and (self['command'] is not None):
-            apply(self['command'], [value] + self['commandData'])
+            self['command'](*[value] + self['commandData'])
         # Record adjusted value
         self.adjustedValue = value
         # Once initialization is finished, allow commands to execute
@@ -228,7 +231,7 @@ class Valuator(Pmw.MegaWidget):
             # Reset background
             self._entry.configure(background = self._entryBackground)
             # Get new value and check validity
-            newValue = string.atof(input)
+            newValue = float(input)
             # If OK, execute preCallback if one defined
             self._preCallback()
             # Call set to update valuator
@@ -259,12 +262,12 @@ class Valuator(Pmw.MegaWidget):
     # Callback functions
     def _preCallback(self):
         if self['preCallback']:
-            apply(self['preCallback'], self['callbackData'])
+            self['preCallback'](*self['callbackData'])
 
     def _postCallback(self):
         # Exectute post callback if one defined
         if self['postCallback']:
-            apply(self['postCallback'], self['callbackData'])
+            self['postCallback'](*self['callbackData'])
 
     def setState(self):
         """ Enable/disable widget """
@@ -391,16 +394,16 @@ class ValuatorGroup(Pmw.MegaWidget):
             # Add a group alias so you can configure the valuators via:
             #   fg.configure(Valuator_XXX = YYY)
             if self['type'] == DIAL:
-                import Dial
+                from . import Dial
                 valuatorType = Dial.Dial
             elif self['type'] == ANGLEDIAL:
-                import Dial
+                from . import Dial
                 valuatorType = Dial.AngleDial
             elif self['type'] == SLIDER:
-                import Slider
+                from . import Slider
                 valuatorType = Slider.Slider
             else:
-                import Floater
+                from . import Floater
                 valuatorType = Floater.Floater
             f = self.createcomponent(
                 'valuator%d' % index, (), 'valuator', valuatorType,
@@ -459,12 +462,12 @@ class ValuatorGroup(Pmw.MegaWidget):
     def _preCallback(self, valGroup):
         # Execute pre callback
         if self['preCallback']:
-            apply(self['preCallback'], valGroup.get())
+            self['preCallback'](*valGroup.get())
 
     def _postCallback(self, valGroup):
         # Execute post callback
         if self['postCallback']:
-            apply(self['postCallback'], valGroup.get())
+            self['postCallback'](*valGroup.get())
 
     def __len__(self):
         return self['dim']
@@ -607,7 +610,7 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
 
     def popupColorPicker():
         # Can pass in current color with: color = (255, 0, 0)
-        color = tkColorChooser.askcolor(
+        color = askcolor(
             parent = vgp.interior(),
             # Initialize it to current color
             initialcolor = tuple(vgp.get()[:3]))[0]
@@ -616,7 +619,7 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
 
     def printToLog():
         c=nodePath.getColor()
-        print "Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3])
+        print("Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3]))
 
     # Check init color
     if nodePath.hasColor():
@@ -689,7 +692,7 @@ def lightRGBPanel(light, style = 'mini'):
     # Color picker for lights
     def popupColorPicker():
         # Can pass in current color with: color = (255, 0, 0)
-        color = tkColorChooser.askcolor(
+        color = askcolor(
             parent = vgp.interior(),
             # Initialize it to current color
             initialcolor = tuple(vgp.get()[:3]))[0]
@@ -698,8 +701,8 @@ def lightRGBPanel(light, style = 'mini'):
     def printToLog():
         n = light.getName()
         c=light.getColor()
-        print n + (".setColor(Vec4(%.3f, %.3f, %.3f, %.3f))" %
-                   (c[0], c[1], c[2], c[3]))
+        print(n + (".setColor(Vec4(%.3f, %.3f, %.3f, %.3f))" %
+                   (c[0], c[1], c[2], c[3])))
     # Check init color
     initColor = light.getColor() * 255.0
     # Create entry scale group

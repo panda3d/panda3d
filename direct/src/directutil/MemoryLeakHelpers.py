@@ -11,7 +11,7 @@
 import gc
 gc.set_debug(gc.DEBUG_LEAK)
 gc.collect()
-print gc.garbage
+print(gc.garbage)
 
 # Inside DistributedObjectAI, you can uncomment the __del__ function to
 # see when your objects are being deleted (or not)

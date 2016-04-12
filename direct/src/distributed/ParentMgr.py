@@ -2,7 +2,7 @@
 
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.PythonUtil import isDefaultValue
-import types
+
 
 class ParentMgr:
     # This is now used on the AI as well.
@@ -90,7 +90,7 @@ class ParentMgr:
         if isDefaultValue(token):
             self.notify.error('parent token (for %s) cannot be a default value (%s)' % (repr(parent), token))
 
-        if type(token) is types.IntType:
+        if type(token) is int:
             if token > 0xFFFFFFFF:
                 self.notify.error('parent token %s (for %s) is out of uint32 range' % (token, repr(parent)))
 

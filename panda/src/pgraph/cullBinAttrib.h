@@ -35,6 +35,10 @@ PUBLISHED:
   INLINE const string &get_bin_name() const;
   INLINE int get_draw_order() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(bin_name, get_bin_name);
+  MAKE_PROPERTY(draw_order, get_draw_order);
+
 public:
   virtual void output(ostream &out) const;
 

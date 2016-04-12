@@ -106,7 +106,7 @@ class GridChild:
                 self._gridInterests[gridDoId] = [None,zoneId]
 
     def getGridInterestIds(self):
-        return self._gridInterests.keys()
+        return list(self._gridInterests.keys())
 
     def getGridInterestZoneId(self,gridDoId):
         return self._gridInterests.get(gridDoId,[None,None])[1]

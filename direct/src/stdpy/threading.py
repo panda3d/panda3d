@@ -21,7 +21,6 @@ easier to use and understand.
 It is permissible to mix-and-match both threading and threading2
 within the same application. """
 
-import direct
 from panda3d import core
 from direct.stdpy import thread as _thread
 import sys as _sys
@@ -53,12 +52,6 @@ class ThreadBase:
 
     def getName(self):
         return self.name
-
-    def is_alive(self):
-        return self.__thread.isStarted()
-
-    def isAlive(self):
-        return self.__thread.isStarted()
 
     def isDaemon(self):
         return self.daemon
@@ -115,6 +108,12 @@ class Thread(ThreadBase):
         if _thread and _thread._remove_thread_id:
             _thread._remove_thread_id(self.ident)
 
+    def is_alive(self):
+        return self.__thread.isStarted()
+
+    def isAlive(self):
+        return self.__thread.isStarted()
+
     def start(self):
         if self.__thread.isStarted():
             raise RuntimeError
@@ -151,6 +150,12 @@ class ExternalThread(ThreadBase):
         self.__dict__['daemon'] = True
         self.__dict__['name'] = self.__thread.getName()
         self.__dict__['ident'] = threadId
+
+    def is_alive(self):
+        return self.__thread.isStarted()
+
+    def isAlive(self):
+        return self.__thread.isStarted()
 
     def start(self):
         raise RuntimeError
@@ -380,7 +385,7 @@ def enumerate():
     tlist = []
     _thread._threadsLock.acquire()
     try:
-        for thread, locals, wrapper in _thread._threads.values():
+        for thread, locals, wrapper in list(_thread._threads.values()):
             if wrapper and thread.isStarted():
                 tlist.append(wrapper)
         return tlist
@@ -484,7 +489,7 @@ if __debug__:
             def run(self):
                 while self.count > 0:
                     item = self.queue.get()
-                    print item
+                    print(item)
                     self.count = self.count - 1
 
         NP = 3

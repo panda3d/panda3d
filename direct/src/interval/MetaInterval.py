@@ -5,10 +5,9 @@ __all__ = ['MetaInterval', 'Sequence', 'Parallel', 'ParallelEndTogether', 'Track
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-from IntervalManager import ivalMgr
-import Interval
+from .IntervalManager import ivalMgr
+from . import Interval
 from direct.task.Task import TaskManager
-import types
 #if __debug__:
 #    import direct.showbase.PythonUtil as PythonUtil
 
@@ -32,7 +31,7 @@ class MetaInterval(CMetaInterval):
         #        "create interval", 1, 10)
 
         name = None
-        #if len(ivals) == 2 and isinstance(ivals[1], types.StringType):
+        #if len(ivals) == 2 and isinstance(ivals[1], str):
         #    # If the second parameter is a string, it's the name.
         #    name = ivals[1]
         #    ivals = ivals[0]
@@ -69,7 +68,7 @@ class MetaInterval(CMetaInterval):
             del kw['duration']
 
         if kw:
-            self.notify.error("Unexpected keyword parameters: %s" % (kw.keys()))
+            self.notify.error("Unexpected keyword parameters: %s" % (list(kw.keys())))
 
         # We must allow the old style: Track([ival0, ival1, ...]) as
         # well as the new style: Track(ival0, ival1, ...)
@@ -80,8 +79,8 @@ class MetaInterval(CMetaInterval):
         # bug, since it will go away when we eventually remove support
         # for the old interface.
         #if len(ivals) == 1 and \
-        #   (isinstance(ivals[0], types.TupleType) or \
-        #    isinstance(ivals[0], types.ListType)):
+        #   (isinstance(ivals[0], tuple) or \
+        #    isinstance(ivals[0], list)):
         #    self.ivals = ivals[0]
         #else:
 
@@ -121,7 +120,7 @@ class MetaInterval(CMetaInterval):
 
     def append(self, ival):
         # Appends a single interval to the list so far.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.append(ival)
         self.__ivalsDirty = 1
@@ -141,7 +140,7 @@ class MetaInterval(CMetaInterval):
 
     def insert(self, index, ival):
         # Inserts the given interval into the middle of the list.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.insert(index, ival)
         self.__ivalsDirty = 1
@@ -150,7 +149,7 @@ class MetaInterval(CMetaInterval):
     def pop(self, index = None):
         # Returns element index (or the last element) and removes it
         # from the list.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.__ivalsDirty = 1
         if index == None:
@@ -160,21 +159,21 @@ class MetaInterval(CMetaInterval):
 
     def remove(self, ival):
         # Removes the indicated interval from the list.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.remove(ival)
         self.__ivalsDirty = 1
 
     def reverse(self):
         # Reverses the order of the intervals.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.reverse()
         self.__ivalsDirty = 1
 
     def sort(self, cmpfunc = None):
         # Sorts the intervals. (?)
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.__ivalsDirty = 1
         if cmpfunc == None:
@@ -189,38 +188,38 @@ class MetaInterval(CMetaInterval):
         return self.ivals[index]
 
     def __setitem__(self, index, value):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals[index] = value
         self.__ivalsDirty = 1
         assert self.validateComponent(value)
 
     def __delitem__(self, index):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         del self.ivals[index]
         self.__ivalsDirty = 1
 
     def __getslice__(self, i, j):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         return self.__class__(self.ivals[i: j])
 
     def __setslice__(self, i, j, s):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals[i: j] = s
         self.__ivalsDirty = 1
         assert self.validateComponents(s)
 
     def __delslice__(self, i, j):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         del self.ivals[i: j]
         self.__ivalsDirty = 1
 
     def __iadd__(self, other):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         if isinstance(other, MetaInterval):
             assert self.__class__ == other.__class__
@@ -283,8 +282,8 @@ class MetaInterval(CMetaInterval):
         # is TRACK_START.
         self.pushLevel(name, relTime, relTo)
         for tuple in list:
-            if isinstance(tuple, types.TupleType) or \
-               isinstance(tuple, types.ListType):
+            if isinstance(tuple, tuple) or \
+               isinstance(tuple, list):
                 relTime = tuple[0]
                 ival = tuple[1]
                 if len(tuple) >= 3:
@@ -497,10 +496,10 @@ class MetaInterval(CMetaInterval):
                 ival = None
         except:
             if ival != None:
-                print "Exception occurred while processing %s of %s:" % (ival.getName(), self.getName())
+                print("Exception occurred while processing %s of %s:" % (ival.getName(), self.getName()))
             else:
-                print "Exception occurred while processing %s:" % (self.getName())
-            print self
+                print("Exception occurred while processing %s:" % (self.getName()))
+            print(self)
             raise
 
     def privDoEvent(self, t, event):
@@ -601,8 +600,8 @@ class Track(MetaInterval):
         # this is the same as asking that the component is itself an
         # Interval.
 
-        if not (isinstance(tuple, types.TupleType) or \
-                isinstance(tuple, types.ListType)):
+        if not (isinstance(tuple, tuple) or \
+                isinstance(tuple, list)):
             # It's not a tuple.
             return 0
 
@@ -613,8 +612,8 @@ class Track(MetaInterval):
         else:
             relTo = TRACK_START
 
-        if not (isinstance(relTime, types.FloatType) or \
-                isinstance(relTime, types.IntType)):
+        if not (isinstance(relTime, float) or \
+                isinstance(relTime, int)):
             # First parameter is not a number.
             return 0
         if not MetaInterval.validateComponent(self, ival):

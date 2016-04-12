@@ -60,6 +60,11 @@ PUBLISHED:
   INLINE PN_stdfloat get_min_value() const;
   INLINE PN_stdfloat get_max_value() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(offset, get_offset);
+  MAKE_PROPERTY(min_value, get_min_value);
+  MAKE_PROPERTY(max_value, get_max_value);
+
 public:
   virtual void output(ostream &out) const;
 

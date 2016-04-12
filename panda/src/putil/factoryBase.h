@@ -56,7 +56,7 @@ public:
 
   TypeHandle find_registered_type(TypeHandle handle);
 
-  void register_factory(TypeHandle handle, BaseCreateFunc *func);
+  void register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data = NULL);
 
   int get_num_types() const;
   TypeHandle get_type(int n) const;
@@ -74,22 +74,18 @@ private:
   void operator = (const FactoryBase &copy);
 
   // internal utility functions
-  TypedObject *make_instance_exact(TypeHandle handle,
-                                   const FactoryParams &params);
+  TypedObject *make_instance_exact(TypeHandle handle, FactoryParams params);
   TypedObject *make_instance_more_specific(TypeHandle handle,
-                                           const FactoryParams &params);
+                                           FactoryParams params);
 
 private:
   // internal mechanics and bookkeeping
+  struct Creator {
+    BaseCreateFunc *_func;
+    void *_user_data;
+  };
 
-#if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(__ICL)    //__ICL is Intel C++
-  // Visual C++ seems to have a problem with building a map based on
-  // BaseCreateFunc.  We'll have to typecast it on the way out.
-  typedef pmap<TypeHandle, void *> Creators;
-#else
-  typedef pmap<TypeHandle, BaseCreateFunc *> Creators;
-#endif
-
+  typedef pmap<TypeHandle, Creator> Creators;
   Creators _creators;
 
   typedef pvector<TypeHandle> Preferred;

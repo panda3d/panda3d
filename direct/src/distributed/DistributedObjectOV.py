@@ -40,22 +40,24 @@ class DistributedObjectOV(DistributedObjectBase):
             print out "doId(parentId, zoneId) className"
                 and conditionally show generated, disabled
             """
-            spaces=' '*(indent+2)
+            spaces = ' ' * (indent + 2)
             try:
-                print "%s%s:"%(
-                    ' '*indent, self.__class__.__name__)
-                print "%sfrom DistributedObjectOV doId:%s, parent:%s, zone:%s"%(
-                    spaces,
-                    self.doId, self.parentId, self.zoneId),
-                flags=[]
+                print("%s%s:" % (' ' * indent, self.__class__.__name__))
+
+                flags = []
                 if self.activeState == ESGenerated:
                     flags.append("generated")
                 if self.activeState < ESGenerating:
                     flags.append("disabled")
+
+                flagStr = ""
                 if len(flags):
-                    print "(%s)"%(" ".join(flags),),
-                print
-            except Exception, e: print "%serror printing status"%(spaces,), e
+                    flagStr = " (%s)" % (" ".join(flags))
+
+                print("%sfrom DistributedObjectOV doId:%s, parent:%s, zone:%s%s" % (
+                    spaces, self.doId, self.parentId, self.zoneId, flagStr))
+            except Exception as e:
+                print("%serror printing status %s" % (spaces, e))
 
 
     def getDelayDeleteCount(self):

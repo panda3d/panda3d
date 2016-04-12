@@ -24,22 +24,23 @@ Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
  */
 Pipeline::
 Pipeline(const string &name, int num_stages) :
-  Namable(name)
+  Namable(name),
 #ifdef THREADED_PIPELINE
-  , _lock("Pipeline")
+  _num_stages(num_stages),
+  _lock("Pipeline")
+#else
+  _num_stages(1)
 #endif
 {
 #ifdef THREADED_PIPELINE
-
-/*
- * We maintain all of the cyclers in the world on one of two linked lists.
- * Cyclers that are "clean", which is to say, they have the same value across
- * all pipeline stages, are stored on the _clean list.  Cyclers that are
- * "dirty", which have different values across some pipeline stages, are
- * stored instead on the _dirty list.  Cyclers can move themselves from clean
- * to dirty by calling add_dirty_cycler(), and cyclers get moved from dirty to
- * clean during cycle().
- */
+  // We maintain all of the cyclers in the world on one of two linked
+  // lists.  Cyclers that are "clean", which is to say, they have the
+  // same value across all pipeline stages, are stored on the _clean
+  // list.  Cyclers that are "dirty", which have different values
+  // across some pipeline stages, are stored instead on the _dirty
+  // list.  Cyclers can move themselves from clean to dirty by calling
+  // add_dirty_cycler(), and cyclers get moved from dirty to clean
+  // during cycle().
 
   // To visit each cycler once requires traversing both lists.
   _clean.make_head();
@@ -53,9 +54,15 @@ Pipeline(const string &name, int num_stages) :
   // This flag is true only during the call to cycle().
   _cycling = false;
 
+#else
+  if (num_stages != 1) {
+    pipeline_cat.warning()
+      << "Requested " << num_stages
+      << " pipeline stages but multithreaded render pipelines not enabled in build.\n";
+  }
 #endif  // THREADED_PIPELINE
 
-  set_num_stages(num_stages);
+  nassertv(num_stages >= 1);
 }
 
 /**

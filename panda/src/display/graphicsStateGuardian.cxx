@@ -246,6 +246,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   // Assume a maximum of 1 render target in absence of MRT.
   _max_color_targets = 1;
+  _supports_dual_source_blending = false;
 
   _supported_geom_rendering = 0;
 
@@ -3101,7 +3102,7 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "Constructing shadow buffer for light '" << light->get_name()
-      << "', size=" << light->_sb_xsize << "x" << light->_sb_ysize
+      << "', size=" << light->_sb_size[0] << "x" << light->_sb_size[1]
       << ", sort=" << light->_sb_sort << "\n";
   }
 
@@ -3109,7 +3110,7 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   FrameBufferProperties fbp;
   fbp.set_depth_bits(shadow_depth_bits);
 
-  WindowProperties props = WindowProperties::size(light->_sb_xsize, light->_sb_ysize);
+  WindowProperties props = WindowProperties::size(light->_sb_size[0], light->_sb_size[1]);
   int flags = GraphicsPipe::BF_refuse_window;
   if (is_point) {
     flags |= GraphicsPipe::BF_size_square;
@@ -3124,13 +3125,13 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   // error
   PT(Texture) tex = new Texture(light->get_name());
   if (is_point) {
-    if (light->_sb_xsize != light->_sb_ysize) {
+    if (light->_sb_size[0] != light->_sb_size[1]) {
       display_cat.error()
         << "PointLight shadow buffers must have an equal width and height!\n";
     }
-    tex->setup_cube_map(light->_sb_xsize, Texture::T_unsigned_byte, Texture::F_depth_component);
+    tex->setup_cube_map(light->_sb_size[0], Texture::T_unsigned_byte, Texture::F_depth_component);
   } else {
-    tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_unsigned_byte, Texture::F_depth_component);
+    tex->setup_2d_texture(light->_sb_size[0], light->_sb_size[1], Texture::T_unsigned_byte, Texture::F_depth_component);
   }
   tex->make_ram_image();
   sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);

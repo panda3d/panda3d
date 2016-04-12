@@ -121,7 +121,7 @@ int PipeStreamBuf::underflow(void) {
 #endif /* PHAVE_IOSTREAM */
     gbump(-((int)n));
   }
-  delete buf;
+  delete[] buf;
   return ret;
 }
 

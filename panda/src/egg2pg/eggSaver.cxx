@@ -578,8 +578,8 @@ convert_primitive(const GeomVertexData *vertex_data,
 
   // Check for a color scale.
   LVecBase4 color_scale(1.0f, 1.0f, 1.0f, 1.0f);
-  const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, net_state->get_attrib(ColorScaleAttrib::get_class_type()));
-  if (csa != (const ColorScaleAttrib *)NULL) {
+  const ColorScaleAttrib *csa;
+  if (net_state->get_attrib(csa)) {
     color_scale = csa->get_scale();
   }
 
@@ -587,8 +587,8 @@ convert_primitive(const GeomVertexData *vertex_data,
   bool has_color_override = false;
   bool has_color_off = false;
   LColor color_override;
-  const ColorAttrib *ca = DCAST(ColorAttrib, net_state->get_attrib(ColorAttrib::get_class_type()));
-  if (ca != (const ColorAttrib *)NULL) {
+  const ColorAttrib *ca;
+  if (net_state->get_attrib(ca)) {
     if (ca->get_color_type() == ColorAttrib::T_flat) {
       has_color_override = true;
       color_override = ca->get_color();
@@ -604,15 +604,15 @@ convert_primitive(const GeomVertexData *vertex_data,
 
   // Check for a material.
   EggMaterial *egg_mat = (EggMaterial *)NULL;
-  const MaterialAttrib *ma = DCAST(MaterialAttrib, net_state->get_attrib(MaterialAttrib::get_class_type()));
-  if (ma != (const MaterialAttrib *)NULL) {
+  const MaterialAttrib *ma;
+  if (net_state->get_attrib(ma)) {
     egg_mat = get_egg_material(ma->get_material());
   }
 
   // Check for a texture.
   EggTexture *egg_tex = (EggTexture *)NULL;
-  const TextureAttrib *ta = DCAST(TextureAttrib, net_state->get_attrib(TextureAttrib::get_class_type()));
-  if (ta != (const TextureAttrib *)NULL) {
+  const TextureAttrib *ta;
+  if (net_state->get_attrib(ta)) {
     egg_tex = get_egg_texture(ta->get_texture());
   }
 
@@ -651,9 +651,8 @@ convert_primitive(const GeomVertexData *vertex_data,
 
   // Check the backface flag.
   bool bface = false;
-  const RenderAttrib *cf_attrib = net_state->get_attrib(CullFaceAttrib::get_class_type());
-  if (cf_attrib != (const RenderAttrib *)NULL) {
-    const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, cf_attrib);
+  const CullFaceAttrib *cfa;
+  if (net_state->get_attrib(cfa)) {
     if (cfa->get_effective_mode() == CullFaceAttrib::M_cull_none) {
       bface = true;
     }
@@ -662,9 +661,8 @@ convert_primitive(const GeomVertexData *vertex_data,
   // Check the depth write flag - only needed for AM_blend_no_occlude
   bool has_depthwrite = false;
   DepthWriteAttrib::Mode depthwrite = DepthWriteAttrib::M_on;
-  const RenderAttrib *dw_attrib = net_state->get_attrib(DepthWriteAttrib::get_class_type());
-  if (dw_attrib != (const RenderAttrib *)NULL) {
-    const DepthWriteAttrib *dwa = DCAST(DepthWriteAttrib, dw_attrib);
+  const DepthWriteAttrib *dwa;
+  if (net_state->get_attrib(dwa)) {
     depthwrite = dwa->get_mode();
     has_depthwrite = true;
   }
@@ -672,9 +670,8 @@ convert_primitive(const GeomVertexData *vertex_data,
   // Check the transparency flag.
   bool has_transparency = false;
   TransparencyAttrib::Mode transparency = TransparencyAttrib::M_none;
-  const RenderAttrib *tr_attrib = net_state->get_attrib(TransparencyAttrib::get_class_type());
-  if (tr_attrib != (const RenderAttrib *)NULL) {
-    const TransparencyAttrib *tra = DCAST(TransparencyAttrib, tr_attrib);
+  const TransparencyAttrib *tra;
+  if (net_state->get_attrib(tra)) {
     transparency = tra->get_mode();
     has_transparency = true;
   }
@@ -715,6 +712,16 @@ convert_primitive(const GeomVertexData *vertex_data,
     }
   }
 
+  // Check for line thickness and such.
+  bool has_render_mode = false;
+  bool perspective = false;
+  PN_stdfloat thickness = 1;
+  const RenderModeAttrib *rma;
+  if (net_state->get_attrib(rma)) {
+    has_render_mode = true;
+    thickness = rma->get_thickness();
+    perspective = rma->get_perspective();
+  }
 
   LNormal normal;
   LColor color;
@@ -752,6 +759,18 @@ convert_primitive(const GeomVertexData *vertex_data,
 
     if (bface) {
       egg_prim->set_bface_flag(true);
+    }
+
+    if (has_render_mode) {
+      if (egg_prim->is_of_type(EggPoint::get_class_type())) {
+        EggPoint *egg_point = (EggPoint *)egg_prim.p();
+        egg_point->set_thick(thickness);
+        egg_point->set_perspective(perspective);
+
+      } else if (egg_prim->is_of_type(EggLine::get_class_type())) {
+        EggLine *egg_line = (EggLine *)egg_prim.p();
+        egg_line->set_thick(thickness);
+      }
     }
 
     for (int j = 0; j < num_vertices; j++) {

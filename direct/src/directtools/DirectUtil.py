@@ -1,5 +1,5 @@
 
-from DirectGlobals import *
+from .DirectGlobals import *
 
 # Routines to adjust values
 def ROUND_TO(value, divisor):

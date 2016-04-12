@@ -38,14 +38,22 @@ PUBLISHED:
   INLINE void set_shadow_caster(bool caster);
   INLINE void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
 
+  INLINE LVecBase2i get_shadow_buffer_size() const;
+  INLINE void set_shadow_buffer_size(const LVecBase2i &size);
+
   INLINE GraphicsOutputBase *get_shadow_buffer(GraphicsStateGuardianBase *gsg);
+
+PUBLISHED:
+  MAKE_PROPERTY(shadow_caster, is_shadow_caster);
+  MAKE_PROPERTY(shadow_buffer_size, get_shadow_buffer_size, set_shadow_buffer_size);
 
 protected:
   LightLensNode(const LightLensNode &copy);
   void clear_shadow_buffers();
 
+  LVecBase2i _sb_size;
   bool _shadow_caster;
-  int _sb_xsize, _sb_ysize, _sb_sort;
+  int _sb_sort;
 
   // This is really a map of GSG -> GraphicsOutput.
   typedef pmap<PT(GraphicsStateGuardianBase), PT(GraphicsOutputBase) > ShadowBuffers;

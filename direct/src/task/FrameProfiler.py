@@ -35,15 +35,15 @@ class FrameProfiler:
                                   24 * FrameProfiler.Minute,
                                   ]
         for t in self._logSchedule:
-            assert isInteger(t)
+            #assert isInteger(t)
             # make sure the period is evenly divisible into each element of the log schedule
             assert (t % self._period) == 0
         # make sure each element of the schedule is evenly divisible into each subsequent element
-        for i in xrange(len(self._logSchedule)):
+        for i in range(len(self._logSchedule)):
             e = self._logSchedule[i]
-            for j in xrange(i, len(self._logSchedule)):
+            for j in range(i, len(self._logSchedule)):
                 assert (self._logSchedule[j] % e) == 0
-        assert isInteger(self._period)
+        #assert isInteger(self._period)
         self._enableFC = FunctionCall(self._setEnabled, taskMgr.getProfileFramesSV())
         self._enableFC.pushCurrentState()
 
@@ -66,13 +66,13 @@ class FrameProfiler:
         else:
             self._task.remove()
             del self._task
-            for session in self._period2aggregateProfile.itervalues:
+            for session in self._period2aggregateProfile.values():
                 session.release()
             del self._period2aggregateProfile
-            for task in self._id2task.itervalues():
+            for task in self._id2task.values():
                 task.remove()
             del self._id2task
-            for session in self._id2session.itervalues():
+            for session in self._id2session.values():
                 session.release()
             del self._id2session
             self.notify.info('frame profiler stopped')
@@ -84,7 +84,7 @@ class FrameProfiler:
     def _scheduleNextProfile(self):
         self._profileCounter += 1
         self._timeElapsed = self._profileCounter * self._period
-        assert isInteger(self._timeElapsed)
+        #assert isInteger(self._timeElapsed)
         time = self._startTime + self._timeElapsed
 
         # vary the actual delay between profiles by a random amount to prevent interaction
@@ -121,7 +121,7 @@ class FrameProfiler:
         else:
             gen = self._doAnalysisGen(sessionId)
             task._generator = gen
-        result = gen.next()
+        result = next(gen)
         if result == Task.done:
             del task._generator
         return result
@@ -150,7 +150,7 @@ class FrameProfiler:
 
         # log profiles when it's time, and aggregate them upwards into the
         # next-longer profile
-        for pi in xrange(len(self._logSchedule)):
+        for pi in range(len(self._logSchedule)):
             period = self._logSchedule[pi]
             if (self._timeElapsed % period) == 0:
                 if period in p2ap:

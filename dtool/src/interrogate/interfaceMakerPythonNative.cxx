@@ -4703,9 +4703,18 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
         if (args_type == AT_single_arg) {
           out << "#if PY_MAJOR_VERSION >= 3\n";
-          indent(out, indent_level)
-            << param_name << "_str = PyUnicode_AsUTF8AndSize(arg, &"
-            << param_name << "_len);\n";
+          // As a special hack to fix pickling in Python 3, if the method name
+          // starts with py_decode_, we take a bytes object instead of a str.
+          if (remap->_cppfunc->get_local_name().substr(0, 10) == "py_decode_") {
+            indent(out, indent_level) << "if (PyBytes_AsStringAndSize(arg, &"
+              << param_name << "_str, &" << param_name << "_len) == -1) {\n";
+            indent(out, indent_level + 2) << param_name << "_str = NULL;\n";
+            indent(out, indent_level) << "}\n";
+          } else {
+            indent(out, indent_level)
+              << param_name << "_str = PyUnicode_AsUTF8AndSize(arg, &"
+              << param_name << "_len);\n";
+          }
           out << "#else\n"; // NB. PyString_AsStringAndSize also accepts a PyUnicode.
           indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, &"
             << param_name << "_str, &" << param_name << "_len) == -1) {\n";
@@ -4720,11 +4729,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
             + "_str, &" + param_name + "_len";
         }
 
-// if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
-// pexpr_string = "&std::string(" + param_name + "_str, " + param_name +
-// "_len)"; } else {
-          pexpr_string = param_name + "_str, " + param_name + "_len";
-// }
+        //if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
+        //  pexpr_string = "&std::string(" + param_name + "_str, " + param_name + "_len)";
+        //} else {
+        pexpr_string = param_name + "_str, " + param_name + "_len";
+        //}
         expected_params += "str";
       }
       // Remember to clear the TypeError that any of the above methods raise.

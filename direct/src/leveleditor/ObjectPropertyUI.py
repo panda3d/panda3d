@@ -10,8 +10,8 @@ from wx.lib.scrolledpanel import ScrolledPanel
 from wx.lib.agw.cubecolourdialog import *
 from direct.wxwidgets.WxSlider import *
 from pandac.PandaModules import *
-import ObjectGlobals as OG
-import AnimGlobals as AG
+from . import ObjectGlobals as OG
+from . import AnimGlobals as AG
 
 #----------------------------------------------------------------------
 Key = PyEmbeddedImage(
@@ -495,14 +495,14 @@ class ObjectPropertyUI(ScrolledPanel):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         propNames = objDef.orderedProperties[:]
-        for key in objDef.properties.keys():
+        for key in list(objDef.properties.keys()):
             if key not in propNames:
                 propNames.append(key)
 
         for key in propNames:
             # handling properties mask
             propMask = BitMask32()
-            for modeKey in objDef.propertiesMask.keys():
+            for modeKey in list(objDef.propertiesMask.keys()):
                 if key in objDef.propertiesMask[modeKey]:
                     propMask |= modeKey
 

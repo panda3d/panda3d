@@ -47,7 +47,10 @@ public:
   virtual int complete_pointers(TypedWritable **p_list, BamReader *manager);
   virtual bool require_fully_complete() const;
 
+PUBLISHED:
   virtual void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   virtual void finalize(BamReader *manager);
 
   virtual ReferenceCount *as_reference_count();
