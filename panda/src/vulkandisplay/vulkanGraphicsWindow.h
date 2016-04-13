@@ -51,20 +51,35 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
+  void destroy_swapchain();
+  bool create_swapchain();
+
 private:
   VkSurfaceKHR _surface;
   VkSwapchainKHR _swapchain;
   VkRenderPass _render_pass;
   VkSemaphore _present_complete;
 
-  bool _layout_defined;
-  pvector<VkImage> _images;
-  pvector<VkImageView> _image_views;
+  LVecBase2i _swapchain_size;
+  VkSurfaceFormatKHR _surface_format;
+
+  struct SwapBuffer {
+    VkImage _image;
+    VkImageView _image_view;
+    VkFramebuffer _framebuffer;
+    bool _layout_defined;
+  };
+  typedef pvector<SwapBuffer> SwapBuffers;
+  SwapBuffers _swap_buffers;
+  uint32_t _image_index;
+
+  pvector<VkCommandBuffer> _present_cmds;
+
+  bool _depth_stencil_layout_defined;
+  VkFormat _depth_stencil_format;
   VkImage _depth_stencil_image;
   VkImageView _depth_stencil_view;
-  pvector<VkFramebuffer> _framebuffers;
-  uint32_t _image_index;
-  pvector<VkCommandBuffer> _present_cmds;
+  VkDeviceMemory _depth_stencil_memory;
 
 public:
   static TypeHandle get_class_type() {

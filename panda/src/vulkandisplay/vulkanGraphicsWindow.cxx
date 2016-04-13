@@ -32,8 +32,11 @@ VulkanGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _swapchain(VK_NULL_HANDLE),
   _render_pass(VK_NULL_HANDLE),
   _present_complete(VK_NULL_HANDLE),
-  _image_index(0),
-  _layout_defined(false)
+  _depth_stencil_image(VK_NULL_HANDLE),
+  _depth_stencil_view(VK_NULL_HANDLE),
+  _depth_stencil_memory(VK_NULL_HANDLE),
+  _depth_stencil_layout_defined(false),
+  _image_index(0)
 {
 }
 
@@ -78,6 +81,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   DCAST_INTO_R(vkgsg, _gsg, false);
   //vkgsg->reset_if_new();
 
+  if (_swapchain_size != _size) {
+    // Uh-oh, the window must have resized.  Recreate the swapchain.
+    // Before destroying the old, make sure the queue is no longer rendering
+    // anything to it.
+    vkQueueWaitIdle(vkgsg->_queue);
+    destroy_swapchain();
+    if (!create_swapchain()) {
+      return false;
+    }
+  }
+
   // Instruct the GSG that we are commencing a new frame.  This will cause it
   // to create a command buffer.
   vkgsg->set_current_properties(&get_fb_properties());
@@ -98,6 +112,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
                               _present_complete, (VkFence)0, &_image_index);
 
+  nassertr(_image_index < _swap_buffers.size(), false);
+  SwapBuffer &buffer = _swap_buffers[_image_index];
+
   /*if (mode == FM_render) {
     clear_cube_map_selection();
   }*/
@@ -115,7 +132,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   barriers[0].srcQueueFamilyIndex = vkgsg->_graphics_queue_family_index; //TODO support separate present queue.
   barriers[0].dstQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
-  barriers[0].image = _images[_image_index];
+  barriers[0].image = buffer._image;
   barriers[0].subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   barriers[0].subresourceRange.baseMipLevel = 0;
   barriers[0].subresourceRange.levelCount = 1;
@@ -138,14 +155,18 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   barriers[1].subresourceRange.baseArrayLayer = 0;
   barriers[1].subresourceRange.layerCount = 1;
 
-  if (!_layout_defined) {
-    // If this is the first time we are using these images, they are still
-    // in the UNDEFINED layout.
+  if (!buffer._layout_defined) {
+    // If this is the first time we are using these images, they are still in
+    // the UNDEFINED layout.
     barriers[0].srcAccessMask = 0;
     barriers[0].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    buffer._layout_defined = true;
+  }
+
+  if (!_depth_stencil_layout_defined) {
     barriers[1].srcAccessMask = 0;
     barriers[1].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    _layout_defined = true;
+    _depth_stencil_layout_defined = true;
   }
 
   vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -165,7 +186,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   begin_info.pNext = NULL;
   begin_info.renderPass = _render_pass;
-  begin_info.framebuffer = _framebuffers[_image_index];
+  begin_info.framebuffer = buffer._framebuffer;
   begin_info.renderArea.offset.x = 0;
   begin_info.renderArea.offset.y = 0;
   begin_info.renderArea.extent.width = _size[0];
@@ -255,7 +276,10 @@ end_flip() {
   VkFence fence = vkgsg->_fence;
 
   nassertv(_present_complete != VK_NULL_HANDLE);
-  nassertv(_layout_defined);
+  nassertv(_depth_stencil_layout_defined);
+
+  SwapBuffer &buffer = _swap_buffers[_image_index];
+  nassertv(buffer._layout_defined);
 
   VkCommandBuffer cmdbufs[3] = {vkgsg->_transfer_cmd, vkgsg->_cmd, _present_cmds[_image_index]};
 
@@ -304,7 +328,7 @@ end_flip() {
     return;
   }
 
-  nassertv(vkQueueWaitIdle(queue) == VK_SUCCESS);
+  err = vkQueueWaitIdle(queue);
   assert(err == VK_SUCCESS);
 
   vkDestroySemaphore(vkgsg->_device, _present_complete, NULL);
@@ -316,7 +340,23 @@ end_flip() {
  */
 void VulkanGraphicsWindow::
 close_window() {
-  _gsg.clear();
+  // Destroy the previous swapchain first, if we had one.
+  if (!_gsg.is_null()) {
+    VulkanGraphicsStateGuardian *vkgsg;
+    DCAST_INTO_V(vkgsg, _gsg);
+
+    // Wait until the queue is done with any commands that might use the swap
+    // chain, then destroy it.
+    vkQueueWaitIdle(vkgsg->_queue);
+    destroy_swapchain();
+
+    if (_render_pass != VK_NULL_HANDLE) {
+      vkDestroyRenderPass(vkgsg->_device, _render_pass, NULL);
+      _render_pass = VK_NULL_HANDLE;
+    }
+
+    _gsg.clear();
+  }
   BaseGraphicsWindow::close_window();
 }
 
@@ -368,8 +408,6 @@ open_window() {
   _fb_properties.set_force_hardware(vkgsg->is_hardware());
   _fb_properties.set_force_software(!vkgsg->is_hardware());
 
-  VkDevice device = vkgsg->_device;
-
   // Query the preferred image formats for this surface.
   uint32_t num_formats;
   err = vkGetPhysicalDeviceSurfaceFormatsKHR(vkpipe->_gpu, _surface,
@@ -381,211 +419,39 @@ open_window() {
                                              &num_formats, formats);
   nassertr(!err, false);
 
-  // Get the surface capabilities to make sure we make a compatible swapchain.
-  VkSurfaceCapabilitiesKHR surf_caps;
-  err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkpipe->_gpu, _surface, &surf_caps);
-  if (err) {
-    vulkan_error(err, "Failed to get surface capabilities");
-    return false;
-  }
-
-  uint32_t num_images = (uint32_t)(1 + _fb_properties.get_back_buffers());
-  num_images = min(surf_caps.maxImageCount, num_images);
-  num_images = max(surf_caps.minImageCount, num_images);
-
-  // Get the supported presentation modes for this surface.
-  uint32_t num_present_modes = 0;
-  err = vkGetPhysicalDeviceSurfacePresentModesKHR(vkpipe->_gpu, _surface, &num_present_modes, NULL);
-  VkPresentModeKHR *present_modes = (VkPresentModeKHR *)
-    alloca(sizeof(VkPresentModeKHR) * num_present_modes);
-  err = vkGetPhysicalDeviceSurfacePresentModesKHR(vkpipe->_gpu, _surface, &num_present_modes, present_modes);
-
-  VkSwapchainCreateInfoKHR swapchain_info;
-  swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  swapchain_info.pNext = NULL;
-  swapchain_info.surface = _surface;
-  swapchain_info.minImageCount = num_images;
-  swapchain_info.imageExtent.width = _size[0];
-  swapchain_info.imageExtent.height = _size[1];
-  swapchain_info.imageArrayLayers = 1;
-  swapchain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-  swapchain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  swapchain_info.queueFamilyIndexCount = 0;
-  swapchain_info.pQueueFamilyIndices = NULL;
-  swapchain_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-  swapchain_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  swapchain_info.clipped = true;
-  swapchain_info.oldSwapchain = NULL;
-
   // If the format list includes just one entry of VK_FORMAT_UNDEFINED, the
   // surface has no preferred format.  Otherwise, at least one supported
   // format will be returned.
+  //TODO: add more logic for picking a suitabl format.
   if (num_formats == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
-    swapchain_info.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    _surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
+    _surface_format.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
   } else {
     nassertr(num_formats > 1, false);
-    swapchain_info.imageFormat = formats[0].format;
-  }
-  swapchain_info.imageColorSpace = formats[0].colorSpace;
-
-  // Choose a present mode.  Use FIFO mode as fallback, which is always
-  // available.  TODO: respect sync_video when choosing a mode.
-  swapchain_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-  for (size_t i = 0; i < num_present_modes; ++i) {
-    if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-      // This is the lowest-latency non-tearing mode, so we'll take this.
-      swapchain_info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-      break;
-    }
-    if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-      // This is the fastest present mode, though it tears, so we'll use this
-      // if mailbox mode isn't available.
-      swapchain_info.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-    }
+    _surface_format = formats[0];
   }
 
-  err = vkCreateSwapchainKHR(device, &swapchain_info, NULL, &_swapchain);
-  if (err) {
-    vulkan_error(err, "Failed to create swap chain");
-    return false;
-  }
-
-  // Get the images in the swap chain, which may be more than requested.
-  vkGetSwapchainImagesKHR(device, _swapchain, &num_images, NULL);
-  _images.resize(num_images);
-  _image_views.resize(num_images);
-  _framebuffers.resize(num_images);
-  _fb_properties.set_back_buffers(num_images - 1);
-
-  vkGetSwapchainImagesKHR(device, _swapchain, &num_images, &_images[0]);
-
-  // Now create an image view for each image.
-  for (uint32_t i = 0; i < num_images; ++i) {
-    VkImageViewCreateInfo view_info;
-    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    view_info.pNext = NULL;
-    view_info.flags = 0;
-    view_info.image = _images[i];
-    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    view_info.format = swapchain_info.imageFormat;
-    view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    view_info.subresourceRange.baseMipLevel = 0;
-    view_info.subresourceRange.levelCount = 1;
-    view_info.subresourceRange.baseArrayLayer = 0;
-    view_info.subresourceRange.layerCount = 1;
-
-    err = vkCreateImageView(device, &view_info, NULL, &_image_views[i]);
-    if (err) {
-      vulkan_error(err, "Failed to create image view for swapchain");
-      return false;
-    }
-  }
-
-  // Now create a depth image.
-  VkImageCreateInfo depth_img_info;
-  depth_img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  depth_img_info.pNext = NULL;
-  depth_img_info.flags = 0;
-  depth_img_info.imageType = VK_IMAGE_TYPE_2D;
-  depth_img_info.extent.width = _size[0];
-  depth_img_info.extent.height = _size[1];
-  depth_img_info.extent.depth = 1;
-  depth_img_info.mipLevels = 1;
-  depth_img_info.arrayLayers = 1;
-  depth_img_info.samples = VK_SAMPLE_COUNT_1_BIT;
-  depth_img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-  depth_img_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-  depth_img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  depth_img_info.queueFamilyIndexCount = 0;
-  depth_img_info.pQueueFamilyIndices = NULL;
-  depth_img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-  // Choose a suitable format that satisfies the requirements.
+  // Choose a suitable depth/stencil format that satisfies the requirements.
   if (_fb_properties.get_depth_bits() > 24 ||
       _fb_properties.get_float_depth()) {
     _fb_properties.set_depth_bits(32);
     if (_fb_properties.get_stencil_bits() > 0) {
-      depth_img_info.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
+      _depth_stencil_format = VK_FORMAT_D32_SFLOAT_S8_UINT;
       _fb_properties.set_stencil_bits(8);
     } else {
-      depth_img_info.format = VK_FORMAT_D32_SFLOAT;
+      _depth_stencil_format = VK_FORMAT_D32_SFLOAT;
     }
   } else {
-    depth_img_info.format = VK_FORMAT_D24_UNORM_S8_UINT;
+    _depth_stencil_format = VK_FORMAT_D24_UNORM_S8_UINT;
     _fb_properties.set_depth_bits(24);
     _fb_properties.set_stencil_bits(8);
-  }
-
-  err = vkCreateImage(device, &depth_img_info, NULL, &_depth_stencil_image);
-  if (err) {
-    vulkan_error(err, "Failed to create depth image");
-    return false;
-  }
-
-  // Get the memory requirements, and find an appropriate heap to alloc in.
-  VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(device, _depth_stencil_image, &mem_reqs);
-
-  VkMemoryAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
-  alloc_info.allocationSize = mem_reqs.size;
-
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, 0)) {
-    vulkan_error(err, "Failed to find memory heap to allocate depth buffer");
-    return false;
-  }
-
-  VkDeviceMemory depth_mem;
-  err = vkAllocateMemory(device, &alloc_info, NULL, &depth_mem);
-  if (err) {
-    vulkan_error(err, "Failed to allocate memory for depth image");
-    return false;
-  }
-
-  // Bind memory to image.
-  err = vkBindImageMemory(device, _depth_stencil_image, depth_mem, 0);
-  if (err) {
-    vulkan_error(err, "Failed to bind memory to depth image");
-    return false;
-  }
-
-  VkImageViewCreateInfo view_info;
-  view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  view_info.pNext = NULL;
-  view_info.flags = 0;
-  view_info.image = _depth_stencil_image;
-  view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  view_info.format = depth_img_info.format;
-  view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-  view_info.subresourceRange.baseMipLevel = 0;
-  view_info.subresourceRange.levelCount = 1;
-  view_info.subresourceRange.baseArrayLayer = 0;
-  view_info.subresourceRange.layerCount = 1;
-
-  if (_fb_properties.get_stencil_bits()) {
-    view_info.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-  }
-
-  err = vkCreateImageView(device, &view_info, NULL, &_depth_stencil_view);
-  if (err) {
-    vulkan_error(err, "Failed to create image view for depth/stencil");
-    return false;
   }
 
   // Now we want to create a render pass, and for that we need to describe the
   // framebuffer attachments as well as any subpasses we'd like to use.
   VkAttachmentDescription attachments[2];
   attachments[0].flags = 0;
-  attachments[0].format = swapchain_info.imageFormat;
+  attachments[0].format = _surface_format.format;
   attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
   attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -595,7 +461,7 @@ open_window() {
   attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
   attachments[1].flags = 0;
-  attachments[1].format = depth_img_info.format;
+  attachments[1].format = _depth_stencil_format;
   attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
   attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -635,9 +501,261 @@ open_window() {
   pass_info.dependencyCount = 0;
   pass_info.pDependencies = NULL;
 
-  err = vkCreateRenderPass(device, &pass_info, NULL, &_render_pass);
+  err = vkCreateRenderPass(vkgsg->_device, &pass_info, NULL, &_render_pass);
   if (err) {
     vulkan_error(err, "Failed to create render pass");
+    return false;
+  }
+
+  return create_swapchain();
+}
+
+/**
+ * Destroys an existing swapchain.  Before calling this, make sure that no
+ * commands are executing on any queue that uses this swapchain.
+ */
+void VulkanGraphicsWindow::
+destroy_swapchain() {
+  VulkanGraphicsStateGuardian *vkgsg;
+  DCAST_INTO_V(vkgsg, _gsg);
+  VkDevice device = vkgsg->_device;
+
+  // Make sure that the GSG's command buffer releases its resources.
+  if (vkgsg->_cmd != VK_NULL_HANDLE) {
+    vkResetCommandBuffer(vkgsg->_cmd, 0);
+  }
+
+  if (!_present_cmds.empty()) {
+    vkFreeCommandBuffers(device, vkgsg->_cmd_pool, _present_cmds.size(), &_present_cmds[0]);
+    _present_cmds.clear();
+  }
+
+  // Destroy the resources held for each link in the swap chain.
+  SwapBuffers::iterator it;
+  for (it = _swap_buffers.begin(); it != _swap_buffers.end(); ++it) {
+    SwapBuffer &buffer = *it;
+
+    // Destroy the framebuffers that use the swapchain images.
+    vkDestroyFramebuffer(device, buffer._framebuffer, NULL);
+    vkDestroyImageView(device, buffer._image_view, NULL);
+  }
+  _swap_buffers.clear();
+
+  if (_depth_stencil_view != VK_NULL_HANDLE) {
+    vkDestroyImageView(device, _depth_stencil_view, NULL);
+    _depth_stencil_view = VK_NULL_HANDLE;
+  }
+
+  if (_depth_stencil_image != VK_NULL_HANDLE) {
+    vkDestroyImage(device, _depth_stencil_image, NULL);
+    _depth_stencil_image = VK_NULL_HANDLE;
+  }
+
+  if (_depth_stencil_memory != VK_NULL_HANDLE) {
+    vkFreeMemory(device, _depth_stencil_memory, NULL);
+    _depth_stencil_memory = VK_NULL_HANDLE;
+  }
+
+  // Destroy the previous swapchain.  This also destroys the swapchain images.
+  if (_swapchain != VK_NULL_HANDLE) {
+    vkDestroySwapchainKHR(device, _swapchain, NULL);
+    _swapchain = VK_NULL_HANDLE;
+  }
+
+  _image_index = 0;
+  _depth_stencil_layout_defined = false;
+}
+
+/**
+ * Creates or recreates the swapchain and framebuffer.
+ */
+bool VulkanGraphicsWindow::
+create_swapchain() {
+  VulkanGraphicsPipe *vkpipe;
+  VulkanGraphicsStateGuardian *vkgsg;
+  DCAST_INTO_R(vkpipe, _pipe, false);
+  DCAST_INTO_R(vkgsg, _gsg, false);
+  VkDevice device = vkgsg->_device;
+  VkResult err;
+
+  // Get the surface capabilities to make sure we make a compatible swapchain.
+  VkSurfaceCapabilitiesKHR surf_caps;
+  err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkpipe->_gpu, _surface, &surf_caps);
+  if (err) {
+    vulkan_error(err, "Failed to get surface capabilities");
+    return false;
+  }
+
+  uint32_t num_images = (uint32_t)(1 + _fb_properties.get_back_buffers());
+  num_images = min(surf_caps.maxImageCount, num_images);
+  num_images = max(surf_caps.minImageCount, num_images);
+
+  // Get the supported presentation modes for this surface.
+  uint32_t num_present_modes = 0;
+  err = vkGetPhysicalDeviceSurfacePresentModesKHR(vkpipe->_gpu, _surface, &num_present_modes, NULL);
+  VkPresentModeKHR *present_modes = (VkPresentModeKHR *)
+    alloca(sizeof(VkPresentModeKHR) * num_present_modes);
+  err = vkGetPhysicalDeviceSurfacePresentModesKHR(vkpipe->_gpu, _surface, &num_present_modes, present_modes);
+
+  VkSwapchainCreateInfoKHR swapchain_info;
+  swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  swapchain_info.pNext = NULL;
+  swapchain_info.surface = _surface;
+  swapchain_info.minImageCount = num_images;
+  swapchain_info.imageFormat = _surface_format.format;
+  swapchain_info.imageColorSpace = _surface_format.colorSpace;
+  swapchain_info.imageExtent.width = _size[0];
+  swapchain_info.imageExtent.height = _size[1];
+  swapchain_info.imageArrayLayers = 1;
+  swapchain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  swapchain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  swapchain_info.queueFamilyIndexCount = 0;
+  swapchain_info.pQueueFamilyIndices = NULL;
+  swapchain_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+  swapchain_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  swapchain_info.clipped = true;
+  swapchain_info.oldSwapchain = NULL;
+
+  // Choose a present mode.  Use FIFO mode as fallback, which is always
+  // available.  TODO: respect sync_video when choosing a mode.
+  swapchain_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+  for (size_t i = 0; i < num_present_modes; ++i) {
+    if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+      // This is the lowest-latency non-tearing mode, so we'll take this.
+      swapchain_info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+      break;
+    }
+    if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+      // This is the fastest present mode, though it tears, so we'll use this
+      // if mailbox mode isn't available.
+      swapchain_info.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+    }
+  }
+
+  err = vkCreateSwapchainKHR(device, &swapchain_info, NULL, &_swapchain);
+  if (err) {
+    vulkan_error(err, "Failed to create swap chain");
+    return false;
+  }
+
+  // Get the images in the swap chain, which may be more than requested.
+  vkGetSwapchainImagesKHR(device, _swapchain, &num_images, NULL);
+  _swap_buffers.resize(num_images);
+  _fb_properties.set_back_buffers(num_images - 1);
+  _depth_stencil_layout_defined = false;
+  _image_index = 0;
+
+  memset(&_swap_buffers[0], 0, sizeof(SwapBuffer) * num_images);
+
+  VkImage *images = (VkImage *)alloca(sizeof(VkImage) * num_images);
+  vkGetSwapchainImagesKHR(device, _swapchain, &num_images, images);
+
+  // Now create an image view for each image.
+  for (uint32_t i = 0; i < num_images; ++i) {
+    SwapBuffer &buffer = _swap_buffers[i];
+    buffer._image = images[i];
+
+    VkImageViewCreateInfo view_info;
+    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    view_info.pNext = NULL;
+    view_info.flags = 0;
+    view_info.image = images[i];
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    view_info.format = swapchain_info.imageFormat;
+    view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    view_info.subresourceRange.baseMipLevel = 0;
+    view_info.subresourceRange.levelCount = 1;
+    view_info.subresourceRange.baseArrayLayer = 0;
+    view_info.subresourceRange.layerCount = 1;
+
+    err = vkCreateImageView(device, &view_info, NULL, &buffer._image_view);
+    if (err) {
+      vulkan_error(err, "Failed to create image view for swapchain");
+      return false;
+    }
+  }
+
+  // Now create a depth image.
+  VkImageCreateInfo depth_img_info;
+  depth_img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  depth_img_info.pNext = NULL;
+  depth_img_info.flags = 0;
+  depth_img_info.imageType = VK_IMAGE_TYPE_2D;
+  depth_img_info.format = _depth_stencil_format;
+  depth_img_info.extent.width = _size[0];
+  depth_img_info.extent.height = _size[1];
+  depth_img_info.extent.depth = 1;
+  depth_img_info.mipLevels = 1;
+  depth_img_info.arrayLayers = 1;
+  depth_img_info.samples = VK_SAMPLE_COUNT_1_BIT;
+  depth_img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+  depth_img_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+  depth_img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  depth_img_info.queueFamilyIndexCount = 0;
+  depth_img_info.pQueueFamilyIndices = NULL;
+  depth_img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+  err = vkCreateImage(device, &depth_img_info, NULL, &_depth_stencil_image);
+  if (err) {
+    vulkan_error(err, "Failed to create depth image");
+    return false;
+  }
+
+  // Get the memory requirements, and find an appropriate heap to alloc in.
+  VkMemoryRequirements mem_reqs;
+  vkGetImageMemoryRequirements(device, _depth_stencil_image, &mem_reqs);
+
+  VkMemoryAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  alloc_info.pNext = NULL;
+  alloc_info.allocationSize = mem_reqs.size;
+
+  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, 0)) {
+    vulkan_error(err, "Failed to find memory heap to allocate depth buffer");
+    return false;
+  }
+
+  err = vkAllocateMemory(device, &alloc_info, NULL, &_depth_stencil_memory);
+  if (err) {
+    vulkan_error(err, "Failed to allocate memory for depth image");
+    return false;
+  }
+
+  // Bind memory to image.
+  err = vkBindImageMemory(device, _depth_stencil_image, _depth_stencil_memory, 0);
+  if (err) {
+    vulkan_error(err, "Failed to bind memory to depth image");
+    return false;
+  }
+
+  VkImageViewCreateInfo view_info;
+  view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  view_info.pNext = NULL;
+  view_info.flags = 0;
+  view_info.image = _depth_stencil_image;
+  view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  view_info.format = depth_img_info.format;
+  view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+  view_info.subresourceRange.baseMipLevel = 0;
+  view_info.subresourceRange.levelCount = 1;
+  view_info.subresourceRange.baseArrayLayer = 0;
+  view_info.subresourceRange.layerCount = 1;
+
+  if (_fb_properties.get_stencil_bits()) {
+    view_info.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+  }
+
+  err = vkCreateImageView(device, &view_info, NULL, &_depth_stencil_view);
+  if (err) {
+    vulkan_error(err, "Failed to create image view for depth/stencil");
     return false;
   }
 
@@ -657,8 +775,9 @@ open_window() {
   fb_info.layers = 1;
 
   for (uint32_t i = 0; i < num_images; ++i) {
-    attach_views[0] = _image_views[i];
-    err = vkCreateFramebuffer(device, &fb_info, NULL, &_framebuffers[i]);
+    SwapBuffer &buffer = _swap_buffers[i];
+    attach_views[0] = buffer._image_view;
+    err = vkCreateFramebuffer(device, &fb_info, NULL, &buffer._framebuffer);
     if (err) {
       vulkan_error(err, "Failed to create framebuffer");
       return false;
@@ -674,22 +793,24 @@ open_window() {
   cmd_alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   cmd_alloc.commandBufferCount = num_images;
 
-  VkCommandBuffer *cmd_bufs =
-    (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer) * num_images);
-  err = vkAllocateCommandBuffers(device, &cmd_alloc, cmd_bufs);
+  _present_cmds.resize(num_images);
+  err = vkAllocateCommandBuffers(device, &cmd_alloc, &_present_cmds[0]);
   if (err) {
     vulkan_error(err, "Failed to create command buffer");
     return false;
   }
 
   for (uint32_t i = 0; i < num_images; ++i) {
+    SwapBuffer &buffer = _swap_buffers[i];
+    VkCommandBuffer present_cmd = _present_cmds[i];
+
     VkCommandBufferBeginInfo begin_info;
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.pNext = NULL;
     begin_info.flags = 0;
     begin_info.pInheritanceInfo = NULL;
 
-    err = vkBeginCommandBuffer(cmd_bufs[i], &begin_info);
+    err = vkBeginCommandBuffer(present_cmd, &begin_info);
     if (err) {
       vulkan_error(err, "Can't begin command buffer");
       return false;
@@ -702,9 +823,9 @@ open_window() {
     barriers[0].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
     barriers[0].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     barriers[0].newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    barriers[0].srcQueueFamilyIndex = queue_family_index;
-    barriers[0].dstQueueFamilyIndex = queue_family_index; //TODO support separate present queue.
-    barriers[0].image = _images[i];
+    barriers[0].srcQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
+    barriers[0].dstQueueFamilyIndex = vkgsg->_graphics_queue_family_index; //TODO support separate present queue.
+    barriers[0].image = buffer._image;
     barriers[0].subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barriers[0].subresourceRange.baseMipLevel = 0;
     barriers[0].subresourceRange.levelCount = 1;
@@ -717,18 +838,18 @@ open_window() {
     barriers[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
     barriers[1].oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     barriers[1].newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    barriers[1].srcQueueFamilyIndex = queue_family_index;
-    barriers[1].dstQueueFamilyIndex = queue_family_index; //TODO support separate present queue.
+    barriers[1].srcQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
+    barriers[1].dstQueueFamilyIndex = vkgsg->_graphics_queue_family_index; //TODO support separate present queue.
     barriers[1].image = _depth_stencil_image;
     barriers[1].subresourceRange = view_info.subresourceRange;
 
-    vkCmdPipelineBarrier(cmd_bufs[i], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+    vkCmdPipelineBarrier(present_cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0,
                          0, NULL, 0, NULL, 2, barriers);
 
-    vkEndCommandBuffer(cmd_bufs[i]);
-    _present_cmds.push_back(cmd_bufs[i]);
+    vkEndCommandBuffer(present_cmd);
   }
 
+  _swapchain_size = _size;
   return true;
 }
