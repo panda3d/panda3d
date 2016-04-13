@@ -373,7 +373,10 @@ open_window() {
     return false;
   }
 
+  VkResult err;
+
   // Create a surface using the WSI extension.
+#ifdef _WIN32
   VkWin32SurfaceCreateInfoKHR surface_info;
   surface_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
   surface_info.pNext = NULL;
@@ -381,9 +384,21 @@ open_window() {
   surface_info.hinstance = GetModuleHandle(NULL);
   surface_info.hwnd = _hWnd;
 
-  VkResult err = vkCreateWin32SurfaceKHR(vkpipe->_instance, &surface_info, NULL, &_surface);
+  err = vkCreateWin32SurfaceKHR(vkpipe->_instance, &surface_info, NULL, &_surface);
+
+#elif defined(HAVE_X11)
+  VkXlibSurfaceCreateInfoKHR surface_info;
+  surface_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+  surface_info.pNext = NULL;
+  surface_info.flags = 0;
+  surface_info.dpy = _display;
+  surface_info.window = _xwindow;
+
+  err = vkCreateXlibSurfaceKHR(vkpipe->_instance, &surface_info, NULL, &_surface);
+#endif
+
   if (err) {
-    vulkan_error(err, "Failed to create Win32 surface");
+    vulkan_error(err, "Failed to create surface");
     return false;
   }
 

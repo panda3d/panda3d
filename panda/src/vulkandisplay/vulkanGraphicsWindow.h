@@ -19,6 +19,9 @@
 #ifdef _WIN32
 #include "winGraphicsWindow.h"
 typedef WinGraphicsWindow BaseGraphicsWindow;
+#elif defined(HAVE_X11)
+#include "x11GraphicsWindow.h"
+typedef x11GraphicsWindow BaseGraphicsWindow;
 #else
 #include "graphicsWindow.h"
 typedef GraphicsWindow BaseGraphicsWindow;

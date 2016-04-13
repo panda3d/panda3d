@@ -198,7 +198,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // flat color assigned via ColorAttrib.
   VkBuffer buffer;
   VkDeviceMemory memory;
-  uint32_t palette_size = (uint32_t)min(2, vulkan_color_palette_size) * 16;
+  uint32_t palette_size = (uint32_t)min(2, vulkan_color_palette_size.get_value()) * 16;
   if (!create_buffer(palette_size, _color_vertex_buffer, memory,
                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
@@ -453,9 +453,9 @@ prepare_texture(Texture *texture, int view) {
          image_info.extent.height > img_props.maxExtent.height ||
          image_info.extent.depth > img_props.maxExtent.depth) {
     // Reduce the size by bumping the first mipmap level uploaded.
-    image_info.extent.width = max(1, image_info.extent.width >> 1);
-    image_info.extent.height = max(1, image_info.extent.height >> 1);
-    image_info.extent.depth = max(1, image_info.extent.depth >> 1);
+    image_info.extent.width = max(1U, image_info.extent.width >> 1);
+    image_info.extent.height = max(1U, image_info.extent.height >> 1);
+    image_info.extent.depth = max(1U, image_info.extent.depth >> 1);
     ++mipmap_begin;
   }
 
@@ -872,9 +872,9 @@ upload_texture(VulkanTextureContext *tc) {
       blit.srcOffsets[1].z = region.imageExtent.depth;
     }
 
-    region.imageExtent.width = max(1, region.imageExtent.width >> 1);
-    region.imageExtent.height = max(1, region.imageExtent.height >> 1);
-    region.imageExtent.depth = max(1, region.imageExtent.depth >> 1);
+    region.imageExtent.width = max(1U, region.imageExtent.width >> 1);
+    region.imageExtent.height = max(1U, region.imageExtent.height >> 1);
+    region.imageExtent.depth = max(1U, region.imageExtent.depth >> 1);
     ++region.imageSubresource.mipLevel;
   }
 
@@ -1973,6 +1973,8 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
     case GeomEnums::NT_packed_dabc:
       attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
       break;
+    case GeomEnums::NT_stdfloat:
+      assert(false);
     case GeomEnums::NT_float32:
       attrib_desc[i].format = (VkFormat)(VK_FORMAT_R32_SFLOAT + 3 * fmt_jump);
       break;
@@ -2392,6 +2394,10 @@ get_image_format(const Texture *texture) const {
     } else {
       return (VkFormat)(VK_FORMAT_BC5_UNORM_BLOCK + is_signed);
     }
+
+  default:
+    // Compression mode not supported.
+    break;
   }
 
   switch (format) {

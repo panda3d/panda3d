@@ -82,7 +82,7 @@ get_pipe_type_p3vulkandisplay() {
 /**
  * Returns a string describing a VkResult code, or NULL if it is unrecognized.
  */
-static const char *const string_result(VkResult result) {
+static const char *string_result(VkResult result) {
   switch (result) {
   case VK_SUCCESS:
     return "Success.";

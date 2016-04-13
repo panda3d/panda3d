@@ -20,6 +20,9 @@
 #ifdef _WIN32
 #include "winGraphicsPipe.h"
 typedef WinGraphicsPipe BaseGraphicsPipe;
+#elif defined(HAVE_X11)
+#include "x11GraphicsPipe.h"
+typedef x11GraphicsPipe BaseGraphicsPipe;
 #else
 #include "graphicsPipe.h"
 typedef GraphicsPipe BaseGraphicsPipe;

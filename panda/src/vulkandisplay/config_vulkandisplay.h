@@ -25,8 +25,21 @@ extern ConfigVariableInt vulkan_color_palette_size;
 extern EXPCL_VULKANDISPLAY void init_libvulkandisplay();
 extern "C" EXPCL_VULKANDISPLAY int get_pipe_type_p3vulkandisplay();
 
+#ifdef _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
+
+#elif defined(HAVE_X11)
+// Make sure Eigen is included first to avoid conflict
+#include "lsimpleMatrix.h"
+#include "pre_x11_include.h"
+#define VK_USE_PLATFORM_XLIB_KHR
+#endif
+
 #include <vulkan/vulkan.h>
+
+#ifdef HAVE_X11
+#include "post_x11_include.h"
+#endif
 
 void vulkan_error(VkResult result, const char *message);
 

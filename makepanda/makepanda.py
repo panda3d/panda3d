@@ -775,6 +775,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+        SmartPkgEnable("VULKAN",    "",          ("vulkan"), "vulkan/vulkan.h")
 
         if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
             LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
@@ -4577,13 +4578,17 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
 # DIRECTORY: panda/src/vulkandisplay/
 #
 
-if (GetTarget() == 'windows' and PkgSkip("GL")==0 and not RUNTIME):
+if not PkgSkip("VULKAN") and not RUNTIME:
   OPTS=['DIR:panda/src/vulkandisplay', 'DIR:panda/src/vulkandisplay', 'BUILDING:VULKANDISPLAY', 'VULKAN']
   TargetAdd('p3vulkandisplay_composite1.obj', opts=OPTS, input='p3vulkandisplay_composite1.cxx')
   TargetAdd('libp3vulkandisplay.dll', input='p3vulkandisplay_composite1.obj')
-  TargetAdd('libp3vulkandisplay.dll', input='libp3windisplay.dll')
+  if GetTarget() == 'windows':
+    TargetAdd('libp3vulkandisplay.dll', input='libp3windisplay.dll')
+    TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN'])
+  else:
+    TargetAdd('libp3vulkandisplay.dll', input='p3x11display_composite1.obj')
+    TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
   TargetAdd('libp3vulkandisplay.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN'])
 
 #
 # DIRECTORY: panda/src/ode/

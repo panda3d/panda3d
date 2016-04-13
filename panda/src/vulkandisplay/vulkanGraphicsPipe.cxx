@@ -62,7 +62,13 @@ VulkanGraphicsPipe() {
   const char *extensions[] = {
     "VK_EXT_debug_report",
     "VK_KHR_surface",
+#ifdef _WIN32
     "VK_KHR_win32_surface"
+#elif defined(HAVE_X11)
+    "VK_KHR_xlib_surface"
+#else
+    ""
+#endif
   };
 
   VkApplicationInfo app_info;
