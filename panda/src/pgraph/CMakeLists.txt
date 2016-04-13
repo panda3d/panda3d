@@ -44,10 +44,11 @@ set(P3PGRAPH_HEADERS
   light.I light.h
   lightAttrib.I lightAttrib.h
   lightRampAttrib.I lightRampAttrib.h
-  loader.I loader.h 
+  loader.I loader.h
   loaderFileType.h
-  loaderFileTypeBam.h 
+  loaderFileTypeBam.h
   loaderFileTypeRegistry.h
+  logicOpAttrib.I logicOpAttrib.h
   materialAttrib.I materialAttrib.h
   materialCollection.I materialCollection.h
   modelFlattenRequest.I modelFlattenRequest.h
@@ -144,9 +145,10 @@ set(P3PGRAPH_SOURCES
   lightAttrib.cxx
   lightRampAttrib.cxx
   loader.cxx
-  loaderFileType.cxx 
+  loaderFileType.cxx
   loaderFileTypeBam.cxx
-  loaderFileTypeRegistry.cxx 
+  loaderFileTypeRegistry.cxx
+  logicOpAttrib.cxx
   materialAttrib.cxx
   materialCollection.cxx
   modelFlattenRequest.cxx

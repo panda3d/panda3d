@@ -10,6 +10,7 @@ set(P3GRUTIL_HEADERS
   geoMipTerrain.I geoMipTerrain.h
   sceneGraphAnalyzerMeter.I sceneGraphAnalyzerMeter.h
   heightfieldTesselator.I heightfieldTesselator.h
+  shaderTerrainMesh.I shaderTerrainMesh.h
   lineSegs.I lineSegs.h
   multitexReducer.I multitexReducer.h
   nodeVertexTransform.I nodeVertexTransform.h
@@ -27,6 +28,7 @@ set(P3GRUTIL_SOURCES
   geoMipTerrain.cxx
   sceneGraphAnalyzerMeter.cxx
   heightfieldTesselator.cxx
+  shaderTerrainMesh.cxx
   multitexReducer.cxx
   nodeVertexTransform.cxx
   pfmVizzer.cxx

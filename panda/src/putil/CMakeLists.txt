@@ -112,6 +112,8 @@ set(P3PUTIL_SOURCES
 )
 
 set(P3PUTIL_IGATEEXT
+  bamReader_ext.cxx
+  bamReader_ext.h
   callbackObject_ext.h
   pythonCallbackObject.cxx
   pythonCallbackObject.h
