@@ -20,6 +20,7 @@ class ShaderTerrainDemo(ShowBase):
         load_prc_file_data("", """
             textures-power-2 none
             window-title Panda3D Shader Terrain Demo
+            gl-coordinate-system default
         """)
 
         # Initialize the showbase
