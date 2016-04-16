@@ -109,9 +109,9 @@ protected:
 protected:
   int _screenshot_buffer_type;
   int _draw_buffer_type;
+  int _clear_mask;
 
 private:
-  bool    _clear_active[RTP_COUNT];
   LColor  _clear_value[RTP_COUNT];
 
   PN_stdfloat _pixel_zoom;
