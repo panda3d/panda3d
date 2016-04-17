@@ -1,16 +1,15 @@
-// Filename: connectionWriter.h
-// Created by:  drose (08Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file connectionWriter.h
+ * @author drose
+ * @date 2000-02-08
+ */
 
 #ifndef CONNECTIONWRITER_H
 #define CONNECTIONWRITER_H
@@ -25,16 +24,14 @@
 class ConnectionManager;
 class NetAddress;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConnectionWriter
-// Description : This class handles threaded delivery of datagrams to
-//               various TCP or UDP sockets.
-//
-//               A ConnectionWriter may define an arbitrary number of
-//               threads (0 or more) to write its datagrams to
-//               sockets.  The number of threads is specified at
-//               construction time and cannot be changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class handles threaded delivery of datagrams to various TCP or UDP
+ * sockets.
+ *
+ * A ConnectionWriter may define an arbitrary number of threads (0 or more) to
+ * write its datagrams to sockets.  The number of threads is specified at
+ * construction time and cannot be changed.
+ */
 class EXPCL_PANDA_NET ConnectionWriter {
 PUBLISHED:
   ConnectionWriter(ConnectionManager *manager, int num_threads,
@@ -48,7 +45,7 @@ PUBLISHED:
   BLOCKING bool send(const Datagram &datagram,
                      const PT(Connection) &connection,
                      bool block = false);
-  
+
   BLOCKING bool send(const Datagram &datagram,
                      const PT(Connection) &connection,
                      const NetAddress &address,
@@ -104,5 +101,3 @@ private:
 };
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: maya_funcs.h
-// Created by:  drose (16Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maya_funcs.h
+ * @author drose
+ * @date 2000-02-16
+ */
 
 #ifndef MAYA_FUNCS_H
 #define MAYA_FUNCS_H
@@ -108,9 +107,9 @@ string_mfndata_type(MFnData::Type type);
 void
 list_maya_attributes(MObject &node);
 
-// Also, we must define some output functions for Maya objects, since
-// we can't use those built into Maya (which forward-defines the
-// ostream type incorrectly).
+// Also, we must define some output functions for Maya objects, since we can't
+// use those built into Maya (which forward-defines the ostream type
+// incorrectly).
 INLINE ostream &operator << (ostream &out, const MString &str);
 INLINE ostream &operator << (ostream &out, const MVector &vec);
 

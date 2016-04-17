@@ -23,7 +23,7 @@ class CRDataCache:
             # cache is full, throw out a random doId's data
             if self._junkIndex >= len(self._doId2name2data):
                 self._junkIndex = 0
-            junkDoId = self._doId2name2data.keys()[self._junkIndex]
+            junkDoId = list(self._doId2name2data.keys())[self._junkIndex]
             self._junkIndex += 1
             for name in self._doId2name2data[junkDoId]:
                 self._doId2name2data[junkDoId][name].flush()
@@ -96,7 +96,7 @@ if __debug__:
     assert 'testCachedData2' in data
     assert data['testCachedData'].foo == 34
     assert data['testCachedData2'].bar == 45
-    for cd in data.itervalues():
+    for cd in data.values():
         cd.flush()
     del data
     dc._checkMemLeaks()

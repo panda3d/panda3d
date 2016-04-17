@@ -1,32 +1,29 @@
-// Filename: xFileTrans.cxx
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileTrans.cxx
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #include "xFileTrans.h"
 #include "xFile.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileTrans::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileTrans::
 XFileTrans() :
   WithOutputFile(true, false, true)
 {
-  // Indicate the extension name we expect the user to supply for
-  // output files.
+  // Indicate the extension name we expect the user to supply for output
+  // files.
   _preferred_extension = ".x";
 
   set_program_brief("reads and writes DirectX .x files");
@@ -48,11 +45,9 @@ XFileTrans() :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileTrans::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void XFileTrans::
 run() {
   nout << "Reading " << _input_filename << "\n";
@@ -70,11 +65,9 @@ run() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileTrans::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool XFileTrans::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 1)) {

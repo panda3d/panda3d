@@ -1,16 +1,15 @@
-// Filename: cfChannel.h
-// Created by:  drose (26Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cfChannel.h
+ * @author drose
+ * @date 2009-03-26
+ */
 
 #ifndef CFCHANNEL_H
 #define CFCHANNEL_H
@@ -21,12 +20,10 @@
 #include "bamWriter.h"
 #include "cfCommand.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CFChannel
-// Description : Represents an open communication channel in the
-//               connected-frame protocol.  Commands may be sent and
-//               received on this channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents an open communication channel in the connected-frame protocol.
+ * Commands may be sent and received on this channel.
+ */
 class EXPCL_CFTALK CFChannel : public ReferenceCount {
 public:
   CFChannel(DatagramGenerator *dggen, DatagramSink *dgsink);

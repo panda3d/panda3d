@@ -1,16 +1,15 @@
-// Filename: notifyCategory.h
-// Created by:  drose (29Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file notifyCategory.h
+ * @author drose
+ * @date 2000-02-29
+ */
 
 #ifndef NOTIFYCATEGORY_H
 #define NOTIFYCATEGORY_H
@@ -24,15 +23,12 @@
 
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : NotifyCategory
-// Description : A particular category of error messages.  Typically
-//               there will be one of these per package, so that we
-//               can turn on or off error messages at least at a
-//               package level; further nested categories can be
-//               created within a package if a finer grain of control
-//               is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * A particular category of error messages.  Typically there will be one of
+ * these per package, so that we can turn on or off error messages at least at
+ * a package level; further nested categories can be created within a package
+ * if a finer grain of control is required.
+ */
 class EXPCL_DTOOLCONFIG NotifyCategory : public MemoryBase, public ConfigFlags {
 private:
   NotifyCategory(const string &fullname, const string &basename,
@@ -49,12 +45,12 @@ PUBLISHED:
 
   INLINE bool is_on(NotifySeverity severity) const;
 
-  // When NOTIFY_DEBUG is not defined, the categories will never be
-  // set to "spam" or "debug" severities, and these methods are
-  // redefined to be static to make it more obvious to the compiler.
-  // However, we still want to present a consistent interface to our
-  // scripting language, so during the interrogate pass (that is, when
-  // CPPPARSER is defined), we still pretend they're nonstatic.
+  // When NOTIFY_DEBUG is not defined, the categories will never be set to
+  // "spam" or "debug" severities, and these methods are redefined to be
+  // static to make it more obvious to the compiler.  However, we still want
+  // to present a consistent interface to our scripting language, so during
+  // the interrogate pass (that is, when CPPPARSER is defined), we still
+  // pretend they're nonstatic.
 #if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
   INLINE bool is_spam() const;
   INLINE bool is_debug() const;

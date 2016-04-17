@@ -1,26 +1,24 @@
-// Filename: httpChannel.h
-// Created by:  drose (24Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpChannel.h
+ * @author drose
+ * @date 2002-09-24
+ */
 
 #ifndef HTTPCHANNEL_H
 #define HTTPCHANNEL_H
 
 #include "pandabase.h"
 
-// This module requires OpenSSL to compile, even if you do not intend
-// to use this to establish https connections; this is because it uses
-// the OpenSSL library to portably handle all of the socket
-// communications.
+// This module requires OpenSSL to compile, even if you do not intend to use
+// this to establish https connections; this is because it uses the OpenSSL
+// library to portably handle all of the socket communications.
 
 #ifdef HAVE_OPENSSL
 
@@ -46,21 +44,17 @@
 class Ramfile;
 class HTTPClient;
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPChannel
-// Description : A single channel of communication from an HTTPClient.
-//               This is similar to the concept of a 'connection',
-//               except that HTTP is technically connectionless; in
-//               fact, a channel may represent one unbroken connection
-//               or it may transparently close and reopen a new
-//               connection with each request.
-//
-//               A channel is conceptually a single thread of I/O.
-//               One document at a time may be requested using a
-//               channel; a new document may (in general) not be
-//               requested from the same HTTPChannel until the first
-//               document has been fully retrieved.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single channel of communication from an HTTPClient.  This is similar to
+ * the concept of a 'connection', except that HTTP is technically
+ * connectionless; in fact, a channel may represent one unbroken connection or
+ * it may transparently close and reopen a new connection with each request.
+ *
+ * A channel is conceptually a single thread of I/O. One document at a time
+ * may be requested using a channel; a new document may (in general) not be
+ * requested from the same HTTPChannel until the first document has been fully
+ * retrieved.
+ */
 class EXPCL_PANDAEXPRESS HTTPChannel : public TypedReferenceCount {
 private:
   HTTPChannel(HTTPClient *client);
@@ -69,9 +63,9 @@ public:
   virtual ~HTTPChannel();
 
 PUBLISHED:
-  // get_status_code() will either return an HTTP-style status code >=
-  // 100 (e.g. 404), or one of the following values.  In general,
-  // these are ordered from less-successful to more-successful.
+  // get_status_code() will either return an HTTP-style status code >= 100
+  // (e.g.  404), or one of the following values.  In general, these are
+  // ordered from less-successful to more-successful.
   enum StatusCode {
     SC_incomplete = 0,
     SC_internal_error,
@@ -87,16 +81,16 @@ PUBLISHED:
     SC_ssl_internal_failure,
     SC_ssl_no_handshake,
 
-    // No one returns this code, but StatusCode values higher than
-    // this are deemed more successful than any generic HTTP response.
+    // No one returns this code, but StatusCode values higher than this are
+    // deemed more successful than any generic HTTP response.
     SC_http_error_watermark,
 
     SC_ssl_invalid_server_certificate,
     SC_ssl_self_signed_server_certificate,
     SC_ssl_unexpected_server,
-    
-    // These errors are only generated after a download_to_*() call
-    // been issued.
+
+    // These errors are only generated after a download_to_*() call been
+    // issued.
     SC_download_open_error,
     SC_download_write_error,
     SC_download_invalid_range,
@@ -171,7 +165,7 @@ PUBLISHED:
   INLINE void send_extra_header(const string &key, const string &value);
 
   BLOCKING INLINE bool get_document(const DocumentSpec &url);
-  BLOCKING INLINE bool get_subdocument(const DocumentSpec &url, 
+  BLOCKING INLINE bool get_subdocument(const DocumentSpec &url,
                                        size_t first_byte, size_t last_byte);
   BLOCKING INLINE bool get_header(const DocumentSpec &url);
   BLOCKING INLINE bool post_form(const DocumentSpec &url, const string &body);
@@ -182,7 +176,7 @@ PUBLISHED:
   BLOCKING INLINE bool get_options(const DocumentSpec &url);
 
   INLINE void begin_get_document(const DocumentSpec &url);
-  INLINE void begin_get_subdocument(const DocumentSpec &url, 
+  INLINE void begin_get_subdocument(const DocumentSpec &url,
                                     size_t first_byte, size_t last_byte);
   INLINE void begin_get_header(const DocumentSpec &url);
   INLINE void begin_post_form(const DocumentSpec &url, const string &body);
@@ -233,7 +227,7 @@ private:
   bool run_download_to_ram();
   bool run_download_to_stream();
 
-  void begin_request(HTTPEnum::Method method, const DocumentSpec &url, 
+  void begin_request(HTTPEnum::Method method, const DocumentSpec &url,
                      const string &body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
   void reconsider_proxy();
@@ -253,7 +247,7 @@ private:
 
   void check_socket();
 
-  void check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved, 
+  void check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved,
                                             bool &cert_name_preapproved) const;
   bool validate_server_name(X509 *cert);
   static bool match_cert_name(const string &cert_name, const string &hostname);
@@ -279,8 +273,7 @@ private:
   static bool more_useful_status_code(int a, int b);
 
 public:
-  // This is declared public solely so we can make an ostream operator
-  // for it.
+  // This is declared public solely so we can make an ostream operator for it.
   enum State {
     S_new,
     S_try_next_proxy,
@@ -387,13 +380,13 @@ private:
   // What type of response do we get to our HTTP request?
   enum ResponseType {
     RT_none,
-    RT_hangup,       // immediately lost connection 
+    RT_hangup,       // immediately lost connection
     RT_non_http,     // something that wasn't an expected HTTP response
     RT_http_hangup,  // the start of an HTTP response, then a lost connection
     RT_http_complete // a valid HTTP response completed
   };
   ResponseType _response_type;
-  
+
   // Not a phash_map, to maintain sorted order.
   typedef pmap<string, string> Headers;
   Headers _headers;
@@ -407,12 +400,11 @@ private:
   bool _got_file_size;
   bool _got_transfer_file_size;
 
-  // These members are used to maintain the current state while
-  // communicating with the server.  We need to store everything in
-  // the class object instead of using local variables because in the
-  // case of nonblocking I/O we have to be able to return to the
-  // caller after any I/O operation and resume later where we left
-  // off.
+  // These members are used to maintain the current state while communicating
+  // with the server.  We need to store everything in the class object instead
+  // of using local variables because in the case of nonblocking IO we have to
+  // be able to return to the caller after any IO operation and resume later
+  // where we left off.
   State _state;
   State _done_state;
   double _started_connecting_time;
@@ -433,8 +425,8 @@ private:
   int _last_status_code;
   double _last_run_time;
 
-  // RAU we find that we may need a little more time for the
-  // ssl handshake when the phase files are downloading
+  // RAU we find that we may need a little more time for the ssl handshake
+  // when the phase files are downloading
   double _extra_ssl_handshake_time;
 
 public:
@@ -465,5 +457,3 @@ ostream &operator << (ostream &out, HTTPChannel::State state);
 #endif  // HAVE_OPENSSL
 
 #endif
-
-

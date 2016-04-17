@@ -1,9 +1,7 @@
 #ifndef __SOCKET_PORTABLE_H__
-#define __SOCKET_PORTABLE_H__ 
-//////////////////////////////////////////////////////////////////
+#define __SOCKET_PORTABLE_H__
 // Lots of stuff to make network socket-based io transparent across multiple
-//  platforms
-//////////////////////////////////////////////////////////////////
+// platforms
 
 const int ALL_OK = 0;
 const int BASIC_ERROR = -1;
@@ -121,7 +119,7 @@ inline int init_network()
     int answer = WSAStartup(0x0101, &mydata);
     if (answer != 0)
         return BASIC_ERROR;
-    
+
     return ALL_OK;
 }
 
@@ -164,9 +162,9 @@ const SOCKET BAD_SOCKET = (SOCKET)-1;
 typedef int SOCKET;
 const SOCKET BAD_SOCKET = 0xffffffff;
 
-//#define DO_CONNECT(a,b)               connect(a,(sockaddr *)b,sizeof(sockaddr))
-//#define DO_SOCKET_READ(a,b,c)         recv(a,b,c,0)
-//#define DO_SOCKET_WRITE(a,b,c)        send(a,b,c,0)
+// #define DO_CONNECT(a,b)               connect(a,(sockaddr
+// *)b,sizeof(sockaddr)) #define DO_SOCKET_READ(a,b,c)         recv(a,b,c,0)
+// #define DO_SOCKET_WRITE(a,b,c)        send(a,b,c,0)
 
 inline int DO_CONNECT(const SOCKET a, const sockaddr_in *b)
 {
@@ -181,11 +179,11 @@ inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
     return send(a, buff, len, 0);
 }
 
-//#define DO_SOCKET_WRITE_TO(a,b,c,d)   sendto(a,b,c,0,(sockaddr *)d,sizeof(sockaddr))
-//#define DO_NEWUDP()          socket(AF_INET, SOCK_DGRAM, 0)
-//#define DO_NEWTCP()       socket(AF_INET, SOCK_STREAM, 0)
-//#define DO_BIND(a,b)      ::bind(a,(sockaddr *)b,sizeof(sockaddr))
-//#/define DO_CLOSE(a)       close(a)
+// #define DO_SOCKET_WRITE_TO(a,b,c,d)   sendto(a,b,c,0,(sockaddr
+// *)d,sizeof(sockaddr)) #define DO_NEWUDP()          socket(AF_INET,
+// SOCK_DGRAM, 0) #define DO_NEWTCP()       socket(AF_INET, SOCK_STREAM, 0)
+// #define DO_BIND(a,b)      ::bind(a,(sockaddr *)b,sizeof(sockaddr)) #define
+// DO_CLOSE(a)       close(a)
 inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
 {
     return sendto(a, buffer, buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
@@ -262,14 +260,14 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
-//#include <netinet/in_systm.h>
+// #include <netinetin_systm.h>
 #include <netinet/tcp.h>
-//#include <netinet/ip.h>
+// #include <netinetip.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
-typedef struct sockaddr_in AddressType; 
+typedef struct sockaddr_in AddressType;
 
 typedef int SOCKET;
 const SOCKET BAD_SOCKET = -1;
@@ -290,7 +288,6 @@ inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
 {
     return (int)send(a, buff, (size_t)len, 0);
 }
-///////////////////////////////////////////////
 inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
 {
     return (int)sendto(a, buffer, (size_t)buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
@@ -357,11 +354,11 @@ inline bool do_shutdown_send(SOCKET s)
 
 const long LOCAL_NONBLOCK = 1;
 // With BSDBLOCK defined, we don't need FIONBIO.  Solaris doesn't provide it.
-//const long LOCAL_FL_SET = FIONBIO ;
+// const long LOCAL_FL_SET = FIONBIO ;
 const int LOCAL_BLOCKING_ERROR = EAGAIN;
 const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 
-#else 
+#else
 /************************************************************************
 * NO DEFINITION => GIVE COMPILATION ERROR
 ************************************************************************/

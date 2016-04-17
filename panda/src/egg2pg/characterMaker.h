@@ -1,16 +1,15 @@
-// Filename: characterMaker.h
-// Created by:  drose (06Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file characterMaker.h
+ * @author drose
+ * @date 2002-03-06
+ */
 
 #ifndef CHARACTERMAKER_H
 #define CHARACTERMAKER_H
@@ -39,12 +38,10 @@ class MovingPartBase;
 class EggLoader;
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CharacterMaker
-// Description : Converts an EggGroup hierarchy, beginning with a
-//               group with <Dart> set, to a character node with
-//               joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an EggGroup hierarchy, beginning with a group with <Dart> set, to
+ * a character node with joints.
+ */
 class EXPCL_PANDAEGG CharacterMaker {
 public:
   CharacterMaker(EggGroup *root, EggLoader &loader, bool structured = false);
@@ -90,7 +87,7 @@ private:
   CharacterJointBundle *_bundle;
   PartGroup *_morph_root;
   PartGroup *_skeleton_root;
-  
+
   bool _structured;
 
 };

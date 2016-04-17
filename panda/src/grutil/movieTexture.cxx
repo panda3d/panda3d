@@ -1,16 +1,15 @@
-// Filename: movieTexture.cxx
-// Created by: jyelon (01Aug2007)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieTexture.cxx
+ * @author jyelon
+ * @date 2007-08-01
+ */
 
 #include "pandabase.h"
 
@@ -31,36 +30,30 @@
 
 TypeHandle MovieTexture::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::Constructor
-//       Access: Published
-//  Description: Creates a blank movie texture.  Movies must be 
-//               added using do_read_one or do_load_one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a blank movie texture.  Movies must be added using do_read_one or
+ * do_load_one.
+ */
 MovieTexture::
-MovieTexture(const string &name) : 
+MovieTexture(const string &name) :
   Texture(name)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::Constructor
-//       Access: Published
-//  Description: Creates a texture playing the specified movie.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a texture playing the specified movie.
+ */
 MovieTexture::
-MovieTexture(MovieVideo *video) : 
+MovieTexture(MovieVideo *video) :
   Texture(video->get_name())
 {
   Texture::CDWriter cdata_tex(Texture::_cycler, true);
   do_load_one(cdata_tex, video->open(), NULL, 0, LoaderOptions());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::CData::Constructor
-//       Access: public
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 MovieTexture::CData::
 CData() :
   _video_width(1),
@@ -74,11 +67,9 @@ CData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::CData::Copy Constructor
-//       Access: public
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 MovieTexture::CData::
 CData(const CData &copy) :
   _pages(copy._pages),
@@ -93,85 +84,70 @@ CData(const CData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::CData::make_copy
-//       Access: public
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 CycleData *MovieTexture::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::Copy Constructor
-//       Access: Protected
-//  Description: Use MovieTexture::make_copy() to make a duplicate copy of
-//               an existing MovieTexture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use MovieTexture::make_copy() to make a duplicate copy of an existing
+ * MovieTexture.
+ */
 MovieTexture::
-MovieTexture(const MovieTexture &copy) : 
+MovieTexture(const MovieTexture &copy) :
   Texture(copy)
 {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::Destructor
-//       Access: Published, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 MovieTexture::
 ~MovieTexture() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::ensure_loader_type
-//       Access: Public, Virtual
-//  Description: May be called prior to calling read_txo() or any
-//               bam-related Texture-creating callback, to ensure that
-//               the proper dynamic libraries for a Texture of the
-//               current class type, and the indicated filename, have
-//               been already loaded.
-//
-//               This is a low-level function that should not normally
-//               need to be called directly by the user.
-//
-//               Note that for best results you must first create a
-//               Texture object of the appropriate class type for your
-//               filename, for instance with
-//               TexturePool::make_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called prior to calling read_txo() or any bam-related Texture-
+ * creating callback, to ensure that the proper dynamic libraries for a
+ * Texture of the current class type, and the indicated filename, have been
+ * already loaded.
+ *
+ * This is a low-level function that should not normally need to be called
+ * directly by the user.
+ *
+ * Note that for best results you must first create a Texture object of the
+ * appropriate class type for your filename, for instance with
+ * TexturePool::make_texture().
+ */
 void MovieTexture::
 ensure_loader_type(const Filename &filename) {
-  // Creating a MovieVideo of the appropriate type is a slightly hacky
-  // way to ensure the appropriate libraries are loaded.  We can let
-  // the MovieVideo we create immediately destruct.
+  // Creating a MovieVideo of the appropriate type is a slightly hacky way to
+  // ensure the appropriate libraries are loaded.  We can let the MovieVideo
+  // we create immediately destruct.
   MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();
   PT(MovieVideo) video = reg->make_video(filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::make_texture
-//       Access: Public, Static
-//  Description: A factory function to make a new MovieTexture, used
-//               to pass to the TexturePool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A factory function to make a new MovieTexture, used to pass to the
+ * TexturePool.
+ */
 PT(Texture) MovieTexture::
 make_texture() {
   return new MovieTexture("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_recalculate_image_properties
-//       Access: Protected
-//  Description: Resizes the texture, and adjusts the format,
-//               based on the source movies.  The resulting texture
-//               will be large enough to hold all the videos.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes the texture, and adjusts the format, based on the source movies.
+ * The resulting texture will be large enough to hold all the videos.
+ *
+ * Assumes the lock is already held.
+ */
 void MovieTexture::
 do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const LoaderOptions &options) {
   int x_max = 1;
@@ -201,26 +177,23 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
   cdata->_video_length = len;
 
   do_adjust_this_size(cdata_tex, x_max, y_max, get_name(), true);
-  
-  do_reconsider_image_properties(cdata_tex, x_max, y_max, alpha?4:3, 
+
+  do_reconsider_image_properties(cdata_tex, x_max, y_max, alpha?4:3,
                                  T_unsigned_byte, cdata->_pages.size(),
                                  options);
   cdata_tex->_orig_file_x_size = cdata->_video_width;
   cdata_tex->_orig_file_y_size = cdata->_video_height;
 
-  do_set_pad_size(cdata_tex, 
-                  max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0), 
+  do_set_pad_size(cdata_tex,
+                  max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0),
                   max(cdata_tex->_y_size - cdata_tex->_orig_file_y_size, 0),
                   0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_adjust_this_size
-//       Access: Protected, Virtual
-//  Description: Works like adjust_size, but also considers the
-//               texture class.  Movie textures, for instance, always
-//               pad outwards, never scale down.
-////////////////////////////////////////////////////////////////////
+/**
+ * Works like adjust_size, but also considers the texture class.  Movie
+ * textures, for instance, always pad outwards, never scale down.
+ */
 bool MovieTexture::
 do_adjust_this_size(const Texture::CData *cdata_tex,
                     int &x_size, int &y_size, const string &name,
@@ -233,13 +206,10 @@ do_adjust_this_size(const Texture::CData *cdata_tex,
   return adjust_size(x_size, y_size, name, for_padding, ats);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_read_one
-//       Access: Protected, Virtual
-//  Description: Combines a color and alpha video image from the two
-//               indicated filenames.  Both must be the same kind of
-//               video with similar properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Combines a color and alpha video image from the two indicated filenames.
+ * Both must be the same kind of video with similar properties.
+ */
 bool MovieTexture::
 do_read_one(Texture::CData *cdata_tex,
             const Filename &fullpath, const Filename &alpha_fullpath,
@@ -251,14 +221,14 @@ do_read_one(Texture::CData *cdata_tex,
     return false;
   }
   nassertr(z >= 0 && z < cdata_tex->_z_size * cdata_tex->_num_views, false);
-  
+
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
   }
 
   PT(MovieVideoCursor) color;
   PT(MovieVideoCursor) alpha;
-  
+
   color = MovieVideo::get(fullpath)->open();
   if (color == 0) {
     return false;
@@ -269,7 +239,7 @@ do_read_one(Texture::CData *cdata_tex,
       return false;
     }
   }
-  
+
   if (z == 0) {
     if (!has_name()) {
       set_name(fullpath.get_basename_wo_extension());
@@ -279,29 +249,27 @@ do_read_one(Texture::CData *cdata_tex,
       cdata_tex->_filename = fullpath;
       cdata_tex->_alpha_filename = alpha_fullpath;
     }
-    
+
     cdata_tex->_fullpath = fullpath;
     cdata_tex->_alpha_fullpath = alpha_fullpath;
   }
 
   cdata_tex->_primary_file_num_channels = primary_file_num_channels;
   cdata_tex->_alpha_file_channel = alpha_file_channel;
-  
+
   if (!do_load_one(cdata_tex, color, alpha, z, options)) {
     return false;
   }
-  
+
   cdata_tex->_loaded_from_image = true;
   set_loop(true);
   play();
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_load_one
-//       Access: Protected, Virtual
-//  Description: Loads movie objects into the texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads movie objects into the texture.
+ */
 bool MovieTexture::
 do_load_one(Texture::CData *cdata_tex,
             PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z,
@@ -312,20 +280,17 @@ do_load_one(Texture::CData *cdata_tex,
   cdata->_pages[z]._alpha = alpha;
   do_recalculate_image_properties(cdata, cdata_tex, options);
 
-  // Make sure the image data is initially black, which is nice for
-  // padded textures.
+  // Make sure the image data is initially black, which is nice for padded
+  // textures.
   PTA_uchar image = make_ram_image();
   memset(image.p(), 0, image.size());
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_load_one
-//       Access: Protected, Virtual
-//  Description: Loading a static image into a MovieTexture is
-//               an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loading a static image into a MovieTexture is an error.
+ */
 bool MovieTexture::
 do_load_one(Texture::CData *cdata_tex,
             const PNMImage &pnmimage, const string &name, int z, int n,
@@ -334,52 +299,42 @@ do_load_one(Texture::CData *cdata_tex,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_allocate_pages
-//       Access: Protected, Virtual
-//  Description: Called internally by do_reconsider_z_size() to
-//               allocate new memory in _ram_images[0] for the new
-//               number of pages.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally by do_reconsider_z_size() to allocate new memory in
+ * _ram_images[0] for the new number of pages.
+ *
+ * Assumes the lock is already held.
+ */
 void MovieTexture::
 do_allocate_pages(Texture::CData *cdata_tex) {
   // We don't actually do anything here; the allocation is made in
   // do_load_one(), above.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this node during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if cull_callback()
+ * has been defined.  Otherwise, returns false to indicate cull_callback()
+ * does not need to be called for this node during the cull traversal.
+ */
 bool MovieTexture::
 has_cull_callback() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull 
-//               traversal to update the MovieTexture.  This update
-//               consists of fetching the next video frame from the
-//               underlying MovieVideo sources.  The MovieVideo
-//               object belongs to the cull thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to update the
+ * MovieTexture.  This update consists of fetching the next video frame from
+ * the underlying MovieVideo sources.  The MovieVideo object belongs to the
+ * cull thread.
+ */
 bool MovieTexture::
 cull_callback(CullTraverser *, const CullTraverserData &) const {
   Texture::CDReader cdata_tex(Texture::_cycler);
   CDReader cdata(_cycler);
 
   if (!cdata->_has_offset) {
-    // If we don't have a previously-computed timestamp (offset)
-    // cached, then compute a new one.
+    // If we don't have a previously-computed timestamp (offset) cached, then
+    // compute a new one.
     double offset;
     int true_loop_count = 1;
     if (cdata->_synchronize != 0) {
@@ -400,8 +355,8 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 
   bool in_sync = do_update_frames(cdata);
   if (!in_sync) {
-    // If it didn't successfully sync, try again--once.  The second
-    // time it might be able to fill in some more recent frames.
+    // If it didn't successfully sync, try again--once.  The second time it
+    // might be able to fill in some more recent frames.
     in_sync = do_update_frames(cdata);
   }
 
@@ -413,15 +368,15 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
       MovieVideoCursor *color = page._color;
       MovieVideoCursor *alpha = page._alpha;
       size_t i = pi - cdata->_pages.begin();
-      
+
       if (color != NULL && alpha != NULL) {
         color->apply_to_texture_rgb(page._cbuffer, (MovieTexture*)this, i);
         alpha->apply_to_texture_alpha(page._abuffer, (MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
-        
+
       } else if (color != NULL) {
         color->apply_to_texture(page._cbuffer, (MovieTexture*)this, i);
       }
-      
+
       ((VideoPage &)page)._cbuffer.clear();
       ((VideoPage &)page)._abuffer.clear();
     }
@@ -429,23 +384,19 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
     // Clear the cached offset so we can update the frame next time.
     ((CData *)cdata.p())->_has_offset = false;
   }
-    
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::make_copy_impl
-//       Access: Protected, Virtual
-//  Description: Returns a new copy of the same Texture.  This copy,
-//               if applied to geometry, will be copied into texture
-//               as a separate texture from the original, so it will
-//               be duplicated in texture memory (and may be
-//               independently modified if desired).
-//               
-//               If the Texture is a MovieTexture, the resulting
-//               duplicate may be animated independently of the
-//               original.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new copy of the same Texture.  This copy, if applied to geometry,
+ * will be copied into texture as a separate texture from the original, so it
+ * will be duplicated in texture memory (and may be independently modified if
+ * desired).
+ *
+ * If the Texture is a MovieTexture, the resulting duplicate may be animated
+ * independently of the original.
+ */
 PT(Texture) MovieTexture::
 make_copy_impl() {
   Texture::CDReader cdata_tex(Texture::_cycler);
@@ -458,13 +409,11 @@ make_copy_impl() {
   return copy.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_assign
-//       Access: Protected
-//  Description: Implements make_copy().
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements make_copy().
+ */
 void MovieTexture::
-do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy, 
+do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
           const CData *cdata_copy, const Texture::CData *cdata_copy_tex) {
   Texture::do_assign(cdata_tex, copy, cdata_copy_tex);
 
@@ -476,7 +425,7 @@ do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
     color[i] = cdata_copy->_pages[i]._color;
     alpha[i] = cdata_copy->_pages[i]._alpha;
   }
-  
+
   cdata->_pages.resize(color.size());
   for (int i=0; i<(int)(color.size()); i++) {
     if (color[i]) {
@@ -489,77 +438,58 @@ do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
   do_recalculate_image_properties(cdata, cdata_tex, LoaderOptions());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::reload_ram_image
-//       Access: Protected, Virtual
-//  Description: A MovieTexture must always keep its ram image, 
-//               since there is no way to reload it from the 
-//               source MovieVideo.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MovieTexture must always keep its ram image, since there is no way to
+ * reload it from the source MovieVideo.
+ */
 void MovieTexture::
 do_reload_ram_image(Texture::CData *cdata, bool allow_compression) {
-  // A MovieTexture should never dump its RAM image.
-  // Therefore, this is not needed.
+  // A MovieTexture should never dump its RAM image.  Therefore, this is not
+  // needed.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::get_keep_ram_image
-//       Access: Published, Virtual
-//  Description: A MovieTexture must always keep its ram image, 
-//               since there is no way to reload it from the 
-//               source MovieVideo.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MovieTexture must always keep its ram image, since there is no way to
+ * reload it from the source MovieVideo.
+ */
 bool MovieTexture::
 get_keep_ram_image() const {
   // A MovieTexture should never dump its RAM image.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_has_bam_rawdata
-//       Access: Protected, Virtual
-//  Description: Returns true if there is a rawdata image that we have
-//               available to write to the bam stream.  For a normal
-//               Texture, this is the same thing as
-//               do_has_ram_image(), but a movie texture might define
-//               it differently.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a rawdata image that we have available to write to
+ * the bam stream.  For a normal Texture, this is the same thing as
+ * do_has_ram_image(), but a movie texture might define it differently.
+ */
 bool MovieTexture::
 do_has_bam_rawdata(const Texture::CData *cdata) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_get_bam_rawdata
-//       Access: Protected, Virtual
-//  Description: If do_has_bam_rawdata() returned false, this attempts
-//               to reload the rawdata image if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * If do_has_bam_rawdata() returned false, this attempts to reload the rawdata
+ * image if possible.
+ */
 void MovieTexture::
 do_get_bam_rawdata(Texture::CData *cdata) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_can_reload
-//       Access: Protected, Virtual
-//  Description: Returns true if we can safely call
-//               do_unlock_and_reload_ram_image() in order to make the
-//               image available, or false if we shouldn't do this
-//               (because we know from a priori knowledge that it
-//               wouldn't work anyway).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if we can safely call do_unlock_and_reload_ram_image() in
+ * order to make the image available, or false if we shouldn't do this
+ * (because we know from a priori knowledge that it wouldn't work anyway).
+ */
 bool MovieTexture::
 do_can_reload(const Texture::CData *cdata) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::restart
-//       Access: Published
-//  Description: Start playing the movie from where it was last
-//               paused.  Has no effect if the movie is not paused,
-//               or if the movie's cursor is already at the end.
-////////////////////////////////////////////////////////////////////
+/**
+ * Start playing the movie from where it was last paused.  Has no effect if
+ * the movie is not paused, or if the movie's cursor is already at the end.
+ */
 void MovieTexture::
 restart() {
   CDWriter cdata(_cycler);
@@ -570,13 +500,10 @@ restart() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::stop
-//       Access: Published
-//  Description: Stops a currently playing or looping movie right
-//               where it is.  The movie's cursor remains frozen at
-//               the point where it was stopped.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops a currently playing or looping movie right where it is.  The movie's
+ * cursor remains frozen at the point where it was stopped.
+ */
 void MovieTexture::
 stop() {
   CDWriter cdata(_cycler);
@@ -587,11 +514,9 @@ stop() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::play
-//       Access: Published
-//  Description: Plays the movie from the beginning.
-////////////////////////////////////////////////////////////////////
+/**
+ * Plays the movie from the beginning.
+ */
 void MovieTexture::
 play() {
   CDWriter cdata(_cycler);
@@ -600,11 +525,9 @@ play() {
   cdata->_playing = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::set_time
-//       Access: Published
-//  Description: Sets the movie's cursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the movie's cursor.
+ */
 void MovieTexture::
 set_time(double t) {
   CDWriter cdata(_cycler);
@@ -617,16 +540,12 @@ set_time(double t) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::get_time
-//       Access: Published
-//  Description: Returns the current value of the movie's cursor.
-//               If the movie's loop count is greater than one, then
-//               its length is effectively multiplied for the
-//               purposes of this function.  In other words, 
-//               the return value will be in the range 0.0 
-//               to (length * loopcount).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current value of the movie's cursor.  If the movie's loop count
+ * is greater than one, then its length is effectively multiplied for the
+ * purposes of this function.  In other words, the return value will be in the
+ * range 0.0 to (length * loopcount).
+ */
 double MovieTexture::
 get_time() const {
   CDReader cdata(_cycler);
@@ -638,58 +557,47 @@ get_time() const {
   return clock;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::set_loop
-//       Access: Published
-//  Description: If true, sets the movie's loop count to 1 billion.
-//               If false, sets the movie's loop count to one.
-////////////////////////////////////////////////////////////////////
+/**
+ * If true, sets the movie's loop count to 1 billion.  If false, sets the
+ * movie's loop count to one.
+ */
 void MovieTexture::
 set_loop(bool loop) {
   set_loop_count(loop ? 0:1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::get_loop
-//       Access: Published
-//  Description: Returns true if the movie's loop count is not equal
-//               to one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the movie's loop count is not equal to one.
+ */
 bool MovieTexture::
 get_loop() const {
   CDReader cdata(_cycler);
   return (cdata->_loop_count == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::set_loop_count
-//       Access: Published
-//  Description: Sets the movie's loop count to the desired value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the movie's loop count to the desired value.
+ */
 void MovieTexture::
 set_loop_count(int n) {
   CDWriter cdata(_cycler);
   cdata->_loop_count = n;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::get_loop_count
-//       Access: Published
-//  Description: Returns the movie's loop count.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the movie's loop count.
+ */
 int MovieTexture::
 get_loop_count() const {
   CDReader cdata(_cycler);
   return cdata->_loop_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::set_play_rate
-//       Access: Published
-//  Description: Sets the movie's play-rate.  This is the speed at
-//               which the movie's cursor advances.  The default is
-//               to advance 1.0 movie-seconds per real-time second.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the movie's play-rate.  This is the speed at which the movie's cursor
+ * advances.  The default is to advance 1.0 movie-seconds per real-time
+ * second.
+ */
 void MovieTexture::
 set_play_rate(double rate) {
   CDWriter cdata(_cycler);
@@ -700,49 +608,40 @@ set_play_rate(double rate) {
     cdata->_clock -= (now * cdata->_play_rate);
   } else {
     cdata->_play_rate = rate;
-  }    
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::get_play_rate
-//       Access: Published
-//  Description: Gets the movie's play-rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the movie's play-rate.
+ */
 double MovieTexture::
 get_play_rate() const {
   CDReader cdata(_cycler);
   return cdata->_play_rate;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::is_playing
-//       Access: Published
-//  Description: Returns true if the movie's cursor is advancing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the movie's cursor is advancing.
+ */
 bool MovieTexture::
 is_playing() const {
   CDReader cdata(_cycler);
   return cdata->_playing;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::synchronize_to
-//       Access: Published
-//  Description: Synchronize this texture to a sound.  Typically,
-//               you would load the texture and the sound from the
-//               same AVI file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Synchronize this texture to a sound.  Typically, you would load the texture
+ * and the sound from the same AVI file.
+ */
 void MovieTexture::
 synchronize_to(AudioSound *s) {
   CDWriter cdata(_cycler);
   cdata->_synchronize = s;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::unsynchronize
-//       Access: Published
-//  Description: Stop synchronizing with a sound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stop synchronizing with a sound.
+ */
 void MovieTexture::
 unsynchronize() {
   CDWriter cdata(_cycler);
@@ -750,19 +649,16 @@ unsynchronize() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_update_frames
-//       Access: Private
-//  Description: Called internally to sync all of the frames to the
-//               current time.  Returns true if successful, or false
-//               of some of the frames are out-of-date with each
-//               other.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to sync all of the frames to the current time.  Returns
+ * true if successful, or false of some of the frames are out-of-date with
+ * each other.
+ */
 bool MovieTexture::
 do_update_frames(const CData *cdata) const {
-  // Throughout this method, we cast the VideoPage to non-const to
-  // update the _cbuffer or _abuffer member.  We can do this safely
-  // because this is only a transparent cache value.
+  // Throughout this method, we cast the VideoPage to non-const to update the
+  // _cbuffer or _abuffer member.  We can do this safely because this is only
+  // a transparent cache value.
   nassertr(cdata->_has_offset, false);
 
   // First, go through and get all of the current frames.
@@ -785,9 +681,8 @@ do_update_frames(const CData *cdata) const {
   }
 
   if (!movies_sync_pages) {
-    // If movies-sync-pages is configured off, we don't care about
-    // syncing the pages, and we always return true here to render the
-    // pages we've got.
+    // If movies-sync-pages is configured off, we don't care about syncing the
+    // pages, and we always return true here to render the pages we've got.
     return true;
   }
 
@@ -848,8 +743,8 @@ do_update_frames(const CData *cdata) const {
   }
 
   if (!in_sync) {
-    // If we're not in sync, throw away pages that are older than the
-    // newest available frame.
+    // If we're not in sync, throw away pages that are older than the newest
+    // available frame.
     if (newest != NULL) {
       Pages::const_iterator pi;
       for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
@@ -865,10 +760,10 @@ do_update_frames(const CData *cdata) const {
       }
 
       if (any_dropped) {
-        // If we dropped one or more frames for being out-of-sync,
-        // implying that compare_timestamp() is implemented, then we
-        // also want to update our internal offset value so that
-        // future frames will get the same value.
+        // If we dropped one or more frames for being out-of-sync, implying
+        // that compare_timestamp() is implemented, then we also want to
+        // update our internal offset value so that future frames will get the
+        // same value.
         ((CData *)cdata)->_offset = newest->get_timestamp();
       }
     }
@@ -877,34 +772,27 @@ do_update_frames(const CData *cdata) const {
   return in_sync;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a Texture object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a Texture object
+ */
 void MovieTexture::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::make_from_bam
-//       Access: Protected, Static
-//  Description: Factory method to generate a MovieTexture object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a MovieTexture object
+ */
 TypedWritable *MovieTexture::
 make_from_bam(const FactoryParams &params) {
   PT(MovieTexture) dummy = new MovieTexture("");
   return dummy->make_this_from_bam(params);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int MovieTexture::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = Texture::complete_pointers(p_list, manager);
@@ -920,12 +808,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_write_datagram_rawdata
-//       Access: Protected, Virtual
-//  Description: Writes the rawdata part of the texture to the
-//               Datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the rawdata part of the texture to the Datagram.
+ */
 void MovieTexture::
 do_write_datagram_rawdata(Texture::CData *cdata_tex, BamWriter *manager, Datagram &dg) {
   CDReader cdata(_cycler);
@@ -940,12 +825,10 @@ do_write_datagram_rawdata(Texture::CData *cdata_tex, BamWriter *manager, Datagra
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_fillin_rawdata
-//       Access: Protected, Virtual
-//  Description: Reads in the part of the Texture that was written
-//               with do_write_datagram_rawdata().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in the part of the Texture that was written with
+ * do_write_datagram_rawdata().
+ */
 void MovieTexture::
 do_fillin_rawdata(Texture::CData *cdata_tex, DatagramIterator &scan, BamReader *manager) {
   CDWriter cdata(_cycler);
@@ -964,19 +847,17 @@ do_fillin_rawdata(Texture::CData *cdata_tex, DatagramIterator &scan, BamReader *
     manager->read_pointer(scan);  // page._alpha
   }
 
-  // We load one or more MovieVideoCursors during the above loop.  We
-  // need a finalize callback so we can initialize ourselves once
-  // those cursors have been read completely.
+  // We load one or more MovieVideoCursors during the above loop.  We need a
+  // finalize callback so we can initialize ourselves once those cursors have
+  // been read completely.
   manager->register_finalize(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void MovieTexture::
 finalize(BamReader *manager) {
   Texture::CDWriter cdata_tex(Texture::_cycler);

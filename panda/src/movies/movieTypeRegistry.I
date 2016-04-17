@@ -1,28 +1,23 @@
-// Filename: movieTypeRegistry.I
-// Created by:  rdb (24Aug13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieTypeRegistry.I
+ * @author rdb
+ * @date 2013-08-24
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns a pointer to the global MovieTypeRegistry
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global MovieTypeRegistry instance.
+ */
 INLINE MovieTypeRegistry *MovieTypeRegistry::
 get_global_ptr() {
   if (_global_ptr == NULL) {
-  	_global_ptr = new MovieTypeRegistry;
+    _global_ptr = new MovieTypeRegistry;
   }
 
   return _global_ptr;

@@ -1,16 +1,15 @@
-// Filename: cast_to_double.I
-// Created by:  drose (24May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cast_to_double.I
+ * @author drose
+ * @date 2000-05-24
+ */
 
 INLINE_LINMATH LVecBase2d cast_to_double(const LVecBase2f &source) {
   return LCAST(double, source);
@@ -55,4 +54,3 @@ INLINE_LINMATH LMatrix3d cast_to_double(const LMatrix3f &source) {
 INLINE_LINMATH LMatrix4d cast_to_double(const LMatrix4f &source) {
   return LCAST(double, source);
 }
-

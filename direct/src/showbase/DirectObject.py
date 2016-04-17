@@ -4,7 +4,7 @@ __all__ = ['DirectObject']
 
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from MessengerGlobal import messenger
+from .MessengerGlobal import messenger
 
 class DirectObject:
     """
@@ -60,7 +60,7 @@ class DirectObject:
         if type(taskOrName) == type(''):
             # we must use a copy, since task.remove will modify self._taskList
             if hasattr(self, '_taskList'):
-                taskListValues = self._taskList.values()
+                taskListValues = list(self._taskList.values())
                 for task in taskListValues:
                     if task.name == taskOrName:
                         task.remove()
@@ -69,7 +69,7 @@ class DirectObject:
 
     def removeAllTasks(self):
         if hasattr(self,'_taskList'):
-            for task in self._taskList.values():
+            for task in list(self._taskList.values()):
                 task.remove()
 
     def _addTask(self, task):

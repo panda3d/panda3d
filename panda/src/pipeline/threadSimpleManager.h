@@ -1,16 +1,15 @@
-// Filename: threadSimpleManager.h
-// Created by:  drose (18Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadSimpleManager.h
+ * @author drose
+ * @date 2007-06-18
+ */
 
 #ifndef THREADSIMPLEMANAGER_H
 #define THREADSIMPLEMANAGER_H
@@ -42,20 +41,17 @@ class ThreadSimpleImpl;
 class BlockerSimple;
 struct ThreadContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSimpleManager
-// Description : This is the global object that selects the
-//               currently-active thread of the various
-//               ThreadSimpleImpl objects running, when the
-//               currently-active thread yields.
-//
-//               This class only exists when we are using the
-//               ThreadSimple implementation, which is to say, we are
-//               not using "real" threads.
-//
-//               Generally, you shouldn't be calling these methods
-//               directly.  Call the interfaces on Thread instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the global object that selects the currently-active thread of the
+ * various ThreadSimpleImpl objects running, when the currently-active thread
+ * yields.
+ *
+ * This class only exists when we are using the ThreadSimple implementation,
+ * which is to say, we are not using "real" threads.
+ *
+ * Generally, you shouldn't be calling these methods directly.  Call the
+ * interfaces on Thread instead.
+ */
 class EXPCL_PANDA_PIPELINE ThreadSimpleManager {
 private:
   ThreadSimpleManager();
@@ -120,28 +116,26 @@ public:
 private:
   ThreadSimpleImpl *volatile _current_thread;
 
-  // The list of ready threads: threads that are ready to execute
-  // right now.
+  // The list of ready threads: threads that are ready to execute right now.
   FifoThreads _ready;
 
-  // The list of threads that are ready, but will not be executed
-  // until next epoch (for instance, because they exceeded their
-  // timeslice budget this epoch).
+  // The list of threads that are ready, but will not be executed until next
+  // epoch (for instance, because they exceeded their timeslice budget this
+  // epoch).
   FifoThreads _next_ready;
 
-  // The list of threads that are blocked on some ConditionVar or
-  // Mutex.
+  // The list of threads that are blocked on some ConditionVar or Mutex.
   typedef pmap<BlockerSimple *, FifoThreads> Blocked;
   Blocked _blocked;
 
-  // Priority queue (partially-ordered heap) of sleeping threads,
-  // based on wakeup time.
+  // Priority queue (partially-ordered heap) of sleeping threads, based on
+  // wakeup time.
   Sleeping _sleeping;
 
-  // Priority queue (partially-ordered heap) of volunteer threads,
-  // based on wakeup time.  This are threads that have voluntarily
-  // yielded a timeslice.  They are treated the same as sleeping
-  // threads, unless all threads are sleeping.
+  // Priority queue (partially-ordered heap) of volunteer threads, based on
+  // wakeup time.  This are threads that have voluntarily yielded a timeslice.
+  // They are treated the same as sleeping threads, unless all threads are
+  // sleeping.
   Sleeping _volunteers;
 
   // Threads which have finished execution and are awaiting cleanup.

@@ -1,25 +1,22 @@
-// Filename: cppSimpleType.cxx
-// Created by:  drose (19Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppSimpleType.cxx
+ * @author drose
+ * @date 1999-10-19
+ */
 
 #include "cppSimpleType.h"
 #include "cppGlobals.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPSimpleType::
 CPPSimpleType(CPPSimpleType::Type type, int flags) :
   CPPType(CPPFile()),
@@ -27,81 +24,63 @@ CPPSimpleType(CPPSimpleType::Type type, int flags) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::is_tbd
-//       Access: Public, Virtual
-//  Description: Returns true if the type, or any nested type within
-//               the type, is a CPPTBDType and thus isn't fully
-//               determined right now.  In this case, calling
-//               resolve_type() may or may not resolve the type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type, or any nested type within the type, is a
+ * CPPTBDType and thus isn't fully determined right now.  In this case,
+ * calling resolve_type() may or may not resolve the type.
+ */
 bool CPPSimpleType::
 is_tbd() const {
   return (_type == T_unknown);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::is_trivial
-//       Access: Public, Virtual
-//  Description: Returns true if the type is considered a Plain Old
-//               Data (POD) type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is considered a Plain Old Data (POD) type.
+ */
 bool CPPSimpleType::
 is_trivial() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::is_default_constructible
-//       Access: Public, Virtual
-//  Description: Returns true if the type is default-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is default-constructible.
+ */
 bool CPPSimpleType::
 is_default_constructible() const {
   return (_type != T_void);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::is_copy_constructible
-//       Access: Public, Virtual
-//  Description: Returns true if the type is copy-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is copy-constructible.
+ */
 bool CPPSimpleType::
 is_copy_constructible() const {
   return (_type != T_void);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::is_parameter_expr
-//       Access: Public, Virtual
-//  Description: Returns true if the type is a special parameter
-//               expression type.
-//
-//               This sort of type is created to handle instance
-//               declarations that initially look like function
-//               prototypes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is a special parameter expression type.
+ *
+ * This sort of type is created to handle instance declarations that initially
+ * look like function prototypes.
+ */
 bool CPPSimpleType::
 is_parameter_expr() const {
   return (_type == T_parameter);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::get_preferred_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string CPPSimpleType::
 get_preferred_name() const {
   // Simple types always prefer to use their native types.
   return get_local_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPSimpleType::
 output(ostream &out, int, CPPScope *, bool) const {
   if (_flags & F_unsigned) {
@@ -114,9 +93,8 @@ output(ostream &out, int, CPPScope *, bool) const {
 
   if ((_type == T_int && (_flags & F_longlong) != 0) &&
       !cpp_longlong_keyword.empty()) {
-    // It's a long long, and we have a specific long long type name.
-    // This is to output code for compilers that don't recognize "long
-    // long int".
+    // It's a long long, and we have a specific long long type name.  This is
+    // to output code for compilers that don't recognize "long long int".
     out << cpp_longlong_keyword;
     return;
   }
@@ -187,33 +165,27 @@ output(ostream &out, int, CPPScope *, bool) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPDeclaration::SubType CPPSimpleType::
 get_subtype() const {
   return ST_simple;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::as_simple_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPSimpleType *CPPSimpleType::
 as_simple_type() {
   return this;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::is_equal
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration() to determine whether this type is
-//               equivalent to another type of the same type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration() to determine whether this type is equivalent to
+ * another type of the same type.
+ */
 bool CPPSimpleType::
 is_equal(const CPPDeclaration *other) const {
   const CPPSimpleType *ot = ((CPPDeclaration *)other)->as_simple_type();
@@ -223,13 +195,10 @@ is_equal(const CPPDeclaration *other) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPSimpleType::is_less
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration() to determine whether this type
-//               should be ordered before another type of the same
-//               type, in an arbitrary but fixed ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration() to determine whether this type should be ordered
+ * before another type of the same type, in an arbitrary but fixed ordering.
+ */
 bool CPPSimpleType::
 is_less(const CPPDeclaration *other) const {
   const CPPSimpleType *ot = ((CPPDeclaration *)other)->as_simple_type();

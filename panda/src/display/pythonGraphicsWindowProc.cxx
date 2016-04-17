@@ -1,16 +1,15 @@
-// Filename: customGraphicsWindowProc.cxx
-// Created by:  Walt Destler (May 2010)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pythonGraphicsWindowProc.cxx
+ * @author Walt Destler
+ * @date 2010-05
+ */
 
 #include "pythonGraphicsWindowProc.h"
 #include "graphicsWindowProcCallbackData.h"
@@ -19,12 +18,10 @@
 
 TypeHandle PythonGraphicsWindowProc::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::Constructor
-//       Access: Public
-//  Description: Initializes this PythonGraphicsWindowProc to use the
-//               specified callback handler and name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes this PythonGraphicsWindowProc to use the specified callback
+ * handler and name.
+ */
 PythonGraphicsWindowProc::
 PythonGraphicsWindowProc(PyObject* function, PyObject* name) :
   PythonCallbackObject(function)
@@ -33,11 +30,9 @@ PythonGraphicsWindowProc(PyObject* function, PyObject* name) :
   Py_INCREF(_name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::Constructor
-//       Access: Public, Virtual
-//  Description: Decrements references to the handler and name objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decrements references to the handler and name objects.
+ */
 PythonGraphicsWindowProc::
 ~PythonGraphicsWindowProc(){
   Py_DECREF(_name);
@@ -45,12 +40,10 @@ PythonGraphicsWindowProc::
 
 #ifdef WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::wnd_proc
-//       Access: Public, Virtual
-//  Description: A WIN32-specific method that is called when a Window
-//               proc event occurrs. Calls the python handler.
-////////////////////////////////////////////////////////////////////
+/**
+ * A WIN32-specific method that is called when a Window proc event occurrs.
+ * Calls the python handler.
+ */
 LONG PythonGraphicsWindowProc::
 wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
   GraphicsWindowProcCallbackData cdata(graphicsWindow);
@@ -65,11 +58,9 @@ wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPA
 
 #endif // WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::get_name
-//       Access: Public
-//  Description: Returns the python name object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the python name object.
+ */
 PyObject* PythonGraphicsWindowProc::
 get_name(){
   return _name;

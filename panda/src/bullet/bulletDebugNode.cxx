@@ -1,16 +1,15 @@
-// Filename: bulletDebugNode.cxx
-// Created by:  enn0x (23Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletDebugNode.cxx
+ * @author enn0x
+ * @date 2010-01-23
+ */
 
 #include "bulletDebugNode.h"
 
@@ -23,11 +22,9 @@
 
 TypeHandle BulletDebugNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletDebugNode::
 BulletDebugNode(const char *name) : GeomNode(name) {
 
@@ -76,102 +73,79 @@ BulletDebugNode(const char *name) : GeomNode(name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::safe_to_flatten
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to flatten out
-//               this particular kind of Node by duplicating
-//               instances, false otherwise (for instance, a Camera
-//               cannot be safely flattened, because the Camera
-//               pointer itself is meaningful).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to flatten out this particular kind of
+ * Node by duplicating instances, false otherwise (for instance, a Camera
+ * cannot be safely flattened, because the Camera pointer itself is
+ * meaningful).
+ */
 bool BulletDebugNode::
 safe_to_flatten() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::safe_to_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of Node by calling the xform()
-//               method, false otherwise.  For instance, it's usually
-//               a bad idea to attempt to xform a Character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to transform this particular kind of
+ * Node by calling the xform() method, false otherwise.  For instance, it's
+ * usually a bad idea to attempt to xform a Character.
+ */
 bool BulletDebugNode::
 safe_to_transform() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::safe_to_modify_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is safe to automatically adjust
-//               the transform on this kind of node.  Usually, this is
-//               only a bad idea if the user expects to find a
-//               particular transform on the node.
-//
-//               ModelNodes with the preserve_transform flag set are
-//               presently the only kinds of nodes that should not
-//               have their transform even adjusted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is safe to automatically adjust the transform on this
+ * kind of node.  Usually, this is only a bad idea if the user expects to find
+ * a particular transform on the node.
+ *
+ * ModelNodes with the preserve_transform flag set are presently the only
+ * kinds of nodes that should not have their transform even adjusted.
+ */
 bool BulletDebugNode::
 safe_to_modify_transform() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::safe_to_combine
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine this
-//               particular kind of PandaNode with other kinds of
-//               PandaNodes of compatible type, adding children or
-//               whatever.  For instance, an LODNode should not be
-//               combined with any other PandaNode, because its set of
-//               children is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine this particular kind of
+ * PandaNode with other kinds of PandaNodes of compatible type, adding
+ * children or whatever.  For instance, an LODNode should not be combined with
+ * any other PandaNode, because its set of children is meaningful.
+ */
 bool BulletDebugNode::
 safe_to_combine() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::safe_to_combine_children
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine the
-//               children of this PandaNode with each other.  For
-//               instance, an LODNode's children should not be
-//               combined with each other, because the set of children
-//               is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine the children of this
+ * PandaNode with each other.  For instance, an LODNode's children should not
+ * be combined with each other, because the set of children is meaningful.
+ */
 bool BulletDebugNode::
 safe_to_combine_children() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::safe_to_flatten_below
-//       Access: Public, Virtual
-//  Description: Returns true if a flatten operation may safely
-//               continue past this node, or false if nodes below this
-//               node may not be molested.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a flatten operation may safely continue past this node, or
+ * false if nodes below this node may not be molested.
+ */
 bool BulletDebugNode::
 safe_to_flatten_below() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::draw_mask_changed
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::
 draw_mask_changed() {
 
@@ -197,14 +171,12 @@ draw_mask_changed() {
     }
 
     _drawer.setDebugMode(mode);
-  } 
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::sync_b2p
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::
 sync_b2p(btDynamicsWorld *world) {
 
@@ -299,44 +271,36 @@ sync_b2p(btDynamicsWorld *world) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::setDebugMode
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 setDebugMode(int mode) {
 
   _mode = mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::getDebugMode
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BulletDebugNode::DebugDraw::
 getDebugMode() const {
 
   return _mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::reportErrorWarning
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 reportErrorWarning(const char *warning) {
 
   bullet_cat.error() << warning << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::drawLine
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
 
@@ -344,8 +308,8 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
   PN_stdfloat g = color.getY();
   PN_stdfloat b = color.getZ();
 
-  // Hack to get rid of triangle normals. The hack is based on the
-  // assumption that only normals are drawn in yellow.
+  // Hack to get rid of triangle normals.  The hack is based on the assumption
+  // that only normals are drawn in yellow.
   if (_normals==false && r==1.0f && g==1.0f && b==0.0f) return;
 
   Line line;
@@ -357,17 +321,15 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
                        (PN_stdfloat)to.getY(),
                        (PN_stdfloat)to.getZ());
   line._color = UnalignedLVecBase4((PN_stdfloat)r,
-                                   (PN_stdfloat)g, 
+                                   (PN_stdfloat)g,
                                    (PN_stdfloat)b, 1.0f);
 
   _lines.push_back(line);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::drawTriangle
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, const btVector3 &color, btScalar) {
 
@@ -389,8 +351,8 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
                       (PN_stdfloat)v2.getY(),
                       (PN_stdfloat)v2.getZ());
 
-  tri._color = UnalignedLVecBase4((PN_stdfloat)r, 
-                                  (PN_stdfloat)g, 
+  tri._color = UnalignedLVecBase4((PN_stdfloat)r,
+                                  (PN_stdfloat)g,
                                   (PN_stdfloat)b, 1.0f);
 
   _triangles.push_back(tri);
@@ -408,22 +370,18 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
 */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::drawTriangle
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, const btVector3 &n0, const btVector3 &n1, const btVector3 &n2, const btVector3 &color, btScalar alpha) {
 
   bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::drawContactPoint
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 drawContactPoint(const btVector3 &point, const btVector3 &normal, btScalar distance, int lifetime, const btVector3 &color) {
 
@@ -433,22 +391,18 @@ drawContactPoint(const btVector3 &point, const btVector3 &normal, btScalar dista
   drawLine(from, to, color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::draw3dText
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 draw3dText(const btVector3 &location, const char *text) {
 
   bullet_cat.debug() << "draw3dText - not yet implemented!" << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::DebugDraw::drawSphere
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletDebugNode::DebugDraw::
 drawSphere(btScalar radius, const btTransform &transform, const btVector3 &color) {
 
@@ -463,27 +417,22 @@ drawSphere(btScalar radius, const btTransform &transform, const btVector3 &color
   drawArc(center, zoffs, xoffs, radius, radius, 0, SIMD_2_PI, color, false, 10.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               BulletDebugNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type BulletDebugNode.
+ */
 void BulletDebugNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void BulletDebugNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  // Don't upcall to GeomNode since we're not interested in storing
-  // the actual debug Geoms in the .bam file.
+  // Don't upcall to GeomNode since we're not interested in storing the actual
+  // debug Geoms in the .bam file.
   PandaNode::write_datagram(manager, dg);
 
   dg.add_bool(_wireframe);
@@ -492,14 +441,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_bool(_drawer._normals);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of this type is encountered
-//               in the Bam file.  It should create the rigid body
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * this type is encountered in the Bam file.  It should create the rigid body
+ * and extract its information from the file.
+ */
 TypedWritable *BulletDebugNode::
 make_from_bam(const FactoryParams &params) {
   BulletDebugNode *param = new BulletDebugNode;
@@ -512,17 +458,14 @@ make_from_bam(const FactoryParams &params) {
   return param;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BulletDebugNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletDebugNode.
+ */
 void BulletDebugNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  // Don't upcall to GeomNode since we're not interested in storing
-  // the actual debug Geoms in the .bam file.
+  // Don't upcall to GeomNode since we're not interested in storing the actual
+  // debug Geoms in the .bam file.
   PandaNode::fillin(scan, manager);
 
   _wireframe = scan.get_bool();

@@ -9,10 +9,10 @@ from direct.showbase.DirectObject import *
 from direct.directtools.DirectUtil import *
 from direct.gui.DirectGui import *
 
-from CurveEditor import *
-from FileMgr import *
-from ActionMgr import *
-from MayaConverter import *
+from .CurveEditor import *
+from .FileMgr import *
+from .ActionMgr import *
+from .MayaConverter import *
 
 class LevelEditorBase(DirectObject):
     """ Base Class for Panda3D LevelEditor """

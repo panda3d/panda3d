@@ -1,16 +1,15 @@
-// Filename: eggToC.h
-// Created by:  drose (03Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToC.h
+ * @author drose
+ * @date 2001-08-03
+ */
 
 #ifndef EGGTOC_H
 #define EGGTOC_H
@@ -25,10 +24,9 @@ class EggNode;
 class EggVertexPool;
 class EggBin;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToC
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EggToC : public EggToSomething {
 public:
   EggToC();

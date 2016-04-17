@@ -1,26 +1,23 @@
-// Filename: pgScrollFrame.cxx
-// Created by:  drose (17Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgScrollFrame.cxx
+ * @author drose
+ * @date 2005-08-17
+ */
 
 #include "pgScrollFrame.h"
 
 TypeHandle PGScrollFrame::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGScrollFrame::
 PGScrollFrame(const string &name) : PGVirtualFrame(name)
 {
@@ -37,22 +34,18 @@ PGScrollFrame(const string &name) : PGVirtualFrame(name)
   _vertical_slider = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGScrollFrame::
 ~PGScrollFrame() {
   set_horizontal_slider(NULL);
   set_vertical_slider(NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGScrollFrame::
 PGScrollFrame(const PGScrollFrame &copy) :
   PGVirtualFrame(copy),
@@ -66,45 +59,35 @@ PGScrollFrame(const PGScrollFrame &copy) :
   _needs_recompute_clip = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PGScrollFrame::
 make_copy() const {
   LightReMutexHolder holder(_lock);
   return new PGScrollFrame(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PGScrollFrame::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LightReMutexHolder holder(_lock);
@@ -120,13 +103,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return PGVirtualFrame::cull_callback(trav, data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this node by the indicated matrix, if it means
+ * anything to do so.  For most kinds of nodes, this does nothing.
+ */
 void PGScrollFrame::
 xform(const LMatrix4 &mat) {
   LightReMutexHolder holder(_lock);
@@ -135,13 +115,11 @@ xform(const LMatrix4 &mat) {
   _needs_remanage = true;
   _needs_recompute_clip = true;
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::setup
-//       Access: Published
-//  Description: Creates a PGScrollFrame with the indicated 
-//               dimensions, and the indicated virtual frame.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Creates a PGScrollFrame with the indicated dimensions, and the indicated
+ * virtual frame.
+ */
 void PGScrollFrame::
 setup(PN_stdfloat width, PN_stdfloat height,
       PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top,
@@ -164,8 +142,7 @@ setup(PN_stdfloat width, PN_stdfloat height,
 
   set_virtual_frame(left, right, bottom, top);
 
-  // Remove the slider nodes created by a previous call to setup(), if
-  // any.
+  // Remove the slider nodes created by a previous call to setup(), if any.
   if (_horizontal_slider != (PGSliderBar *)NULL) {
     remove_child(_horizontal_slider);
     set_horizontal_slider(NULL);
@@ -192,12 +169,10 @@ setup(PN_stdfloat width, PN_stdfloat height,
   set_auto_hide(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::remanage
-//       Access: Published
-//  Description: Manages the position and size of the scroll bars.
-//               Normally this should not need to be called directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Manages the position and size of the scroll bars.  Normally this should not
+ * need to be called directly.
+ */
 void PGScrollFrame::
 remanage() {
   LightReMutexHolder holder(_lock);
@@ -207,7 +182,7 @@ remanage() {
   LVecBase4 clip = get_frame_style(get_state()).get_internal_frame(frame);
 
   // Determine which scroll bars we have in the frame.
-  
+
   bool got_horizontal = false;
   PN_stdfloat horizontal_width = 0.0f;
   if (_horizontal_slider != (PGSliderBar *)NULL) {
@@ -215,7 +190,7 @@ remanage() {
     const LVecBase4 &slider_frame = _horizontal_slider->get_frame();
     horizontal_width = slider_frame[3] - slider_frame[2];
   }
-  
+
   bool got_vertical = false;
   PN_stdfloat vertical_width = 0.0f;
   if (_vertical_slider != (PGSliderBar *)NULL) {
@@ -247,11 +222,11 @@ remanage() {
         // No need for the horizontal slider.
         got_horizontal = false;
       }
-      
+
       if (virtual_height <= clip_height - horizontal_width) {
         // No need for the vertical slider.
         got_vertical = false;
-        
+
         // Now reconsider the need for the horizontal slider.
         if (virtual_width <= clip_width) {
           got_horizontal = false;
@@ -279,9 +254,8 @@ remanage() {
       }
     }
 
-    // Showing or hiding one of the scroll bars might have set this
-    // flag again indirectly; we clear it again to avoid a feedback
-    // loop.
+    // Showing or hiding one of the scroll bars might have set this flag again
+    // indirectly; we clear it again to avoid a feedback loop.
     _needs_remanage = false;
 }
 
@@ -305,16 +279,14 @@ remanage() {
                                 clip[2] + horizontal_width, clip[3]);
     _vertical_slider->clear_transform();
   }
-    
+
 
   recompute();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::frame_changed
-//       Access: Protected, Virtual
-//  Description: Called when the user changes the frame size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user changes the frame size.
+ */
 void PGScrollFrame::
 frame_changed() {
   LightReMutexHolder holder(_lock);
@@ -323,36 +295,27 @@ frame_changed() {
   _needs_recompute_clip = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::item_transform_changed
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGItem's local transform
-//               has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGItem's local transform has been changed.
+ */
 void PGScrollFrame::
 item_transform_changed(PGItem *) {
   LightReMutexHolder holder(_lock);
   _needs_recompute_clip = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::item_frame_changed
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGItem's frame
-//               has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGItem's frame has been changed.
+ */
 void PGScrollFrame::
 item_frame_changed(PGItem *) {
   LightReMutexHolder holder(_lock);
   _needs_recompute_clip = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::item_draw_mask_changed
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGItem's draw_mask
-//               has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGItem's draw_mask has been changed.
+ */
 void PGScrollFrame::
 item_draw_mask_changed(PGItem *) {
   LightReMutexHolder holder(_lock);
@@ -360,24 +323,20 @@ item_draw_mask_changed(PGItem *) {
   _needs_recompute_clip = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::slider_bar_adjust
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGSliderBar's value
-//               has been changed by the user or programmatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGSliderBar's value has been changed by the user
+ * or programmatically.
+ */
 void PGScrollFrame::
 slider_bar_adjust(PGSliderBar *) {
   LightReMutexHolder holder(_lock);
   _needs_recompute_canvas = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::recompute_clip
-//       Access: Private
-//  Description: Recomputes the clipping window of the PGScrollFrame,
-//               based on the position of the slider bars.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the clipping window of the PGScrollFrame, based on the position
+ * of the slider bars.
+ */
 void PGScrollFrame::
 recompute_clip() {
   LightReMutexHolder holder(_lock);
@@ -399,13 +358,10 @@ recompute_clip() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::recompute_canvas
-//       Access: Private
-//  Description: Recomputes the portion of the virtual canvas that is
-//               visible within the PGScrollFrame, based on the values
-//               of the slider bars.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the portion of the virtual canvas that is visible within the
+ * PGScrollFrame, based on the values of the slider bars.
+ */
 void PGScrollFrame::
 recompute_canvas() {
   LightReMutexHolder holder(_lock);
@@ -413,26 +369,23 @@ recompute_canvas() {
 
   const LVecBase4 &clip = get_clip_frame();
 
-  PN_stdfloat x = interpolate_canvas(clip[0], clip[1], 
+  PN_stdfloat x = interpolate_canvas(clip[0], clip[1],
                                _virtual_frame[0], _virtual_frame[1],
                                _horizontal_slider);
 
-  PN_stdfloat y = interpolate_canvas(clip[3], clip[2], 
+  PN_stdfloat y = interpolate_canvas(clip[3], clip[2],
                                _virtual_frame[3], _virtual_frame[2],
                                _vertical_slider);
 
   get_canvas_node()->set_transform(TransformState::make_pos(LVector3::rfu(x, 0, y)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGScrollFrame::interpolate_canvas
-//       Access: Private
-//  Description: Computes the linear translation that should be
-//               applied to the virtual canvas node, based on the
-//               corresponding slider bar's position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the linear translation that should be applied to the virtual
+ * canvas node, based on the corresponding slider bar's position.
+ */
 PN_stdfloat PGScrollFrame::
-interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max, 
+interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max,
                    PN_stdfloat canvas_min, PN_stdfloat canvas_max,
                    PGSliderBar *slider_bar) {
   LightReMutexHolder holder(_lock);

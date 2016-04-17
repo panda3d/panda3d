@@ -1,16 +1,15 @@
-// Filename: nurbsSurfaceResult.h
-// Created by:  drose (10Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsSurfaceResult.h
+ * @author drose
+ * @date 2003-10-10
+ */
 
 #ifndef NURBSSURFACERESULT_H
 #define NURBSSURFACERESULT_H
@@ -22,13 +21,11 @@
 
 class NurbsVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsSurfaceResult
-// Description : The result of a NurbsSurfaceEvaluator.  This object
-//               represents a surface in a particular coordinate space.
-//               It can return the point and/or normal to the surface
-//               at any point.
-////////////////////////////////////////////////////////////////////
+/**
+ * The result of a NurbsSurfaceEvaluator.  This object represents a surface in
+ * a particular coordinate space.  It can return the point and/or normal to
+ * the surface at any point.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsSurfaceResult : public ReferenceCount {
 public:
   NurbsSurfaceResult(const NurbsBasisVector &u_basis,
@@ -76,10 +73,9 @@ private:
   int _num_u_vertices;
   int _num_v_vertices;
 
-  // We pre-compose the basis matrix and the geometry vectors, so we
-  // have these handy for evaluation.  There is one entry in the
-  // _composed for each entry in u_basis._segments *
-  // v_basis._segments.
+  // We pre-compose the basis matrix and the geometry vectors, so we have
+  // these handy for evaluation.  There is one entry in the _composed for each
+  // entry in u_basis._segments * v_basis._segments.
   class ComposedMats {
   public:
     LMatrix4 _x, _y, _z, _w;
@@ -99,4 +95,3 @@ private:
 #include "nurbsSurfaceResult.I"
 
 #endif
-

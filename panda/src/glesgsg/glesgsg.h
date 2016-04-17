@@ -1,22 +1,21 @@
-// Filename: glesgsg.h
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glesgsg.h
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #ifndef GLESGSG_H
 #define GLESGSG_H
 
-// This header file compiles a GSG for the limited subset of OpenGL
-// that is OpenGL ES.
+// This header file compiles a GSG for the limited subset of OpenGL that is
+// OpenGL ES.
 
 #include "pandabase.h"
 #include "config_glesgsg.h"
@@ -50,22 +49,22 @@
 #define SUPPORT_FIXED_FUNCTION
 #endif
 
-// This prevents glext.h from getting included by gl.h
-// That way, we can provide our own, better version.
+// This prevents glext.h from getting included by gl.h That way, we can
+// provide our own, better version.
 #define __glext_h_
 #define ES1_GLEXT_H_GUARD
 
 #ifdef IS_OSX
   #include <OpenGLES/ES1/gl.h>
-//  #include <OpenGLES/ES1/glext.h>
+// #include <OpenGLESES1glext.h>
 #else
   #include <GLES/gl.h>
-//  #include <GLES/glext.h>
+// #include <GLESglext.h>
 #endif
 
 #include "panda_esglext.h"
 
-// This helps to keep the source clean of hundreds of #ifdefs.
+// This helps to keep the source clean of hundreds of ifdefs.
 #define GL_NONE GL_NONE_OES
 #define GL_RENDERBUFFER_EXT GL_RENDERBUFFER_OES
 #define GL_RENDERBUFFER_RED_SIZE_EXT GL_RENDERBUFFER_RED_SIZE_OES
@@ -74,6 +73,7 @@
 #define GL_RENDERBUFFER_ALPHA_SIZE_EXT GL_RENDERBUFFER_ALPHA_SIZE_OES
 #define GL_RENDERBUFFER_DEPTH_SIZE_EXT GL_RENDERBUFFER_DEPTH_SIZE_OES
 #define GL_RENDERBUFFER_STENCIL_SIZE_EXT GL_RENDERBUFFER_STENCIL_SIZE_OES
+#define GL_FRAMEBUFFER GL_FRAMEBUFFER_OES
 #define GL_FRAMEBUFFER_EXT GL_FRAMEBUFFER_OES
 #define GL_DRAW_FRAMEBUFFER_EXT GL_FRAMEBUFFER_OES
 #define GL_READ_FRAMEBUFFER_EXT GL_FRAMEBUFFER_OES
@@ -120,6 +120,17 @@
 #define GL_LUMINANCE8 GL_LUMINANCE8_EXT
 #define GL_LUMINANCE8_ALPHA8 GL_LUMINANCE8_ALPHA8_EXT
 #define GL_MAX_VERTEX_UNITS_ARB GL_MAX_VERTEX_UNITS_OES
+#define GL_TEXTURE_MAX_LEVEL GL_TEXTURE_MAX_LEVEL_APPLE
+
+// These aren't technically part of OpenGL ES 1.0, but some implementations
+// nonetheless implement it.
+#define GL_DEBUG_OUTPUT_SYNCHRONOUS 0x8242
+#define GL_DEBUG_TYPE_PERFORMANCE 0x8250
+#define GL_DEBUG_SEVERITY_NOTIFICATION 0x826B
+#define GL_DEBUG_SEVERITY_HIGH 0x9146
+#define GL_DEBUG_SEVERITY_MEDIUM 0x9147
+#define GL_DEBUG_SEVERITY_LOW 0x9148
+#define GL_DEBUG_OUTPUT 0x92E0
 
 #undef SUPPORT_IMMEDIATE_MODE
 #define APIENTRY

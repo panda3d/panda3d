@@ -1,16 +1,15 @@
-// Filename: dSearchPath.h
-// Created by:  drose (01Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dSearchPath.h
+ * @author drose
+ * @date 2000-07-01
+ */
 
 #ifndef PANDASEARCHPATH_H
 #define PANDASEARCHPATH_H
@@ -20,15 +19,12 @@
 #include "filename.h"
 #include "pvector.h"
 
-///////////////////////////////////////////////////////////////////
-//       Class : DSearchPath
-// Description : This class stores a list of directories that can be
-//               searched, in order, to locate a particular file.  It
-//               is normally constructed by passing it a traditional
-//               searchpath-style string, e.g. a list of directory
-//               names delimited by spaces or colons, but it can also
-//               be built up explicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class stores a list of directories that can be searched, in order, to
+ * locate a particular file.  It is normally constructed by passing it a
+ * traditional searchpath-style string, e.g.  a list of directory names
+ * delimited by spaces or colons, but it can also be built up explicitly.
+ */
 class EXPCL_DTOOL DSearchPath {
 PUBLISHED:
   class EXPCL_DTOOL Results {

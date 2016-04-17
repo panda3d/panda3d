@@ -1,16 +1,15 @@
-// Filename: string_utils.h
-// Created by:  drose (18Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file string_utils.h
+ * @author drose
+ * @date 1999-01-18
+ */
 
 #ifndef STRING_UTILS_H
 #define STRING_UTILS_H
@@ -46,7 +45,7 @@ EXPCL_DTOOL void tokenize(const wstring &str, pvector<wstring> &words,
                           const wstring &delimiters,
                           bool discard_repeated_delimiters = false);
 
-// Trims leading and/or trailing whitespace from the string.
+// Trims leading andor trailing whitespace from the string.
 EXPCL_DTOOL string trim_left(const string &str);
 EXPCL_DTOOL wstring trim_left(const wstring &str);
 EXPCL_DTOOL string trim_right(const string &str);
@@ -62,8 +61,8 @@ EXPCL_DTOOL bool string_to_double(const string &str, double &result);
 EXPCL_DTOOL bool string_to_float(const string &str, float &result);
 EXPCL_DTOOL bool string_to_stdfloat(const string &str, PN_stdfloat &result);
 
-// Convenience function to make a string from anything that has an
-// ostream operator.
+// Convenience function to make a string from anything that has an ostream
+// operator.
 template<class Thing>
 INLINE string format_string(const Thing &thing);
 

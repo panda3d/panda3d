@@ -1,35 +1,30 @@
-// Filename: qtessInputFile.cxx
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file qtessInputFile.cxx
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #include "qtessInputFile.h"
 #include "config_egg_qtess.h"
 #include "string_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 QtessInputFile::
 QtessInputFile() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::read
-//       Access: Public
-//  Description: reads the input file.
-////////////////////////////////////////////////////////////////////
+/**
+ * reads the input file.
+ */
 bool QtessInputFile::
 read(const Filename &filename) {
   _filename = Filename::text_filename(filename);
@@ -49,8 +44,8 @@ read(const Filename &filename) {
   while (getline(input, line)) {
     line_number++;
 
-    // Eliminate comments.  We have to scan the line repeatedly until
-    // we find the first hash mark that's preceded by whitespace.
+    // Eliminate comments.  We have to scan the line repeatedly until we find
+    // the first hash mark that's preceded by whitespace.
     size_t comment = line.find('#');
     while (comment != string::npos) {
       if (comment == 0 || isspace(line[comment - 1])) {
@@ -86,24 +81,23 @@ read(const Filename &filename) {
         }
         if (colon == 0) {
           qtess_cat.error()
-            << _filename << ": line " << line_number 
+            << _filename << ": line " << line_number
             << " has no nodes.\n";
           return false;
         }
 
-        // Split the line into two groups of words at the colon: names
-        // before the colon, and params following it.
+        // Split the line into two groups of words at the colon: names before
+        // the colon, and params following it.
         vector_string names, params;
         extract_words(line.substr(0, colon), names);
         extract_words(line.substr(colon + 1), params);
-        
+
         vector_string::const_iterator ni;
         for (ni = names.begin(); ni != names.end(); ++ni) {
           entry.add_node_name(*ni);
         }
 
-        // Scan for things like ap, ad, ar, and pull them out of the
-        // stream.
+        // Scan for things like ap, ad, ar, and pull them out of the stream.
         vector_string::iterator ci, cnext;
         ci = params.begin();
         while (ci != params.end()) {
@@ -129,7 +123,7 @@ read(const Filename &filename) {
             case 'r':
               if (!string_to_double(param.substr(2), entry._curvature_ratio)) {
                 qtess_cat.error()
-                  << _filename << ": line " << line_number 
+                  << _filename << ": line " << line_number
                   << " - invalid field " << param << "\n";
                 return false;
               }
@@ -137,7 +131,7 @@ read(const Filename &filename) {
 
             default:
               qtess_cat.error()
-                << _filename << ": invalid parameters at line " 
+                << _filename << ": invalid parameters at line "
                 << line_number << ".\n";
               return false;
             }
@@ -226,7 +220,7 @@ read(const Filename &filename) {
 
           if (!okflag) {
             qtess_cat.error()
-              << _filename << ": invalid parameters at line " 
+              << _filename << ": invalid parameters at line "
               << line_number << ".\n";
             return false;
           }
@@ -249,14 +243,11 @@ read(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::get_default_entry
-//       Access: Public
-//  Description: Returns a reference to the last entry on the list,
-//               which is the "default" entry that will match any
-//               surface that does not get explicitly named in the
-//               input file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a reference to the last entry on the list, which is the "default"
+ * entry that will match any surface that does not get explicitly named in the
+ * input file.
+ */
 QtessInputEntry &QtessInputFile::
 get_default_entry() {
   if (_entries.empty()) {
@@ -267,19 +258,15 @@ get_default_entry() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::match
-//       Access: Public
-//  Description: Attempts to find a match for the given surface in the
-//               user input entries.  Searches in the order in which
-//               the entries were defined, and chooses the first
-//               match.
-//
-//               When a match is found, the surface is added to the
-//               entry's set of matched surfaces.  Returns the type of
-//               the matching node if a match is found, or T_undefined
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to find a match for the given surface in the user input entries.
+ * Searches in the order in which the entries were defined, and chooses the
+ * first match.
+ *
+ * When a match is found, the surface is added to the entry's set of matched
+ * surfaces.  Returns the type of the matching node if a match is found, or
+ * T_undefined otherwise.
+ */
 QtessInputEntry::Type QtessInputFile::
 match(QtessSurface *surface) {
   QtessInputEntry::Type type;
@@ -299,14 +286,11 @@ match(QtessSurface *surface) {
   return QtessInputEntry::T_undefined;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::count_tris
-//       Access: Public
-//  Description: Determines the tesselation u,v amounts of each
-//               attached surface, and stores this information in the
-//               surface pointer.  Returns the total number of tris
-//               that will be produced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the tesselation u,v amounts of each attached surface, and stores
+ * this information in the surface pointer.  Returns the total number of tris
+ * that will be produced.
+ */
 int QtessInputFile::
 count_tris() {
   int total_tris = 0;
@@ -318,11 +302,9 @@ count_tris() {
   return total_tris;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void QtessInputFile::
 write(ostream &out, int indent_level) const {
   Entries::const_iterator ei;
@@ -331,12 +313,10 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::add_default_entry
-//       Access: Private
-//  Description: Adds one more entry to the end of the list, to catch
-//               all of the surfaces that didn't get explicitly named.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds one more entry to the end of the list, to catch all of the surfaces
+ * that didn't get explicitly named.
+ */
 void QtessInputFile::
 add_default_entry() {
   QtessInputEntry entry("*");

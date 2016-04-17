@@ -1,16 +1,15 @@
-// Filename: pandaNode.cxx
-// Created by:  drose (20Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pandaNode.cxx
+ * @author drose
+ * @date 2002-02-20
+ */
 
 #include "pandaNode.h"
 #include "config_pgraph.h"
@@ -48,36 +47,28 @@ TypeHandle PandaNode::_type_handle;
 TypeHandle PandaNode::CData::_type_handle;
 TypeHandle PandaNodePipelineReader::_type_handle;
 
-//
-// There are two different interfaces here for making and breaking
-// parent-child connections: the fundamental PandaNode interface, via
-// add_child() and remove_child() (and related functions), and the
-// NodePath support interface, via attach(), detach(), and reparent().
-// They both do essentially the same thing, but with slightly
-// different inputs.  The PandaNode interfaces try to guess which
-// NodePaths should be updated as a result of the scene graph change,
-// while the NodePath interfaces already know.
-//
-// The NodePath support interface functions are strictly called from
-// within the NodePath class, and are used to implement
-// NodePath::reparent_to() and NodePath::remove_node(), etc.  The
-// fundamental interface, on the other hand, is intended to be called
-// directly by the user.
-//
-// The fundamental interface has a slightly lower overhead because it
-// does not need to create a NodePathComponent chain where one does
-// not already exist; however, the NodePath support interface is more
-// useful when the NodePath already does exist, because it ensures
-// that the particular NodePath calling it is kept appropriately
-// up-to-date.
-//
+/*
+ * There are two different interfaces here for making and breaking parent-
+ * child connections: the fundamental PandaNode interface, via add_child() and
+ * remove_child() (and related functions), and the NodePath support interface,
+ * via attach(), detach(), and reparent(). They both do essentially the same
+ * thing, but with slightly different inputs.  The PandaNode interfaces try to
+ * guess which NodePaths should be updated as a result of the scene graph
+ * change, while the NodePath interfaces already know.  The NodePath support
+ * interface functions are strictly called from within the NodePath class, and
+ * are used to implement NodePath::reparent_to() and NodePath::remove_node(),
+ * etc.  The fundamental interface, on the other hand, is intended to be
+ * called directly by the user.  The fundamental interface has a slightly
+ * lower overhead because it does not need to create a NodePathComponent chain
+ * where one does not already exist; however, the NodePath support interface
+ * is more useful when the NodePath already does exist, because it ensures
+ * that the particular NodePath calling it is kept appropriately up-to-date.
+ */
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PandaNode::
 PandaNode(const string &name) :
   Namable(name),
@@ -97,11 +88,9 @@ PandaNode(const string &name) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PandaNode::
 ~PandaNode() {
   if (pgraph_cat.is_debug()) {
@@ -115,12 +104,12 @@ PandaNode::
     do_clear_dirty_prev_transform();
   }
 
-  // We shouldn't have any parents left by the time we destruct, or
-  // there's a refcount fault somewhere.
+  // We shouldn't have any parents left by the time we destruct, or there's a
+  // refcount fault somewhere.
 
-  // Actually, that's not necessarily true anymore, since we might be
-  // updating a node dynamically via the bam reader, which doesn't
-  // necessarily keep related pairs of nodes in sync with each other.
+  // Actually, that's not necessarily true anymore, since we might be updating
+  // a node dynamically via the bam reader, which doesn't necessarily keep
+  // related pairs of nodes in sync with each other.
   /*
 #ifndef NDEBUG
   {
@@ -133,13 +122,10 @@ PandaNode::
   remove_all_children();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::Copy Constructor
-//       Access: Protected
-//  Description: Do not call the copy constructor directly; instead,
-//               use make_copy() or copy_subgraph() to make a copy of
-//               a node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
 PandaNode::
 PandaNode(const PandaNode &copy) :
   TypedWritableReferenceCount(copy),
@@ -188,166 +174,127 @@ PandaNode(const PandaNode &copy) :
     cdata->_fancy_bits = copy_cdata->_fancy_bits;
 
 #ifdef HAVE_PYTHON
-    // Copy and increment all of the Python objects held by the other
-    // node.
+    // Copy and increment all of the Python objects held by the other node.
     cdata->_python_tag_data = copy_cdata->_python_tag_data;
     cdata->inc_py_refs();
 #endif  // HAVE_PYTHON
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not call the copy assignment operator at all.  Use
-//               make_copy() or copy_subgraph() to make a copy of a
-//               node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not call the copy assignment operator at all.  Use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
 void PandaNode::
 operator = (const PandaNode &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::dupe_for_flatten
-//       Access: Public, Virtual
-//  Description: This is similar to make_copy(), but it makes a copy
-//               for the specific purpose of flatten.  Typically, this
-//               will be a new PandaNode with a new pointer, but all
-//               of the internal data will always be shared with the
-//               original; whereas the new node returned by
-//               make_copy() might not share the internal data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to make_copy(), but it makes a copy for the specific
+ * purpose of flatten.  Typically, this will be a new PandaNode with a new
+ * pointer, but all of the internal data will always be shared with the
+ * original; whereas the new node returned by make_copy() might not share the
+ * internal data.
+ */
 PandaNode *PandaNode::
 dupe_for_flatten() const {
   return make_copy();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::safe_to_flatten
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to flatten out
-//               this particular kind of PandaNode by duplicating
-//               instances (by calling dupe_for_flatten()), false
-//               otherwise (for instance, a Camera cannot be safely
-//               flattened, because the Camera pointer itself is
-//               meaningful).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to flatten out this particular kind of
+ * PandaNode by duplicating instances (by calling dupe_for_flatten()), false
+ * otherwise (for instance, a Camera cannot be safely flattened, because the
+ * Camera pointer itself is meaningful).
+ */
 bool PandaNode::
 safe_to_flatten() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::safe_to_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of PandaNode by calling the
-//               xform() method, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to transform this particular kind of
+ * PandaNode by calling the xform() method, false otherwise.
+ */
 bool PandaNode::
 safe_to_transform() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::safe_to_modify_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is safe to automatically adjust
-//               the transform on this kind of node.  Usually, this is
-//               only a bad idea if the user expects to find a
-//               particular transform on the node.
-//
-//               ModelNodes with the preserve_transform flag set are
-//               presently the only kinds of nodes that should not
-//               have their transform even adjusted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is safe to automatically adjust the transform on this
+ * kind of node.  Usually, this is only a bad idea if the user expects to find
+ * a particular transform on the node.
+ *
+ * ModelNodes with the preserve_transform flag set are presently the only
+ * kinds of nodes that should not have their transform even adjusted.
+ */
 bool PandaNode::
 safe_to_modify_transform() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::safe_to_combine
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine this
-//               particular kind of PandaNode with other kinds of
-//               PandaNodes of compatible type, adding children or
-//               whatever.  For instance, an LODNode should not be
-//               combined with any other PandaNode, because its set of
-//               children is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine this particular kind of
+ * PandaNode with other kinds of PandaNodes of compatible type, adding
+ * children or whatever.  For instance, an LODNode should not be combined with
+ * any other PandaNode, because its set of children is meaningful.
+ */
 bool PandaNode::
 safe_to_combine() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::safe_to_combine_children
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine the
-//               children of this PandaNode with each other.  For
-//               instance, an LODNode's children should not be
-//               combined with each other, because the set of children
-//               is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine the children of this
+ * PandaNode with each other.  For instance, an LODNode's children should not
+ * be combined with each other, because the set of children is meaningful.
+ */
 bool PandaNode::
 safe_to_combine_children() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::safe_to_flatten_below
-//       Access: Public, Virtual
-//  Description: Returns true if a flatten operation may safely
-//               continue past this node, or false if nodes below this
-//               node may not be molested.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a flatten operation may safely continue past this node, or
+ * false if nodes below this node may not be molested.
+ */
 bool PandaNode::
 safe_to_flatten_below() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::preserve_name
-//       Access: Public, Virtual
-//  Description: Returns true if the node's name has extrinsic meaning
-//               and must be preserved across a flatten operation,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node's name has extrinsic meaning and must be preserved
+ * across a flatten operation, false otherwise.
+ */
 bool PandaNode::
 preserve_name() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_unsafe_to_apply_attribs
-//       Access: Public, Virtual
-//  Description: Returns the union of all attributes from
-//               SceneGraphReducer::AttribTypes that may not safely be
-//               applied to the vertices of this node.  If this is
-//               nonzero, these attributes must be dropped at this
-//               node as a state change.
-//
-//               This is a generalization of safe_to_transform().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of all attributes from SceneGraphReducer::AttribTypes
+ * that may not safely be applied to the vertices of this node.  If this is
+ * nonzero, these attributes must be dropped at this node as a state change.
+ *
+ * This is a generalization of safe_to_transform().
+ */
 int PandaNode::
 get_unsafe_to_apply_attribs() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::apply_attribs_to_vertices
-//       Access: Public, Virtual
-//  Description: Applies whatever attributes are specified in the
-//               AccumulatedAttribs object (and by the attrib_types
-//               bitmask) to the vertices on this node, if
-//               appropriate.  If this node uses geom arrays like a
-//               GeomNode, the supplied GeomTransformer may be used to
-//               unify shared arrays across multiple different nodes.
-//
-//               This is a generalization of xform().
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies whatever attributes are specified in the AccumulatedAttribs object
+ * (and by the attrib_types bitmask) to the vertices on this node, if
+ * appropriate.  If this node uses geom arrays like a GeomNode, the supplied
+ * GeomTransformer may be used to unify shared arrays across multiple
+ * different nodes.
+ *
+ * This is a generalization of xform().
+ */
 void PandaNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
@@ -366,33 +313,25 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this PandaNode by the
-//               indicated matrix, if it means anything to do so.  For
-//               most kinds of PandaNodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this PandaNode by the indicated matrix, if it
+ * means anything to do so.  For most kinds of PandaNodes, this does nothing.
+ */
 void PandaNode::
 xform(const LMatrix4 &) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::combine_with
-//       Access: Public, Virtual
-//  Description: Collapses this PandaNode with the other PandaNode, if
-//               possible, and returns a pointer to the combined
-//               PandaNode, or NULL if the two PandaNodes cannot
-//               safely be combined.
-//
-//               The return value may be this, other, or a new
-//               PandaNode altogether.
-//
-//               This function is called from GraphReducer::flatten(),
-//               and need not deal with children; its job is just to
-//               decide whether to collapse the two PandaNodes and
-//               what the collapsed PandaNode should look like.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collapses this PandaNode with the other PandaNode, if possible, and returns
+ * a pointer to the combined PandaNode, or NULL if the two PandaNodes cannot
+ * safely be combined.
+ *
+ * The return value may be this, other, or a new PandaNode altogether.
+ *
+ * This function is called from GraphReducer::flatten(), and need not deal
+ * with children; its job is just to decide whether to collapse the two
+ * PandaNodes and what the collapsed PandaNode should look like.
+ */
 PandaNode *PandaNode::
 combine_with(PandaNode *other) {
   // An unadorned PandaNode always combines with any other PandaNodes by
@@ -412,26 +351,20 @@ combine_with(PandaNode *other) {
   return (PandaNode *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::calc_tight_bounds
-//       Access: Public, Virtual
-//  Description: This is used to support
-//               NodePath::calc_tight_bounds().  It is not intended to
-//               be called directly, and it has nothing to do with the
-//               normal Panda bounding-volume computation.
-//
-//               If the node contains any geometry, this updates
-//               min_point and max_point to enclose its bounding box.
-//               found_any is to be set true if the node has any
-//               geometry at all, or left alone if it has none.  This
-//               method may be called over several nodes, so it may
-//               enter with min_point, max_point, and found_any
-//               already set.
-//
-//               This function is recursive, and the return value is
-//               the transform after it has been modified by this
-//               node's transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to support NodePath::calc_tight_bounds().  It is not intended
+ * to be called directly, and it has nothing to do with the normal Panda
+ * bounding-volume computation.
+ *
+ * If the node contains any geometry, this updates min_point and max_point to
+ * enclose its bounding box.  found_any is to be set true if the node has any
+ * geometry at all, or left alone if it has none.  This method may be called
+ * over several nodes, so it may enter with min_point, max_point, and
+ * found_any already set.
+ *
+ * This function is recursive, and the return value is the transform after it
+ * has been modified by this node's transform.
+ */
 CPT(TransformState) PandaNode::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
@@ -448,183 +381,139 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
   return next_transform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PandaNode::
 cull_callback(CullTraverser *, CullTraverserData &) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::has_selective_visibility
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if this kind of node has some restrictions on
-//               the set of children that should be rendered.  Node
-//               with this property include LODNodes, SwitchNodes, and
-//               SequenceNodes.
-//
-//               If this function returns true,
-//               get_first_visible_child() and
-//               get_next_visible_child() will be called to walk
-//               through the list of children during cull, instead of
-//               iterating through the entire list.  This method is
-//               called after cull_callback(), so cull_callback() may
-//               be responsible for the decisions as to which children
-//               are visible at the moment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if this kind of node
+ * has some restrictions on the set of children that should be rendered.  Node
+ * with this property include LODNodes, SwitchNodes, and SequenceNodes.
+ *
+ * If this function returns true, get_first_visible_child() and
+ * get_next_visible_child() will be called to walk through the list of
+ * children during cull, instead of iterating through the entire list.  This
+ * method is called after cull_callback(), so cull_callback() may be
+ * responsible for the decisions as to which children are visible at the
+ * moment.
+ */
 bool PandaNode::
 has_selective_visibility() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_first_visible_child
-//       Access: Public, Virtual
-//  Description: Returns the index number of the first visible child
-//               of this node, or a number >= get_num_children() if
-//               there are no visible children of this node.  This is
-//               called during the cull traversal, but only if
-//               has_selective_visibility() has already returned true.
-//               See has_selective_visibility().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the first visible child of this node, or a
+ * number >= get_num_children() if there are no visible children of this node.
+ * This is called during the cull traversal, but only if
+ * has_selective_visibility() has already returned true.  See
+ * has_selective_visibility().
+ */
 int PandaNode::
 get_first_visible_child() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_next_visible_child
-//       Access: Public, Virtual
-//  Description: Returns the index number of the next visible child
-//               of this node following the indicated child, or a
-//               number >= get_num_children() if there are no more
-//               visible children of this node.  See
-//               has_selective_visibility() and
-//               get_first_visible_child().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the next visible child of this node following
+ * the indicated child, or a number >= get_num_children() if there are no more
+ * visible children of this node.  See has_selective_visibility() and
+ * get_first_visible_child().
+ */
 int PandaNode::
 get_next_visible_child(int n) const {
   return n + 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::has_single_child_visibility
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if this kind of node has the special property
-//               that just one of its children is visible at any given
-//               time, and furthermore that the particular visible
-//               child can be determined without reference to any
-//               external information (such as a camera).  At present,
-//               only SequenceNodes and SwitchNodes fall into this
-//               category.
-//
-//               If this function returns true, get_visible_child()
-//               can be called to return the index of the
-//               currently-visible child.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if this kind of node
+ * has the special property that just one of its children is visible at any
+ * given time, and furthermore that the particular visible child can be
+ * determined without reference to any external information (such as a
+ * camera).  At present, only SequenceNodes and SwitchNodes fall into this
+ * category.
+ *
+ * If this function returns true, get_visible_child() can be called to return
+ * the index of the currently-visible child.
+ */
 bool PandaNode::
 has_single_child_visibility() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_visible_child
-//       Access: Public, Virtual
-//  Description: Returns the index number of the currently visible
-//               child of this node.  This is only meaningful if
-//               has_single_child_visibility() has returned true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the currently visible child of this node.  This
+ * is only meaningful if has_single_child_visibility() has returned true.
+ */
 int PandaNode::
 get_visible_child() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool PandaNode::
 is_renderable() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::add_for_draw
-//       Access: Public, Virtual
-//  Description: Adds the node's contents to the CullResult we are
-//               building up during the cull traversal, so that it
-//               will be drawn at render time.  For most nodes other
-//               than GeomNodes, this is a do-nothing operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the node's contents to the CullResult we are building up during the
+ * cull traversal, so that it will be drawn at render time.  For most nodes
+ * other than GeomNodes, this is a do-nothing operation.
+ */
 void PandaNode::
 add_for_draw(CullTraverser *, CullTraverserData &) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::make_copy
-//       Access: Published, Virtual
-//  Description: Returns a newly-allocated PandaNode that is a shallow
-//               copy of this one.  It will be a different pointer,
-//               but its internal data may or may not be shared with
-//               that of the original PandaNode.  No children will be
-//               copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated PandaNode that is a shallow copy of this one.  It
+ * will be a different pointer, but its internal data may or may not be shared
+ * with that of the original PandaNode.  No children will be copied.
+ */
 PandaNode *PandaNode::
 make_copy() const {
   return new PandaNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::copy_subgraph
-//       Access: Published
-//  Description: Allocates and returns a complete copy of this
-//               PandaNode and the entire scene graph rooted at this
-//               PandaNode.  Some data may still be shared from the
-//               original (e.g. vertex index tables), but nothing that
-//               will impede normal use of the PandaNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a complete copy of this PandaNode and the entire
+ * scene graph rooted at this PandaNode.  Some data may still be shared from
+ * the original (e.g.  vertex index tables), but nothing that will impede
+ * normal use of the PandaNode.
+ */
 PT(PandaNode) PandaNode::
 copy_subgraph(Thread *current_thread) const {
   InstanceMap inst_map;
   return r_copy_subgraph(inst_map, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::count_num_descendants
-//       Access: Published
-//  Description: Returns the number of nodes at and below this level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of nodes at and below this level.
+ */
 int PandaNode::
 count_num_descendants() const {
   int count = 1;
@@ -639,24 +528,21 @@ count_num_descendants() const {
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::add_child
-//       Access: Published
-//  Description: Adds a new child to the node.  The child is added in
-//               the relative position indicated by sort; if all
-//               children have the same sort index, the child is added
-//               at the end.
-//
-//               If the same child is added to a node more than once,
-//               the previous instance is first removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new child to the node.  The child is added in the relative position
+ * indicated by sort; if all children have the same sort index, the child is
+ * added at the end.
+ *
+ * If the same child is added to a node more than once, the previous instance
+ * is first removed.
+ */
 void PandaNode::
 add_child(PandaNode *child_node, int sort, Thread *current_thread) {
   nassertv(child_node != (PandaNode *)NULL);
 
   if (!verify_child_no_cycles(child_node)) {
-    // Whoops, adding this child node would introduce a cycle in the
-    // scene graph.
+    // Whoops, adding this child node would introduce a cycle in the scene
+    // graph.
     return;
   }
 
@@ -664,8 +550,8 @@ add_child(PandaNode *child_node, int sort, Thread *current_thread) {
   PT(PandaNode) keep_child = child_node;
   remove_child(child_node);
 
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
@@ -688,11 +574,9 @@ add_child(PandaNode *child_node, int sort, Thread *current_thread) {
   child_node->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::remove_child
-//       Access: Published
-//  Description: Removes the nth child from the node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth child from the node.
+ */
 void PandaNode::
 remove_child(int child_index, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -720,20 +604,17 @@ remove_child(int child_index, Thread *current_thread) {
   child_node->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::remove_child
-//       Access: Published
-//  Description: Removes the indicated child from the node.  Returns
-//               true if the child was removed, false if it was not
-//               already a child of the node.  This will also
-//               successfully remove the child if it had been stashed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated child from the node.  Returns true if the child was
+ * removed, false if it was not already a child of the node.  This will also
+ * successfully remove the child if it had been stashed.
+ */
 bool PandaNode::
 remove_child(PandaNode *child_node, Thread *current_thread) {
   nassertr(child_node != (PandaNode *)NULL, false);
 
-  // Make sure the child node is not destructed during the execution
-  // of this method.
+  // Make sure the child node is not destructed during the execution of this
+  // method.
   PT(PandaNode) keep_child = child_node;
 
   // We have to do this for each upstream pipeline stage.
@@ -758,15 +639,12 @@ remove_child(PandaNode *child_node, Thread *current_thread) {
   return any_removed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::replace_child
-//       Access: Published
-//  Description: Searches for the orig_child node in the node's list
-//               of children, and replaces it with the new_child
-//               instead.  Returns true if the replacement is made, or
-//               false if the node is not a child or if there is some
-//               other problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the orig_child node in the node's list of children, and
+ * replaces it with the new_child instead.  Returns true if the replacement is
+ * made, or false if the node is not a child or if there is some other
+ * problem.
+ */
 bool PandaNode::
 replace_child(PandaNode *orig_child, PandaNode *new_child,
               Thread *current_thread) {
@@ -779,13 +657,13 @@ replace_child(PandaNode *orig_child, PandaNode *new_child,
   }
 
   if (!verify_child_no_cycles(new_child)) {
-    // Whoops, adding this child node would introduce a cycle in the
-    // scene graph.
+    // Whoops, adding this child node would introduce a cycle in the scene
+    // graph.
     return false;
   }
 
-  // Make sure the orig_child node is not destructed during the
-  // execution of this method.
+  // Make sure the orig_child node is not destructed during the execution of
+  // this method.
   PT(PandaNode) keep_orig_child = orig_child;
 
   // We have to do this for each upstream pipeline stage.
@@ -808,20 +686,15 @@ replace_child(PandaNode *orig_child, PandaNode *new_child,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::stash_child
-//       Access: Published
-//  Description: Stashes the indicated child node.  This removes the
-//               child from the list of active children and puts it on
-//               a special list of stashed children.  This child node
-//               no longer contributes to the bounding volume of the
-//               PandaNode, and is not visited in normal traversals.
-//               It is invisible and uncollidable.  The child may
-//               later be restored by calling unstash_child().
-//
-//               This can only be called from the top pipeline stage
-//               (i.e. from App).
-////////////////////////////////////////////////////////////////////
+/**
+ * Stashes the indicated child node.  This removes the child from the list of
+ * active children and puts it on a special list of stashed children.  This
+ * child node no longer contributes to the bounding volume of the PandaNode,
+ * and is not visited in normal traversals.  It is invisible and uncollidable.
+ * The child may later be restored by calling unstash_child().
+ *
+ * This can only be called from the top pipeline stage (i.e.  from App).
+ */
 void PandaNode::
 stash_child(int child_index, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -853,30 +726,24 @@ stash_child(int child_index, Thread *current_thread) {
   child_node->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::unstash_child
-//       Access: Published
-//  Description: Returns the indicated stashed node to normal child
-//               status.  This removes the child from the list of
-//               stashed children and puts it on the normal list of
-//               active children.  This child node once again
-//               contributes to the bounding volume of the PandaNode,
-//               and will be visited in normal traversals.  It is
-//               visible and collidable.
-//
-//               This can only be called from the top pipeline stage
-//               (i.e. from App).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the indicated stashed node to normal child status.  This removes
+ * the child from the list of stashed children and puts it on the normal list
+ * of active children.  This child node once again contributes to the bounding
+ * volume of the PandaNode, and will be visited in normal traversals.  It is
+ * visible and collidable.
+ *
+ * This can only be called from the top pipeline stage (i.e.  from App).
+ */
 void PandaNode::
 unstash_child(int stashed_index, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertv(pipeline_stage == 0);
   nassertv(stashed_index >= 0 && stashed_index < get_num_stashed());
 
-  // Save a reference count for ourselves.  I don't think this should
-  // be necessary, but there are occasional crashes in stash() during
-  // furniture moving mode.  Perhaps this will eliminate those
-  // crashes.
+  // Save a reference count for ourselves.  I don't think this should be
+  // necessary, but there are occasional crashes in stash() during furniture
+  // moving mode.  Perhaps this will eliminate those crashes.
   PT(PandaNode) self = this;
 
   PT(PandaNode) child_node = get_stashed(stashed_index);
@@ -901,28 +768,24 @@ unstash_child(int stashed_index, Thread *current_thread) {
   child_node->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::add_stashed
-//       Access: Published
-//  Description: Adds a new child to the node, directly as a stashed
-//               child.  The child is not added in the normal sense,
-//               but will be revealed if unstash_child() is called on
-//               it later.
-//
-//               If the same child is added to a node more than once,
-//               the previous instance is first removed.
-//
-//               This can only be called from the top pipeline stage
-//               (i.e. from App).
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new child to the node, directly as a stashed child.  The child is
+ * not added in the normal sense, but will be revealed if unstash_child() is
+ * called on it later.
+ *
+ * If the same child is added to a node more than once, the previous instance
+ * is first removed.
+ *
+ * This can only be called from the top pipeline stage (i.e.  from App).
+ */
 void PandaNode::
 add_stashed(PandaNode *child_node, int sort, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertv(pipeline_stage == 0);
 
   if (!verify_child_no_cycles(child_node)) {
-    // Whoops, adding this child node would introduce a cycle in the
-    // scene graph.
+    // Whoops, adding this child node would introduce a cycle in the scene
+    // graph.
     return;
   }
 
@@ -947,11 +810,9 @@ add_stashed(PandaNode *child_node, int sort, Thread *current_thread) {
   child_node->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::remove_stashed
-//       Access: Published
-//  Description: Removes the nth stashed child from the node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth stashed child from the node.
+ */
 void PandaNode::
 remove_stashed(int child_index, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -977,15 +838,11 @@ remove_stashed(int child_index, Thread *current_thread) {
   child_node->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::remove_all_children
-//       Access: Published
-//  Description: Removes all the children from the node at once,
-//               including stashed children.
-//
-//               This can only be called from the top pipeline stage
-//               (i.e. from App).
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the children from the node at once, including stashed children.
+ *
+ * This can only be called from the top pipeline stage (i.e.  from App).
+ */
 void PandaNode::
 remove_all_children(Thread *current_thread) {
   // We have to do this for each upstream pipeline stage.
@@ -1025,15 +882,12 @@ remove_all_children(Thread *current_thread) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::steal_children
-//       Access: Published
-//  Description: Moves all the children from the other node onto this
-//               node.
-//
-//               Any NodePaths to child nodes of the other node are
-//               truncated, rather than moved to the new parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves all the children from the other node onto this node.
+ *
+ * Any NodePaths to child nodes of the other node are truncated, rather than
+ * moved to the new parent.
+ */
 void PandaNode::
 steal_children(PandaNode *other, Thread *current_thread) {
   if (other == this) {
@@ -1041,13 +895,12 @@ steal_children(PandaNode *other, Thread *current_thread) {
     return;
   }
 
-  // We do this through the high-level interface for convenience.
-  // This could begin to be a problem if we have a node with hundreds
-  // of children to copy; this could break down the ov_set.insert()
-  // method, which is an O(n^2) operation.  If this happens, we should
-  // rewrite this to do a simpler add_child() operation that involves
-  // push_back() instead of insert(), and then sort the down list at
-  // the end.
+  // We do this through the high-level interface for convenience.  This could
+  // begin to be a problem if we have a node with hundreds of children to
+  // copy; this could break down the ov_set.insert() method, which is an
+  // O(n^2) operation.  If this happens, we should rewrite this to do a
+  // simpler add_child() operation that involves push_back() instead of
+  // insert(), and then sort the down list at the end.
 
   int num_children = other->get_num_children();
   int i;
@@ -1066,12 +919,10 @@ steal_children(PandaNode *other, Thread *current_thread) {
   other->remove_all_children(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::copy_children
-//       Access: Published
-//  Description: Makes another instance of all the children of the
-//               other node, copying them to this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes another instance of all the children of the other node, copying them
+ * to this node.
+ */
 void PandaNode::
 copy_children(PandaNode *other, Thread *current_thread) {
   if (other == this) {
@@ -1095,18 +946,15 @@ copy_children(PandaNode *other, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_attrib
-//       Access: Published
-//  Description: Adds the indicated render attribute to the scene
-//               graph on this node.  This attribute will now apply to
-//               this node and everything below.  If there was already
-//               an attribute of the same type, it is replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated render attribute to the scene graph on this node.  This
+ * attribute will now apply to this node and everything below.  If there was
+ * already an attribute of the same type, it is replaced.
+ */
 void PandaNode::
 set_attrib(const RenderAttrib *attrib, int override) {
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   bool any_changed = false;
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
@@ -1129,14 +977,11 @@ set_attrib(const RenderAttrib *attrib, int override) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_attrib
-//       Access: Published
-//  Description: Removes the render attribute of the given type from
-//               this node.  This node, and the subgraph below, will
-//               now inherit the indicated render attribute from the
-//               nodes above this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the render attribute of the given type from this node.  This node,
+ * and the subgraph below, will now inherit the indicated render attribute
+ * from the nodes above this one.
+ */
 void PandaNode::
 clear_attrib(int slot) {
   bool any_changed = false;
@@ -1154,8 +999,8 @@ clear_attrib(int slot) {
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
-  // We mark the bounds stale when the state changes, in case
-  // we have changed a ClipPlaneAttrib.
+  // We mark the bounds stale when the state changes, in case we have changed
+  // a ClipPlaneAttrib.
   if (any_changed) {
     mark_bounds_stale(current_thread);
     state_changed();
@@ -1163,17 +1008,14 @@ clear_attrib(int slot) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_effect
-//       Access: Published
-//  Description: Adds the indicated render effect to the scene
-//               graph on this node.  If there was already an effect
-//               of the same type, it is replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated render effect to the scene graph on this node.  If there
+ * was already an effect of the same type, it is replaced.
+ */
 void PandaNode::
 set_effect(const RenderEffect *effect) {
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -1184,12 +1026,9 @@ set_effect(const RenderEffect *effect) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_effect
-//       Access: Published
-//  Description: Removes the render effect of the given type from
-//               this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the render effect of the given type from this node.
+ */
 void PandaNode::
 clear_effect(TypeHandle type) {
   Thread *current_thread = Thread::get_current_thread();
@@ -1202,20 +1041,17 @@ clear_effect(TypeHandle type) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_state
-//       Access: Published
-//  Description: Sets the complete RenderState that will be applied to
-//               all nodes at this level and below.  (The actual state
-//               that will be applied to lower nodes is based on the
-//               composition of RenderStates from above this node as
-//               well).  This completely replaces whatever has been
-//               set on this node via repeated calls to set_attrib().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the complete RenderState that will be applied to all nodes at this
+ * level and below.  (The actual state that will be applied to lower nodes is
+ * based on the composition of RenderStates from above this node as well).
+ * This completely replaces whatever has been set on this node via repeated
+ * calls to set_attrib().
+ */
 void PandaNode::
 set_state(const RenderState *state, Thread *current_thread) {
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   bool any_changed = false;
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -1235,18 +1071,15 @@ set_state(const RenderState *state, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_effects
-//       Access: Published
-//  Description: Sets the complete RenderEffects that will be applied
-//               this node.  This completely replaces whatever has
-//               been set on this node via repeated calls to
-//               set_attrib().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the complete RenderEffects that will be applied this node.  This
+ * completely replaces whatever has been set on this node via repeated calls
+ * to set_attrib().
+ */
 void PandaNode::
 set_effects(const RenderEffects *effects, Thread *current_thread) {
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = effects;
@@ -1256,20 +1089,17 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_transform
-//       Access: Published
-//  Description: Sets the transform that will be applied to this node
-//               and below.  This defines a new coordinate space at
-//               this point in the scene graph and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the transform that will be applied to this node and below.  This
+ * defines a new coordinate space at this point in the scene graph and below.
+ */
 void PandaNode::
 set_transform(const TransformState *transform, Thread *current_thread) {
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
 
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   bool any_changed = false;
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -1294,21 +1124,18 @@ set_transform(const TransformState *transform, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_prev_transform
-//       Access: Published
-//  Description: Sets the transform that represents this node's
-//               "previous" position, one frame ago, for the purposes
-//               of detecting motion for accurate collision
-//               calculations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the transform that represents this node's "previous" position, one
+ * frame ago, for the purposes of detecting motion for accurate collision
+ * calculations.
+ */
 void PandaNode::
 set_prev_transform(const TransformState *transform, Thread *current_thread) {
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
 
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_prev_transform = transform;
@@ -1324,22 +1151,19 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::reset_prev_transform
-//       Access: Published
-//  Description: Resets the transform that represents this node's
-//               "previous" position to the same as the current
-//               transform.  This is not the same thing as clearing it
-//               to identity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the transform that represents this node's "previous" position to the
+ * same as the current transform.  This is not the same thing as clearing it
+ * to identity.
+ */
 void PandaNode::
 reset_prev_transform(Thread *current_thread) {
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
   do_clear_dirty_prev_transform();
 
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
 
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -1349,15 +1173,12 @@ reset_prev_transform(Thread *current_thread) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::reset_all_prev_transform
-//       Access: Published, Static
-//  Description: Visits all nodes in the world with the
-//               _dirty_prev_transform flag--that is, all nodes whose
-//               _prev_transform is different from the _transform in
-//               pipeline stage 0--and resets the _prev_transform to
-//               be the same as _transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Visits all nodes in the world with the _dirty_prev_transform flag--that is,
+ * all nodes whose _prev_transform is different from the _transform in
+ * pipeline stage 0--and resets the _prev_transform to be the same as
+ * _transform.
+ */
 void PandaNode::
 reset_all_prev_transform(Thread *current_thread) {
   nassertv(current_thread->get_pipeline_stage() == 0);
@@ -1386,23 +1207,19 @@ reset_all_prev_transform(Thread *current_thread) {
   _dirty_prev_transforms._next = &_dirty_prev_transforms;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_tag
-//       Access: Published
-//  Description: Associates a user-defined value with a user-defined
-//               key which is stored on the node.  This value has no
-//               meaning to Panda; but it is stored indefinitely on
-//               the node until it is requested again.
-//
-//               Each unique key stores a different string value.
-//               There is no effective limit on the number of
-//               different keys that may be stored or on the length of
-//               any one key's value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates a user-defined value with a user-defined key which is stored on
+ * the node.  This value has no meaning to Panda; but it is stored
+ * indefinitely on the node until it is requested again.
+ *
+ * Each unique key stores a different string value.  There is no effective
+ * limit on the number of different keys that may be stored or on the length
+ * of any one key's value.
+ */
 void PandaNode::
 set_tag(const string &key, const string &value, Thread *current_thread) {
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_tag_data[key] = value;
@@ -1412,13 +1229,10 @@ set_tag(const string &key, const string &value, Thread *current_thread) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_tag
-//       Access: Published
-//  Description: Removes the value defined for this key on this
-//               particular node.  After a call to clear_tag(),
-//               has_tag() will return false for the indicated key.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the value defined for this key on this particular node.  After a
+ * call to clear_tag(), has_tag() will return false for the indicated key.
+ */
 void PandaNode::
 clear_tag(const string &key, Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
@@ -1430,14 +1244,11 @@ clear_tag(const string &key, Thread *current_thread) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::copy_tags
-//       Access: Published
-//  Description: Copies all of the tags stored on the other node onto
-//               this node.  If a particular tag exists on both nodes,
-//               the contents of this node's value is replaced by that
-//               of the other.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies all of the tags stored on the other node onto this node.  If a
+ * particular tag exists on both nodes, the contents of this node's value is
+ * replaced by that of the other.
+ */
 void PandaNode::
 copy_tags(PandaNode *other) {
   if (other == this) {
@@ -1445,8 +1256,8 @@ copy_tags(PandaNode *other) {
     return;
   }
 
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
@@ -1473,10 +1284,9 @@ copy_tags(PandaNode *other) {
       result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
 
       if (!result.second) {
-        // The insert was unsuccessful; that means the key was already
-        // present in the map.  In this case, we should decrement the
-        // original value's reference count and replace it with the new
-        // object.
+        // The insert was unsuccessful; that means the key was already present
+        // in the map.  In this case, we should decrement the original value's
+        // reference count and replace it with the new object.
         PythonTagData::iterator wpti = result.first;
         PyObject *old_value = (*wpti).second;
         Py_XDECREF(old_value);
@@ -1489,18 +1299,15 @@ copy_tags(PandaNode *other) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::list_tags
-//       Access: Published
-//  Description: Writes a list of all the tag keys assigned to the
-//               node to the indicated stream.  Writes one instance of
-//               the separator following each key (but does not write
-//               a terminal separator).  The value associated with
-//               each key is not written.
-//
-//               This is mainly for the benefit of the realtime user,
-//               to see the list of all of the associated tag keys.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of all the tag keys assigned to the node to the indicated
+ * stream.  Writes one instance of the separator following each key (but does
+ * not write a terminal separator).  The value associated with each key is not
+ * written.
+ *
+ * This is mainly for the benefit of the realtime user, to see the list of all
+ * of the associated tag keys.
+ */
 void PandaNode::
 list_tags(ostream &out, const string &separator) const {
   CDReader cdata(_cycler);
@@ -1530,16 +1337,12 @@ list_tags(ostream &out, const string &separator) const {
 #endif  // HAVE_PYTHON
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_tag_keys
-//       Access: Published
-//  Description: Fills the given vector up with the
-//               list of tags on this PandaNode.
-//
-//               It is the user's responsibility to ensure that the
-//               keys vector is empty before making this call;
-//               otherwise, the new keys will be appended to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the given vector up with the list of tags on this PandaNode.
+ *
+ * It is the user's responsibility to ensure that the keys vector is empty
+ * before making this call; otherwise, the new keys will be appended to it.
+ */
 void PandaNode::
 get_tag_keys(vector_string &keys) const {
   CDReader cdata(_cycler);
@@ -1552,17 +1355,13 @@ get_tag_keys(vector_string &keys) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::compare_tags
-//       Access: Published
-//  Description: Returns a number less than 0, 0, or greater than 0,
-//               to indicate the similarity of tags between this node
-//               and the other one.  If this returns 0, the tags are
-//               identical.  If it returns other than 0, then the tags
-//               are different; and the nodes may be sorted into a
-//               consistent (but arbitrary) ordering based on this
-//               number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than 0, 0, or greater than 0, to indicate the
+ * similarity of tags between this node and the other one.  If this returns 0,
+ * the tags are identical.  If it returns other than 0, then the tags are
+ * different; and the nodes may be sorted into a consistent (but arbitrary)
+ * ordering based on this number.
+ */
 int PandaNode::
 compare_tags(const PandaNode *other) const {
   CDReader cdata(_cycler);
@@ -1642,15 +1441,12 @@ compare_tags(const PandaNode *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::copy_all_properties
-//       Access: Published
-//  Description: Copies the TransformState, RenderState,
-//               RenderEffects, tags, Python tags, and the show/hide
-//               state from the other node onto this one.  Typically
-//               this is used to prepare a node to replace another
-//               node in the scene graph (also see replace_node()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the TransformState, RenderState, RenderEffects, tags, Python tags,
+ * and the show/hide state from the other node onto this one.  Typically this
+ * is used to prepare a node to replace another node in the scene graph (also
+ * see replace_node()).
+ */
 void PandaNode::
 copy_all_properties(PandaNode *other) {
   if (other == this) {
@@ -1687,9 +1483,8 @@ copy_all_properties(PandaNode *other) {
     cdataw->_draw_control_mask = cdatar->_draw_control_mask;
     cdataw->_draw_show_mask = cdatar->_draw_show_mask;
 
-    // The collide mask becomes the union of the two masks.  This is
-    // important to preserve properties such as the default GeomNode
-    // bitmask.
+    // The collide mask becomes the union of the two masks.  This is important
+    // to preserve properties such as the default GeomNode bitmask.
     cdataw->_into_collide_mask |= cdatar->_into_collide_mask;
 
     TagData::const_iterator ti;
@@ -1712,10 +1507,9 @@ copy_all_properties(PandaNode *other) {
       result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
 
       if (!result.second) {
-        // The insert was unsuccessful; that means the key was already
-        // present in the map.  In this case, we should decrement the
-        // original value's reference count and replace it with the new
-        // object.
+        // The insert was unsuccessful; that means the key was already present
+        // in the map.  In this case, we should decrement the original value's
+        // reference count and replace it with the new object.
         PythonTagData::iterator wpti = result.first;
         PyObject *old_value = (*wpti).second;
         Py_XDECREF(old_value);
@@ -1754,36 +1548,32 @@ copy_all_properties(PandaNode *other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::replace_node
-//       Access: Published
-//  Description: Inserts this node into the scene graph in place of
-//               the other one, and removes the other node.  All scene
-//               graph attributes (TransformState, RenderState, etc.)
-//               are copied to this node.
-//
-//               All children are moved to this node, and removed from
-//               the old node.  The new node is left in the same place
-//               in the old node's parent's list of children.
-//
-//               Even NodePaths that reference the old node are
-//               updated in-place to reference the new node instead.
-//
-//               This method is intended to be used to replace a node
-//               of a given type in the scene graph with a node of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts this node into the scene graph in place of the other one, and
+ * removes the other node.  All scene graph attributes (TransformState,
+ * RenderState, etc.) are copied to this node.
+ *
+ * All children are moved to this node, and removed from the old node.  The
+ * new node is left in the same place in the old node's parent's list of
+ * children.
+ *
+ * Even NodePaths that reference the old node are updated in-place to
+ * reference the new node instead.
+ *
+ * This method is intended to be used to replace a node of a given type in the
+ * scene graph with a node of a different type.
+ */
 void PandaNode::
 replace_node(PandaNode *other) {
-  //  nassertv(Thread::get_current_pipeline_stage() == 0);
+  // nassertv(Thread::get_current_pipeline_stage() == 0);
 
   if (other == this) {
     // Trivial.
     return;
   }
 
-  // Make sure the other node is not destructed during the
-  // execution of this method.
+  // Make sure the other node is not destructed during the execution of this
+  // method.
   PT(PandaNode) keep_other = other;
 
   // Get all the important scene graph properties.
@@ -1810,8 +1600,7 @@ replace_node(PandaNode *other) {
   for (int i = 0; i < other_parents.get_num_parents(); ++i) {
     PandaNode *parent = other_parents.get_parent(i);
     if (find_parent(parent) != -1) {
-      // This node was already a child of this parent; don't change
-      // it.
+      // This node was already a child of this parent; don't change it.
       parent->remove_child(other);
     } else {
       // This node was not yet a child of this parent; now it is.
@@ -1820,25 +1609,19 @@ replace_node(PandaNode *other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_unexpected_change
-//       Access: Published
-//  Description: Sets one or more of the PandaNode::UnexpectedChange
-//               bits on, indicating that the corresponding property
-//               should not change again on this node.  Once one of
-//               these bits has been set, if the property changes, an
-//               assertion failure will be raised, which is designed
-//               to assist the developer in identifying the
-//               troublesome code that modified the property
-//               unexpectedly.
-//
-//               The input parameter is the union of bits that are to
-//               be set.  To clear these bits later, use
-//               clear_unexpected_change().
-//
-//               Since this is a developer debugging tool only, this
-//               function does nothing in a production (NDEBUG) build.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets one or more of the PandaNode::UnexpectedChange bits on, indicating
+ * that the corresponding property should not change again on this node.  Once
+ * one of these bits has been set, if the property changes, an assertion
+ * failure will be raised, which is designed to assist the developer in
+ * identifying the troublesome code that modified the property unexpectedly.
+ *
+ * The input parameter is the union of bits that are to be set.  To clear
+ * these bits later, use clear_unexpected_change().
+ *
+ * Since this is a developer debugging tool only, this function does nothing
+ * in a production (NDEBUG) build.
+ */
 void PandaNode::
 set_unexpected_change(unsigned int flags) {
 #ifndef NDEBUG
@@ -1846,20 +1629,15 @@ set_unexpected_change(unsigned int flags) {
 #endif // !NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_unexpected_change
-//       Access: Published
-//  Description: Returns nonzero if any of the bits in the input
-//               parameter are set on this node, or zero if none of
-//               them are set.  More specifically, this returns the
-//               particular set of bits (masked by the input
-//               parameter) that have been set on this node.  See
-//               set_unexpected_change().
-//
-//               Since this is a developer debugging tool only, this
-//               function always returns zero in a production (NDEBUG)
-//               build.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns nonzero if any of the bits in the input parameter are set on this
+ * node, or zero if none of them are set.  More specifically, this returns the
+ * particular set of bits (masked by the input parameter) that have been set
+ * on this node.  See set_unexpected_change().
+ *
+ * Since this is a developer debugging tool only, this function always returns
+ * zero in a production (NDEBUG) build.
+ */
 unsigned int PandaNode::
 get_unexpected_change(unsigned int flags) const {
 #ifndef NDEBUG
@@ -1869,20 +1647,16 @@ get_unexpected_change(unsigned int flags) const {
 #endif // !NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_unexpected_change
-//       Access: Published
-//  Description: Sets one or more of the PandaNode::UnexpectedChange
-//               bits off, indicating that the corresponding property
-//               may once again change on this node.  See
-//               set_unexpected_change().
-//
-//               The input parameter is the union of bits that are to
-//               be cleared.
-//
-//               Since this is a developer debugging tool only, this
-//               function does nothing in a production (NDEBUG) build.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets one or more of the PandaNode::UnexpectedChange bits off, indicating
+ * that the corresponding property may once again change on this node.  See
+ * set_unexpected_change().
+ *
+ * The input parameter is the union of bits that are to be cleared.
+ *
+ * Since this is a developer debugging tool only, this function does nothing
+ * in a production (NDEBUG) build.
+ */
 void PandaNode::
 clear_unexpected_change(unsigned int flags) {
 #ifndef NDEBUG
@@ -1890,44 +1664,36 @@ clear_unexpected_change(unsigned int flags) {
 #endif // !NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::adjust_draw_mask
-//       Access: Published
-//  Description: Adjusts the hide/show bits of this particular node.
-//
-//               These three parameters can be used to adjust the
-//               _draw_control_mask and _draw_show_mask independently,
-//               which work together to provide per-camera visibility
-//               for the node and its descendents.
-//
-//               _draw_control_mask indicates the bits in
-//               _draw_show_mask that are significant.  Each different
-//               bit corresponds to a different camera (and these bits
-//               are assigned via Camera::set_camera_mask()).
-//
-//               Where _draw_control_mask has a 1 bit, a 1 bit in
-//               _draw_show_mask indicates the node is visible to that
-//               camera, and a 0 bit indicates the node is hidden to
-//               that camera.  Where _draw_control_mask is 0, the node
-//               is hidden only if a parent node is hidden.
-//
-//               The meaning of the three parameters is as follows:
-//
-//               * Wherever show_mask is 1, _draw_show_mask and
-//               _draw_control_mask will be set 1.  Thus, show_mask
-//               indicates the set of cameras to which the node should
-//               be shown.
-//
-//               * Wherever hide_mask is 1, _draw_show_mask will be
-//               set 0 and _draw_control_mask will be set 1.  Thus,
-//               hide_mask indicates the set of cameras from which the
-//               node should be hidden.
-//
-//               * Wherever clear_mask is 1, _draw_control_mask will
-//               be set 0.  Thus, clear_mask indicates the set of
-//               cameras from which the hidden state should be
-//               inherited from a parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the hide/show bits of this particular node.
+ *
+ * These three parameters can be used to adjust the _draw_control_mask and
+ * _draw_show_mask independently, which work together to provide per-camera
+ * visibility for the node and its descendents.
+ *
+ * _draw_control_mask indicates the bits in _draw_show_mask that are
+ * significant.  Each different bit corresponds to a different camera (and
+ * these bits are assigned via Camera::set_camera_mask()).
+ *
+ * Where _draw_control_mask has a 1 bit, a 1 bit in _draw_show_mask indicates
+ * the node is visible to that camera, and a 0 bit indicates the node is
+ * hidden to that camera.  Where _draw_control_mask is 0, the node is hidden
+ * only if a parent node is hidden.
+ *
+ * The meaning of the three parameters is as follows:
+ *
+ * * Wherever show_mask is 1, _draw_show_mask and _draw_control_mask will be
+ * set 1.  Thus, show_mask indicates the set of cameras to which the node
+ * should be shown.
+ *
+ * * Wherever hide_mask is 1, _draw_show_mask will be set 0 and
+ * _draw_control_mask will be set 1.  Thus, hide_mask indicates the set of
+ * cameras from which the node should be hidden.
+ *
+ * * Wherever clear_mask is 1, _draw_control_mask will be set 0.  Thus,
+ * clear_mask indicates the set of cameras from which the hidden state should
+ * be inherited from a parent.
+ */
 void PandaNode::
 adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
   bool any_changed = false;
@@ -1958,18 +1724,14 @@ adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_net_draw_control_mask
-//       Access: Published
-//  Description: Returns the set of bits in get_net_draw_show_mask()
-//               that have been explicitly set via adjust_draw_mask(),
-//               rather than implicitly inherited.
-//
-//               A 1 bit in any position of this mask indicates that
-//               (a) this node has renderable children, and (b) some
-//               child of this node has made an explicit hide() or
-//               show_through() call for the corresponding bit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of bits in get_net_draw_show_mask() that have been
+ * explicitly set via adjust_draw_mask(), rather than implicitly inherited.
+ *
+ * A 1 bit in any position of this mask indicates that (a) this node has
+ * renderable children, and (b) some child of this node has made an explicit
+ * hide() or show_through() call for the corresponding bit.
+ */
 DrawMask PandaNode::
 get_net_draw_control_mask() const {
   Thread *current_thread = Thread::get_current_thread();
@@ -1985,22 +1747,18 @@ get_net_draw_control_mask() const {
   return cdata->_net_draw_control_mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_net_draw_show_mask
-//       Access: Published
-//  Description: Returns the union of all draw_show_mask values--of
-//               renderable nodes only--at this level and below.  If
-//               any bit in this mask is 0, there is no reason to
-//               traverse below this node for a camera with the
-//               corresponding camera_mask.
-//
-//               The bits in this mask that do not correspond to a 1
-//               bit in the net_draw_control_mask are meaningless (and
-//               will be set to 1).  For bits that *do* correspond to
-//               a 1 bit in the net_draw_control_mask, a 1 bit
-//               indicates that at least one child should be visible,
-//               while a 0 bit indicates that all children are hidden.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of all draw_show_mask values--of renderable nodes only--
+ * at this level and below.  If any bit in this mask is 0, there is no reason
+ * to traverse below this node for a camera with the corresponding
+ * camera_mask.
+ *
+ * The bits in this mask that do not correspond to a 1 bit in the
+ * net_draw_control_mask are meaningless (and will be set to 1).  For bits
+ * that *do* correspond to a 1 bit in the net_draw_control_mask, a 1 bit
+ * indicates that at least one child should be visible, while a 0 bit
+ * indicates that all children are hidden.
+ */
 DrawMask PandaNode::
 get_net_draw_show_mask() const {
   Thread *current_thread = Thread::get_current_thread();
@@ -2016,23 +1774,18 @@ get_net_draw_show_mask() const {
   return cdata->_net_draw_show_mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_into_collide_mask
-//       Access: Published
-//  Description: Sets the "into" CollideMask.
-//
-//               This specifies the set of bits that must be shared
-//               with a CollisionNode's "from" CollideMask in order
-//               for the CollisionNode to detect a collision with this
-//               particular node.
-//
-//               The actual CollideMask that will be set is masked by
-//               the return value from get_legal_collide_mask().
-//               Thus, the into_collide_mask cannot be set to anything
-//               other than nonzero except for those types of nodes
-//               that can be collided into, such as CollisionNodes and
-//               GeomNodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the "into" CollideMask.
+ *
+ * This specifies the set of bits that must be shared with a CollisionNode's
+ * "from" CollideMask in order for the CollisionNode to detect a collision
+ * with this particular node.
+ *
+ * The actual CollideMask that will be set is masked by the return value from
+ * get_legal_collide_mask(). Thus, the into_collide_mask cannot be set to
+ * anything other than nonzero except for those types of nodes that can be
+ * collided into, such as CollisionNodes and GeomNodes.
+ */
 void PandaNode::
 set_into_collide_mask(CollideMask mask) {
   mask &= get_legal_collide_mask();
@@ -2054,28 +1807,23 @@ set_into_collide_mask(CollideMask mask) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_legal_collide_mask
-//       Access: Published, Virtual
-//  Description: Returns the subset of CollideMask bits that may be
-//               set for this particular type of PandaNode.  For most
-//               nodes, this is 0; it doesn't make sense to set a
-//               CollideMask for most kinds of nodes.
-//
-//               For nodes that can be collided with, such as GeomNode
-//               and CollisionNode, this returns all bits on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the subset of CollideMask bits that may be set for this particular
+ * type of PandaNode.  For most nodes, this is 0; it doesn't make sense to set
+ * a CollideMask for most kinds of nodes.
+ *
+ * For nodes that can be collided with, such as GeomNode and CollisionNode,
+ * this returns all bits on.
+ */
 CollideMask PandaNode::
 get_legal_collide_mask() const {
   return CollideMask::all_off();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_net_collide_mask
-//       Access: Published
-//  Description: Returns the union of all into_collide_mask() values
-//               set at CollisionNodes at this level and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of all into_collide_mask() values set at CollisionNodes
+ * at this level and below.
+ */
 CollideMask PandaNode::
 get_net_collide_mask(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -2090,13 +1838,10 @@ get_net_collide_mask(Thread *current_thread) const {
   return cdata->_net_collide_mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_off_clip_planes
-//       Access: Published
-//  Description: Returns a ClipPlaneAttrib which represents the union
-//               of all of the clip planes that have been turned *off*
-//               at this level and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a ClipPlaneAttrib which represents the union of all of the clip
+ * planes that have been turned *off* at this level and below.
+ */
 CPT(RenderAttrib) PandaNode::
 get_off_clip_planes(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -2111,21 +1856,16 @@ get_off_clip_planes(Thread *current_thread) const {
   return cdata->_off_clip_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::prepare_scene
-//       Access: Published
-//  Description: Walks through the scene graph beginning at this node,
-//               and does whatever initialization is required to
-//               render the scene properly with the indicated GSG.  It
-//               is not strictly necessary to call this, since the GSG
-//               will initialize itself when the scene is rendered,
-//               but this may take some of the overhead away from that
-//               process.
-//
-//               In particular, this will ensure that textures and
-//               vertex buffers within the scene are loaded into
-//               graphics memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the scene graph beginning at this node, and does whatever
+ * initialization is required to render the scene properly with the indicated
+ * GSG.  It is not strictly necessary to call this, since the GSG will
+ * initialize itself when the scene is rendered, but this may take some of the
+ * overhead away from that process.
+ *
+ * In particular, this will ensure that textures and vertex buffers within the
+ * scene are loaded into graphics memory.
+ */
 void PandaNode::
 prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state) {
   GeomTransformer transformer;
@@ -2133,35 +1873,28 @@ prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state) {
   r_prepare_scene(gsg, node_state, transformer, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::is_scene_root
-//       Access: Published
-//  Description: Returns true if this particular node is known to be
-//               the render root of some active DisplayRegion
-//               associated with the global GraphicsEngine, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular node is known to be the render root of some
+ * active DisplayRegion associated with the global GraphicsEngine, false
+ * otherwise.
+ */
 bool PandaNode::
 is_scene_root() const {
-  // This function pointer has to be filled in when the global
-  // GraphicsEngine is created, because we can't link with the
-  // GraphicsEngine functions directly.
+  // This function pointer has to be filled in when the global GraphicsEngine
+  // is created, because we can't link with the GraphicsEngine functions
+  // directly.
   if (_scene_root_func != (SceneRootFunc *)NULL) {
     return (*_scene_root_func)(this);
   }
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::is_under_scene_root
-//       Access: Published
-//  Description: Returns true if this particular node is in a live
-//               scene graph: that is, it is a child or descendent of
-//               a node that is itself a scene root.  If this is true,
-//               this node may potentially be traversed by the render
-//               traverser.  Stashed nodes don't count for this
-//               purpose, but hidden nodes do.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular node is in a live scene graph: that is, it
+ * is a child or descendent of a node that is itself a scene root.  If this is
+ * true, this node may potentially be traversed by the render traverser.
+ * Stashed nodes don't count for this purpose, but hidden nodes do.
+ */
 bool PandaNode::
 is_under_scene_root() const {
   if (is_scene_root()) {
@@ -2180,21 +1913,17 @@ is_under_scene_root() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PandaNode::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PandaNode::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
@@ -2238,25 +1967,20 @@ write(ostream &out, int indent_level) const {
   out << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_bounds_type
-//       Access: Published
-//  Description: Specifies the desired type of bounding volume that
-//               will be created for this node.  This is normally
-//               BoundingVolume::BT_default, which means to set the
-//               type according to the config variable "bounds-type".
-//
-//               If this is BT_sphere or BT_box, a BoundingSphere or
-//               BoundingBox is explicitly created.  If it is BT_best,
-//               the appropriate type to best enclose the node's
-//               children is created.
-//
-//               This affects the bounding volume returned by
-//               get_bounds(), which is not exactly the same bounding
-//               volume modified by set_bounds(), because a new
-//               bounding volume has to be created that includes this
-//               node and all of its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the desired type of bounding volume that will be created for this
+ * node.  This is normally BoundingVolume::BT_default, which means to set the
+ * type according to the config variable "bounds-type".
+ *
+ * If this is BT_sphere or BT_box, a BoundingSphere or BoundingBox is
+ * explicitly created.  If it is BT_best, the appropriate type to best enclose
+ * the node's children is created.
+ *
+ * This affects the bounding volume returned by get_bounds(), which is not
+ * exactly the same bounding volume modified by set_bounds(), because a new
+ * bounding volume has to be created that includes this node and all of its
+ * children.
+ */
 void PandaNode::
 set_bounds_type(BoundingVolume::BoundsType bounds_type) {
   Thread *current_thread = Thread::get_current_thread();
@@ -2265,41 +1989,33 @@ set_bounds_type(BoundingVolume::BoundsType bounds_type) {
     cdata->_bounds_type = bounds_type;
     mark_bounds_stale(pipeline_stage, current_thread);
 
-    // GeomNodes, CollisionNodes, and PGItems all have an internal
-    // bounds that may need to be updated when the bounds_type
-    // changes.
+    // GeomNodes, CollisionNodes, and PGItems all have an internal bounds that
+    // may need to be updated when the bounds_type changes.
     mark_internal_bounds_stale(pipeline_stage, current_thread);
     mark_bam_modified();
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_bounds_type
-//       Access: Published
-//  Description: Returns the bounding volume type set with
-//               set_bounds_type().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the bounding volume type set with set_bounds_type().
+ */
 BoundingVolume::BoundsType PandaNode::
 get_bounds_type() const {
   CDReader cdata(_cycler);
   return cdata->_bounds_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_bounds
-//       Access: Published
-//  Description: Resets the bounding volume so that it is the
-//               indicated volume.  When it is explicitly set, the
-//               bounding volume will no longer be automatically
-//               computed according to the contents of the node
-//               itself, for nodes like GeomNodes and TextNodes that
-//               contain substance (but the bounding volume will still
-//               be automatically expanded to include its children).
-//
-//               Call clear_bounds() if you would like to return the
-//               bounding volume to its default behavior later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the bounding volume so that it is the indicated volume.  When it is
+ * explicitly set, the bounding volume will no longer be automatically
+ * computed according to the contents of the node itself, for nodes like
+ * GeomNodes and TextNodes that contain substance (but the bounding volume
+ * will still be automatically expanded to include its children).
+ *
+ * Call clear_bounds() if you would like to return the bounding volume to its
+ * default behavior later.
+ */
 void PandaNode::
 set_bounds(const BoundingVolume *volume) {
   Thread *current_thread = Thread::get_current_thread();
@@ -2316,11 +2032,9 @@ set_bounds(const BoundingVolume *volume) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_bound
-//       Access: Published
-//  Description: Deprecated.  Use set_bounds() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated.  Use set_bounds() instead.
+ */
 void PandaNode::
 set_bound(const BoundingVolume *volume) {
   pgraph_cat.warning()
@@ -2328,14 +2042,11 @@ set_bound(const BoundingVolume *volume) {
   set_bounds(volume);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_bounds
-//       Access: Published
-//  Description: Returns the external bounding volume of this node: a
-//               bounding volume that contains the user bounding
-//               volume, the internal bounding volume, and all of the
-//               children's bounding volumes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the external bounding volume of this node: a bounding volume that
+ * contains the user bounding volume, the internal bounding volume, and all of
+ * the children's bounding volumes.
+ */
 CPT(BoundingVolume) PandaNode::
 get_bounds(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -2354,22 +2065,17 @@ get_bounds(Thread *current_thread) const {
   return cdata->_external_bounds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_bounds
-//       Access: Published
-//  Description: This flavor of get_bounds() return the external
-//               bounding volume, and also fills in seq with the
-//               bounding volume's current sequence number.  When this
-//               sequence number changes, it indicates that the
-//               bounding volume might have changed, e.g. because some
-//               nested child's bounding volume has changed.
-//
-//               Although this might occasionally increment without
-//               changing the bounding volume, the bounding volume
-//               will never change without incrementing this counter,
-//               so as long as this counter remains unchanged you can
-//               be confident the bounding volume is also unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of get_bounds() return the external bounding volume, and also
+ * fills in seq with the bounding volume's current sequence number.  When this
+ * sequence number changes, it indicates that the bounding volume might have
+ * changed, e.g.  because some nested child's bounding volume has changed.
+ *
+ * Although this might occasionally increment without changing the bounding
+ * volume, the bounding volume will never change without incrementing this
+ * counter, so as long as this counter remains unchanged you can be confident
+ * the bounding volume is also unchanged.
+ */
 CPT(BoundingVolume) PandaNode::
 get_bounds(UpdateSeq &seq, Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -2390,19 +2096,15 @@ get_bounds(UpdateSeq &seq, Thread *current_thread) const {
   return cdata->_external_bounds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_nested_vertices
-//       Access: Published
-//  Description: Returns the total number of vertices that will be
-//               rendered by this node and all of its descendents.
-//
-//               This is not necessarily an accurate count of vertices
-//               that will actually be rendered, since this will
-//               include all vertices of all LOD's, and it will also
-//               include hidden nodes.  It may also omit or only
-//               approximate certain kinds of dynamic geometry.
-//               However, it will not include stashed nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of vertices that will be rendered by this node and
+ * all of its descendents.
+ *
+ * This is not necessarily an accurate count of vertices that will actually be
+ * rendered, since this will include all vertices of all LOD's, and it will
+ * also include hidden nodes.  It may also omit or only approximate certain
+ * kinds of dynamic geometry.  However, it will not include stashed nodes.
+ */
 int PandaNode::
 get_nested_vertices(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -2421,24 +2123,19 @@ get_nested_vertices(Thread *current_thread) const {
   return cdata->_nested_vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::mark_bounds_stale
-//       Access: Published
-//  Description: Indicates that the bounding volume, or something that
-//               influences the bounding volume (or any of the other
-//               things stored in CData, like net_collide_mask),
-//               may have changed for this node, and that it must be
-//               recomputed.
-//
-//               With no parameters, this means to iterate through all
-//               stages including and upstream of the current pipeline
-//               stage.
-//
-//               This method is intended for internal use; usually it
-//               is not necessary for a user to call this directly.
-//               It will be called automatically by derived classes
-//               when appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the bounding volume, or something that influences the
+ * bounding volume (or any of the other things stored in CData, like
+ * net_collide_mask), may have changed for this node, and that it must be
+ * recomputed.
+ *
+ * With no parameters, this means to iterate through all stages including and
+ * upstream of the current pipeline stage.
+ *
+ * This method is intended for internal use; usually it is not necessary for a
+ * user to call this directly.  It will be called automatically by derived
+ * classes when appropriate.
+ */
 void PandaNode::
 mark_bounds_stale(Thread *current_thread) const {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
@@ -2447,22 +2144,17 @@ mark_bounds_stale(Thread *current_thread) const {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::mark_internal_bounds_stale
-//       Access: Published
-//  Description: Should be called by a derived class to mark the
-//               internal bounding volume stale, so that
-//               compute_internal_bounds() will be called when the
-//               bounding volume is next requested.
-//
-//               With no parameters, this means to iterate through all
-//               stages including and upstream of the current pipeline
-//               stage.
-//
-//               It is normally not necessary to call this method
-//               directly; each node should be responsible for calling
-//               it when its internals have changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called by a derived class to mark the internal bounding volume
+ * stale, so that compute_internal_bounds() will be called when the bounding
+ * volume is next requested.
+ *
+ * With no parameters, this means to iterate through all stages including and
+ * upstream of the current pipeline stage.
+ *
+ * It is normally not necessary to call this method directly; each node should
+ * be responsible for calling it when its internals have changed.
+ */
 void PandaNode::
 mark_internal_bounds_stale(Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
@@ -2471,89 +2163,71 @@ mark_internal_bounds_stale(Thread *current_thread) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::is_geom_node
-//       Access: Published, Virtual
-//  Description: A simple downcast check.  Returns true if this kind
-//               of node happens to inherit from GeomNode, false
-//               otherwise.
-//
-//               This is provided as a a faster alternative to calling
-//               is_of_type(GeomNode::get_class_type()), since this
-//               test is so important to rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple downcast check.  Returns true if this kind of node happens to
+ * inherit from GeomNode, false otherwise.
+ *
+ * This is provided as a a faster alternative to calling
+ * is_of_type(GeomNode::get_class_type()), since this test is so important to
+ * rendering.
+ */
 bool PandaNode::
 is_geom_node() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::is_lod_node
-//       Access: Published, Virtual
-//  Description: A simple downcast check.  Returns true if this kind
-//               of node happens to inherit from LODNode, false
-//               otherwise.
-//
-//               This is provided as a a faster alternative to calling
-//               is_of_type(LODNode::get_class_type()).
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple downcast check.  Returns true if this kind of node happens to
+ * inherit from LODNode, false otherwise.
+ *
+ * This is provided as a a faster alternative to calling
+ * is_of_type(LODNode::get_class_type()).
+ */
 bool PandaNode::
 is_lod_node() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::is_collision_node
-//       Access: Published, Virtual
-//  Description: A simple downcast check.  Returns true if this kind
-//               of node happens to inherit from CollisionNode, false
-//               otherwise.
-//
-//               This is provided as a a faster alternative to calling
-//               is_of_type(CollisionNode::get_class_type()).
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple downcast check.  Returns true if this kind of node happens to
+ * inherit from CollisionNode, false otherwise.
+ *
+ * This is provided as a a faster alternative to calling
+ * is_of_type(CollisionNode::get_class_type()).
+ */
 bool PandaNode::
 is_collision_node() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::as_light
-//       Access: Published, Virtual
-//  Description: Cross-casts the node to a Light pointer, if it is one
-//               of the four kinds of Light nodes, or returns NULL if
-//               it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Cross-casts the node to a Light pointer, if it is one of the four kinds of
+ * Light nodes, or returns NULL if it is not.
+ */
 Light *PandaNode::
 as_light() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::is_ambient_light
-//       Access: Published, Virtual
-//  Description: Returns true if this is an AmbientLight, false if it
-//               is not a light, or it is some other kind of light.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this is an AmbientLight, false if it is not a light, or it
+ * is some other kind of light.
+ */
 bool PandaNode::
 is_ambient_light() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::decode_from_bam_stream
-//       Access: Published, Static
-//  Description: Reads the string created by a previous call to
-//               encode_to_bam_stream(), and extracts and returns the
-//               single object on that string.  Returns NULL on error.
-//
-//               This method is intended to replace
-//               decode_raw_from_bam_stream() when you know the stream
-//               in question returns an object of type PandaNode,
-//               allowing for easier reference count management.  Note
-//               that the caller is still responsible for maintaining
-//               the reference count on the return value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the string created by a previous call to encode_to_bam_stream(), and
+ * extracts and returns the single object on that string.  Returns NULL on
+ * error.
+ *
+ * This method is intended to replace decode_raw_from_bam_stream() when you
+ * know the stream in question returns an object of type PandaNode, allowing
+ * for easier reference count management.  Note that the caller is still
+ * responsible for maintaining the reference count on the return value.
+ */
 PT(PandaNode) PandaNode::
 decode_from_bam_stream(const string &data, BamReader *reader) {
   TypedWritable *object;
@@ -2566,13 +2240,10 @@ decode_from_bam_stream(const string &data, BamReader *reader) {
   return DCAST(PandaNode, object);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_internal_bounds
-//       Access: Protected
-//  Description: Returns the node's internal bounding volume.  This is
-//               the bounding volume around the node alone, without
-//               including children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the node's internal bounding volume.  This is the bounding volume
+ * around the node alone, without including children.
+ */
 CPT(BoundingVolume) PandaNode::
 get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   while (true) {
@@ -2590,8 +2261,8 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
       mark = cdata->_internal_bounds_mark;
     }
 
-    // First, call compute_internal_bounds without acquiring the lock.
-    // This avoids a deadlock condition.
+    // First, call compute_internal_bounds without acquiring the lock.  This
+    // avoids a deadlock condition.
     CPT(BoundingVolume) internal_bounds;
     int internal_vertices;
     compute_internal_bounds(internal_bounds, internal_vertices,
@@ -2608,22 +2279,18 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
       return cdataw->_internal_bounds;
     }
 
-    // Dang, someone in another thread incremented
-    // _internal_bounds_mark while we weren't holding the lock.  That
-    // means we need to go back and do it again.
+    // Dang, someone in another thread incremented _internal_bounds_mark while
+    // we weren't holding the lock.  That means we need to go back and do it
+    // again.
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_internal_vertices
-//       Access: Protected
-//  Description: Returns the total number of vertices that will be
-//               rendered by this particular node alone, not
-//               accounting for its children.
-//
-//               This may not include all vertices for certain dynamic
-//               effects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of vertices that will be rendered by this
+ * particular node alone, not accounting for its children.
+ *
+ * This may not include all vertices for certain dynamic effects.
+ */
 int PandaNode::
 get_internal_vertices(int pipeline_stage, Thread *current_thread) const {
   while (true) {
@@ -2637,8 +2304,8 @@ get_internal_vertices(int pipeline_stage, Thread *current_thread) const {
       mark = cdata->_internal_bounds_mark;
     }
 
-    // First, call compute_internal_bounds without acquiring the lock.
-    // This avoids a deadlock condition.
+    // First, call compute_internal_bounds without acquiring the lock.  This
+    // avoids a deadlock condition.
     CPT(BoundingVolume) internal_bounds;
     int internal_vertices;
     compute_internal_bounds(internal_bounds, internal_vertices,
@@ -2655,21 +2322,18 @@ get_internal_vertices(int pipeline_stage, Thread *current_thread) const {
       return cdataw->_internal_vertices;
     }
 
-    // Dang, someone in another thread incremented
-    // _internal_bounds_mark while we weren't holding the lock.  That
-    // means we need to go back and do it again.
+    // Dang, someone in another thread incremented _internal_bounds_mark while
+    // we weren't holding the lock.  That means we need to go back and do it
+    // again.
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_internal_bounds
-//       Access: Protected
-//  Description: This is provided as an alternate way for a node to
-//               set its own internal bounds, rather than overloading
-//               compute_internal_bounds().  If this method is called,
-//               the internal bounding volume will immediately be set
-//               to the indicated pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is provided as an alternate way for a node to set its own internal
+ * bounds, rather than overloading compute_internal_bounds().  If this method
+ * is called, the internal bounding volume will immediately be set to the
+ * indicated pointer.
+ */
 void PandaNode::
 set_internal_bounds(const BoundingVolume *volume) {
   Thread *current_thread = Thread::get_current_thread();
@@ -2683,17 +2347,13 @@ set_internal_bounds(const BoundingVolume *volume) {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::force_bounds_stale
-//       Access: Protected
-//  Description: Similar to mark_bounds_stale(), except that the
-//               parents of this node marked stale even if this node
-//               was already considered stale.
-//
-//               With no parameters, this means to iterate through all
-//               stages including and upstream of the current pipeline
-//               stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to mark_bounds_stale(), except that the parents of this node marked
+ * stale even if this node was already considered stale.
+ *
+ * With no parameters, this means to iterate through all stages including and
+ * upstream of the current pipeline stage.
+ */
 void PandaNode::
 force_bounds_stale(Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
@@ -2702,13 +2362,10 @@ force_bounds_stale(Thread *current_thread) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::force_bounds_stale
-//       Access: Protected
-//  Description: Similar to mark_bounds_stale(), except that the
-//               parents of this node marked stale even if this node
-//               was already considered stale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to mark_bounds_stale(), except that the parents of this node marked
+ * stale even if this node was already considered stale.
+ */
 void PandaNode::
 force_bounds_stale(int pipeline_stage, Thread *current_thread) {
   {
@@ -2717,13 +2374,13 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
     mark_bam_modified();
 
     // It is important that we allow this lock to be dropped before we
-    // continue up the graph; otherwise, we risk deadlock from another
-    // thread walking down the graph.
+    // continue up the graph; otherwise, we risk deadlock from another thread
+    // walking down the graph.
   }
 
-  // It is similarly important that we use get_parents() here to copy
-  // the parents list, instead of keeping the lock open while we walk
-  // through the parents list directly on the node.
+  // It is similarly important that we use get_parents() here to copy the
+  // parents list, instead of keeping the lock open while we walk through the
+  // parents list directly on the node.
   Parents parents;
   {
     CDStageReader cdata(_cycler, pipeline_stage, current_thread);
@@ -2736,12 +2393,10 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::r_mark_geom_bounds_stale
-//       Access: Protected, Virtual
-//  Description: Recursively calls Geom::mark_bounds_stale() on every
-//               Geom at this node and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively calls Geom::mark_bounds_stale() on every Geom at this node and
+ * below.
+ */
 void PandaNode::
 r_mark_geom_bounds_stale(Thread *current_thread) {
   Children children = get_children(current_thread);
@@ -2759,14 +2414,11 @@ r_mark_geom_bounds_stale(Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated BoundingVolume that
-//               represents the internal contents of the node.  Should
-//               be overridden by PandaNode classes that contain
-//               something internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated BoundingVolume that represents the internal
+ * contents of the node.  Should be overridden by PandaNode classes that
+ * contain something internally.
+ */
 void PandaNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -2776,83 +2428,63 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::parents_changed
-//       Access: Protected, Virtual
-//  Description: Called after a scene graph update that either adds or
-//               remove parents from this node, this just provides a
-//               hook for derived PandaNode objects that need to
-//               update themselves based on the set of parents the
-//               node has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a scene graph update that either adds or remove parents from
+ * this node, this just provides a hook for derived PandaNode objects that
+ * need to update themselves based on the set of parents the node has.
+ */
 void PandaNode::
 parents_changed() {
   nassertv((_unexpected_change_flags & UC_parents) == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::children_changed
-//       Access: Protected, Virtual
-//  Description: Called after a scene graph update that either adds or
-//               remove children from this node, this just provides a
-//               hook for derived PandaNode objects that need to
-//               update themselves based on the set of children the
-//               node has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a scene graph update that either adds or remove children from
+ * this node, this just provides a hook for derived PandaNode objects that
+ * need to update themselves based on the set of children the node has.
+ */
 void PandaNode::
 children_changed() {
   nassertv((_unexpected_change_flags & UC_children) == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::transform_changed
-//       Access: Protected, Virtual
-//  Description: Called after the node's transform has been changed
-//               for any reason, this just provides a hook so derived
-//               classes can do something special in this case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the node's transform has been changed for any reason, this
+ * just provides a hook so derived classes can do something special in this
+ * case.
+ */
 void PandaNode::
 transform_changed() {
   nassertv((_unexpected_change_flags & UC_transform) == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::state_changed
-//       Access: Protected, Virtual
-//  Description: Called after the node's RenderState has been changed
-//               for any reason, this just provides a hook so derived
-//               classes can do something special in this case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the node's RenderState has been changed for any reason, this
+ * just provides a hook so derived classes can do something special in this
+ * case.
+ */
 void PandaNode::
 state_changed() {
   nassertv((_unexpected_change_flags & UC_state) == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::draw_mask_changed
-//       Access: Protected, Virtual
-//  Description: Called after the node's DrawMask has been changed
-//               for any reason, this just provides a hook so derived
-//               classes can do something special in this case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the node's DrawMask has been changed for any reason, this just
+ * provides a hook so derived classes can do something special in this case.
+ */
 void PandaNode::
 draw_mask_changed() {
   nassertv((_unexpected_change_flags & UC_draw_mask) == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::r_copy_subgraph
-//       Access: Protected, Virtual
-//  Description: This is the recursive implementation of copy_subgraph().
-//               It returns a copy of the entire subgraph rooted at
-//               this node.
-//
-//               Note that it includes the parameter inst_map, which
-//               is a map type, and is not (and cannot be) exported
-//               from PANDA.DLL.  Thus, any derivative of PandaNode
-//               that is not also a member of PANDA.DLL *cannot*
-//               access this map.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the recursive implementation of copy_subgraph(). It returns a copy
+ * of the entire subgraph rooted at this node.
+ *
+ * Note that it includes the parameter inst_map, which is a map type, and is
+ * not (and cannot be) exported from PANDA.DLL.  Thus, any derivative of
+ * PandaNode that is not also a member of PANDA.DLL *cannot* access this map.
+ */
 PT(PandaNode) PandaNode::
 r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const {
   PT(PandaNode) copy = make_copy();
@@ -2870,21 +2502,16 @@ r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const 
   return copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::r_copy_children
-//       Access: Protected, Virtual
-//  Description: This is called by r_copy_subgraph(); the copy has
-//               already been made of this particular node (and this
-//               is the copy); this function's job is to copy all of
-//               the children from the original.
-//
-//               Note that it includes the parameter inst_map, which
-//               is a map type, and is not (and cannot be) exported
-//               from PANDA.DLL.  Thus, any derivative of PandaNode
-//               that is not also a member of PANDA.DLL *cannot*
-//               access this map, and probably should not even
-//               override this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by r_copy_subgraph(); the copy has already been made of this
+ * particular node (and this is the copy); this function's job is to copy all
+ * of the children from the original.
+ *
+ * Note that it includes the parameter inst_map, which is a map type, and is
+ * not (and cannot be) exported from PANDA.DLL.  Thus, any derivative of
+ * PandaNode that is not also a member of PANDA.DLL *cannot* access this map,
+ * and probably should not even override this function.
+ */
 void PandaNode::
 r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
                 Thread *current_thread) {
@@ -2896,10 +2523,10 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
     PandaNode *source_child = (*di).get_child();
     PT(PandaNode) dest_child;
 
-    // Check to see if we have already copied this child.  If we
-    // have, use the copy.  In this way, a subgraph that contains
-    // instances will be correctly duplicated into another subgraph
-    // that also contains its own instances.
+    // Check to see if we have already copied this child.  If we have, use the
+    // copy.  In this way, a subgraph that contains instances will be
+    // correctly duplicated into another subgraph that also contains its own
+    // instances.
     InstanceMap::const_iterator ci;
     ci = inst_map.find(source_child);
     if (ci != inst_map.end()) {
@@ -2913,20 +2540,16 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::r_prepare_scene
-//       Access: Public, Virtual
-//  Description: The recursive implementation of prepare_scene().
-//               Don't call this directly; call
-//               PandaNode::prepare_scene() or
-//               NodePath::prepare_scene() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of prepare_scene(). Don't call this directly;
+ * call PandaNode::prepare_scene() or NodePath::prepare_scene() instead.
+ */
 void PandaNode::
 r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
                 GeomTransformer &transformer, Thread *current_thread) {
   Children children = get_children(current_thread);
-  // We must call get_num_children() each time through the loop, in
-  // case we're running SIMPLE_THREADS and we get interrupted.
+  // We must call get_num_children() each time through the loop, in case we're
+  // running SIMPLE_THREADS and we get interrupted.
   int i;
   for (i = 0; i < children.get_num_children(); i++) {
     PandaNode *child = children.get_child(i);
@@ -2942,14 +2565,11 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_cull_callback
-//       Access: Protected
-//  Description: Intended to be called in the constructor by any
-//               subclass that defines cull_callback(), this sets up
-//               the flags to indicate that the cullback needs to be
-//               called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called in the constructor by any subclass that defines
+ * cull_callback(), this sets up the flags to indicate that the cullback needs
+ * to be called.
+ */
 void PandaNode::
 set_cull_callback() {
   Thread *current_thread = Thread::get_current_thread();
@@ -2961,11 +2581,9 @@ set_cull_callback() {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::disable_cull_callback
-//       Access: Protected
-//  Description: disables the call back
-////////////////////////////////////////////////////////////////////
+/**
+ * disables the call back
+ */
 void PandaNode::
 disable_cull_callback() {
   Thread *current_thread = Thread::get_current_thread();
@@ -2977,19 +2595,17 @@ disable_cull_callback() {
   mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::stage_remove_child
-//       Access: Private
-//  Description: The private implementation of remove_child(), for a
-//               particular pipeline stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of remove_child(), for a particular pipeline
+ * stage.
+ */
 bool PandaNode::
 stage_remove_child(PandaNode *child_node, int pipeline_stage,
                    Thread *current_thread) {
   CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
 
-  // First, look for the parent in the child's up list, to ensure the
-  // child is known.
+  // First, look for the parent in the child's up list, to ensure the child is
+  // known.
   CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
                             current_thread);
   int parent_index = child_node->do_find_parent(this, cdata_child);
@@ -3018,19 +2634,16 @@ stage_remove_child(PandaNode *child_node, int pipeline_stage,
     return true;
   }
 
-  // Never heard of this child.  This shouldn't be possible, because
-  // the parent was in the child's up list, above.  Must be some
-  // internal error.
+  // Never heard of this child.  This shouldn't be possible, because the
+  // parent was in the child's up list, above.  Must be some internal error.
   nassertr(false, false);
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::stage_replace_child
-//       Access: Private
-//  Description: The private implementation of replace_child(), for a
-//               particular pipeline stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of replace_child(), for a particular pipeline
+ * stage.
+ */
 bool PandaNode::
 stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
                     int pipeline_stage, Thread *current_thread) {
@@ -3039,8 +2652,8 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
     CDStageWriter cdata_orig_child(orig_child->_cycler, pipeline_stage, current_thread);
     CDStageWriter cdata_new_child(new_child->_cycler, pipeline_stage, current_thread);
 
-    // First, look for the parent in the child's up list, to ensure the
-    // child is known.
+    // First, look for the parent in the child's up list, to ensure the child
+    // is known.
     int parent_index = orig_child->do_find_parent(this, cdata_orig_child);
     if (parent_index < 0) {
       // Nope, no relation.
@@ -3078,9 +2691,9 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
         dc.set_child(new_child);
 
       } else {
-        // Never heard of this child.  This shouldn't be possible, because
-        // the parent was in the child's up list, above.  Must be some
-        // internal error.
+        // Never heard of this child.  This shouldn't be possible, because the
+        // parent was in the child's up list, above.  Must be some internal
+        // error.
         nassertr(false, false);
         return false;
       }
@@ -3105,20 +2718,16 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::quick_add_new_child
-//       Access: Private
-//  Description: Similar to add_child(), but performs fewer checks.
-//               The purpose of this method is to add a child node
-//               that was newly constructed, to a parent node that was
-//               newly constructed, so we know we have to make fewer
-//               sanity checks.  This is a private method; do not call
-//               it directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to add_child(), but performs fewer checks.  The purpose of this
+ * method is to add a child node that was newly constructed, to a parent node
+ * that was newly constructed, so we know we have to make fewer sanity checks.
+ * This is a private method; do not call it directly.
+ */
 void PandaNode::
 quick_add_new_child(PandaNode *child_node, int sort, Thread *current_thread) {
-  // Apply this operation to the current stage as well as to all
-  // upstream stages.
+  // Apply this operation to the current stage as well as to all upstream
+  // stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
@@ -3129,12 +2738,9 @@ quick_add_new_child(PandaNode *child_node, int sort, Thread *current_thread) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::report_cycle
-//       Access: Private
-//  Description: Raises an assertion when a graph cycle attempt is
-//               detected (and aborted).
-////////////////////////////////////////////////////////////////////
+/**
+ * Raises an assertion when a graph cycle attempt is detected (and aborted).
+ */
 void PandaNode::
 report_cycle(PandaNode *child_node) {
   ostringstream strm;
@@ -3143,13 +2749,10 @@ report_cycle(PandaNode *child_node) {
   nassert_raise(strm.str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::find_node_above
-//       Access: Private
-//  Description: Returns true if the indicated node is this node, or
-//               any ancestor of this node; or false if it is not in
-//               this node's ancestry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated node is this node, or any ancestor of this
+ * node; or false if it is not in this node's ancestry.
+ */
 bool PandaNode::
 find_node_above(PandaNode *node) {
   if (node == this) {
@@ -3167,23 +2770,20 @@ find_node_above(PandaNode *node) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::attach
-//       Access: Private, Static
-//  Description: Creates a new parent-child relationship, and returns
-//               the new NodePathComponent.  If the child was already
-//               attached to the indicated parent, repositions it and
-//               returns the original NodePathComponent.
-//
-//               This operation is automatically propagated back up to
-//               pipeline 0, from the specified pipeline stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new parent-child relationship, and returns the new
+ * NodePathComponent.  If the child was already attached to the indicated
+ * parent, repositions it and returns the original NodePathComponent.
+ *
+ * This operation is automatically propagated back up to pipeline 0, from the
+ * specified pipeline stage.
+ */
 PT(NodePathComponent) PandaNode::
 attach(NodePathComponent *parent, PandaNode *child_node, int sort,
        int pipeline_stage, Thread *current_thread) {
   if (parent == (NodePathComponent *)NULL) {
-    // Attaching to NULL means to create a new "instance" with no
-    // attachments, and no questions asked.
+    // Attaching to NULL means to create a new "instance" with no attachments,
+    // and no questions asked.
     PT(NodePathComponent) child =
       new NodePathComponent(child_node, (NodePathComponent *)NULL,
                             pipeline_stage, current_thread);
@@ -3192,8 +2792,8 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
     return child;
   }
 
-  // See if the child was already attached to the parent.  If it was,
-  // we'll use that same NodePathComponent.
+  // See if the child was already attached to the parent.  If it was, we'll
+  // use that same NodePathComponent.
   PT(NodePathComponent) child = get_component(parent, child_node, pipeline_stage, current_thread);
 
   if (child == (NodePathComponent *)NULL) {
@@ -3207,14 +2807,12 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
   return child;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::detach
-//       Access: Private, Static
-//  Description: Breaks a parent-child relationship.
-//
-//               This operation is automatically propagated back up to
-//               pipeline 0, from the specified pipeline stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Breaks a parent-child relationship.
+ *
+ * This operation is automatically propagated back up to pipeline 0, from the
+ * specified pipeline stage.
+ */
 void PandaNode::
 detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
   nassertv(child != (NodePathComponent *)NULL);
@@ -3228,15 +2826,12 @@ detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
   child->get_node()->parents_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::detach_one_stage
-//       Access: Private, Static
-//  Description: Breaks a parent-child relationship.
-//
-//               This operation is not automatically propagated
-//               upstream.  It is applied to the indicated pipeline
-//               stage only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Breaks a parent-child relationship.
+ *
+ * This operation is not automatically propagated upstream.  It is applied to
+ * the indicated pipeline stage only.
+ */
 void PandaNode::
 detach_one_stage(NodePathComponent *child, int pipeline_stage,
                  Thread *current_thread) {
@@ -3254,14 +2849,13 @@ detach_one_stage(NodePathComponent *child, int pipeline_stage,
   if (parent_index >= 0) {
     // Now look for the child and break the actual connection.
 
-    // First, look for and remove the parent node from the child's up
-    // list.
+    // First, look for and remove the parent node from the child's up list.
     int num_erased = cdata_child->modify_up()->erase(UpConnection(parent_node));
     nassertv(num_erased == 1);
 
-    // Now, look for and remove the child node from the parent's down
-    // list.  We also check in the stashed list, in case the child node
-    // has been stashed.
+    // Now, look for and remove the child node from the parent's down list.
+    // We also check in the stashed list, in case the child node has been
+    // stashed.
     Down::iterator di;
     bool found = false;
     PT(Down) down = cdata_parent->modify_down();
@@ -3293,18 +2887,15 @@ detach_one_stage(NodePathComponent *child, int pipeline_stage,
   parent_node->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::reparent
-//       Access: Private, Static
-//  Description: Switches a node from one parent to another.  Returns
-//               true if the new connection is allowed, or false if it
-//               conflicts with another instance (that is, another
-//               instance of the child is already attached to the
-//               indicated parent).
-//
-//               This operation is automatically propagated back up to
-//               pipeline 0, from the specified pipeline stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Switches a node from one parent to another.  Returns true if the new
+ * connection is allowed, or false if it conflicts with another instance (that
+ * is, another instance of the child is already attached to the indicated
+ * parent).
+ *
+ * This operation is automatically propagated back up to pipeline 0, from the
+ * specified pipeline stage.
+ */
 bool PandaNode::
 reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
          bool as_stashed, int pipeline_stage, Thread *current_thread) {
@@ -3312,8 +2903,8 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
 
   if (new_parent != (NodePathComponent *)NULL &&
       !new_parent->get_node()->verify_child_no_cycles(child->get_node())) {
-    // Whoops, adding this child node would introduce a cycle in the
-    // scene graph.
+    // Whoops, adding this child node would introduce a cycle in the scene
+    // graph.
     return false;
   }
 
@@ -3336,27 +2927,23 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
   return any_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::reparent_one_stage
-//       Access: Private, Static
-//  Description: Switches a node from one parent to another.  Returns
-//               true if the new connection is allowed, or false if it
-//               conflicts with another instance (that is, another
-//               instance of the child is already attached to the
-//               indicated parent).
-//
-//               This operation is not automatically propagated
-//               upstream.  It is applied to the indicated pipeline
-//               stage only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Switches a node from one parent to another.  Returns true if the new
+ * connection is allowed, or false if it conflicts with another instance (that
+ * is, another instance of the child is already attached to the indicated
+ * parent).
+ *
+ * This operation is not automatically propagated upstream.  It is applied to
+ * the indicated pipeline stage only.
+ */
 bool PandaNode::
 reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
                    int sort, bool as_stashed, int pipeline_stage,
                    Thread *current_thread) {
   nassertr(child != (NodePathComponent *)NULL, false);
 
-  // Keep a reference count to the new parent, since detaching the
-  // child might lose the count.
+  // Keep a reference count to the new parent, since detaching the child might
+  // lose the count.
   PT(NodePathComponent) keep_parent = new_parent;
 
   if (!child->is_top_node(pipeline_stage, current_thread)) {
@@ -3408,13 +2995,10 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_component
-//       Access: Private, Static
-//  Description: Returns the NodePathComponent based on the indicated
-//               child of the given parent, or NULL if there is no
-//               such parent-child relationship.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the NodePathComponent based on the indicated child of the given
+ * parent, or NULL if there is no such parent-child relationship.
+ */
 PT(NodePathComponent) PandaNode::
 get_component(NodePathComponent *parent, PandaNode *child_node,
               int pipeline_stage, Thread *current_thread) {
@@ -3423,9 +3007,9 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
 
   LightReMutexHolder holder(child_node->_paths_lock);
 
-  // First, walk through the list of NodePathComponents we already
-  // have on the child, looking for one that already exists,
-  // referencing the indicated parent component.
+  // First, walk through the list of NodePathComponents we already have on the
+  // child, looking for one that already exists, referencing the indicated
+  // parent component.
   Paths::const_iterator pi;
   for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
     if ((*pi)->get_next(pipeline_stage, current_thread) == parent) {
@@ -3434,8 +3018,8 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
     }
   }
 
-  // We don't already have a NodePathComponent referring to this
-  // parent-child relationship.  Are they actually related?
+  // We don't already have a NodePathComponent referring to this parent-child
+  // relationship.  Are they actually related?
   CDStageReader cdata_child(child_node->_cycler, pipeline_stage, current_thread);
   int parent_index = child_node->do_find_parent(parent_node, cdata_child);
 
@@ -3451,27 +3035,23 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_top_component
-//       Access: Private, Static
-//  Description: Returns a NodePathComponent referencing the
-//               indicated node as a singleton.  It is invalid to call
-//               this for a node that has parents, unless you are
-//               about to create a new instance (and immediately
-//               reconnect the NodePathComponent elsewhere).
-//
-//               If force is true, this will always return something,
-//               even if it needs to create a new top component;
-//               otherwise, if force is false, it will return NULL if
-//               there is not already a top component available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a NodePathComponent referencing the indicated node as a singleton.
+ * It is invalid to call this for a node that has parents, unless you are
+ * about to create a new instance (and immediately reconnect the
+ * NodePathComponent elsewhere).
+ *
+ * If force is true, this will always return something, even if it needs to
+ * create a new top component; otherwise, if force is false, it will return
+ * NULL if there is not already a top component available.
+ */
 PT(NodePathComponent) PandaNode::
 get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
                   Thread *current_thread) {
   LightReMutexHolder holder(child_node->_paths_lock);
 
-  // Walk through the list of NodePathComponents we already have on
-  // the child, looking for one that already exists as a top node.
+  // Walk through the list of NodePathComponents we already have on the child,
+  // looking for one that already exists as a top node.
   Paths::const_iterator pi;
   for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
     if ((*pi)->is_top_node(pipeline_stage, current_thread)) {
@@ -3481,13 +3061,13 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
   }
 
   if (!force) {
-    // If we don't care to force the point, return NULL to indicate
-    // there's not already a top component.
+    // If we don't care to force the point, return NULL to indicate there's
+    // not already a top component.
     return NULL;
   }
 
-  // We don't already have such a NodePathComponent; create and
-  // return a new one.
+  // We don't already have such a NodePathComponent; create and return a new
+  // one.
   PT(NodePathComponent) child =
     new NodePathComponent(child_node, (NodePathComponent *)NULL,
                           pipeline_stage, current_thread);
@@ -3496,17 +3076,13 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
   return child;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_generic_component
-//       Access: Private
-//  Description: Returns a NodePathComponent referencing this node as
-//               a path from the root.
-//
-//               Unless accept_ambiguity is true, it is only valid to
-//               call this if there is an unambiguous path from the
-//               root; otherwise, a warning will be issued and one
-//               path will be chosen arbitrarily.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a NodePathComponent referencing this node as a path from the root.
+ *
+ * Unless accept_ambiguity is true, it is only valid to call this if there is
+ * an unambiguous path from the root; otherwise, a warning will be issued and
+ * one path will be chosen arbitrarily.
+ */
 PT(NodePathComponent) PandaNode::
 get_generic_component(bool accept_ambiguity, int pipeline_stage,
                       Thread *current_thread) {
@@ -3524,14 +3100,11 @@ get_generic_component(bool accept_ambiguity, int pipeline_stage,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::r_get_generic_component
-//       Access: Private
-//  Description: The recursive implementation of
-//               get_generic_component, this simply sets the flag when
-//               the ambiguity is detected (so we can report the
-//               bottom node that started the ambiguous search).
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of get_generic_component, this simply sets the
+ * flag when the ambiguity is detected (so we can report the bottom node that
+ * started the ambiguous search).
+ */
 PT(NodePathComponent) PandaNode::
 r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected,
                         int pipeline_stage, Thread *current_thread) {
@@ -3571,13 +3144,10 @@ r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected,
   return get_component(parent, this, pipeline_stage, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::delete_component
-//       Access: Private
-//  Description: Removes a NodePathComponent from the set prior to
-//               its deletion.  This should only be called by the
-//               NodePathComponent destructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a NodePathComponent from the set prior to its deletion.  This
+ * should only be called by the NodePathComponent destructor.
+ */
 void PandaNode::
 delete_component(NodePathComponent *component) {
   LightReMutexHolder holder(_paths_lock);
@@ -3585,24 +3155,18 @@ delete_component(NodePathComponent *component) {
   nassertv(num_erased == 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::sever_connection
-//       Access: Private, Static
-//  Description: This is called internally when a parent-child
-//               connection is broken to update the NodePathComponents
-//               that reflected this connection.
-//
-//               It severs any NodePathComponents on the child node
-//               that reference the indicated parent node.  These
-//               components remain unattached; there may therefore be
-//               multiple "instances" of a node that all have no
-//               parent, even while there are other instances that do
-//               have parents.
-//
-//               This operation is not automatically propagated
-//               upstream.  It is applied to the indicated pipeline
-//               stage only.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called internally when a parent-child connection is broken to
+ * update the NodePathComponents that reflected this connection.
+ *
+ * It severs any NodePathComponents on the child node that reference the
+ * indicated parent node.  These components remain unattached; there may
+ * therefore be multiple "instances" of a node that all have no parent, even
+ * while there are other instances that do have parents.
+ *
+ * This operation is not automatically propagated upstream.  It is applied to
+ * the indicated pipeline stage only.
+ */
 void PandaNode::
 sever_connection(PandaNode *parent_node, PandaNode *child_node,
                  int pipeline_stage, Thread *current_thread) {
@@ -3620,22 +3184,17 @@ sever_connection(PandaNode *parent_node, PandaNode *child_node,
   child_node->fix_path_lengths(pipeline_stage, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::new_connection
-//       Access: Private, Static
-//  Description: This is called internally when a parent-child
-//               connection is established to update the
-//               NodePathComponents that might be involved.
-//
-//               It adjusts any NodePathComponents the child has that
-//               reference the child as a top node.  Any other
-//               components we can leave alone, because we are making
-//               a new instance of the child.
-//
-//               This operation is not automatically propagated
-//               upstream.  It is applied to the indicated pipeline
-//               stage only.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called internally when a parent-child connection is established to
+ * update the NodePathComponents that might be involved.
+ *
+ * It adjusts any NodePathComponents the child has that reference the child as
+ * a top node.  Any other components we can leave alone, because we are making
+ * a new instance of the child.
+ *
+ * This operation is not automatically propagated upstream.  It is applied to
+ * the indicated pipeline stage only.
+ */
 void PandaNode::
 new_connection(PandaNode *parent_node, PandaNode *child_node,
                int pipeline_stage, Thread *current_thread) {
@@ -3651,18 +3210,14 @@ new_connection(PandaNode *parent_node, PandaNode *child_node,
   child_node->fix_path_lengths(pipeline_stage, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::fix_path_lengths
-//       Access: Private
-//  Description: Recursively fixes the _length member of each
-//               NodePathComponent at this level and below, after an
-//               add or delete child operation that might have messed
-//               these up.
-//
-//               This operation is not automatically propagated
-//               upstream.  It is applied to the indicated pipeline
-//               stage only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively fixes the _length member of each NodePathComponent at this
+ * level and below, after an add or delete child operation that might have
+ * messed these up.
+ *
+ * This operation is not automatically propagated upstream.  It is applied to
+ * the indicated pipeline stage only.
+ */
 void PandaNode::
 fix_path_lengths(int pipeline_stage, Thread *current_thread) {
   LightReMutexHolder holder(_paths_lock);
@@ -3676,9 +3231,9 @@ fix_path_lengths(int pipeline_stage, Thread *current_thread) {
     }
   }
 
-  // If any paths were updated, we have to recurse on all of our
-  // children, since any one of those paths might be shared by any of
-  // our child nodes.  Don't hold any locks while we recurse.
+  // If any paths were updated, we have to recurse on all of our children,
+  // since any one of those paths might be shared by any of our child nodes.
+  // Don't hold any locks while we recurse.
   if (any_wrong) {
     Children children;
     Stashed stashed;
@@ -3702,11 +3257,9 @@ fix_path_lengths(int pipeline_stage, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::r_list_descendants
-//       Access: Private
-//  Description: The recursive implementation of ls().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of ls().
+ */
 void PandaNode::
 r_list_descendants(ostream &out, int indent_level) const {
   write(out, indent_level);
@@ -3726,17 +3279,15 @@ r_list_descendants(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::do_find_child
-//       Access: Private
-//  Description: The private implementation of find_child().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of find_child().
+ */
 int PandaNode::
 do_find_child(PandaNode *node, const PandaNode::Down *down) const {
   nassertr(node != (PandaNode *)NULL, -1);
 
-  // We have to search for the child by brute force, since we don't
-  // know what sort index it was added as.
+  // We have to search for the child by brute force, since we don't know what
+  // sort index it was added as.
   Down::const_iterator di;
   for (di = down->begin(); di != down->end(); ++di) {
     if ((*di).get_child() == node) {
@@ -3747,24 +3298,21 @@ do_find_child(PandaNode *node, const PandaNode::Down *down) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::update_cached
-//       Access: Private
-//  Description: Updates the cached values of the node that are
-//               dependent on its children, such as the
-//               external bounding volume, the _net_collide_mask,
-//               and the _off_clip_planes.
-//
-//               If update_bounds is false, it will not update the
-//               bounding volume or vertex count.
-//
-//               The old value should be passed in; it will be
-//               released.  The new value is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the cached values of the node that are dependent on its children,
+ * such as the external bounding volume, the _net_collide_mask, and the
+ * _off_clip_planes.
+ *
+ * If update_bounds is false, it will not update the bounding volume or vertex
+ * count.
+ *
+ * The old value should be passed in; it will be released.  The new value is
+ * returned.
+ */
 PandaNode::CDStageWriter PandaNode::
 update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
-  // We might need to try this a couple of times, in case someone else
-  // steps on our result.
+  // We might need to try this a couple of times, in case someone else steps
+  // on our result.
   if (drawmask_cat.is_debug()) {
     drawmask_cat.debug(false)
       << *this << "::update_cached() {\n";
@@ -3786,8 +3334,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     bool renderable = is_renderable();
 
     if (renderable) {
-      // If this node is itself renderable, it contributes to the net
-      // draw mask.
+      // If this node is itself renderable, it contributes to the net draw
+      // mask.
       net_draw_control_mask = cdata->_draw_control_mask;
       net_draw_show_mask = cdata->_draw_show_mask;
     }
@@ -3808,17 +3356,16 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 
     int num_vertices = cdata->_internal_vertices;
 
-    // Now that we've got all the data we need from the node, we can
-    // release the lock.
+    // Now that we've got all the data we need from the node, we can release
+    // the lock.
     _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
 
     int num_children = children.get_num_children();
 
-    // We need to keep references to the bounding volumes, since in a
-    // threaded environment the pointers might go away while we're
-    // working (since we're not holding a lock on our set of children
-    // right now).  But we also need the regular pointers, to pass to
-    // BoundingVolume::around().
+    // We need to keep references to the bounding volumes, since in a threaded
+    // environment the pointers might go away while we're working (since we're
+    // not holding a lock on our set of children right now).  But we also need
+    // the regular pointers, to pass to BoundingVolume::around().
     const BoundingVolume **child_volumes;
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     pvector<CPT(BoundingVolume) > child_volumes_ref;
@@ -3874,42 +3421,37 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         DrawMask child_control_mask = child_cdataw->_net_draw_control_mask;
         DrawMask child_show_mask = child_cdataw->_net_draw_show_mask;
         if (!(child_control_mask | child_show_mask).is_zero()) {
-          // This child includes a renderable node or subtree.  Thus,
-          // we should propagate its draw masks.
+          // This child includes a renderable node or subtree.  Thus, we
+          // should propagate its draw masks.
           renderable = true;
 
           // For each bit position in the masks, we have assigned the
-          // following semantic meaning.  The number on the left
-          // represents the pairing of the corresponding bit from the
-          // control mask and from the show mask:
+          // following semantic meaning.  The number on the left represents
+          // the pairing of the corresponding bit from the control mask and
+          // from the show mask:
 
-          //   00 : not a renderable node   (control 0, show 0)
-          //   01 : a normally visible node (control 0, show 1)
-          //   10 : a hidden node           (control 1, show 0)
-          //   11 : a show-through node     (control 1, show 1)
+          // 00 : not a renderable node   (control 0, show 0) 01 : a normally
+          // visible node (control 0, show 1) 10 : a hidden node
+          // (control 1, show 0) 11 : a show-through node     (control 1, show
+          // 1)
 
-          // Now, when we accumulate these masks, we want to do so
-          // according to the following table, for each bit position:
+          // Now, when we accumulate these masks, we want to do so according
+          // to the following table, for each bit position:
 
-          //          00   01   10   11     (child)
-          //        ---------------------
-          //     00 | 00   01   10   11
-          //     01 | 01   01   01*  11
-          //     10 | 10   01*  10   11
-          //     11 | 11   11   11   11
-          // (parent)
+          // 00   01   10   11     (child) --------------------- 00 | 00   01
+          // 10   11 01 | 01   01   01*  11 10 | 10   01*  10   11 11 | 11
+          // 11   11   11 (parent)
 
-          // This table is almost the same as the union of both masks,
-          // with one exception, marked with a * in the above table:
-          // if one is 10 and the other is 01--that is, one is hidden
-          // and the other is normally visible--then the result should
-          // be 01, normally visible.  This is because we only want to
-          // propagate the hidden bit upwards if *all* renderable
-          // nodes are hidden.
+          // This table is almost the same as the union of both masks, with
+          // one exception, marked with a * in the above table: if one is 10
+          // and the other is 01--that is, one is hidden and the other is
+          // normally visible--then the result should be 01, normally visible.
+          // This is because we only want to propagate the hidden bit upwards
+          // if *all* renderable nodes are hidden.
 
-          // Get the set of exception bits for which the above rule
-          // applies.  These are the bits for which both bits have
-          // flipped, but which were not the same in the original.
+          // Get the set of exception bits for which the above rule applies.
+          // These are the bits for which both bits have flipped, but which
+          // were not the same in the original.
           DrawMask exception_mask = (net_draw_control_mask ^ child_control_mask) & (net_draw_show_mask ^ child_show_mask);
           exception_mask &= (net_draw_control_mask ^ net_draw_show_mask);
 
@@ -4013,8 +3555,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
       CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
       if (last_update == cdataw->_last_update &&
           next_update == cdataw->_next_update) {
-        // Great, no one has monkeyed with these while we were computing
-        // the cache.  Safe to store the computed values and return.
+        // Great, no one has monkeyed with these while we were computing the
+        // cache.  Safe to store the computed values and return.
         cdataw->_net_collide_mask = net_collide_mask;
 
         if (renderable) {
@@ -4030,8 +3572,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 
           net_draw_show_mask |= show_through_mask;
 
-          // There are renderable nodes below, so the implicit draw
-          // bits are all on.
+          // There are renderable nodes below, so the implicit draw bits are
+          // all on.
           cdataw->_net_draw_control_mask = net_draw_control_mask;
           cdataw->_net_draw_show_mask = net_draw_show_mask | ~net_draw_control_mask;
           if (drawmask_cat.is_debug()) {
@@ -4039,10 +3581,9 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
               << "renderable, set mask " << cdataw->_net_draw_show_mask << "\n";
           }
         } else {
-          // There are no renderable nodes below, so the implicit draw
-          // bits are all off.  Also, we don't care about the draw
-          // mask on this particular node (since nothing below it is
-          // renderable anyway).
+          // There are no renderable nodes below, so the implicit draw bits
+          // are all off.  Also, we don't care about the draw mask on this
+          // particular node (since nothing below it is renderable anyway).
           cdataw->_net_draw_control_mask = net_draw_control_mask;
           cdataw->_net_draw_show_mask = net_draw_show_mask;
           if (drawmask_cat.is_debug()) {
@@ -4066,9 +3607,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 
           if (btype == BoundingVolume::BT_box ||
               (btype != BoundingVolume::BT_sphere && all_box && transform->is_identity())) {
-            // If all of the child volumes are a BoundingBox, and we
-            // have no transform, then our volume is also a
-            // BoundingBox.
+            // If all of the child volumes are a BoundingBox, and we have no
+            // transform, then our volume is also a BoundingBox.
 
             gbv = new BoundingBox;
           } else {
@@ -4082,8 +3622,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             ((BoundingVolume *)gbv)->around(child_begin, child_end);
           }
 
-          // If we have a transform, apply it to the bounding volume we
-          // just computed.
+          // If we have a transform, apply it to the bounding volume we just
+          // computed.
           if (!transform->is_identity()) {
             gbv->xform(transform->get_mat());
           }
@@ -4101,8 +3641,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 
         nassertr(cdataw->_last_update == cdataw->_next_update, cdataw);
 
-        // Even though implicit bounding volume is not (yet?) part of
-        // the bam stream.
+        // Even though implicit bounding volume is not (yet?) part of the bam
+        // stream.
         mark_bam_modified();
         return cdataw;
       }
@@ -4114,52 +3654,43 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
       }
     }
 
-    // We need to go around again.  Release the write lock, and grab
-    // the read lock back.
+    // We need to go around again.  Release the write lock, and grab the read
+    // lock back.
     cdata = CDLockedStageReader(_cycler, pipeline_stage, current_thread);
 
     if (cdata->_last_update == cdata->_next_update &&
         (!update_bounds || cdata->_last_bounds_update == cdata->_next_update)) {
-      // Someone else has computed the cache for us while we were
-      // diddling with the locks.  OK.
+      // Someone else has computed the cache for us while we were diddling
+      // with the locks.  OK.
       return CDStageWriter(_cycler, pipeline_stage, cdata);
     }
 
   } while (true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_scene_root_func
-//       Access: Public, Static
-//  Description: This is used by the GraphicsEngine to hook in a
-//               pointer to the scene_root_func(), the function to
-//               determine whether the node is an active scene root.
-//               This back-pointer is necessary because we can't make
-//               calls directly into GraphicsEngine, which is in the
-//               display module.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used by the GraphicsEngine to hook in a pointer to the
+ * scene_root_func(), the function to determine whether the node is an active
+ * scene root.  This back-pointer is necessary because we can't make calls
+ * directly into GraphicsEngine, which is in the display module.
+ */
 void PandaNode::
 set_scene_root_func(SceneRootFunc *func) {
   _scene_root_func = func;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               PandaNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type PandaNode.
+ */
 void PandaNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void PandaNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -4168,48 +3699,37 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::update_bam_nested
-//       Access: Public, Virtual
-//  Description: Called by the BamWriter when this object has not
-//               itself been modified recently, but it should check
-//               its nested objects for updates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamWriter when this object has not itself been modified
+ * recently, but it should check its nested objects for updates.
+ */
 void PandaNode::
 update_bam_nested(BamWriter *manager) {
   CDReader cdata(_cycler);
   cdata->update_bam_nested(manager);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::write_recorder
-//       Access: Public
-//  Description: This method is provided for the benefit of classes
-//               (like MouseRecorder) that inherit from PandaMode and
-//               also RecorderBase.  It's not virtual at this level
-//               since it doesn't need to be (it's called up from the
-//               derived class).
-//
-//               This method acts very like write_datagram, but it
-//               writes the node as appropriate for writing a
-//               RecorderBase object as described in the beginning of
-//               a session file, meaning it doesn't need to write
-//               things such as children.  It balances with
-//               fillin_recorder().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is provided for the benefit of classes (like MouseRecorder)
+ * that inherit from PandaMode and also RecorderBase.  It's not virtual at
+ * this level since it doesn't need to be (it's called up from the derived
+ * class).
+ *
+ * This method acts very like write_datagram, but it writes the node as
+ * appropriate for writing a RecorderBase object as described in the beginning
+ * of a session file, meaning it doesn't need to write things such as
+ * children.  It balances with fillin_recorder().
+ */
 void PandaNode::
 write_recorder(BamWriter *, Datagram &dg) {
   dg.add_string(get_name());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type PandaNode is encountered
-//               in the Bam file.  It should create the PandaNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type PandaNode is encountered in the Bam file.  It should create the
+ * PandaNode and extract its information from the file.
+ */
 TypedWritable *PandaNode::
 make_from_bam(const FactoryParams &params) {
   PandaNode *node = new PandaNode("");
@@ -4222,16 +3742,15 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PandaNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new PandaNode.
+ */
 void PandaNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
+
+  remove_all_children();
 
   string name = scan.get_string();
   set_name(name);
@@ -4239,26 +3758,20 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_cdata(scan, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::fillin_recorder
-//       Access: Protected
-//  Description: This internal function is called by make_recorder (in
-//               classes derived from RecorderBase, such as
-//               MouseRecorder) to read in all of the relevant data
-//               from the session file.  It balances with
-//               write_recorder().
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_recorder (in classes derived from
+ * RecorderBase, such as MouseRecorder) to read in all of the relevant data
+ * from the session file.  It balances with write_recorder().
+ */
 void PandaNode::
 fillin_recorder(DatagramIterator &scan, BamReader *) {
   string name = scan.get_string();
   set_name(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PandaNode::CData::
 CData() :
   _state(RenderState::make_empty()),
@@ -4285,11 +3798,9 @@ CData() :
   ++_next_update;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PandaNode::CData::
 CData(const PandaNode::CData &copy) :
   BoundsData(copy),
@@ -4323,22 +3834,19 @@ CData(const PandaNode::CData &copy) :
   _up(copy._up)
 {
   // Note that this copy constructor is not used by the PandaNode copy
-  // constructor!  Any elements that must be copied between nodes
-  // should also be explicitly copied there.
+  // constructor!  Any elements that must be copied between nodes should also
+  // be explicitly copied there.
 
 #ifdef HAVE_PYTHON
-  // Copy and increment all of the Python objects held by the other
-  // node.
+  // Copy and increment all of the Python objects held by the other node.
   _python_tag_data = copy._python_tag_data;
   inc_py_refs();
 #endif  // HAVE_PYTHON
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PandaNode::CData::
 ~CData() {
 #ifdef HAVE_PYTHON
@@ -4347,28 +3855,24 @@ PandaNode::CData::
 #endif  // HAVE_PYTHON
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CycleData *PandaNode::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void PandaNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _state);
   manager->write_pointer(dg, _transform);
 
-  //
+
   manager->write_pointer(dg, _effects);
 
   dg.add_uint32(_draw_control_mask.get_word());
@@ -4383,39 +3887,31 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
     dg.add_string((*ti).second);
   }
 
-  //
+
   write_up_list(*get_up(), manager, dg);
   write_down_list(*get_down(), manager, dg);
   write_down_list(*get_stashed(), manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::update_bam_nested
-//       Access: Public
-//  Description: Called by the BamWriter when this object has not
-//               itself been modified recently, but it should check
-//               its nested objects for updates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamWriter when this object has not itself been modified
+ * recently, but it should check its nested objects for updates.
+ */
 void PandaNode::CData::
 update_bam_nested(BamWriter *manager) const {
-  // No need to check the state pointers for updates, since they're
-  // all immutable objects.
-  //manager->consider_update(_state);
-  //manager->consider_update(_transform);
-  //manager->consider_update(_effects);
+  // No need to check the state pointers for updates, since they're all
+  // immutable objects.  manager->consider_update(_state);
+  // manager->consider_update(_transform); manager->consider_update(_effects);
 
   update_up_list(*get_up(), manager);
   update_down_list(*get_down(), manager);
   update_down_list(*get_stashed(), manager);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int PandaNode::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
@@ -4425,63 +3921,64 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _transform = DCAST(TransformState, p_list[pi++]);
   _prev_transform = _transform;
 
-  // Finalize these pointers now to decrement their artificially-held
-  // reference counts.  We do this now, rather than later, in case
-  // some other object reassigns them a little later on during
-  // initialization, before they can finalize themselves normally (for
-  // instance, the character may change the node's transform).  If
-  // that happens, the pointer may discover that no one else holds its
-  // reference count when it finalizes, which will constitute a memory
-  // leak (see the comments in TransformState::finalize(), etc.).
+/*
+ * Finalize these pointers now to decrement their artificially-held reference
+ * counts.  We do this now, rather than later, in case some other object
+ * reassigns them a little later on during initialization, before they can
+ * finalize themselves normally (for instance, the character may change the
+ * node's transform).  If that happens, the pointer may discover that no one
+ * else holds its reference count when it finalizes, which will constitute a
+ * memory leak (see the comments in TransformState::finalize(), etc.).
+ */
   manager->finalize_now((RenderState *)_state.p());
   manager->finalize_now((TransformState *)_transform.p());
 
-  //
+
 
   // Get the effects pointer.
   _effects = DCAST(RenderEffects, p_list[pi++]);
 
-  // Finalize these pointers now to decrement their artificially-held
-  // reference counts.  We do this now, rather than later, in case
-  // some other object reassigns them a little later on during
-  // initialization, before they can finalize themselves normally (for
-  // instance, the character may change the node's transform).  If
-  // that happens, the pointer may discover that no one else holds its
-  // reference count when it finalizes, which will constitute a memory
-  // leak (see the comments in TransformState::finalize(), etc.).
+/*
+ * Finalize these pointers now to decrement their artificially-held reference
+ * counts.  We do this now, rather than later, in case some other object
+ * reassigns them a little later on during initialization, before they can
+ * finalize themselves normally (for instance, the character may change the
+ * node's transform).  If that happens, the pointer may discover that no one
+ * else holds its reference count when it finalizes, which will constitute a
+ * memory leak (see the comments in TransformState::finalize(), etc.).
+ */
   manager->finalize_now((RenderEffects *)_effects.p());
 
-  //
+
 
   // Get the parent and child pointers.
   pi += complete_up_list(*modify_up(), "up", p_list + pi, manager);
   pi += complete_down_list(*modify_down(), "down", p_list + pi, manager);
   pi += complete_down_list(*modify_stashed(), "stashed", p_list + pi, manager);
 
-  // Since the _effects and _states members have been finalized by
-  // now, this should be safe.
+  // Since the _effects and _states members have been finalized by now, this
+  // should be safe.
   set_fancy_bit(FB_transform, !_transform->is_identity());
   set_fancy_bit(FB_state, !_state->is_empty());
   set_fancy_bit(FB_effects, !_effects->is_empty());
   set_fancy_bit(FB_tag, !_tag_data.empty());
 
+  // Mark the bounds stale.
+  ++_next_update;
+
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PandaNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new PandaNode.
+ */
 void PandaNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   // Read the state and transform pointers.
   manager->read_pointer(scan);
   manager->read_pointer(scan);
 
-  //
   // Read the effects pointer.
   manager->read_pointer(scan);
 
@@ -4526,25 +4023,22 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _tag_data[key] = value;
   }
 
-  //
+
   fillin_up_list(*modify_up(), "up", scan, manager);
   fillin_down_list(*modify_down(), "down", scan, manager);
   fillin_down_list(*modify_stashed(), "stashed", scan, manager);
 }
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::inc_py_refs
-//       Access: Public
-//  Description: Increments the reference counts on all held Python
-//               objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments the reference counts on all held Python objects.
+ */
 void PandaNode::CData::
 inc_py_refs() {
   if (!_python_tag_data.empty()) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-    // This might happen at any time, so be sure the Python state is
-    // ready for it.
+    // This might happen at any time, so be sure the Python state is ready for
+    // it.
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 #endif
@@ -4563,18 +4057,15 @@ inc_py_refs() {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::dec_py_refs
-//       Access: Public
-//  Description: Decrements the reference counts on all held Python
-//               objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decrements the reference counts on all held Python objects.
+ */
 void PandaNode::CData::
 dec_py_refs() {
   if (!_python_tag_data.empty()) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-    // This might happen at any time, so be sure the Python state is
-    // ready for it.
+    // This might happen at any time, so be sure the Python state is ready for
+    // it.
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 #endif
@@ -4594,23 +4085,21 @@ dec_py_refs() {
 }
 #endif  // HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::write_up_list
-//       Access: Public
-//  Description: Writes the indicated list of parent node pointers to
-//               the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated list of parent node pointers to the datagram.
+ */
 void PandaNode::CData::
 write_up_list(const PandaNode::Up &up_list,
               BamWriter *manager, Datagram &dg) const {
-  // When we write a PandaNode, we write out its complete list of
-  // child node pointers, but we only write out the parent node
-  // pointers that have already been added to the bam file by a
-  // previous write operation.  This is a bit of trickery that allows
-  // us to write out just a subgraph (instead of the complete graph)
-  // when we write out an arbitrary node in the graph, yet also allows
-  // us to keep nodes completely in sync when we use the bam format
-  // for streaming scene graph operations over the network.
+/*
+ * When we write a PandaNode, we write out its complete list of child node
+ * pointers, but we only write out the parent node pointers that have already
+ * been added to the bam file by a previous write operation.  This is a bit of
+ * trickery that allows us to write out just a subgraph (instead of the
+ * complete graph) when we write out an arbitrary node in the graph, yet also
+ * allows us to keep nodes completely in sync when we use the bam format for
+ * streaming scene graph operations over the network.
+ */
 
   int num_parents = 0;
   Up::const_iterator ui;
@@ -4630,12 +4119,9 @@ write_up_list(const PandaNode::Up &up_list,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::write_down_list
-//       Access: Public
-//  Description: Writes the indicated list of child node pointers to
-//               the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated list of child node pointers to the datagram.
+ */
 void PandaNode::CData::
 write_down_list(const PandaNode::Down &down_list,
                 BamWriter *manager, Datagram &dg) const {
@@ -4643,8 +4129,8 @@ write_down_list(const PandaNode::Down &down_list,
   nassertv(num_children == (int)(PN_uint16)num_children);
   dg.add_uint16(num_children);
 
-  // Should we smarten up the writing of the sort number?  Most of the
-  // time these will all be zero.
+  // Should we smarten up the writing of the sort number?  Most of the time
+  // these will all be zero.
   Down::const_iterator di;
   for (di = down_list.begin(); di != down_list.end(); ++di) {
     PandaNode *child_node = (*di).get_child();
@@ -4654,12 +4140,9 @@ write_down_list(const PandaNode::Down &down_list,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::update_up_list
-//       Access: Public
-//  Description: Calls consider_update on each node of the indicated
-//               up list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls consider_update on each node of the indicated up list.
+ */
 void PandaNode::CData::
 update_up_list(const PandaNode::Up &up_list, BamWriter *manager) const {
   Up::const_iterator ui;
@@ -4671,12 +4154,9 @@ update_up_list(const PandaNode::Up &up_list, BamWriter *manager) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::update_down_list
-//       Access: Public
-//  Description: Calls consider_update on each node of the indicated
-//               up list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls consider_update on each node of the indicated up list.
+ */
 void PandaNode::CData::
 update_down_list(const PandaNode::Down &down_list, BamWriter *manager) const {
   Down::const_iterator di;
@@ -4686,12 +4166,9 @@ update_down_list(const PandaNode::Down &down_list, BamWriter *manager) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::complete_up_list
-//       Access: Public
-//  Description: Calls complete_pointers() on the list of parent node
-//               pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls complete_pointers() on the list of parent node pointers.
+ */
 int PandaNode::CData::
 complete_up_list(PandaNode::Up &up_list, const string &tag,
                  TypedWritable **p_list, BamReader *manager) {
@@ -4706,9 +4183,8 @@ complete_up_list(PandaNode::Up &up_list, const string &tag,
     new_up_list.push_back(connection);
   }
 
-  // Now we should sort the list, since the sorting is based on
-  // pointer order, which might be different from one session to the
-  // next.
+  // Now we should sort the list, since the sorting is based on pointer order,
+  // which might be different from one session to the next.
   new_up_list.sort();
 
   // Make it permanent.
@@ -4718,12 +4194,9 @@ complete_up_list(PandaNode::Up &up_list, const string &tag,
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::complete_down_list
-//       Access: Public
-//  Description: Calls complete_pointers() on the list of child node
-//               pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls complete_pointers() on the list of child node pointers.
+ */
 int PandaNode::CData::
 complete_down_list(PandaNode::Down &down_list, const string &tag,
                    TypedWritable **p_list, BamReader *manager) {
@@ -4740,9 +4213,9 @@ complete_down_list(PandaNode::Down &down_list, const string &tag,
     (*di).set_child(child_node);
   }
 
-  // Unlike the up list, we should *not* sort the down list.  The down
-  // list is stored in a specific order, not related to pointer order;
-  // and this order should be preserved from one session to the next.
+  // Unlike the up list, we should *not* sort the down list.  The down list is
+  // stored in a specific order, not related to pointer order; and this order
+  // should be preserved from one session to the next.
 
   // Make it permanent.
   down_list.swap(new_down_list);
@@ -4751,13 +4224,10 @@ complete_down_list(PandaNode::Down &down_list, const string &tag,
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::fillin_up_list
-//       Access: Public
-//  Description: Reads the indicated list parent node pointers from
-//               the datagram (or at least calls read_pointer() for
-//               each one).
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated list parent node pointers from the datagram (or at
+ * least calls read_pointer() for each one).
+ */
 void PandaNode::CData::
 fillin_up_list(PandaNode::Up &up_list, const string &tag,
                DatagramIterator &scan, BamReader *manager) {
@@ -4766,22 +4236,18 @@ fillin_up_list(PandaNode::Up &up_list, const string &tag,
   manager->read_pointers(scan, num_parents);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::fillin_down_list
-//       Access: Public
-//  Description: Reads the indicated list child node pointers from
-//               the datagram (or at least calls read_pointer() for
-//               each one).
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated list child node pointers from the datagram (or at least
+ * calls read_pointer() for each one).
+ */
 void PandaNode::CData::
 fillin_down_list(PandaNode::Down &down_list, const string &tag,
                  DatagramIterator &scan, BamReader *manager) {
   int num_children = scan.get_uint16();
 
-  // Create a temporary down_list, with the right number of elements,
-  // but a NULL value for each pointer (we'll fill in the pointers
-  // later).  We need to do this to associate the sort values with
-  // their pointers.
+  // Create a temporary down_list, with the right number of elements, but a
+  // NULL value for each pointer (we'll fill in the pointers later).  We need
+  // to do this to associate the sort values with their pointers.
   Down new_down_list(PandaNode::get_class_type());
   new_down_list.reserve(num_children);
   for (int i = 0; i < num_children; i++) {
@@ -4791,20 +4257,17 @@ fillin_down_list(PandaNode::Down &down_list, const string &tag,
     new_down_list.push_back(connection);
   }
 
-  // Now store the temporary down_list in the BamReader, so we can get
-  // it during the call to complete_down_list().
+  // Now store the temporary down_list in the BamReader, so we can get it
+  // during the call to complete_down_list().
   PT(BamReaderAuxDataDown) aux = new BamReaderAuxDataDown;
   aux->_down_list.swap(new_down_list);
   manager->set_aux_tag(tag, aux);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNodePipelineReader::check_cached
-//       Access: Public
-//  Description: Ensures that the draw masks etc. are properly
-//               computed on this node.  If update_bounds is true,
-//               also checks the bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the draw masks etc.  are properly computed on this node.  If
+ * update_bounds is true, also checks the bounding volume.
+ */
 void PandaNodePipelineReader::
 check_cached(bool update_bounds) const {
   UpdateSeq last_update = update_bounds
@@ -4814,9 +4277,8 @@ check_cached(bool update_bounds) const {
   if (last_update != _cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
 
-    // We'll need to get a fresh read pointer, since another thread
-    // might already have modified the pointer on the object since we
-    // queried it.
+    // We'll need to get a fresh read pointer, since another thread might
+    // already have modified the pointer on the object since we queried it.
 #ifdef DO_PIPELINING
     node_unref_delete((CycleData *)_cdata);
 #endif  // DO_PIPELINING
@@ -4825,9 +4287,8 @@ check_cached(bool update_bounds) const {
     PandaNode::CDLockedStageReader fresh_cdata(_node->_cycler, pipeline_stage, _current_thread);
     if (fresh_cdata->_last_update == fresh_cdata->_next_update &&
         (!update_bounds || fresh_cdata->_last_bounds_update == fresh_cdata->_next_update)) {
-      // What luck, some other thread has already freshened the
-      // cache for us.  Save the new pointer, and let the lock
-      // release itself.
+      // What luck, some other thread has already freshened the cache for us.
+      // Save the new pointer, and let the lock release itself.
       if (_cdata != (const PandaNode::CData *)fresh_cdata) {
         ((PandaNodePipelineReader *)this)->_cdata = fresh_cdata;
 #ifdef DO_PIPELINING
@@ -4836,13 +4297,13 @@ check_cached(bool update_bounds) const {
       }
 
     } else {
-      // No, the cache is still stale.  We have to do the work of
-      // freshening it.
+      // No, the cache is still stale.  We have to do the work of freshening
+      // it.
       PStatTimer timer(PandaNode::_update_bounds_pcollector);
       PandaNode::CDStageWriter cdataw = ((PandaNode *)_node)->update_cached(update_bounds, pipeline_stage, fresh_cdata);
       nassertv(cdataw->_last_update == cdataw->_next_update);
-      // As above, we save the new pointer, and then let the lock
-      // release itself.
+      // As above, we save the new pointer, and then let the lock release
+      // itself.
       if (_cdata != (const PandaNode::CData *)cdataw) {
         ((PandaNodePipelineReader *)this)->_cdata = cdataw;
 #ifdef DO_PIPELINING

@@ -1,16 +1,15 @@
-// Filename: androidGraphicsPipe.h
-// Created by:  rdb (11Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file androidGraphicsPipe.h
+ * @author rdb
+ * @date 2013-01-11
+ */
 
 #ifndef ANDROIDGRAPHICSPIPE_H
 #define ANDROIDGRAPHICSPIPE_H
@@ -21,9 +20,8 @@
 
 #ifdef OPENGLES_2
   #include "gles2gsg.h"
-//  #define NativeDisplayType EGLNativeDisplayType
-//  #define NativePixmapType EGLNativePixmapType
-//  #define NativeWindowType EGLNativeWindowType
+// #define NativeDisplayType EGLNativeDisplayType #define NativePixmapType
+// EGLNativePixmapType #define NativeWindowType EGLNativeWindowType
 #else
   #include "glesgsg.h"
 #endif
@@ -35,12 +33,10 @@ class AndroidGraphicsBuffer;
 class AndroidGraphicsPixmap;
 class AndroidGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AndroidGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL ES graphics windows on an X-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL ES graphics
+ * windows on an X-based (e.g.  Unix) client.
+ */
 class AndroidGraphicsPipe : public GraphicsPipe {
 public:
   AndroidGraphicsPipe();

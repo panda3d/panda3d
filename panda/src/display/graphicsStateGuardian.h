@@ -1,18 +1,18 @@
-// Filename: graphicsStateGuardian.h
-// Created by:  drose (02eb99)
-// Updated by: fperazzi, PandaSE (05May10) (added fetch_ptr_parameter,
-//  _max_2d_texture_array_layers on z axis, get_supports_cg_profile)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsStateGuardian.h
+ * @author drose
+ * @date 1999-02-02
+ * @author fperazzi, PandaSE
+ * @date 2010-05-05
+ *  _max_2d_texture_array_layers on z axis, get_supports_cg_profile)
+ */
 
 #ifndef GRAPHICSSTATEGUARDIAN_H
 #define GRAPHICSSTATEGUARDIAN_H
@@ -54,20 +54,16 @@
 class DrawableRegion;
 class GraphicsEngine;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsStateGuardian
-// Description : Encapsulates all the communication with a particular
-//               instance of a given rendering backend.  Tries to
-//               guarantee that redundant state-change requests are
-//               not issued (hence "state guardian").
-//
-//               There will be one of these objects for each different
-//               graphics context active in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates all the communication with a particular instance of a given
+ * rendering backend.  Tries to guarantee that redundant state-change requests
+ * are not issued (hence "state guardian").
+ *
+ * There will be one of these objects for each different graphics context
+ * active in the system.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsStateGuardian : public GraphicsStateGuardianBase {
-  //
   // Interfaces all GSGs should have
-  //
 public:
   GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
                         GraphicsEngine *engine, GraphicsPipe *pipe);
@@ -176,6 +172,7 @@ PUBLISHED:
 
   INLINE int get_max_color_targets() const;
   INLINE int get_maximum_simultaneous_render_targets() const;
+  INLINE bool get_supports_dual_source_blending() const;
 
   MAKE_PROPERTY(max_vertices_per_array, get_max_vertices_per_array);
   MAKE_PROPERTY(max_vertices_per_primitive, get_max_vertices_per_primitive);
@@ -221,6 +218,7 @@ PUBLISHED:
   MAKE_PROPERTY(supports_timer_query, get_supports_timer_query);
   MAKE_PROPERTY(timer_queries_active, get_timer_queries_active);
   MAKE_PROPERTY(max_color_targets, get_max_color_targets);
+  MAKE_PROPERTY(supports_dual_source_blending, get_supports_dual_source_blending);
 
   INLINE ShaderModel get_shader_model() const;
   INLINE void set_shader_model(ShaderModel shader_model);
@@ -467,35 +465,32 @@ protected:
   // set_state_and_transform().
   CPT(RenderState) _target_rs;
 
-  // This bitmask contains a 1 bit everywhere that _state_rs has a
-  // known value.  If a bit is 0, the corresponding state must be
-  // re-sent.
-  //
-  // Derived GSGs should initialize _inv_state_mask in reset() as a mask of
-  // 1's where they don't care, and 0's where they do care, about the state.
+  // This bitmask contains a 1 bit everywhere that _state_rs has a known
+  // value.  If a bit is 0, the corresponding state must be re-sent.  Derived
+  // GSGs should initialize _inv_state_mask in reset() as a mask of 1's where
+  // they don't care, and 0's where they do care, about the state.
   RenderState::SlotMask _state_mask;
   RenderState::SlotMask _inv_state_mask;
 
-  // The current transform, as of the last call to
-  // set_state_and_transform().
+  // The current transform, as of the last call to set_state_and_transform().
   CPT(TransformState) _internal_transform;
 
-  // The current TextureAttrib is a special case; we may further
-  // restrict it (according to graphics cards limits) or extend it
-  // (according to ColorScaleAttribs in effect) beyond what is
-  // specifically requested in the scene graph.
+  // The current TextureAttrib is a special case; we may further restrict it
+  // (according to graphics cards limits) or extend it (according to
+  // ColorScaleAttribs in effect) beyond what is specifically requested in the
+  // scene graph.
   CPT(TextureAttrib) _target_texture;
   CPT(TextureAttrib) _state_texture;
   CPT(TexGenAttrib) _target_tex_gen;
   CPT(TexGenAttrib) _state_tex_gen;
 
-  // Also, the shader might be the explicitly-requested shader, or it
-  // might be an auto-generated one.
+  // Also, the shader might be the explicitly-requested shader, or it might be
+  // an auto-generated one.
   CPT(ShaderAttrib) _state_shader;
   CPT(ShaderAttrib) _target_shader;
 
-  // These are set by begin_draw_primitives(), and are only valid
-  // between begin_draw_primitives() and end_draw_primitives().
+  // These are set by begin_draw_primitives(), and are only valid between
+  // begin_draw_primitives() and end_draw_primitives().
   CPT(GeomMunger) _munger;
   const GeomVertexDataPipelineReader *_data_reader;
 
@@ -588,7 +583,7 @@ protected:
 
   int _last_query_frame;
   int _last_num_queried;
-  //double _timer_delta;
+  // double _timer_delta;
   typedef pdeque<PT(TimerQueryContext)> TimerQueryQueue;
   TimerQueryQueue _pending_timer_queries;
 #endif
@@ -616,6 +611,7 @@ protected:
   bool _supports_indirect_draw;
 
   int _max_color_targets;
+  bool _supports_dual_source_blending;
 
   int  _supported_geom_rendering;
   bool _color_scale_via_lighting;
@@ -685,8 +681,8 @@ public:
   static PStatCollector _prepare_vertex_buffer_pcollector;
   static PStatCollector _prepare_index_buffer_pcollector;
 
-  // A whole slew of collectors to measure the cost of individual
-  // state changes.  These are disabled by default.
+  // A whole slew of collectors to measure the cost of individual state
+  // changes.  These are disabled by default.
   static PStatCollector _draw_set_state_transform_pcollector;
   static PStatCollector _draw_set_state_alpha_test_pcollector;
   static PStatCollector _draw_set_state_antialias_pcollector;

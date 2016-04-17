@@ -11,15 +11,18 @@ from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
 from direct.directtools.DirectSelection import *
-from tkFileDialog import *
-from Tkinter import *
-import Pmw, os, string
+import Pmw, os, sys
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import EntryScale
 from direct.tkwidgets import VectorWidgets
-import __builtin__
+
+if sys.version_info >= (3, 0):
+    from tkinter.filedialog import *
+else:
+    from tkFileDialog import *
+
 
 PRF_UTILITIES = [
     'lambda: base.direct.camera.lookAt(render)',
@@ -347,7 +350,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.speedEntry.bind(
             '<Return>',
             lambda e = None, s = self: s.setSpeedScale(
-            string.atof(s.speedVar.get())))
+            float(s.speedVar.get())))
         self.speedEntry.pack(side = LEFT, expand = 0)
         frame.pack(fill = X, expand = 1)
 
@@ -662,7 +665,7 @@ class MopathRecorder(AppShell, DirectObject):
         marker if subnode selected
         """
         taskMgr.remove(self.name + '-curveEditTask')
-        print nodePath.id()
+        print(nodePath.getKey())
         if nodePath.id() in self.playbackMarkerIds:
             base.direct.select(self.playbackMarker)
         elif nodePath.id() in self.tangentMarkerIds:
@@ -1105,7 +1108,7 @@ class MopathRecorder(AppShell, DirectObject):
     def computeCurves(self):
         # Check to make sure curve fitters have points
         if (self.curveFitter.getNumSamples() == 0):
-            print 'MopathRecorder.computeCurves: Must define curve first'
+            print('MopathRecorder.computeCurves: Must define curve first')
             return
         # Create curves
         # XYZ
@@ -1351,7 +1354,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def desampleCurve(self):
         if (self.curveFitter.getNumSamples() == 0):
-            print 'MopathRecorder.desampleCurve: Must define curve first'
+            print('MopathRecorder.desampleCurve: Must define curve first')
             return
         # NOTE: This is destructive, points will be deleted from curve fitter
         self.curveFitter.desample(self.desampleFrequency)
@@ -1365,7 +1368,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def sampleCurve(self, fCompute = 1):
         if self.curveCollection == None:
-            print 'MopathRecorder.sampleCurve: Must define curve first'
+            print('MopathRecorder.sampleCurve: Must define curve first')
             return
         # Reset curve fitters
         self.curveFitter.reset()
@@ -1580,7 +1583,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def cropCurve(self):
         if self.pointSet == None:
-            print 'Empty Point Set'
+            print('Empty Point Set')
             return
         # Keep handle on old points
         oldPoints = self.pointSet
@@ -1623,8 +1626,8 @@ class MopathRecorder(AppShell, DirectObject):
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'MopathRecorder Info: Empty Model Path!'
-            print 'Using current directory'
+            print('MopathRecorder Info: Empty Model Path!')
+            print('Using current directory')
             path = '.'
         mopathFilename = askopenfilename(
             defaultextension = '.egg',
@@ -1662,8 +1665,8 @@ class MopathRecorder(AppShell, DirectObject):
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'MopathRecorder Info: Empty Model Path!'
-            print 'Using current directory'
+            print('MopathRecorder Info: Empty Model Path!')
+            print('Using current directory')
             path = '.'
         mopathFilename = asksaveasfilename(
             defaultextension = '.egg',
@@ -1760,7 +1763,7 @@ class MopathRecorder(AppShell, DirectObject):
         kw['min'] = min
         kw['maxVelocity'] = maxVelocity
         kw['resolution'] = resolution
-        widget = apply(Floater.Floater, (parent,), kw)
+        widget = Floater.Floater(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1771,7 +1774,7 @@ class MopathRecorder(AppShell, DirectObject):
     def createAngleDial(self, parent, category, text, balloonHelp,
                         command = None, **kw):
         kw['text'] = text
-        widget = apply(Dial.AngleDial, (parent,), kw)
+        widget = Dial.AngleDial(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1789,7 +1792,7 @@ class MopathRecorder(AppShell, DirectObject):
         kw['resolution'] = resolution
         #widget = apply(EntryScale.EntryScale, (parent,), kw)
         from direct.tkwidgets import Slider
-        widget = apply(Slider.Slider, (parent,), kw)
+        widget = Slider.Slider(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(side = side, fill = fill, expand = expand)
@@ -1805,7 +1808,7 @@ class MopathRecorder(AppShell, DirectObject):
         kw['min'] = min
         kw['max'] = max
         kw['resolution'] = resolution
-        widget = apply(EntryScale.EntryScale, (parent,), kw)
+        widget = EntryScale.EntryScale(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(side = side, fill = fill, expand = expand)
@@ -1817,7 +1820,7 @@ class MopathRecorder(AppShell, DirectObject):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.Vector2Entry, (parent,), kw)
+        widget = VectorWidgets.Vector2Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1829,7 +1832,7 @@ class MopathRecorder(AppShell, DirectObject):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.Vector3Entry, (parent,), kw)
+        widget = VectorWidgets.Vector3Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1841,7 +1844,7 @@ class MopathRecorder(AppShell, DirectObject):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.ColorEntry, (parent,), kw)
+        widget = VectorWidgets.ColorEntry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1913,4 +1916,3 @@ class MopathRecorder(AppShell, DirectObject):
         self.cCam = self.cCamera.attachNewNode(self.cCamNode)
 
         self.cDr.setCamera(self.cCam)
-

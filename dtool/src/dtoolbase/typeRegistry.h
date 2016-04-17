@@ -1,16 +1,15 @@
-// Filename: typeRegistry.h
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeRegistry.h
+ * @author drose
+ * @date 2001-08-06
+ */
 
 #ifndef TYPEREGISTRY_H
 #define TYPEREGISTRY_H
@@ -27,28 +26,26 @@ class TypeHandle;
 class TypeRegistryNode;
 class TypedObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeRegistry
-// Description : The TypeRegistry class maintains all the assigned
-//               TypeHandles in a given system.  There should be only
-//               one TypeRegistry class during the lifetime of the
-//               application.  It will be created on the local heap
-//               initially, and it should be migrated to shared memory
-//               as soon as shared memory becomes available.
-////////////////////////////////////////////////////////////////////
+/**
+ * The TypeRegistry class maintains all the assigned TypeHandles in a given
+ * system.  There should be only one TypeRegistry class during the lifetime of
+ * the application.  It will be created on the local heap initially, and it
+ * should be migrated to shared memory as soon as shared memory becomes
+ * available.
+ */
 class EXPCL_DTOOL TypeRegistry : public MemoryBase {
 public:
-  // User code shouldn't generally need to call
-  // TypeRegistry::register_type() or record_derivation() directly;
-  // instead, use the register_type convenience function, defined
-  // below.
+  // User code shouldn't generally need to call TypeRegistry::register_type()
+  // or record_derivation() directly; instead, use the register_type
+  // convenience function, defined in register_type.h.
   bool register_type(TypeHandle &type_handle, const string &name);
+
+PUBLISHED:
   TypeHandle register_dynamic_type(const string &name);
 
   void record_derivation(TypeHandle child, TypeHandle parent);
   void record_alternate_name(TypeHandle type, const string &name);
 
-PUBLISHED:
   TypeHandle find_type(const string &name) const;
   TypeHandle find_type_by_id(int id) const;
 
@@ -83,8 +80,8 @@ PUBLISHED:
   static TypeRegistry *ptr();
 
 private:
-  // The TypeRegistry class should never be constructed by user code.
-  // There is only one in the universe, and it constructs itself!
+  // The TypeRegistry class should never be constructed by user code.  There
+  // is only one in the universe, and it constructs itself!
   TypeRegistry();
 
   static void init_global_pointer();
@@ -117,7 +114,6 @@ private:
   friend class TypeHandle;
 };
 
-///////////////////////////////////////////
 // Helper function to allow for "C" interaction into the type system
 extern "C" EXPCL_DTOOL  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
 

@@ -1,16 +1,15 @@
-// Filename: textEncoder.cxx
-// Created by:  drose (26Mar03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textEncoder.cxx
+ * @author drose
+ * @date 2003-03-26
+ */
 
 #include "textEncoder.h"
 #include "stringDecoder.h"
@@ -19,13 +18,10 @@
 
 TextEncoder::Encoding TextEncoder::_default_encoding = TextEncoder::E_iso8859;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::make_upper
-//       Access: Published
-//  Description: Adjusts the text stored within the encoder to all
-//               uppercase letters (preserving accent marks
-//               correctly).
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the text stored within the encoder to all uppercase letters
+ * (preserving accent marks correctly).
+ */
 void TextEncoder::
 make_upper() {
   get_wtext();
@@ -36,13 +32,10 @@ make_upper() {
   _flags &= ~F_got_text;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::make_lower
-//       Access: Published
-//  Description: Adjusts the text stored within the encoder to all
-//               lowercase letters (preserving accent marks
-//               correctly).
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the text stored within the encoder to all lowercase letters
+ * (preserving accent marks correctly).
+ */
 void TextEncoder::
 make_lower() {
   get_wtext();
@@ -53,25 +46,19 @@ make_lower() {
   _flags &= ~F_got_text;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::get_wtext_as_ascii
-//       Access: Published
-//  Description: Returns the text associated with the node, converted
-//               as nearly as possible to a fully-ASCII
-//               representation.  This means replacing accented
-//               letters with their unaccented ASCII equivalents.
-//
-//               It is possible that some characters in the string
-//               cannot be converted to ASCII.  (The string may
-//               involve symbols like the copyright symbol, for
-//               instance, or it might involve letters in some other
-//               alphabet such as Greek or Cyrillic, or even Latin
-//               letters like thorn or eth that are not part of the
-//               ASCII character set.)  In this case, as much of the
-//               string as possible will be converted to ASCII, and
-//               the nonconvertible characters will remain in their
-//               original form.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the text associated with the node, converted as nearly as possible
+ * to a fully-ASCII representation.  This means replacing accented letters
+ * with their unaccented ASCII equivalents.
+ *
+ * It is possible that some characters in the string cannot be converted to
+ * ASCII.  (The string may involve symbols like the copyright symbol, for
+ * instance, or it might involve letters in some other alphabet such as Greek
+ * or Cyrillic, or even Latin letters like thorn or eth that are not part of
+ * the ASCII character set.)  In this case, as much of the string as possible
+ * will be converted to ASCII, and the nonconvertible characters will remain
+ * in their original form.
+ */
 wstring TextEncoder::
 get_wtext_as_ascii() const {
   get_wtext();
@@ -80,7 +67,7 @@ get_wtext_as_ascii() const {
   for (si = _wtext.begin(); si != _wtext.end(); ++si) {
     wchar_t character = (*si);
 
-    const UnicodeLatinMap::Entry *map_entry = 
+    const UnicodeLatinMap::Entry *map_entry =
       UnicodeLatinMap::look_up(character);
     if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
       result += (wchar_t)map_entry->_ascii_equiv;
@@ -96,15 +83,12 @@ get_wtext_as_ascii() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::is_wtext
-//       Access: Published
-//  Description: Returns true if any of the characters in the string
-//               returned by get_wtext() are out of the range of an
-//               ASCII character (and, therefore, get_wtext() should
-//               be called in preference to get_text()).
-////////////////////////////////////////////////////////////////////
-bool TextEncoder:: 
+/**
+ * Returns true if any of the characters in the string returned by get_wtext()
+ * are out of the range of an ASCII character (and, therefore, get_wtext()
+ * should be called in preference to get_text()).
+ */
+bool TextEncoder::
 is_wtext() const {
   get_wtext();
   wstring::const_iterator ti;
@@ -117,13 +101,10 @@ is_wtext() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::encode_wchar
-//       Access: Published, Static
-//  Description: Encodes a single wide char into a one-, two-, or
-//               three-byte string, according to the given encoding
-//               system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes a single wide char into a one-, two-, or three-byte string,
+ * according to the given encoding system.
+ */
 string TextEncoder::
 encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
   switch (encoding) {
@@ -131,10 +112,10 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
     if ((ch & ~0xff) == 0) {
       return string(1, (char)ch);
     } else {
-      // The character won't fit in the 8-bit ISO 8859.  See if we can
-      // make it fit by reducing it to its ascii equivalent
-      // (essentially stripping off an unusual accent mark).
-      const UnicodeLatinMap::Entry *map_entry = 
+      // The character won't fit in the 8-bit ISO 8859.  See if we can make it
+      // fit by reducing it to its ascii equivalent (essentially stripping off
+      // an unusual accent mark).
+      const UnicodeLatinMap::Entry *map_entry =
         UnicodeLatinMap::look_up(ch);
       if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
         // Yes, it has an ascii equivalent.
@@ -154,11 +135,11 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
     if ((ch & ~0x7f) == 0) {
       return string(1, (char)ch);
     } else if ((ch & ~0x7ff) == 0) {
-      return 
+      return
         string(1, (char)((ch >> 6) | 0xc0)) +
         string(1, (char)((ch & 0x3f) | 0x80));
     } else {
-      return 
+      return
         string(1, (char)((ch >> 12) | 0xe0)) +
         string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
         string(1, (char)((ch & 0x3f) | 0x80));
@@ -166,19 +147,17 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
 
   case E_unicode:
     return
-      string(1, (char)(ch >> 8)) + 
+      string(1, (char)(ch >> 8)) +
       string(1, (char)(ch & 0xff));
   }
 
   return "";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::encode_wtext
-//       Access: Published, Static
-//  Description: Encodes a wide-text string into a single-char string,
-//               according to the given encoding.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes a wide-text string into a single-char string, according to the
+ * given encoding.
+ */
 string TextEncoder::
 encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
   string result;
@@ -190,12 +169,10 @@ encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::decode_text
-//       Access: Published, Static
-//  Description: Returns the given wstring decoded to a single-byte
-//               string, via the given encoding system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the given wstring decoded to a single-byte string, via the given
+ * encoding system.
+ */
 wstring TextEncoder::
 decode_text(const string &text, TextEncoder::Encoding encoding) {
   switch (encoding) {
@@ -220,23 +197,20 @@ decode_text(const string &text, TextEncoder::Encoding encoding) {
   };
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::decode_text_impl
-//       Access: Private, Static
-//  Description: Decodes the eight-bit stream from the indicated
-//               decoder, returning the decoded wide-char string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes the eight-bit stream from the indicated decoder, returning the
+ * decoded wide-char string.
+ */
 wstring TextEncoder::
 decode_text_impl(StringDecoder &decoder) {
   wstring result;
-  //  bool expand_amp = get_expand_amp();
+  // bool expand_amp = get_expand_amp();
 
   wchar_t character = decoder.get_next_character();
   while (!decoder.is_eof()) {
     /*
     if (character == '&' && expand_amp) {
-      // An ampersand in expand_amp mode is treated as an escape
-      // character.
+      // An ampersand in expand_amp mode is treated as an escape character.
       character = expand_amp_sequence(decoder);
     }
     */
@@ -247,16 +221,13 @@ decode_text_impl(StringDecoder &decoder) {
   return result;
 }
 
+/**
+ * Given that we have just read an ampersand from the StringDecoder, and that
+ * we have expand_amp in effect and are therefore expected to expand the
+ * sequence that this ampersand begins into a single unicode character, do the
+ * expansion and return the character.
+ */
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::expand_amp_sequence
-//       Access: Private
-//  Description: Given that we have just read an ampersand from the
-//               StringDecoder, and that we have expand_amp in effect
-//               and are therefore expected to expand the sequence
-//               that this ampersand begins into a single unicode
-//               character, do the expansion and return the character.
-////////////////////////////////////////////////////////////////////
 int TextEncoder::
 expand_amp_sequence(StringDecoder &decoder) const {
   int result = 0;
@@ -279,7 +250,7 @@ expand_amp_sequence(StringDecoder &decoder) const {
   }
 
   string sequence;
-  
+
   // Some non-numeric sequence.
   while (!decoder.is_eof() && character < 128 && isalpha((unsigned int)character)) {
     sequence += character;
@@ -339,10 +310,9 @@ expand_amp_sequence(StringDecoder &decoder) const {
 */
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::Encoding ostream operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, TextEncoder::Encoding encoding) {
   switch (encoding) {
@@ -359,10 +329,9 @@ operator << (ostream &out, TextEncoder::Encoding encoding) {
   return out << "**invalid TextEncoder::Encoding(" << (int)encoding << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::Encoding istream operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 istream &
 operator >> (istream &in, TextEncoder::Encoding &encoding) {
   string word;

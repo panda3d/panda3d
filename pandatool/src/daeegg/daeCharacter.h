@@ -1,16 +1,15 @@
-// Filename: daeCharacter.h
-// Created by:  pro-rsoft (24Nov08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file daeCharacter.h
+ * @author rdb
+ * @date 2008-11-24
+ */
 
 #ifndef DAECHARACTER_H
 #define DAECHARACTER_H
@@ -30,10 +29,9 @@
 
 class DAEToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DaeCharacter
-// Description : Class representing an animated character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class representing an animated character.
+ */
 class DaeCharacter : public TypedReferenceCount {
 public:
   DaeCharacter(EggGroup *node_group, const FCDControllerInstance* controller_instance);

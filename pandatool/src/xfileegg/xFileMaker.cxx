@@ -1,16 +1,15 @@
-// Filename: xFileMaker.cxx
-// Created by:  drose (19Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileMaker.cxx
+ * @author drose
+ * @date 2001-06-19
+ */
 
 #include "xFileMaker.h"
 #include "xFileMesh.h"
@@ -31,45 +30,36 @@
 #include "string_utils.h"
 #include "datagram.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileMaker::
 XFileMaker() {
   _mesh_index = 0;
   _x_file = new XFile;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileMaker::
 ~XFileMaker() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::write
-//       Access: Public
-//  Description: Writes the .x file data to the indicated filename;
-//               returns true on success, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the .x file data to the indicated filename; returns true on success,
+ * false otherwise.
+ */
 bool XFileMaker::
 write(const Filename &filename) {
   return _x_file->write(filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::add_tree
-//       Access: Public
-//  Description: Adds the egg tree rooted at the indicated node to the
-//               X structure.  This may be somewhat destructive of
-//               the egg tree.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the egg tree rooted at the indicated node to the X structure.  This
+ * may be somewhat destructive of the egg tree.  Returns true on success,
+ * false on failure.
+ */
 bool XFileMaker::
 add_tree(EggData *egg_data) {
   _meshes.clear();
@@ -95,12 +85,9 @@ add_tree(EggData *egg_data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::add_node
-//       Access: Private
-//  Description: Adds the node to the DX structure, in whatever form
-//               it is supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the node to the DX structure, in whatever form it is supported.
+ */
 bool XFileMaker::
 add_node(EggNode *egg_node, XFileNode *x_parent) {
   if (egg_node->is_of_type(EggBin::get_class_type())) {
@@ -114,8 +101,7 @@ add_node(EggNode *egg_node, XFileNode *x_parent) {
     EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
 
     if (xfile_one_mesh) {
-      // Don't create any additional frames representing the egg
-      // hierarchy.
+      // Don't create any additional frames representing the egg hierarchy.
       if (!recurse_nodes(egg_group, x_parent)) {
         return false;
       }
@@ -128,7 +114,7 @@ add_node(EggNode *egg_node, XFileNode *x_parent) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -136,16 +122,13 @@ add_node(EggNode *egg_node, XFileNode *x_parent) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::add_group
-//       Access: Private
-//  Description: Adds a frame for the indicated group node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a frame for the indicated group node.
+ */
 bool XFileMaker::
 add_group(EggGroup *egg_group, XFileNode *x_parent) {
   if (xfile_one_mesh) {
-    // Don't create any additional frames representing the egg
-    // hierarchy.
+    // Don't create any additional frames representing the egg hierarchy.
     if (!recurse_nodes(egg_group, x_parent)) {
       return false;
     }
@@ -167,12 +150,10 @@ add_group(EggGroup *egg_group, XFileNode *x_parent) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::add_bin
-//       Access: Private
-//  Description: Determines what kind of object needs to be added for
-//               the indicated bin node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines what kind of object needs to be added for the indicated bin
+ * node.
+ */
 bool XFileMaker::
 add_bin(EggBin *egg_bin, XFileNode *x_parent) {
   switch (egg_bin->get_bin_number()) {
@@ -185,12 +166,10 @@ add_bin(EggBin *egg_bin, XFileNode *x_parent) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::add_polyset
-//       Access: Private
-//  Description: Adds a mesh object corresponding to the collection of
-//               polygons within the indicated bin.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a mesh object corresponding to the collection of polygons within the
+ * indicated bin.
+ */
 bool XFileMaker::
 add_polyset(EggBin *egg_bin, XFileNode *x_parent) {
   // Make sure that all our polygons are reasonable.
@@ -209,13 +188,11 @@ add_polyset(EggBin *egg_bin, XFileNode *x_parent) {
   return true;
 }
 
-  
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::recurse_nodes
-//       Access: Private
-//  Description: Adds each child of the indicated Node as a child of
-//               the indicated DX object.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Adds each child of the indicated Node as a child of the indicated DX
+ * object.
+ */
 bool XFileMaker::
 recurse_nodes(EggGroupNode *egg_node, XFileNode *x_parent) {
   EggGroupNode::iterator ci;
@@ -229,18 +206,16 @@ recurse_nodes(EggGroupNode *egg_node, XFileNode *x_parent) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::get_mesh
-//       Access: Private
-//  Description: Returns a suitable XFileMesh object for creating
-//               meshes within the indicated x_parent object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable XFileMesh object for creating meshes within the
+ * indicated x_parent object.
+ */
 XFileMesh *XFileMaker::
 get_mesh(XFileNode *x_parent) {
   Meshes::iterator mi = _meshes.find(x_parent);
   if (mi != _meshes.end()) {
-    // We've already started working on this x_parent before; use the
-    // same mesh object.
+    // We've already started working on this x_parent before; use the same
+    // mesh object.
     return (*mi).second;
   }
 
@@ -251,12 +226,10 @@ get_mesh(XFileNode *x_parent) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::finalize_mesh
-//       Access: Private
-//  Description: Creates the actual X structures corresponding to
-//               the indicated XFileMesh object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the actual X structures corresponding to the indicated XFileMesh
+ * object.
+ */
 bool XFileMaker::
 finalize_mesh(XFileNode *x_parent, XFileMesh *mesh) {
   // Get a unique number for each mesh.

@@ -1,16 +1,15 @@
-// Filename: animInterface.cxx
-// Created by:  drose (20Sep05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animInterface.cxx
+ * @author drose
+ * @date 2005-09-20
+ */
 
 #include "animInterface.h"
 #include "clockObject.h"
@@ -21,22 +20,18 @@
 
 TypeHandle AnimInterface::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimInterface::
 AnimInterface() :
   _num_frames(0)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimInterface::
 AnimInterface(const AnimInterface &copy) :
   _num_frames(copy._num_frames),
@@ -44,82 +39,64 @@ AnimInterface(const AnimInterface &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimInterface::
 ~AnimInterface() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::get_num_frames
-//       Access: Published, Virtual
-//  Description: Returns the number of frames in the animation.  This
-//               is a property of the animation and may not be
-//               directly adjusted by the user (although it may change
-//               without warning with certain kinds of animations,
-//               since this is a virtual method that may be
-//               overridden).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames in the animation.  This is a property of the
+ * animation and may not be directly adjusted by the user (although it may
+ * change without warning with certain kinds of animations, since this is a
+ * virtual method that may be overridden).
+ */
 int AnimInterface::
 get_num_frames() const {
   return _num_frames;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AnimInterface::
 output(ostream &out) const {
   CDReader cdata(_cycler);
   cdata->output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::animation_activated
-//       Access: Protected, Virtual
-//  Description: This is provided as a callback method for when the
-//               user calls one of the play/loop/pose type methods to
-//               start the animation playing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is provided as a callback method for when the user calls one of the
+ * play/loop/pose type methods to start the animation playing.
+ */
 void AnimInterface::
 animation_activated() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void AnimInterface::
 write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_int32(_num_frames);
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new AnimInterface.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new AnimInterface.
+ */
 void AnimInterface::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _num_frames = scan.get_int32();
   manager->read_cdata(scan, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimInterface::CData::
 CData() :
   _frame_rate(0.0),
@@ -136,11 +113,9 @@ CData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimInterface::CData::
 CData(const AnimInterface::CData &copy) :
   _frame_rate(copy._frame_rate),
@@ -157,22 +132,18 @@ CData(const AnimInterface::CData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CycleData *AnimInterface::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void AnimInterface::CData::
 write_datagram(BamWriter *, Datagram &dg) const {
   dg.add_stdfloat(_frame_rate);
@@ -187,13 +158,10 @@ write_datagram(BamWriter *, Datagram &dg) const {
   dg.add_stdfloat(_paused_f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new AnimInterface.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new AnimInterface.
+ */
 void AnimInterface::CData::
 fillin(DatagramIterator &scan, BamReader *) {
   _frame_rate = scan.get_stdfloat();
@@ -209,19 +177,14 @@ fillin(DatagramIterator &scan, BamReader *) {
   _paused_f = scan.get_stdfloat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::play
-//       Access: Public
-//  Description: Runs the animation from the frame "from" to and
-//               including the frame "to", at which point the
-//               animation is stopped.  Both "from" and "to" frame
-//               numbers may be outside the range (0,
-//               get_num_frames()) and the animation will follow the
-//               range correctly, reporting numbers modulo
-//               get_num_frames().  For instance, play(0,
-//               get_num_frames() * 2) will play the animation twice
-//               and then stop.
-////////////////////////////////////////////////////////////////////
+/**
+ * Runs the animation from the frame "from" to and including the frame "to",
+ * at which point the animation is stopped.  Both "from" and "to" frame
+ * numbers may be outside the range (0, get_num_frames()) and the animation
+ * will follow the range correctly, reporting numbers modulo get_num_frames().
+ * For instance, play(0, get_num_frames() * 2) will play the animation twice
+ * and then stop.
+ */
 void AnimInterface::CData::
 play(double from, double to) {
   if (from >= to) {
@@ -243,15 +206,11 @@ play(double from, double to) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::loop
-//       Access: Public
-//  Description: Loops the animation from the frame "from" to and
-//               including the frame "to", indefinitely.  If restart
-//               is true, the animation is restarted from the
-//               beginning; otherwise, it continues from the current
-//               frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loops the animation from the frame "from" to and including the frame "to",
+ * indefinitely.  If restart is true, the animation is restarted from the
+ * beginning; otherwise, it continues from the current frame.
+ */
 void AnimInterface::CData::
 loop(bool restart, double from, double to) {
   if (from >= to) {
@@ -279,13 +238,10 @@ loop(bool restart, double from, double to) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::pingpong
-//       Access: Public
-//  Description: Loops the animation from the frame "from" to and
-//               including the frame "to", and then back in the
-//               opposite direction, indefinitely.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loops the animation from the frame "from" to and including the frame "to",
+ * and then back in the opposite direction, indefinitely.
+ */
 void AnimInterface::CData::
 pingpong(bool restart, double from, double to) {
   if (from >= to) {
@@ -313,12 +269,9 @@ pingpong(bool restart, double from, double to) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::pose
-//       Access: Public
-//  Description: Sets the animation to the indicated frame and holds
-//               it there.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the animation to the indicated frame and holds it there.
+ */
 void AnimInterface::CData::
 pose(double frame) {
   _play_mode = PM_pose;
@@ -330,48 +283,39 @@ pose(double frame) {
   _paused_f = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::get_full_frame
-//       Access: Public
-//  Description: Returns the current integer frame number, plus the
-//               indicated increment.
-//
-//               Unlike the value returned by get_frame(), this frame
-//               number may extend beyond the range of
-//               get_num_frames() if the frame range passed to play(),
-//               loop(), etc. did.
-//
-//               Unlike the value returned by get_full_fframe(), this
-//               return value will never exceed the value passed to
-//               to_frame in the play() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current integer frame number, plus the indicated increment.
+ *
+ * Unlike the value returned by get_frame(), this frame number may extend
+ * beyond the range of get_num_frames() if the frame range passed to play(),
+ * loop(), etc.  did.
+ *
+ * Unlike the value returned by get_full_fframe(), this return value will
+ * never exceed the value passed to to_frame in the play() method.
+ */
 int AnimInterface::CData::
 get_full_frame(int increment) const {
   int frame = (int)floor(get_full_fframe()) + increment;
   if (_play_mode == PM_play) {
-    // In play mode, we never let the return value exceed
-    // (_from_frame, _to_frame).
+    // In play mode, we never let the return value exceed (_from_frame,
+    // _to_frame).
     frame = min(max(frame, _from_frame), _to_frame);
   }
   return frame;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::get_full_fframe
-//       Access: Public
-//  Description: Returns the current floating-point frame number.
-//
-//               Unlike the value returned by get_frame(), this frame
-//               number may extend beyond the range of
-//               get_num_frames() if the frame range passed to play(),
-//               loop(), etc. did.
-//
-//               Unlike the value returned by get_full_frame(), this
-//               return value may equal (to_frame + 1.0), when the
-//               animation has played to its natural end.  However, in
-//               this case the return value of get_full_frame() will
-//               be to_frame, not (to_frame + 1).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current floating-point frame number.
+ *
+ * Unlike the value returned by get_frame(), this frame number may extend
+ * beyond the range of get_num_frames() if the frame range passed to play(),
+ * loop(), etc.  did.
+ *
+ * Unlike the value returned by get_full_frame(), this return value may equal
+ * (to_frame + 1.0), when the animation has played to its natural end.
+ * However, in this case the return value of get_full_frame() will be
+ * to_frame, not (to_frame + 1).
+ */
 double AnimInterface::CData::
 get_full_fframe() const {
   switch (_play_mode) {
@@ -400,14 +344,11 @@ get_full_fframe() const {
   return _start_frame;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::is_playing
-//       Access: Public
-//  Description: Returns true if the animation is currently playing,
-//               false if it is stopped (e.g. because stop() or pose()
-//               was called, or because it reached the end of the
-//               animation after play() was called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the animation is currently playing, false if it is stopped
+ * (e.g.  because stop() or pose() was called, or because it reached the end
+ * of the animation after play() was called).
+ */
 bool AnimInterface::CData::
 is_playing() const {
   switch (_play_mode) {
@@ -425,11 +366,9 @@ is_playing() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AnimInterface::CData::
 output(ostream &out) const {
   switch (_play_mode) {
@@ -451,17 +390,15 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::internal_set_rate
-//       Access: Public
-//  Description: Called internally to adjust either or both of the
-//               frame_rate or play_rate without changing the current
-//               frame number if the animation is already playing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to adjust either or both of the frame_rate or play_rate
+ * without changing the current frame number if the animation is already
+ * playing.
+ */
 void AnimInterface::CData::
 internal_set_rate(double frame_rate, double play_rate) {
   double f = get_f();
-  
+
   _frame_rate = frame_rate;
   _play_rate = play_rate;
   _effective_frame_rate = frame_rate * play_rate;
@@ -471,8 +408,8 @@ internal_set_rate(double frame_rate, double play_rate) {
     _paused = true;
 
   } else {
-    // Compute a new _start_time that will keep f the same value with
-    // the new play_rate.
+    // Compute a new _start_time that will keep f the same value with the new
+    // play_rate.
     double new_elapsed = f / _effective_frame_rate;
     double now = ClockObject::get_global_clock()->get_frame_time();
     _start_time = now - new_elapsed;
@@ -480,12 +417,10 @@ internal_set_rate(double frame_rate, double play_rate) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::CData::get_f
-//       Access: Public
-//  Description: Returns the current floating-point frame number,
-//               elapsed since _start_frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current floating-point frame number, elapsed since
+ * _start_frame.
+ */
 double AnimInterface::CData::
 get_f() const {
   if (_paused) {

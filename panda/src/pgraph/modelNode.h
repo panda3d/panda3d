@@ -1,16 +1,15 @@
-// Filename: modelNode.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file modelNode.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef MODELNODE_H
 #define MODELNODE_H
@@ -19,18 +18,16 @@
 
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ModelNode
-// Description : This node is placed at key points within the scene
-//               graph to indicate the roots of "models": subtrees
-//               that are conceptually to be treated as a single unit,
-//               like a car or a room, for instance.  It doesn't
-//               affect rendering or any other operations; it's
-//               primarily useful as a high-level model indication.
-//
-//               ModelNodes are created in response to a <Model> { 1 }
-//               flag within an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This node is placed at key points within the scene graph to indicate the
+ * roots of "models": subtrees that are conceptually to be treated as a single
+ * unit, like a car or a room, for instance.  It doesn't affect rendering or
+ * any other operations; it's primarily useful as a high-level model
+ * indication.
+ *
+ * ModelNodes are created in response to a <Model> { 1 } flag within an egg
+ * file.
+ */
 class EXPCL_PANDA_PGRAPH ModelNode : public PandaNode {
 PUBLISHED:
   INLINE ModelNode(const string &name);
@@ -41,7 +38,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
 
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_flatten_below() const;
   virtual bool safe_to_transform() const;
@@ -107,5 +104,3 @@ private:
 #include "modelNode.I"
 
 #endif
-
-

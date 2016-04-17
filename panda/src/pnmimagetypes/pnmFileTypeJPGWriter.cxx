@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeJPGWriter.cxx
-// Created by:  mike (19Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeJPGWriter.cxx
+ * @author mike
+ * @date 2000-06-19
+ */
 
 #include "pnmFileTypeJPG.h"
 
@@ -23,11 +22,8 @@
 #include "thread.h"
 
 
-//
-// The following bit of code, for setting up jpeg_ostream_src(), was
-// lifted from jpeglib, and modified to work with ostream instead of
-// stdio.
-//
+// The following bit of code, for setting up jpeg_ostream_src(), was lifted
+// from jpeglib, and modified to work with ostream instead of stdio.
 
 /*
  * jdatadst.c
@@ -185,43 +181,33 @@ jpeg_ostream_dest (j_compress_ptr cinfo, ostream * outfile)
 
 
 
-//
 // The rest of the code in this file is new to Panda.
-//
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeJPG::Writer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeJPG::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeJPG::Writer::write_data
-//       Access: Public, Virtual
-//  Description: Writes out an entire image all at once, including the
-//               header, based on the image data stored in the given
-//               _x_size * _y_size array and alpha pointers.  (If the
-//               image type has no alpha channel, alpha is ignored.)
-//               Returns the number of rows correctly written.
-//
-//               It is the user's responsibility to fill in the header
-//               data via calls to set_x_size(), set_num_channels(),
-//               etc., or copy_header_from(), before calling
-//               write_data().
-//
-//               It is important to delete the PNMWriter class after
-//               successfully writing the data.  Failing to do this
-//               may result in some data not getting flushed!
-//
-//               Derived classes need not override this if they
-//               instead provide supports_streaming() and write_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out an entire image all at once, including the header, based on the
+ * image data stored in the given _x_size * _y_size array and alpha pointers.
+ * (If the image type has no alpha channel, alpha is ignored.) Returns the
+ * number of rows correctly written.
+ *
+ * It is the user's responsibility to fill in the header data via calls to
+ * set_x_size(), set_num_channels(), etc., or copy_header_from(), before
+ * calling write_data().
+ *
+ * It is important to delete the PNMWriter class after successfully writing
+ * the data.  Failing to do this may result in some data not getting flushed!
+ *
+ * Derived classes need not override this if they instead provide
+ * supports_streaming() and write_row(), below.
+ */
 int PNMFileTypeJPG::Writer::
 write_data(xel *array, xelval *) {
   if (_y_size<=0 || _x_size<=0) {
@@ -328,12 +314,12 @@ write_data(xel *array, xelval *) {
       }
       x++;
     }
-    //row_pointer[0] = & image_buffer[cinfo.next_scanline * row_stride];
-    //(void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    // row_pointer[0] = & image_buffer[cinfo.next_scanline * row_stride];
+    // (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
     row_pointer[0] = row;
     (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
   }
-  delete row;
+  delete[] row;
 
   /* Step 6: Finish compression */
 

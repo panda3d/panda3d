@@ -1,16 +1,15 @@
-// Filename: odeMass.I
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeMass.I
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 INLINE int OdeMass::
 check() {
@@ -38,7 +37,7 @@ set_parameters(dReal themass,
                const LVecBase3f &center,
                const LMatrix3f &i) {
   set_parameters(themass,
-                 center[0], center[1], center[2], 
+                 center[0], center[1], center[2],
                  i(0, 0), i(1, 1), i(2, 2),
                  i(0, 1), i(0, 2), i(1, 2));
 }
@@ -63,7 +62,7 @@ set_capsule(dReal density, int direction,
 INLINE void OdeMass::
 set_capsule_total(dReal total_mass, int direction,
                   dReal radius, dReal length) {
-  dMassSetCapsuleTotal(&_mass, 
+  dMassSetCapsuleTotal(&_mass,
                        total_mass, direction,
                        radius, length);
 }
@@ -71,7 +70,7 @@ set_capsule_total(dReal total_mass, int direction,
 INLINE void OdeMass::
 set_cylinder(dReal density, int direction,
              dReal radius, dReal length) {
-  dMassSetCylinder(&_mass, 
+  dMassSetCylinder(&_mass,
                    density,direction,
                    radius,length);
 }

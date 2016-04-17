@@ -1,16 +1,15 @@
-// Filename: odeHeightfieldGeom.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeHeightFieldGeom.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODEHEIGHTFIELDGEOM_H
 #define ODEHEIGHTFIELDGEOM_H
@@ -22,10 +21,9 @@
 #include "ode_includes.h"
 #include "odeGeom.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeHeightfieldGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeHeightfieldGeom : public OdeGeom {
   friend class OdeGeom;
 
@@ -38,25 +36,25 @@ PUBLISHED:
 
   INLINE dHeightfieldDataID heightfield_data_create();
   INLINE void heightfield_data_destroy(dHeightfieldDataID d);
-  INLINE void heightfield_data_build_callback(dHeightfieldDataID d, 
-                                              void* p_user_data, 
+  INLINE void heightfield_data_build_callback(dHeightfieldDataID d,
+                                              void* p_user_data,
                                               dHeightfieldGetHeight* p_callback,
                                               dReal width,
-                                              dReal depth, 
+                                              dReal depth,
                                               int width_samples,
                                               int depth_samples,
-                                              dReal scale, 
+                                              dReal scale,
                                               dReal offset,
                                               dReal thickness,
                                               int b_wrap);
-  INLINE void heightfield_data_build_byte(dHeightfieldDataID d, 
+  INLINE void heightfield_data_build_byte(dHeightfieldDataID d,
                                           const unsigned char* p_height_data,
-                                          int b_copy_height_data, 
-                                          dReal width, 
-                                          dReal depth, 
+                                          int b_copy_height_data,
+                                          dReal width,
+                                          dReal depth,
                                           int width_samples,
                                           int depth_samples,
-                                          dReal scale, 
+                                          dReal scale,
                                           dReal offset,
                                           dReal thickness,
                                           int b_wrap);
@@ -66,35 +64,35 @@ PUBLISHED:
                                            dReal width,
                                            dReal depth,
                                            int width_samples,
-                                           int depth_samples, 
-                                           dReal scale, 
-                                           dReal offset, 
-                                           dReal thickness, 
+                                           int depth_samples,
+                                           dReal scale,
+                                           dReal offset,
+                                           dReal thickness,
                                            int b_wrap);
-  INLINE void heightfield_data_build_single(dHeightfieldDataID d, 
+  INLINE void heightfield_data_build_single(dHeightfieldDataID d,
                                             const float* p_height_data,
-                                            int b_copy_height_data, 
-                                            dReal width, 
-                                            dReal depth, 
-                                            int width_samples,
-                                            int depth_samples,
-                                            dReal scale,
-                                            dReal offset, 
-                                            dReal thickness, 
-                                            int b_wrap);
-  INLINE void heightfield_data_build_double(dHeightfieldDataID d,
-                                            const double* p_height_data,
-                                            int b_copy_height_data, 
-                                            dReal width, 
+                                            int b_copy_height_data,
+                                            dReal width,
                                             dReal depth,
                                             int width_samples,
                                             int depth_samples,
-                                            dReal scale, 
-                                            dReal offset, 
+                                            dReal scale,
+                                            dReal offset,
+                                            dReal thickness,
+                                            int b_wrap);
+  INLINE void heightfield_data_build_double(dHeightfieldDataID d,
+                                            const double* p_height_data,
+                                            int b_copy_height_data,
+                                            dReal width,
+                                            dReal depth,
+                                            int width_samples,
+                                            int depth_samples,
+                                            dReal scale,
+                                            dReal offset,
                                             dReal thickness,
                                             int b_wrap);
   INLINE void heightfield_data_set_bounds(dHeightfieldDataID d,
-                                          dReal min_height, 
+                                          dReal min_height,
                                           dReal max_height);
   INLINE void heightfield_set_heightfield_data(dHeightfieldDataID d);
 

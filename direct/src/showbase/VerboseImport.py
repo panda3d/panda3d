@@ -19,13 +19,13 @@ def newimport(*args, **kw):
     name = args[0]
     # Only print the name if we have not imported this before
     if name not in sys.modules:
-        print (" "*indentLevel + "import " + args[0])
+        print((" "*indentLevel + "import " + args[0]))
         fPrint = 1
     indentLevel += 1
     result = oldimport(*args, **kw)
     indentLevel -= 1
     if fPrint:
-        print (" "*indentLevel + "DONE: import " + args[0])
+        print((" "*indentLevel + "DONE: import " + args[0]))
     return result
 
 # Replace the builtin import with our new import

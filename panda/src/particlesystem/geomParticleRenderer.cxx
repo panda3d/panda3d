@@ -1,16 +1,15 @@
-// Filename: geomParticleRenderer.cxx
-// Created by:  charles (05Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomParticleRenderer.cxx
+ * @author charles
+ * @date 2000-07-05
+ */
 
 #include "geomParticleRenderer.h"
 #include "baseParticle.h"
@@ -22,11 +21,9 @@
 
 PStatCollector GeomParticleRenderer::_render_collector("App:Particles:Geom:Render");
 
-////////////////////////////////////////////////////////////////////
-//    Function : GeomParticleRenderer
-//      Access : public
-// Description : constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 GeomParticleRenderer::
 GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
@@ -48,15 +45,13 @@ GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
     _geom_node = new PandaNode("empty");
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : GeomParticleRenderer
-//      Access : public
-// Description : copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 
 GeomParticleRenderer::
 GeomParticleRenderer(const GeomParticleRenderer& copy) :
-  BaseParticleRenderer(copy), 
+  BaseParticleRenderer(copy),
   _pool_size(0),
   _initial_x_scale(copy._initial_x_scale),
   _final_x_scale(copy._final_x_scale),
@@ -71,50 +66,42 @@ GeomParticleRenderer(const GeomParticleRenderer& copy) :
   _geom_node = copy._geom_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : ~GeomParticleRenderer
-//      Access : public
-// Description : destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 
 GeomParticleRenderer::
 ~GeomParticleRenderer() {
   kill_nodes();
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : public
-// Description : dynamic copying
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic copying
+ */
 
 BaseParticleRenderer *GeomParticleRenderer::
 make_copy() {
   return new GeomParticleRenderer(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : init_geoms
-//      Access : private
-// Description : links the child nodes to the parent stuff
-////////////////////////////////////////////////////////////////////
+/**
+ * links the child nodes to the parent stuff
+ */
 void GeomParticleRenderer::
 init_geoms() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : resize_pool
-//      Access : private
-// Description : handles renderer-size resizing.
-////////////////////////////////////////////////////////////////////
+/**
+ * handles renderer-size resizing.
+ */
 
 void GeomParticleRenderer::
 resize_pool(int new_size) {
   kill_nodes();
 
-  // now repopulate the vector with a bunch of NULLS, representing
-  // potential instances of the _geom_node.
+  // now repopulate the vector with a bunch of NULLS, representing potential
+  // instances of the _geom_node.
 
   int i;
   for (i = 0; i < new_size; i++) {
@@ -124,10 +111,9 @@ resize_pool(int new_size) {
   _pool_size = new_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//  Function : kill_nodes
-//    Access : private
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 
 void GeomParticleRenderer::
 kill_nodes() {
@@ -144,11 +130,9 @@ kill_nodes() {
   _node_vector.erase(_node_vector.begin(), _node_vector.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : birth_particle
-//      Access : Private, virtual
-// Description : child birth
-////////////////////////////////////////////////////////////////////
+/**
+ * child birth
+ */
 
 void GeomParticleRenderer::
 birth_particle(int index) {
@@ -160,11 +144,9 @@ birth_particle(int index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : kill_particle
-//      Access : Private, virtual
-// Description : child kill
-////////////////////////////////////////////////////////////////////
+/**
+ * child kill
+ */
 
 void GeomParticleRenderer::
 kill_particle(int index) {
@@ -174,11 +156,9 @@ kill_particle(int index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : render
-//      Access : private
-// Description : sets the transitions on each arc
-////////////////////////////////////////////////////////////////////
+/**
+ * sets the transitions on each arc
+ */
 
 void GeomParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
@@ -223,7 +203,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
             alpha_scalar = 2.0f * min(alpha_scalar, 1.0f - alpha_scalar);
           alpha_scalar *= get_user_alpha();
         }
-        
+
         c[3] *= alpha_scalar;
         cur_node->set_attrib(ColorScaleAttrib::make
                              (LColor(1.0f, 1.0f, 1.0f, c[3])));
@@ -238,15 +218,15 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
       if (_animate_x_ratio || _animate_y_ratio || _animate_z_ratio) {
         if (_animate_x_ratio) {
-          current_x_scale = (_initial_x_scale + 
+          current_x_scale = (_initial_x_scale +
                              (t * (_final_x_scale - _initial_x_scale)));
         }
         if (_animate_y_ratio) {
-          current_y_scale = (_initial_y_scale + 
+          current_y_scale = (_initial_y_scale +
                              (t * (_final_y_scale - _initial_y_scale)));
         }
         if (_animate_z_ratio) {
-          current_z_scale = (_initial_z_scale + 
+          current_z_scale = (_initial_z_scale +
                              (t * (_final_z_scale - _initial_z_scale)));
         }
       }
@@ -268,12 +248,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void GeomParticleRenderer::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -281,12 +258,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write_linear_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void GeomParticleRenderer::
 write_linear_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
@@ -300,12 +274,9 @@ write_linear_forces(ostream &out, int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void GeomParticleRenderer::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

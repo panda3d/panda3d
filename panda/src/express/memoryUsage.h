@@ -1,16 +1,15 @@
-// Filename: memoryUsage.h
-// Created by:  drose (25May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memoryUsage.h
+ * @author drose
+ * @date 2000-05-25
+ */
 
 #ifndef MEMORYUSAGE_H
 #define MEMORYUSAGE_H
@@ -28,16 +27,14 @@
 class ReferenceCount;
 class MemoryUsagePointers;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryUsage
-// Description : This class is used strictly for debugging purposes,
-//               specifically for tracking memory leaks of
-//               reference-counted objects: it keeps a record of every
-//               such object currently allocated.
-//
-//               When compiled with NDEBUG set, this entire class does
-//               nothing and compiles to nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used strictly for debugging purposes, specifically for
+ * tracking memory leaks of reference-counted objects: it keeps a record of
+ * every such object currently allocated.
+ *
+ * When compiled with NDEBUG set, this entire class does nothing and compiles
+ * to nothing.
+ */
 class EXPCL_PANDAEXPRESS MemoryUsage : public MemoryHook {
 public:
   INLINE static bool get_track_memory_usage();
@@ -58,11 +55,11 @@ public:
   virtual void mark_pointer(void *ptr, size_t orig_size, ReferenceCount *ref_ptr);
 
 #if (defined(WIN32_VC) || defined(WIN64_VC)) && defined(_DEBUG)
-  static int win32_malloc_hook(int alloc_type, void *ptr, 
-                               size_t size, int block_use, long request, 
+  static int win32_malloc_hook(int alloc_type, void *ptr,
+                               size_t size, int block_use, long request,
                                const unsigned char *filename, int line);
 #endif
-    
+
 PUBLISHED:
   INLINE static bool is_tracking();
   INLINE static bool is_counting();
@@ -126,19 +123,20 @@ private:
 
   static MemoryUsage *_global_ptr;
 
-  // We shouldn't use a pmap, since that would be recursive!
-  // Actually, it turns out that it doesn't matter, since somehow the
-  // pallocator gets used even though we don't specify it here, so we
-  // have to make special code that handles the recursion anyway.
+  // We shouldn't use a pmap, since that would be recursive!  Actually, it
+  // turns out that it doesn't matter, since somehow the pallocator gets used
+  // even though we don't specify it here, so we have to make special code
+  // that handles the recursion anyway.
 
-  // This table stores up to two entiries for each MemoryInfo object:
-  // one for the void pointer (the pointer to the beginning of the
-  // allocated memory block), and one for the ReferenceCount pointer.
-  // For a particular object, these two pointers may be the same or
-  // they may be different.  Some objects may be stored under both
-  // pointers, while others may be stored under only one pointer or
-  // the other.  We don't store an entry for an object's TypedObject
-  // pointer.
+/*
+ * This table stores up to two entiries for each MemoryInfo object: one for
+ * the void pointer (the pointer to the beginning of the allocated memory
+ * block), and one for the ReferenceCount pointer.  For a particular object,
+ * these two pointers may be the same or they may be different.  Some objects
+ * may be stored under both pointers, while others may be stored under only
+ * one pointer or the other.  We don't store an entry for an object's
+ * TypedObject pointer.
+ */
   typedef map<void *, MemoryInfo *> Table;
   Table _table;
 
@@ -199,4 +197,3 @@ private:
 #endif  // DO_MEMORY_USAGE
 
 #endif
-

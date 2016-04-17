@@ -1,16 +1,15 @@
-// Filename: characterJoint.cxx
-// Created by:  drose (23Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file characterJoint.cxx
+ * @author drose
+ * @date 1999-02-23
+ */
 
 #include "characterJoint.h"
 #include "config_char.h"
@@ -23,22 +22,18 @@
 
 TypeHandle CharacterJoint::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::Default Constructor
-//       Access: Protected
-//  Description: For internal use only.
-////////////////////////////////////////////////////////////////////
+/**
+ * For internal use only.
+ */
 CharacterJoint::
 CharacterJoint() :
   _character(NULL)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CharacterJoint::
 CharacterJoint(const CharacterJoint &copy) :
   MovingPartMatrix(copy),
@@ -49,11 +44,9 @@ CharacterJoint(const CharacterJoint &copy) :
   // We don't copy the sets of transform nodes.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CharacterJoint::
 CharacterJoint(Character *character,
                PartBundle *root, PartGroup *parent, const string &name,
@@ -67,79 +60,68 @@ CharacterJoint(Character *character,
   // update_internals() to get our _net_transform set properly.
   update_internals(root, parent, true, false, current_thread);
 
-  // And then compute its inverse.  This is needed for
-  // ComputedVertices, during animation.
+  // And then compute its inverse.  This is needed for ComputedVertices,
+  // during animation.
   _initial_net_transform_inverse = invert(_net_transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CharacterJoint::
 ~CharacterJoint() {
   nassertv(_vertex_transforms.empty());
   nassertv(_character == (Character *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::is_character_joint
-//       Access: Public, Virtual
-//  Description: Returns true if this part is a CharacterJoint, false
-//               otherwise.  This is a tiny optimization over
-//               is_of_type(CharacterType::get_class_type()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this part is a CharacterJoint, false otherwise.  This is a
+ * tiny optimization over is_of_type(CharacterType::get_class_type()).
+ */
 bool CharacterJoint::
 is_character_joint() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the node.
-//               Children are not copied, but see copy_subgraph().
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the node.  Children are not copied, but
+ * see copy_subgraph().
+ */
 PartGroup *CharacterJoint::
 make_copy() const {
   return new CharacterJoint(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::update_internals
-//       Access: Public, Virtual
-//  Description: This is called by do_update() whenever the part or
-//               some ancestor has changed values.  It is a hook for
-//               derived classes to update whatever cache they may
-//               have that depends on these.
-//
-//               The return value is true if the part has changed as a
-//               result of the update, or false otherwise.
-//
-//               In the case of a CharacterJoint, of course, it means
-//               to recompute the joint angles and associated
-//               transforms for this particular joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by do_update() whenever the part or some ancestor has
+ * changed values.  It is a hook for derived classes to update whatever cache
+ * they may have that depends on these.
+ *
+ * The return value is true if the part has changed as a result of the update,
+ * or false otherwise.
+ *
+ * In the case of a CharacterJoint, of course, it means to recompute the joint
+ * angles and associated transforms for this particular joint.
+ */
 bool CharacterJoint::
-update_internals(PartBundle *root, PartGroup *parent, bool self_changed, 
+update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
                  bool parent_changed, Thread *current_thread) {
   nassertr(parent != (PartGroup *)NULL, false);
 
   bool net_changed = false;
   if (parent->is_character_joint()) {
-    // The joint is not a toplevel joint; its parent therefore affects
-    // its net transform.
+    // The joint is not a toplevel joint; its parent therefore affects its net
+    // transform.
     if (parent_changed || self_changed) {
       CharacterJoint *parent_joint = DCAST(CharacterJoint, parent);
-      
+
       _net_transform = _value * parent_joint->_net_transform;
       net_changed = true;
     }
 
   } else {
-    // The joint is a toplevel joint, so therefore it gets its root
-    // transform from the bundle.
+    // The joint is a toplevel joint, so therefore it gets its root transform
+    // from the bundle.
     if (self_changed) {
       _net_transform = _value * root->get_root_xform();
       net_changed = true;
@@ -149,7 +131,7 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
   if (net_changed) {
     if (!_net_transform_nodes.empty()) {
       CPT(TransformState) t = TransformState::make_mat(_net_transform);
-      
+
       NodeList::iterator ai;
       for (ai = _net_transform_nodes.begin();
            ai != _net_transform_nodes.end();
@@ -159,8 +141,8 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
       }
     }
 
-    // Also tell our related JointVertexTransforms that they now need
-    // to recompute themselves.
+    // Also tell our related JointVertexTransforms that they now need to
+    // recompute themselves.
     VertexTransforms::iterator vti;
     for (vti = _vertex_transforms.begin(); vti != _vertex_transforms.end(); ++vti) {
       (*vti)->_matrix_stale = true;
@@ -183,13 +165,10 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
   return self_changed || net_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::do_xform
-//       Access: Public, Virtual
-//  Description: Called by PartBundle::xform(), this indicates the
-//               indicated transform is being applied to the root
-//               joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by PartBundle::xform(), this indicates the indicated transform is
+ * being applied to the root joint.
+ */
 void CharacterJoint::
 do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
   _initial_net_transform_inverse = inv_mat * _initial_net_transform_inverse;
@@ -199,18 +178,14 @@ do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::add_net_transform
-//       Access: Published
-//  Description: Adds the indicated node to the list of nodes that will
-//               be updated each frame with the joint's net transform
-//               from the root.  Returns true if the node is
-//               successfully added, false if it had already been
-//               added.
-//
-//               A CharacterJointEffect for this joint's Character
-//               will automatically be added to the specified node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated node to the list of nodes that will be updated each
+ * frame with the joint's net transform from the root.  Returns true if the
+ * node is successfully added, false if it had already been added.
+ *
+ * A CharacterJointEffect for this joint's Character will automatically be
+ * added to the specified node.
+ */
 bool CharacterJoint::
 add_net_transform(PandaNode *node) {
   if (_character != (Character *)NULL) {
@@ -221,18 +196,14 @@ add_net_transform(PandaNode *node) {
   return _net_transform_nodes.insert(node).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::remove_net_transform
-//       Access: Published
-//  Description: Removes the indicated node from the list of nodes that
-//               will be updated each frame with the joint's net
-//               transform from the root.  Returns true if the node is
-//               successfully removed, false if it was not on the
-//               list.
-//
-//               If the node has a CharacterJointEffect that matches
-//               this joint's Character, it will be cleared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated node from the list of nodes that will be updated each
+ * frame with the joint's net transform from the root.  Returns true if the
+ * node is successfully removed, false if it was not on the list.
+ *
+ * If the node has a CharacterJointEffect that matches this joint's Character,
+ * it will be cleared.
+ */
 bool CharacterJoint::
 remove_net_transform(PandaNode *node) {
   CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
@@ -244,25 +215,19 @@ remove_net_transform(PandaNode *node) {
   return (_net_transform_nodes.erase(node) > 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::has_net_transform
-//       Access: Published
-//  Description: Returns true if the node is on the list of nodes that
-//               will be updated each frame with the joint's net
-//               transform from the root, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node is on the list of nodes that will be updated each
+ * frame with the joint's net transform from the root, false otherwise.
+ */
 bool CharacterJoint::
 has_net_transform(PandaNode *node) const {
   return (_net_transform_nodes.count(node) > 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::clear_net_transforms
-//       Access: Published
-//  Description: Removes all nodes from the list of nodes that will be
-//               updated each frame with the joint's net transform
-//               from the root.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all nodes from the list of nodes that will be updated each frame
+ * with the joint's net transform from the root.
+ */
 void CharacterJoint::
 clear_net_transforms() {
   NodeList::iterator ai;
@@ -281,14 +246,11 @@ clear_net_transforms() {
   _net_transform_nodes.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::get_net_transforms
-//       Access: Published
-//  Description: Returns a list of the net transforms set for this
-//               node.  Note that this returns a list of NodePaths,
-//               even though the net transforms are actually a list of
-//               PandaNodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of the net transforms set for this node.  Note that this
+ * returns a list of NodePaths, even though the net transforms are actually a
+ * list of PandaNodes.
+ */
 NodePathCollection CharacterJoint::
 get_net_transforms() {
   NodePathCollection npc;
@@ -304,23 +266,18 @@ get_net_transforms() {
   return npc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::add_local_transform
-//       Access: Published
-//  Description: Adds the indicated node to the list of nodes that will
-//               be updated each frame with the joint's local
-//               transform from its parent.  Returns true if the node
-//               is successfully added, false if it had already been
-//               added.
-//
-//               The Character pointer should be the Character object
-//               that owns this joint; this will be used to create a
-//               CharacterJointEffect for this node.  If it is NULL,
-//               no such effect will be created.
-//
-//               A CharacterJointEffect for this joint's Character
-//               will automatically be added to the specified node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated node to the list of nodes that will be updated each
+ * frame with the joint's local transform from its parent.  Returns true if
+ * the node is successfully added, false if it had already been added.
+ *
+ * The Character pointer should be the Character object that owns this joint;
+ * this will be used to create a CharacterJointEffect for this node.  If it is
+ * NULL, no such effect will be created.
+ *
+ * A CharacterJointEffect for this joint's Character will automatically be
+ * added to the specified node.
+ */
 bool CharacterJoint::
 add_local_transform(PandaNode *node) {
   if (_character != (Character *)NULL) {
@@ -331,18 +288,14 @@ add_local_transform(PandaNode *node) {
   return _local_transform_nodes.insert(node).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::remove_local_transform
-//       Access: Published
-//  Description: Removes the indicated node from the list of nodes that
-//               will be updated each frame with the joint's local
-//               transform from its parent.  Returns true if the node
-//               is successfully removed, false if it was not on the
-//               list.
-//
-//               If the node has a CharacterJointEffect that matches
-//               this joint's Character, it will be cleared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated node from the list of nodes that will be updated each
+ * frame with the joint's local transform from its parent.  Returns true if
+ * the node is successfully removed, false if it was not on the list.
+ *
+ * If the node has a CharacterJointEffect that matches this joint's Character,
+ * it will be cleared.
+ */
 bool CharacterJoint::
 remove_local_transform(PandaNode *node) {
   CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
@@ -354,25 +307,19 @@ remove_local_transform(PandaNode *node) {
   return (_local_transform_nodes.erase(node) > 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::has_local_transform
-//       Access: Published
-//  Description: Returns true if the node is on the list of nodes that
-//               will be updated each frame with the joint's local
-//               transform from its parent, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node is on the list of nodes that will be updated each
+ * frame with the joint's local transform from its parent, false otherwise.
+ */
 bool CharacterJoint::
 has_local_transform(PandaNode *node) const {
   return (_local_transform_nodes.count(node) > 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::clear_local_transforms
-//       Access: Published
-//  Description: Removes all nodes from the list of nodes that will be
-//               updated each frame with the joint's local transform
-//               from its parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all nodes from the list of nodes that will be updated each frame
+ * with the joint's local transform from its parent.
+ */
 void CharacterJoint::
 clear_local_transforms() {
   NodeList::iterator ai;
@@ -391,14 +338,11 @@ clear_local_transforms() {
   _local_transform_nodes.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::get_local_transforms
-//       Access: Published
-//  Description: Returns a list of the local transforms set for this
-//               node.  Note that this returns a list of NodePaths,
-//               even though the local transforms are actually a list of
-//               PandaNodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of the local transforms set for this node.  Note that this
+ * returns a list of NodePaths, even though the local transforms are actually
+ * a list of PandaNodes.
+ */
 NodePathCollection CharacterJoint::
 get_local_transforms() {
   NodePathCollection npc;
@@ -414,12 +358,9 @@ get_local_transforms() {
   return npc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::get_transform
-//       Access: Published
-//  Description: Copies the joint's current transform into the
-//               indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the joint's current transform into the indicated matrix.
+ */
 void CharacterJoint::
 get_transform(LMatrix4 &transform) const {
   transform = _value;
@@ -430,40 +371,32 @@ get_transform_state() const {
     return TransformState::make_mat( _value );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::get_net_transform
-//       Access: Published
-//  Description: Copies the joint's current net transform (composed
-//               from the root of the character joint hierarchy) into
-//               the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the joint's current net transform (composed from the root of the
+ * character joint hierarchy) into the indicated matrix.
+ */
 void CharacterJoint::
 get_net_transform(LMatrix4 &transform) const {
   transform = _net_transform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::get_character
-//       Access: Published
-//  Description: Returns the Character that owns this joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Character that owns this joint.
+ */
 Character *CharacterJoint::
 get_character() const {
   return _character;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::set_character
-//       Access: Private
-//  Description: Changes the Character that owns this joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the Character that owns this joint.
+ */
 void CharacterJoint::
 set_character(Character *character) {
   if (character != _character) {
 
     if (character != (Character *)NULL) {
-      // Change or set a _character pointer on each joint's exposed
-      // node.
+      // Change or set a _character pointer on each joint's exposed node.
       NodeList::iterator ai;
       for (ai = _net_transform_nodes.begin();
            ai != _net_transform_nodes.end();
@@ -485,7 +418,7 @@ set_character(Character *character) {
            ai != _net_transform_nodes.end();
            ++ai) {
         PandaNode *node = *ai;
-        
+
         CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
         if (effect != (RenderEffect *)NULL &&
             DCAST(CharacterJointEffect, effect)->get_character() == _character) {
@@ -496,7 +429,7 @@ set_character(Character *character) {
            ai != _local_transform_nodes.end();
            ++ai) {
         PandaNode *node = *ai;
-        
+
         CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
         if (effect != (RenderEffect *)NULL &&
             DCAST(CharacterJointEffect, effect)->get_character() == _character) {
@@ -505,16 +438,14 @@ set_character(Character *character) {
       }
     }
   }
-    
+
   _character = character;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CharacterJoint::
 write_datagram(BamWriter *manager, Datagram &me) {
   NodeList::iterator ni;
@@ -523,15 +454,15 @@ write_datagram(BamWriter *manager, Datagram &me) {
   manager->write_pointer(me, _character);
 
   me.add_uint16(_net_transform_nodes.size());
-  for (ni = _net_transform_nodes.begin(); 
-       ni != _net_transform_nodes.end(); 
+  for (ni = _net_transform_nodes.begin();
+       ni != _net_transform_nodes.end();
        ni++) {
     manager->write_pointer(me, (*ni));
   }
 
   me.add_uint16(_local_transform_nodes.size());
-  for (ni = _local_transform_nodes.begin(); 
-       ni != _local_transform_nodes.end(); 
+  for (ni = _local_transform_nodes.begin();
+       ni != _local_transform_nodes.end();
        ni++) {
     manager->write_pointer(me, (*ni));
   }
@@ -539,14 +470,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   _initial_net_transform_inverse.write_datagram(me);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of
+ * the data that is needed to re-create this object and stores it in the
+ * appropiate place
+ */
 void CharacterJoint::
 fillin(DatagramIterator &scan, BamReader *manager) {
   int i;
@@ -560,7 +488,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for(i = 0; i < _num_net_nodes; i++) {
     manager->read_pointer(scan);
   }
-  
+
   _num_local_nodes = scan.get_uint16();
   for(i = 0; i < _num_local_nodes; i++) {
     manager->read_pointer(scan);
@@ -569,13 +497,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _initial_net_transform_inverse.read_datagram(scan);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::complete_pointers
-//       Access: Public
-//  Description: Takes in a vector of pointers to TypedWritable
-//               objects that correspond to all the requests for
-//               pointers that this object made to BamReader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes in a vector of pointers to TypedWritable objects that correspond to
+ * all the requests for pointers that this object made to BamReader.
+ */
 int CharacterJoint::
 complete_pointers(TypedWritable **p_list, BamReader* manager) {
   int pi = MovingPartMatrix::complete_pointers(p_list, manager);
@@ -600,11 +525,9 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::make_CharacterJoint
-//       Access: Protected
-//  Description: Factory method to generate a CharacterJoint object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CharacterJoint object
+ */
 TypedWritable* CharacterJoint::
 make_CharacterJoint(const FactoryParams &params) {
   CharacterJoint *me = new CharacterJoint;
@@ -616,14 +539,10 @@ make_CharacterJoint(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a CharacterJoint object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CharacterJoint object
+ */
 void CharacterJoint::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CharacterJoint);
 }
-
-

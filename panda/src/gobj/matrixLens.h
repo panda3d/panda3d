@@ -1,16 +1,15 @@
-// Filename: matrixLens.h
-// Created by:  drose (12Dec01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file matrixLens.h
+ * @author drose
+ * @date 2001-12-12
+ */
 
 #ifndef MATRIXLENS_H
 #define MATRIXLENS_H
@@ -20,14 +19,12 @@
 #include "lens.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : MatrixLens
-// Description : A completely generic linear lens.  This is provided
-//               for the benefit of low-level code that wants to
-//               specify a perspective or orthographic frustum via an
-//               explicit projection matrix, but not mess around with
-//               fov's or focal lengths or any of that nonsense.
-////////////////////////////////////////////////////////////////////
+/**
+ * A completely generic linear lens.  This is provided for the benefit of low-
+ * level code that wants to specify a perspective or orthographic frustum via
+ * an explicit projection matrix, but not mess around with fov's or focal
+ * lengths or any of that nonsense.
+ */
 class EXPCL_PANDA_GOBJ MatrixLens : public Lens {
 PUBLISHED:
   INLINE MatrixLens();
@@ -73,9 +70,11 @@ private:
 
 public:
   static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   virtual TypeHandle get_type() const {

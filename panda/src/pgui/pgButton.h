@@ -1,16 +1,15 @@
-// Filename: pgButton.h
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgButton.h
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #ifndef PGBUTTON_H
 #define PGBUTTON_H
@@ -22,13 +21,11 @@
 #include "nodePath.h"
 #include "pset.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGButton
-// Description : This is a particular kind of PGItem that is
-//               specialized to behave like a normal button object.
-//               It keeps track of its own state, and handles mouse
-//               events sensibly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of PGItem that is specialized to behave like a
+ * normal button object.  It keeps track of its own state, and handles mouse
+ * events sensibly.
+ */
 class EXPCL_PANDA_PGUI PGButton : public PGItem {
 PUBLISHED:
   PGButton(const string &name);
@@ -61,7 +58,7 @@ PUBLISHED:
   void setup(const string &label, PN_stdfloat bevel = 0.1f);
   INLINE void setup(const NodePath &ready);
   INLINE void setup(const NodePath &ready, const NodePath &depressed);
-  INLINE void setup(const NodePath &ready, const NodePath &depressed, 
+  INLINE void setup(const NodePath &ready, const NodePath &depressed,
                     const NodePath &rollover);
   void setup(const NodePath &ready, const NodePath &depressed,
              const NodePath &rollover, const NodePath &inactive);

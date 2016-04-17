@@ -5,14 +5,14 @@
 
   This file implements the classes that are used to choose
   what to export from 3D Studio max
-  
+
   Updated by Fei Wang, Carnegie Mellon University Entertainment
   Technology Center student, 14Aug2009:  added enableAddCollisionChoices
 */
 
 #include "maxEgg.h"
 
-//Disable the forcing int to true or false performance warning
+// Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)
 
 void SetICustEdit(HWND wnd, int nIDDlgItem, TCHAR *text)
@@ -161,7 +161,7 @@ public:
   MaxOptionsDialog *ph; //Pointer to the parent class
   HWND hWnd;            //Handle to the parent dialog
 
-  AddNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
+  AddNodeCB (MaxOptionsDialog *instance, HWND wnd) :
     ph(instance), hWnd(wnd) {}
 
 #if MAX_VERSION_MAJOR < 15
@@ -176,11 +176,11 @@ public:
   virtual void proc(INodeTab &nodeTab);
 };
 
-//This tells what should be in the list
-//Allow only triangular objects, nurbs, and joints
+// This tells what should be in the list Allow only triangular objects, nurbs,
+// and joints
 int AddNodeCB::filter(INode *node) {
   if (!node) return 0;
-  
+
   Object *obj = node->EvalWorldState(0).obj;
   Control *c = node->GetTMController();
   NURBSSet getSet;
@@ -190,7 +190,7 @@ int AddNodeCB::filter(INode *node) {
      (c->ClassID() == BIPBODY_CONTROL_CLASS_ID) ||
      (c->ClassID() == FOOTPRINT_CLASS_ID))));
 
-  
+
   if (IsDlgButtonChecked(hWnd, IDC_ANIMATION) == BST_CHECKED)
     return is_bone && !ph->FindNode(node->GetHandle());
   else
@@ -205,7 +205,7 @@ int AddNodeCB::filter(INode *node) {
     !ph->FindNode(node->GetHandle()));             //Only allow items not already selected
 }
 
-//Adds all of the selected items to the list
+// Adds all of the selected items to the list
 void AddNodeCB::proc(INodeTab &nodeTab) {
 
   for (int i = 0; i < nodeTab.Count(); i++)
@@ -213,14 +213,15 @@ void AddNodeCB::proc(INodeTab &nodeTab) {
   ph->RefreshNodeList(hWnd);
 }
 
-//This callback class generates a list of nodes that have previously been selected
+// This callback class generates a list of nodes that have previously been
+// selected
 class RemoveNodeCB : public HitByNameDlgCallback
 {
 public:
     MaxOptionsDialog *ph; //Pointer to the parent class
     HWND hWnd;            //Handle to the parent dialog
 
-    RemoveNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
+    RemoveNodeCB (MaxOptionsDialog *instance, HWND wnd) :
         ph(instance), hWnd(wnd) {}
 
 #if MAX_VERSION_MAJOR < 15
@@ -236,7 +237,7 @@ public:
 };
 
 
-//Adds all of the selected items to the list
+// Adds all of the selected items to the list
 void RemoveNodeCB::proc(INodeTab &nodeTab) {
     for (int i = 0; i < nodeTab.Count(); i++)
         ph->RemoveNodeByHandle(nodeTab[i]->GetHandle());
@@ -260,28 +261,29 @@ MaxEggOptions::MaxEggOptions() {
     _successful = false;
 }
 
-INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) 
+INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
     TCHAR tempFilename[2048];
-    //We pass in our plugin through the lParam variable. Let's convert it back.
-    MaxOptionsDialog *imp = (MaxOptionsDialog*)GetWindowLongPtr(hWnd,GWLP_USERDATA); 
+    // We pass in our plugin through the lParam variable.  Let's convert it
+    // back.
+    MaxOptionsDialog *imp = (MaxOptionsDialog*)GetWindowLongPtr(hWnd,GWLP_USERDATA);
     if ( !imp && message != WM_INITDIALOG ) return FALSE;
 
     switch(message) {
 
     case WM_INITDIALOG:
         // this line is very necessary to pass the plugin as the lParam
-        SetWindowLongPtr(hWnd,GWLP_USERDATA,lParam); 
+        SetWindowLongPtr(hWnd,GWLP_USERDATA,lParam);
         ((MaxOptionsDialog*)lParam)->UpdateUI(hWnd);
 
         return TRUE; break;
-        
+
     case WM_CLOSE:
         EndDialog(hWnd, FALSE);
         return TRUE; break;
-        
+
     case WM_COMMAND:
-        //The modified control is found in the lower word of the wParam long.
+        // The modified control is found in the lower word of the wParam long.
         switch( LOWORD(wParam) ) {
         case IDC_MODEL:
             if (HIWORD(wParam) == BN_CLICKED) {
@@ -296,7 +298,7 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
                 return TRUE;
             }
             break;
-            
+
         case IDC_ANIMATION:
             if (HIWORD(wParam) == BN_CLICKED) {
                 SetWindowText(GetDlgItem(hWnd, IDC_EXPORT_SELECTED),
@@ -353,7 +355,7 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
                 return TRUE;
             }
             break;
-            
+
         case IDC_EXP_SEL_FRAMES:
             if (HIWORD(wParam) == BN_CLICKED) {
                 enableAnimControls(hWnd, TRUE);
@@ -375,7 +377,7 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
                 return TRUE;
             }
             break;
-            
+
         case IDC_EXPORT_SELECTED:
             if (HIWORD(wParam) == BN_CLICKED) {
                 enableChooserControls(hWnd, TRUE);
@@ -429,11 +431,9 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
             SetFocus(GetDlgItem(hWnd, IDC_FILENAME));
             if (GetSaveFileName(&ofn))
                 SetICustEdit(hWnd, IDC_FILENAME, ofn.lpstrFile);
-            //else {
-            //  char buf[255];
-            //  sprintf(buf, "%d", CommDlgExtendedError());
-            //  MessageBox(hWnd, buf, "Error on GetSaveFileName", MB_OK);
-            //}
+            // else { char buf[255]; sprintf(buf, "%d",
+            // CommDlgExtendedError()); MessageBox(hWnd, buf, "Error on
+            // GetSaveFileName", MB_OK); }
             return TRUE; break;
         case IDC_CHECK1:
             if (IsDlgButtonChecked(hWnd, IDC_CHECK1))
@@ -444,9 +444,8 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
             return TRUE; break;
 
         default:
-            //char buf[255];
-            //sprintf(buf, "%d", LOWORD(wParam));
-            //MessageBox(hWnd, buf, "Unknown WParam", MB_OK);
+            // char buf[255]; sprintf(buf, "%d", LOWORD(wParam));
+            // MessageBox(hWnd, buf, "Unknown WParam", MB_OK);
             break;
         }
     }
@@ -479,14 +478,14 @@ void MaxOptionsDialog::UpdateUI(HWND hWnd) {
     int typeButton = IDC_MODEL;
     int anim_exp = _export_all_frames ? IDC_EXP_ALL_FRAMES : IDC_EXP_SEL_FRAMES;
     int model_exp = _export_whole_scene ? IDC_EXPORT_ALL : IDC_EXPORT_SELECTED;
-    
+
     switch (_anim_type) {
     case MaxEggOptions::AT_chan:  typeButton = IDC_ANIMATION; break;
     case MaxEggOptions::AT_both:  typeButton = IDC_BOTH; break;
     case MaxEggOptions::AT_pose:  typeButton = IDC_POSE; break;
     case MaxEggOptions::AT_model: typeButton = IDC_MODEL; break;
     }
-    
+
     _prev_type = _anim_type;
 
     CheckRadioButton(hWnd, IDC_MODEL, IDC_POSE, typeButton);
@@ -495,11 +494,11 @@ void MaxOptionsDialog::UpdateUI(HWND hWnd) {
     SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(model_exp, BN_CLICKED), 0);
     CheckRadioButton(hWnd, IDC_EXP_ALL_FRAMES, IDC_EXP_SEL_FRAMES, anim_exp);
     SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(anim_exp, BN_CLICKED), 0);
-    
+
     CheckDlgButton(hWnd, IDC_CHECK1,
                    _double_sided ? BST_CHECKED : BST_UNCHECKED);
 
-    
+
     SetICustEdit(hWnd, IDC_FILENAME, _file_name);
     if (_start_frame != INT_MIN) {
         SetICustEdit(hWnd, IDC_SF, _start_frame);
@@ -508,7 +507,7 @@ void MaxOptionsDialog::UpdateUI(HWND hWnd) {
         SetICustEdit(hWnd, IDC_SF, _min_frame);
         SetICustEdit(hWnd, IDC_EF, _max_frame);
     }
-    
+
     RefreshNodeList(hWnd);
 }
 
@@ -518,7 +517,7 @@ void MaxOptionsDialog::ClearNodeList(HWND hWnd) {
 }
 
 void MaxOptionsDialog::RefreshNodeList(HWND hWnd) {
-  //Clear and repopulate the node box
+  // Clear and repopulate the node box
   HWND nodeLB = GetDlgItem(hWnd, IDC_LIST_EXPORT);
   SendMessage(nodeLB, LB_RESETCONTENT, 0, 0);
   for (int i = 0; i < _node_list.size(); i++) {
@@ -596,7 +595,7 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
     _tcscpy(_short_name, temp);
     _short_name[_tcslen(_short_name) - 4] = NULL; //Cut off the .egg
   }
-  
+
   _start_frame = newSF;
   _end_frame = newEF;
   _anim_type = newAnimType;
@@ -610,13 +609,13 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
 }
 
 bool MaxOptionsDialog::FindNode(ULONG INodeHandle) {
-    for (int i = 0; i < _node_list.size(); i++) 
+    for (int i = 0; i < _node_list.size(); i++)
         if (_node_list[i] == INodeHandle) return true;
     return false;
 }
 
 void MaxOptionsDialog::AddNode(ULONG INodeHandle) {
-  if (FindNode(INodeHandle)) return; 
+  if (FindNode(INodeHandle)) return;
   _node_list.push_back(INodeHandle);
 }
 
@@ -660,18 +659,18 @@ IOResult MaxOptionsDialog::Save(ISave *isave) {
     ChunkSave(isave, CHUNK_EGG_CHECKED, _checked);
     ChunkSave(isave, CHUNK_ALL_FRAMES, _export_all_frames);
     ChunkSave(isave, CHUNK_EXPORT_FULL, _export_whole_scene);
-    
+
     isave->BeginChunk(CHUNK_NODE_LIST);
     for (int i = 0; i < _node_list.size(); i++)
         ChunkSave(isave, CHUNK_NODE_HANDLE, _node_list[i]);
     isave->EndChunk();
     isave->EndChunk();
     return IO_OK;
-} 
+}
 
 IOResult MaxOptionsDialog::Load(ILoad *iload) {
     IOResult res = iload->OpenChunk();
-    
+
     while (res == IO_OK) {
         switch(iload->CurChunkID()) {
         case CHUNK_ANIM_TYPE: _anim_type = (Anim_Type)ChunkLoadInt(iload); break;
@@ -683,7 +682,7 @@ IOResult MaxOptionsDialog::Load(ILoad *iload) {
         case CHUNK_EGG_CHECKED: _checked = ChunkLoadBool(iload); break;
         case CHUNK_ALL_FRAMES: _export_all_frames = ChunkLoadBool(iload); break;
         case CHUNK_EXPORT_FULL: _export_whole_scene = ChunkLoadBool(iload); break;
-        
+
         case CHUNK_NODE_LIST:
             res = iload->OpenChunk();
             while (res == IO_OK) {
@@ -696,8 +695,7 @@ IOResult MaxOptionsDialog::Load(ILoad *iload) {
         iload->CloseChunk();
         res = iload->OpenChunk();
     }
-    
+
     if (res == IO_END) return IO_OK;
     return IO_ERROR;
 }
-

@@ -1,33 +1,29 @@
-// Filename: softFilename.h
-// Created by:  drose (10Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file softFilename.h
+ * @author drose
+ * @date 2000-11-10
+ */
 
 #ifndef SOFTFILENAME_H
 #define SOFTFILENAME_H
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftFilename
-// Description : This encapsulates a SoftImage versioned filename, of
-//               the form base.v-v.ext: it consists of a directory
-//               name, a base, a major and minor version number, and
-//               an optional extension.
-//
-//               It also keeps track of whether the named file has
-//               been added to CVS, and how many scene files it is
-//               referenced by,
-////////////////////////////////////////////////////////////////////
+/**
+ * This encapsulates a SoftImage versioned filename, of the form base.v-v.ext:
+ * it consists of a directory name, a base, a major and minor version number,
+ * and an optional extension.
+ *
+ * It also keeps track of whether the named file has been added to CVS, and
+ * how many scene files it is referenced by,
+ */
 class SoftFilename {
 public:
   SoftFilename(const string &dirname, const string &filename);

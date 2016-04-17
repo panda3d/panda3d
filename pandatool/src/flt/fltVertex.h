@@ -1,16 +1,15 @@
-// Filename: fltVertex.h
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltVertex.h
+ * @author drose
+ * @date 2000-08-25
+ */
 
 #ifndef FLTVERTEX_H
 #define FLTVERTEX_H
@@ -22,16 +21,14 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltVertex
-// Description : Represents a single vertex in the vertex palette.
-//               Flt files index vertices by their byte offset in the
-//               vertex palette; within this library, we map those
-//               byte offsets to pointers automatically.
-//
-//               This may represent a vertex with or without a normal
-//               or texture coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single vertex in the vertex palette.  Flt files index vertices
+ * by their byte offset in the vertex palette; within this library, we map
+ * those byte offsets to pointers automatically.
+ *
+ * This may represent a vertex with or without a normal or texture
+ * coordinates.
+ */
 class FltVertex : public FltRecord {
 public:
   FltVertex(FltHeader *header);
@@ -92,5 +89,3 @@ private:
 #include "fltVertex.I"
 
 #endif
-
-

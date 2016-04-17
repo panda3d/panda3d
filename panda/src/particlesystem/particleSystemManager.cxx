@@ -1,16 +1,15 @@
-// Filename: particleSystemManager.cxx
-// Created by:  charles (28Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file particleSystemManager.cxx
+ * @author charles
+ * @date 2000-06-28
+ */
 
 #include "particleSystemManager.h"
 #include "particleSystem.h"
@@ -24,30 +23,24 @@
 
 PStatCollector ParticleSystemManager::_do_particles_collector("App:Particles:Do Particles");
 
-////////////////////////////////////////////////////////////////////
-//    Function : ParticleSystemManager
-//      Access : public
-// Description : default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 ParticleSystemManager::
 ParticleSystemManager(int every_nth_frame) :
   _nth_frame(every_nth_frame), _cur_frame(0) {
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : ParticleSystemManager
-//      Access : Public, Virtual
-// Description : Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 ParticleSystemManager::
 ~ParticleSystemManager() {
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : remove_particlesystem
-//      Access : public
-// Description : removes a ps from the maintenance list
-////////////////////////////////////////////////////////////////////
+/**
+ * removes a ps from the maintenance list
+ */
 void ParticleSystemManager::
 remove_particlesystem(ParticleSystem *ps) {
   plist< PT(ParticleSystem) >::iterator found;
@@ -61,18 +54,15 @@ remove_particlesystem(ParticleSystem *ps) {
   _ps_list.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : do_particles
-//      Access : public
-// Description : does an update and render for each ps in the list.
-//               this is probably the one you want to use.  Rendering
-//               is the expensive operation, and particles REALLY
-//               should at least be updated every frame, so nth_frame
-//               stepping applies only to rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * does an update and render for each ps in the list.  this is probably the
+ * one you want to use.  Rendering is the expensive operation, and particles
+ * REALLY should at least be updated every frame, so nth_frame stepping
+ * applies only to rendering.
+ */
 void ParticleSystemManager::
 do_particles(PN_stdfloat dt) {
-  //  cout << "ParticlesystemManager::doparticles entering." << endl;
+  // cout << "ParticlesystemManager::doparticles entering."  << endl;
   PStatTimer t1(_do_particles_collector);
 
   plist< PT(ParticleSystem) >::iterator cur;
@@ -88,16 +78,16 @@ do_particles(PN_stdfloat dt) {
 
   cur = _ps_list.begin();
 
-  //  cout << "PSM::do_particles on a vector of size " << _ps_list.size() << endl;
-  //  int cs = 0;
+  // cout << "PSM::do_particles on a vector of size " << _ps_list.size() <<
+  // endl; int cs = 0;
 
   while (cur != _ps_list.end()) {
     ParticleSystem *cur_ps = *cur;
 
     // update this system
     if (cur_ps->get_active_system_flag() == true) {
-      //      cout << "  system " << cs++ << endl;
-      //      cout << "  count is: " << cur_ps->get_render_parent()->get_ref_count() << endl;
+      // cout << "  system " << cs++ << endl; cout << "  count is: " <<
+      // cur_ps->get_render_parent()->get_ref_count() << endl;
       cur_ps->update(dt);
 
       // Handle age:
@@ -125,17 +115,15 @@ do_particles(PN_stdfloat dt) {
       ++cur;
     }
   }
-  //  cout << "PSM::do_particles finished." << endl;
-  //  cout << "ParticleSystemManager::doparticles exiting." << endl;
+  // cout << "PSM::do_particles finished."  << endl; cout <<
+  // "ParticleSystemManager::doparticles exiting."  << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : do_particles
-//      Access : public
-// Description : does an update and an optional render for a specific
-//               ps.  Since rendering is the expensive operation, multiple
-//               updates could be applied before calling the final render.
-////////////////////////////////////////////////////////////////////
+/**
+ * does an update and an optional render for a specific ps.  Since rendering
+ * is the expensive operation, multiple updates could be applied before
+ * calling the final render.
+ */
 void ParticleSystemManager::
 do_particles(PN_stdfloat dt, ParticleSystem *ps, bool do_render) {
   if (ps->get_active_system_flag() == true) {
@@ -145,7 +133,7 @@ do_particles(PN_stdfloat dt, ParticleSystem *ps, bool do_render) {
       PN_stdfloat age = ps->get_system_age() + dt;
       ps->set_system_age(age);
     }
-    
+
     // handle render
     if (do_render) {
       ps->render();
@@ -153,12 +141,9 @@ do_particles(PN_stdfloat dt, ParticleSystem *ps, bool do_render) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ParticleSystemManager::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -166,12 +151,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write_ps_list
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ParticleSystemManager::
 write_ps_list(ostream &out, int indent) const {
   #ifndef NDEBUG //[
@@ -185,12 +167,9 @@ write_ps_list(ostream &out, int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ParticleSystemManager::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

@@ -1,27 +1,24 @@
-// Filename: distanceUnit.cxx
-// Created by:  drose (17Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file distanceUnit.cxx
+ * @author drose
+ * @date 2001-04-17
+ */
 
 #include "distanceUnit.h"
 #include "config_pandatoolbase.h"
 #include "string_utils.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: format_abbrev_unit
-//  Description: Returns the string representing the common
-//               abbreviation for the given unit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string representing the common abbreviation for the given unit.
+ */
 string
 format_abbrev_unit(DistanceUnit unit) {
   switch (unit) {
@@ -59,11 +56,9 @@ format_abbrev_unit(DistanceUnit unit) {
   return "**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: format_long_unit
-//  Description: Returns the string representing the full name (plural)
-//               for the given unit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string representing the full name (plural) for the given unit.
+ */
 string
 format_long_unit(DistanceUnit unit) {
   switch (unit) {
@@ -101,19 +96,17 @@ format_long_unit(DistanceUnit unit) {
   return "**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DistanceUnit output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, DistanceUnit unit) {
   return out << format_abbrev_unit(unit);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DistanceUnit input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 istream &
 operator >> (istream &in, DistanceUnit &unit) {
   string word;
@@ -126,12 +119,10 @@ operator >> (istream &in, DistanceUnit &unit) {
   return in;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: string_distance_unit
-//  Description: Converts from a string, as might be input by the
-//               user, to one of the known DistanceUnit types.
-//               Returns DU_invalid if the string is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts from a string, as might be input by the user, to one of the known
+ * DistanceUnit types.  Returns DU_invalid if the string is unknown.
+ */
 DistanceUnit
 string_distance_unit(const string &str) {
   if (cmp_nocase(str, "mm") == 0 || cmp_nocase(str, "millimeters") == 0) {
@@ -170,12 +161,10 @@ string_distance_unit(const string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: unit_scale
-//  Description: Returns the number of the indicated unit per each
-//               centimeter.  This internal function is used to
-//               implement convert_units(), below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of the indicated unit per each centimeter.  This
+ * internal function is used to implement convert_units(), below.
+ */
 static double unit_scale(DistanceUnit unit) {
   switch (unit) {
   case DU_millimeters:
@@ -213,12 +202,10 @@ static double unit_scale(DistanceUnit unit) {
   return 1.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: convert_units
-//  Description: Returns the scaling factor that must be applied to
-//               convert from units of "from" to "to".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scaling factor that must be applied to convert from units of
+ * "from" to "to".
+ */
 double convert_units(DistanceUnit from, DistanceUnit to) {
   return unit_scale(from) / unit_scale(to);
 }
-

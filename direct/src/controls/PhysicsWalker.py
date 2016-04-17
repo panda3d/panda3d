@@ -324,7 +324,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             indicator.instanceTo(contactIndicatorNode)
             self.physContactIndicator=contactIndicatorNode
         else:
-            print "failed load of physics indicator"
+            print("failed load of physics indicator")
 
     def avatarPhysicsIndicator(self, task):
         #assert self.debugPrint("avatarPhysicsIndicator()")
@@ -710,7 +710,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     def setPriorParentVector(self):
         assert self.debugPrint("doDeltaPos()")
 
-        print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
+        print("self.__oldDt %s self.__oldPosDelta %s" % (self.__oldDt, self.__oldPosDelta))
         if __debug__:
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",

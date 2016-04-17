@@ -3,18 +3,15 @@
 __all__ = ['EventManager']
 
 
-from MessengerGlobal import *
+from .MessengerGlobal import *
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import PStatCollector, EventQueue, EventHandler
+from panda3d.core import ConfigVariableBool
 
 class EventManager:
 
     notify = None
-
-    # delayed import, since this is imported by the Toontown Launcher
-    # before the complete PandaModules have been downloaded.
-    PStatCollector = None
 
     def __init__(self, eventQueue = None):
         """
@@ -27,15 +24,12 @@ class EventManager:
         self.eventQueue = eventQueue
         self.eventHandler = None
 
-        self._wantPstats = None # no config at this point
+        self._wantPstats = ConfigVariableBool('pstats-eventmanager', False)
 
     def doEvents(self):
         """
         Process all the events on the C++ event queue
         """
-        if self._wantPstats is None:
-            self._wantPstats = config.GetBool('pstats-eventmanager', 0)
-            EventManager.PStatCollector = PStatCollector
         # use different methods for handling events with and without pstats tracking
         # for efficiency
         if self._wantPstats:
@@ -141,10 +135,10 @@ class EventManager:
                 hyphen = name.find('-')
                 if hyphen >= 0:
                     name = name[0:hyphen]
-                pstatCollector = EventManager.PStatCollector('App:Show code:eventManager:' + name)
+                pstatCollector = PStatCollector('App:Show code:eventManager:' + name)
                 pstatCollector.start()
                 if self.eventHandler:
-                    cppPstatCollector = EventManager.PStatCollector(
+                    cppPstatCollector = PStatCollector(
                         'App:Show code:eventManager:' + name + ':C++')
 
             if paramList:

@@ -1,16 +1,15 @@
-// Filename: adaptiveLru.cxx
-// Created by:  drose (03Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file adaptiveLru.cxx
+ * @author drose
+ * @date 2008-09-03
+ */
 
 #include "adaptiveLru.h"
 #include "config_gobj.h"
@@ -20,13 +19,11 @@
 static const int HIGH_PRIORITY_SCALE = 4;
 static const int LOW_PRIORITY_RANGE = 25;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AdaptiveLru::
-AdaptiveLru(const string &name, size_t max_size) : 
+AdaptiveLru(const string &name, size_t max_size) :
   Namable(name)
 {
   _total_size = 0;
@@ -47,17 +44,15 @@ AdaptiveLru(const string &name, size_t max_size) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AdaptiveLru::
 ~AdaptiveLru() {
 #ifndef NDEBUG
-  // We're shutting down.  Force-remove everything remaining, but
-  // don't explicitly evict it (that would force vertex buffers to
-  // write themselves to disk unnecessarily).
+  // We're shutting down.  Force-remove everything remaining, but don't
+  // explicitly evict it (that would force vertex buffers to write themselves
+  // to disk unnecessarily).
 
   while (_static_list._next != &_static_list) {
     nassertv(_static_list._next != (LinkedListNode *)NULL);
@@ -70,18 +65,15 @@ AdaptiveLru::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::do_partial_lru_update
-//       Access: Private
-//  Description: This only updates a number of pages up to the
-//               specified maximum_updates.  Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * This only updates a number of pages up to the specified maximum_updates.
+ * Assumes the lock is held.
+ */
 void AdaptiveLru::
 do_partial_lru_update(int num_updates) {
-  // Iterate sequentially through the static list of pages.  As we
-  // process each page, pop it and push it back on the tail.  Stop
-  // when we have processed num_updates, or come back to the starting
-  // one.
+  // Iterate sequentially through the static list of pages.  As we process
+  // each page, pop it and push it back on the tail.  Stop when we have
+  // processed num_updates, or come back to the starting one.
 
   AdaptiveLruPageStaticList *start_node = (AdaptiveLruPageStaticList *)_static_list._next;
   if (start_node == &_static_list) {
@@ -103,18 +95,15 @@ do_partial_lru_update(int num_updates) {
   } while (node != start_node && node != &_static_list);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::update_page
-//       Access: Private
-//  Description: This updates the page's average utilization.
-//               Priority LPP_New is considered to be average usage
-//               of 1.0 (which means the page is used once per frame
-//               on average).  Priorities < LPP_New are for pages
-//               used more than once per frame and Priorities >
-//               LPP_New are for pages used less than once per frame.
-//
-//               Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * This updates the page's average utilization.  Priority LPP_New is
+ * considered to be average usage of 1.0 (which means the page is used once
+ * per frame on average).  Priorities < LPP_New are for pages used more than
+ * once per frame and Priorities > LPP_New are for pages used less than once
+ * per frame.
+ *
+ * Assumes the lock is held.
+ */
 void AdaptiveLru::
 update_page(AdaptiveLruPage *page) {
   int target_priority = page->_priority;
@@ -122,20 +111,20 @@ update_page(AdaptiveLruPage *page) {
   if (lifetime_frames > 0) {
     if (page->_update_frame_identifier) {
       unsigned int update_frames;
-      
+
       update_frames = (_current_frame_identifier - page->_update_frame_identifier);
       if (update_frames > 0) {
         PN_stdfloat update_average_frame_utilization =
           (PN_stdfloat) (page->_update_total_usage) / (PN_stdfloat)update_frames;
 
         page->_average_frame_utilization =
-          calculate_exponential_moving_average(update_average_frame_utilization, 
+          calculate_exponential_moving_average(update_average_frame_utilization,
                                                page->_average_frame_utilization);
 
         target_priority = page->_priority;
         if (page->_average_frame_utilization >= 1.0f) {
           int integer_average_frame_utilization;
-          
+
           integer_average_frame_utilization =
             (int) ((page->_average_frame_utilization - 1.0f) *
                    (PN_stdfloat) HIGH_PRIORITY_SCALE);
@@ -147,7 +136,7 @@ update_page(AdaptiveLruPage *page) {
           target_priority = integer_average_frame_utilization;
         } else {
           int integer_average_frame_utilization;
-          
+
           integer_average_frame_utilization = (int)
             (page->_average_frame_utilization *
              (PN_stdfloat) LOW_PRIORITY_RANGE);
@@ -169,15 +158,12 @@ update_page(AdaptiveLruPage *page) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::enqueue_lru
-//       Access: Published
-//  Description: Adds the page to the LRU for the first time, or marks
-//               it recently-accessed if it has already been added.
-//
-//               If lru is NULL, it means to remove this page from its
-//               LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the page to the LRU for the first time, or marks it recently-accessed
+ * if it has already been added.
+ *
+ * If lru is NULL, it means to remove this page from its LRU.
+ */
 void AdaptiveLruPage::
 enqueue_lru(AdaptiveLru *lru) {
   if (lru != _lru && _lru != (AdaptiveLru *)NULL) {
@@ -203,12 +189,10 @@ enqueue_lru(AdaptiveLru *lru) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::count_active_size
-//       Access: Published
-//  Description: Returns the total size of the pages that were
-//               enqueued since the last call to begin_epoch().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total size of the pages that were enqueued since the last call
+ * to begin_epoch().
+ */
 size_t AdaptiveLru::
 count_active_size() const {
   size_t counted_size = 0;
@@ -225,14 +209,11 @@ count_active_size() const {
   return counted_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::begin_epoch
-//       Access: Published
-//  Description: Marks the end of the previous epoch and the beginning
-//               of the next one.  This will evict any objects that
-//               are pending eviction, and also update any internal
-//               bookkeeping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the end of the previous epoch and the beginning of the next one.
+ * This will evict any objects that are pending eviction, and also update any
+ * internal bookkeeping.
+ */
 void AdaptiveLru::
 begin_epoch() {
   LightMutexHolder holder(_lock);
@@ -244,11 +225,9 @@ begin_epoch() {
   _current_frame_identifier = ClockObject::get_global_clock()->get_frame_count();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AdaptiveLru::
 output(ostream &out) const {
   LightMutexHolder holder(_lock);
@@ -256,18 +235,16 @@ output(ostream &out) const {
       << ", " << _total_size << " of " << _max_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AdaptiveLru::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
 
-  // We write out the list backwards.  Things we write out first are
-  // the freshest in the LRU.  Things at the end of the list will be
-  // the next to be evicted.
+  // We write out the list backwards.  Things we write out first are the
+  // freshest in the LRU.  Things at the end of the list will be the next to
+  // be evicted.
 
   LightMutexHolder holder(_lock);
 
@@ -295,11 +272,9 @@ write(ostream &out, int indent_level) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::do_add_page
-//       Access: Private
-//  Description: Adds a new page the the LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new page the the LRU.
+ */
 void AdaptiveLru::
 do_add_page(AdaptiveLruPage *page) {
   nassertv(page != (AdaptiveLruPage *)NULL && page->_lru == this);
@@ -310,11 +285,9 @@ do_add_page(AdaptiveLruPage *page) {
   ((AdaptiveLruPageStaticList *)page)->insert_before(&_static_list);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::do_remove_page
-//       Access: Private
-//  Description: Removes a page from the LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a page from the LRU.
+ */
 void AdaptiveLru::
 do_remove_page(AdaptiveLruPage *page) {
   nassertv(page != (AdaptiveLruPage *)NULL && page->_lru == this);
@@ -325,19 +298,16 @@ do_remove_page(AdaptiveLruPage *page) {
   ((AdaptiveLruPageStaticList *)page)->remove_from_list();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::do_access_page
-//       Access: Private
-//  Description: Marks a page accessed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks a page accessed.
+ */
 void AdaptiveLru::
 do_access_page(AdaptiveLruPage *page) {
   nassertv(page != (AdaptiveLruPage *)NULL && page->_lru == this);
   LightMutexHolder holder(_lock);
 
   if (page->_current_frame_identifier == _current_frame_identifier) {
-    // This is the second or more time this page is accessed this
-    // frame.
+    // This is the second or more time this page is accessed this frame.
     ++(page->_current_frame_usage);
 
   } else {
@@ -354,14 +324,11 @@ do_access_page(AdaptiveLruPage *page) {
   ++(page->_update_total_usage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::do_evict_to
-//       Access: Private
-//  Description: Evicts pages until the LRU is within the indicated
-//               size.  Assumes the lock is already held.  If
-//               hard_evict is false, does not evict "active" pages
-//               that were added within this epoch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts pages until the LRU is within the indicated size.  Assumes the lock
+ * is already held.  If hard_evict is false, does not evict "active" pages
+ * that were added within this epoch.
+ */
 void AdaptiveLru::
 do_evict_to(size_t target_size, bool hard_evict) {
   int attempts;
@@ -372,9 +339,8 @@ do_evict_to(size_t target_size, bool hard_evict) {
     int index;
     for (index = LPP_TotalPriorities - 1; index >= 0; index--) {
 
-      // Store the current end of the list.  If pages re-enqueue
-      // themselves during this traversal, we don't want to visit them
-      // twice.
+      // Store the current end of the list.  If pages re-enqueue themselves
+      // during this traversal, we don't want to visit them twice.
       AdaptiveLruPageDynamicList *end = (AdaptiveLruPageDynamicList *)_page_array[index]._prev;
 
       AdaptiveLruPageDynamicList *node = (AdaptiveLruPageDynamicList *)_page_array[index]._next;
@@ -383,10 +349,10 @@ do_evict_to(size_t target_size, bool hard_evict) {
         AdaptiveLruPageDynamicList *next = (AdaptiveLruPageDynamicList *)node->_next;
         AdaptiveLruPage *page = (AdaptiveLruPage *)node;
 
-        if (attempts == 0 && 
+        if (attempts == 0 &&
             (page->_current_frame_identifier + 1 >= _current_frame_identifier)) {
-          // avoid swapping out pages used in the current and last
-          // frame on the first attempt
+          // avoid swapping out pages used in the current and last frame on
+          // the first attempt
 
         } else {
           // We must release the lock while we call evict_lru().
@@ -400,8 +366,8 @@ do_evict_to(size_t target_size, bool hard_evict) {
           }
         }
         if (node == end) {
-          // We've reached the former end of the list.  Stop here;
-          // everything after has been re-queued.
+          // We've reached the former end of the list.  Stop here; everything
+          // after has been re-queued.
           break;
         }
         node = next;
@@ -411,12 +377,10 @@ do_evict_to(size_t target_size, bool hard_evict) {
   } while (hard_evict && attempts < 2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLru::do_validate
-//       Access: Private
-//  Description: Checks that the LRU is internally consistent.  Assume
-//               the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks that the LRU is internally consistent.  Assume the lock is already
+ * held.
+ */
 bool AdaptiveLru::
 do_validate() {
   bool okflag = true;
@@ -456,7 +420,7 @@ do_validate() {
   while (node != &_static_list) {
     AdaptiveLruPage *page = (AdaptiveLruPage *)node;
     counted_size += page->_lru_size;
-    
+
     if (pages.find(page) == pages.end()) {
       nout << "page " << page << " appears in dynamic index, but not in static index (or multiple times in static index)\n";
       okflag = false;
@@ -474,11 +438,9 @@ do_validate() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AdaptiveLruPage::
 AdaptiveLruPage(size_t lru_size) :
   _lru(NULL),
@@ -495,11 +457,9 @@ AdaptiveLruPage(size_t lru_size) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AdaptiveLruPage::
 AdaptiveLruPage(const AdaptiveLruPage &copy) :
   _lru(NULL),
@@ -516,21 +476,17 @@ AdaptiveLruPage(const AdaptiveLruPage &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::Copy Assignment Operator
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AdaptiveLruPage::
 operator = (const AdaptiveLruPage &copy) {
   set_lru_size(copy.get_lru_size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AdaptiveLruPage::
 ~AdaptiveLruPage() {
   if (_lru != NULL) {
@@ -538,53 +494,41 @@ AdaptiveLruPage::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::evict_lru
-//       Access: Published, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines
+ * that it is full.  May also be called externally when necessary to
+ * explicitly evict the page.
+ *
+ * It is legal for this method to either evict the page as requested, do
+ * nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void AdaptiveLruPage::
 evict_lru() {
   dequeue_lru();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AdaptiveLruPage::
 output(ostream &out) const {
   out << "page " << this << ", " << _lru_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AdaptiveLruPage::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::get_num_frames
-//       Access: Published
-//  Description: Returns the number of frames since the page was first
-//               added to its LRU.  Returns 0 if it does not have an
-//               LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames since the page was first added to its LRU.
+ * Returns 0 if it does not have an LRU.
+ */
 unsigned int AdaptiveLruPage::
 get_num_frames() const {
   if (_lru == (AdaptiveLru *)NULL) {
@@ -593,13 +537,10 @@ get_num_frames() const {
   return _lru->_current_frame_identifier - _first_frame_identifier;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AdaptiveLruPage::get_num_inactive_frames
-//       Access: Published
-//  Description: Returns the number of frames since the page was last
-//               accessed on its LRU.  Returns 0 if it does not have
-//               an LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames since the page was last accessed on its LRU.
+ * Returns 0 if it does not have an LRU.
+ */
 unsigned int AdaptiveLruPage::
 get_num_inactive_frames() const {
   if (_lru == (AdaptiveLru *)NULL) {
@@ -611,11 +552,9 @@ get_num_inactive_frames() const {
 
 #if 0
 
-////////////////////////////////////////////////////////////////////
-//     Function: test_adaptive_lru
-//       Access:
-//  Description: Unit test function for Lru.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unit test function for Lru.
+ */
 void
 test_adaptive_lru() {
   int maximum_memory = 3000000;
@@ -627,27 +566,27 @@ test_adaptive_lru() {
   AdaptiveLruPage *lru_page_3;
   AdaptiveLruPage *lru_page_4;
   AdaptiveLruPage *lru_page_5;
-  
+
   lru_page_0 = new AdaptiveLruPage(1000000);
   cerr << "created lru_page_0: " << lru_page_0 << "\n";
   lru_page_0->enqueue_lru(lru);
-  
+
   lru_page_1 = new AdaptiveLruPage(1000000);
   cerr << "created lru_page_1: " << lru_page_1 << "\n";
   lru_page_1->enqueue_lru(lru);
-  
+
   lru_page_2 = new AdaptiveLruPage(1000000);
   cerr << "created lru_page_2: " << lru_page_2 << "\n";
   lru_page_2->enqueue_lru(lru);
-  
+
   lru_page_3 = new AdaptiveLruPage(1000000);
   cerr << "created lru_page_3: " << lru_page_3 << "\n";
   lru_page_3->enqueue_lru(lru);
-  
+
   lru_page_4 = new AdaptiveLruPage(1000000);
   cerr << "created lru_page_4: " << lru_page_4 << "\n";
   lru_page_4->enqueue_lru(lru);
-  
+
   lru_page_5 = new AdaptiveLruPage(1000000);
   cerr << "created lru_page_5: " << lru_page_5 << "\n";
   lru_page_5->enqueue_lru(lru);
@@ -665,7 +604,7 @@ test_adaptive_lru() {
 
     lru_page_1->mark_used_lru(lru);
     lru_page_1->mark_used_lru(lru);
-    
+
     if (index & 0x01) {
       lru_page_2->mark_used_lru(lru);
     }
@@ -687,7 +626,7 @@ test_adaptive_lru() {
       break;
     }
   }
-  
+
   delete lru;
   delete lru_page_0;
   delete lru_page_1;

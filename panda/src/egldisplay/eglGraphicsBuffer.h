@@ -1,16 +1,15 @@
-// Filename: eglGraphicsBuffer.h
-// Created by:  rdb (13Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsBuffer.h
+ * @author rdb
+ * @date 2009-06-13
+ */
 
 #ifndef EGLGRAPHICSBUFFER_H
 #define EGLGRAPHICSBUFFER_H
@@ -20,14 +19,12 @@
 #include "eglGraphicsPipe.h"
 #include "graphicsBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsBuffer
-// Description : An offscreen buffer in the EGL environment.  This
-//               creates an EGL pbuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen buffer in the EGL environment.  This creates an EGL pbuffer.
+ */
 class eglGraphicsBuffer : public GraphicsBuffer {
 public:
-  eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

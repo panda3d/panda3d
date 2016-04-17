@@ -1,16 +1,15 @@
-// Filename: cppFile.h
-// Created by:  drose (11Nov99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppFile.h
+ * @author drose
+ * @date 1999-11-11
+ */
 
 #ifndef CPPFILE_H
 #define CPPFILE_H
@@ -18,13 +17,11 @@
 #include "dtoolbase.h"
 #include "filename.h"
 
-///////////////////////////////////////////////////////////////////
-//       Class : CPPFile
-// Description : This defines a source file (typically a C++ header
-//               file) that is parsed by the CPPParser.  Each
-//               declaration indicates the source file where it
-//               appeared.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a source file (typically a C++ header file) that is parsed by
+ * the CPPParser.  Each declaration indicates the source file where it
+ * appeared.
+ */
 class CPPFile {
 public:
   enum Source {
@@ -67,4 +64,3 @@ inline ostream &operator << (ostream &out, const CPPFile &file) {
 }
 
 #endif
-

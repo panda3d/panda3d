@@ -1,16 +1,15 @@
-// Filename: chunkedStreamBuf.h
-// Created by:  drose (25Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file chunkedStreamBuf.h
+ * @author drose
+ * @date 2002-09-25
+ */
 
 #ifndef CHUNKEDSTREAMBUF_H
 #define CHUNKEDSTREAMBUF_H
@@ -24,13 +23,11 @@
 #include "bioStreamPtr.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ChunkedStreamBuf
-// Description : The streambuf object that implements
-//               IChunkedStream.
-////////////////////////////////////////////////////////////////////
-// No need to export from DLL.
+/**
+ * The streambuf object that implements IChunkedStream.
+ */
 class ChunkedStreamBuf : public streambuf {
+  // No need to export from DLL.
 public:
   ChunkedStreamBuf();
   virtual ~ChunkedStreamBuf();

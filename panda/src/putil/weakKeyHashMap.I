@@ -1,23 +1,19 @@
-// Filename: weakKeyHashMap.I
-// Created by:  rdb (13Jul15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file weakKeyHashMap.I
+ * @author rdb
+ * @date 2015-07-13
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Key, class Value>
 INLINE WeakKeyHashMap<Key, Value>::
 WeakKeyHashMap() :
@@ -28,23 +24,18 @@ WeakKeyHashMap() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Key, class Value>
 INLINE WeakKeyHashMap<Key, Value>::
 ~WeakKeyHashMap() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::swap
-//       Access: Public
-//  Description: Quickly exchanges the contents of this map and the
-//               other map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Quickly exchanges the contents of this map and the other map.
+ */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
 swap(WeakKeyHashMap<Key, Value> &other) {
@@ -65,13 +56,10 @@ swap(WeakKeyHashMap<Key, Value> &other) {
   other._num_entries = t3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::find
-//       Access: Public
-//  Description: Searches for the indicated key in the table.  Returns
-//               its index number if it is found, or -1 if it is not
-//               present in the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the indicated key in the table.  Returns its index number if
+ * it is found, or -1 if it is not present in the table.
+ */
 template<class Key, class Value>
 int WeakKeyHashMap<Key, Value>::
 find(const Key *key) const {
@@ -88,10 +76,10 @@ find(const Key *key) const {
     return index;
   }
 
-  // There was some other key at the hashed slot.  That's a hash
-  // conflict.  Maybe our entry was recorded at a later slot position;
-  // scan the subsequent positions until we find the entry or an
-  // unused slot, indicating the end of the scan.
+  // There was some other key at the hashed slot.  That's a hash conflict.
+  // Maybe our entry was recorded at a later slot position; scan the
+  // subsequent positions until we find the entry or an unused slot,
+  // indicating the end of the scan.
   size_t i = index;
   i = (i + 1) & (_table_size - 1);
   while (i != index && has_element(i)) {
@@ -105,13 +93,10 @@ find(const Key *key) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::store
-//       Access: Public
-//  Description: Records the indicated key/data pair in the map.  If
-//               the key was already present, silently replaces it.
-//               Returns the index at which it was stored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated key/data pair in the map.  If the key was already
+ * present, silently replaces it.  Returns the index at which it was stored.
+ */
 template<class Key, class Value>
 int WeakKeyHashMap<Key, Value>::
 store(const Key *key, const Value &data) {
@@ -142,8 +127,7 @@ store(const Key *key, const Value &data) {
     return index;
   }
   if (is_element(index, key)) {
-    // This element is already in the map; replace the data at that
-    // key.
+    // This element is already in the map; replace the data at that key.
     _table[index]._data = data;
 #ifdef _DEBUG
     nassertr(validate(), index);
@@ -151,8 +135,8 @@ store(const Key *key, const Value &data) {
     return index;
   }
 
-  // There was some other key at the hashed slot.  That's a hash
-  // conflict.  Record this entry at a later position.
+  // There was some other key at the hashed slot.  That's a hash conflict.
+  // Record this entry at a later position.
   size_t i = index;
   i = (i + 1) & (_table_size - 1);
   while (i != index) {
@@ -177,19 +161,16 @@ store(const Key *key, const Value &data) {
     i = (i + 1) & (_table_size - 1);
   }
 
-  // Shouldn't get here unless _num_entries == _table_size, which
-  // shouldn't be possible due to consider_expand_table().
+  // Shouldn't get here unless _num_entries == _table_size, which shouldn't be
+  // possible due to consider_expand_table().
   nassertr(false, -1);
   return -1;  // To satisfy compiler
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::remove
-//       Access: Public
-//  Description: Removes the indicated key and its associated data
-//               from the table.  Returns true if the key was removed,
-//               false if it was not present.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated key and its associated data from the table.  Returns
+ * true if the key was removed, false if it was not present.
+ */
 template<class Key, class Value>
 INLINE bool WeakKeyHashMap<Key, Value>::
 remove(const Key *key) {
@@ -201,11 +182,9 @@ remove(const Key *key) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::clear
-//       Access: Public
-//  Description: Completely empties the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely empties the table.
+ */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
 clear() {
@@ -224,13 +203,10 @@ clear() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::operator []
-//       Access: Public
-//  Description: Returns a modifiable reference to the data associated
-//               with the indicated key, or creates a new data entry
-//               and returns its reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable reference to the data associated with the indicated
+ * key, or creates a new data entry and returns its reference.
+ */
 template<class Key, class Value>
 INLINE Value &WeakKeyHashMap<Key, Value>::
 operator [] (const Key *key) {
@@ -241,25 +217,21 @@ operator [] (const Key *key) {
   return modify_data(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::get_size
-//       Access: Public
-//  Description: Returns the total number of slots in the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of slots in the table.
+ */
 template<class Key, class Value>
 INLINE size_t WeakKeyHashMap<Key, Value>::
 get_size() const {
   return _table_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::has_element
-//       Access: Public
-//  Description: Returns true if there is an element stored in the nth
-//               slot, false otherwise.
-//
-//               n should be in the range 0 <= n < get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is an element stored in the nth slot, false
+ * otherwise.
+ *
+ * n should be in the range 0 <= n < get_size().
+ */
 template<class Key, class Value>
 INLINE bool WeakKeyHashMap<Key, Value>::
 has_element(int n) const {
@@ -267,16 +239,13 @@ has_element(int n) const {
   return (get_exists_array()[n] != 0 && !_table[n]._key.was_deleted());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::get_key
-//       Access: Public
-//  Description: Returns the key in the nth slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key in the nth slot of the table.
+ *
+ * It is an error to call this if there is nothing stored in the nth slot (use
+ * has_element() to check this first).  n should be in the range 0 <= n <
+ * get_size().
+ */
 template<class Key, class Value>
 INLINE const Key *WeakKeyHashMap<Key, Value>::
 get_key(int n) const {
@@ -284,16 +253,13 @@ get_key(int n) const {
   return _table[n]._key;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::get_data
-//       Access: Public
-//  Description: Returns the data in the nth slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the data in the nth slot of the table.
+ *
+ * It is an error to call this if there is nothing stored in the nth slot (use
+ * has_element() to check this first).  n should be in the range 0 <= n <
+ * get_size().
+ */
 template<class Key, class Value>
 INLINE const Value &WeakKeyHashMap<Key, Value>::
 get_data(int n) const {
@@ -301,17 +267,13 @@ get_data(int n) const {
   return _table[n]._data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::modify_data
-//       Access: Public
-//  Description: Returns a modifiable reference to the data in the nth
-//               slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable reference to the data in the nth slot of the table.
+ *
+ * It is an error to call this if there is nothing stored in the nth slot (use
+ * has_element() to check this first).  n should be in the range 0 <= n <
+ * get_size().
+ */
 template<class Key, class Value>
 INLINE Value &WeakKeyHashMap<Key, Value>::
 modify_data(int n) {
@@ -319,16 +281,13 @@ modify_data(int n) {
   return _table[n]._data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::set_data
-//       Access: Public
-//  Description: Changes the data for the nth slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the data for the nth slot of the table.
+ *
+ * It is an error to call this if there is nothing stored in the nth slot (use
+ * has_element() to check this first).  n should be in the range 0 <= n <
+ * get_size().
+ */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
 set_data(int n, const Value &data) {
@@ -337,16 +296,13 @@ set_data(int n, const Value &data) {
 }
 
 #ifdef USE_MOVE_SEMANTICS
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::set_data
-//       Access: Public
-//  Description: Changes the data for the nth slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the data for the nth slot of the table.
+ *
+ * It is an error to call this if there is nothing stored in the nth slot (use
+ * has_element() to check this first).  n should be in the range 0 <= n <
+ * get_size().
+ */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
 set_data(int n, Value &&data) {
@@ -355,16 +311,13 @@ set_data(int n, Value &&data) {
 }
 #endif  // USE_MOVE_SEMANTICS
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::remove_element
-//       Access: Public
-//  Description: Removes the nth slot from the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth slot from the table.
+ *
+ * It is an error to call this if there is nothing stored in the nth slot (use
+ * has_element() to check this first).  n should be in the range 0 <= n <
+ * get_size().
+ */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
 remove_element(int n) {
@@ -374,9 +327,8 @@ remove_element(int n) {
   nassertv(_num_entries > 0);
   --_num_entries;
 
-  // Now we have put a hole in the table.  If there was a hash
-  // conflict in the slot following this one, we have to move it down
-  // to close the hole.
+  // Now we have put a hole in the table.  If there was a hash conflict in the
+  // slot following this one, we have to move it down to close the hole.
   size_t i = (size_t)n;
   i = (i + 1) & (_table_size - 1);
   while (get_exists_array()[i] != 0) {
@@ -387,9 +339,8 @@ remove_element(int n) {
     } else {
       size_t wants_index = get_hash(_table[i]._key);
       if (wants_index != i) {
-        // This one was a hash conflict; try to put it where it belongs.
-        // We can't just put it in n, since maybe it belongs somewhere
-        // after n.
+        // This one was a hash conflict; try to put it where it belongs.  We
+        // can't just put it in n, since maybe it belongs somewhere after n.
         while (wants_index != i && has_element(wants_index)) {
           // Hash conflict; move it up.
           wants_index = (wants_index + 1) & (_table_size - 1);
@@ -401,9 +352,8 @@ remove_element(int n) {
       }
     }
 
-    // Continue until we encounter the next unused slot.  Until we do,
-    // we can't be sure we've found all of the potential hash
-    // conflicts.
+    // Continue until we encounter the next unused slot.  Until we do, we
+    // can't be sure we've found all of the potential hash conflicts.
     i = (i + 1) & (_table_size - 1);
   }
 
@@ -412,45 +362,34 @@ remove_element(int n) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::get_num_entries
-//       Access: Public
-//  Description: Returns the number of active entries in the table.
-//               This is not necessarily related to the number of
-//               slots in the table as reported by get_size().  Use
-//               get_size() to iterate through all of the slots, not
-//               get_num_entries().
-//
-//               This is merely an upper bound on the number of
-//               entries; it may also count false positives for
-//               pointers that were recently deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of active entries in the table.  This is not necessarily
+ * related to the number of slots in the table as reported by get_size().  Use
+ * get_size() to iterate through all of the slots, not get_num_entries().
+ *
+ * This is merely an upper bound on the number of entries; it may also count
+ * false positives for pointers that were recently deleted.
+ */
 template<class Key, class Value>
 INLINE size_t WeakKeyHashMap<Key, Value>::
 get_num_entries() const {
   return _num_entries;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::is_empty
-//       Access: Public
-//  Description: Returns true if the table is empty;
-//               i.e. get_num_entries() == 0.  This may return a
-//               false negatives if a pointer was recently deleted;
-//               if this returns true, though, you can be sure it's
-//               empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the table is empty; i.e.  get_num_entries() == 0.  This may
+ * return a false negatives if a pointer was recently deleted; if this returns
+ * true, though, you can be sure it's empty.
+ */
 template<class Key, class Value>
 INLINE bool WeakKeyHashMap<Key, Value>::
 is_empty() const {
   return (_num_entries == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
 output(ostream &out) const {
@@ -463,8 +402,8 @@ output(ostream &out) const {
       out << " " << _table[i]._key;
       size_t index = get_hash(_table[i]._key.get_orig());
       if (index != i) {
-        // This was misplaced as the result of a hash conflict.
-        // Report how far off it is.
+        // This was misplaced as the result of a hash conflict.  Report how
+        // far off it is.
         out << "(" << ((_table_size + i - index) & (_table_size - 1)) << ")";
       }
     }
@@ -472,11 +411,9 @@ output(ostream &out) const {
   out << " ]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
 write(ostream &out) const {
@@ -484,12 +421,10 @@ write(ostream &out) const {
   out << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::validate
-//       Access: Public
-//  Description: Returns true if the internal table appears to be
-//               consistent, false if there are some internal errors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the internal table appears to be consistent, false if there
+ * are some internal errors.
+ */
 template<class Key, class Value>
 bool WeakKeyHashMap<Key, Value>::
 validate() const {
@@ -528,18 +463,14 @@ validate() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::get_hash
-//       Access: Private
-//  Description: Computes an appropriate index number to store the
-//               given pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes an appropriate index number to store the given pointer.
+ */
 template<class Key, class Value>
 INLINE size_t WeakKeyHashMap<Key, Value>::
 get_hash(const Key *key) const {
   /*
-  // We want a hash constant 0 < k < 1.  This one is suggested by
-  // Knuth:
+  // We want a hash constant 0 < k < 1.  This one is suggested by Knuth:
   static const double hash_constant = (sqrt(5.0) - 1.0) / 2.0;
   double f = ((double)(size_t)key * hash_constant);
   f -= floor(f);
@@ -549,11 +480,9 @@ get_hash(const Key *key) const {
   return (((size_t)key * (size_t)9973) >> 8) & (_table_size - 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::is_element
-//       Access: Private
-//  Description: Returns true if element n matches key.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if element n matches key.
+ */
 template<class Key, class Value>
 INLINE bool WeakKeyHashMap<Key, Value>::
 is_element(int n, const Key *key) const {
@@ -561,18 +490,16 @@ is_element(int n, const Key *key) const {
   return _table[n]._key == key;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::store_new_element
-//       Access: Private
-//  Description: Constructs a new TableEntry at position n, storing
-//               the indicated key and value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new TableEntry at position n, storing the indicated key and
+ * value.
+ */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
 store_new_element(int n, const Key *key, const Value &data) {
   if (get_exists_array()[n] != 0) {
-    // There was already an element in this spot.  This can happen
-    // if it was a pointer that had already been deleted.
+    // There was already an element in this spot.  This can happen if it was a
+    // pointer that had already been deleted.
     nassertv(_table[n]._key.was_deleted());
     _table[n].~TableEntry();
     --_num_entries;
@@ -581,11 +508,9 @@ store_new_element(int n, const Key *key, const Value &data) {
   get_exists_array()[n] = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::clear_element
-//       Access: Private
-//  Description: Destructs the TableEntry at position n.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructs the TableEntry at position n.
+ */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
 clear_element(int n) {
@@ -593,36 +518,31 @@ clear_element(int n) {
   get_exists_array()[n] = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::get_exists_array
-//       Access: Private
-//  Description: Returns the beginning of the array of _table_size
-//               unsigned chars that are the boolean flags for whether
-//               each element exists (has been constructed) within the
-//               table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the beginning of the array of _table_size unsigned chars that are
+ * the boolean flags for whether each element exists (has been constructed)
+ * within the table.
+ */
 template<class Key, class Value>
 INLINE unsigned char *WeakKeyHashMap<Key, Value>::
 get_exists_array() const {
   return (unsigned char *)(_table + _table_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::new_table
-//       Access: Private
-//  Description: Allocates a brand new table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a brand new table.
+ */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
 new_table() {
   nassertv(_table_size == 0 && _num_entries == 0);
 
-  // Pick a good initial table size.  For now, we make it really
-  // small.  Maybe that's the right answer.
+  // Pick a good initial table size.  For now, we make it really small.  Maybe
+  // that's the right answer.
   _table_size = 4;
 
-  // We allocate enough bytes for _table_size elements of TableEntry,
-  // plus _table_size more bytes at the end (for the exists array).
+  // We allocate enough bytes for _table_size elements of TableEntry, plus
+  // _table_size more bytes at the end (for the exists array).
   size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size;
 
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
@@ -630,13 +550,10 @@ new_table() {
   memset(get_exists_array(), 0, _table_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::consider_expand_table
-//       Access: Private
-//  Description: Expands the table if it will need it (assuming one
-//               more element is about to be added).  Returns true if
-//               the table was modified, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expands the table if it will need it (assuming one more element is about to
+ * be added).  Returns true if the table was modified, false otherwise.
+ */
 template<class Key, class Value>
 INLINE bool WeakKeyHashMap<Key, Value>::
 consider_expand_table() {
@@ -657,11 +574,9 @@ consider_expand_table() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakKeyHashMap::expand_table
-//       Access: Private
-//  Description: Doubles the size of the existing table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Doubles the size of the existing table.
+ */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
 expand_table() {
@@ -675,8 +590,8 @@ expand_table() {
   _table_size = (old_table_size << 1);
   nassertv(_table == NULL);
 
-  // We allocate enough bytes for _table_size elements of TableEntry,
-  // plus _table_size more bytes at the end (for the exists array).
+  // We allocate enough bytes for _table_size elements of TableEntry, plus
+  // _table_size more bytes at the end (for the exists array).
   size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size;
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
@@ -696,8 +611,8 @@ expand_table() {
       }
 
 #ifdef USE_MOVE_SEMANTICS
-      // Use C++11 rvalue references to invoke the move constructor,
-      // which may be more efficient.
+      // Use C++11 rvalue references to invoke the move constructor, which may
+      // be more efficient.
       new(&_table[new_index]) TableEntry(move(old_map._table[i]));
 #else
       new(&_table[new_index]) TableEntry(old_map._table[i]);
@@ -710,8 +625,8 @@ expand_table() {
   nassertv(validate());
   nassertv(old_map.validate());
 
-  // Note that since has_element(i) also checks whether the pointer
-  // has been deleted, we may end up with fewer entries than we
-  // started with.  Good riddance.
+  // Note that since has_element(i) also checks whether the pointer has been
+  // deleted, we may end up with fewer entries than we started with.  Good
+  // riddance.
   nassertv(_num_entries <= old_map._num_entries);
 }

@@ -26,6 +26,12 @@ if sys.version_info < (3, 0):
     FileExistsError = IOError
     PermissionError = IOError
 
+    unicodeType = unicode
+    strType = str
+else:
+    unicodeType = str
+    strType = ()
+
 
 def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True):
     if sys.version_info >= (3, 0):
@@ -70,11 +76,11 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
             # We can also "open" a VirtualFile object for reading.
             vfile = file
             filename = vfile.getFilename()
-        elif isinstance(file, unicode):
+        elif isinstance(file, unicodeType):
             # If a raw string is given, assume it's an os-specific
             # filename.
             filename = core.Filename.fromOsSpecificW(file)
-        elif isinstance(file, str):
+        elif isinstance(file, strType):
             filename = core.Filename.fromOsSpecific(file)
         else:
             # If a Filename is given, make a writable copy anyway.

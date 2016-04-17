@@ -1,5 +1,5 @@
 import copy
-import ObjectGlobals as OG
+from . import ObjectGlobals as OG
 
 class ObjectGen:
     """ Base class for obj definitions """
@@ -82,7 +82,7 @@ class ObjectPaletteBase:
     def deleteStruct(self, name, deleteItems):
         try:
            item = self.data.pop(name)
-           for key in self.dataStruct.keys():
+           for key in list(self.dataStruct.keys()):
                if self.dataStruct[key] == name:
                   node = self.deleteStruct(key, deleteItems)
                   if node is not None:
@@ -98,7 +98,7 @@ class ObjectPaletteBase:
            node = self.deleteStruct(name, deleteItems)
            if node is not None:
               deleteItems[name] = node
-           for key in deleteItems.keys():
+           for key in list(deleteItems.keys()):
                item = self.dataStruct.pop(key)
         except:
            return
@@ -126,7 +126,7 @@ class ObjectPaletteBase:
         if newName == "":
            return False
         try:
-            for key in self.dataStruct.keys():
+            for key in list(self.dataStruct.keys()):
                 if self.dataStruct[key] == oldName:
                    self.dataStruct[key] = newName
 

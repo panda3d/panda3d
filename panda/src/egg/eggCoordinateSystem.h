@@ -1,16 +1,15 @@
-// Filename: eggCoordinateSystem.h
-// Created by:  drose (20Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCoordinateSystem.h
+ * @author drose
+ * @date 1999-01-20
+ */
 
 #ifndef EGGCOORDINATESYSTEM_H
 #define EGGCOORDINATESYSTEM_H
@@ -22,13 +21,11 @@
 #include "coordinateSystem.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCoordinateSystem
-// Description : The <CoordinateSystem> entry at the top of an egg
-//               file.  Don't confuse this with the enum
-//               EggData::CoordinateSystem, which is the value
-//               contained by this entry.
-////////////////////////////////////////////////////////////////////
+/**
+ * The <CoordinateSystem> entry at the top of an egg file.  Don't confuse this
+ * with the enum EggData::CoordinateSystem, which is the value contained by
+ * this entry.
+ */
 class EXPCL_PANDAEGG EggCoordinateSystem : public EggNode {
 PUBLISHED:
   INLINE EggCoordinateSystem(CoordinateSystem value = CS_default);

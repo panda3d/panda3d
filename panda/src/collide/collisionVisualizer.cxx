@@ -1,16 +1,15 @@
-// Filename: collisionVisualizer.cxx
-// Created by:  drose (16Apr03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionVisualizer.cxx
+ * @author drose
+ * @date 2003-04-16
+ */
 
 #include "collisionVisualizer.h"
 #include "collisionEntry.h"
@@ -38,80 +37,64 @@
 
 TypeHandle CollisionVisualizer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CollisionVisualizer::
 CollisionVisualizer(const string &name) : PandaNode(name) {
   set_cull_callback();
 
-  // We always want to render the CollisionVisualizer node itself
-  // (even if it doesn't appear to have any geometry within it).
+  // We always want to render the CollisionVisualizer node itself (even if it
+  // doesn't appear to have any geometry within it).
   set_internal_bounds(new OmniBoundingVolume());
   _point_scale = 1.0f;
   _normal_scale = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CollisionVisualizer::
 ~CollisionVisualizer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::clear
-//       Access: Published
-//  Description: Removes all the visualization data from a previous
-//               traversal and resets the visualizer to empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the visualization data from a previous traversal and resets the
+ * visualizer to empty.
+ */
 void CollisionVisualizer::
 clear() {
   _data.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *CollisionVisualizer::
 make_copy() const {
   return new CollisionVisualizer(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool CollisionVisualizer::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Now we go through and actually draw our visualized collision solids.
@@ -123,10 +106,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
     CullTraverserData xform_data(data);
 
-    // We don't want to inherit the transform from above!  We ignore
-    // whatever transforms were above the CollisionVisualizer node; it
-    // always renders its objects according to their appropriate net
-    // transform.
+    // We don't want to inherit the transform from above!  We ignore whatever
+    // transforms were above the CollisionVisualizer node; it always renders
+    // its objects according to their appropriate net transform.
     xform_data._net_transform = TransformState::make_identity();
     xform_data._view_frustum = trav->get_view_frustum();
     xform_data.apply_transform_and_state(trav, net_transform,
@@ -138,10 +120,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     Solids::const_iterator si;
     for (si = viz_info._solids.begin(); si != viz_info._solids.end(); ++si) {
       // Note that we don't preserve the clip plane attribute from the
-      // collision solid.  We always draw the whole polygon (or
-      // whatever) in the CollisionVisualizer.  This is a deliberate
-      // decision; clipping the polygons may obscure many collision
-      // tests that are being made.
+      // collision solid.  We always draw the whole polygon (or whatever) in
+      // the CollisionVisualizer.  This is a deliberate decision; clipping the
+      // polygons may obscure many collision tests that are being made.
       const CollisionSolid *solid = (*si).first;
       const SolidInfo &solid_info = (*si).second;
       bool was_detected = (solid_info._detected_count > 0);
@@ -149,8 +130,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       if (node != (PandaNode *)NULL) {
         CullTraverserData next_data(xform_data, node);
 
-        // We don't want to inherit the render state from above for
-        // these guys.
+        // We don't want to inherit the render state from above for these
+        // guys.
         next_data._state = get_viz_state();
         trav->traverse(next_data);
       }
@@ -175,8 +156,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       for (pi = viz_info._points.begin(); pi != viz_info._points.end(); ++pi) {
         const CollisionPoint &point = (*pi);
 
-        // Draw a small red point at the surface point, and a smaller
-        // white point at the interior point.
+        // Draw a small red point at the surface point, and a smaller white
+        // point at the interior point.
         {
           PT(GeomVertexData) point_vdata =
             new GeomVertexData("viz", point_format, Geom::UH_stream);
@@ -247,30 +228,23 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool CollisionVisualizer::
 is_renderable() const {
   return true;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::output
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the node to the
-//               indicated output stream.  This is invoked by the <<
-//               operator.  It may be overridden in derived classes to
-//               include some information relevant to the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the node to the indicated output stream.
+ * This is invoked by the << operator.  It may be overridden in derived
+ * classes to include some information relevant to the class.
+ */
 void CollisionVisualizer::
 output(ostream &out) const {
   PandaNode::output(out);
@@ -278,28 +252,22 @@ output(ostream &out) const {
   CollisionRecorder::output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::begin_traversal
-//       Access: Public, Virtual
-//  Description: This method is called at the beginning of a
-//               CollisionTraverser::traverse() call.  It is provided
-//               as a hook for the derived class to reset its state as
-//               appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called at the beginning of a CollisionTraverser::traverse()
+ * call.  It is provided as a hook for the derived class to reset its state as
+ * appropriate.
+ */
 void CollisionVisualizer::
 begin_traversal() {
   CollisionRecorder::begin_traversal();
   _data.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::collision_tested
-//       Access: Public, Virtual
-//  Description: This method is called when a pair of collision solids
-//               have passed all bounding-volume tests and have been
-//               tested for a collision.  The detected value is set
-//               true if a collision was detected, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called when a pair of collision solids have passed all
+ * bounding-volume tests and have been tested for a collision.  The detected
+ * value is set true if a collision was detected, false otherwise.
+ */
 void CollisionVisualizer::
 collision_tested(const CollisionEntry &entry, bool detected) {
   CollisionRecorder::collision_tested(entry, detected);
@@ -326,16 +294,14 @@ collision_tested(const CollisionEntry &entry, bool detected) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::get_viz_state
-//       Access: Private
-//  Description: Returns a RenderState suitable for rendering the
-//               collision solids with which a collision was detected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState suitable for rendering the collision solids with
+ * which a collision was detected.
+ */
 CPT(RenderState) CollisionVisualizer::
 get_viz_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
+  // Once someone asks for this pointer, we hold its reference count and never
+  // free it.
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make

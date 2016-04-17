@@ -1,16 +1,15 @@
-// Filename: eggGroupUniquifier.h
-// Created by:  drose (22Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroupUniquifier.h
+ * @author drose
+ * @date 2001-02-22
+ */
 
 #ifndef EGGGROUPUNIQUIFIER_H
 #define EGGGROUPUNIQUIFIER_H
@@ -19,13 +18,11 @@
 
 #include "eggNameUniquifier.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroupUniquifier
-// Description : This is a specialization of EggNameUniquifier to
-//               generate unique names for EggGroup nodes.  It's not
-//               called automatically; you must invoke it yourself if
-//               you want it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization of EggNameUniquifier to generate unique names for
+ * EggGroup nodes.  It's not called automatically; you must invoke it yourself
+ * if you want it.
+ */
 class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
 PUBLISHED:
   EggGroupUniquifier(bool filter_names = true);
@@ -58,5 +55,3 @@ private:
 };
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: cvsSourceDirectory.h
-// Created by:  drose (31Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cvsSourceDirectory.h
+ * @author drose
+ * @date 2000-10-31
+ */
 
 #ifndef CVSSOURCEDIRECTORY_H
 #define CVSSOURCEDIRECTORY_H
@@ -22,21 +21,17 @@
 
 class CVSSourceTree;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CVSSourceDirectory
-// Description : This represents one particular directory in the
-//               hierarchy of source directory files.  We must scan
-//               the source directory to identify where the related
-//               files have previously been copied.
-//
-//               The tree is maintained in a case-insensitive manner,
-//               even on a non-Windows system, since you might want to
-//               eventually check out the CVS tree onto a Windows
-//               system--and if you do, you'll be sad if there are
-//               case conflicts within the tree.  So we make an effort
-//               to ensure this doesn't happen by treating two files
-//               with a different case as the same file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents one particular directory in the hierarchy of source
+ * directory files.  We must scan the source directory to identify where the
+ * related files have previously been copied.
+ *
+ * The tree is maintained in a case-insensitive manner, even on a non-Windows
+ * system, since you might want to eventually check out the CVS tree onto a
+ * Windows system--and if you do, you'll be sad if there are case conflicts
+ * within the tree.  So we make an effort to ensure this doesn't happen by
+ * treating two files with a different case as the same file.
+ */
 class CVSSourceDirectory {
 public:
   CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,

@@ -1,16 +1,15 @@
-// Filename: vertexDataBook.h
-// Created by:  drose (16May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexDataBook.h
+ * @author drose
+ * @date 2007-05-16
+ */
 
 #ifndef VERTEXDATABOOK_H
 #define VERTEXDATABOOK_H
@@ -24,11 +23,10 @@
 
 class VertexDataBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexDataBook
-// Description : A collection of VertexDataPages, which can be used to
-//               allocate new VertexDataBlock objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * A collection of VertexDataPages, which can be used to allocate new
+ * VertexDataBlock objects.
+ */
 class EXPCL_PANDA_GOBJ VertexDataBook {
 PUBLISHED:
   VertexDataBook(size_t block_size);

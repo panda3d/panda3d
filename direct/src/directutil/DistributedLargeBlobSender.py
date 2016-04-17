@@ -2,7 +2,7 @@
 
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
-import LargeBlobSenderConsts
+from . import LargeBlobSenderConsts
 
 class DistributedLargeBlobSender(DistributedObject.DistributedObject):
     """DistributedLargeBlobSender: for sending large chunks of data through

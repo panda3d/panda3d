@@ -1,16 +1,15 @@
-// Filename: glVertexBufferContext_src.h
-// Created by:  drose (17Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glVertexBufferContext_src.h
+ * @author drose
+ * @date 2005-03-17
+ */
 
 #include "pandabase.h"
 #include "vertexBufferContext.h"
@@ -18,15 +17,13 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLVertexBufferContext
-// Description : Caches a GeomVertexArrayData on the GL as a buffer
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Caches a GeomVertexArrayData on the GL as a buffer object.
+ */
 class EXPCL_GL CLP(VertexBufferContext) : public VertexBufferContext {
 public:
   INLINE CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
-                                  PreparedGraphicsObjects *pgo, 
+                                  PreparedGraphicsObjects *pgo,
                                   GeomVertexArrayData *data);
   ALLOC_DELETED_CHAIN(CLP(VertexBufferContext));
 
@@ -56,4 +53,3 @@ private:
 };
 
 #include "glVertexBufferContext_src.I"
-

@@ -172,7 +172,7 @@ else:
                         break
 
             if pipe.getInterfaceName() != 'OpenGL':
-                raise StandardError, "Couldn't get an OpenGL pipe."
+                raise Exception("Couldn't get an OpenGL pipe.")
 
             self.win = base.openWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
             self.hasCapture = False

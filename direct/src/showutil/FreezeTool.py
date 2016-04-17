@@ -7,8 +7,7 @@ import os
 import marshal
 import imp
 import platform
-import types
-from StringIO import StringIO
+from io import StringIO
 from distutils.sysconfig import PREFIX, get_python_inc, get_python_version, get_config_var
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
@@ -30,8 +29,8 @@ isDebugBuild = (python.lower().endswith('_d'))
 # These are modules that Python always tries to import up-front.  They
 # must be frozen in any main.exe.
 startupModules = [
-    'site', 'sitecustomize', 'os', 'encodings.cp1252',
-    'encodings.latin_1', 'encodings.utf_8', 'io', 'org',
+    'os', 'encodings.cp1252',
+    'encodings.latin_1', 'encodings.utf_8', 'io',
     ]
 
 # These are missing modules that we've reported already this session.
@@ -97,7 +96,7 @@ class CompilationEnvironment:
             elif (Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').exists()):
                 self.MSVC = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').toOsSpecific()
             else:
-                print 'Could not locate Microsoft Visual C++ Compiler! Try running from the Visual Studio Command Prompt.'
+                print('Could not locate Microsoft Visual C++ Compiler! Try running from the Visual Studio Command Prompt.')
                 sys.exit(1)
 
             if ('WindowsSdkDir' in os.environ):
@@ -107,7 +106,7 @@ class CompilationEnvironment:
             elif (os.path.exists(os.path.join(self.MSVC, 'PlatformSDK'))):
                 self.PSDK = os.path.join(self.MSVC, 'PlatformSDK')
             else:
-                print 'Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.'
+                print('Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.')
                 sys.exit(1)
 
             # We need to use the correct compiler setting for debug vs. release builds.
@@ -169,9 +168,9 @@ class CompilationEnvironment:
             'filename' : filename,
             'basename' : basename,
             }
-        print >> sys.stderr, compile
+        sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
-            raise StandardError, 'failed to compile %s.' % basename
+            raise Exception('failed to compile %s.' % basename)
 
         link = self.linkExe % {
             'python' : self.Python,
@@ -184,9 +183,9 @@ class CompilationEnvironment:
             'filename' : filename,
             'basename' : basename,
             }
-        print >> sys.stderr, link
+        sys.stderr.write(link + '\n')
         if os.system(link) != 0:
-            raise StandardError, 'failed to link %s.' % basename
+            raise Exception('failed to link %s.' % basename)
 
     def compileDll(self, filename, basename):
         compile = self.compileObj % {
@@ -201,9 +200,9 @@ class CompilationEnvironment:
             'filename' : filename,
             'basename' : basename,
             }
-        print >> sys.stderr, compile
+        sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
-            raise StandardError, 'failed to compile %s.' % basename
+            raise Exception('failed to compile %s.' % basename)
 
         link = self.linkDll % {
             'python' : self.Python,
@@ -217,15 +216,19 @@ class CompilationEnvironment:
             'basename' : basename,
             'dllext' : self.dllext,
             }
-        print >> sys.stderr, link
+        sys.stderr.write(link + '\n')
         if os.system(link) != 0:
-            raise StandardError, 'failed to link %s.' % basename
+            raise Exception('failed to link %s.' % basename)
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
 /* Python interpreter main program for frozen scripts */
 
 #include "Python.h"
+
+#if PY_MAJOR_VERSION >= 3
+#include <locale.h>
+#endif
 
 #ifdef MS_WINDOWS
 extern void PyWinFreeze_ExeInit(void);
@@ -239,9 +242,26 @@ int
 Py_FrozenMain(int argc, char **argv)
 {
     char *p;
-    int n, sts;
+    int n, sts = 1;
     int inspect = 0;
     int unbuffered = 0;
+
+#if PY_MAJOR_VERSION >= 3
+    int i;
+    char *oldloc = NULL;
+    wchar_t **argv_copy = NULL;
+    /* We need a second copies, as Python might modify the first one. */
+    wchar_t **argv_copy2 = NULL;
+
+    if (argc > 0) {
+        argv_copy = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
+        argv_copy2 = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
+        if (!argv_copy || !argv_copy2) {
+            fprintf(stderr, \"out of memory\\n\");
+            goto error;
+        }
+    }
+#endif
 
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
 
@@ -256,10 +276,41 @@ Py_FrozenMain(int argc, char **argv)
         setbuf(stderr, (char *)NULL);
     }
 
+#if PY_MAJOR_VERSION >= 3
+    oldloc = _PyMem_RawStrdup(setlocale(LC_ALL, NULL));
+    if (!oldloc) {
+        fprintf(stderr, \"out of memory\\n\");
+        goto error;
+    }
+
+    setlocale(LC_ALL, \"\");
+    for (i = 0; i < argc; i++) {
+        argv_copy[i] = Py_DecodeLocale(argv[i], NULL);
+        argv_copy2[i] = argv_copy[i];
+        if (!argv_copy[i]) {
+            fprintf(stderr, \"Unable to decode the command line argument #%i\\n\",
+                            i + 1);
+            argc = i;
+            goto error;
+        }
+    }
+    setlocale(LC_ALL, oldloc);
+    PyMem_RawFree(oldloc);
+    oldloc = NULL;
+#endif
+
 #ifdef MS_WINDOWS
     PyInitFrozenExtensions();
 #endif /* MS_WINDOWS */
-    Py_SetProgramName(argv[0]);
+
+    if (argc >= 1) {
+#if PY_MAJOR_VERSION >= 3
+        Py_SetProgramName(argv_copy[0]);
+#else
+        Py_SetProgramName(argv[0]);
+#endif
+    }
+
     Py_Initialize();
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeInit();
@@ -269,7 +320,11 @@ Py_FrozenMain(int argc, char **argv)
         fprintf(stderr, "Python %s\\n%s\\n",
             Py_GetVersion(), Py_GetCopyright());
 
+#if PY_MAJOR_VERSION >= 3
+    PySys_SetArgv(argc, argv_copy);
+#else
     PySys_SetArgv(argc, argv);
+#endif
 
     n = PyImport_ImportFrozenModule("__main__");
     if (n == 0)
@@ -288,6 +343,17 @@ Py_FrozenMain(int argc, char **argv)
     PyWinFreeze_ExeTerm();
 #endif
     Py_Finalize();
+
+error:
+#if PY_MAJOR_VERSION >= 3
+    PyMem_RawFree(argv_copy);
+    if (argv_copy2) {
+        for (i = 0; i < argc; i++)
+            PyMem_RawFree(argv_copy2[i]);
+        PyMem_RawFree(argv_copy2);
+    }
+    PyMem_RawFree(oldloc);
+#endif
     return sts;
 }
 """
@@ -480,14 +546,15 @@ int PyInitFrozenExtensions()
 """
 
 okMissing = [
+    '__main__', '_dummy_threading', 'Carbon', 'Carbon.Files',
     'Carbon.Folder', 'Carbon.Folders', 'HouseGlobals', 'Carbon.File',
     'MacOS', '_emx_link', 'ce', 'mac', 'org.python.core', 'os.path',
     'os2', 'posix', 'pwd', 'readline', 'riscos', 'riscosenviron',
-    'riscospath', 'dbm', 'fcntl', 'win32api', 'usercustomize',
-    '_winreg', 'ctypes', 'ctypes.wintypes', 'nt','msvcrt',
-    'EasyDialogs', 'SOCKS', 'ic', 'rourl2path', 'termios',
+    'riscospath', 'dbm', 'fcntl', 'win32api', 'win32pipe', 'usercustomize',
+    '_winreg', 'winreg', 'ctypes', 'ctypes.wintypes', 'nt','msvcrt',
+    'EasyDialogs', 'SOCKS', 'ic', 'rourl2path', 'termios', 'vms_lib',
     'OverrideFrom23._Res', 'email', 'email.Utils', 'email.Generator',
-    'email.Iterators', '_subprocess', 'gestalt',
+    'email.Iterators', '_subprocess', 'gestalt', 'java.lang',
     'direct.extensions_native.extensions_darwin',
     ]
 
@@ -503,7 +570,7 @@ class Freezer:
 
             # The file on disk it was loaded from, if any.
             self.filename = filename
-            if isinstance(filename, types.StringTypes):
+            if filename is not None and not isinstance(filename, Filename):
                 self.filename = Filename(filename)
 
             # True if the module was found via the modulefinder.
@@ -614,7 +681,7 @@ class Freezer:
         # Actually, make sure we know how to find all of the
         # already-imported modules.  (Some of them might do their own
         # special path mangling.)
-        for moduleName, module in sys.modules.items():
+        for moduleName, module in list(sys.modules.items()):
             if module and hasattr(module, '__path__'):
                 path = getattr(module, '__path__')
                 if path:
@@ -627,7 +694,7 @@ class Freezer:
         constructor, but it may be called at any point during
         processing. """
 
-        for key, value in freezer.modules.items():
+        for key, value in list(freezer.modules.items()):
             self.previousModules[key] = value
             self.modules[key] = value
 
@@ -670,7 +737,7 @@ class Freezer:
         try:
             module = __import__(moduleName)
         except:
-            print "couldn't import %s" % (moduleName)
+            print("couldn't import %s" % (moduleName))
             module = None
 
         if module != None:
@@ -709,7 +776,7 @@ class Freezer:
         try:
             module = __import__(moduleName)
         except:
-            print "couldn't import %s" % (moduleName)
+            print("couldn't import %s" % (moduleName))
             module = None
 
         if module != None:
@@ -832,6 +899,7 @@ class Freezer:
         # bring in Python's startup modules.
         if addStartupModules:
             self.modules['_frozen_importlib'] = self.ModuleDef('importlib._bootstrap', implicit = True)
+            self.modules['_frozen_importlib_external'] = self.ModuleDef('importlib._bootstrap_external', implicit = True)
 
             for moduleName in startupModules:
                 if moduleName not in self.modules:
@@ -843,7 +911,7 @@ class Freezer:
 
         # Walk through the list in sorted order, so we reach parents
         # before children.
-        names = self.modules.items()
+        names = list(self.modules.items())
         names.sort()
 
         excludeDict = {}
@@ -868,7 +936,7 @@ class Freezer:
             else:
                 includes.append(mdef)
 
-        self.mf = PandaModuleFinder(excludes = excludeDict.keys())
+        self.mf = PandaModuleFinder(excludes = list(excludeDict.keys()))
 
         # Attempt to import the explicit modules into the modulefinder.
 
@@ -884,7 +952,7 @@ class Freezer:
             try:
                 self.__loadModule(mdef)
             except ImportError:
-                print "Unknown module: %s" % (mdef.moduleName)
+                print("Unknown module: %s" % (mdef.moduleName))
 
         # Also attempt to import any implicit modules.  If any of
         # these fail to import, we don't really care.
@@ -899,7 +967,7 @@ class Freezer:
                 pass
 
         # Now, any new modules we found get added to the export list.
-        for origName in self.mf.modules.keys():
+        for origName in list(self.mf.modules.keys()):
             if origName not in origToNewName:
                 self.modules[origName] = self.ModuleDef(origName, implicit = True)
 
@@ -928,7 +996,7 @@ class Freezer:
 
         if missing:
             missing.sort()
-            print "There are some missing modules: %r" % missing
+            print("There are some missing modules: %r" % missing)
 
     def __sortModuleKey(self, mdef):
         """ A sort key function to sort a list of mdef's into order,
@@ -1004,7 +1072,7 @@ class Freezer:
 
         moduleNames = []
 
-        for newName, mdef in self.modules.items():
+        for newName, mdef in list(self.modules.items()):
             if mdef.guess:
                 # Not really a module.
                 pass
@@ -1024,7 +1092,7 @@ class Freezer:
 
         moduleDefs = []
 
-        for newName, mdef in self.modules.items():
+        for newName, mdef in list(self.modules.items()):
             prev = self.previousModules.get(newName, None)
             if not mdef.exclude:
                 # Include this module (even if a previous pass
@@ -1050,7 +1118,7 @@ class Freezer:
         # actual filename we put in there is meaningful only for stack
         # traces, so we'll just use the module name.
         replace_paths = []
-        for moduleName, module in self.mf.modules.items():
+        for moduleName, module in list(self.mf.modules.items()):
             if module.__code__:
                 origPathname = module.__code__.co_filename
                 replace_paths.append((origPathname, moduleName))
@@ -1058,7 +1126,7 @@ class Freezer:
 
         # Now that we have built up the replacement mapping, go back
         # through and actually replace the paths.
-        for moduleName, module in self.mf.modules.items():
+        for moduleName, module in list(self.mf.modules.items()):
             if module.__code__:
                 co = self.mf.replace_paths_in_code(module.__code__)
                 module.__code__ = co;
@@ -1206,7 +1274,7 @@ class Freezer:
         Filename(mfname).unlink()
         multifile = Multifile()
         if not multifile.openReadWrite(mfname):
-            raise StandardError
+            raise Exception
 
         self.addToMultifile(multifile)
 
@@ -1283,7 +1351,7 @@ class Freezer:
             # We must have a __main__ module to make an exe file.
             if not self.__writingModule('__main__'):
                 message = "Can't generate an executable without a __main__ module."
-                raise StandardError, message
+                raise Exception(message)
 
         filename = basename + self.sourceExtension
 
@@ -1406,9 +1474,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 return (None, name, ('', '', imp.PY_FROZEN))
 
         message = "DLL loader cannot find %s." % (name)
-        raise ImportError, message
+        raise ImportError(message)
 
-    def load_module(self, fqname, fp, pathname, (suffix, mode, type)):
+    def load_module(self, fqname, fp, pathname, file_info):
+        suffix, mode, type = file_info
+
         if type == imp.PY_FROZEN:
             # It's a frozen module.
             co, isPackage = p3extend_frozen.get_frozen_module_code(pathname)

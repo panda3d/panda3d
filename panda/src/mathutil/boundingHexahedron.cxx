@@ -1,16 +1,15 @@
-// Filename: boundingHexahedron.cxx
-// Created by:  drose (03Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingHexahedron.cxx
+ * @author drose
+ * @date 1999-10-03
+ */
 
 #include "boundingHexahedron.h"
 #include "boundingSphere.h"
@@ -22,11 +21,9 @@
 
 TypeHandle BoundingHexahedron::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BoundingHexahedron::
 BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
                    CoordinateSystem cs) {
@@ -40,8 +37,8 @@ BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
   }
 
   // We build the points based on a Z-up right-handed frustum.  If the
-  // requested coordinate system is otherwise, we'll convert it in a
-  // second pass.
+  // requested coordinate system is otherwise, we'll convert it in a second
+  // pass.
   _points[0].set(frustum._l * fs, frustum._ffar, frustum._b * fs);
   _points[1].set(frustum._r * fs, frustum._ffar, frustum._b * fs);
   _points[2].set(frustum._r * fs, frustum._ffar, frustum._t * fs);
@@ -62,11 +59,9 @@ BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BoundingHexahedron::
 BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
                    const LPoint3 &fur, const LPoint3 &ful,
@@ -86,21 +81,17 @@ BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
   set_planes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::make_copy
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BoundingVolume *BoundingHexahedron::
 make_copy() const {
   return new BoundingHexahedron(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::get_min
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LPoint3 BoundingHexahedron::
 get_min() const {
   nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -115,11 +106,9 @@ get_min() const {
   return m;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::get_max
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LPoint3 BoundingHexahedron::
 get_max() const {
   nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -134,11 +123,9 @@ get_max() const {
   return m;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::get_approx_center
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LPoint3 BoundingHexahedron::
 get_approx_center() const {
   nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -146,11 +133,9 @@ get_approx_center() const {
   return _centroid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::xform
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BoundingHexahedron::
 xform(const LMatrix4 &mat) {
   if (!is_empty() && !is_infinite()) {
@@ -162,11 +147,9 @@ xform(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BoundingHexahedron::
 output(ostream &out) const {
   if (is_empty()) {
@@ -178,11 +161,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::write
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BoundingHexahedron::
 write(ostream &out, int indent_level) const {
   if (is_empty()) {
@@ -200,33 +181,26 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::as_bounding_hexahedron
-//       Access: Public, Virtual
-//  Description: Virtual downcast method.  Returns this object as a
-//               pointer of the indicated type, if it is in fact that
-//               type.  Returns NULL if it is not that type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Virtual downcast method.  Returns this object as a pointer of the indicated
+ * type, if it is in fact that type.  Returns NULL if it is not that type.
+ */
 const BoundingHexahedron *BoundingHexahedron::
 as_bounding_hexahedron() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::extend_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BoundingHexahedron::
 extend_other(BoundingVolume *other) const {
   return other->extend_by_hexahedron(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::around_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BoundingHexahedron::
 around_other(BoundingVolume *other,
              const BoundingVolume **first,
@@ -234,21 +208,17 @@ around_other(BoundingVolume *other,
   return other->around_hexahedrons(first, last);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BoundingHexahedron::
 contains_other(const BoundingVolume *other) const {
   return other->contains_hexahedron(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_point
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BoundingHexahedron::
 contains_point(const LPoint3 &point) const {
   if (is_empty()) {
@@ -258,8 +228,8 @@ contains_point(const LPoint3 &point) const {
     return IF_possible | IF_some | IF_all;
 
   } else {
-    // The hexahedron contains the point iff the point is behind all of
-    // the planes.
+    // The hexahedron contains the point iff the point is behind all of the
+    // planes.
     for (int i = 0; i < num_planes; i++) {
       const LPlane &p = _planes[i];
       if (p.dist_to_plane(point) > 0.0f) {
@@ -270,11 +240,9 @@ contains_point(const LPoint3 &point) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_lineseg
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BoundingHexahedron::
 contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   if (is_empty()) {
@@ -284,8 +252,8 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
     return IF_possible | IF_some | IF_all;
 
   } else {
-    // The hexahedron does not contains the line segment if both points
-    // are in front of any one plane.
+    // The hexahedron does not contains the line segment if both points are in
+    // front of any one plane.
     for (int i = 0; i < num_planes; i++) {
       const LPlane &p = _planes[i];
       if (p.dist_to_plane(a) > 0.0f ||
@@ -294,24 +262,22 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
       }
     }
 
-    // If there is no plane that both points are in front of, the
-    // hexahedron may or may not contain the line segment.  For the
-    // moment, we won't bother to check that more thoroughly, though.
+    // If there is no plane that both points are in front of, the hexahedron
+    // may or may not contain the line segment.  For the moment, we won't
+    // bother to check that more thoroughly, though.
     return IF_possible;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_sphere
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BoundingHexahedron::
 contains_sphere(const BoundingSphere *sphere) const {
   nassertr(!is_empty(), 0);
 
-  // The hexahedron contains the sphere iff the sphere is at least
-  // partly behind all of the planes.
+  // The hexahedron contains the sphere iff the sphere is at least partly
+  // behind all of the planes.
   const LPoint3 &center = sphere->get_center();
   PN_stdfloat radius = sphere->get_radius();
 
@@ -322,13 +288,12 @@ contains_sphere(const BoundingSphere *sphere) const {
     PN_stdfloat dist = p.dist_to_plane(center);
 
     if (dist > radius) {
-      // The sphere is completely in front of this plane; it's thus
-      // completely outside of the hexahedron.
+      // The sphere is completely in front of this plane; it's thus completely
+      // outside of the hexahedron.
       return IF_no_intersection;
 
     } else if (dist > -radius) {
-      // The sphere is not completely behind this plane, but some of
-      // it is.
+      // The sphere is not completely behind this plane, but some of it is.
       result &= ~IF_all;
     }
   }
@@ -336,11 +301,9 @@ contains_sphere(const BoundingSphere *sphere) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_box
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BoundingHexahedron::
 contains_box(const BoundingBox *box) const {
   nassertr(!is_empty(), 0);
@@ -360,9 +323,8 @@ contains_box(const BoundingBox *box) const {
     PN_stdfloat dist2 = dist * dist;
 
     if (dist2 <= radius2) {
-      // The sphere is not completely behind this plane, but some of
-      // it is.
-      
+      // The sphere is not completely behind this plane, but some of it is.
+
       // Look a little closer.
       bool all_in = true;
       bool all_out = true;
@@ -391,11 +353,9 @@ contains_box(const BoundingBox *box) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_hexahedron
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BoundingHexahedron::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   nassertr(!is_empty(), 0);
@@ -415,13 +375,12 @@ contains_hexahedron(const BoundingHexahedron *hexahedron) const {
     PN_stdfloat dist2 = dist * dist;
 
     if (dist >= 0.0f && dist2 > radius2) {
-      // The sphere is completely in front of this plane; it's thus
-      // completely outside of the hexahedron.
+      // The sphere is completely in front of this plane; it's thus completely
+      // outside of the hexahedron.
       return IF_no_intersection;
 
     } else {/*if (dist < 0.0f && dist2 < radius2) {*/
-      // The sphere is not completely behind this plane, but some of
-      // it is.
+      // The sphere is not completely behind this plane, but some of it is.
 
       // Look a little closer.
       unsigned points_out = 0;
@@ -444,22 +403,19 @@ contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::set_planes
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BoundingHexahedron::
 set_planes() {
   _planes[0] = LPlane(_points[0], _points[3], _points[2]);
 
-  // Test to see if we have accidentally inverted our frustum by
-  // transforming it with a -1 matrix.  We do this by ensuring that
-  // the centroid is in front of all of the planes (actually, we only
-  // need to test the first plane).
+  // Test to see if we have accidentally inverted our frustum by transforming
+  // it with a -1 matrix.  We do this by ensuring that the centroid is in
+  // front of all of the planes (actually, we only need to test the first
+  // plane).
   if (_planes[0].dist_to_plane(_centroid) > 0) {
-    // Oops!  We're flipped!  Rebuild the planes in the opposite
-    // direction.
+    // Oops!  We're flipped!  Rebuild the planes in the opposite direction.
     _planes[0] = LPlane(_points[0], _points[2], _points[3]);
     _planes[1] = LPlane(_points[0], _points[5], _points[1]);
     _planes[2] = LPlane(_points[1], _points[6], _points[2]);
@@ -476,8 +432,8 @@ set_planes() {
     _planes[5] = LPlane(_points[4], _points[6], _points[7]);
   }
 
-  // Still not entirely sure why some code keeps triggering these, but
-  // I'm taking them out of the normal build for now.
+  // Still not entirely sure why some code keeps triggering these, but I'm
+  // taking them out of the normal build for now.
 #ifdef _DEBUG
   nassertv(_planes[0].dist_to_plane(_centroid) <= 0.001);
   nassertv(_planes[1].dist_to_plane(_centroid) <= 0.001);
@@ -488,11 +444,9 @@ set_planes() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::set_centroid
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BoundingHexahedron::
 set_centroid() {
   LPoint3 net = _points[0];

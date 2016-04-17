@@ -1,16 +1,15 @@
-// Filename: animChannel.h
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animChannel.h
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #ifndef ANIMCHANNEL_H
 #define ANIMCHANNEL_H
@@ -21,18 +20,16 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannel
-// Description : This template class is the parent class for all kinds
-//               of AnimChannels that return different values.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class is the parent class for all kinds of AnimChannels that
+ * return different values.
+ */
 template<class SwitchType>
 class AnimChannel : public AnimChannelBase {
 protected:
-  // The default constructor is protected: don't try to create an
-  // AnimChannel without a parent.  To create an AnimChannel hierarchy,
-  // you must first create an AnimBundle, and use that to create any
-  // subsequent children.
+  // The default constructor is protected: don't try to create an AnimChannel
+  // without a parent.  To create an AnimChannel hierarchy, you must first
+  // create an AnimBundle, and use that to create any subsequent children.
   INLINE AnimChannel(const string &name = "");
   INLINE AnimChannel(AnimGroup *parent, const AnimChannel &copy);
 public:
@@ -54,8 +51,8 @@ PUBLISHED:
 
   virtual TypeHandle get_value_type() const;
 
-  //This class has no Read/Write functions as it is abstract
-  //and defines no new data
+  // This class has no ReadWrite functions as it is abstract and defines no
+  // new data
 
 public:
   virtual TypeHandle get_type() const {
@@ -132,4 +129,3 @@ typedef AnimChannel<ACScalarSwitchType> AnimChannelScalar;
 #endif
 
 #endif
-

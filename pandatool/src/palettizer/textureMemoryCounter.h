@@ -1,16 +1,15 @@
-// Filename: textureMemoryCounter.h
-// Created by:  drose (19Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureMemoryCounter.h
+ * @author drose
+ * @date 2000-12-19
+ */
 
 #ifndef TEXTUREMEMORYCOUNTER_H
 #define TEXTUREMEMORYCOUNTER_H
@@ -26,13 +25,11 @@ class TexturePlacement;
 #include "pmap.h"
 #include "pset.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureMemoryCounter
-// Description : This class is used to gather statistics on texture
-//               memory usage, etc.  It adds up the total texture
-//               memory required by a number of image files, and
-//               reports it at the end.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to gather statistics on texture memory usage, etc.  It
+ * adds up the total texture memory required by a number of image files, and
+ * reports it at the end.
+ */
 class TextureMemoryCounter {
 public:
   TextureMemoryCounter();

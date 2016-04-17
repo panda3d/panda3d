@@ -1,16 +1,15 @@
-// Filename: collisionNode.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionNode.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef COLLISIONNODE_H
 #define COLLISIONNODE_H
@@ -22,14 +21,12 @@
 #include "collideMask.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionNode
-// Description : A node in the scene graph that can hold any number of
-//               CollisionSolids.  This may either represent a bit of
-//               static geometry in the scene that things will collide
-//               with, or an animated object twirling around in the
-//               world and running into things.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold any number of CollisionSolids.
+ * This may either represent a bit of static geometry in the scene that things
+ * will collide with, or an animated object twirling around in the world and
+ * running into things.
+ */
 class EXPCL_PANDA_COLLIDE CollisionNode : public PandaNode {
 PUBLISHED:
   CollisionNode(const string &name);
@@ -42,7 +39,7 @@ public:
   virtual PandaNode *make_copy() const;
   virtual bool preserve_name() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
   virtual CollideMask get_legal_collide_mask() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -87,15 +84,14 @@ protected:
 private:
   CPT(RenderState) get_last_pos_state();
 
-  // This data is not cycled, for now.  We assume the collision
-  // traversal will take place in App only.  Perhaps we will revisit
-  // this later.
+  // This data is not cycled, for now.  We assume the collision traversal will
+  // take place in App only.  Perhaps we will revisit this later.
   CollideMask _from_collide_mask;
   int _collider_sort;
 
   typedef pvector< COWPT(CollisionSolid) > Solids;
   Solids _solids;
-  
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

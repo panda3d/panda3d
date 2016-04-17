@@ -1,3 +1,4 @@
+import sys
 from panda3d.core import Filename, PandaSystem, getModelPath
 
 # This file defines a number of standard "packages" that correspond to
@@ -96,12 +97,16 @@ class panda3d(package):
     excludeModule('wx',
                   'direct.showbase.WxGlobal')
 
-    excludeModule('Tkinter', 'Pmw',
+    excludeModule('Tkinter', 'tkinter', 'Pmw', 'tkinter.simpledialog',
                   'direct.showbase.TkGlobal',
                   'direct.tkpanels', 'direct.tkwidgets',
                   'tkCommonDialog', 'tkMessageBox', 'tkSimpleDialog')
 
-    excludeModule('MySQLdb', '_mysql')
+    excludeModule('MySQLdb', 'MySQLdb.connections', 'MySQLdb.constants',
+                  'MySQLdb.converters', '_mysql')
+
+    # Some code in distributed conditionally imports these.
+    excludeModule('otp.ai', 'otp.ai.AIZoneData')
 
     # Most of the core Panda3D DLL's will be included implicitly due to
     # being referenced by the above Python code.  Here we name a few more
@@ -140,60 +145,82 @@ class morepy(package):
     config(display_name = "Python standard library")
     require('panda3d')
 
-    module('string', 're', 'struct', 'difflib', 'StringIO',
-           'cStringIO', 'StringIO', 'textwrap', 'codecs',
-           'unicodedata', 'stringprep', 'fpformat', 'datetime',
+    module('string', 're', 'struct', 'difflib',
+           'textwrap', 'codecs', 'unicodedata', 'stringprep', 'datetime',
            'calendar', 'collections', 'heapq', 'bisect', 'array',
-           'sets', 'sched', 'mutex', 'queue', 'weakref', 'UserDict',
-           'UserList', 'UserString', 'types', 'new', 'copy', 'pprint',
-           'repr', 'numbers', 'math', 'cmath', 'decimal', 'fractions',
+           'sched', 'queue', 'weakref', 'types', 'copy', 'pprint',
+           'numbers', 'math', 'cmath', 'decimal', 'fractions',
            'random', 'itertools', 'functools', 'operator', 'os.path',
-           'fileinput', 'stat', 'statvfs', 'filecmp', 'tempfile',
-           'glob', 'fnmatch', 'linecache', 'shutil', 'dircache',
-           'macpath', 'pickle', 'cPickle', 'copy_reg', 'shelve',
-           'marshal', 'anydbm', 'whichdb', 'dbm', 'gdbm', 'dbhash',
-           'bsddb', 'dumbdbm', 'zlib', 'gzip', 'bz2', 'zipfile',
-           'tarfile', 'csv', 'ConfigParser', 'robotparser', 'netrc',
-           'xdrlib', 'plistlib', 'hashlib', 'hmac', 'md5', 'sha', 'os',
+           'fileinput', 'filecmp', 'tempfile', 'glob', 'fnmatch', 'linecache',
+           'shutil', 'macpath', 'pickle', 'shelve', 'marshal', 'zlib',
+           'gzip', 'bz2', 'zipfile', 'tarfile', 'csv', 'netrc',
+           'xdrlib', 'plistlib', 'hashlib', 'hmac', 'os',
            'time', 'optparse', 'getopt', 'logging', 'logging.*')
     module('getpass', 'curses', 'curses.textpad', 'curses.wrapper',
            'curses.ascii', 'curses.panel', 'platform', 'errno',
-           'ctypes', 'select', 'threading', 'thread',
-           'dummy_threading', 'dummy_thread', 'multiprocessing',
-           'mmap', 'readline', 'rlcompleter', 'subprocess', 'socket',
-           'ssl', 'signal', 'popen2', 'asyncore', 'asynchat', 'email',
-           'json', 'mailcap', 'mailbox', 'mhlib', 'mimetools',
-           'mimetypes', 'MimeWriter', 'mimify', 'multifile', 'rfc822',
-           'base64', 'binhex', 'binascii', 'quopri', 'uu',
-           'HTMLParser', 'sgmllib', 'htmllib', 'htmlentitydefs',
-           'xml.parsers.expat', 'xml.dom', 'xml.dom.minidom',
+           'ctypes', 'select', 'threading', 'dummy_threading', 'dummy_thread',
+           'multiprocessing', 'mmap', 'readline', 'rlcompleter', 'subprocess',
+           'socket', 'ssl', 'signal', 'asyncore', 'asynchat', 'email', 'json',
+           'mailcap', 'mailbox', 'mimetypes', 'base64', 'binhex', 'binascii',
+           'quopri', 'uu', 'xml.parsers.expat', 'xml.dom', 'xml.dom.minidom',
            'xml.dom.pulldom', 'xml.sax', 'xml.sax.handler',
            'xml.sax.saxutils', 'xml.sax.xmlreader',
            'xml.etree.ElementTree', 'webbrowser', 'cgi', 'cgitb')
-    module('wsgiref', 'urllib', 'urllib2', 'httplib', 'ftplib',
-           'poplib', 'imaplib', 'nntplib', 'smtplib', 'smtpd',
-           'telnetlib', 'uuid', 'urlparse', 'SocketServer',
-           'BaseHTTPServer', 'SimpleHTTPServer', 'CGIHTTPServer',
-           'cookielib', 'Cookie', 'xmlrpclib', 'SimpleXMLRPCServer',
-           'DocXMLRPCServer', 'audioop', 'imageop', 'aifc', 'sunau',
+    module('wsgiref', 'ftplib', 'poplib', 'imaplib', 'nntplib', 'smtplib',
+           'smtpd', 'telnetlib', 'uuid', 'audioop', 'aifc', 'sunau',
            'wave', 'chunk', 'colorsys', 'imghdr', 'sndhdr',
            'ossaudiodev', 'gettext', 'locale', 'cmd', 'shlex',
            'pydoc', 'doctest', 'unittest', 'test',
-           'test.test_support', 'bdb', 'pdb', 'hotshot', 'timeit',
-           'trace', 'sys', '__builtin__')
-    module('future_builtins', 'warnings', 'contextlib', 'abc',
+           'bdb', 'pdb', 'timeit', 'trace', 'sys')
+    module('warnings', 'contextlib', 'abc',
            'atexit', 'traceback', '__future__', 'gc', 'inspect',
-           'site', 'user', 'fpectl', 'code', 'codeop', 'rexec',
-           'Bastion', 'imp', 'imputil', 'zipimport', 'pkgutil',
+           'site', 'fpectl', 'code', 'codeop', 'zipimport', 'pkgutil',
            'modulefinder', 'runpy', 'parser', 'symtable', 'symbol',
            'token', 'keyword', 'tokenize', 'tabnanny', 'pyclbr',
            'py_compile', 'compileall', 'dis', 'pickletools',
-           'distutils', 'formatter', 'msilib', 'msvcrt', '_winreg',
-           'winsound', 'posix', 'pwd', 'spwd', 'grp', 'crypt', 'dl',
-           'termios', 'tty', 'pty', 'fcntl', 'pipes', 'posixfile',
-           'resource', 'nis', 'syslog', 'commands', 'ic', 'MacOS',
-           'macostools', 'findertools', 'EasyDialogs', 'FrameWork',
-           'autoGIL', 'ColorPicker', 'ast')
+           'distutils', 'msilib', 'msvcrt', 'winsound', 'posix', 'pwd', 'spwd',
+           'grp', 'crypt', 'termios', 'tty', 'pty', 'fcntl', 'pipes',
+           'resource', 'nis', 'syslog', 'ast')
+
+    # Handle module name differences between Python 2 and Python 3 (see PEP3108)
+    if sys.version_info[0] < 3:
+        # Deprecated modules that were removed in Python 3
+        module('posixfile', 'rfc822', 'mimetools','MimeWriter', 'mimify',
+               'multifile', 'sets', 'md5', 'sha', 'imp',  'formatter')
+        # Mac-specific modules that were removed
+        module('autoGIL', 'ColorPicker', 'EasyDialogs', 'findertools',
+               'FrameWork', 'ic',  'MacOS', 'macostools')
+        # Removed because they were hardly used
+        module('imputil', 'mutex', 'user', 'new')
+        # Removed because they were obsolete
+        module('Bastion', 'rexec', 'commands', 'dircache', 'dl', 'fpformat',
+               'htmllib', 'imageop', 'mhlib', 'popen2', 'sgmllib', 'stat',
+               'statvfs', 'thread', 'UserDict', 'UserList', 'UserString',
+               'future_builtins', 'hotshot', 'bsddb')
+        # Renamed to fix PEP8 violations
+        module('_winreg', 'ConfigParser', 'copy_reg', 'SocketServer')
+        # C and Python implementations of the same interface were merged
+        module('cPickle', 'cStringIO', 'StringIO')
+        # Renamed because of poorly chosen names
+        module('repr', 'test.test_support', '__builtins__')
+        # Modules that got grouped under packages
+        module('anydbm', 'whichdb', 'dbm', 'dumbdbm', 'gdbm', 'dbhash')
+        module('HTMLParser', 'htmlentitydefs')
+        module('BaseHTTPServer', 'SimpleHTTPServer', 'cookielib', 'Cookie',
+               'CGIHTTPServer', 'httplib')
+        module('urllib', 'urllib2', 'urlparse', 'robotparser')
+        module('xmlrpclib', 'SimpleXMLRPCServer', 'DocXMLRPCServer')
+    else:
+        # Renamed to fix PEP8 violations
+        module('winreg', 'configparser', 'copyreg', 'socketserver')
+        # Renamed because of poorly chosen names
+        module('reprlib', 'test.support', 'builtins')
+        # Modules that got grouped under packages
+        module('dbm')
+        module('html')
+        module('http')
+        module('urllib')
+        module('xmlrpc')
 
     # To add the multitude of standard Python string encodings.
     module('encodings', 'encodings.*')
@@ -291,6 +318,39 @@ class egg(package):
 plugin-path $EGG_ROOT
 load-file-type egg pandaegg
 load-file-type p3ptloader
+
+# These are excerpted from the default Confauto.prc file.
+egg-object-type-portal          <Scalar> portal { 1 }
+egg-object-type-polylight       <Scalar> polylight { 1 }
+egg-object-type-seq24           <Switch> { 1 } <Scalar> fps { 24 }
+egg-object-type-seq12           <Switch> { 1 } <Scalar> fps { 12 }
+egg-object-type-indexed         <Scalar> indexed { 1 }
+egg-object-type-seq10           <Switch> { 1 } <Scalar> fps { 10 }
+egg-object-type-seq8            <Switch> { 1 } <Scalar> fps { 8 }
+egg-object-type-seq6            <Switch> { 1 } <Scalar>  fps { 6 }
+egg-object-type-seq4            <Switch> { 1 } <Scalar>  fps { 4 }
+egg-object-type-seq2            <Switch> { 1 } <Scalar>  fps { 2 }
+
+egg-object-type-binary          <Scalar> alpha { binary }
+egg-object-type-dual            <Scalar> alpha { dual }
+egg-object-type-glass           <Scalar> alpha { blend_no_occlude }
+
+egg-object-type-model           <Model> { 1 }
+egg-object-type-dcs             <DCS> { 1 }
+egg-object-type-notouch         <DCS> { no_touch }
+
+egg-object-type-barrier         <Collide> { Polyset descend }
+egg-object-type-sphere          <Collide> { Sphere descend }
+egg-object-type-invsphere       <Collide> { InvSphere descend }
+egg-object-type-tube            <Collide> { Tube descend }
+egg-object-type-trigger         <Collide> { Polyset descend intangible }
+egg-object-type-trigger-sphere  <Collide> { Sphere descend intangible }
+egg-object-type-floor           <Collide> { Polyset descend level }
+egg-object-type-dupefloor       <Collide> { Polyset keep descend level }
+egg-object-type-bubble          <Collide> { Sphere keep descend }
+egg-object-type-ghost           <Scalar> collide-mask { 0 }
+egg-object-type-glow            <Scalar> blend { add }
+egg-object-type-direct-widget   <Scalar> collide-mask { 0x80000000 } <Collide> { Polyset descend }
 """)
 
 class ode(package):

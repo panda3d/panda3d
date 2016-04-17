@@ -1,16 +1,15 @@
-// Filename: odeSurfaceParameters.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeSurfaceParameters.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #include "config_ode.h"
 #include "odeSurfaceParameters.h"
@@ -18,7 +17,7 @@
 TypeHandle OdeSurfaceParameters::_type_handle;
 
 OdeSurfaceParameters::
-OdeSurfaceParameters(int mode, dReal mu) : 
+OdeSurfaceParameters(int mode, dReal mu) :
   _surface_parameters() {
   if (mu < 0) {
     mu = 0;
@@ -40,7 +39,7 @@ OdeSurfaceParameters(int mode, dReal mu) :
 }
 
 OdeSurfaceParameters::
-OdeSurfaceParameters(const dSurfaceParameters &surface_parameters) : 
+OdeSurfaceParameters(const dSurfaceParameters &surface_parameters) :
   _surface_parameters() {
   _surface_parameters.mode = surface_parameters.mode;
   _surface_parameters.mu = surface_parameters.mu;

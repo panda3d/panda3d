@@ -1,16 +1,15 @@
-// Filename: xFileDataObjectDouble.h
-// Created by:  drose (07Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataObjectDouble.h
+ * @author drose
+ * @date 2004-10-07
+ */
 
 #ifndef XFILEDATAOBJECTDOUBLE_H
 #define XFILEDATAOBJECTDOUBLE_H
@@ -18,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectDouble
-// Description : An double-valued data element.  This matches one
-//               double data member of a template, or a single
-//               element of an double array.
-////////////////////////////////////////////////////////////////////
+/**
+ * An double-valued data element.  This matches one double data member of a
+ * template, or a single element of an double array.
+ */
 class XFileDataObjectDouble : public XFileDataObject {
 public:
   XFileDataObjectDouble(const XFileDataDef *data_def, double value);
@@ -42,7 +39,7 @@ protected:
 
 private:
   double _value;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

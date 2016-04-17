@@ -1,16 +1,15 @@
-// Filename: audioVolumeAttrib.h
-// Created by:  darren (15Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file audioVolumeAttrib.h
+ * @author darren
+ * @date 2006-12-15
+ */
 
 #ifndef AUDIOVOLUMEATTRIB_H
 #define AUDIOVOLUMEATTRIB_H
@@ -22,11 +21,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AudioVolumeAttrib
-// Description : Applies a scale to audio volume for positional sounds
-//               in the scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a scale to audio volume for positional sounds in the scene graph.
+ */
 class EXPCL_PANDA_PGRAPH AudioVolumeAttrib : public RenderAttrib {
 protected:
   AudioVolumeAttrib(bool off, PN_stdfloat volume);
@@ -42,6 +39,9 @@ PUBLISHED:
   INLINE bool has_volume() const;
   INLINE PN_stdfloat get_volume() const;
   CPT(RenderAttrib) set_volume(PN_stdfloat volume) const;
+
+PUBLISHED:
+  MAKE_PROPERTY2(volume, has_volume, get_volume);
 
 public:
   virtual void output(ostream &out) const;
@@ -97,4 +97,3 @@ private:
 #include "audioVolumeAttrib.I"
 
 #endif
-

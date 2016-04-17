@@ -1,16 +1,15 @@
-// Filename: asyncTaskChain.cxx
-// Created by:  drose (23Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file asyncTaskChain.cxx
+ * @author drose
+ * @date 2006-08-23
+ */
 
 #include "asyncTaskChain.h"
 #include "asyncTaskManager.h"
@@ -29,11 +28,9 @@ TypeHandle AsyncTaskChain::_type_handle;
 PStatCollector AsyncTaskChain::_task_pcollector("Task");
 PStatCollector AsyncTaskChain::_wait_pcollector("Wait");
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AsyncTaskChain::
 AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   Namable(name),
@@ -57,53 +54,43 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AsyncTaskChain::
 ~AsyncTaskChain() {
-  // We only grab the lock if _needs_cleanup is true.  This way, the
-  // temporary AsyncTaskChain objects created (and destructed) within
-  // the task manager won't risk a double-lock.
+  // We only grab the lock if _needs_cleanup is true.  This way, the temporary
+  // AsyncTaskChain objects created (and destructed) within the task manager
+  // won't risk a double-lock.
   if (_needs_cleanup) {
     MutexHolder holder(_manager->_lock);
     do_cleanup();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::set_tick_clock
-//       Access: Published
-//  Description: Sets the tick_clock flag.  When this is true,
-//               get_clock()->tick() will be called automatically at
-//               each task epoch.  This is false by default.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the tick_clock flag.  When this is true, get_clock()->tick() will be
+ * called automatically at each task epoch.  This is false by default.
+ */
 void AsyncTaskChain::
 set_tick_clock(bool tick_clock) {
   MutexHolder holder(_manager->_lock);
   _tick_clock = tick_clock;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_tick_clock
-//       Access: Published
-//  Description: Returns the tick_clock flag.  See set_tick_clock().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the tick_clock flag.  See set_tick_clock().
+ */
 bool AsyncTaskChain::
 get_tick_clock() const {
   MutexHolder holder(_manager->_lock);
   return _tick_clock;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::set_num_threads
-//       Access: Published
-//  Description: Changes the number of threads for this task chain.
-//               This may require stopping the threads if they are
-//               already running.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the number of threads for this task chain.  This may require
+ * stopping the threads if they are already running.
+ */
 void AsyncTaskChain::
 set_num_threads(int num_threads) {
   nassertv(num_threads >= 0);
@@ -129,40 +116,31 @@ set_num_threads(int num_threads) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_num_threads
-//       Access: Published
-//  Description: Returns the number of threads that will be servicing
-//               tasks for this chain.  Also see
-//               get_num_running_threads().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of threads that will be servicing tasks for this chain.
+ * Also see get_num_running_threads().
+ */
 int AsyncTaskChain::
 get_num_threads() const {
   MutexHolder holder(_manager->_lock);
   return _num_threads;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_num_running_threads
-//       Access: Published
-//  Description: Returns the number of threads that have been created
-//               and are actively running.  This will return 0 before
-//               the threads have been started; it will also return 0
-//               if thread support is not available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of threads that have been created and are actively
+ * running.  This will return 0 before the threads have been started; it will
+ * also return 0 if thread support is not available.
+ */
 int AsyncTaskChain::
 get_num_running_threads() const {
   MutexHolder holder(_manager->_lock);
   return _threads.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::set_thread_priority
-//       Access: Published
-//  Description: Changes the priority associated with threads that
-//               serve this task chain.  This may require stopping the
-//               threads if they are already running.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the priority associated with threads that serve this task chain.
+ * This may require stopping the threads if they are already running.
+ */
 void AsyncTaskChain::
 set_thread_priority(ThreadPriority priority) {
   MutexHolder holder(_manager->_lock);
@@ -176,138 +154,107 @@ set_thread_priority(ThreadPriority priority) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_thread_priority
-//       Access: Published
-//  Description: Returns the priority associated with threads that
-//               serve this task chain.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the priority associated with threads that serve this task chain.
+ */
 ThreadPriority AsyncTaskChain::
 get_thread_priority() const {
   MutexHolder holder(_manager->_lock);
   return _thread_priority;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::set_frame_budget
-//       Access: Published
-//  Description: Sets the maximum amount of time per frame the tasks
-//               on this chain are granted for execution.  If this is
-//               less than zero, there is no limit; if it is >= 0, it
-//               represents a maximum amount of time (in seconds) that
-//               will be used to execute tasks.  If this time is
-//               exceeded in any one frame, the task chain will stop
-//               executing tasks until the next frame, as defined by
-//               the TaskManager's clock.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the maximum amount of time per frame the tasks on this chain are
+ * granted for execution.  If this is less than zero, there is no limit; if it
+ * is >= 0, it represents a maximum amount of time (in seconds) that will be
+ * used to execute tasks.  If this time is exceeded in any one frame, the task
+ * chain will stop executing tasks until the next frame, as defined by the
+ * TaskManager's clock.
+ */
 void AsyncTaskChain::
 set_frame_budget(double frame_budget) {
   MutexHolder holder(_manager->_lock);
   _frame_budget = frame_budget;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_frame_budget
-//       Access: Published
-//  Description: Returns the maximum amount of time per frame the
-//               tasks on this chain are granted for execution.  See
-//               set_frame_budget().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the maximum amount of time per frame the tasks on this chain are
+ * granted for execution.  See set_frame_budget().
+ */
 double AsyncTaskChain::
 get_frame_budget() const {
   MutexHolder holder(_manager->_lock);
   return _frame_budget;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::set_frame_sync
-//       Access: Published
-//  Description: Sets the frame_sync flag.  When this flag is true,
-//               this task chain will be forced to sync with the
-//               TaskManager's clock.  It will run no faster than one
-//               epoch per clock frame.
-//
-//               When this flag is false, the default, the task chain
-//               will finish all of its tasks and then immediately
-//               start from the first task again, regardless of the
-//               clock frame.  When it is true, the task chain will
-//               finish all of its tasks and then wait for the clock
-//               to tick to the next frame before resuming the first
-//               task.
-//
-//               This only makes sense for threaded task chains.
-//               Non-threaded task chains are automatically
-//               synchronous.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the frame_sync flag.  When this flag is true, this task chain will be
+ * forced to sync with the TaskManager's clock.  It will run no faster than
+ * one epoch per clock frame.
+ *
+ * When this flag is false, the default, the task chain will finish all of its
+ * tasks and then immediately start from the first task again, regardless of
+ * the clock frame.  When it is true, the task chain will finish all of its
+ * tasks and then wait for the clock to tick to the next frame before resuming
+ * the first task.
+ *
+ * This only makes sense for threaded task chains.  Non-threaded task chains
+ * are automatically synchronous.
+ */
 void AsyncTaskChain::
 set_frame_sync(bool frame_sync) {
   MutexHolder holder(_manager->_lock);
   _frame_sync = frame_sync;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_frame_sync
-//       Access: Published
-//  Description: Returns the frame_sync flag.  See set_frame_sync().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the frame_sync flag.  See set_frame_sync().
+ */
 bool AsyncTaskChain::
 get_frame_sync() const {
   MutexHolder holder(_manager->_lock);
   return _frame_sync;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::set_timeslice_priority
-//       Access: Published
-//  Description: Sets the timeslice_priority flag.  This changes
-//               the interpretation of priority, and the number of
-//               times per epoch each task will run.  
-//
-//               When this flag is true, some tasks might not run in
-//               any given epoch.  Instead, tasks with priority higher
-//               than 1 will be given precedence, in proportion to the
-//               amount of time they have already used.  This gives
-//               higher-priority tasks more runtime than
-//               lower-priority tasks.  Each task gets the amount of
-//               time proportional to its priority value, so a task
-//               with priority 100 will get five times as much
-//               processing time as a task with priority 20.  For
-//               these purposes, priority values less than 1 are
-//               deemed to be equal to 1.
-//
-//               When this flag is false (the default), all tasks are
-//               run exactly once each epoch, round-robin style.
-//               Priority is only used to determine which task runs
-//               first within tasks of the same sort value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the timeslice_priority flag.  This changes the interpretation of
+ * priority, and the number of times per epoch each task will run.
+ *
+ * When this flag is true, some tasks might not run in any given epoch.
+ * Instead, tasks with priority higher than 1 will be given precedence, in
+ * proportion to the amount of time they have already used.  This gives
+ * higher-priority tasks more runtime than lower-priority tasks.  Each task
+ * gets the amount of time proportional to its priority value, so a task with
+ * priority 100 will get five times as much processing time as a task with
+ * priority 20.  For these purposes, priority values less than 1 are deemed to
+ * be equal to 1.
+ *
+ * When this flag is false (the default), all tasks are run exactly once each
+ * epoch, round-robin style.  Priority is only used to determine which task
+ * runs first within tasks of the same sort value.
+ */
 void AsyncTaskChain::
 set_timeslice_priority(bool timeslice_priority) {
   MutexHolder holder(_manager->_lock);
   _timeslice_priority = timeslice_priority;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_timeslice_priority
-//       Access: Published
-//  Description: Returns the timeslice_priority flag.  This changes
-//               the interpretation of priority, and the number of
-//               times per epoch each task will run.  See
-//               set_timeslice_priority().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the timeslice_priority flag.  This changes the interpretation of
+ * priority, and the number of times per epoch each task will run.  See
+ * set_timeslice_priority().
+ */
 bool AsyncTaskChain::
 get_timeslice_priority() const {
   MutexHolder holder(_manager->_lock);
   return _timeslice_priority;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::stop_threads
-//       Access: Published
-//  Description: Stops any threads that are currently running.  If any
-//               tasks are still pending and have not yet been picked
-//               up by a thread, they will not be serviced unless
-//               poll() or start_threads() is later called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops any threads that are currently running.  If any tasks are still
+ * pending and have not yet been picked up by a thread, they will not be
+ * serviced unless poll() or start_threads() is later called.
+ */
 void AsyncTaskChain::
 stop_threads() {
   if (_state == S_started || _state == S_interrupted) {
@@ -317,13 +264,11 @@ stop_threads() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::start_threads
-//       Access: Published
-//  Description: Starts any requested threads to service the tasks on
-//               the queue.  This is normally not necessary, since
-//               adding a task will start the threads automatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts any requested threads to service the tasks on the queue.  This is
+ * normally not necessary, since adding a task will start the threads
+ * automatically.
+ */
 void AsyncTaskChain::
 start_threads() {
   if (_state == S_initial || _state == S_interrupted) {
@@ -332,12 +277,10 @@ start_threads() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::has_task
-//       Access: Published
-//  Description: Returns true if the indicated task has been added to
-//               this AsyncTaskChain, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated task has been added to this AsyncTaskChain,
+ * false otherwise.
+ */
 bool AsyncTaskChain::
 has_task(AsyncTask *task) const {
   MutexHolder holder(_manager->_lock);
@@ -351,40 +294,34 @@ has_task(AsyncTask *task) const {
     return false;
   }
 
-  // The task might not actually be in the active queue, since it
-  // might be being serviced right now.  That's OK.
+  // The task might not actually be in the active queue, since it might be
+  // being serviced right now.  That's OK.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::wait_for_tasks
-//       Access: Published
-//  Description: Blocks until the task list is empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks until the task list is empty.
+ */
 void AsyncTaskChain::
 wait_for_tasks() {
   MutexHolder holder(_manager->_lock);
   do_wait_for_tasks();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_num_tasks
-//       Access: Published
-//  Description: Returns the number of tasks that are currently active
-//               or sleeping within the task chain.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of tasks that are currently active or sleeping within
+ * the task chain.
+ */
 int AsyncTaskChain::
 get_num_tasks() const {
   MutexHolder holder(_manager->_lock);
   return _num_tasks;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_tasks
-//       Access: Published
-//  Description: Returns the set of tasks that are active or sleeping
-//               on the task chain, at the time of the call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are active or sleeping on the task chain, at
+ * the time of the call.
+ */
 AsyncTaskCollection AsyncTaskChain::
 get_tasks() const {
   MutexHolder holder(_manager->_lock);
@@ -393,96 +330,76 @@ get_tasks() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_active_tasks
-//       Access: Published
-//  Description: Returns the set of tasks that are active (and not
-//               sleeping) on the task chain, at the time of the
-//               call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are active (and not sleeping) on the task
+ * chain, at the time of the call.
+ */
 AsyncTaskCollection AsyncTaskChain::
 get_active_tasks() const {
   MutexHolder holder(_manager->_lock);
   return do_get_active_tasks();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_sleeping_tasks
-//       Access: Published
-//  Description: Returns the set of tasks that are sleeping (and not
-//               active) on the task chain, at the time of the
-//               call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are sleeping (and not active) on the task
+ * chain, at the time of the call.
+ */
 AsyncTaskCollection AsyncTaskChain::
 get_sleeping_tasks() const {
   MutexHolder holder(_manager->_lock);
   return do_get_sleeping_tasks();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::poll
-//       Access: Published
-//  Description: Runs through all the tasks in the task list, once, if
-//               the task chain is running in single-threaded mode
-//               (no threads available).  This method does nothing in
-//               threaded mode, so it may safely be called in either
-//               case.
-//
-//               Normally, you would not call this function directly;
-//               instead, call AsyncTaskManager::poll(), which polls
-//               all of the task chains in sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Runs through all the tasks in the task list, once, if the task chain is
+ * running in single-threaded mode (no threads available).  This method does
+ * nothing in threaded mode, so it may safely be called in either case.
+ *
+ * Normally, you would not call this function directly; instead, call
+ * AsyncTaskManager::poll(), which polls all of the task chains in sequence.
+ */
 void AsyncTaskChain::
 poll() {
   MutexHolder holder(_manager->_lock);
   do_poll();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::get_next_wake_time
-//       Access: Published
-//  Description: Returns the scheduled time (on the manager's clock)
-//               of the next sleeping task, on any task chain, to
-//               awaken.  Returns -1 if there are no sleeping tasks.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scheduled time (on the manager's clock) of the next sleeping
+ * task, on any task chain, to awaken.  Returns -1 if there are no sleeping
+ * tasks.
+ */
 double AsyncTaskChain::
 get_next_wake_time() const {
   MutexHolder holder(_manager->_lock);
   return do_get_next_wake_time();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AsyncTaskChain::
 output(ostream &out) const {
   MutexHolder holder(_manager->_lock);
   do_output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AsyncTaskChain::
 write(ostream &out, int indent_level) const {
   MutexHolder holder(_manager->_lock);
   do_write(out, indent_level);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_add
-//       Access: Protected
-//  Description: Adds the indicated task to the active queue.  It is
-//               an error if the task is already added to this or any
-//               other active queue.
-//
-//               This is normally called only by the AsyncTaskManager.
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated task to the active queue.  It is an error if the task is
+ * already added to this or any other active queue.
+ *
+ * This is normally called only by the AsyncTaskManager.  Assumes the lock is
+ * already held.
+ */
 void AsyncTaskChain::
 do_add(AsyncTask *task) {
   nassertv(task->_chain == NULL &&
@@ -535,14 +452,11 @@ do_add(AsyncTask *task) {
   _cvar.notify_all();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_remove
-//       Access: Protected
-//  Description: Removes the indicated task from this chain.  Returns
-//               true if removed, false otherwise.  Assumes the lock
-//               is already held.  The task->upon_death() method is
-//               *not* called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated task from this chain.  Returns true if removed, false
+ * otherwise.  Assumes the lock is already held.  The task->upon_death()
+ * method is *not* called.
+ */
 bool AsyncTaskChain::
 do_remove(AsyncTask *task) {
   bool removed = false;
@@ -555,11 +469,11 @@ do_remove(AsyncTask *task) {
     task->_state = AsyncTask::S_servicing_removed;
     removed = true;
     break;
-    
+
   case AsyncTask::S_servicing_removed:
     // Being serviced, though it will be removed later.
     break;
-    
+
   case AsyncTask::S_sleeping:
     // Sleeping, easy.
     {
@@ -571,7 +485,7 @@ do_remove(AsyncTask *task) {
       cleanup_task(task, false, false);
     }
     break;
-    
+
   case AsyncTask::S_active:
     {
       // Active, but not being serviced, easy.
@@ -591,7 +505,7 @@ do_remove(AsyncTask *task) {
       removed = true;
       cleanup_task(task, false, false);
     }
-    
+
   default:
     break;
   }
@@ -599,12 +513,9 @@ do_remove(AsyncTask *task) {
   return removed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_wait_for_tasks
-//       Access: Protected
-//  Description: Blocks until the task list is empty.  Assumes the
-//               lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks until the task list is empty.  Assumes the lock is held.
+ */
 void AsyncTaskChain::
 do_wait_for_tasks() {
   do_start_threads();
@@ -624,20 +535,17 @@ do_wait_for_tasks() {
       if (_state == S_shutdown || _state == S_interrupted) {
         return;
       }
-      
+
       PStatTimer timer(_wait_pcollector);
       _cvar.wait();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_cleanup
-//       Access: Protected
-//  Description: Stops all threads and messily empties the task list.
-//               This is intended to be called on destruction only.
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops all threads and messily empties the task list.  This is intended to
+ * be called on destruction only.  Assumes the lock is already held.
+ */
 void AsyncTaskChain::
 do_cleanup() {
   if (task_cat.is_spam()) {
@@ -649,10 +557,10 @@ do_cleanup() {
   _num_threads = 0;
 
   // Don't call the upon_death functions while we clean up the tasks.
-  // Instead, store all the tasks in a list as we clean them up, and
-  // then call the upon_death functions all at once.  We do this
-  // because calling upon_death wil release the lock, allowing the
-  // iterators to become invalid.
+  // Instead, store all the tasks in a list as we clean them up, and then call
+  // the upon_death functions all at once.  We do this because calling
+  // upon_death wil release the lock, allowing the iterators to become
+  // invalid.
 
   TaskHeap dead;
   dead.reserve(_num_tasks);
@@ -681,10 +589,9 @@ do_cleanup() {
     cleanup_task(task, false, false);
   }
 
-  // There might still be one task remaining: the currently-executing
-  // task.
+  // There might still be one task remaining: the currently-executing task.
   nassertv(_num_tasks == 0 || _num_tasks == 1);
-  
+
   // Now go back and call the upon_death functions.
   _manager->_lock.release();
   for (ti = dead.begin(); ti != dead.end(); ++ti) {
@@ -699,14 +606,11 @@ do_cleanup() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_has_task
-//       Access: Protected
-//  Description: Returns true if the task is on one of the task lists,
-//               false if it is not (false may mean that the task is
-//               currently being serviced).  Assumes the lock is
-//               currently held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the task is on one of the task lists, false if it is not
+ * (false may mean that the task is currently being serviced).  Assumes the
+ * lock is currently held.
+ */
 bool AsyncTaskChain::
 do_has_task(AsyncTask *task) const {
   return (find_task_on_heap(_active, task) != -1 ||
@@ -715,15 +619,11 @@ do_has_task(AsyncTask *task) const {
           find_task_on_heap(_this_active, task) != -1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::find_task_on_heap
-//       Access: Protected
-//  Description: Returns the index number of the indicated task within
-//               the specified task list, or -1 if the task is not
-//               found in the list (this may mean that it is currently
-//               being serviced).  Assumes that the lock is currently
-//               held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the indicated task within the specified task
+ * list, or -1 if the task is not found in the list (this may mean that it is
+ * currently being serviced).  Assumes that the lock is currently held.
+ */
 int AsyncTaskChain::
 find_task_on_heap(const TaskHeap &heap, AsyncTask *task) const {
   for (int i = 0; i < (int)heap.size(); ++i) {
@@ -735,17 +635,13 @@ find_task_on_heap(const TaskHeap &heap, AsyncTask *task) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::service_one_task
-//       Access: Protected
-//  Description: Pops a single task off the active queue, services it,
-//               and restores it to the end of the queue.  This is
-//               called internally only within one of the task
-//               threads.  Assumes the lock is already held.
-//
-//               Note that the lock may be temporarily released by
-//               this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pops a single task off the active queue, services it, and restores it to
+ * the end of the queue.  This is called internally only within one of the
+ * task threads.  Assumes the lock is already held.
+ *
+ * Note that the lock may be temporarily released by this method.
+ */
 void AsyncTaskChain::
 service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
   if (!_active.empty()) {
@@ -789,13 +685,12 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
       } else {
         switch (ds) {
         case AsyncTask::DS_cont:
-          // The task is still alive; put it on the next frame's active
-          // queue.
+          // The task is still alive; put it on the next frame's active queue.
           task->_state = AsyncTask::S_active;
           _next_active.push_back(task);
           _cvar.notify_all();
           break;
-          
+
         case AsyncTask::DS_again:
           // The task wants to sleep again.
           {
@@ -807,7 +702,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
             push_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
             if (task_cat.is_spam()) {
               task_cat.spam()
-                << "Sleeping " << *task << ", wake time at " 
+                << "Sleeping " << *task << ", wake time at "
                 << task->_wake_time - now << "\n";
             }
             _cvar.notify_all();
@@ -830,7 +725,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
             _cvar.notify_all();
           }
           break;
-          
+
         default:
           // The task has finished.
           cleanup_task(task, true, true);
@@ -838,7 +733,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
       }
     } else {
       task_cat.error()
-        << "Task is no longer on chain " << get_name() 
+        << "Task is no longer on chain " << get_name()
         << ": " << *task << "\n";
     }
 
@@ -851,20 +746,15 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
   thread_consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::cleanup_task
-//       Access: Protected
-//  Description: Called internally when a task has completed (or been
-//               interrupted) and is about to be removed from the
-//               active queue.  Assumes the lock is held.
-//
-//               If upon_death is true, then task->upon_death() will
-//               also be called, with the indicated clean_exit
-//               parameter.
-//
-//               Note that the lock may be temporarily released by
-//               this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when a task has completed (or been interrupted) and is
+ * about to be removed from the active queue.  Assumes the lock is held.
+ *
+ * If upon_death is true, then task->upon_death() will also be called, with
+ * the indicated clean_exit parameter.
+ *
+ * Note that the lock may be temporarily released by this method.
+ */
 void AsyncTaskChain::
 cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   if (task_cat.is_spam()) {
@@ -892,18 +782,14 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::finish_sort_group
-//       Access: Protected
-//  Description: Called internally when all tasks of a given sort
-//               value have been completed, and it is time to
-//               increment to the next sort value, or begin the next
-//               epoch.  Assumes the lock is held.
-//
-//               Returns true if there are more tasks on the queue
-//               after this operation, or false if the task list is
-//               empty and we need to wait.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when all tasks of a given sort value have been completed,
+ * and it is time to increment to the next sort value, or begin the next
+ * epoch.  Assumes the lock is held.
+ *
+ * Returns true if there are more tasks on the queue after this operation, or
+ * false if the task list is empty and we need to wait.
+ */
 bool AsyncTaskChain::
 finish_sort_group() {
   nassertr(_num_busy_threads == 0, true);
@@ -911,7 +797,7 @@ finish_sort_group() {
   if (!_threads.empty()) {
     PStatClient::thread_tick(get_name());
   }
-  
+
   if (!_active.empty()) {
     // There are more tasks; just set the next sort value.
     nassertr(_current_sort < _active.front()->get_sort(), true);
@@ -923,10 +809,9 @@ finish_sort_group() {
   // There are no more tasks in this epoch; advance to the next epoch.
 
   if (!_this_active.empty() && _frame_budget >= 0.0) {
-    // Enter pickup mode.  This is a special mode at the end of the
-    // epoch in which we are just re-running the tasks that think they
-    // can still run within the frame, in an attempt to use up our
-    // frame budget.
+    // Enter pickup mode.  This is a special mode at the end of the epoch in
+    // which we are just re-running the tasks that think they can still run
+    // within the frame, in an attempt to use up our frame budget.
 
     if (task_cat.is_spam()) {
       do_output(task_cat.spam());
@@ -948,16 +833,16 @@ finish_sort_group() {
 
     _pickup_mode = false;
 
-    // Here, there's no difference between _this_active and
-    // _next_active.  Combine them.
+    // Here, there's no difference between _this_active and _next_active.
+    // Combine them.
     _next_active.insert(_next_active.end(), _this_active.begin(), _this_active.end());
     _this_active.clear();
 
     _active.swap(_next_active);
 
-    // We only tick the clock and wake sleepers in normal mode, the
-    // first time through the task list; not in pickup mode when we
-    // are re-running the stragglers just to use up our frame budget.
+    // We only tick the clock and wake sleepers in normal mode, the first time
+    // through the task list; not in pickup mode when we are re-running the
+    // stragglers just to use up our frame budget.
 
     if (_tick_clock) {
       if (task_cat.is_spam()) {
@@ -969,18 +854,18 @@ finish_sort_group() {
       _manager->_frame_cvar.notify_all();
 
     } else if (_frame_sync) {
-      // If we're a synced chain, we have to wait at the end of the
-      // epoch for someone else to tick the clock.
+      // If we're a synced chain, we have to wait at the end of the epoch for
+      // someone else to tick the clock.
       _block_till_next_frame = true;
     }
-    
+
     // Check for any sleeping tasks that need to be woken.
     double now = _manager->_clock->get_frame_time();
     while (!_sleeping.empty() && _sleeping.front()->_wake_time <= now) {
       PT(AsyncTask) task = _sleeping.front();
       if (task_cat.is_spam()) {
         task_cat.spam()
-          << "Waking " << *task << ", wake time at " 
+          << "Waking " << *task << ", wake time at "
           << task->_wake_time - now << "\n";
       }
       pop_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
@@ -996,13 +881,13 @@ finish_sort_group() {
           << "No more tasks on sleeping queue.\n";
       } else {
         task_cat.spam()
-          << "Next sleeper: " << *_sleeping.front() << ", wake time at " 
+          << "Next sleeper: " << *_sleeping.front() << ", wake time at "
           << _sleeping.front()->_wake_time - now << "\n";
       }
     }
 
-    // Any tasks that are on the active queue at the beginning of the
-    // epoch are deemed to have run one frame (or to be about to).
+    // Any tasks that are on the active queue at the beginning of the epoch
+    // are deemed to have run one frame (or to be about to).
     TaskHeap::const_iterator ti;
     for (ti = _active.begin(); ti != _active.end(); ++ti) {
       AsyncTask *task = (*ti);
@@ -1031,17 +916,13 @@ finish_sort_group() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::filter_timeslice_priority
-//       Access: Protected
-//  Description: Called to filter the _active tasks list when we are
-//               in the special timeslice_priority mode.  In this
-//               mode, go through and postpone any tasks that have
-//               already exceeded their priority budget for this
-//               epoch.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to filter the _active tasks list when we are in the special
+ * timeslice_priority mode.  In this mode, go through and postpone any tasks
+ * that have already exceeded their priority budget for this epoch.
+ *
+ * Assumes the lock is already held.
+ */
 void AsyncTaskChain::
 filter_timeslice_priority() {
   if (_active.empty()) {
@@ -1052,7 +933,7 @@ filter_timeslice_priority() {
   // We must first sum up the average per-epoch runtime of each task.
   double net_runtime = 0.0;
   int net_priority = 0;
-  
+
   TaskHeap::iterator ti;
   for (ti = _active.begin(); ti != _active.end(); ++ti) {
     AsyncTask *task = (*ti);
@@ -1061,17 +942,18 @@ filter_timeslice_priority() {
     net_runtime += runtime;
     net_priority += priority;
   }
-  
+
   // That gives us a timeslice budget per priority value.
   double average_budget = net_runtime / (double)net_priority;
-  
+
   TaskHeap keep, postpone;
   for (ti = _active.begin(); ti != _active.end(); ++ti) {
     AsyncTask *task = (*ti);
     double runtime = max(task->get_average_dt(), 0.0);
     int priority = max(task->_priority, 1);
     double consumed = runtime / (double)priority;
-    //    cerr << *task << " consumed " << consumed << " vs. " << average_budget << "\n";
+    // cerr << *task << " consumed " << consumed << " vs.  " << average_budget
+    // << "\n";
     if (consumed > average_budget) {
       // Postpone.  Run this task next epoch.
       postpone.push_back(task);
@@ -1094,12 +976,12 @@ filter_timeslice_priority() {
       }
     }
 
-    //    cerr << "Nothing to keep, keeping " << *(*max_ti) << " instead\n";
+    // cerr << "Nothing to keep, keeping " << *(*max_ti) << " instead\n";
 
     keep.push_back(*max_ti);
     postpone.erase(max_ti);
   }
-   
+
   _active.swap(keep);
   if (_pickup_mode) {
     _this_active.insert(_this_active.end(), postpone.begin(), postpone.end());
@@ -1110,49 +992,47 @@ filter_timeslice_priority() {
   nassertv(!_active.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_stop_threads
-//       Access: Protected
-//  Description: The private implementation of stop_threads; assumes
-//               the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of stop_threads; assumes the lock is already
+ * held.
+ */
 void AsyncTaskChain::
 do_stop_threads() {
   if (_state == S_started || _state == S_interrupted) {
     if (task_cat.is_debug() && !_threads.empty()) {
       task_cat.debug()
-        << "Stopping " << _threads.size() 
+        << "Stopping " << _threads.size()
         << " threads for " << _manager->get_name()
-        << " chain " << get_name() 
+        << " chain " << get_name()
         << " in " << *Thread::get_current_thread() << "\n";
     }
 
     _state = S_shutdown;
     _cvar.notify_all();
     _manager->_frame_cvar.notify_all();
-    
+
     Threads wait_threads;
     wait_threads.swap(_threads);
-    
-    // We have to release the lock while we join, so the threads can
-    // wake up and see that we're shutting down.
+
+    // We have to release the lock while we join, so the threads can wake up
+    // and see that we're shutting down.
     _manager->_lock.release();
     Threads::iterator ti;
     for (ti = wait_threads.begin(); ti != wait_threads.end(); ++ti) {
       if (task_cat.is_debug()) {
         task_cat.debug()
-          << "Waiting for " << *(*ti) << " in " 
+          << "Waiting for " << *(*ti) << " in "
           << *Thread::get_current_thread() << "\n";
       }
       (*ti)->join();
       if (task_cat.is_spam()) {
         task_cat.spam()
-          << "Done waiting for " << *(*ti) << " in " 
+          << "Done waiting for " << *(*ti) << " in "
           << *Thread::get_current_thread() << "\n";
       }
     }
     _manager->_lock.acquire();
-    
+
     _state = S_initial;
 
     // There might be one busy "thread" still: the main thread.
@@ -1161,12 +1041,10 @@ do_stop_threads() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_start_threads
-//       Access: Protected
-//  Description: The private implementation of start_threads; assumes
-//               the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of start_threads; assumes the lock is already
+ * held.
+ */
 void AsyncTaskChain::
 do_start_threads() {
   if (_state == S_interrupted) {
@@ -1195,13 +1073,10 @@ do_start_threads() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_get_active_tasks
-//       Access: Protected
-//  Description: Returns the set of tasks that are active (and not
-//               sleeping) on the task chain, at the time of the
-//               call.  Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are active (and not sleeping) on the task
+ * chain, at the time of the call.  Assumes the lock is held.
+ */
 AsyncTaskCollection AsyncTaskChain::
 do_get_active_tasks() const {
   AsyncTaskCollection result;
@@ -1230,13 +1105,10 @@ do_get_active_tasks() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_get_sleeping_tasks
-//       Access: Published
-//  Description: Returns the set of tasks that are sleeping (and not
-//               active) on the task chain, at the time of the
-//               call.  Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are sleeping (and not active) on the task
+ * chain, at the time of the call.  Assumes the lock is held.
+ */
 AsyncTaskCollection AsyncTaskChain::
 do_get_sleeping_tasks() const {
   AsyncTaskCollection result;
@@ -1250,12 +1122,10 @@ do_get_sleeping_tasks() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_poll
-//       Access: Protected
-//  Description: The private implementation of poll(), this assumes
-//               the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of poll(), this assumes the lock is already
+ * held.
+ */
 void AsyncTaskChain::
 do_poll() {
   thread_consider_yield();
@@ -1291,17 +1161,17 @@ do_poll() {
       }
       if (_block_till_next_frame ||
           (_frame_budget >= 0.0 && _time_in_frame >= _frame_budget)) {
-        // If we've exceeded our budget, stop here.  We'll resume from
-        // this point at the next call to poll().
+        // If we've exceeded our budget, stop here.  We'll resume from this
+        // point at the next call to poll().
         cleanup_pickup_mode();
         return;
       }
-      
+
       _current_sort = _active.front()->get_sort();
 
-      // Normally, there won't be any threads running at the same time
-      // we're in poll().  But it's possible, if someone calls
-      // set_num_threads() while we're processing.
+      // Normally, there won't be any threads running at the same time we're
+      // in poll().  But it's possible, if someone calls set_num_threads()
+      // while we're processing.
       _num_busy_threads++;
       service_one_task(NULL);
       _num_busy_threads--;
@@ -1311,19 +1181,16 @@ do_poll() {
         return;
       }
     }
-    
+
     finish_sort_group();
   } while (_pickup_mode);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::cleanup_pickup_mode
-//       Access: Protected
-//  Description: Clean up the damage from setting pickup mode.  This
-//               means we restore the _active and _next_active lists
-//               as they should have been without pickup mode, for
-//               next frame.  Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clean up the damage from setting pickup mode.  This means we restore the
+ * _active and _next_active lists as they should have been without pickup
+ * mode, for next frame.  Assumes the lock is held.
+ */
 void AsyncTaskChain::
 cleanup_pickup_mode() {
   if (_pickup_mode) {
@@ -1340,12 +1207,10 @@ cleanup_pickup_mode() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_output
-//       Access: Protected
-//  Description: The private implementation of output(), this assumes
-//               the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of output(), this assumes the lock is already
+ * held.
+ */
 void AsyncTaskChain::
 do_output(ostream &out) const {
   if (_manager != (AsyncTaskManager *)NULL) {
@@ -1357,43 +1222,41 @@ do_output(ostream &out) const {
       << "; " << _num_tasks << " tasks";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_write
-//       Access: Protected
-//  Description: The private implementation of write(), this assumes
-//               the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of write(), this assumes the lock is already
+ * held.
+ */
 void AsyncTaskChain::
 do_write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Task chain \"" << get_name() << "\"\n";
   if (_num_threads > 0) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << _num_threads << " threads, priority " << _thread_priority << "\n";
   }
   if (_frame_budget >= 0.0) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "frame budget " << _frame_budget << " s\n";
   }
   if (_timeslice_priority) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "timeslice priority\n";
   }
   if (_tick_clock) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "tick clock\n";
   }
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
   sprintf(buffer, " %-32s %8s %8s %8s %8s %6s",
-          "Task", 
+          "Task",
           "sleep(s)",
           "dt(ms)", "avg", "max",
           "sort");
   nassertv(strlen(buffer) < buffer_size);
 
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << buffer << "\n";
 
   indent(out, indent_level);
@@ -1402,8 +1265,7 @@ do_write(ostream &out, int indent_level) const {
   }
   out << "\n";
 
-  // Collect a list of all active tasks, then sort them into order for
-  // output.
+  // Collect a list of all active tasks, then sort them into order for output.
   TaskHeap tasks = _active;
   tasks.insert(tasks.end(), _this_active.begin(), _this_active.end());
   tasks.insert(tasks.end(), _next_active.begin(), _next_active.end());
@@ -1422,8 +1284,8 @@ do_write(ostream &out, int indent_level) const {
     sort(tasks.begin(), tasks.end(), AsyncTaskSortPriority());
 
     // Since AsyncTaskSortPriority() sorts backwards (because of STL's
-    // push_heap semantics), we go through the task list in reverse
-    // order to print them forwards.
+    // push_heap semantics), we go through the task list in reverse order to
+    // print them forwards.
     TaskHeap::reverse_iterator ti;
     for (ti = tasks.rbegin(); ti != tasks.rend(); ++ti) {
       AsyncTask *task = (*ti);
@@ -1431,26 +1293,23 @@ do_write(ostream &out, int indent_level) const {
     }
   }
 
-  // Instead of iterating through the _sleeping list in heap order,
-  // copy it and then use repeated pops to get it out in sorted
-  // order, for the user's satisfaction.
+  // Instead of iterating through the _sleeping list in heap order, copy it
+  // and then use repeated pops to get it out in sorted order, for the user's
+  // satisfaction.
   TaskHeap sleeping = _sleeping;
   while (!sleeping.empty()) {
     PT(AsyncTask) task = sleeping.front();
     pop_heap(sleeping.begin(), sleeping.end(), AsyncTaskSortWakeTime());
     sleeping.pop_back();
-    
+
     write_task_line(out, indent_level, task, now);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::write_task_line
-//       Access: Protected
-//  Description: Writes a single line for a task in the report
-//               generated by do_write().  Assumes the lock is already
-//               held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a single line for a task in the report generated by do_write().
+ * Assumes the lock is already held.
+ */
 void AsyncTaskChain::
 write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) const {
   char servicing_flag = ' ';
@@ -1464,28 +1323,28 @@ write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) con
   char buffer[buffer_size];
 
   if (task->_state == AsyncTask::S_sleeping) {
-    // For sleeping tasks, include the wake time, as an elapsed time
-    // in seconds.
+    // For sleeping tasks, include the wake time, as an elapsed time in
+    // seconds.
     string name = task->get_name().substr(0, 32);
     sprintf(buffer, "%c%-32s %8.1f",
             servicing_flag, name.c_str(),
             task->_wake_time - now);
   } else {
-    // For active tasks, don't include a wake time.  This means we
-    // have more space for the name.
+    // For active tasks, don't include a wake time.  This means we have more
+    // space for the name.
     string name = task->get_name().substr(0, 41);
     sprintf(buffer, "%c%-41s",
             servicing_flag, name.c_str());
   }
   nassertv(strlen(buffer) < buffer_size);
 
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << buffer;
 
   if (task->_num_frames > 0) {
     sprintf(buffer, " %8.1f %8.1f %8.1f %6d",
             task->_dt * 1000.0, task->get_average_dt() * 1000.0,
-            task->_max_dt * 1000.0, 
+            task->_max_dt * 1000.0,
             task->_sort);
   } else {
     // No statistics for a task that hasn't run yet.
@@ -1498,11 +1357,9 @@ write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) con
   out << buffer << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::AsyncTaskChainThread::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AsyncTaskChain::AsyncTaskChainThread::
 AsyncTaskChainThread(const string &name, AsyncTaskChain *chain) :
   Thread(name, chain->get_name()),
@@ -1511,11 +1368,9 @@ AsyncTaskChainThread(const string &name, AsyncTaskChain *chain) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::AsyncTaskChainThread::thread_main
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AsyncTaskChain::AsyncTaskChainThread::
 thread_main() {
   MutexHolder holder(_chain->_manager->_lock);
@@ -1531,8 +1386,7 @@ thread_main() {
         _chain->_block_till_next_frame = false;
       }
 
-      // If we've exceeded our frame budget, sleep until the next
-      // frame.
+      // If we've exceeded our frame budget, sleep until the next frame.
       if (_chain->_block_till_next_frame ||
           (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget)) {
         while ((_chain->_block_till_next_frame ||
@@ -1558,9 +1412,9 @@ thread_main() {
       _chain->_cvar.notify_all();
 
     } else {
-      // We've finished all the available tasks of the current sort
-      // value.  We can't pick up a new task until all of the threads
-      // finish the tasks with the same sort value.
+      // We've finished all the available tasks of the current sort value.  We
+      // can't pick up a new task until all of the threads finish the tasks
+      // with the same sort value.
       if (_chain->_num_busy_threads == 0) {
         // We're the last thread to finish.  Update _current_sort.
         if (!_chain->finish_sort_group()) {
@@ -1574,16 +1428,15 @@ thread_main() {
             double timeout = max(wake_time - now, 0.0);
             PStatTimer timer(_wait_pcollector);
             _chain->_cvar.wait(timeout);
-          }            
+          }
         }
 
       } else {
-        // Wait for the other threads to finish their current task
-        // before we continue.
+        // Wait for the other threads to finish their current task before we
+        // continue.
         PStatTimer timer(_wait_pcollector);
         _chain->_cvar.wait();
       }
     }
   }
 }
-

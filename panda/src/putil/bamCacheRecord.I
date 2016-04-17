@@ -1,38 +1,30 @@
-// Filename: bamCacheRecord.I
-// Created by:  drose (09Jun06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamCacheRecord.I
+ * @author drose
+ * @date 2006-06-09
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::make_copy
-//       Access: Published
-//  Description: Returns a duplicate of the BamCacheRecord.  The
-//               duplicate will not have a data pointer set, even
-//               though one may have been assigned to the original via
-//               set_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a duplicate of the BamCacheRecord.  The duplicate will not have a
+ * data pointer set, even though one may have been assigned to the original
+ * via set_data().
+ */
 INLINE PT(BamCacheRecord) BamCacheRecord::
 make_copy() const {
   return new BamCacheRecord(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::operator == 
-//       Access: Published
-//  Description: Returns true if the record matches the other record
-//               in those attributes which get written to disk.  Does
-//               not compare the data pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the record matches the other record in those attributes
+ * which get written to disk.  Does not compare the data pointer.
+ */
 INLINE bool BamCacheRecord::
 operator == (const BamCacheRecord &other) const {
   return (_source_pathname == other._source_pathname &&
@@ -41,100 +33,75 @@ operator == (const BamCacheRecord &other) const {
           _record_size == other._record_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::get_source_pathname
-//       Access: Published
-//  Description: Returns the full pathname to the source file that
-//               originally generated this cache request.  In some
-//               cases, for instance in the case of a of a multipage
-//               texture like "cube_#.png", this may not not a true
-//               filename on disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the full pathname to the source file that originally generated this
+ * cache request.  In some cases, for instance in the case of a of a multipage
+ * texture like "cube_#.png", this may not not a true filename on disk.
+ */
 INLINE const Filename &BamCacheRecord::
 get_source_pathname() const {
   return _source_pathname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::get_cache_filename
-//       Access: Published
-//  Description: Returns the name of the cache file as hashed from the
-//               source_pathname.  This will be relative to the root
-//               of the cache directory, and it will not include any
-//               suffixes that may be appended to resolve hash
-//               conflicts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the cache file as hashed from the source_pathname.
+ * This will be relative to the root of the cache directory, and it will not
+ * include any suffixes that may be appended to resolve hash conflicts.
+ */
 INLINE const Filename &BamCacheRecord::
 get_cache_filename() const {
   return _cache_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::get_source_timestamp
-//       Access: Published
-//  Description: Returns the file timestamp of the original source
-//               file that generated this cache record, if available.
-//               In some cases the original file timestamp is not
-//               available, and this will return 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the file timestamp of the original source file that generated this
+ * cache record, if available.  In some cases the original file timestamp is
+ * not available, and this will return 0.
+ */
 INLINE time_t BamCacheRecord::
 get_source_timestamp() const {
   return _source_timestamp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::get_recorded_time
-//       Access: Published
-//  Description: Returns the time at which this particular record was
-//               recorded or updated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the time at which this particular record was recorded or updated.
+ */
 INLINE time_t BamCacheRecord::
 get_recorded_time() const {
   return _recorded_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::get_num_dependent_files
-//       Access: Published
-//  Description: Returns the number of source files that contribute to
-//               the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of source files that contribute to the cache.
+ */
 INLINE int BamCacheRecord::
 get_num_dependent_files() const {
   return _files.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::get_dependent_pathname
-//       Access: Published
-//  Description: Returns the full pathname of the nth source files
-//               that contributes to the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the full pathname of the nth source files that contributes to the
+ * cache.
+ */
 INLINE const Filename &BamCacheRecord::
 get_dependent_pathname(int n) const {
   nassertr(n >= 0 && n < (int)_files.size(), _files[0]._pathname);
   return _files[n]._pathname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::has_data
-//       Access: Published
-//  Description: Returns true if this cache record has an in-memory
-//               data object associated--that is, the object stored in
-//               the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this cache record has an in-memory data object associated--
+ * that is, the object stored in the cache.
+ */
 INLINE bool BamCacheRecord::
 has_data() const {
   return (_ptr != (TypedWritable *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::clear_data
-//       Access: Published
-//  Description: Removes the in-memory data object associated with
-//               this record, if any.  This does not affect the
-//               on-disk representation of the record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the in-memory data object associated with this record, if any.
+ * This does not affect the on-disk representation of the record.
+ */
 INLINE void BamCacheRecord::
 clear_data() {
   if (_ref_ptr != NULL) {
@@ -145,31 +112,24 @@ clear_data() {
   _ref_ptr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::get_data
-//       Access: Published
-//  Description: Returns a pointer to the data stored in the
-//               record, or NULL if there is no data.  The pointer is
-//               not removed from the record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the data stored in the record, or NULL if there is no
+ * data.  The pointer is not removed from the record.
+ */
 INLINE TypedWritable *BamCacheRecord::
 get_data() const {
   return _ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::extract_data
-//       Access: Published
-//  Description: Fills ptr and ref_ptr with the two different-typed
-//               pointers to the same object, the data stored within
-//               this record.  This transfers ownership of the data
-//               pointer; the caller will be responsible for managing
-//               the reference counts on this object subsequently.
-//
-//               Returns true if the record contained any data (and
-//               the pointers have been filled), false if it didn't
-//               (and the pointers are NULL).
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills ptr and ref_ptr with the two different-typed pointers to the same
+ * object, the data stored within this record.  This transfers ownership of
+ * the data pointer; the caller will be responsible for managing the reference
+ * counts on this object subsequently.
+ *
+ * Returns true if the record contained any data (and the pointers have been
+ * filled), false if it didn't (and the pointers are NULL).
+ */
 INLINE bool BamCacheRecord::
 extract_data(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   ptr = _ptr;
@@ -178,22 +138,17 @@ extract_data(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   return (ptr != (TypedWritable *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::set_data
-//       Access: Published
-//  Description: Stores a new data object on the record.  You should
-//               pass the same pointer twice, to both parameters; this
-//               allows the C++ typecasting to automatically convert
-//               the pointer into both a TypedWritable and a
-//               ReferenceCount pointer, so that the BamCacheRecord
-//               object can reliably manage the reference counts.
-//
-//               You may pass 0 or NULL as the second parameter.  If
-//               you do this, the BamCacheRecord will not manage the
-//               object's reference count; it will be up to you to
-//               ensure the object is not deleted during the lifetime
-//               of the BamCacheRecord object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a new data object on the record.  You should pass the same pointer
+ * twice, to both parameters; this allows the C++ typecasting to automatically
+ * convert the pointer into both a TypedWritable and a ReferenceCount pointer,
+ * so that the BamCacheRecord object can reliably manage the reference counts.
+ *
+ * You may pass 0 or NULL as the second parameter.  If you do this, the
+ * BamCacheRecord will not manage the object's reference count; it will be up
+ * to you to ensure the object is not deleted during the lifetime of the
+ * BamCacheRecord object.
+ */
 INLINE void BamCacheRecord::
 set_data(TypedWritable *ptr, ReferenceCount *ref_ptr) {
   if (_ptr != ptr) {
@@ -206,45 +161,37 @@ set_data(TypedWritable *ptr, ReferenceCount *ref_ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::set_data
-//       Access: Published
-//  Description: This variant on set_data() is provided to easily
-//               pass objects deriving from TypedWritable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on set_data() is provided to easily pass objects deriving from
+ * TypedWritable.
+ */
 INLINE void BamCacheRecord::
 set_data(TypedWritable *ptr) {
   set_data(ptr, ptr->as_reference_count());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::set_data
-//       Access: Published
-//  Description: This variant on set_data() is provided to easily
-//               pass objects deriving from TypedWritableReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on set_data() is provided to easily pass objects deriving from
+ * TypedWritableReferenceCount.
+ */
 INLINE void BamCacheRecord::
 set_data(TypedWritableReferenceCount *ptr) {
   set_data((TypedWritable *)ptr, (ReferenceCount *)ptr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::set_data
-//       Access: Published
-//  Description: This variant on set_data() is provided just to allow
-//               Python code to pass a 0 as the second parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on set_data() is provided just to allow Python code to pass a
+ * 0 as the second parameter.
+ */
 INLINE void BamCacheRecord::
 set_data(TypedWritable *ptr, int dummy) {
   nassertv(dummy == 0);
   set_data(ptr, (ReferenceCount *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::SortByAccessTime::operator ()
-//       Access: Public
-//  Description: Returns true if a sorts before b, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a sorts before b, false otherwise.
+ */
 INLINE bool BamCacheRecord::SortByAccessTime::
 operator () (const BamCacheRecord *a, const BamCacheRecord *b) const {
   return (a->_record_access_time < b->_record_access_time);

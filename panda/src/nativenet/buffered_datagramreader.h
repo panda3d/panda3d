@@ -18,18 +18,16 @@ class Buffered_DatagramReader : protected RingBuffer
     inline bool GetMessageFromBuffer(Datagram &inmsg);
 public:
     inline Buffered_DatagramReader(int in_size = 8192) ;
-    inline void ReSet(void); 
-    //
-    // SOCK_TYPE is used to allow for 
-    // abstract socket type to be used .. 
-    // see socket_tcp and socket_ssl
+    inline void ReSet(void);
+    // SOCK_TYPE is used to allow for abstract socket type to be used .. see
+    // socket_tcp and socket_ssl
 
     template < class SOCK_TYPE>
     inline int PumpMessageReader(Datagram &inmsg, SOCK_TYPE &sck)
     {
         if(GetMessageFromBuffer(inmsg) == true)
             return 1;
-        int rp = ReadPump(sck); 
+        int rp = ReadPump(sck);
         if(rp == 0)
             return 0;
 
@@ -59,7 +57,7 @@ public:
             int gotbytes = sck.RecvData(ff,(int)readsize);
             if(gotbytes < 0)  // some error
             {
-                //int er = GETERROR(); 
+                // int er = GETERROR();
                 if(!sck.ErrorIs_WouldBlocking(gotbytes) )
                 {
                     answer = -3;  // hard error ?
@@ -86,13 +84,11 @@ public:
         {
             answer = -2;
     nativenet_cat.error() << "buffered_datagram_reader:ReadPump Yeep! buffer has no room to read to -- " << sck.GetPeerName().get_ip_port().c_str() << "\nBufferAvaiable = " << readsize <<" AmountBuffered = " << AmountBuffered() << " BufferSize " << GetBufferSize() << "\n";
-            
         }
         return answer;
     }
 };
 
-#include "buffered_datagramreader.i"
+#include "buffered_datagramreader.I"
 
 #endif //__BUFFEREDREADER_GM_H__
-

@@ -1,32 +1,28 @@
-// Filename: ppPandaObject.h
-// Created by:  drose (03Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ppPandaObject.h
+ * @author drose
+ * @date 2009-07-03
+ */
 
 #ifndef PPPANDAOBJECT_H
 #define PPPANDAOBJECT_H
 
 #include "nppanda3d_common.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PPPandaObject
-// Description : This is the interface layer between an NPObject and a
-//               P3D_object.  It maps calls from NPAPI into the
-//               P3D_object system, thus allowing the browser to
-//               view and operate on a Panda object.
-//
-//               Also see PPBrowserObject, which maps calls the other
-//               way.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the interface layer between an NPObject and a P3D_object.  It maps
+ * calls from NPAPI into the P3D_object system, thus allowing the browser to
+ * view and operate on a Panda object.
+ *
+ * Also see PPBrowserObject, which maps calls the other way.
+ */
 class PPPandaObject : public NPObject {
 public:
   static PPPandaObject *make_new(PPInstance *inst, P3D_object *p3d_object);
@@ -54,7 +50,7 @@ private:
 
 private:
   static string identifier_to_string(NPIdentifier ident);
-  
+
 
 private:
   static NPObject *NPAllocate(NPP npp, NPClass *aClass);
@@ -93,4 +89,3 @@ public:
 #include "ppPandaObject.I"
 
 #endif
-

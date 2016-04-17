@@ -1,16 +1,15 @@
-// Filename: trackball.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file trackball.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef TRACKBALL_H
 #define TRACKBALL_H
@@ -24,19 +23,15 @@
 #include "transformState.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : Trackball
-// Description : Trackball acts like Performer in trackball mode.  It
-//               can either spin around a piece of geometry directly,
-//               or it can spin around a camera with the inverse
-//               transform to make it appear that the whole world is
-//               spinning.
-//
-//               The Trackball object actually just places a transform
-//               in the data graph; parent a Transform2SG node under
-//               it to actually transform objects (or cameras) in the
-//               world.
-////////////////////////////////////////////////////////////////////
+/**
+ * Trackball acts like Performer in trackball mode.  It can either spin around
+ * a piece of geometry directly, or it can spin around a camera with the
+ * inverse transform to make it appear that the whole world is spinning.
+ *
+ * The Trackball object actually just places a transform in the data graph;
+ * parent a Transform2SG node under it to actually transform objects (or
+ * cameras) in the world.
+ */
 class EXPCL_PANDA_TFORM Trackball : public MouseInterfaceNode {
 PUBLISHED:
   Trackball(const string &name);
@@ -47,7 +42,7 @@ PUBLISHED:
   PN_stdfloat get_forward_scale() const;
   void set_forward_scale(PN_stdfloat fwdscale);
 
-  /// **** Translation ****
+  // **** Translation ****
 
   const LPoint3 &get_pos() const;
   PN_stdfloat get_x() const;
@@ -59,7 +54,7 @@ PUBLISHED:
   void set_y(PN_stdfloat y);
   void set_z(PN_stdfloat z);
 
-  /// **** Rotation ****
+  // **** Rotation ****
 
   LVecBase3 get_hpr() const;
   PN_stdfloat get_h() const;
@@ -71,7 +66,7 @@ PUBLISHED:
   void set_p(PN_stdfloat p);
   void set_r(PN_stdfloat r);
 
-  /// **** Origin of Rotation ****
+  // **** Origin of Rotation ****
 
   void reset_origin_here();
   void move_origin(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
@@ -79,7 +74,7 @@ PUBLISHED:
   LPoint3 get_origin() const;
   void set_origin(const LVecBase3 &origin);
 
-  /// **** Misc ****
+  // **** Misc ****
 
   enum ControlMode {
     CM_default,

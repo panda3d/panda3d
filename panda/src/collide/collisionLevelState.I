@@ -1,23 +1,20 @@
-// Filename: collisionLevelState.I
-// Created by:  drose (05Apr07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionLevelState.I
+ * @author drose
+ * @date 2007-04-05
+ */
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class MaskType>
 INLINE CollisionLevelState<MaskType>::
 CollisionLevelState(const NodePath &node_path) :
@@ -28,12 +25,9 @@ CollisionLevelState(const NodePath &node_path) :
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::Constructor
-//       Access: Public
-//  Description: This constructor goes to the next child node in the
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor goes to the next child node in the traversal.
+ */
 template<class MaskType>
 INLINE CollisionLevelState<MaskType>::
 CollisionLevelState(const CollisionLevelState<MaskType> &parent, PandaNode *child) :
@@ -44,11 +38,9 @@ CollisionLevelState(const CollisionLevelState<MaskType> &parent, PandaNode *chil
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class MaskType>
 INLINE CollisionLevelState<MaskType>::
 CollisionLevelState(const CollisionLevelState<MaskType> &copy) :
@@ -59,11 +51,9 @@ CollisionLevelState(const CollisionLevelState<MaskType> &copy) :
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class MaskType>
 INLINE void CollisionLevelState<MaskType>::
 operator = (const CollisionLevelState<MaskType> &copy) {
@@ -73,11 +63,9 @@ operator = (const CollisionLevelState<MaskType> &copy) {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::clear
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class MaskType>
 INLINE void CollisionLevelState<MaskType>::
 clear() {
@@ -87,12 +75,10 @@ clear() {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::prepare_collider
-//       Access: Public
-//  Description: Adds the indicated Collider to the set of Colliders
-//               in the current level state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated Collider to the set of Colliders in the current level
+ * state.
+ */
 template<class MaskType>
 INLINE void CollisionLevelState<MaskType>::
 prepare_collider(const ColliderDef &def, const NodePath &root) {
@@ -106,16 +92,12 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::any_in_bounds
-//       Access: Public
-//  Description: Checks the bounding volume of the current node
-//               against each of our colliders.  Eliminates from the
-//               current collider list any that are outside of the
-//               bounding volume.  Returns true if any colliders
-//               remain, false if all of them fall outside this node's
-//               bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the bounding volume of the current node against each of our
+ * colliders.  Eliminates from the current collider list any that are outside
+ * of the bounding volume.  Returns true if any colliders remain, false if all
+ * of them fall outside this node's bounding volume.
+ */
 template<class MaskType>
 bool CollisionLevelState<MaskType>::
 any_in_bounds() {
@@ -140,9 +122,8 @@ any_in_bounds() {
         CollisionNode *cnode = get_collider_node(c);
         bool is_in = false;
 
-        // Don't even bother testing the bounding volume if there are
-        // no collide bits in common between our collider and this
-        // node.
+        // Don't even bother testing the bounding volume if there are no
+        // collide bits in common between our collider and this node.
         CollideMask from_mask = cnode->get_from_collide_mask() & _include_mask;
         if (!(from_mask & node()->get_net_collide_mask()).is_zero()) {
           // Also don't test a node with itself, or with any of its
@@ -157,17 +138,17 @@ any_in_bounds() {
 #endif  // NDEBUG
 
           } else {
-            // There are bits in common, and it's not the same
-            // instance, so go ahead and try the bounding volume.
+            // There are bits in common, and it's not the same instance, so go
+            // ahead and try the bounding volume.
             const GeometricBoundingVolume *col_gbv =
               get_local_bound(c);
 
             is_in = true;  // If there's no bounding volume, we're implicitly in.
-          
+
             if (col_gbv != (GeometricBoundingVolume *)NULL) {
               is_in = (node_gbv->contains(col_gbv) != 0);
               _node_volume_pcollector.add_level(1);
-              
+
 #ifndef NDEBUG
               if (collide_cat.is_spam()) {
                 indent(collide_cat.spam(false), indent_level)
@@ -180,8 +161,8 @@ any_in_bounds() {
         }
 
         if (!is_in) {
-          // This collider cannot intersect with any geometry at
-          // this node or below.
+          // This collider cannot intersect with any geometry at this node or
+          // below.
           omit_collider(c);
         }
       }
@@ -224,29 +205,25 @@ any_in_bounds() {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelStateBase::apply_transform
-//       Access: Public
-//  Description: Applies the inverse transform from the current node,
-//               if any, onto all the colliders in the level state.
-//
-//               Returns true if the inverse transform is valid, or
-//               false if it is not valid (e.g. the transform has a
-//               scale to zero).  If the inverse transform is not
-//               valid, the caller should not visit this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the inverse transform from the current node, if any, onto all the
+ * colliders in the level state.
+ *
+ * Returns true if the inverse transform is valid, or false if it is not valid
+ * (e.g.  the transform has a scale to zero).  If the inverse transform is not
+ * valid, the caller should not visit this node.
+ */
 template<class MaskType>
 bool CollisionLevelState<MaskType>::
 apply_transform() {
-  // The "parent" bounds list remembers the bounds list of the
-  // previous node.
+  // The "parent" bounds list remembers the bounds list of the previous node.
   _parent_bounds = _local_bounds;
 
   if (node()->is_final()) {
     // If this node has a "final" bounds, we blank out all of the from
-    // bounding volumes, since we've already tested against this
-    // node's into bounds, and there's no need to test any further
-    // bounding volumes at this node level or below.
+    // bounding volumes, since we've already tested against this node's into
+    // bounds, and there's no need to test any further bounding volumes at
+    // this node level or below.
     BoundingVolumes new_bounds;
 
     int num_colliders = get_num_colliders();
@@ -254,16 +231,15 @@ apply_transform() {
     for (int c = 0; c < num_colliders; c++) {
       new_bounds.push_back((GeometricBoundingVolume *)NULL);
     }
-    
+
     _local_bounds = new_bounds;
 
   } else {
     // Otherwise, in the usual case, the bounds tests will continue.
-    // Recompute the bounds list of this node (if we have a
-    // transform).
+    // Recompute the bounds list of this node (if we have a transform).
     const TransformState *node_transform = node()->get_transform();
     if (!node_transform->is_identity()) {
-      CPT(TransformState) inv_transform = 
+      CPT(TransformState) inv_transform =
         node_transform->invert_compose(TransformState::make_identity());
       if (!inv_transform->has_mat()) {
         // No inverse.
@@ -271,10 +247,10 @@ apply_transform() {
       }
 
       const LMatrix4 &mat = inv_transform->get_mat();
-      
+
       // Now build the new bounding volumes list.
       BoundingVolumes new_bounds;
-      
+
       int num_colliders = get_num_colliders();
       new_bounds.reserve(num_colliders);
       for (int c = 0; c < num_colliders; c++) {
@@ -283,15 +259,15 @@ apply_transform() {
           new_bounds.push_back((GeometricBoundingVolume *)NULL);
         } else {
           const GeometricBoundingVolume *old_bound = get_local_bound(c);
-          GeometricBoundingVolume *new_bound = 
+          GeometricBoundingVolume *new_bound =
             DCAST(GeometricBoundingVolume, old_bound->make_copy());
           new_bound->xform(mat);
           new_bounds.push_back(new_bound);
         }
       }
-      
+
       _local_bounds = new_bounds;
-    }    
+    }
   }
 
   return true;
@@ -299,13 +275,10 @@ apply_transform() {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::has_max_colliders
-//       Access: Public, Static
-//  Description: Returns true if there is any the maximum number of
-//               colliders that may be added to the
-//               CollisionLevelStateBase at any one time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is any the maximum number of colliders that may be
+ * added to the CollisionLevelStateBase at any one time.
+ */
 template<class MaskType>
 INLINE bool CollisionLevelState<MaskType>::
 has_max_colliders() {
@@ -314,12 +287,10 @@ has_max_colliders() {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::get_max_colliders
-//       Access: Public, Static
-//  Description: Returns the maximum number of colliders that may be
-//               added to the CollisionLevelStateBase at any one time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the maximum number of colliders that may be added to the
+ * CollisionLevelStateBase at any one time.
+ */
 template<class MaskType>
 INLINE int CollisionLevelState<MaskType>::
 get_max_colliders() {
@@ -328,12 +299,10 @@ get_max_colliders() {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::has_collider
-//       Access: Public
-//  Description: Returns true if the nth collider in the LevelState is
-//               still part of the level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the nth collider in the LevelState is still part of the
+ * level.
+ */
 template<class MaskType>
 INLINE bool CollisionLevelState<MaskType>::
 has_collider(int n) const {
@@ -343,11 +312,9 @@ has_collider(int n) const {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::has_any_collider
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class MaskType>
 INLINE bool CollisionLevelState<MaskType>::
 has_any_collider() const {
@@ -356,11 +323,9 @@ has_any_collider() const {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::omit_collider
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class MaskType>
 INLINE void CollisionLevelState<MaskType>::
 omit_collider(int n) {

@@ -1,14 +1,13 @@
-// Filename: InterfaceMakerPythonNative.h
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMakerPythonNative.h
+ */
 
 #ifndef INTERFACEMAKERPYTHONNATIVE_H
 #define INTERFACEMAKERPYTHONNATIVE_H
@@ -22,11 +21,10 @@
 
 class FunctionRemap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerPythonNative
-// Description : An InterfaceMaker for generating complex Python
-//               function wrappers around C++ code.
-////////////////////////////////////////////////////////////////////
+/**
+ * An InterfaceMaker for generating complex Python function wrappers around
+ * C++ code.
+ */
 class InterfaceMakerPythonNative : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonNative(InterrogateModuleDef *def);
@@ -59,9 +57,9 @@ protected:
   virtual void generate_wrappers();
 
 private:
-  // This enum defines the various prototypes that must be generated
-  // for the specialty functions that Python requires, especially for
-  // the slotted functions.
+  // This enum defines the various prototypes that must be generated for the
+  // specialty functions that Python requires, especially for the slotted
+  // functions.
   enum WrapperType {
     WT_none,
     WT_no_params,
@@ -85,8 +83,8 @@ private:
     WT_hash,
   };
 
-  // This enum is passed to the wrapper generation functions to indicate
-  // what sort of values the wrapper function is expected to return.
+  // This enum is passed to the wrapper generation functions to indicate what
+  // sort of values the wrapper function is expected to return.
   enum ReturnFlags {
     // -1 on failure, 0 on success.
     RF_int = 0x100,

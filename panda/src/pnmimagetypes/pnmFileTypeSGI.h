@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeSGI.h
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeSGI.h
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #ifndef PNMFILETYPESGI_H
 #define PNMFILETYPESGI_H
@@ -23,10 +22,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeSGI
-// Description : For reading and writing SGI RGB files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing SGI RGB files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeSGI : public PNMFileType {
 public:
   PNMFileTypeSGI();
@@ -136,5 +134,3 @@ private:
 #endif  // HAVE_SGI_RGB
 
 #endif
-
-

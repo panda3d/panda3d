@@ -1,6 +1,6 @@
 from direct.wxwidgets.WxAppShell import *
-import os, re, shutil
-import ObjectGlobals as OG
+import os
+from . import ObjectGlobals as OG
 
 CLOSE_STDIN = "<CLOSE STDIN>"
 
@@ -30,7 +30,7 @@ class Process:
                     #some platforms (like Windows) will send some small number
                     #of bytes per .write() call (sometimes 2 in the case of
                     #Windows).
-                    self.b.extend([input[i:i+512] for i in xrange(0, len(input), 512)])
+                    self.b.extend([input[i:i+512] for i in range(0, len(input), 512)])
                 input = self.b.pop(0)
             self.process._stdin_.write(input)
             if hasattr(self.process._stdin_, "LastWrite"):

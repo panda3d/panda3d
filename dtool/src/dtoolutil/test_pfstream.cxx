@@ -1,21 +1,20 @@
-// Filename: test_pfstream.cxx
-// Created by:  drose (31Jul02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_pfstream.cxx
+ * @author drose
+ * @date 2002-07-31
+ */
 
 #include "dtoolbase.h"
 #include "pfstream.h"
 
-int 
+int
 main(int argc, char *argv[]) {
   if (argc < 2) {
     cout << "test_pfstream command-line\n";
@@ -31,7 +30,7 @@ main(int argc, char *argv[]) {
   }
 
   cout << "Executing command:\n" << cmd << "\n";
-  
+
   IPipeStream in(cmd);
 
   char c;

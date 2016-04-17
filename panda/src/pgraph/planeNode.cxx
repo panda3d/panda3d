@@ -1,16 +1,15 @@
-// Filename: planeNode.cxx
-// Created by:  drose (11Jul02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file planeNode.cxx
+ * @author drose
+ * @date 2002-07-11
+ */
 
 #include "planeNode.h"
 #include "geometricBoundingVolume.h"
@@ -30,44 +29,35 @@ UpdateSeq PlaneNode::_sort_seq;
 
 TypeHandle PlaneNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CycleData *PlaneNode::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void PlaneNode::CData::
 write_datagram(BamWriter *, Datagram &dg) const {
   _plane.write_datagram(dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Light.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new Light.
+ */
 void PlaneNode::CData::
 fillin(DatagramIterator &scan, BamReader *) {
   _plane.read_datagram(scan);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PlaneNode::
 PlaneNode(const string &name, const LPlane &plane) :
   PandaNode(name),
@@ -82,11 +72,9 @@ PlaneNode(const string &name, const LPlane &plane) :
   set_plane(plane);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PlaneNode::
 PlaneNode(const PlaneNode &copy) :
   PandaNode(copy),
@@ -96,37 +84,29 @@ PlaneNode(const PlaneNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PlaneNode::
 output(ostream &out) const {
   PandaNode::output(out);
   out << " " << get_plane();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PlaneNode::
 make_copy() const {
   return new PlaneNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this PandaNode by the
-//               indicated matrix, if it means anything to do so.  For
-//               most kinds of PandaNodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this PandaNode by the indicated matrix, if it
+ * means anything to do so.  For most kinds of PandaNodes, this does nothing.
+ */
 void PlaneNode::
 xform(const LMatrix4 &mat) {
   PandaNode::xform(mat);
@@ -136,35 +116,28 @@ xform(const LMatrix4 &mat) {
   cdata->_back_viz = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PlaneNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  // Normally, a PlaneNode is invisible.  But if someone shows it, we
-  // will draw a visualization, a nice yellow wireframe.
+  // Normally, a PlaneNode is invisible.  But if someone shows it, we will
+  // draw a visualization, a nice yellow wireframe.
 
   CullableObject *plane_viz =
     new CullableObject(get_viz(trav, data), data._state,
@@ -175,29 +148,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool PlaneNode::
 is_renderable() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated BoundingVolume that
-//               represents the internal contents of the node.  Should
-//               be overridden by PandaNode classes that contain
-//               something internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated BoundingVolume that represents the internal
+ * contents of the node.  Should be overridden by PandaNode classes that
+ * contain something internally.
+ */
 void PlaneNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -208,18 +174,14 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::get_viz
-//       Access: Protected
-//  Description: Returns a Geom that represents the visualization of
-//               the PlaneNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Geom that represents the visualization of the PlaneNode.
+ */
 PT(Geom) PlaneNode::
 get_viz(CullTraverser *trav, CullTraverserData &data) {
   CDLockedReader cdata(_cycler);
 
-  // Figure out whether we are looking at the front or the back of the
-  // plane.
+  // Figure out whether we are looking at the front or the back of the plane.
   const Lens *lens = trav->get_scene()->get_lens();
   LPlane eye_plane = cdata->_plane * data.get_modelview_transform(trav)->get_mat();
   bool front = (eye_plane.dist_to_plane(lens->get_nodal_point()) >= 0.0f);
@@ -294,23 +256,18 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   return front ? cdataw->_front_viz : cdataw->_back_viz;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               PlaneNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type PlaneNode.
+ */
 void PlaneNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void PlaneNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
@@ -319,14 +276,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8(_clip_effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type PlaneNode is encountered
-//               in the Bam file.  It should create the PlaneNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type PlaneNode is encountered in the Bam file.  It should create the
+ * PlaneNode and extract its information from the file.
+ */
 TypedWritable *PlaneNode::
 make_from_bam(const FactoryParams &params) {
   PlaneNode *node = new PlaneNode("");
@@ -339,13 +293,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PlaneNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new PlaneNode.
+ */
 void PlaneNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);

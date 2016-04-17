@@ -1,49 +1,38 @@
-// Filename: particleSystem.I
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file particleSystem.I
+ * @author charles
+ * @date 2000-06-14
+ */
 
-////////////////////////////////////////////////////////////////////
-//    Function : render
-//      Access : Public
-// Description : Populates an attached GeomNode structure with the
-//               particle geometry for rendering.  This is a
-//               wrapper for accessability.
-////////////////////////////////////////////////////////////////////
-
+/**
+ * Populates an attached GeomNode structure with the particle geometry for
+ * rendering.  This is a wrapper for accessability.
+ */
 INLINE void ParticleSystem::
 render() {
   _renderer->render(_physics_objects, _living_particles);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : induce_labor
-//      Access : Public
-// Description : Forces the birth of a particle litter this frame
-//               by resetting _tics_since_birth
-////////////////////////////////////////////////////////////////////
-
+/**
+ * Forces the birth of a particle litter this frame by resetting
+ * _tics_since_birth
+ */
 INLINE void ParticleSystem::
 induce_labor() {
   _tics_since_birth = _cur_birth_rate;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : clear_to_initial
-//      Access : Public
-// Description : Resets the system to its start state by resizing to 0,
-//               then resizing back to current size.
-////////////////////////////////////////////////////////////////////
-
+/**
+ * Resets the system to its start state by resizing to 0, then resizing back
+ * to current size.
+ */
 INLINE void ParticleSystem::
 clear_to_initial() {
   BaseParticle *bp;
@@ -58,12 +47,9 @@ clear_to_initial() {
   _tics_since_birth = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : soft_start
-//      Access : Public
-// Description : Causes system to use birth rate set by set_birth_rate()
-////////////////////////////////////////////////////////////////////
-
+/**
+ * Causes system to use birth rate set by set_birth_rate()
+ */
 INLINE void ParticleSystem::
 soft_start(PN_stdfloat br) {
   if (br > 0.0)
@@ -72,13 +58,9 @@ soft_start(PN_stdfloat br) {
   _tics_since_birth = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : soft_stop
-//      Access : Public
-// Description : Causes system to use birth rate set by 
-//               set_soft_birth_rate()
-////////////////////////////////////////////////////////////////////
-
+/**
+ * Causes system to use birth rate set by set_soft_birth_rate()
+ */
 INLINE void ParticleSystem::
 soft_stop(PN_stdfloat br) {
   if (br > 0.0)
@@ -87,25 +69,17 @@ soft_stop(PN_stdfloat br) {
   _tics_since_birth = 0.0f;
 }
 
-////             ///////////////////////////////////////////////////////
-//// SET METHODS ///////////////////////////////////////////////////////
-////             ///////////////////////////////////////////////////////
+/**
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_pool_size
-//      Access : Public
-////////////////////////////////////////////////////////////////////
-
+ */
 INLINE void ParticleSystem::
 set_pool_size(int size) {
   resize_pool(size);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_birth_rate
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
 
+ */
 INLINE void ParticleSystem::
 set_birth_rate(PN_stdfloat new_br) {
   _birth_rate = new_br;
@@ -113,40 +87,34 @@ set_birth_rate(PN_stdfloat new_br) {
   if(IS_NEARLY_ZERO(_birth_rate)) _birth_rate = NEARLY_ZERO(PN_stdfloat);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_soft_birth_rate
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
 
+ */
 INLINE void ParticleSystem::
 set_soft_birth_rate(PN_stdfloat new_br) {
   _soft_birth_rate = new_br;
   if(IS_NEARLY_ZERO(_soft_birth_rate)) _soft_birth_rate = NEARLY_ZERO(PN_stdfloat);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_litter_size
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
 
+ */
 INLINE void ParticleSystem::
 set_litter_size(int new_ls) {
   _litter_size = new_ls;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_litter_spread
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_litter_spread(int new_ls) {
   _litter_spread = new_ls;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_renderer
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_renderer(BaseParticleRenderer *r) {
   _renderer = r;
@@ -157,19 +125,17 @@ set_renderer(BaseParticleRenderer *r) {
   _render_node_path.reparent_to(_render_parent);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_emitter
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_emitter(BaseParticleEmitter *e) {
   _emitter = e;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_factory
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_factory(BaseParticleFactory *f) {
   int pool_size = _particle_pool_size;
@@ -179,102 +145,89 @@ set_factory(BaseParticleFactory *f) {
   set_pool_size(pool_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_floor_z
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_floor_z(PN_stdfloat z) {
   _floor_z = z;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_active_state
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_active_system_flag(bool a) {
   _active_system_flag = a;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_local_velocity_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_local_velocity_flag(bool lv) {
   _local_velocity_flag = lv;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_spawn_on_death_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_spawn_on_death_flag(bool sod) {
   _spawn_on_death_flag = sod;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_system_grows_older_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_system_grows_older_flag(bool sgo) {
   _system_grows_older_flag = sgo;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_system_lifespan
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
 
+ */
 INLINE void ParticleSystem::
 set_system_lifespan(PN_stdfloat sl) {
   _system_lifespan = sl;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_system_age
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
 
+ */
 INLINE void ParticleSystem::
 set_system_age(PN_stdfloat age) {
   _system_age = age;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_spawn_render_node
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_spawn_render_node(PandaNode *node) {
   set_spawn_render_node_path(NodePath(node));
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_spawn_render_node_path
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_spawn_render_node_path(const NodePath &node) {
   _spawn_render_node_path = node;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_render_parent
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_render_parent(PandaNode *node) {
   set_render_parent(NodePath(node));
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_render_parent
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 set_render_parent(const NodePath &node) {
   _render_node_path.remove_node();
@@ -284,223 +237,194 @@ set_render_parent(const NodePath &node) {
   _render_node_path.reparent_to(_render_parent);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_template_system_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
 
+ */
 INLINE void ParticleSystem::
 set_template_system_flag(bool tsf) {
   _template_system_flag = tsf;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : add_spawn_template
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 add_spawn_template(ParticleSystem *ps) {
   _spawn_templates.push_back(ps);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : clear_spawn_templates
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 clear_spawn_templates() {
   _spawn_templates.erase(_spawn_templates.begin(),
                          _spawn_templates.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : clear_floor_z
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ParticleSystem::
 clear_floor_z() {
   _floor_z = -HUGE_VAL;
 }
 
-////             /////////////////////////////////////////////////////
-//// GET METHODS /////////////////////////////////////////////////////
-////             /////////////////////////////////////////////////////
+/**
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_pool_size
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+ */
 INLINE int ParticleSystem::
 get_pool_size() const {
   return _particle_pool_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_birth_rate
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat ParticleSystem::
 get_birth_rate() const {
   return _birth_rate;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_soft_birth_rate
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat ParticleSystem::
 get_soft_birth_rate() const {
   return _soft_birth_rate;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_litter_size
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int ParticleSystem::
 get_litter_size() const {
   return _litter_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_litter_spread
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int ParticleSystem::
 get_litter_spread() const {
   return _litter_spread;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_renderer
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BaseParticleRenderer *ParticleSystem::
 get_renderer() const {
   return _renderer;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_emitter
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BaseParticleEmitter *ParticleSystem::
 get_emitter() const {
   return _emitter;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_factory
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BaseParticleFactory *ParticleSystem::
 get_factory() const {
   return _factory;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_factory
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat ParticleSystem::
 get_floor_z() const {
   return _floor_z;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_living_particles
-//      Access : Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int ParticleSystem::
 get_living_particles() const {
   return _living_particles;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_active_state
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ParticleSystem::
 get_active_system_flag() const {
   return _active_system_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_local_velocity_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ParticleSystem::
 get_local_velocity_flag() const {
   return _local_velocity_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_spawn_on_death_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ParticleSystem::
 get_spawn_on_death_flag() const {
   return _spawn_on_death_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_system_grows_older_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ParticleSystem::
 get_system_grows_older_flag() const {
   return _system_grows_older_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_system_lifespan
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat ParticleSystem::
 get_system_lifespan() const {
   return _system_lifespan;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_system_age
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat ParticleSystem::
 get_system_age() const {
   return _system_age;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_i_was_spawned_flag
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ParticleSystem::
 get_i_was_spawned_flag() const {
   return _i_was_spawned_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_spawn_render_node
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PandaNode *ParticleSystem::
 get_spawn_render_node() const {
   return _spawn_render_node_path.node();
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_spawn_render_node_path
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE NodePath ParticleSystem::
 get_spawn_render_node_path() const {
   return _spawn_render_node_path;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : get_render_parent
-//      Access : public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE NodePath ParticleSystem::
 get_render_parent() const {
   return _render_parent;

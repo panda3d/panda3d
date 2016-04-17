@@ -1,16 +1,15 @@
-// Filename: xFileMesh.cxx
-// Created by:  drose (19Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileMesh.cxx
+ * @author drose
+ * @date 2001-06-19
+ */
 
 #include "xFileMesh.h"
 #include "xFileFace.h"
@@ -25,11 +24,9 @@
 #include "eggPolygon.h"
 #include "eggGroupNode.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileMesh::
 XFileMesh(CoordinateSystem cs) : _cs(cs) {
   _has_normals = false;
@@ -39,21 +36,17 @@ XFileMesh(CoordinateSystem cs) : _cs(cs) {
   _egg_parent = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileMesh::
 ~XFileMesh() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::clear
-//       Access: Public
-//  Description: Empties all data from the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties all data from the mesh.
+ */
 void XFileMesh::
 clear() {
   Vertices::iterator vi;
@@ -92,11 +85,9 @@ clear() {
   _has_materials = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::add_polygon
-//       Access: Public
-//  Description: Adds the indicated polygon to the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated polygon to the mesh.
+ */
 void XFileMesh::
 add_polygon(EggPolygon *egg_poly) {
   XFileFace *face = new XFileFace;
@@ -104,13 +95,10 @@ add_polygon(EggPolygon *egg_poly) {
   _faces.push_back(face);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::add_vertex
-//       Access: Public
-//  Description: Creates a new XFileVertex, if one does not already
-//               exist for the indicated vertex, and returns its
-//               index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new XFileVertex, if one does not already exist for the indicated
+ * vertex, and returns its index.
+ */
 int XFileMesh::
 add_vertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   int next_index = _vertices.size();
@@ -139,13 +127,10 @@ add_vertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::add_normal
-//       Access: Public
-//  Description: Creates a new XFileNormal, if one does not already
-//               exist for the indicated normal, and returns its
-//               index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new XFileNormal, if one does not already exist for the indicated
+ * normal, and returns its index.
+ */
 int XFileMesh::
 add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   int next_index = _normals.size();
@@ -170,13 +155,10 @@ add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::add_material
-//       Access: Public
-//  Description: Creates a new XFileMaterial, if one does not already
-//               exist for the indicated material, and returns its
-//               index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new XFileMaterial, if one does not already exist for the
+ * indicated material, and returns its index.
+ */
 int XFileMesh::
 add_material(EggPrimitive *egg_prim) {
   int next_index = _materials.size();
@@ -202,14 +184,11 @@ add_material(EggPrimitive *egg_prim) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::add_vertex
-//       Access: Public
-//  Description: Adds the newly-created XFileVertex unequivocally to
-//               the mesh, returning its index number.  The XFileMesh
-//               object becomes the owner of the XFileVertex
-//               pointer, and will delete it when it destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the newly-created XFileVertex unequivocally to the mesh, returning its
+ * index number.  The XFileMesh object becomes the owner of the XFileVertex
+ * pointer, and will delete it when it destructs.
+ */
 int XFileMesh::
 add_vertex(XFileVertex *vertex) {
   if (vertex->_has_color) {
@@ -225,14 +204,11 @@ add_vertex(XFileVertex *vertex) {
   return next_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::add_normal
-//       Access: Public
-//  Description: Adds the newly-created XFileNormal unequivocally to
-//               the mesh, returning its index number.  The XFileMesh
-//               object becomes the owner of the XFileNormal
-//               pointer, and will delete it when it destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the newly-created XFileNormal unequivocally to the mesh, returning its
+ * index number.  The XFileMesh object becomes the owner of the XFileNormal
+ * pointer, and will delete it when it destructs.
+ */
 int XFileMesh::
 add_normal(XFileNormal *normal) {
   if (normal->_has_normal) {
@@ -245,14 +221,11 @@ add_normal(XFileNormal *normal) {
   return next_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::add_material
-//       Access: Public
-//  Description: Adds the newly-created XFileMaterial unequivocally to
-//               the mesh, returning its index number.  The XFileMesh
-//               object becomes the owner of the XFileMaterial
-//               pointer, and will delete it when it destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the newly-created XFileMaterial unequivocally to the mesh, returning
+ * its index number.  The XFileMesh object becomes the owner of the
+ * XFileMaterial pointer, and will delete it when it destructs.
+ */
 int XFileMesh::
 add_material(XFileMaterial *material) {
   if (material->has_material()) {
@@ -265,13 +238,10 @@ add_material(XFileMaterial *material) {
   return next_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::set_egg_parent
-//       Access: Public
-//  Description: Specifies the egg node that will eventually be the
-//               parent of this mesh, when create_polygons() is later
-//               called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the egg node that will eventually be the parent of this mesh,
+ * when create_polygons() is later called.
+ */
 void XFileMesh::
 set_egg_parent(EggGroupNode *egg_parent) {
   // We actually put the mesh under its own group.
@@ -281,13 +251,10 @@ set_egg_parent(EggGroupNode *egg_parent) {
   _egg_parent = egg_group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::create_polygons
-//       Access: Public
-//  Description: Creates a slew of EggPolygons according to the faces
-//               in the mesh, and adds them to the
-//               previously-indicated parent node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a slew of EggPolygons according to the faces in the mesh, and adds
+ * them to the previously-indicated parent node.
+ */
 bool XFileMesh::
 create_polygons(XFileToEggConverter *converter) {
   nassertr(_egg_parent != (EggGroupNode *)NULL, false);
@@ -336,10 +303,10 @@ create_polygons(XFileToEggConverter *converter) {
         temp_vtx.set_normal(normal->_normal);
       }
 
-      // We are given the vertex in local space; we need to transform
-      // it into global space.  If the vertex has been skinned, that
-      // means the global space of all of its joints (modified by the
-      // matrix_offset provided in the skinning data).
+      // We are given the vertex in local space; we need to transform it into
+      // global space.  If the vertex has been skinned, that means the global
+      // space of all of its joints (modified by the matrix_offset provided in
+      // the skinning data).
       double net_weight = 0.0;
       LMatrix4d weighted_transform(0.0, 0.0, 0.0, 0.0,
                                    0.0, 0.0, 0.0, 0.0,
@@ -368,8 +335,8 @@ create_polygons(XFileToEggConverter *converter) {
 
       } else {
         // The vertex was skinned into one or more joints.  Therefore,
-        // transform it according to the blended matrix_offset from
-        // the skinning data.
+        // transform it according to the blended matrix_offset from the
+        // skinning data.
         weighted_transform /= net_weight;
         temp_vtx.transform(weighted_transform);
       }
@@ -408,87 +375,71 @@ create_polygons(XFileToEggConverter *converter) {
   }
 
   if (!has_normals()) {
-    // If we don't have explicit normals, make some up, per the DX
-    // spec.  Since the DX spec doesn't mention anything about a
-    // crease angle, we should be as generous as possible.
+    // If we don't have explicit normals, make some up, per the DX spec.
+    // Since the DX spec doesn't mention anything about a crease angle, we
+    // should be as generous as possible.
     _egg_parent->recompute_vertex_normals(180.0, _cs);
   }
 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::has_normals
-//       Access: Public
-//  Description: Returns true if any of the vertices or faces added to
-//               this mesh used a normal, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the vertices or faces added to this mesh used a
+ * normal, false otherwise.
+ */
 bool XFileMesh::
 has_normals() const {
   return _has_normals;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::has_colors
-//       Access: Public
-//  Description: Returns true if any of the vertices or faces added to
-//               this mesh used a color, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the vertices or faces added to this mesh used a
+ * color, false otherwise.
+ */
 bool XFileMesh::
 has_colors() const {
   return _has_colors;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::has_uvs
-//       Access: Public
-//  Description: Returns true if any of the vertices added to this
-//               mesh used a texture coordinate, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the vertices added to this mesh used a texture
+ * coordinate, false otherwise.
+ */
 bool XFileMesh::
 has_uvs() const {
   return _has_uvs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::has_materials
-//       Access: Public
-//  Description: Returns true if any of the faces added to this mesh
-//               used a real material, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the faces added to this mesh used a real material,
+ * false otherwise.
+ */
 bool XFileMesh::
 has_materials() const {
   return _has_materials;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::get_num_materials
-//       Access: Public
-//  Description: Returns the number of distinct materials associated
-//               with the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of distinct materials associated with the mesh.
+ */
 int XFileMesh::
 get_num_materials() const {
   return _materials.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::get_material
-//       Access: Public
-//  Description: Returns a pointer to the nth materials associated
-//               with the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the nth materials associated with the mesh.
+ */
 XFileMaterial *XFileMesh::
 get_material(int n) const {
   nassertr(n >= 0 && n < (int)_materials.size(), (XFileMaterial *)NULL);
   return _materials[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_x_mesh
-//       Access: Public
-//  Description: Creates an X structure corresponding to the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an X structure corresponding to the mesh.
+ */
 XFileDataNode *XFileMesh::
 make_x_mesh(XFileNode *x_parent, const string &suffix) {
   XFileDataNode *x_mesh = x_parent->add_Mesh("mesh" + suffix);
@@ -543,11 +494,9 @@ make_x_mesh(XFileNode *x_parent, const string &suffix) {
   return x_mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_x_normals
-//       Access: Public
-//  Description: Creates a MeshNormals table for the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a MeshNormals table for the mesh.
+ */
 XFileDataNode *XFileMesh::
 make_x_normals(XFileNode *x_mesh, const string &suffix) {
   XFileDataNode *x_meshNormals = x_mesh->add_MeshNormals("norms" + suffix);
@@ -582,11 +531,9 @@ make_x_normals(XFileNode *x_mesh, const string &suffix) {
   return x_meshNormals;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_x_colors
-//       Access: Public
-//  Description: Creates a MeshVertexColors table for the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a MeshVertexColors table for the mesh.
+ */
 XFileDataNode *XFileMesh::
 make_x_colors(XFileNode *x_mesh, const string &suffix) {
   XFileDataNode *x_meshColors = x_mesh->add_MeshVertexColors("colors" + suffix);
@@ -603,21 +550,19 @@ make_x_colors(XFileNode *x_mesh, const string &suffix) {
   }
 
   (*x_meshColors)["nVertexColors"] = x_colors.size();
-  
+
   return x_meshColors;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_x_uvs
-//       Access: Public
-//  Description: Creates a MeshTextureCoords table for the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a MeshTextureCoords table for the mesh.
+ */
 XFileDataNode *XFileMesh::
 make_x_uvs(XFileNode *x_mesh, const string &suffix) {
   XFileDataNode *x_meshUvs = x_mesh->add_MeshTextureCoords("uvs" + suffix);
 
   XFileDataObject &x_uvs = (*x_meshUvs)["textureCoords"];
-  
+
   Vertices::const_iterator vi;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     XFileVertex *vertex = (*vi);
@@ -629,14 +574,12 @@ make_x_uvs(XFileNode *x_mesh, const string &suffix) {
   return x_meshUvs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_x_material_list
-//       Access: Public
-//  Description: Creates a MeshMaterialList table for the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a MeshMaterialList table for the mesh.
+ */
 XFileDataNode *XFileMesh::
 make_x_material_list(XFileNode *x_mesh, const string &suffix) {
-  XFileDataNode *x_meshMaterials = 
+  XFileDataNode *x_meshMaterials =
     x_mesh->add_MeshMaterialList("materials" + suffix);
 
   // First, build up the list of faces the reference the materials.
@@ -650,9 +593,8 @@ make_x_material_list(XFileNode *x_mesh, const string &suffix) {
 
   (*x_meshMaterials)["nFaceIndexes"] = x_indexes.size();
 
-  // Now, build up the list of materials themselves.  Each material is
-  // a child of the MeshMaterialList node, rather than an element of
-  // an array.
+  // Now, build up the list of materials themselves.  Each material is a child
+  // of the MeshMaterialList node, rather than an element of an array.
   for (size_t i = 0; i < _materials.size(); i++) {
     XFileMaterial *material = _materials[i];
 
@@ -665,12 +607,9 @@ make_x_material_list(XFileNode *x_mesh, const string &suffix) {
   return x_meshMaterials;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::fill_mesh
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               X file's Mesh object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on the raw data from the X file's Mesh object.
+ */
 bool XFileMesh::
 fill_mesh(XFileDataNode *obj) {
   clear();
@@ -711,12 +650,9 @@ fill_mesh(XFileDataNode *obj) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::fill_mesh_child
-//       Access: Public
-//  Description: Fills the structure based on one of the children of
-//               the Mesh object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on one of the children of the Mesh object.
+ */
 bool XFileMesh::
 fill_mesh_child(XFileDataNode *obj) {
   if (obj->is_standard_object("MeshNormals")) {
@@ -741,7 +677,7 @@ fill_mesh_child(XFileDataNode *obj) {
 
   } else if (obj->is_standard_object("XSkinMeshHeader")) {
     // Quietly ignore a skin mesh header.
-    
+
   } else if (obj->is_standard_object("SkinWeights")) {
     if (!fill_skin_weights(obj)) {
       return false;
@@ -754,16 +690,13 @@ fill_mesh_child(XFileDataNode *obj) {
         << obj->get_template_name() << "\n";
     }
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::fill_normals
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               MeshNormals template.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on the raw data from the MeshNormals template.
+ */
 bool XFileMesh::
 fill_normals(XFileDataNode *obj) {
   int i, j;
@@ -779,7 +712,7 @@ fill_normals(XFileDataNode *obj) {
   const XFileDataObject &faceNormals = (*obj)["faceNormals"];
   if (faceNormals.size() != (int)_faces.size()) {
     xfile_cat.warning()
-      << "Incorrect number of faces in MeshNormals within " 
+      << "Incorrect number of faces in MeshNormals within "
       << get_name() << "\n";
   }
 
@@ -790,7 +723,7 @@ fill_normals(XFileDataNode *obj) {
     const XFileDataObject &faceIndices = faceNormals[i]["faceVertexIndices"];
 
     if (faceIndices.size() != (int)face->_vertices.size()) {
-      xfile_cat.warning() 
+      xfile_cat.warning()
         << "Incorrect number of vertices for face in MeshNormals within "
         << get_name() << "\n";
     }
@@ -804,12 +737,10 @@ fill_normals(XFileDataNode *obj) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::fill_colors
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               MeshVertexColors template.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on the raw data from the MeshVertexColors
+ * template.
+ */
 bool XFileMesh::
 fill_colors(XFileDataNode *obj) {
   const XFileDataObject &vertexColors = (*obj)["vertexColors"];
@@ -817,7 +748,7 @@ fill_colors(XFileDataNode *obj) {
     int vertex_index = vertexColors[i]["index"].i();
     if (vertex_index < 0 || vertex_index >= (int)_vertices.size()) {
       xfile_cat.warning()
-        << "Vertex index out of range in MeshVertexColors within " 
+        << "Vertex index out of range in MeshVertexColors within "
         << get_name() << "\n";
       continue;
     }
@@ -830,18 +761,16 @@ fill_colors(XFileDataNode *obj) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::fill_uvs
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               MeshTextureCoords template.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on the raw data from the MeshTextureCoords
+ * template.
+ */
 bool XFileMesh::
 fill_uvs(XFileDataNode *obj) {
   const XFileDataObject &textureCoords = (*obj)["textureCoords"];
   if (textureCoords.size() != (int)_vertices.size()) {
     xfile_cat.warning()
-      << "Wrong number of vertices in MeshTextureCoords within " 
+      << "Wrong number of vertices in MeshTextureCoords within "
       << get_name() << "\n";
   }
 
@@ -855,16 +784,13 @@ fill_uvs(XFileDataNode *obj) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::fill_skin_weights
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               SkinWeights template.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on the raw data from the SkinWeights template.
+ */
 bool XFileMesh::
 fill_skin_weights(XFileDataNode *obj) {
-  // Create a new SkinWeightsData record for the table.  We'll need
-  // this data later when we create the vertices.
+  // Create a new SkinWeightsData record for the table.  We'll need this data
+  // later when we create the vertices.
   _skin_weights.push_back(SkinWeightsData());
   SkinWeightsData &data = _skin_weights.back();
 
@@ -898,12 +824,10 @@ fill_skin_weights(XFileDataNode *obj) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::fill_material_list
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               MeshMaterialList template.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on the raw data from the MeshMaterialList
+ * template.
+ */
 bool XFileMesh::
 fill_material_list(XFileDataNode *obj) {
   const XFileDataObject &faceIndexes = (*obj)["faceIndexes"];
@@ -921,16 +845,16 @@ fill_material_list(XFileDataNode *obj) {
     i++;
   }
 
-  // The rest of the faces get the same material index as the last
-  // one in the list.
+  // The rest of the faces get the same material index as the last one in the
+  // list.
   while (i < (int)_faces.size()) {
     XFileFace *face = _faces[i];
     face->_material_index = material_index;
     i++;
   }
 
-  // Now look for children of the MaterialList object.  These should
-  // all be Material objects.
+  // Now look for children of the MaterialList object.  These should all be
+  // Material objects.
   int num_objects = obj->get_num_objects();
   for (i = 0; i < num_objects; i++) {
     XFileDataNode *child = obj->get_object(i);

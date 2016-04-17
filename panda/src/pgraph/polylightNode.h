@@ -1,16 +1,15 @@
-// Filename: PolylightNode.h
-// Created by:  sshodhan (02Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file polylightNode.h
+ * @author sshodhan
+ * @date 2004-06-02
+ */
 
 #ifndef POLYLIGHTNODE_H
 #define POLYLIGHTNODE_H
@@ -24,20 +23,18 @@
 #include "pandaNode.h"
 #include "colorAttrib.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PolylightNode
-// Description : A PolylightNode
-////////////////////////////////////////////////////////////////////
+/**
+ * A PolylightNode
+ */
 class EXPCL_PANDA_PGRAPH PolylightNode : public PandaNode{
-//private:
+// private:
 
 
 PUBLISHED:
   /*
-  // This was the old constructor... interrogate would generate a 
-  // separate wrapper for each parameter... so its better to 
-  // have a simpler constructor and require the programmer
-  // to use set_* methods.
+  // This was the old constructor... interrogate would generate a separate
+  // wrapper for each parameter... so its better to have a simpler constructor
+  // and require the programmer to use set_* methods.
   PolylightNode(const string &name, PN_stdfloat x = 0.0, PN_stdfloat y = 0.0, PN_stdfloat z = 0.0,
   PN_stdfloat r = 1.0, PN_stdfloat g = 1.0, PN_stdfloat b = 1.0,
   PN_stdfloat radius=50.0, string attenuation_type= "linear",
@@ -117,9 +114,8 @@ private:
   PN_stdfloat _scale;
   PN_stdfloat _step_size;
   PN_stdfloat _sin_freq;
-  //PN_stdfloat _speed;
-  //PN_stdfloat fixed_points
-  
+  // PN_stdfloat _speed; PN_stdfloat fixed_points
+
 
 public:
   static void register_with_read_factory();
@@ -153,5 +149,3 @@ private:
 #include "polylightNode.I"
 
 #endif
-
-

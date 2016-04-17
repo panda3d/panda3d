@@ -1,16 +1,15 @@
-// Filename: physxWheelShapeDesc.h
-// Created by:  enn0x (09Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxWheelShapeDesc.h
+ * @author enn0x
+ * @date 2009-11-09
+ */
 
 #ifndef PHYSXWHEELSHAPEDESC_H
 #define PHYSXWHEELSHAPEDESC_H
@@ -22,10 +21,9 @@
 
 class PhysxSpringDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxWheelShapeDesc
-// Description : Descriptor class for PhysxWheelShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxWheelShape.
+ */
 class EXPCL_PANDAPHYSX PhysxWheelShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

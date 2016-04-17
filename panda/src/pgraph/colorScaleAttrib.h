@@ -1,16 +1,15 @@
-// Filename: colorScaleAttrib.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorScaleAttrib.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef COLORSCALEATTRIB_H
 #define COLORSCALEATTRIB_H
@@ -22,11 +21,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorScaleAttrib
-// Description : Applies a scale to colors in the scene graph and on
-//               vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a scale to colors in the scene graph and on vertices.
+ */
 class EXPCL_PANDA_PGRAPH ColorScaleAttrib : public RenderAttrib {
 protected:
   ColorScaleAttrib(bool off, const LVecBase4 &scale);
@@ -45,6 +42,9 @@ PUBLISHED:
   INLINE bool has_alpha_scale() const;
   INLINE const LVecBase4 &get_scale() const;
   CPT(RenderAttrib) set_scale(const LVecBase4 &scale) const;
+
+PUBLISHED:
+  MAKE_PROPERTY2(scale, has_scale, get_scale);
 
 public:
   virtual bool lower_attrib_can_override() const;
@@ -83,7 +83,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -108,4 +108,3 @@ private:
 #include "colorScaleAttrib.I"
 
 #endif
-

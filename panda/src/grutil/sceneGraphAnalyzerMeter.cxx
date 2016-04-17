@@ -1,16 +1,15 @@
-// Filename: sceneGraphAnalyzerMeter.cxx
-// Created by:  pratt (14Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneGraphAnalyzerMeter.cxx
+ * @author pratt
+ * @date 2007-02-14
+ */
 
 #include "sceneGraphAnalyzerMeter.h"
 #include "camera.h"
@@ -26,11 +25,9 @@ PStatCollector SceneGraphAnalyzerMeter::_show_analyzer_pcollector("*:Show scene 
 
 TypeHandle SceneGraphAnalyzerMeter::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzerMeter::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SceneGraphAnalyzerMeter::
 SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
   set_cull_callback();
@@ -43,7 +40,7 @@ SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
   _clock_object = ClockObject::get_global_clock();
 
   set_align(A_left);
-  set_transform(LMatrix4::scale_mat(scene_graph_analyzer_meter_scale) * 
+  set_transform(LMatrix4::scale_mat(scene_graph_analyzer_meter_scale) *
                 LMatrix4::translate_mat(LVector3::rfu(-1.0f + scene_graph_analyzer_meter_side_margins * scene_graph_analyzer_meter_scale, 0.0f, 1.0f - scene_graph_analyzer_meter_scale)));
   set_card_color(0.0f, 0.0f, 0.0f, 0.4);
   set_card_as_margin(scene_graph_analyzer_meter_side_margins, scene_graph_analyzer_meter_side_margins, 0.1f, 0.0f);
@@ -52,23 +49,18 @@ SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
   do_update(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzerMeter::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SceneGraphAnalyzerMeter::
 ~SceneGraphAnalyzerMeter() {
   clear_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzerMeter::setup_window
-//       Access: Published
-//  Description: Sets up the frame rate meter to create a
-//               DisplayRegion to render itself into the indicated
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the frame rate meter to create a DisplayRegion to render itself
+ * into the indicated window.
+ */
 void SceneGraphAnalyzerMeter::
 setup_window(GraphicsOutput *window) {
   clear_window();
@@ -94,7 +86,7 @@ setup_window(GraphicsOutput *window) {
   NodePath camera_np = _root.attach_new_node(camera);
 
   PT(Lens) lens = new OrthographicLens;
-  
+
   static const PN_stdfloat left = -1.0f;
   static const PN_stdfloat right = 1.0f;
   static const PN_stdfloat bottom = -1.0f;
@@ -102,18 +94,15 @@ setup_window(GraphicsOutput *window) {
   lens->set_film_size(right - left, top - bottom);
   lens->set_film_offset((right + left) * 0.5, (top + bottom) * 0.5);
   lens->set_near_far(-1000, 1000);
-  
+
   camera->set_lens(lens);
   camera->set_scene(_root);
   _display_region->set_camera(camera_np);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzerMeter::clear_window
-//       Access: Published
-//  Description: Undoes the effect of a previous call to
-//               setup_window().
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes the effect of a previous call to setup_window().
+ */
 void SceneGraphAnalyzerMeter::
 clear_window() {
   if (_window != (GraphicsOutput *)NULL) {
@@ -124,38 +113,31 @@ clear_window() {
   _root = NodePath();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzerMeter::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool SceneGraphAnalyzerMeter::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   Thread *current_thread = trav->get_current_thread();
 
   // Statistics
   PStatTimer timer(_show_analyzer_pcollector, current_thread);
-  
+
   // Check to see if it's time to update.
   double now = _clock_object->get_frame_time(current_thread);
   double elapsed = now - _last_update;
@@ -166,11 +148,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return TextNode::cull_callback(trav, data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzerMeter::do_update
-//       Access: Private
-//  Description: Resets the text according to the current frame rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the text according to the current frame rate.
+ */
 void SceneGraphAnalyzerMeter::
 do_update(Thread *current_thread) {
   _last_update = _clock_object->get_frame_time(current_thread);

@@ -1,12 +1,12 @@
 """ClientRepository module: contains the ClientRepository class"""
 
-from ClientRepositoryBase import ClientRepositoryBase
+from .ClientRepositoryBase import ClientRepositoryBase
 from direct.directnotify import DirectNotifyGlobal
-from MsgTypesCMU import *
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
+from .MsgTypesCMU import *
+from .PyDatagram import PyDatagram
+from .PyDatagramIterator import PyDatagramIterator
 from panda3d.core import UniqueIdAllocator
-import types
+
 
 class ClientRepository(ClientRepositoryBase):
     """
@@ -305,7 +305,7 @@ class ClientRepository(ClientRepositoryBase):
 
     def handleDatagram(self, di):
         if self.notify.getDebug():
-            print "ClientRepository received datagram:"
+            print("ClientRepository received datagram:")
             di.getDatagram().dumpHex(ostream)
 
         msgType = self.getMsgType()

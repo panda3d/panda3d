@@ -1,31 +1,28 @@
-// Filename: dxfPoints.cxx
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxfPoints.cxx
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #include "dxfPoints.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DXFPoints::
 DXFPoints() :
   WithOutputFile(true, true, false)
 {
-  // Indicate the extension name we expect the user to supply for
-  // output files.
+  // Indicate the extension name we expect the user to supply for output
+  // files.
   _preferred_extension = ".txt";
 
   set_program_brief("extract points from AutoCAD .dxf files");
@@ -41,24 +38,19 @@ DXFPoints() :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void DXFPoints::
 run() {
   // Invoke the DXFFile base class to process the input file.
   process(_input_filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::done_entity
-//       Access: Public, Virtual
-//  Description: This is inherited from DXFFile, and gets called as
-//               each entity (face, line, whatever) has finished
-//               processing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is inherited from DXFFile, and gets called as each entity (face, line,
+ * whatever) has finished processing.
+ */
 void DXFPoints::
 done_entity() {
   if (_entity == EN_point) {
@@ -70,11 +62,9 @@ done_entity() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool DXFPoints::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {

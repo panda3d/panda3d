@@ -1,8 +1,8 @@
 """ClusterClient: Master for mutli-piping or PC clusters.  """
 
 from panda3d.core import *
-from ClusterMsgs import *
-from ClusterConfig import *
+from .ClusterMsgs import *
+from .ClusterConfig import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.task import Task
@@ -44,10 +44,10 @@ class ClusterClient(DirectObject.DirectObject):
             self.daemon.tellServer(serverConfig.serverName,
                                    serverConfig.serverDaemonPort,
                                    serverCommand)
-        print 'Begin waitForServers'
+        print('Begin waitForServers')
         if not self.daemon.waitForServers(len(configList)):
-            print 'Cluster Client, no response from servers'
-        print 'End waitForServers'
+            print('Cluster Client, no response from servers')
+        print('End waitForServers')
         self.qcm=QueuedConnectionManager()
         self.serverList = []
         self.serverQueues = []
@@ -262,9 +262,8 @@ class ClusterClient(DirectObject.DirectObject):
 
 
     def getNodePathFindCmd(self, nodePath):
-        import string
         pathString = repr(nodePath)
-        index = string.find(pathString, '/')
+        index = pathString.find('/')
         if index != -1:
             rootName = pathString[:index]
             searchString = pathString[index+1:]
@@ -273,9 +272,8 @@ class ClusterClient(DirectObject.DirectObject):
             return rootName
 
     def getNodePathName(self, nodePath):
-        import string
         pathString = repr(nodePath)
-        index = string.find(pathString, '/')
+        index = pathString.find('/')
         if index != -1:
             name = pathString[index+1:]
             return name
@@ -409,7 +407,7 @@ class ClusterClientSync(ClusterClient):
         #I probably don't need this
         self.waitForSwap = 0
         self.ready = 0
-        print "creating synced client"
+        print("creating synced client")
         self.startSwapCoordinatorTask()
 
     def startSwapCoordinatorTask(self):

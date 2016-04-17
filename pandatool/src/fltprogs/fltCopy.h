@@ -1,16 +1,15 @@
-// Filename: fltCopy.h
-// Created by:  drose (01Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltCopy.h
+ * @author drose
+ * @date 2000-11-01
+ */
 
 #ifndef FLTCOPY_H
 #define FLTCOPY_H
@@ -28,12 +27,10 @@ class FltRecord;
 class FltTexture;
 class FltExternalReference;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltCopy
-// Description : A program to copy Multigen .flt files into the cvs
-//               tree.  It copies the base file plus all externally
-//               referenced files as well as all textures.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to copy Multigen .flt files into the cvs tree.  It copies the
+ * base file plus all externally referenced files as well as all textures.
+ */
 class FltCopy : public CVSCopy {
 public:
   FltCopy();

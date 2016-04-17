@@ -1,16 +1,15 @@
-// Filename: eggAnimData.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggAnimData.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef EGGANIMDATA_H
 #define EGGANIMDATA_H
@@ -24,11 +23,10 @@
 
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggAnimData
-// Description : A base class for EggSAnimData and EggXfmAnimData,
-//               which contain rows and columns of numbers.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for EggSAnimData and EggXfmAnimData, which contain rows and
+ * columns of numbers.
+ */
 class EXPCL_PANDAEGG EggAnimData : public EggNode {
 PUBLISHED:
 

@@ -1,66 +1,56 @@
-// Filename: angularEulerIntegrator.cxx
-// Created by:  charles (09Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file angularEulerIntegrator.cxx
+ * @author charles
+ * @date 2000-08-09
+ */
 
 #include "angularEulerIntegrator.h"
 #include "forceNode.h"
 #include "physicalNode.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function : AngularEulerIntegrator
-//       Access : Public
-//  Description : constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 AngularEulerIntegrator::
 AngularEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : AngularEulerIntegrator
-//       Access : Public
-//  Description : destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 AngularEulerIntegrator::
 ~AngularEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : Integrate
-//       Access : Public
-//  Description : Integrate a step of motion (based on dt) by
-//                applying every force in force_vec to every object
-//                in obj_vec.
-////////////////////////////////////////////////////////////////////
+/**
+ * Integrate a step of motion (based on dt) by applying every force in
+ * force_vec to every object in obj_vec.
+ */
 void AngularEulerIntegrator::
 child_integrate(Physical *physical,
                 AngularForceVector& forces,
                 PN_stdfloat dt) {
-  // Loop through each object in the set.  This processing occurs in
-  // O(pf) time, where p is the number of physical objects and f is
-  // the number of forces.  Unfortunately, no precomputation of forces
-  // can occur, as each force is possibly contingent on such things as
-  // the position and velocity of each physicsobject in the set.
-  // Accordingly, we have to grunt our way through each one.  wrt
-  // caching of the xform matrix should help.
+  // Loop through each object in the set.  This processing occurs in O(pf)
+  // time, where p is the number of physical objects and f is the number of
+  // forces.  Unfortunately, no precomputation of forces can occur, as each
+  // force is possibly contingent on such things as the position and velocity
+  // of each physicsobject in the set.  Accordingly, we have to grunt our way
+  // through each one.  wrt caching of the xform matrix should help.
   PhysicsObject::Vector::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
   for (; current_object_iter != physical->get_object_vector().end();
        ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
 
-    // bail out if this object doesn't exist or doesn't want to be
-    // processed.
+    // bail out if this object doesn't exist or doesn't want to be processed.
     if (current_object == (PhysicsObject *) NULL) {
       continue;
     }
@@ -78,7 +68,7 @@ child_integrate(Physical *physical,
 
     // global forces
     f_cur = forces.begin();
-    //    unsigned int index = 0;
+    // unsigned int index = 0;
     for (; f_cur != forces.end(); ++f_cur) {
       AngularForce *cur_force = *f_cur;
 
@@ -105,8 +95,8 @@ child_integrate(Physical *physical,
 
       f = cur_force->get_quat(current_object);
 
-      // tally it into the accumulation quaternion
-      // i.e. orientation * f * orientation.conjugate()
+      // tally it into the accumulation quaternion i.e.  orientation * f *
+      // orientation.conjugate()
       accum_quat += orientation.xform(f);
     }
 
@@ -130,16 +120,15 @@ child_integrate(Physical *physical,
       current_object->set_rotation(rot_quat);
     }
     #else
-    //accum_quat*=viscosityDamper;
-    //LOrientation orientation = current_object->get_orientation();
-    
-    //accum_quat.normalize();
-    // x = x + v * t + 0.5 * a * t * t
+    // accum_quat*=viscosityDamper; LOrientation orientation =
+    // current_object->get_orientation();
+
+    // accum_quat.normalize(); x = x + v * t + 0.5 * a * t * t
     orientation = orientation * ((rot_quat * dt) * (accum_quat * (0.5 * dt * dt)));
     // v = v + a * t
     rot_quat = rot_quat + (accum_quat * dt);
 
-    //if (rot_quat.normalize()) {
+    // if (rot_quat.normalize()) {
     if (orientation.normalize() && rot_quat.normalize()) {
       // and write the results back.
       current_object->set_orientation(orientation);
@@ -149,12 +138,9 @@ child_integrate(Physical *physical,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularEulerIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -162,12 +148,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularEulerIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

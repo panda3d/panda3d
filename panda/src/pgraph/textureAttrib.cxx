@@ -1,16 +1,15 @@
-// Filename: textureAttrib.cxx
-// Created by:  drose (21Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureAttrib.cxx
+ * @author drose
+ * @date 2002-02-21
+ */
 
 #include "textureAttrib.h"
 #include "graphicsStateGuardianBase.h"
@@ -28,39 +27,31 @@ TypeHandle TextureAttrib::_type_handle;
 int TextureAttrib::_attrib_slot;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new TextureAttrib object suitable for
-//               rendering the indicated texture onto geometry, using
-//               the default TextureStage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new TextureAttrib object suitable for rendering the indicated
+ * texture onto geometry, using the default TextureStage.
+ */
 CPT(RenderAttrib) TextureAttrib::
 make(Texture *texture) {
   return DCAST(TextureAttrib, make())->add_on_stage(TextureStage::get_default(), texture);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::make_off
-//       Access: Published, Static
-//  Description: Constructs a new TextureAttrib object suitable for
-//               rendering untextured geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new TextureAttrib object suitable for rendering untextured
+ * geometry.
+ */
 CPT(RenderAttrib) TextureAttrib::
 make_off() {
   return make_all_off();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new TextureAttrib object that does
-//               nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new TextureAttrib object that does nothing.
+ */
 CPT(RenderAttrib) TextureAttrib::
 make() {
-  // We make it a special case and store a pointer to the empty attrib
-  // forever once we find it the first time, as an optimization.
+  // We make it a special case and store a pointer to the empty attrib forever
+  // once we find it the first time, as an optimization.
   if (_empty_attrib == (RenderAttrib *)NULL) {
     _empty_attrib = return_new(new TextureAttrib);
   }
@@ -68,16 +59,14 @@ make() {
   return _empty_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::make_all_off
-//       Access: Published, Static
-//  Description: Constructs a new TextureAttrib object that turns off
-//               all stages (and hence disables texturing).
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new TextureAttrib object that turns off all stages (and hence
+ * disables texturing).
+ */
 CPT(RenderAttrib) TextureAttrib::
 make_all_off() {
-  // We make it a special case and store a pointer to the off attrib
-  // forever once we find it the first time, as an optimization.
+  // We make it a special case and store a pointer to the off attrib forever
+  // once we find it the first time, as an optimization.
   if (_all_off_attrib == (RenderAttrib *)NULL) {
     TextureAttrib *attrib = new TextureAttrib;
     attrib->_off_all_stages = true;
@@ -87,26 +76,20 @@ make_all_off() {
   return _all_off_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) TextureAttrib::
 make_default() {
   return make();
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::find_on_stage
-//       Access: Published
-//  Description: Returns the index number of the indicated
-//               TextureStage within the list of on_stages, or -1 if
-//               the indicated stage is not listed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the indicated TextureStage within the list of
+ * on_stages, or -1 if the indicated stage is not listed.
+ */
 int TextureAttrib::
 find_on_stage(const TextureStage *stage) const {
   Stages::const_iterator si = _on_stages.find(StageNode(stage));
@@ -117,13 +100,10 @@ find_on_stage(const TextureStage *stage) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::add_on_stage
-//       Access: Published
-//  Description: Returns a new TextureAttrib, just like this one, but
-//               with the indicated stage added to the list of stages
-//               turned on by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TextureAttrib, just like this one, but with the indicated
+ * stage added to the list of stages turned on by this attrib.
+ */
 CPT(RenderAttrib) TextureAttrib::
 add_on_stage(TextureStage *stage, Texture *tex, int override) const {
   TextureAttrib *attrib = new TextureAttrib(*this);
@@ -141,13 +121,10 @@ add_on_stage(TextureStage *stage, Texture *tex, int override) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::add_on_stage
-//       Access: Published
-//  Description: Returns a new TextureAttrib, just like this one, but
-//               with the indicated stage added to the list of stages
-//               turned on by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TextureAttrib, just like this one, but with the indicated
+ * stage added to the list of stages turned on by this attrib.
+ */
 CPT(RenderAttrib) TextureAttrib::
 add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int override) const {
   TextureAttrib *attrib = new TextureAttrib(*this);
@@ -166,13 +143,10 @@ add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::remove_on_stage
-//       Access: Published
-//  Description: Returns a new TextureAttrib, just like this one, but
-//               with the indicated stage removed from the list of
-//               stages turned on by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TextureAttrib, just like this one, but with the indicated
+ * stage removed from the list of stages turned on by this attrib.
+ */
 CPT(RenderAttrib) TextureAttrib::
 remove_on_stage(TextureStage *stage) const {
   TextureAttrib *attrib = new TextureAttrib(*this);
@@ -188,13 +162,10 @@ remove_on_stage(TextureStage *stage) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::add_off_stage
-//       Access: Published
-//  Description: Returns a new TextureAttrib, just like this one, but
-//               with the indicated stage added to the list of stages
-//               turned off by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TextureAttrib, just like this one, but with the indicated
+ * stage added to the list of stages turned off by this attrib.
+ */
 CPT(RenderAttrib) TextureAttrib::
 add_off_stage(TextureStage *stage, int override) const {
   TextureAttrib *attrib = new TextureAttrib(*this);
@@ -214,13 +185,10 @@ add_off_stage(TextureStage *stage, int override) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::remove_off_stage
-//       Access: Published
-//  Description: Returns a new TextureAttrib, just like this one, but
-//               with the indicated stage removed from the list of
-//               stages turned off by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TextureAttrib, just like this one, but with the indicated
+ * stage removed from the list of stages turned off by this attrib.
+ */
 CPT(RenderAttrib) TextureAttrib::
 remove_off_stage(TextureStage *stage) const {
   TextureAttrib *attrib = new TextureAttrib(*this);
@@ -228,14 +196,11 @@ remove_off_stage(TextureStage *stage) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::unify_texture_stages
-//       Access: Published
-//  Description: Returns a new TextureAttrib, just like this one, but
-//               with any included TextureAttribs that happen to have
-//               the same name as the given object replaced with the
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TextureAttrib, just like this one, but with any included
+ * TextureAttribs that happen to have the same name as the given object
+ * replaced with the object.
+ */
 CPT(RenderAttrib) TextureAttrib::
 unify_texture_stages(TextureStage *stage) const {
   PT(TextureAttrib) attrib = new TextureAttrib;
@@ -281,14 +246,11 @@ unify_texture_stages(TextureStage *stage) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::filter_to_max
-//       Access: Public
-//  Description: Returns a new TextureAttrib, very much like this one,
-//               but with the number of on_stages reduced to be no
-//               more than max_texture_stages.  The number of
-//               off_stages in the new TextureAttrib is undefined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TextureAttrib, very much like this one, but with the number
+ * of on_stages reduced to be no more than max_texture_stages.  The number of
+ * off_stages in the new TextureAttrib is undefined.
+ */
 CPT(TextureAttrib) TextureAttrib::
 filter_to_max(int max_texture_stages) const {
   if ((int)_on_stages.size() <= max_texture_stages) {
@@ -309,9 +271,9 @@ filter_to_max(int max_texture_stages) const {
     return (*fi).second;
   }
 
-  // Harder case: we have to compute it now.  We must choose the n
-  // stages with the highest priority in our list of stages.  In the
-  // case of equal priority, we prefer the stage with the lower sort.
+  // Harder case: we have to compute it now.  We must choose the n stages with
+  // the highest priority in our list of stages.  In the case of equal
+  // priority, we prefer the stage with the lower sort.
   check_sorted();
 
   RenderStages priority_stages = _render_stages;
@@ -336,60 +298,48 @@ filter_to_max(int max_texture_stages) const {
 
   CPT(RenderAttrib) new_attrib = return_new(attrib);
 
-  // Finally, record this newly-created attrib in the map for next
-  // time.
+  // Finally, record this newly-created attrib in the map for next time.
 
-  // TODO: if new_attrib == this, have we just created a circular
-  // reference count?  Whoops!  Fix this!
+  // TODO: if new_attrib == this, have we just created a circular reference
+  // count?  Whoops!  Fix this!
 
   CPT(TextureAttrib) tex_attrib = (const TextureAttrib *)new_attrib.p();
   ((TextureAttrib *)this)->_filtered[max_texture_stages] = tex_attrib;
   return tex_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::lower_attrib_can_override
-//       Access: Public, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               This should return false if a RenderAttrib on a
-//               higher node will compose into a RenderAttrib on a
-//               lower node that has a higher override value, or false
-//               if the lower RenderAttrib will completely replace the
-//               state.
-//
-//               The default behavior is false: normally, a
-//               RenderAttrib in the graph cannot completely override
-//               a RenderAttrib above it, regardless of its override
-//               value--instead, the two attribs are composed.  But
-//               for some kinds of RenderAttribs, it is useful to
-//               allow this kind of override.
-//
-//               This method only handles the one special case of a
-//               lower RenderAttrib with a higher override value.  If
-//               the higher RenderAttrib has a higher override value,
-//               it always completely overrides.  And if both
-//               RenderAttribs have the same override value, they are
-//               always composed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.
+ *
+ * This should return false if a RenderAttrib on a higher node will compose
+ * into a RenderAttrib on a lower node that has a higher override value, or
+ * false if the lower RenderAttrib will completely replace the state.
+ *
+ * The default behavior is false: normally, a RenderAttrib in the graph cannot
+ * completely override a RenderAttrib above it, regardless of its override
+ * value--instead, the two attribs are composed.  But for some kinds of
+ * RenderAttribs, it is useful to allow this kind of override.
+ *
+ * This method only handles the one special case of a lower RenderAttrib with
+ * a higher override value.  If the higher RenderAttrib has a higher override
+ * value, it always completely overrides.  And if both RenderAttribs have the
+ * same override value, they are always composed.
+ */
 bool TextureAttrib::
 lower_attrib_can_override() const {
-  // A TextureAttrib doesn't compose through an override.  Normally,
-  // there won't be a scene-graph override on a TextureAttrib anyway,
-  // since the NodePath::set_texture() override is applied to the
-  // per-TextureStage override value.  But there might be a
-  // scene-graph override if NodePath::adjust_all_priorities() is
-  // used, and in this case, we'd like for it to stick.
+  // A TextureAttrib doesn't compose through an override.  Normally, there
+  // won't be a scene-graph override on a TextureAttrib anyway, since the
+  // NodePath::set_texture() override is applied to the per-TextureStage
+  // override value.  But there might be a scene-graph override if
+  // NodePath::adjust_all_priorities() is used, and in this case, we'd like
+  // for it to stick.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TextureAttrib::
 output(ostream &out) const {
   check_sorted();
@@ -442,15 +392,11 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this node during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if cull_callback()
+ * has been defined.  Otherwise, returns false to indicate cull_callback()
+ * does not need to be called for this node during the cull traversal.
+ */
 bool TextureAttrib::
 has_cull_callback() const {
   Stages::const_iterator si;
@@ -464,19 +410,15 @@ has_cull_callback() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::cull_callback
-//       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.
-//
-//               This is called each time the RenderAttrib is
-//               discovered applied to a Geom in the traversal.  It
-//               should return true if the Geom is visible, false if
-//               it should be omitted.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_cull_callback() returns true, this function will be called during
+ * the cull traversal to perform any additional operations that should be
+ * performed at cull time.
+ *
+ * This is called each time the RenderAttrib is discovered applied to a Geom
+ * in the traversal.  It should return true if the Geom is visible, false if
+ * it should be omitted.
+ */
 bool TextureAttrib::
 cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
   Stages::const_iterator si;
@@ -490,21 +432,18 @@ cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TextureAttrib
-//               types to return a unique number indicating whether
-//               this TextureAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two TextureAttrib objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two TextureAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived TextureAttrib types to return a unique
+ * number indicating whether this TextureAttrib is equivalent to the other
+ * one.
+ *
+ * This should return 0 if the two TextureAttrib objects are equivalent, a
+ * number less than zero if this one should be sorted before the other one,
+ * and a number greater than zero otherwise.
+ *
+ * This will only be called with two TextureAttrib objects whose get_type()
+ * functions return the same.
+ */
 int TextureAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const TextureAttrib *ta = (const TextureAttrib *)other;
@@ -605,16 +544,12 @@ compare_to_impl(const RenderAttrib *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t TextureAttrib::
 get_hash_impl() const {
   check_sorted();
@@ -630,8 +565,8 @@ get_hash_impl() const {
     hash = int_hash::add_hash(hash, sn._override);
   }
 
-  // This bool value goes here, between the two lists, to
-  // differentiate between the two.
+  // This bool value goes here, between the two lists, to differentiate
+  // between the two.
   hash = int_hash::add_hash(hash, (int)_off_all_stages);
 
   for (si = _off_stages.begin(); si != _off_stages.end(); ++si) {
@@ -644,36 +579,29 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               This should return the result of applying the other
-//               RenderAttrib to a node in the scene graph below this
-//               RenderAttrib, which was already applied.  In most
-//               cases, the result is the same as the other
-//               RenderAttrib (that is, a subsequent RenderAttrib
-//               completely replaces the preceding one).  On the other
-//               hand, some kinds of RenderAttrib (for instance,
-//               ColorTransformAttrib) might combine in meaningful
-//               ways.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.
+ *
+ * This should return the result of applying the other RenderAttrib to a node
+ * in the scene graph below this RenderAttrib, which was already applied.  In
+ * most cases, the result is the same as the other RenderAttrib (that is, a
+ * subsequent RenderAttrib completely replaces the preceding one).  On the
+ * other hand, some kinds of RenderAttrib (for instance, ColorTransformAttrib)
+ * might combine in meaningful ways.
+ */
 CPT(RenderAttrib) TextureAttrib::
 compose_impl(const RenderAttrib *other) const {
   const TextureAttrib *ta = (const TextureAttrib *)other;
 
   if (ta->_off_all_stages) {
-    // If the other type turns off all stages, it doesn't matter what
-    // we are.
+    // If the other type turns off all stages, it doesn't matter what we are.
     return ta;
   }
 
-  // This is a three-way merge between ai, bi, and ci, except that bi
-  // and ci should have no intersection and therefore needn't be
-  // compared to each other.
+  // This is a three-way merge between ai, bi, and ci, except that bi and ci
+  // should have no intersection and therefore needn't be compared to each
+  // other.
   Stages::const_iterator ai = _on_stages.begin();
   Stages::const_iterator bi = ta->_on_stages.begin();
   Stages::const_iterator ci = ta->_off_stages.begin();
@@ -686,19 +614,19 @@ compose_impl(const RenderAttrib *other) const {
          ci != ta->_off_stages.end()) {
     if ((*ai)._stage < (*bi)._stage) {
       if ((*ai)._stage < (*ci)._stage) {
-        // Here is a stage that we have in the original, which is not
-        // present in the secondary.
+        // Here is a stage that we have in the original, which is not present
+        // in the secondary.
         attrib->_on_stages.insert(attrib->_on_stages.end(), *ai);
         ++ai;
 
       } else if ((*ci)._stage < (*ai)._stage) {
-        // Here is a stage that is turned off in the secondary, but
-        // was not present in the original.
+        // Here is a stage that is turned off in the secondary, but was not
+        // present in the original.
         ++ci;
 
       } else { // (*ci)._stage == (*ai)._stage
-        // Here is a stage that is turned off in the secondary, and
-        // was present in the original.
+        // Here is a stage that is turned off in the secondary, and was
+        // present in the original.
         if ((*ai)._override > (*ci)._override) {
           // But never mind, keep it anyway.
           attrib->_on_stages.insert(attrib->_on_stages.end(), *ai);
@@ -709,8 +637,8 @@ compose_impl(const RenderAttrib *other) const {
       }
 
     } else if ((*bi)._stage < (*ai)._stage) {
-      // Here is a new stage we have in the secondary, that was not
-      // present in the original.
+      // Here is a new stage we have in the secondary, that was not present in
+      // the original.
       attrib->_on_stages.insert(attrib->_on_stages.end(), *bi);
       ++bi;
 
@@ -728,14 +656,14 @@ compose_impl(const RenderAttrib *other) const {
 
   while (ai != _on_stages.end() && bi != ta->_on_stages.end()) {
     if ((*ai)._stage < (*bi)._stage) {
-      // Here is a stage that we have in the original, which is not
-      // present in the secondary.
+      // Here is a stage that we have in the original, which is not present in
+      // the secondary.
       attrib->_on_stages.insert(attrib->_on_stages.end(), *ai);
       ++ai;
 
     } else if ((*bi)._stage < (*ai)._stage) {
-      // Here is a new stage we have in the secondary, that was not
-      // present in the original.
+      // Here is a new stage we have in the secondary, that was not present in
+      // the original.
       attrib->_on_stages.insert(attrib->_on_stages.end(), *bi);
       ++bi;
 
@@ -753,19 +681,19 @@ compose_impl(const RenderAttrib *other) const {
 
   while (ai != _on_stages.end() && ci != ta->_off_stages.end()) {
     if ((*ai)._stage < (*ci)._stage) {
-      // Here is a stage that we have in the original, which is not
-      // present in the secondary.
+      // Here is a stage that we have in the original, which is not present in
+      // the secondary.
       attrib->_on_stages.insert(attrib->_on_stages.end(), *ai);
       ++ai;
 
     } else if ((*ci)._stage < (*ai)._stage) {
-      // Here is a stage that is turned off in the secondary, but
-      // was not present in the original.
+      // Here is a stage that is turned off in the secondary, but was not
+      // present in the original.
       ++ci;
 
     } else { // (*ci)._stage == (*ai)._stage
-      // Here is a stage that is turned off in the secondary, and
-      // was present in the original.
+      // Here is a stage that is turned off in the secondary, and was present
+      // in the original.
       if ((*ai)._override > (*ci)._override) {
         // But never mind, keep it anyway.
         attrib->_on_stages.insert(attrib->_on_stages.end(), *ai);
@@ -792,50 +720,40 @@ compose_impl(const RenderAttrib *other) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::invert_compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               See invert_compose() and compose_impl().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.
+ *
+ * See invert_compose() and compose_impl().
+ */
 CPT(RenderAttrib) TextureAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
-  // I think in this case the other attrib always wins.  Maybe this
-  // needs a bit more thought.  It's hard to imagine that it's even
-  // important to compute this properly.
+  // I think in this case the other attrib always wins.  Maybe this needs a
+  // bit more thought.  It's hard to imagine that it's even important to
+  // compute this properly.
   return other;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::get_auto_shader_attrib_impl
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPT(RenderAttrib) TextureAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               TextureAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type TextureAttrib.
+ */
 void TextureAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void TextureAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
@@ -868,13 +786,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int TextureAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
@@ -891,8 +806,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     PT(TextureStage) ts = DCAST(TextureStage, p_list[pi++]);
     ts = TextureStagePool::get_stage(ts);
 
-    // The Texture pointer filters itself through the TexturePool, so
-    // we don't have to do anything special here.
+    // The Texture pointer filters itself through the TexturePool, so we don't
+    // have to do anything special here.
     Texture *tex = DCAST(Texture, p_list[pi++]);
 
     if (tex != (Texture *)NULL) {
@@ -902,8 +817,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       ++sni;
 
     } else {
-      // If we couldn't load a texture pointer, turn off that
-      // particular texture stage.
+      // If we couldn't load a texture pointer, turn off that particular
+      // texture stage.
       _off_stages.push_back(StageNode(ts));
       _on_stages.erase(_on_stages.begin() + sni);
     }
@@ -915,14 +830,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type TextureAttrib is encountered
-//               in the Bam file.  It should create the TextureAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type TextureAttrib is encountered in the Bam file.  It should create the
+ * TextureAttrib and extract its information from the file.
+ */
 TypedWritable *TextureAttrib::
 make_from_bam(const FactoryParams &params) {
   TextureAttrib *attrib = new TextureAttrib;
@@ -935,13 +847,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new TextureAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new TextureAttrib.
+ */
 void TextureAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
@@ -950,8 +859,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _off_all_stages = scan.get_bool();
   int num_off_stages = scan.get_uint16();
 
-  // Push back a NULL pointer for each off TextureStage for now, until
-  // we get the actual list of pointers later in complete_pointers().
+  // Push back a NULL pointer for each off TextureStage for now, until we get
+  // the actual list of pointers later in complete_pointers().
   int i;
   _off_stages.reserve(num_off_stages);
   for (i = 0; i < num_off_stages; i++) {
@@ -962,9 +871,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // Read the _on_stages data.
   int num_on_stages = scan.get_uint16();
 
-  // Push back a NULL pointer for each off TextureStage and Texture
-  // for now, until we get the actual list of pointers later in
-  // complete_pointers().
+  // Push back a NULL pointer for each off TextureStage and Texture for now,
+  // until we get the actual list of pointers later in complete_pointers().
   _on_stages.reserve(num_on_stages);
   _next_implicit_sort = 0;
   for (i = 0; i < num_on_stages; i++) {
@@ -995,13 +903,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::sort_on_stages
-//       Access: Private
-//  Description: Sorts the list of stages so that they are listed in
-//               render order.  Also clears the _filtered map and
-//               recalculates the list of fixed-function stages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the list of stages so that they are listed in render order.  Also
+ * clears the _filtered map and recalculates the list of fixed-function
+ * stages.
+ */
 void TextureAttrib::
 sort_on_stages() {
   typedef pmap<const InternalName *, int> UsedTexcoordIndex;
@@ -1021,9 +927,9 @@ sort_on_stages() {
       const InternalName *name = stage->get_texcoord_name();
 
       // This pair of lines will get the next consecutive texcoord index
-      // number if this is the first time we have referenced this
-      // particular texcoord name; otherwise, it will return the same
-      // index number it returned before.
+      // number if this is the first time we have referenced this particular
+      // texcoord name; otherwise, it will return the same index number it
+      // returned before.
       UsedTexcoordIndex::iterator ti = used_texcoord_index.insert(UsedTexcoordIndex::value_type(name, (int)used_texcoord_index.size())).first;
       (*si)._ff_tc_index = (*ti).second;
 
@@ -1038,11 +944,11 @@ sort_on_stages() {
   sort(_render_stages.begin(), _render_stages.end(), CompareTextureStageSort());
   sort(_render_ff_stages.begin(), _render_ff_stages.end(), CompareTextureStageSort());
 
-  // We'd like to clear the _filtered map, in case the TextureStage
-  // priority values have changed as well, but we can't do that here:
-  // it's too dangerous.  Clearing _filtered might cause
-  // TextureAttribs to be deleted, and hence removed from the map that
-  // we might be in the middle of traversing!
+  // We'd like to clear the _filtered map, in case the TextureStage priority
+  // values have changed as well, but we can't do that here: it's too
+  // dangerous.  Clearing _filtered might cause TextureAttribs to be deleted,
+  // and hence removed from the map that we might be in the middle of
+  // traversing!
 
   _sort_seq = TextureStage::get_sort_seq();
 }

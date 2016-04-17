@@ -1,22 +1,21 @@
-// Filename: p3d_lock.h
-// Created by:  drose (05Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3d_lock.h
+ * @author drose
+ * @date 2009-06-05
+ */
 
 #ifndef P3D_LOCK_H
 #define P3D_LOCK_H
 
-// Provides some simple macros that implement platform-independet
-// mutex locks, as well as platform-independent thread constructs.
+// Provides some simple macros that implement platform-independet mutex locks,
+// as well as platform-independent thread constructs.
 
 #ifdef _WIN32
 
@@ -56,10 +55,9 @@ public:
     (thread) = NULL;                            \
   }
 
-// Declare this macro within your class declaration.  This implements
-// the callback function wrapper necessary to hook into the above
-// SPAWN_THREAD call.  The wrapper will in turn call the method
-// function you provide.
+// Declare this macro within your class declaration.  This implements the
+// callback function wrapper necessary to hook into the above SPAWN_THREAD
+// call.  The wrapper will in turn call the method function you provide.
 #define THREAD_CALLBACK_DECLARATION(class, callback_function) \
   static DWORD WINAPI                                         \
   win_ ## callback_function(LPVOID data) {                    \
@@ -73,9 +71,9 @@ public:
 // Posix case
 #include <pthread.h>
 
-// We declare this to be a recursive lock, since we might make a
-// request_ready call from within the API, which in turn is allowed to
-// call back into the API.
+// We declare this to be a recursive lock, since we might make a request_ready
+// call from within the API, which in turn is allowed to call back into the
+// API.
 #define LOCK pthread_mutex_t
 #define INIT_LOCK(lock) {                                      \
     pthread_mutexattr_t attr;                                  \
@@ -123,4 +121,3 @@ public:
 #endif  // _WIN32
 
 #endif
-

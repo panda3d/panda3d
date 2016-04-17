@@ -1,16 +1,15 @@
-// Filename: pointParticleRenderer.h
-// Created by:  charles (20Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointParticleRenderer.h
+ * @author charles
+ * @date 2000-06-20
+ */
 
 #ifndef POINTPARTICLERENDERER_H
 #define POINTPARTICLERENDERER_H
@@ -26,12 +25,10 @@
 #include "geomPoints.h"
 #include "pStatCollector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointParticleRenderer
-// Description : Simple point/point particle renderer.  Does NOT
-//               handle billboards- use BillboardParticleRenderer
-//               for that.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple point/point particle renderer.  Does NOT handle billboards- use
+ * BillboardParticleRenderer for that.
+ */
 
 class EXPCL_PANDAPHYSICS PointParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:

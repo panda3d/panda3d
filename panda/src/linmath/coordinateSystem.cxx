@@ -1,16 +1,15 @@
-// Filename: coordinateSystem.cxx
-// Created by:  drose (24Sep99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file coordinateSystem.cxx
+ * @author drose
+ * @date 1999-09-24
+ */
 
 #include "coordinateSystem.h"
 #include "config_linmath.h"
@@ -41,23 +40,23 @@ parse_coordinate_system_string(const string &str) {
   if (cmp_nocase_uh(str, "default") == 0) {
     return CS_default;
 
-  } else if (cmp_nocase_uh(str, "zup") == 0 || 
+  } else if (cmp_nocase_uh(str, "zup") == 0 ||
              cmp_nocase_uh(str, "zup-right") == 0 ||
-             cmp_nocase_uh(str, "z-up") == 0 || 
+             cmp_nocase_uh(str, "z-up") == 0 ||
              cmp_nocase_uh(str, "z-up-right") == 0) {
     return CS_zup_right;
 
-  } else if (cmp_nocase_uh(str, "yup") == 0 || 
+  } else if (cmp_nocase_uh(str, "yup") == 0 ||
              cmp_nocase_uh(str, "yup-right") == 0 ||
-             cmp_nocase_uh(str, "y-up") == 0 || 
+             cmp_nocase_uh(str, "y-up") == 0 ||
              cmp_nocase_uh(str, "y-up-right") == 0) {
     return CS_yup_right;
 
-  } else if (cmp_nocase_uh(str, "z-up-left") == 0 || 
+  } else if (cmp_nocase_uh(str, "z-up-left") == 0 ||
              cmp_nocase_uh(str, "zup-left") == 0) {
     return CS_zup_left;
 
-  } else if (cmp_nocase_uh(str, "y-up-left") == 0 || 
+  } else if (cmp_nocase_uh(str, "y-up-left") == 0 ||
              cmp_nocase_uh(str, "yup-left") == 0) {
     return CS_yup_left;
   }
@@ -133,4 +132,3 @@ operator >> (istream &in, CoordinateSystem &cs) {
   }
   return in;
 }
-

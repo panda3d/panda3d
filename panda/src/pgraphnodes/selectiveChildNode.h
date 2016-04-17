@@ -1,16 +1,15 @@
-// Filename: selectiveChildNode.h
-// Created by:  drose (06Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file selectiveChildNode.h
+ * @author drose
+ * @date 2002-03-06
+ */
 
 #ifndef SELECTIVECHILDNODE_H
 #define SELECTIVECHILDNODE_H
@@ -19,11 +18,10 @@
 
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SelectiveChildNode
-// Description : A base class for nodes like LODNode and SequenceNode
-//               that select only one visible child at a time.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for nodes like LODNode and SequenceNode that select only one
+ * visible child at a time.
+ */
 class EXPCL_PANDA_PGRAPHNODES SelectiveChildNode : public PandaNode {
 PUBLISHED:
   INLINE SelectiveChildNode(const string &name);
@@ -40,10 +38,10 @@ protected:
   INLINE void select_child(int n);
 
 private:
-  // Not sure if this should be cycled or not.  It's not exactly
-  // thread-safe not to cycle it, but it doesn't really need the full
-  // pipeline control.  It's probably a problem in the non-thread-safe
-  // design; need to rethink the design a bit.
+  // Not sure if this should be cycled or not.  It's not exactly thread-safe
+  // not to cycle it, but it doesn't really need the full pipeline control.
+  // It's probably a problem in the non-thread-safe design; need to rethink
+  // the design a bit.
   int _selected_child;
 
 public:

@@ -1,16 +1,15 @@
-// Filename: animChannelMatrixFixed.h
-// Created by:  drose (19Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animChannelMatrixFixed.h
+ * @author drose
+ * @date 2006-01-19
+ */
 
 #ifndef ANIMCHANNELMATRIXFIXED_H
 #define ANIMCHANNELMATRIXFIXED_H
@@ -20,11 +19,10 @@
 #include "animChannel.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelMatrixFixed
-// Description : A specialization on AnimChannel to add all the
-//               special matrix component operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization on AnimChannel to add all the special matrix component
+ * operations.
+ */
 class EXPCL_PANDA_CHAN AnimChannelMatrixFixed : public AnimChannel<ACMatrixSwitchType> {
 protected:
   AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
@@ -32,7 +30,7 @@ protected:
 public:
   AnimChannelMatrixFixed(const string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
 
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, LMatrix4 &value);
   virtual void get_value_no_scale_shear(int frame, LMatrix4 &value);
@@ -76,6 +74,3 @@ private:
 #include "animChannelMatrixFixed.I"
 
 #endif
-
-
-

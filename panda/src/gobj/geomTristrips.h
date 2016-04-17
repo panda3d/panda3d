@@ -1,16 +1,15 @@
-// Filename: geomTristrips.h
-// Created by:  drose (08Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomTristrips.h
+ * @author drose
+ * @date 2005-03-08
+ */
 
 #ifndef GEOMTRISTRIPS_H
 #define GEOMTRISTRIPS_H
@@ -18,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTristrips
-// Description : Defines a series of triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of triangle strips.
+ */
 class EXPCL_PANDA_GOBJ GeomTristrips : public GeomPrimitive {
 PUBLISHED:
   GeomTristrips(UsageHint usage_hint);
@@ -47,7 +45,7 @@ protected:
   virtual CPT(GeomPrimitive) reverse_impl() const;
   virtual CPT(GeomVertexArrayData) rotate_impl() const;
   virtual bool requires_unused_vertices() const;
-  virtual void append_unused_vertices(GeomVertexArrayData *vertices, 
+  virtual void append_unused_vertices(GeomVertexArrayData *vertices,
                                       int vertex);
 
 public:

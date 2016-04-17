@@ -1,27 +1,24 @@
-// Filename: interrogateFunction.cxx
-// Created by:  drose (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateFunction.cxx
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #include "interrogateFunction.h"
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 #include "interrogateDatabase.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 InterrogateFunction::
 InterrogateFunction(InterrogateModuleDef *def) :
   InterrogateComponent(def)
@@ -31,21 +28,17 @@ InterrogateFunction(InterrogateModuleDef *def) :
   _instances = (Instances *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 InterrogateFunction::
 InterrogateFunction(const InterrogateFunction &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void InterrogateFunction::
 operator = (const InterrogateFunction &copy) {
   InterrogateComponent::operator = (copy);
@@ -61,12 +54,9 @@ operator = (const InterrogateFunction &copy) {
   _expression = copy._expression;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::output
-//       Access: Public
-//  Description: Formats the InterrogateFunction data for output to a data
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the InterrogateFunction data for output to a data file.
+ */
 void InterrogateFunction::
 output(ostream &out) const {
   InterrogateComponent::output(out);
@@ -79,12 +69,9 @@ output(ostream &out) const {
   idf_output_string(out, _prototype, '\n');
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::input
-//       Access: Public
-//  Description: Reads the data file as previously formatted by
-//               output().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data file as previously formatted by output().
+ */
 void InterrogateFunction::
 input(istream &in) {
   InterrogateComponent::input(in);
@@ -96,13 +83,10 @@ input(istream &in) {
   idf_input_string(in, _prototype);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::remap_indices
-//       Access: Public
-//  Description: Remaps all internal index numbers according to the
-//               indicated map.  This called from
-//               InterrogateDatabase::remap_indices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Remaps all internal index numbers according to the indicated map.  This
+ * called from InterrogateDatabase::remap_indices().
+ */
 void InterrogateFunction::
 remap_indices(const IndexRemapper &remap) {
   _class = remap.map_from(_class);

@@ -1,16 +1,15 @@
-// Filename: pgCullTraverser.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgCullTraverser.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef PGCULLTRAVERSER_H
 #define PGCULLTRAVERSER_H
@@ -20,15 +19,12 @@
 #include "pgTop.h"
 #include "cullTraverser.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGCullTraverser
-// Description : This is a specialization of CullTraverser for use
-//               within the pgui system.  It is substituted in for the
-//               normal CullTraverser by the PGTop node.  Its purpose
-//               is to carry additional data through the traversal so
-//               that PGItems can know how to register their regions
-//               with the current MouseWatcherGroup.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization of CullTraverser for use within the pgui system.
+ * It is substituted in for the normal CullTraverser by the PGTop node.  Its
+ * purpose is to carry additional data through the traversal so that PGItems
+ * can know how to register their regions with the current MouseWatcherGroup.
+ */
 class EXPCL_PANDA_PGUI PGCullTraverser : public CullTraverser {
 public:
   INLINE PGCullTraverser(PGTop *top, CullTraverser *trav);
@@ -57,6 +53,3 @@ private:
 #include "pgCullTraverser.I"
 
 #endif
-
-
-  

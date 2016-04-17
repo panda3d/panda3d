@@ -1,16 +1,15 @@
-// Filename: winStatsLabelStack.h
-// Created by:  drose (07Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winStatsLabelStack.h
+ * @author drose
+ * @date 2004-01-07
+ */
 
 #ifndef WINSTATSLABELSTACK_H
 #define WINSTATSLABELSTACK_H
@@ -24,11 +23,9 @@ class WinStatsLabel;
 class WinStatsMonitor;
 class WinStatsGraph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsLabelStack
-// Description : A window that contains a stack of labels from bottom
-//               to top.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window that contains a stack of labels from bottom to top.
+ */
 class WinStatsLabelStack {
 public:
   WinStatsLabelStack();
@@ -78,4 +75,3 @@ private:
 };
 
 #endif
-

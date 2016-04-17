@@ -1,16 +1,15 @@
-// Filename: winStatsGraph.h
-// Created by:  drose (03Dec03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winStatsGraph.h
+ * @author drose
+ * @date 2003-12-03
+ */
 
 #ifndef WINSTATSGRAPH_H
 #define WINSTATSGRAPH_H
@@ -23,12 +22,10 @@
 
 class WinStatsMonitor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsGraph
-// Description : This is just an abstract base class to provide a
-//               common pointer type for the various kinds of graphs
-//               that may be created for a WinStatsMonitor.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is just an abstract base class to provide a common pointer type for
+ * the various kinds of graphs that may be created for a WinStatsMonitor.
+ */
 class WinStatsGraph {
 public:
   // What is the user adjusting by dragging the mouse in a window?
@@ -71,7 +68,7 @@ protected:
 
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
-  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
+  virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
   virtual void set_drag_mode(DragMode drag_mode);
 
@@ -130,4 +127,3 @@ protected:
 };
 
 #endif
-

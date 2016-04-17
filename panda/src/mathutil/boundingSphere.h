@@ -1,16 +1,15 @@
-// Filename: boundingSphere.h
-// Created by:  drose (01Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingSphere.h
+ * @author drose
+ * @date 1999-10-01
+ */
 
 #ifndef BOUNDINGSPHERE_H
 #define BOUNDINGSPHERE_H
@@ -19,12 +18,10 @@
 
 #include "finiteBoundingVolume.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingSphere
-// Description : This defines a bounding sphere, consisting of a
-//               center and a radius.  It is always a sphere, and
-//               never an ellipsoid or other quadric.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a bounding sphere, consisting of a center and a radius.  It is
+ * always a sphere, and never an ellipsoid or other quadric.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingSphere : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingSphere();

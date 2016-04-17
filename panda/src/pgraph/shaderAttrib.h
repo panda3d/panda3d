@@ -1,19 +1,20 @@
-// Filename: shaderAttrib.h
-// Created by: jyelon (01Sep05)
-// Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
-//   for set_shader_input)
-// Updated by: weifengh, PandaSE(15Apr10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderAttrib.h
+ * @author jyelon
+ * @date 2005-09-01
+ * @author fperazzi, PandaSE
+ * @date 2010-04-06
+ *   for set_shader_input)
+ * @author weifengh, PandaSE
+ * @date 2010-04-15
+ */
 
 #ifndef SHADERATTRIB_H
 #define SHADERATTRIB_H
@@ -31,10 +32,9 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderAttrib
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDA_PGRAPH ShaderAttrib: public RenderAttrib {
 private:
   INLINE ShaderAttrib();
@@ -114,6 +114,10 @@ PUBLISHED:
 
   static void register_with_read_factory();
 
+PUBLISHED:
+  MAKE_PROPERTY(shader, get_shader);
+  MAKE_PROPERTY(instance_count, get_instance_count);
+
 public:
   virtual void output(ostream &out) const;
 
@@ -174,6 +178,3 @@ private:
 #include "shaderAttrib.I"
 
 #endif  // SHADERATTRIB_H
-
-
-

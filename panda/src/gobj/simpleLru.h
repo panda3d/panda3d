@@ -1,16 +1,15 @@
-// Filename: simpleLru.h
-// Created by:  drose (11May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file simpleLru.h
+ * @author drose
+ * @date 2007-05-11
+ */
 
 #ifndef SIMPLELRU_H
 #define SIMPLELRU_H
@@ -23,11 +22,9 @@
 
 class SimpleLruPage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleLru
-// Description : An implementation of a very simple LRU algorithm.
-//               Also see AdaptiveLru.
-////////////////////////////////////////////////////////////////////
+/**
+ * An implementation of a very simple LRU algorithm.  Also see AdaptiveLru.
+ */
 class EXPCL_PANDA_GOBJ SimpleLru : public LinkedListNode, public Namable {
 PUBLISHED:
   SimpleLru(const string &name, size_t max_size);
@@ -61,12 +58,10 @@ private:
   friend class SimpleLruPage;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleLruPage
-// Description : One atomic piece that may be managed by a SimpleLru
-//               chain.  To use this class, inherit from it and
-//               override evict_lru().
-////////////////////////////////////////////////////////////////////
+/**
+ * One atomic piece that may be managed by a SimpleLru chain.  To use this
+ * class, inherit from it and override evict_lru().
+ */
 class EXPCL_PANDA_GOBJ SimpleLruPage : public LinkedListNode {
 PUBLISHED:
   INLINE SimpleLruPage(size_t lru_size);

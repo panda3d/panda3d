@@ -1,16 +1,15 @@
-// Filename: windowProperties.h
-// Created by:  drose (13Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file windowProperties.h
+ * @author drose
+ * @date 2002-08-13
+ */
 
 #ifndef WINDOWPROPERTIES_H
 #define WINDOWPROPERTIES_H
@@ -22,13 +21,11 @@
 #include "lpoint2.h"
 #include "lvector2.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WindowProperties
-// Description : A container for the various kinds of properties we
-//               might ask to have on a graphics window before we open
-//               it.  This also serves to hold the current properties
-//               for a window after it has been opened.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for the various kinds of properties we might ask to have on a
+ * graphics window before we open it.  This also serves to hold the current
+ * properties for a window after it has been opened.
+ */
 class EXPCL_PANDA_DISPLAY WindowProperties {
 PUBLISHED:
   enum ZOrder {
@@ -36,7 +33,7 @@ PUBLISHED:
     Z_normal,
     Z_top,
   };
-  
+
   enum MouseMode {
     M_absolute,
     M_relative,
@@ -179,8 +176,7 @@ PUBLISHED:
 
 private:
   // This bitmask indicates which of the parameters in the properties
-  // structure have been filled in by the user, and which remain
-  // unspecified.
+  // structure have been filled in by the user, and which remain unspecified.
   enum Specified {
     S_origin               = 0x00001,
     S_size                 = 0x00002,
@@ -200,9 +196,8 @@ private:
     S_raw_mice             = 0x08000,
   };
 
-  // This bitmask represents the true/false settings for various
-  // boolean flags (assuming the corresponding S_* bit has been set,
-  // above).
+  // This bitmask represents the truefalse settings for various boolean flags
+  // (assuming the corresponding S_* bit has been set, above).
   enum Flags {
     F_undecorated    = S_undecorated,
     F_fullscreen     = S_fullscreen,

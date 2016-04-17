@@ -13,7 +13,7 @@
 #
 ##############################################################################
 
-import sys, os, getopt, string, shutil, py_compile, subprocess
+import sys, os, getopt, shutil, py_compile, subprocess
 
 OPTIONLIST = [
 ("dir",       1, "Name of directory containing game"),
@@ -27,14 +27,14 @@ OPTIONLIST = [
 ]
 
 def ParseFailure():
-  print ""
-  print "packpanda usage:"
-  print ""
+  print("")
+  print("packpanda usage:")
+  print("")
   for (opt, hasval, explanation) in OPTIONLIST:
     if (hasval):
-      print "  --%-10s    %s"%(opt+" x", explanation)
+      print("  --%-10s    %s"%(opt+" x", explanation))
     else:
-      print "  --%-10s    %s"%(opt+"  ", explanation)
+      print("  --%-10s    %s"%(opt+"  ", explanation))
   sys.exit(1)
 
 def ParseOptions(args):
@@ -75,7 +75,7 @@ for dir in sys.path:
         PANDA=os.path.abspath(dir)
 if (PANDA is None):
   sys.exit("Cannot locate the panda root directory in the python path (cannot locate directory containing direct and pandac).")
-print "PANDA located at "+PANDA
+print("PANDA located at "+PANDA)
 
 if (os.path.exists(os.path.join(PANDA,"..","makepanda","makepanda.py"))) and (sys.platform != "win32" or os.path.exists(os.path.join(PANDA,"..","thirdparty","win-nsis","makensis.exe"))):
   PSOURCE=os.path.abspath(os.path.join(PANDA,".."))
@@ -95,7 +95,7 @@ else:
 VER=OPTIONS["version"]
 DIR=OPTIONS["dir"]
 if (DIR==""):
-  print "You must specify the --dir option."
+  print("You must specify the --dir option.")
   ParseFailure()
 DIR=os.path.abspath(DIR)
 MYDIR=os.path.abspath(os.getcwd())
@@ -123,21 +123,21 @@ else: MAIN="main.py"
 
 def PrintFileStatus(label, file):
   if (os.path.exists(file)):
-    print "%-15s: %s"%(label, file)
+    print("%-15s: %s"%(label, file))
   else:
-    print "%-15s: %s (MISSING)"%(label, file)
+    print("%-15s: %s (MISSING)"%(label, file))
 
 PrintFileStatus("Dir", DIR)
-print "%-15s: %s"%("Name", NAME)
-print "%-15s: %s"%("Start Menu", SMDIRECTORY)
+print("%-15s: %s"%("Name", NAME))
+print("%-15s: %s"%("Start Menu", SMDIRECTORY))
 PrintFileStatus("Main", os.path.join(DIR, MAIN))
 if (sys.platform == "win32"):
   PrintFileStatus("Icon", ICON)
   PrintFileStatus("Bitmap", BITMAP)
 PrintFileStatus("License", LICENSE)
-print "%-15s: %s"%("Output", OUTFILE)
+print("%-15s: %s"%("Output", OUTFILE))
 if (sys.platform == "win32"):
-  print "%-15s: %s"%("Install Dir", INSTALLDIR)
+  print("%-15s: %s"%("Install Dir", INSTALLDIR))
 
 if (os.path.isdir(DIR)==0):
   sys.exit("Difficulty reading "+DIR+". Cannot continue.")
@@ -181,8 +181,8 @@ if (sys.platform == "win32"):
 else:
   TMPGAME=os.path.join(TMPDIR,"usr","share","games",BASENAME,"game")
   TMPETC=os.path.join(TMPDIR,"usr","share","games",BASENAME,"etc")
-print ""
-print "Copying the game to "+TMPDIR+"..."
+print("")
+print("Copying the game to "+TMPDIR+"...")
 if (os.path.exists(TMPDIR)):
     try: shutil.rmtree(TMPDIR)
     except: sys.exit("Cannot delete "+TMPDIR)
@@ -247,7 +247,7 @@ def egg2bam(file,bam):
     present = os.path.exists(bam)
     if (present): bam = "packpanda-TMP.bam";
     cmd = 'egg2bam -noabs -ps rel -pd . "'+file+'" -o "'+bam+'"'
-    print "Executing: "+cmd
+    print("Executing: "+cmd)
     if (sys.platform == "win32"):
       res = os.spawnl(os.P_WAIT, EGG2BAM, cmd)
     else:
@@ -257,7 +257,7 @@ def egg2bam(file,bam):
         os.unlink(bam)
 
 def py2pyc(file):
-    print "Compiling python "+file
+    print("Compiling python "+file)
     pyc = file[:-3]+'.pyc'
     pyo = file[:-3]+'.pyo'
     if (os.path.exists(pyc)): os.unlink(pyc)
@@ -284,24 +284,24 @@ def CompileFiles(file):
             CompileFiles(os.path.join(file, x))
 
 def DeleteFiles(file):
-    base = string.lower(os.path.basename(file))
+    base = os.path.basename(file).lower()
     if (os.path.isdir(file)):
         for pattern in OPTIONS["rmdir"]:
-            if (string.lower(pattern) == base):
-                print "Deleting "+file
+            if pattern.lower() == base:
+                print("Deleting "+file)
                 shutil.rmtree(file)
                 return
         for x in os.listdir(file):
             DeleteFiles(os.path.join(file, x))
     else:
         for ext in OPTIONS["rmext"]:
-            if (base[-(len(ext)+1):] == string.lower("."+ext)):
-                print "Deleting "+file
+            if base[-(len(ext) + 1):] == ("." + ext).lower():
+                print("Deleting "+file)
                 os.unlink(file)
                 return
 
-print ""
-print "Compiling BAM and PYC files..."
+print("")
+print("Compiling BAM and PYC files...")
 os.chdir(TMPGAME)
 CompileFiles(".")
 DeleteFiles(".")
@@ -371,9 +371,9 @@ if (sys.platform == "win32"):
     CMD=CMD+'/DPPICON="'+PPICON+'" '
     CMD=CMD+'"'+PSOURCE+'\\direct\\directscripts\\packpanda.nsi"'
 
-    print ""
-    print CMD
-    print "packing..."
+    print("")
+    print(CMD)
+    print("packing...")
     subprocess.call(CMD)
 else:
     os.chdir(MYDIR)

@@ -1,11 +1,7 @@
-///////////////////////////////////////////////////////////////////////
-//
-// This is a little wrapper to make it easy to run a python
-// program from the command line. Basically, it just interfaces
-// to the Python API and imports the module that was specified
-// by the IMPORT_MODULE preprocessor definition when it was compiled.
-//
-///////////////////////////////////////////////////////////////////////
+// This is a little wrapper to make it easy to run a python program from the
+// command line.  Basically, it just interfaces to the Python API and imports
+// the module that was specified by the IMPORT_MODULE preprocessor definition
+// when it was compiled.
 
 #include "dtoolbase.h"
 
@@ -25,8 +21,8 @@
 #define IMPORT_MODULE_STR STRINGIFY(IMPORT_MODULE)
 
 #if defined(_WIN32) && PY_MAJOR_VERSION >= 3
-// As Py_SetProgramName expects a wchar_t*,
-// it's easiest to just use the wmain entry point.
+// As Py_SetProgramName expects a wchar_t*, it's easiest to just use the wmain
+// entry point.
 int wmain(int argc, wchar_t *argv[]) {
   Py_SetProgramName(argv[0]);
 
@@ -51,8 +47,8 @@ int main(int argc, char *argv[]) {
   Py_SetProgramName(argv[0]);
 #endif
 
-  // On Windows, we need to set pythonhome correctly. We'll try to
-  // find ppython.exe on the path and set pythonhome to its location.
+  // On Windows, we need to set pythonhome correctly.  We'll try to find
+  // ppython.exe on the path and set pythonhome to its location.
 #ifdef _WIN32
 #if PY_MAJOR_VERSION >= 3
   // Py_SetPythonHome expects a wchar_t in Python 3.

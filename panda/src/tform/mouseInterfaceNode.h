@@ -1,16 +1,15 @@
-// Filename: mouseInterfaceNode.h
-// Created by:  drose (11Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mouseInterfaceNode.h
+ * @author drose
+ * @date 2004-06-11
+ */
 
 #ifndef MOUSEINTERFACENODE_H
 #define MOUSEINTERFACENODE_H
@@ -22,15 +21,13 @@
 
 class ButtonEventList;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseInterfaceNode
-// Description : This is the base class for some classes that monitor
-//               the mouse and keyboard input and perform some action
-//               due to their state.
-//
-//               It collects together some common interface; in
-//               particular, the require_button() and related methods.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for some classes that monitor the mouse and keyboard
+ * input and perform some action due to their state.
+ *
+ * It collects together some common interface; in particular, the
+ * require_button() and related methods.
+ */
 class EXPCL_PANDA_TFORM MouseInterfaceNode : public DataNode {
 public:
   MouseInterfaceNode(const string &name);

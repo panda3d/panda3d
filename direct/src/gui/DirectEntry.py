@@ -3,10 +3,10 @@
 __all__ = ['DirectEntry']
 
 from panda3d.core import *
-import DirectGuiGlobals as DGG
-from DirectFrame import *
-from OnscreenText import OnscreenText
-import string,types
+from . import DirectGuiGlobals as DGG
+from .DirectFrame import *
+from .OnscreenText import OnscreenText
+import sys
 # import this to make sure it gets pulled into the publish
 import encodings.utf_8
 from direct.showbase.DirectObject import DirectObject
@@ -46,8 +46,8 @@ class DirectEntry(DirectFrame):
             ('numStates',       3,                None),
             ('state',           DGG.NORMAL,       None),
             ('entryFont',       None,             DGG.INITOPT),
-            ('width',           10,               self.setup),
-            ('numLines',        1,                self.setup),
+            ('width',           10,               self.updateWidth),
+            ('numLines',        1,                self.updateNumLines),
             ('focus',           0,                self.setFocus),
             ('cursorKeys',      1,                self.setCursorKeysActive),
             ('obscured',        0,                self.setObscureMode),
@@ -146,6 +146,12 @@ class DirectEntry(DirectFrame):
     def setup(self):
         self.guiItem.setupMinimal(self['width'], self['numLines'])
 
+    def updateWidth(self):
+        self.guiItem.setMaxWidth(self['width'])
+
+    def updateNumLines(self):
+        self.guiItem.setNumLines(self['numLines'])
+
     def setFocus(self):
         PGEntry.setFocus(self.guiItem, self['focus'])
 
@@ -175,12 +181,12 @@ class DirectEntry(DirectFrame):
     def commandFunc(self, event):
         if self['command']:
             # Pass any extra args to command
-            apply(self['command'], [self.get()] + self['extraArgs'])
+            self['command'](*[self.get()] + self['extraArgs'])
 
     def failedCommandFunc(self, event):
         if self['failedCommand']:
             # Pass any extra args
-            apply(self['failedCommand'], [self.get()] + self['failedExtraArgs'])
+            self['failedCommand'](*[self.get()] + self['failedExtraArgs'])
 
     def autoCapitalizeFunc(self):
         if self['autoCapitalize']:
@@ -192,7 +198,7 @@ class DirectEntry(DirectFrame):
 
     def focusInCommandFunc(self):
         if self['focusInCommand']:
-            apply(self['focusInCommand'], self['focusInExtraArgs'])
+            self['focusInCommand'](*self['focusInExtraArgs'])
         if self['autoCapitalize']:
             self.accept(self.guiItem.getTypeEvent(), self._handleTyping)
             self.accept(self.guiItem.getEraseEvent(), self._handleErasing)
@@ -210,14 +216,13 @@ class DirectEntry(DirectFrame):
         wordSoFar = ''
         # track whether the previous character was part of a word or not
         wasNonWordChar = True
-        for i in xrange(len(name)):
-            character = name[i]
+        for i, character in enumerate(name):
             # test to see if we are between words
             # - Count characters that can't be capitalized as a break between words
             #   This assumes that string.lower and string.upper will return different
             #   values for all unicode letters.
             # - Don't count apostrophes as a break between words
-            if ((string.lower(character) == string.upper(character)) and (character != "'")):
+            if character.lower() == character.upper() and character != "'":
                 # we are between words
                 wordSoFar = ''
                 wasNonWordChar = True
@@ -226,7 +231,7 @@ class DirectEntry(DirectFrame):
                 if wasNonWordChar:
                     # first letter of a word, capitalize it unconditionally;
                     capitalize = True
-                elif (character == string.upper(character) and
+                elif (character == character.upper() and
                       len(self.autoCapitalizeAllowPrefixes) and
                       wordSoFar in self.autoCapitalizeAllowPrefixes):
                     # first letter after one of the prefixes, allow it to be capitalized
@@ -237,9 +242,9 @@ class DirectEntry(DirectFrame):
                     capitalize = True
                 if capitalize:
                     # allow this letter to remain capitalized
-                    character = string.upper(character)
+                    character = character.upper()
                 else:
-                    character = string.lower(character)
+                    character = character.lower()
                 wordSoFar += character
                 wasNonWordChar = False
             capName += character
@@ -247,7 +252,7 @@ class DirectEntry(DirectFrame):
 
     def focusOutCommandFunc(self):
         if self['focusOutCommand']:
-            apply(self['focusOutCommand'], self['focusOutExtraArgs'])
+            self['focusOutCommand'](*self['focusOutExtraArgs'])
         if self['autoCapitalize']:
             self.ignore(self.guiItem.getTypeEvent())
             self.ignore(self.guiItem.getEraseEvent())
@@ -257,11 +262,16 @@ class DirectEntry(DirectFrame):
         does not change the current cursor position.  Also see
         enterText(). """
 
-        self.unicodeText = isinstance(text, types.UnicodeType)
-        if self.unicodeText:
+        if sys.version_info >= (3, 0):
+            assert not isinstance(text, bytes)
+            self.unicodeText = True
             self.guiItem.setWtext(text)
         else:
-            self.guiItem.setText(text)
+            self.unicodeText = isinstance(text, unicode)
+            if self.unicodeText:
+                self.guiItem.setWtext(text)
+            else:
+                self.guiItem.setText(text)
 
     def get(self, plain = False):
         """ Returns the text currently showing in the typable region.

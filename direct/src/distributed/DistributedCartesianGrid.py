@@ -15,7 +15,7 @@ if __debug__:
     from direct.directtools.DirectGeometry import *
     from direct.showbase.PythonUtil import randFloat
 
-from CartesianGridBase import CartesianGridBase
+from .CartesianGridBase import CartesianGridBase
 
 # increase this number if you want to visualize the grid lines
 # above water level

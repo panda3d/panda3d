@@ -87,6 +87,9 @@ IMAGE_SORT_INDEX = 10
 GEOM_SORT_INDEX = 20
 TEXT_SORT_INDEX = 30
 
+FADE_SORT_INDEX = 1000
+NO_FADE_SORT_INDEX = 2000
+
 # Handy conventions for organizing top-level gui objects in loose buckets.
 BACKGROUND_SORT_INDEX = -100
 MIDGROUND_SORT_INDEX = 0

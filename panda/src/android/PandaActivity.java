@@ -1,16 +1,15 @@
-// Filename: PandaActivity.java
-// Created by:  rdb (22Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PandaActivity.java
+ * @author rdb
+ * @date 2013-01-22
+ */
 
 package org.panda3d.android;
 
@@ -19,12 +18,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import org.panda3d.android.NativeIStream;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaActivity
-// Description : The entry point for a Panda-based activity.  Loads
-//               the Panda libraries and also provides some utility
-//               functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * The entry point for a Panda-based activity.  Loads the Panda libraries and
+ * also provides some utility functions.
+ */
 public class PandaActivity extends NativeActivity {
     protected static BitmapFactory.Options readBitmapSize(long istreamPtr) {
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -37,7 +34,7 @@ public class PandaActivity extends NativeActivity {
 
     protected static Bitmap readBitmap(long istreamPtr, int sampleSize) {
         BitmapFactory.Options options = new BitmapFactory.Options();
-        //options.inPreferredConfig = Bitmap.Config.RGBA_8888;
+        // options.inPreferredConfig = Bitmap.Config.RGBA_8888;
         options.inScaled = false;
         options.inSampleSize = sampleSize;
         NativeIStream stream = new NativeIStream(istreamPtr);

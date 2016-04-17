@@ -1,51 +1,45 @@
-// Filename: buttonRegistry.cxx
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buttonRegistry.cxx
+ * @author drose
+ * @date 2000-03-01
+ */
 
 #include "buttonRegistry.h"
 #include "config_util.h"
 
 #include <stdio.h>
 
-// In general, we use the util_cat->info() syntax in this file
-// (instead of util_cat.info()), because much of this work is done at
-// static init time, and we must use the arrow syntax to force
-// initialization of the util_cat category.
+// In general, we use the util_cat->info() syntax in this file (instead of
+// util_cat.info()), because much of this work is done at static init time,
+// and we must use the arrow syntax to force initialization of the util_cat
+// category.
 
 ButtonRegistry *ButtonRegistry::_global_pointer = NULL;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::register_button
-//       Access: Public
-//  Description: Registers a new ButtonHandle with the indicated name,
-//               and if specified, the indicated ASCII equivalent.
-//               Returns true if the button was registered, or false
-//               it was already registered; in either case, the new
-//               ButtonHandle is loaded into the first parameter.
-//
-//               If the alias is not ButtonHandle::none(), it
-//               indicates an alias (alternate name) for the same
-//               button.  Each button is allowed to have one alias,
-//               and multiple different buttons can refer to the same
-//               alias.  The alias should be the more general name for
-//               the button, for instance, shift is an alias for
-//               lshift, but not vice-versa.
-//
-//               This defines a new kind of button matching the
-//               indicated name.  The ButtonHandle can then be passed
-//               around to devices as a button in its own right.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers a new ButtonHandle with the indicated name, and if specified, the
+ * indicated ASCII equivalent.  Returns true if the button was registered, or
+ * false it was already registered; in either case, the new ButtonHandle is
+ * loaded into the first parameter.
+ *
+ * If the alias is not ButtonHandle::none(), it indicates an alias (alternate
+ * name) for the same button.  Each button is allowed to have one alias, and
+ * multiple different buttons can refer to the same alias.  The alias should
+ * be the more general name for the button, for instance, shift is an alias
+ * for lshift, but not vice-versa.
+ *
+ * This defines a new kind of button matching the indicated name.  The
+ * ButtonHandle can then be passed around to devices as a button in its own
+ * right.
+ */
 bool ButtonRegistry::
 register_button(ButtonHandle &button_handle, const string &name,
                 ButtonHandle alias, char ascii_equivalent) {
@@ -53,8 +47,8 @@ register_button(ButtonHandle &button_handle, const string &name,
   ri = _name_registry.find(name);
 
   if (ri == _name_registry.end()) {
-    // The name was not already used; this is the first time this
-    // button has been defined.
+    // The name was not already used; this is the first time this button has
+    // been defined.
 
     int index = -1;
     if (ascii_equivalent != '\0') {
@@ -110,13 +104,10 @@ register_button(ButtonHandle &button_handle, const string &name,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::get_button
-//       Access: Published
-//  Description: Finds a ButtonHandle in the registry matching the
-//               indicated name.  If there is no such ButtonHandle,
-//               registers a new one and returns it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds a ButtonHandle in the registry matching the indicated name.  If there
+ * is no such ButtonHandle, registers a new one and returns it.
+ */
 ButtonHandle ButtonRegistry::
 get_button(const string &name) {
   NameRegistry::const_iterator ri;
@@ -131,13 +122,10 @@ get_button(const string &name) {
   return button;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::find_button
-//       Access: Published
-//  Description: Finds a ButtonHandle in the registry matching the
-//               indicated name.  If there is no such ButtonHandle,
-//               returns ButtonHandle::none().
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds a ButtonHandle in the registry matching the indicated name.  If there
+ * is no such ButtonHandle, returns ButtonHandle::none().
+ */
 ButtonHandle ButtonRegistry::
 find_button(const string &name) {
   NameRegistry::const_iterator ri;
@@ -150,13 +138,11 @@ find_button(const string &name) {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::find_ascii_button
-//       Access: Published
-//  Description: Finds a ButtonHandle in the registry matching the
-//               indicated ASCII equivalent character.  If there is no
-//               such ButtonHandle, returns ButtonHandle::none().
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds a ButtonHandle in the registry matching the indicated ASCII
+ * equivalent character.  If there is no such ButtonHandle, returns
+ * ButtonHandle::none().
+ */
 ButtonHandle ButtonRegistry::
 find_ascii_button(char ascii_equivalent) const {
   if (_handle_registry[ascii_equivalent] == (RegistryNode *)NULL) {
@@ -165,11 +151,9 @@ find_ascii_button(char ascii_equivalent) const {
   return _handle_registry[ascii_equivalent]->_handle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ButtonRegistry::
 write(ostream &out) const {
   out << "ASCII equivalents:\n";
@@ -197,16 +181,13 @@ write(ostream &out) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ButtonRegistry::
 ButtonRegistry() {
-  // We'll start by filling up the handle_registry with 128 entries
-  // for ButtonHandle::none(), as well as for all the ASCII
-  // equivalents.
+  // We'll start by filling up the handle_registry with 128 entries for
+  // ButtonHandle::none(), as well as for all the ASCII equivalents.
 
   _handle_registry.reserve(128);
   int i;
@@ -215,23 +196,18 @@ ButtonRegistry() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::init_global_pointer
-//       Access: Private, Static
-//  Description: Constructs the ButtonRegistry object for the first
-//               time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs the ButtonRegistry object for the first time.
+ */
 void ButtonRegistry::
 init_global_pointer() {
   _global_pointer = new ButtonRegistry;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::look_up
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ButtonRegistry::RegistryNode *ButtonRegistry::
 look_up(ButtonHandle handle) const {
   nassertr(handle._index != 0, NULL);

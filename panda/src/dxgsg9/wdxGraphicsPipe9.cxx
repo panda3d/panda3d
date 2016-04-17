@@ -1,16 +1,15 @@
-// Filename: wdxGraphicsPipe9.cxx
-// Created by:  drose (20Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wdxGraphicsPipe9.cxx
+ * @author drose
+ * @date 2002-12-20
+ */
 
 #include "wdxGraphicsPipe9.h"
 #include "dxGraphicsDevice9.h"
@@ -24,11 +23,9 @@ TypeHandle wdxGraphicsPipe9::_type_handle;
 #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000  // if # is > 1MB, card is lying and I cant tell what it is
 #define UNKNOWN_VIDMEM_SIZE 0xFFFFFFFF
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 wdxGraphicsPipe9::
 wdxGraphicsPipe9() {
   _hDDrawDLL = NULL;
@@ -37,11 +34,9 @@ wdxGraphicsPipe9() {
   _is_valid = init();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 wdxGraphicsPipe9::
 ~wdxGraphicsPipe9() {
   RELEASE(__d3d9, wdxdisplay9, "ID3D9", RELEASE_DOWN_TO_ZERO);
@@ -49,38 +44,29 @@ wdxGraphicsPipe9::
   SAFE_FREELIB(_hDDrawDLL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to
+ * choose between several possible GraphicsPipes available on a particular
+ * platform, so the name should be meaningful and unique for a given platform.
+ */
 string wdxGraphicsPipe9::
 get_interface_name() const {
   return "DirectX9";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               wdxGraphicsPipe9.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the
+ * user to make a default wdxGraphicsPipe9.
+ */
 PT(GraphicsPipe) wdxGraphicsPipe9::
 pipe_constructor() {
   return new wdxGraphicsPipe9;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) wdxGraphicsPipe9::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -113,8 +99,8 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    // Early failure - if we are sure that this buffer WONT
-    // meet specs, we can bail out early.
+    // Early failure - if we are sure that this buffer WONT meet specs, we can
+    // bail out early.
     if ((flags & BF_fb_props_optional) == 0) {
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_rgba() > 0)||
@@ -136,8 +122,8 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    // Early failure - if we are sure that this buffer WONT
-    // meet specs, we can bail out early.
+    // Early failure - if we are sure that this buffer WONT meet specs, we can
+    // bail out early.
     if ((flags & BF_fb_props_optional) == 0) {
       if (fb_prop.get_indexed_color() ||
           (fb_prop.get_back_buffers() > 0)||
@@ -147,9 +133,8 @@ make_output(const string &name,
       }
     }
 
-    // Early success - if we are sure that this buffer WILL
-    // meet specs, we can precertify it.
-    // This looks rather overly optimistic -- ie, buggy.
+    // Early success - if we are sure that this buffer WILL meet specs, we can
+    // precertify it.  This looks rather overly optimistic -- ie, buggy.
     if ((wdxgsg != NULL) && wdxgsg->is_valid() && !wdxgsg->needs_reset() &&
         wdxgsg->get_supports_render_texture()) {
       precertify = true;
@@ -162,15 +147,11 @@ make_output(const string &name,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::init
-//       Access: Private
-//  Description: Performs some initialization steps to load up
-//               function pointers from the relevant DLL's, and
-//               determine the number and type of available graphics
-//               adapters, etc.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs some initialization steps to load up function pointers from the
+ * relevant DLL's, and determine the number and type of available graphics
+ * adapters, etc.  Returns true on success, false on failure.
+ */
 bool wdxGraphicsPipe9::
 init() {
   if (!MyLoadLib(_hDDrawDLL, "ddraw.dll")) {
@@ -210,8 +191,7 @@ init() {
   hFind = FindFirstFile (tmppath, &TempFindData);
   if (hFind != INVALID_HANDLE_VALUE) {
     FindClose(hFind);
-// ??? This was from DX8
-//    __is_dx9_1 = true;
+// ??? This was from DX8 __is_dx9_1 = true;
     __d3d9 = (*_Direct3DCreate9)(D3D_SDK_VERSION_9_1);
   } else {
     __is_dx9_1 = false;
@@ -219,7 +199,7 @@ init() {
   }
   if (__d3d9 == NULL) {
     wdxdisplay9_cat.error() << "Direct3DCreate9(9." << (__is_dx9_1 ? "1" : "0") << ") failed!, error = " << GetLastError() << endl;
-    //release_gsg();
+    // release_gsg();
     goto error;
   }
 
@@ -235,13 +215,10 @@ init() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::find_all_card_memavails
-//       Access: Private
-//  Description: Uses DX7 calls to determine how much video memory is
-//               available for each video adapter in the system.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses DX7 calls to determine how much video memory is available for each
+ * video adapter in the system.  Returns true on success, false on failure.
+ */
 bool wdxGraphicsPipe9::
 find_all_card_memavails() {
   HRESULT hr;
@@ -301,19 +278,18 @@ find_all_card_memavails() {
     _card_ids[i].DeviceID = pDX7DeviceID->dwDeviceId;
     _card_ids[i].VendorID = pDX7DeviceID->dwVendorId;
 
-    // Get Current VidMem avail.  Note this is only an estimate, when
-    // we switch to fullscreen mode from desktop, more vidmem will be
-    // available (typically 1.2 meg).  I don't want to switch to
-    // fullscreen more than once due to the annoying monitor flicker,
-    // so try to figure out optimal mode using this estimate
+    // Get Current VidMem avail.  Note this is only an estimate, when we
+    // switch to fullscreen mode from desktop, more vidmem will be available
+    // (typically 1.2 meg).  I don't want to switch to fullscreen more than
+    // once due to the annoying monitor flicker, so try to figure out optimal
+    // mode using this estimate
     DDSCAPS2 ddsGAVMCaps;
     DWORD dwVidMemTotal, dwVidMemFree;
     dwVidMemTotal = dwVidMemFree = 0;
     {
-      // print out total INCLUDING AGP just for information purposes
-      // and future use.  The real value I'm interested in for
-      // purposes of measuring possible valid screen sizes shouldnt
-      // include AGP.
+      // print out total INCLUDING AGP just for information purposes and
+      // future use.  The real value I'm interested in for purposes of
+      // measuring possible valid screen sizes shouldnt include AGP.
       ZeroMemory(&ddsGAVMCaps, sizeof(DDSCAPS2));
       ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY;
 
@@ -322,8 +298,8 @@ find_all_card_memavails() {
         wdxdisplay9_cat.error()
           << "GetAvailableVidMem failed for device #" << i
           << D3DERRORSTRING(hr);
-        //goto skip_device;
-        //exit(1);  // probably want to exit, since it may be my fault
+        // goto skip_device; exit(1);   probably want to exit, since it may be
+        // my fault
       }
     }
 
@@ -340,8 +316,9 @@ find_all_card_memavails() {
     hr = pDD->GetAvailableVidMem(&ddsGAVMCaps, &dwVidMemTotal, &dwVidMemFree);
     if (FAILED(hr)) {
       wdxdisplay9_cat.error() << "GetAvailableVidMem failed for device #" << i<< D3DERRORSTRING(hr);
-      // sometimes GetAvailableVidMem fails with hr = DDERR_NODIRECTDRAWHW for some unknown reason (bad drivers?)
-      // see bugs: 15327, 18122, others.  is it because D3D9 object has already been created?
+      // sometimes GetAvailableVidMem fails with hr = DDERR_NODIRECTDRAWHW for
+      // some unknown reason (bad drivers?) see bugs: 15327, 18122, others.
+      // is it because D3D9 object has already been created?
       if (hr == DDERR_NODIRECTDRAWHW)
         continue;
       exit(1);  // probably want to exit, since it may be my fault
@@ -364,8 +341,8 @@ find_all_card_memavails() {
       dwVidMemTotal = UNKNOWN_VIDMEM_SIZE;
     } else {
       if (!ISPOW2(dwVidMemTotal)) {
-        // assume they wont return a proper max value, so
-        // round up to next pow of 2
+        // assume they wont return a proper max value, so round up to next pow
+        // of 2
         UINT count = 0;
         while ((dwVidMemTotal >> count) != 0x0) {
           count++;
@@ -374,20 +351,20 @@ find_all_card_memavails() {
       }
     }
 
-    // after Set_display_mode, GetAvailVidMem totalmem seems to go down
-    // by 1.2 meg (contradicting above comment and what I think would
-    // be correct behavior (shouldnt FS mode release the desktop
-    // vidmem?), so this is the true value
+    // after Set_display_mode, GetAvailVidMem totalmem seems to go down by 1.2
+    // meg (contradicting above comment and what I think would be correct
+    // behavior (shouldnt FS mode release the desktop vidmem?), so this is the
+    // true value
     _card_ids[i]._max_available_video_memory = dwVidMemTotal;
 
-    // I can never get this stuff to work reliably, so I'm just
-    // rounding up to nearest pow2.  Could try to get
-    // HardwareInformation.Memory_size MB number from registry like
-    // video control panel, but its not clear how to find the proper
-    // registry location for a given card
+    // I can never get this stuff to work reliably, so I'm just rounding up to
+    // nearest pow2.  Could try to get HardwareInformation.Memory_size MB
+    // number from registry like video control panel, but its not clear how to
+    // find the proper registry location for a given card
 
-    // assume buggy drivers (this means you, FireGL2) may return zero
-    // (or small amts) for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
+    // assume buggy drivers (this means you, FireGL2) may return zero (or
+    // small amts) for dwVidMemTotal, so ignore value if its <
+    // CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
     bool bLowVidMemFlag =
       ((dwVidMemTotal > CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) &&
        (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
@@ -400,11 +377,9 @@ find_all_card_memavails() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::dx7_driver_enum_callback
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BOOL WINAPI wdxGraphicsPipe9::
 dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
                          VOID *argptr, HMONITOR hm) {
@@ -431,11 +406,9 @@ dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
   return DDENUMRET_OK;
 }
 
-//////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::find_best_depth_format
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool wdxGraphicsPipe9::
 find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
                        D3DFORMAT *pBestFmt, bool bWantStencil,
@@ -453,7 +426,8 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
     D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16         // without stencil
   };
 
-  // do not use Display._display_mode since that is probably not set yet, use Test_display_mode instead
+  // do not use Display._display_mode since that is probably not set yet, use
+  // Test_display_mode instead
 
   *pBestFmt = D3DFMT_UNKNOWN;
   HRESULT hr;
@@ -531,12 +505,9 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::special_check_fullscreen_resolution
-//       Access: Private
-//  Description: overrides of the general estimator for known working
-//               cases
-////////////////////////////////////////////////////////////////////
+/**
+ * overrides of the general estimator for known working cases
+ */
 bool wdxGraphicsPipe9::
 special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size, UINT y_size) {
   DWORD VendorId = scrn._dx_device_id.VendorId;
@@ -559,12 +530,10 @@ special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size, UINT y_size
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::search_for_valid_displaymode
-//       Access: Private
-//  Description: All ptr args are output parameters.  If no valid mode
-//               found, returns *pSuggestedPixFmt = D3DFMT_UNKNOWN;
-////////////////////////////////////////////////////////////////////
+/**
+ * All ptr args are output parameters.  If no valid mode found, returns
+ * *pSuggestedPixFmt = D3DFMT_UNKNOWN;
+ */
 void wdxGraphicsPipe9::
 search_for_valid_displaymode(DXScreenData &scrn,
                              UINT RequestedX_Size, UINT RequestedY_Size,
@@ -615,9 +584,9 @@ search_for_valid_displaymode(DXScreenData &scrn,
         << "), TotalModes: " << cNumModes << endl;
     }
 
-    // ignore memory based checks for min res 640x480.  some cards just
-    // don't give accurate memavails.  (should I do the check anyway for
-    // 640x480 32bpp?)
+    // ignore memory based checks for min res 640x480.  some cards just don't
+    // give accurate memavails.  (should I do the check anyway for 640x480
+    // 32bpp?)
     bool bDoMemBasedChecks =
       ((!((RequestedX_Size == 640)&&(RequestedY_Size == 480))) &&
        (scrn._max_available_video_memory != UNKNOWN_VIDMEM_SIZE) &&
@@ -649,12 +618,12 @@ search_for_valid_displaymode(DXScreenData &scrn,
         continue;
       }
 
-      // disable refresh rate checking since SLI video cards may use
-      // refresh rates less than 60
+      // disable refresh rate checking since SLI video cards may use refresh
+      // rates less than 60
       if (0) {
         if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
-          // don't want refresh rates under 60Hz, but 0 or 1 might indicate
-          // a default refresh rate, which is usually > = 60
+          // don't want refresh rates under 60Hz, but 0 or 1 might indicate a
+          // default refresh rate, which is usually > = 60
           if (bVerboseMode) {
             wdxdisplay9_cat.info()
               << "skipping mode[" << i << "], bad refresh rate: "
@@ -664,9 +633,9 @@ search_for_valid_displaymode(DXScreenData &scrn,
         }
       }
 
-      // Note no attempt is made to verify if format will work at
-      // requested size, so even if this call succeeds, could still get
-      // an out-of-video-mem error
+      // Note no attempt is made to verify if format will work at requested
+      // size, so even if this call succeeds, could still get an out-of-video-
+      // mem error
 
       hr = scrn._d3d9->CheckDeviceFormat(scrn._card_id, D3DDEVTYPE_HAL, dispmode.Format,
                                          D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE,
@@ -691,12 +660,12 @@ search_for_valid_displaymode(DXScreenData &scrn,
       bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
       PN_stdfloat RendTgtMinMemReqmt = 0.0f;
 
-      // if we have a valid memavail value, try to determine if we have
-      // enough space
+      // if we have a valid memavail value, try to determine if we have enough
+      // space
       if (bDoMemBasedChecks) {
-        // assume user is testing fullscreen, not windowed, so use the
-        // dwTotal value see if 3 scrnbufs (front/back/z)at 16bpp at
-        // x_size*y_size will fit with a few extra megs for texmem
+        // assume user is testing fullscreen, not windowed, so use the dwTotal
+        // value see if 3 scrnbufs (frontbackz)at 16bpp at x_size*y_size will
+        // fit with a few extra megs for texmem
 
         // 8MB Rage Pro says it has 6.8 megs Total free and will run at
         // 1024x768, so formula makes it so that is OK
@@ -761,7 +730,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
           }
         }
 
-//      Optimizing for 16-bit depth does not work in all cases so turn it off.
+// Optimizing for 16-bit depth does not work in all cases so turn it off.
         if (false) {
           if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn._max_available_video_memory)) {
             if (!IS_16BPP_ZBUFFER(zformat)) {
@@ -820,8 +789,8 @@ search_for_valid_displaymode(DXScreenData &scrn,
       }
     }
 
-    // note: this chooses 32bpp, which may not be preferred over 16 for
-    // memory & speed reasons on some older cards in particular
+    // note: this chooses 32bpp, which may not be preferred over 16 for memory
+    // & speed reasons on some older cards in particular
     if (*p_supported_screen_depths_mask & X8R8G8B8_FLAG) {
       *pSuggestedPixFmt = D3DFMT_X8R8G8B8;
     } else if (*p_supported_screen_depths_mask & A8R8G8B8_FLAG) {
@@ -846,12 +815,10 @@ search_for_valid_displaymode(DXScreenData &scrn,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipew9::make_device
-//       Access: Public, Virtual
-//  Description: Creates a new reference to a particular hardware
-//               device and associates it with the pipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new reference to a particular hardware device and associates it
+ * with the pipe.
+ */
 PT(GraphicsDevice) wdxGraphicsPipe9::
 make_device(void *scrn) {
   PT(DXGraphicsDevice9) device = new DXGraphicsDevice9(this);
@@ -894,12 +861,11 @@ void Init_D3DFORMAT_map() {
   INSERT_ELEM(D24X8);
   INSERT_ELEM(D24S8);
   INSERT_ELEM(D32);
-  g_D3DFORMATmap[INTZ_FLAG] = (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z');
-//  NOT IN DX9
-//  INSERT_ELEM(W11V11U10);
+  INSERT_ELEM(INTZ);
+// NOT IN DX9 INSERT_ELEM(W11V11U10);
   INSERT_ELEM(A2W10V10U10);
-  INSERT_ELEM(UYVY);
-  INSERT_ELEM(YUY2);
+  INSERT_ELEM(ATI1);
+  INSERT_ELEM(ATI2);
   INSERT_ELEM(DXT1);
   INSERT_ELEM(DXT2);
   INSERT_ELEM(DXT3);
@@ -937,11 +903,10 @@ const char *D3DFormatStr(D3DFORMAT fmt) {
     CASESTR(D3DFMT_X8L8V8U8);
     CASESTR(D3DFMT_Q8W8V8U8);
     CASESTR(D3DFMT_V16U16);
-//  NOT IN DX9
-//    CASESTR(D3DFMT_W11V11U10);
+// NOT IN DX9 CASESTR(D3DFMT_W11V11U10);
     CASESTR(D3DFMT_A2W10V10U10);
-    CASESTR(D3DFMT_UYVY);
-    CASESTR(D3DFMT_YUY2);
+    CASESTR(D3DFMT_ATI1);
+    CASESTR(D3DFMT_ATI2);
     CASESTR(D3DFMT_DXT1);
     CASESTR(D3DFMT_DXT2);
     CASESTR(D3DFMT_DXT3);
@@ -954,6 +919,7 @@ const char *D3DFormatStr(D3DFORMAT fmt) {
     CASESTR(D3DFMT_D16);
     CASESTR(D3DFMT_D24X8);
     CASESTR(D3DFMT_D24X4S4);
+    CASESTR(D3DFMT_INTZ);
     CASESTR(D3DFMT_VERTEXDATA);
     CASESTR(D3DFMT_INDEX16);
     CASESTR(D3DFMT_INDEX32);

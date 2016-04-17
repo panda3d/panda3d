@@ -1,16 +1,15 @@
-// Filename: qtessInputEntry.h
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file qtessInputEntry.h
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #ifndef QTESSINPUTENTRY_H
 #define QTESSINPUTENTRY_H
@@ -21,12 +20,10 @@
 
 class QtessSurface;
 
-////////////////////////////////////////////////////////////////////
-//       Class : QtessInputEntry
-// Description : Stores one entry in the qtess input file.  This
-//               consists of a list of name patterns and a
-//               set of tesselation parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores one entry in the qtess input file.  This consists of a list of name
+ * patterns and a set of tesselation parameters.
+ */
 class QtessInputEntry {
 public:
   enum Type {
@@ -91,4 +88,3 @@ INLINE ostream &operator << (ostream &out, const QtessInputEntry &entry);
 #include "qtessInputEntry.I"
 
 #endif
-

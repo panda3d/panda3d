@@ -1,16 +1,25 @@
-#ifndef __NONECLOCKING_CONNECTTION_H_
-#define __NONECLOCKING_CONNECTTION_H_
-////////////////////////////////////////////////////////////////////
-// 
-// Ok here is the base behavior..
-//     A message IO engin that is Smart enough to Do 
-//
-//  1. Non Blocking Connect .. and Buffer the writes if needed
-//  2. Handle 1 to N targets for the connection.. 
-//
-//  3. Handle Framing and Unframing properly ..
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buffered_datagramconnection.h
+ * @author drose
+ * @date 2007-03-05
+ */
+
+
+#ifndef __BUFFERED_DATAGRAM_CONNECTION_H__
+#define __BUFFERED_DATAGRAM_CONNECTION_H__
+/*
+ * Ok here is the base behavior.. A message IO engin that is Smart enough to
+ * Do 1. Non Blocking Connect .. and Buffer the writes if needed 2. Handle 1
+ * to N targets for the connection.. 3. Handle Framing and Unframing properly
+ * ..
+ */
 
 #include "pandabase.h"
 #include "socket_base.h"
@@ -20,20 +29,15 @@
 #include "buffered_datagramwriter.h"
 #include "config_nativenet.h"
 
-////////////////////////////////////////////////////////////////
-// there are 3 states
-//
-//      1. Socket not even assigned,,,,
-//      2. Socket Assigned and trying to get a active connect open
-//      3. Socket is open and  writable.. ( Fully powered up )...
-//
-///////////////////////////////////////////////////////////////
+// there are 3 states 1. Socket not even assigned,,,, 2. Socket Assigned and
+// trying to get a active connect open 3. Socket is open and  writable.. (
+// Fully powered up )...
 class EXPCL_PANDA_NATIVENET Buffered_DatagramConnection : public Socket_TCP
 {
 private:
   struct AddressQueue : private pvector<Socket_Address> // this is used to do a round robin for addres to connect to ..
-  {   
-    size_t _active_index;   
+  {
+    size_t _active_index;
 
     INLINE AddressQueue() : _active_index(0) {}
 
@@ -47,9 +51,9 @@ private:
         _active_index = 0;
       }
 
-      out = (*this)[_active_index++];   
+      out = (*this)[_active_index++];
       return true;
-    }            
+    }
 
     INLINE void clear() {
       pvector<Socket_Address>::clear();
@@ -67,17 +71,17 @@ private:
   };
 
 protected:
-  // c++ upcalls for 
+  // c++ upcalls for
   virtual void PostConnect(void) { };
   virtual void NewWriteBuffer(void) { };
-  ///////////////////////////////////////////
+
   inline void ClearAll(void);
 
   inline bool SendMessageBufferOnly(Datagram &msg); // do not use this .. this is a way for the the COnnecting UPcall to drop messages in queue first..
 PUBLISHED:
   inline bool GetMessage(Datagram &val);
   inline bool DoConnect(void);           // all the real state magic is in here
-  inline bool IsConnected(void); 
+  inline bool IsConnected(void);
   inline Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) ;
   virtual ~Buffered_DatagramConnection(void) ;
   // the reason thsi all exists
@@ -85,7 +89,8 @@ PUBLISHED:
   inline bool Flush(void);
   inline void Reset(void);
 
-//  int WaitFor_Read_Error(const Socket_fdset & fd, const Time_Span & timeout);
+  // int WaitFor_Read_Error(const Socket_fdset & fd, const Time_Span &
+  // timeout);
 
   inline void WaitForNetworkReadEvent(PN_stdfloat MaxTime)
   {
@@ -96,7 +101,6 @@ PUBLISHED:
     selector.WaitFor_Read_Error(fdset,waittime);
   }
 
-  
   // address queue stuff
   inline size_t AddressQueueSize() { return _Addresslist.size(); };
   inline void AddAddress(Socket_Address &inadr);
@@ -128,13 +132,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::ClearAll
-// Description      :  used to do a full reset of buffers
-//  
-// Return type      : inline void 
-// Argument         : void
-////////////////////////////////////////////////////////////////////
+/**
+ * used to do a full reset of buffers
+ */
 inline void Buffered_DatagramConnection::ClearAll(void) {
   nativenet_cat.error() << "Buffered_DatagramConnection::ClearAll Starting Auto Reset\n";
   Close();
@@ -145,47 +145,43 @@ inline void Buffered_DatagramConnection::ClearAll(void) {
 inline bool Buffered_DatagramConnection::DoConnect(void) {
   if(!_Addresslist.GetNext(_Adddress)) // lookup the proper value...
      return false;
-    
+
   if(ActiveOpen(_Adddress,true) == true) {
     SetNoDelay();
     SetNonBlocking(); // maybe should be blocking?
     NewWriteBuffer();
     return true;
   }
-      
+
   return false;
-  
+
 }
 
+/**
+ * This is the function that does the connection for us
+ */
 /*
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::DoConnect
-// Description      : This is the function thah does the conection for us
-//  
-// Return type      : inline bool 
-// Argument         : void
-////////////////////////////////////////////////////////////////////
 inline bool Buffered_DatagramConnection::DoConnect(void) {
-  if(Active() != true) { 
+  if(Active() != true) {
     if(_LastConnectTry.Expired() != true)
       return true;
-    
+
     if(!_Addresslist.GetNext(_Adddress)) // lookup the proper value...
       return false;
-    
+
     if(ActiveOpen(_Adddress) == true) {
       _LastConnectTry.ReStart();
-      _tryingToOpen = true; // set the flag indicating we are trying to open up 
+      _tryingToOpen = true; // set the flag indicating we are trying to open up
       SetNonBlocking(); // maybe should be blocking?
       SetSendBufferSize(1024*50);  // we need to hand tune these for the os we are using
       SetRecvBufferSize(1024*50);
       NewWriteBuffer();
       return true;
     }
-      
+
     return true;
   }
-  
+
   if(_tryingToOpen) {  // okay handle the  i am connecting state....
     Socket_fdset  fdset;
     fdset.setForSocket(*this);
@@ -194,42 +190,32 @@ inline bool Buffered_DatagramConnection::DoConnect(void) {
       _tryingToOpen = false;
       if(selector._error.IsSetFor(*this) == true) { // means we are in errorconnected. else writable
         ClearAll();
-        return false;  // error on connect 
+        return false;  // error on connect
       }
       PostConnect();
       return true;  // just got connected
     }
     return true; // still connecting
-  }    
+  }
   return true;
 }
 
 */
 
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::~Buffered_DatagramConnection
-// Description      : 
-//  
-// Return type      : inline 
-// Argument         : void
-////////////////////////////////////////////////////////////////////
-inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void) 
+/**
+ *
+ */
+inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void)
 {
     Close();
 }
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::Buffered_DatagramConnection
-// Description      : 
-//  
-// Return type      : inline 
-// Argument         : bool do_blocking_writes
-// Argument         : int rbufsize
-// Argument         : int wbufsize
-////////////////////////////////////////////////////////////////////
-inline Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) 
-    :  _Writer(wbufsize,write_flush_point) , _Reader(rbufsize) 
+/**
+ *
+ */
+inline Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point)
+    :  _Writer(wbufsize,write_flush_point) , _Reader(rbufsize)
 {
-  nativenet_cat.error() << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize 
+  nativenet_cat.error() << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize
                         << " wbufsize = " << wbufsize << " write_flush_point = " << write_flush_point << "\n";
 }
 
@@ -244,13 +230,9 @@ inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)
     return false;
 }
 
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::Init
-// Description      :  must be called to set value to the server
-//  
-// Return type      : inline void 
-// Argument         : Socket_Address &inadr
-////////////////////////////////////////////////////////////////////
+/**
+ * must be called to set value to the server
+ */
 inline void Buffered_DatagramConnection::AddAddress(Socket_Address &inadr)
 {
     _Addresslist.push_back(inadr);
@@ -260,19 +242,12 @@ inline void Buffered_DatagramConnection::ClearAddresses(void)
 {
     _Addresslist.clear();
 }
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::GetMessage
-// Description      :  read a message
-//  
-//  false means something bad happened..
-//
-//
-// Return type      : inline bool 
-// Argument         : Datagram &val
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a message.  Returns false on failure.
+ */
 inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
 {
-  if(IsConnected()) 
+  if(IsConnected())
   {
     int ans1 = _Reader.PumpMessageReader(val,*this);
     if(ans1 == 0)
@@ -289,13 +264,9 @@ inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
 
 
 
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::Flush
-// Description      : flush all wrightes
-//  
-// Return type      : bool 
-// Argument         : void
-////////////////////////////////////////////////////////////////////
+/**
+ * Flush all writes.
+ */
 bool Buffered_DatagramConnection::Flush(void)
 {
     if (IsConnected())
@@ -303,34 +274,27 @@ bool Buffered_DatagramConnection::Flush(void)
         int flush_resp = _Writer.FlushNoBlock(*this);
         if(flush_resp < 0)
         {
-                  nativenet_cat.error() << "Buffered_DatagramConnection::Flush->Error On Flush [" <<GetLastError() << "]\n" 
+                  nativenet_cat.error() << "Buffered_DatagramConnection::Flush->Error On Flush [" <<GetLastError() << "]\n"
 
                                        << "Buffered_DatagramConnection::Flush->Error ..Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
-            ClearAll();  
+            ClearAll();
             return false;
         }
         return true;
     }
     return false;
 }
-////////////////////////////////////////////////////////////////////
-// Function name    : Buffered_DatagramConnection::Reset
-// Description      : Reset 
-//  
-// Return type      : void 
-// Argument         : void
-////////////////////////////////////////////////////////////////////
-inline void Buffered_DatagramConnection::Reset()
-{
+
+/**
+ * Reset
+ */
+inline void Buffered_DatagramConnection::Reset() {
   nativenet_cat.error() << "Buffered_DatagramConnection::Reset()\n";
   ClearAll();
-};
-
-
-inline bool Buffered_DatagramConnection::IsConnected(void) {
-  return ( Active() == true );
 }
 
+inline bool Buffered_DatagramConnection::IsConnected(void) {
+  return (Active() == true);
+}
 
-#endif //__NONECLOCKING_CONNECTTION_H_
-
+#endif //__BUFFERED_DATAGRAM_CONNECTION_H__

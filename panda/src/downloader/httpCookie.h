@@ -1,38 +1,34 @@
-// Filename: httpCookie.h
-// Created by:  drose (26Aug04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpCookie.h
+ * @author drose
+ * @date 2004-08-26
+ */
 
 #ifndef HTTPCOOKIE_H
 #define HTTPCOOKIE_H
 
 #include "pandabase.h"
 
-// This module requires OpenSSL to compile, even if you do not intend
-// to use this to establish https connections; this is because it uses
-// the OpenSSL library to portably handle all of the socket
-// communications.
+// This module requires OpenSSL to compile, even if you do not intend to use
+// this to establish https connections; this is because it uses the OpenSSL
+// library to portably handle all of the socket communications.
 
 #ifdef HAVE_OPENSSL
 
 #include "httpDate.h"
 #include "urlSpec.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPCookie
-// Description : A cookie sent from an HTTP server to be stored on the
-//               client and returned when the path and/or domain
-//               matches.
-////////////////////////////////////////////////////////////////////
+/**
+ * A cookie sent from an HTTP server to be stored on the client and returned
+ * when the path and/or domain matches.
+ */
 class EXPCL_PANDAEXPRESS HTTPCookie {
 PUBLISHED:
   INLINE HTTPCookie();

@@ -1,16 +1,15 @@
-// Filename: textNode.cxx
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textNode.cxx
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #include "textNode.h"
 #include "textGlyph.h"
@@ -54,11 +53,9 @@ TypeHandle TextNode::_type_handle;
 
 PStatCollector TextNode::_text_generate_pcollector("*:Generate Text");
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TextNode::
 TextNode(const string &name) : PandaNode(name) {
   set_cull_callback();
@@ -95,16 +92,13 @@ TextNode(const string &name) : PandaNode(name) {
   _lr3d.set(0.0f, 0.0f, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::Copy Constructor
-//       Access: Published
-//  Description: It's sort of a copy constructor: it copies the
-//               indicated TextProperties, without copying a complete
-//               TextNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * It's sort of a copy constructor: it copies the indicated TextProperties,
+ * without copying a complete TextNode.
+ */
 TextNode::
-TextNode(const string &name, const TextProperties &copy) : 
-  PandaNode(name), TextProperties(copy) 
+TextNode(const string &name, const TextProperties &copy) :
+  PandaNode(name), TextProperties(copy)
 {
   _flags = 0;
   _max_rows = 0;
@@ -127,14 +121,12 @@ TextNode(const string &name, const TextProperties &copy) :
   _lr3d.set(0.0f, 0.0f, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::Copy Constructor
-//       Access: Published
-//  Description: OK, this is a true copy constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * OK, this is a true copy constructor.
+ */
 TextNode::
-TextNode(const TextNode &copy) : 
-  PandaNode(copy), 
+TextNode(const TextNode &copy) :
+  PandaNode(copy),
   TextEncoder(copy),
   TextProperties(copy),
   _card_texture(copy._card_texture),
@@ -158,35 +150,27 @@ TextNode(const TextNode &copy) :
   invalidate_with_measure();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::make_copy
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *TextNode::
 make_copy() const {
   return new TextNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TextNode::
 ~TextNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_width
-//       Access: Published
-//  Description: Returns the width of a single character of the font,
-//               or 0.0 if the character is not known.  This may be a
-//               wide character (greater than 255).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width of a single character of the font, or 0.0 if the
+ * character is not known.  This may be a wide character (greater than 255).
+ */
 PN_stdfloat TextNode::
 calc_width(wchar_t character) const {
   TextFont *font = get_font();
@@ -197,24 +181,18 @@ calc_width(wchar_t character) const {
   return TextAssembler::calc_width(character, *this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::has_exact_character
-//       Access: Published
-//  Description: Returns true if the named character exists in the
-//               font exactly as named, false otherwise.  Note that
-//               because Panda can assemble glyphs together
-//               automatically using cheesy accent marks, this is not
-//               a reliable indicator of whether a suitable glyph can
-//               be rendered for the character.  For that, use
-//               has_character() instead.
-//
-//               This returns true for whitespace and Unicode
-//               whitespace characters (if they exist in the font),
-//               but returns false for characters that would render
-//               with the "invalid glyph".  It also returns false for
-//               characters that would be synthesized within Panda,
-//               but see has_character().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named character exists in the font exactly as named,
+ * false otherwise.  Note that because Panda can assemble glyphs together
+ * automatically using cheesy accent marks, this is not a reliable indicator
+ * of whether a suitable glyph can be rendered for the character.  For that,
+ * use has_character() instead.
+ *
+ * This returns true for whitespace and Unicode whitespace characters (if they
+ * exist in the font), but returns false for characters that would render with
+ * the "invalid glyph".  It also returns false for characters that would be
+ * synthesized within Panda, but see has_character().
+ */
 bool TextNode::
 has_exact_character(wchar_t character) const {
   TextFont *font = get_font();
@@ -225,19 +203,15 @@ has_exact_character(wchar_t character) const {
   return TextAssembler::has_exact_character(character, *this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::has_character
-//       Access: Published
-//  Description: Returns true if the named character exists in the
-//               font or can be synthesized by Panda, false otherwise.
-//               (Panda can synthesize some accented characters by
-//               combining similar-looking glyphs from the font.)
-//
-//               This returns true for whitespace and Unicode
-//               whitespace characters (if they exist in the font),
-//               but returns false for characters that would render
-//               with the "invalid glyph".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named character exists in the font or can be
+ * synthesized by Panda, false otherwise.  (Panda can synthesize some accented
+ * characters by combining similar-looking glyphs from the font.)
+ *
+ * This returns true for whitespace and Unicode whitespace characters (if they
+ * exist in the font), but returns false for characters that would render with
+ * the "invalid glyph".
+ */
 bool TextNode::
 has_character(wchar_t character) const {
   TextFont *font = get_font();
@@ -248,27 +222,20 @@ has_character(wchar_t character) const {
   return TextAssembler::has_character(character, *this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::is_whitespace
-//       Access: Published
-//  Description: Returns true if the indicated character represents
-//               whitespace in the font, or false if anything visible
-//               will be rendered for it.
-//
-//               This returns true for whitespace and Unicode
-//               whitespace characters (if they exist in the font),
-//               and returns false for any other characters, including
-//               characters that do not exist in the font (these would
-//               be rendered with the "invalid glyph", which is
-//               visible).
-//
-//               Note that this function can be reliably used to
-//               identify Unicode whitespace characters only if the
-//               font has all of the whitespace characters defined.
-//               It will return false for any character not in the
-//               font, even if it is an official Unicode whitespace
-//               character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated character represents whitespace in the font,
+ * or false if anything visible will be rendered for it.
+ *
+ * This returns true for whitespace and Unicode whitespace characters (if they
+ * exist in the font), and returns false for any other characters, including
+ * characters that do not exist in the font (these would be rendered with the
+ * "invalid glyph", which is visible).
+ *
+ * Note that this function can be reliably used to identify Unicode whitespace
+ * characters only if the font has all of the whitespace characters defined.
+ * It will return false for any character not in the font, even if it is an
+ * official Unicode whitespace character.
+ */
 bool TextNode::
 is_whitespace(wchar_t character) const {
   TextFont *font = get_font();
@@ -279,14 +246,11 @@ is_whitespace(wchar_t character) const {
   return TextAssembler::is_whitespace(character, *this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_width
-//       Access: Published
-//  Description: Returns the width of a line of text of arbitrary
-//               characters.  The line should not include the newline
-//               character or any embedded control characters like \1
-//               or \3.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width of a line of text of arbitrary characters.  The line
+ * should not include the newline character or any embedded control characters
+ * like \1 or \3.
+ */
 PN_stdfloat TextNode::
 calc_width(const wstring &line) const {
   PN_stdfloat width = 0.0f;
@@ -299,11 +263,9 @@ calc_width(const wstring &line) const {
   return width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TextNode::
 output(ostream &out) const {
   PandaNode::output(out);
@@ -317,11 +279,9 @@ output(ostream &out) const {
   out << " (" << geom_count << " geoms)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TextNode::
 write(ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
@@ -334,13 +294,11 @@ write(ostream &out, int indent_level) const {
     << "text is " << get_text() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::generate
-//       Access: Published
-//  Description: Generates the text, according to the parameters
-//               indicated within the TextNode, and returns a Node
-//               that may be parented within the tree to represent it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the text, according to the parameters indicated within the
+ * TextNode, and returns a Node that may be parented within the tree to
+ * represent it.
+ */
 PT(PandaNode) TextNode::
 generate() {
   PStatTimer timer(_text_generate_pcollector);
@@ -350,15 +308,14 @@ generate() {
       << " with '" << get_text() << "'\n";
   }
 
-  // The strategy here will be to assemble together a bunch of
-  // letters, instanced from the letter hierarchy of font_def, into
-  // our own little hierarchy.
+  // The strategy here will be to assemble together a bunch of letters,
+  // instanced from the letter hierarchy of font_def, into our own little
+  // hierarchy.
 
-  // There will be one root over the whole text block, that
-  // contains the transform passed in.  Under this root there will be
-  // another node for each row, that moves the row into the right place
-  // horizontally and vertically, and for each row, there is another
-  // node for each character.
+  // There will be one root over the whole text block, that contains the
+  // transform passed in.  Under this root there will be another node for each
+  // row, that moves the row into the right place horizontally and vertically,
+  // and for each row, there is another node for each character.
 
   _ul3d.set(0.0f, 0.0f, 0.0f);
   _lr3d.set(0.0f, 0.0f, 0.0f);
@@ -380,9 +337,8 @@ generate() {
     return root;
   }
 
-  // Compute the overall text transform matrix.  We build the text in
-  // a Z-up coordinate system and then convert it to whatever the user
-  // asked for.
+  // Compute the overall text transform matrix.  We build the text in a Z-up
+  // coordinate system and then convert it to whatever the user asked for.
   LMatrix4 mat =
     LMatrix4::convert_mat(CS_zup_right, _coordinate_system) *
     _transform;
@@ -418,8 +374,8 @@ generate() {
   root->add_child(text, get_draw_order() + 2);
   text->add_child(text_root);
 
-  // Save the bounding-box information about the text in a form
-  // friendly to the user.
+  // Save the bounding-box information about the text in a form friendly to
+  // the user.
   const LVector2 &ul = assembler.get_ul();
   const LVector2 &lr = assembler.get_lr();
   _ul3d.set(ul[0], 0.0f, ul[1]);
@@ -469,8 +425,8 @@ generate() {
     SceneGraphReducer gr;
     gr.apply_attribs(card_root);
 
-    // In order to decal the text onto the card, the card must
-    // become the parent of the text.
+    // In order to decal the text onto the card, the card must become the
+    // parent of the text.
     card_root->add_child(root);
     root = card_root;
 
@@ -499,61 +455,49 @@ generate() {
   return root;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_internal_geom
-//       Access: Published
-//  Description: Returns the actual node that is used internally to
-//               render the text, if the TextNode is parented within
-//               the scene graph.
-//
-//               In general, you should not call this method.  Call
-//               generate() instead if you want to get a handle to
-//               geometry that represents the text.  This method is
-//               provided as a debugging aid only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the actual node that is used internally to render the text, if the
+ * TextNode is parented within the scene graph.
+ *
+ * In general, you should not call this method.  Call generate() instead if
+ * you want to get a handle to geometry that represents the text.  This method
+ * is provided as a debugging aid only.
+ */
 PandaNode *TextNode::
 get_internal_geom() const {
-  // Output a nuisance warning to discourage the naive from calling
-  // this method accidentally.
+  // Output a nuisance warning to discourage the naive from calling this
+  // method accidentally.
   text_cat.info()
     << "TextNode::get_internal_geom() called.\n";
   check_rebuild();
   return _internal_geom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_unsafe_to_apply_attribs
-//       Access: Public, Virtual
-//  Description: Returns the union of all attributes from
-//               SceneGraphReducer::AttribTypes that may not safely be
-//               applied to the vertices of this node.  If this is
-//               nonzero, these attributes must be dropped at this
-//               node as a state change.
-//
-//               This is a generalization of safe_to_transform().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of all attributes from SceneGraphReducer::AttribTypes
+ * that may not safely be applied to the vertices of this node.  If this is
+ * nonzero, these attributes must be dropped at this node as a state change.
+ *
+ * This is a generalization of safe_to_transform().
+ */
 int TextNode::
 get_unsafe_to_apply_attribs() const {
-  // We have no way to apply these kinds of attributes to our
-  // TextNode, so insist they get dropped into the PandaNode's basic
-  // state.
-  return 
-    SceneGraphReducer::TT_tex_matrix | 
+  // We have no way to apply these kinds of attributes to our TextNode, so
+  // insist they get dropped into the PandaNode's basic state.
+  return
+    SceneGraphReducer::TT_tex_matrix |
     SceneGraphReducer::TT_other;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::apply_attribs_to_vertices
-//       Access: Public, Virtual
-//  Description: Applies whatever attributes are specified in the
-//               AccumulatedAttribs object (and by the attrib_types
-//               bitmask) to the vertices on this node, if
-//               appropriate.  If this node uses geom arrays like a
-//               GeomNode, the supplied GeomTransformer may be used to
-//               unify shared arrays across multiple different nodes.
-//
-//               This is a generalization of xform().
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies whatever attributes are specified in the AccumulatedAttribs object
+ * (and by the attrib_types bitmask) to the vertices on this node, if
+ * appropriate.  If this node uses geom arrays like a GeomNode, the supplied
+ * GeomTransformer may be used to unify shared arrays across multiple
+ * different nodes.
+ *
+ * This is a generalization of xform().
+ */
 void TextNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
@@ -562,9 +506,9 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     _transform *= mat;
 
     if ((_flags & F_needs_measure) == 0) {
-      // If we already have a measure, transform it too.  We don't
-      // need to invalidate the 2-d parts, since that's not affected
-      // by the transform anyway.
+      // If we already have a measure, transform it too.  We don't need to
+      // invalidate the 2-d parts, since that's not affected by the transform
+      // anyway.
       _ul3d = _ul3d * mat;
       _lr3d = _lr3d * mat;
     }
@@ -614,73 +558,61 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
 
-  // Now propagate the attributes down to our already-generated
-  // geometry, if we have any.
-  if ((_flags & F_needs_rebuild) == 0 && 
+  // Now propagate the attributes down to our already-generated geometry, if
+  // we have any.
+  if ((_flags & F_needs_rebuild) == 0 &&
       _internal_geom != (PandaNode *)NULL) {
     SceneGraphReducer gr;
     gr.apply_attribs(_internal_geom, attribs, attrib_types, transformer);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_tight_bounds
-//       Access: Public, Virtual
-//  Description: This is used to support
-//               NodePath::calc_tight_bounds().  It is not intended to
-//               be called directly, and it has nothing to do with the
-//               normal Panda bounding-volume computation.
-//
-//               If the node contains any geometry, this updates
-//               min_point and max_point to enclose its bounding box.
-//               found_any is to be set true if the node has any
-//               geometry at all, or left alone if it has none.  This
-//               method may be called over several nodes, so it may
-//               enter with min_point, max_point, and found_any
-//               already set.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to support NodePath::calc_tight_bounds().  It is not intended
+ * to be called directly, and it has nothing to do with the normal Panda
+ * bounding-volume computation.
+ *
+ * If the node contains any geometry, this updates min_point and max_point to
+ * enclose its bounding box.  found_any is to be set true if the node has any
+ * geometry at all, or left alone if it has none.  This method may be called
+ * over several nodes, so it may enter with min_point, max_point, and
+ * found_any already set.
+ */
 CPT(TransformState) TextNode::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
-  CPT(TransformState) next_transform = 
+  CPT(TransformState) next_transform =
     PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
                                  current_thread);
 
   check_rebuild();
 
   if (_internal_geom != (PandaNode *)NULL) {
-    _internal_geom->calc_tight_bounds(min_point, max_point, 
+    _internal_geom->calc_tight_bounds(min_point, max_point,
                                       found_any, next_transform, current_thread);
   }
 
   return next_transform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool TextNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   check_rebuild();
@@ -694,29 +626,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool TextNode::
 is_renderable() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Called when needed to recompute the node's
-//               _internal_bound object.  Nodes that contain anything
-//               of substance should redefine this to do the right
-//               thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when needed to recompute the node's _internal_bound object.  Nodes
+ * that contain anything of substance should redefine this to do the right
+ * thing.
+ */
 void TextNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -727,9 +652,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
 
-  // Now enclose the bounding box around the text.  We can do this
-  // without actually generating the text, if we have at least
-  // measured it.
+  // Now enclose the bounding box around the text.  We can do this without
+  // actually generating the text, if we have at least measured it.
   check_measure();
 
   LPoint3 vertices[8];
@@ -748,14 +672,10 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = 0;  // TODO: estimate this better.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::r_prepare_scene
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of prepare_scene().
-//               Don't call this directly; call
-//               PandaNode::prepare_scene() or
-//               NodePath::prepare_scene() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of prepare_scene(). Don't call this directly;
+ * call PandaNode::prepare_scene() or NodePath::prepare_scene() instead.
+ */
 void TextNode::
 r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
                 GeomTransformer &transformer, Thread *current_thread) {
@@ -766,16 +686,14 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
     CPT(RenderState) child_state = node_state->compose(child->get_state());
     child->r_prepare_scene(gsg, child_state, transformer, current_thread);
   }
-  
+
   PandaNode::r_prepare_scene(gsg, node_state, transformer, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::do_rebuild
-//       Access: Private
-//  Description: Removes any existing children of the TextNode, and
-//               adds the newly generated text instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any existing children of the TextNode, and adds the newly generated
+ * text instead.
+ */
 void TextNode::
 do_rebuild() {
   _flags &= ~(F_needs_rebuild | F_needs_measure);
@@ -783,24 +701,19 @@ do_rebuild() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::do_measure
-//       Access: Private
-//  Description: Can be called in lieu of do_rebuild() to measure the
-//               text and set up the bounding boxes properly without
-//               actually assembling it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Can be called in lieu of do_rebuild() to measure the text and set up the
+ * bounding boxes properly without actually assembling it.
+ */
 void TextNode::
 do_measure() {
   // We no longer make this a special case.
   do_rebuild();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::make_frame
-//       Access: Private
-//  Description: Creates a frame around the text.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a frame around the text.
+ */
 PT(PandaNode) TextNode::
 make_frame() {
   PT(GeomNode) frame_node = new GeomNode("frame");
@@ -810,28 +723,28 @@ make_frame() {
   PN_stdfloat right = dimensions[1];
   PN_stdfloat bottom = dimensions[2];
   PN_stdfloat top = dimensions[3];
-    
+
   CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _frame_width);
   CPT(RenderState) state = RenderState::make(thick);
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("text", GeomVertexFormat::get_v3(), get_usage_hint());
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   vertex.add_data3(left, 0.0f, top);
   vertex.add_data3(left, 0.0f, bottom);
   vertex.add_data3(right, 0.0f, bottom);
   vertex.add_data3(right, 0.0f, top);
-  
+
   PT(GeomLinestrips) frame = new GeomLinestrips(get_usage_hint());
   frame->add_consecutive_vertices(0, 4);
   frame->add_vertex(0);
   frame->close_primitive();
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(frame);
   frame_node->add_geom(geom, state);
-  
+
   if (get_frame_corners()) {
     PT(GeomPoints) corners = new GeomPoints(get_usage_hint());
     corners->add_consecutive_vertices(0, 4);
@@ -843,11 +756,9 @@ make_frame() {
   return frame_node.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::make_card
-//       Access: Private
-//  Description: Creates a card behind the text.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a card behind the text.
+ */
 PT(PandaNode) TextNode::
 make_card() {
   PT(GeomNode) card_node = new GeomNode("card");
@@ -862,36 +773,34 @@ make_card() {
     ("text", GeomVertexFormat::get_v3t2(), get_usage_hint());
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  
+
   vertex.add_data3(left, 0.0f, top);
   vertex.add_data3(left, 0.0f, bottom);
   vertex.add_data3(right, 0.0f, top);
   vertex.add_data3(right, 0.0f, bottom);
-  
+
   texcoord.add_data2(0.0f, 1.0f);
   texcoord.add_data2(0.0f, 0.0f);
   texcoord.add_data2(1.0f, 1.0f);
   texcoord.add_data2(1.0f, 0.0f);
-  
+
   PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
   card->add_consecutive_vertices(0, 4);
   card->close_primitive();
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(card);
-  
+
   card_node->add_geom(geom);
 
   return card_node.p();
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::make_card_with_border
-//       Access: Private
-//  Description: Creates a card behind the text with a specified border
-//               for button edge or what have you.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a card behind the text with a specified border for button edge or
+ * what have you.
+ */
 PT(PandaNode) TextNode::
 make_card_with_border() {
   PT(GeomNode) card_node = new GeomNode("card");
@@ -902,20 +811,17 @@ make_card_with_border() {
   PN_stdfloat bottom = dimensions[2];
   PN_stdfloat top = dimensions[3];
 
-  // we now create three tri-strips instead of one
-  // with vertices arranged as follows:
-  //
-  //  1 3            5 7  - one
-  //  2 4            6 8  /  \ two
-  //  9 11          13 15 \  /
-  // 10 12          14 16 - three
-  //
+/*
+ * we now create three tri-strips instead of one with vertices arranged as
+ * follows: 1 3            5 7  - one 2 4            6 8    \ two 9 11
+ * 13 15 \ 10 12          14 16 - three
+ */
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("text", GeomVertexFormat::get_v3t2(), get_usage_hint());
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  
+
   // verts 1,2,3,4
   vertex.add_data3(left, 0.02, top);
   vertex.add_data3(left, 0.02, top - _card_border_size);
@@ -940,7 +846,7 @@ make_card_with_border() {
   vertex.add_data3(right - _card_border_size, 0.02, bottom);
   vertex.add_data3(right, 0.02, bottom + _card_border_size);
   vertex.add_data3(right, 0.02, bottom);
-  
+
   texcoord.add_data2(0.0f, 1.0f); //1
   texcoord.add_data2(0.0f, 1.0f - _card_border_uv_portion); //2
   texcoord.add_data2(0.0f + _card_border_uv_portion, 1.0f); //3
@@ -951,7 +857,7 @@ make_card_with_border() {
                       1.0f - _card_border_uv_portion); //6
   texcoord.add_data2(1.0f, 1.0f); //7
   texcoord.add_data2(1.0f, 1.0f - _card_border_uv_portion); //8
-  
+
   texcoord.add_data2(0.0f, _card_border_uv_portion); //9
   texcoord.add_data2(0.0f, 0.0f); //10
   texcoord.add_data2(_card_border_uv_portion, _card_border_uv_portion); //11
@@ -961,13 +867,13 @@ make_card_with_border() {
   texcoord.add_data2(1.0f - _card_border_uv_portion, 0.0f);//14
   texcoord.add_data2(1.0f, _card_border_uv_portion);//15
   texcoord.add_data2(1.0f, 0.0f);//16
-  
+
   PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
-  
+
   // tristrip #1
   card->add_consecutive_vertices(0, 8);
   card->close_primitive();
-  
+
   // tristrip #2
   card->add_vertex(1);
   card->add_vertex(8);
@@ -978,26 +884,23 @@ make_card_with_border() {
   card->add_vertex(7);
   card->add_vertex(14);
   card->close_primitive();
-  
+
   // tristrip #3
   card->add_consecutive_vertices(8, 8);
   card->close_primitive();
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(card);
-  
+
   card_node->add_geom(geom);
-  
+
   return card_node.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::count_geoms
-//       Access: Private, Static
-//  Description: Recursively counts the number of Geoms at the
-//               indicated node and below.  Strictly for reporting
-//               this count on output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively counts the number of Geoms at the indicated node and below.
+ * Strictly for reporting this count on output.
+ */
 int TextNode::
 count_geoms(PandaNode *node) {
   int num_geoms = 0;

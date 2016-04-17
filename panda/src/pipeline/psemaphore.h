@@ -1,16 +1,15 @@
-// Filename: psemaphore.h
-// Created by:  drose (13Oct08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file psemaphore.h
+ * @author drose
+ * @date 2008-10-13
+ */
 
 #ifndef PSEMAPHORE_H
 #define PSEMAPHORE_H
@@ -20,17 +19,14 @@
 #include "conditionVar.h"
 #include "mutexHolder.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Semaphore
-// Description : A classic semaphore synchronization primitive.  
-//
-//               A semaphore manages an internal counter which is
-//               decremented by each acquire() call and incremented by
-//               each release() call. The counter can never go below
-//               zero; when acquire() finds that it is zero, it
-//               blocks, waiting until some other thread calls
-//               release().
-////////////////////////////////////////////////////////////////////
+/**
+ * A classic semaphore synchronization primitive.
+ *
+ * A semaphore manages an internal counter which is decremented by each
+ * acquire() call and incremented by each release() call.  The counter can
+ * never go below zero; when acquire() finds that it is zero, it blocks,
+ * waiting until some other thread calls release().
+ */
 class EXPCL_PANDA_PIPELINE Semaphore {
 PUBLISHED:
   INLINE Semaphore(int initial_count = 1);

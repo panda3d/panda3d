@@ -1,16 +1,15 @@
-// Filename: gtkStatsStripChart.h
-// Created by:  drose (16Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gtkStatsStripChart.h
+ * @author drose
+ * @date 2006-01-16
+ */
 
 #ifndef GTKSTATSSTRIPCHART_H
 #define GTKSTATSSTRIPCHART_H
@@ -25,10 +24,9 @@
 
 class GtkStatsMonitor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsStripChart
-// Description : A window that draws a strip chart, given a view.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window that draws a strip chart, given a view.
+ */
 class GtkStatsStripChart : public PStatStripChart, public GtkStatsGraph {
 public:
   GtkStatsStripChart(GtkStatsMonitor *monitor,
@@ -50,7 +48,7 @@ protected:
 
   virtual void clear_region();
   virtual void copy_region(int start_x, int end_x, int dest_x);
-  virtual void draw_slice(int x, int w, 
+  virtual void draw_slice(int x, int w,
                           const PStatStripChart::FrameData &fdata);
   virtual void draw_empty(int x, int w);
   virtual void draw_cursor(int x);
@@ -61,19 +59,19 @@ protected:
   virtual void set_drag_mode(DragMode drag_mode);
 
   virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-				       bool double_click);
+               bool double_click);
   virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
   virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
 private:
-  void draw_guide_bar(GdkDrawable *surface, int from_x, int to_x, 
-		      const PStatGraph::GuideBar &bar);
+  void draw_guide_bar(GdkDrawable *surface, int from_x, int to_x,
+          const PStatGraph::GuideBar &bar);
   void draw_guide_labels();
   int draw_guide_label(const PStatGraph::GuideBar &bar, int last_y);
 
-  static void toggled_callback(GtkToggleButton *button, gpointer data);  
-  static gboolean expose_event_callback(GtkWidget *widget, 
-					GdkEventExpose *event, gpointer data);
+  static void toggled_callback(GtkToggleButton *button, gpointer data);
+  static gboolean expose_event_callback(GtkWidget *widget,
+          GdkEventExpose *event, gpointer data);
 
 private:
   int _brush_origin;
@@ -85,4 +83,3 @@ private:
 };
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: weakPointerToBase.h
-// Created by:  drose (27Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file weakPointerToBase.h
+ * @author drose
+ * @date 2004-09-27
+ */
 
 #ifndef WEAKPOINTERTOBASE_H
 #define WEAKPOINTERTOBASE_H
@@ -19,12 +18,10 @@
 #include "pointerToBase.h"
 #include "weakPointerToVoid.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakPointerToBase
-// Description : This is the base class for PointerTo and
-//               ConstPointerTo.  Don't try to use it directly; use
-//               either derived class instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for PointerTo and ConstPointerTo.  Don't try to use
+ * it directly; use either derived class instead.
+ */
 template <class T>
 class WeakPointerToBase : public WeakPointerToVoid {
 public:
@@ -40,13 +37,12 @@ protected:
   INLINE void reassign(const PointerToBase<To> &copy);
   INLINE void reassign(const WeakPointerToBase<To> &copy);
 
-  // No assignment or retrieval functions are declared in
-  // WeakPointerToBase, because we will have to specialize on const
-  // vs. non-const later.
+  // No assignment or retrieval functions are declared in WeakPointerToBase,
+  // because we will have to specialize on const vs.  non-const later.
 
 public:
-  // These comparison functions are common to all things PointerTo, so
-  // they're defined up here.
+  // These comparison functions are common to all things PointerTo, so they're
+  // defined up here.
 #ifndef CPPPARSER
 #ifndef WIN32_VC
   INLINE bool operator == (const To *other) const;

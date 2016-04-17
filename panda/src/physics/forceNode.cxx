@@ -1,66 +1,55 @@
-// Filename: forceNode.cxx
-// Created by:  charles (02Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file forceNode.cxx
+ * @author charles
+ * @date 2000-08-02
+ */
 
 #include "forceNode.h"
 #include "config_physics.h"
 
 TypeHandle ForceNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function : ForceNode
-//       Access : public
-//  Description : default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 ForceNode::
 ForceNode(const string &name) :
   PandaNode(name) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : ForceNode
-//       Access : protected
-//  Description : copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 ForceNode::
 ForceNode(const ForceNode &copy) :
   PandaNode(copy), _forces(copy._forces) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : ~ForceNode
-//       Access : public, virtual
-//  Description : destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 ForceNode::
 ~ForceNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : make_copy
-//       Access : public, virtual
-//  Description : dynamic child copy
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic child copy
+ */
 PandaNode *ForceNode::
 make_copy() const {
   return new ForceNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : add_forces_from
-//       Access : public
-//  Description : append operation
-////////////////////////////////////////////////////////////////////
+/**
+ * append operation
+ */
 void ForceNode::
 add_forces_from(const ForceNode &other) {
   pvector< PT(BaseForce) >::iterator last = _forces.end() - 1;
@@ -75,11 +64,9 @@ add_forces_from(const ForceNode &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : remove_force
-//       Access : public
-//  Description : remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * remove operation
+ */
 void ForceNode::
 remove_force(BaseForce *f) {
   pvector< PT(BaseForce) >::iterator found;
@@ -90,11 +77,9 @@ remove_force(BaseForce *f) {
   _forces.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : remove_force
-//       Access : public
-//  Description : remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * remove operation
+ */
 void ForceNode::
 remove_force(int index) {
   nassertv(index >= 0 && index <= (int)_forces.size());
@@ -107,24 +92,18 @@ remove_force(int index) {
   _forces.erase(remove);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ForceNode::
 output(ostream &out) const {
   PandaNode::output(out);
   out<<" ("<<_forces.size()<<" forces)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write_linear_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ForceNode::
 write_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -133,24 +112,21 @@ write_forces(ostream &out, unsigned int indent) const {
        i != _forces.end();
        ++i) {
     out.width(indent+2); out<<""; out<<"(id "<<&(*i)<<" "<<(*i)->is_linear()<<")\n";
-    //#*#(*i)->write(out, indent+2);
+    // #*#(*i)->write(out, indent+2);
   }
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ForceNode::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ForceNode (id "<<this<<") ";
-  //#*#PandaNode::output(out);
+  // #*#PandaNode::output(out);
   out<<"\n";
-  //#*#write_forces(out, indent+2);
+  // #*#write_forces(out, indent+2);
   PandaNode::write(out, indent+4);
   #endif //] NDEBUG
 }

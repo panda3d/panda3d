@@ -1,19 +1,18 @@
-// Filename: pre_fcollada_include.h
-// Created by:  pro-rsoft (04Oct08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pre_fcollada_include.h
+ * @author rdb
+ * @date 2008-10-04
+ */
 
-// This file defines some stuff that need to be defined before
-// one includes FCollada.h
+// This file defines some stuff that need to be defined before one includes
+// FCollada.h
 
 #ifndef PRE_FCOLLADA_INCLUDE_H
 #define PRE_FCOLLADA_INCLUDE_H

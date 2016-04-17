@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeRegistry.h
-// Created by:  drose (15Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeRegistry.h
+ * @author drose
+ * @date 2000-06-15
+ */
 
 #ifndef PNMFILETYPEREGISTRY_H
 #define PNMFILETYPEREGISTRY_H
@@ -23,11 +22,9 @@
 
 class PNMFileType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeRegistry
-// Description : This class maintains the set of all known
-//               PNMFileTypes in the universe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class maintains the set of all known PNMFileTypes in the universe.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMFileTypeRegistry {
 protected:
   PNMFileTypeRegistry();
@@ -68,4 +65,3 @@ private:
 };
 
 #endif
-

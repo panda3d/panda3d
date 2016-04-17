@@ -1,16 +1,15 @@
-// Filename: cullBinAttrib.h
-// Created by:  drose (01Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullBinAttrib.h
+ * @author drose
+ * @date 2002-03-01
+ */
 
 #ifndef CULLBINATTRIB_H
 #define CULLBINATTRIB_H
@@ -21,12 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinAttrib
-// Description : Assigns geometry to a particular bin by name.  The
-//               bins must be created separately via the
-//               CullBinManager interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns geometry to a particular bin by name.  The bins must be created
+ * separately via the CullBinManager interface.
+ */
 class EXPCL_PANDA_PGRAPH CullBinAttrib : public RenderAttrib {
 private:
   INLINE CullBinAttrib();
@@ -37,6 +34,10 @@ PUBLISHED:
 
   INLINE const string &get_bin_name() const;
   INLINE int get_draw_order() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(bin_name, get_bin_name);
+  MAKE_PROPERTY(draw_order, get_draw_order);
 
 public:
   virtual void output(ostream &out) const;
@@ -64,7 +65,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -88,4 +89,3 @@ private:
 #include "cullBinAttrib.I"
 
 #endif
-

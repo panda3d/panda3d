@@ -1,16 +1,15 @@
-// Filename: paletteImage.h
-// Created by:  drose (28Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file paletteImage.h
+ * @author drose
+ * @date 2000-11-28
+ */
 
 #ifndef PALETTEIMAGE_H
 #define PALETTEIMAGE_H
@@ -24,15 +23,12 @@
 class PalettePage;
 class TexturePlacement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PaletteImage
-// Description : This is a single palette image, one of several within
-//               a PalettePage, which is in turn one of several pages
-//               within a PaletteGroup.  Each palette image is a
-//               collage of several different textures that were all
-//               assigned to the same PaletteGroup, and all share the
-//               same properties of the PalettePage.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single palette image, one of several within a PalettePage, which
+ * is in turn one of several pages within a PaletteGroup.  Each palette image
+ * is a collage of several different textures that were all assigned to the
+ * same PaletteGroup, and all share the same properties of the PalettePage.
+ */
 class PaletteImage : public ImageFile {
 private:
   PaletteImage();
@@ -72,8 +68,8 @@ private:
   void get_swapped_image(int index);
   void get_swapped_images();
 
-  // The ClearedRegion object keeps track of TexturePlacements that
-  // were recently removed and thus need to be set to black.
+  // The ClearedRegion object keeps track of TexturePlacements that were
+  // recently removed and thus need to be set to black.
   class ClearedRegion {
   public:
     ClearedRegion();
@@ -105,7 +101,7 @@ private:
   bool _new_image;
   bool _got_image;
   PNMImage _image;
-  
+
   unsigned _swapped_image; // 0 for non swapped image
 
   ImageFile _shadow_image;
@@ -125,8 +121,8 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
-  // This value is only filled in while reading from the bam file;
-  // don't use it otherwise.
+  // This value is only filled in while reading from the bam file; don't use
+  // it otherwise.
   int _num_placements;
 
 public:
@@ -147,4 +143,3 @@ private:
 };
 
 #endif
-

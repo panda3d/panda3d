@@ -1,16 +1,15 @@
-// Filename: pandaNode.h
-// Created by:  drose (20Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pandaNode.h
+ * @author drose
+ * @date 2002-02-20
+ */
 
 #ifndef PANDANODE_H
 #define PANDANODE_H
@@ -56,18 +55,17 @@ class AccumulatedAttribs;
 class GeomTransformer;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaNode
-// Description : A basic node of the scene graph or data graph.  This
-//               is the base class of all specialized nodes, and also
-//               serves as a generic node with no special properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * A basic node of the scene graph or data graph.  This is the base class of
+ * all specialized nodes, and also serves as a generic node with no special
+ * properties.
+ */
 class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
                                      public Namable, public LinkedListNode {
 PUBLISHED:
   explicit PandaNode(const string &name);
   virtual ~PandaNode();
-  //published so that characters can be combined.
+  // published so that characters can be combined.
   virtual PandaNode *combine_with(PandaNode *other);
 
 protected:
@@ -233,12 +231,15 @@ PUBLISHED:
   INLINE static DrawMask get_all_camera_mask();
   INLINE bool is_overall_hidden() const;
   INLINE void set_overall_hidden(bool overall_hidden);
+  MAKE_PROPERTY(overall_hidden, is_overall_hidden, set_overall_hidden);
 
   void adjust_draw_mask(DrawMask show_mask,
                         DrawMask hide_mask,
                         DrawMask clear_mask);
   INLINE DrawMask get_draw_control_mask() const;
   INLINE DrawMask get_draw_show_mask() const;
+  MAKE_PROPERTY(draw_control_mask, get_draw_control_mask);
+  MAKE_PROPERTY(draw_show_mask, get_draw_show_mask);
 
   DrawMask get_net_draw_control_mask() const;
   DrawMask get_net_draw_show_mask() const;
@@ -246,6 +247,8 @@ PUBLISHED:
   void set_into_collide_mask(CollideMask mask);
   INLINE CollideMask get_into_collide_mask() const;
   virtual CollideMask get_legal_collide_mask() const;
+  MAKE_PROPERTY(into_collide_mask, get_into_collide_mask, set_into_collide_mask);
+  MAKE_PROPERTY(legal_collide_mask, get_legal_collide_mask);
 
   CollideMask get_net_collide_mask(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(RenderAttrib) get_off_clip_planes(Thread *current_thread = Thread::get_current_thread()) const;
@@ -260,19 +263,20 @@ PUBLISHED:
 
   INLINE void ls(ostream &out, int indent_level) const;
 
-  // A node has three bounding volumes: an "external" bounding volume
-  // that represents the node and all of its children, an "internal"
-  // bounding volume which represents only the node itself (and is
-  // usually empty, unless a specific node type sets it otherwise),
-  // and a "user" bounding volume which is specified by the user.
+  // A node has three bounding volumes: an "external" bounding volume that
+  // represents the node and all of its children, an "internal" bounding
+  // volume which represents only the node itself (and is usually empty,
+  // unless a specific node type sets it otherwise), and a "user" bounding
+  // volume which is specified by the user.
 
-  // We define set_bounds() and get_bounds() functions so that
-  // set_bounds() sets the user bounding volume, while get_bounds()
-  // returns the external bounding volume.  Although it might seem
-  // strange and confusing to do this, this is actually the natural
-  // way the user thinks about nodes and bounding volumes.
+  // We define set_bounds() and get_bounds() functions so that set_bounds()
+  // sets the user bounding volume, while get_bounds() returns the external
+  // bounding volume.  Although it might seem strange and confusing to do
+  // this, this is actually the natural way the user thinks about nodes and
+  // bounding volumes.
   void set_bounds_type(BoundingVolume::BoundsType bounds_type);
   BoundingVolume::BoundsType get_bounds_type() const;
+  MAKE_PROPERTY(bounds_type, get_bounds_type);
 
   void set_bounds(const BoundingVolume *volume);
   void set_bound(const BoundingVolume *volume);
@@ -282,13 +286,18 @@ PUBLISHED:
   int get_nested_vertices(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE CPT(BoundingVolume) get_internal_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int get_internal_vertices(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(nested_vertices, get_nested_vertices);
+  MAKE_PROPERTY(internal_bounds, get_internal_bounds);
+  MAKE_PROPERTY(internal_vertices, get_internal_vertices);
 
   void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;
   void mark_internal_bounds_stale(Thread *current_thread = Thread::get_current_thread());
   INLINE bool is_bounds_stale() const;
+  MAKE_PROPERTY(bounds_stale, is_bounds_stale);
 
   INLINE void set_final(bool flag);
   INLINE bool is_final(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(final, is_final, set_final);
 
   virtual bool is_geom_node() const;
   virtual bool is_lod_node() const;
@@ -349,9 +358,9 @@ public:
                                Thread *current_thread);
 
 protected:
-  // This is a base class of CData, defined below.  It contains just
-  // the protected (not private) part of CData that will be needed by
-  // derived classes to implement compute_internal_bounds().
+  // This is a base class of CData, defined below.  It contains just the
+  // protected (not private) part of CData that will be needed by derived
+  // classes to implement compute_internal_bounds().
   class EXPCL_PANDA_PGRAPH BoundsData : public CycleData {
   protected:
     INLINE BoundsData();
@@ -359,10 +368,10 @@ protected:
     INLINE void copy_bounds(const BoundsData &copy);
 
   public:
-    // This is the "internal" bounding volume, which is normally
-    // empty, but which a particular PandaNode subclass may define to
-    // be any arbitrary volume, by calling set_internal_bounds() or by
-    // overriding compute_internal_bounds().
+    // This is the "internal" bounding volume, which is normally empty, but
+    // which a particular PandaNode subclass may define to be any arbitrary
+    // volume, by calling set_internal_bounds() or by overriding
+    // compute_internal_bounds().
     CPT(BoundingVolume) _internal_bounds;
     int _internal_vertices;
     UpdateSeq _internal_bounds_mark;     // incremented on mark_stale
@@ -385,8 +394,8 @@ private:
   void report_cycle(PandaNode *node);
   bool find_node_above(PandaNode *node);
 
-  // parent-child manipulation for NodePath support.  Don't try to
-  // call these directly.
+  // parent-child manipulation for NodePath support.  Don't try to call these
+  // directly.
   static PT(NodePathComponent) attach(NodePathComponent *parent,
                                       PandaNode *child, int sort,
                                       int pipeline_stage, Thread *current_thread);
@@ -420,8 +429,8 @@ private:
   INLINE void do_clear_dirty_prev_transform();
 
 public:
-  // This must be declared public so that VC6 will allow the nested
-  // CData class to access it.
+  // This must be declared public so that VC6 will allow the nested CData
+  // class to access it.
   class EXPCL_PANDA_PGRAPH DownConnection {
   public:
     INLINE DownConnection(PandaNode *child, int sort);
@@ -431,9 +440,8 @@ public:
     INLINE int get_sort() const;
 
   private:
-    // Child pointers are reference counted.  That way, holding a
-    // pointer to the root of a subgraph keeps the entire subgraph
-    // around.
+    // Child pointers are reference counted.  That way, holding a pointer to
+    // the root of a subgraph keeps the entire subgraph around.
     PT(PandaNode) _child;
     int _sort;
   };
@@ -482,23 +490,22 @@ private:
   typedef CopyOnWriteObj1< UpList, TypeHandle > Up;
 
   // We also maintain a set of NodePathComponents in the node.  This
-  // represents the set of instances of this node that we have
-  // requested a NodePath for.  We don't keep reference counts; when
-  // each NodePathComponent destructs, it removes itself from this
-  // set.
+  // represents the set of instances of this node that we have requested a
+  // NodePath for.  We don't keep reference counts; when each
+  // NodePathComponent destructs, it removes itself from this set.
   typedef phash_set<NodePathComponent *, pointer_hash> Paths;
 
-  // We don't cycle the set of Paths, since these are across all
-  // threads.  A NodePathComponent, once created, is always associated
-  // with the same node.  We do, however, protect the Paths under a mutex.
+  // We don't cycle the set of Paths, since these are across all threads.  A
+  // NodePathComponent, once created, is always associated with the same node.
+  // We do, however, protect the Paths under a mutex.
   Paths _paths;
   LightReMutex _paths_lock;
 
   bool _dirty_prev_transform;
   static PandaNodeChain _dirty_prev_transforms;
 
-  // This is used to maintain a table of keyed data on each node, for
-  // the user's purposes.
+  // This is used to maintain a table of keyed data on each node, for the
+  // user's purposes.
   typedef phash_map<string, string, string_hash> TagData;
 #ifdef HAVE_PYTHON
   typedef phash_map<string, PyObject *, string_hash> PythonTagData;
@@ -527,16 +534,16 @@ private:
     }
 
   public:
-    // This section contains the lightweight parts of the node that
-    // are likely to change fairly often: transform and state.
+    // This section contains the lightweight parts of the node that are likely
+    // to change fairly often: transform and state.
 
     NCPT(RenderState) _state;
     NCPT(TransformState) _transform;
     NCPT(TransformState) _prev_transform;
 
   public:
-    // This section contains the heavierweight parts of the node that
-    // are less likely to change as often: tags, collide mask.
+    // This section contains the heavierweight parts of the node that are less
+    // likely to change as often: tags, collide mask.
 
     INLINE void set_fancy_bit(int bits, bool value);
 
@@ -552,72 +559,69 @@ private:
     PythonTagData _python_tag_data;
 #endif  // HAVE_PYTHON
 
-    // These two together determine the per-camera visibility of this
-    // node.  See adjust_draw_mask() for details.
+    // These two together determine the per-camera visibility of this node.
+    // See adjust_draw_mask() for details.
     DrawMask _draw_control_mask, _draw_show_mask;
 
-    // This is the mask that indicates which CollisionNodes may detect
-    // a collision with this particular node.  By default it is zero
-    // for an ordinary PandaNode, and all bits on for a CollisionNode
-    // or GeomNode.
+    // This is the mask that indicates which CollisionNodes may detect a
+    // collision with this particular node.  By default it is zero for an
+    // ordinary PandaNode, and all bits on for a CollisionNode or GeomNode.
     CollideMask _into_collide_mask;
 
     // The requested bounding volume type.
     BoundingVolume::BoundsType _bounds_type;
 
-    // This is the user bounding volume, which is only specified by a
-    // user.  It defaults to NULL, which means an empty volume.
+    // This is the user bounding volume, which is only specified by a user.
+    // It defaults to NULL, which means an empty volume.
     CPT(BoundingVolume) _user_bounds;
 
     // See BoundsData, above, for _internal_bounds.
 
-    // This is true if the external bounds of this node should be
-    // deemed "final".  See set_final().
+    // This is true if the external bounds of this node should be deemed
+    // "final".  See set_final().
     bool _final_bounds;
 
-    // This bitmask is maintained automatically by the internal
-    // PandaNode code; it contains a 1 for each "fancy" attribute that
-    // is set on the node.  See enum FancyBits, above.
+    // This bitmask is maintained automatically by the internal PandaNode
+    // code; it contains a 1 for each "fancy" attribute that is set on the
+    // node.  See enum FancyBits, above.
     int _fancy_bits;
 
   public:
-    // This section contains the data that is accumulated upward from
-    // the node's children: that is, the external bounding volume, and
-    // conceptually similar things like the net_collide_mask, etc.
-    // None of the data in this object is preserved in a bam file.
+    // This section contains the data that is accumulated upward from the
+    // node's children: that is, the external bounding volume, and
+    // conceptually similar things like the net_collide_mask, etc.  None of
+    // the data in this object is preserved in a bam file.
 
-    // This is the union of all into_collide_mask bits for any nodes
-    // at and below this level.
+    // This is the union of all into_collide_mask bits for any nodes at and
+    // below this level.
     CollideMask _net_collide_mask;
 
     // These are similar, for the draw mask.
     DrawMask _net_draw_control_mask, _net_draw_show_mask;
 
-    // This is a ClipPlaneAttrib that represents the union of all clip
-    // planes that have been turned *off* at and below this level.
-    // TODO: fix the circular reference counts involved here.
+    // This is a ClipPlaneAttrib that represents the union of all clip planes
+    // that have been turned *off* at and below this level.  TODO: fix the
+    // circular reference counts involved here.
     CPT(RenderAttrib) _off_clip_planes;
 
-    // The number of vertices rendered by this node and all child
-    // nodes.
+    // The number of vertices rendered by this node and all child nodes.
     int _nested_vertices;
 
     // This is the bounding volume around the _user_bounds, the
-    // _internal_bounds, and all of the children's external bounding
-    // volumes.
+    // _internal_bounds, and all of the children's external bounding volumes.
     CPT(BoundingVolume) _external_bounds;
 
     // When _last_update != _next_update, this cache is stale.
     UpdateSeq _last_update, _next_update;
 
-    // We don't always update the bounding volume and number of
-    // nested vertices.  This indicates the last time they were changed.
-    // It is never higher than _last_update.
+    // We don't always update the bounding volume and number of nested
+    // vertices.  This indicates the last time they were changed.  It is never
+    // higher than _last_update.
     UpdateSeq _last_bounds_update;
 
   public:
-    // This section stores the links to other nodes above and below
-    // this node in the graph.
+    // This section stores the links to other nodes above and below this node
+    // in the graph.
 
     void write_up_list(const Up &up_list,
                        BamWriter *manager, Datagram &dg) const;
@@ -642,8 +646,8 @@ private:
     INLINE PT(Up) modify_up();
 
   private:
-    // We store the child lists by reference, so we can copy them
-    // quickly.  We perform copy-on-write when necessary.
+    // We store the child lists by reference, so we can copy them quickly.  We
+    // perform copy-on-write when necessary.
     COWPT(Down) _down;
     COWPT(Down) _stashed;
     COWPT(Up) _up;
@@ -677,12 +681,11 @@ private:
   static PStatCollector _update_bounds_pcollector;
 
 public:
-  // This class is returned from get_children().  Use it to walk
-  // through the list of children.  This is faster, and safer, than
-  // walking through the children one at a time via
-  // get_num_children()/get_child(), since the list of children is
-  // saved out ahead of time, rather than having to reacquire the lock
-  // with each iteration, or to keep the lock held for the entire
+  // This class is returned from get_children().  Use it to walk through the
+  // list of children.  This is faster, and safer, than walking through the
+  // children one at a time via get_num_children()get_child(), since the list
+  // of children is saved out ahead of time, rather than having to reacquire
+  // the lock with each iteration, or to keep the lock held for the entire
   // pass.
   class EXPCL_PANDA_PGRAPH Children {
   public:
@@ -803,11 +806,10 @@ private:
   friend class Extension<PandaNode>;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaNodePipelineReader
-// Description : Encapsulates the data from a PandaNode,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a PandaNode, pre-fetched for one stage of the
+ * pipeline.
+ */
 class EXPCL_PANDA_PGRAPH PandaNodePipelineReader {
 public:
   INLINE PandaNodePipelineReader(const PandaNode *object, Thread *current_thread);
@@ -889,4 +891,3 @@ INLINE ostream &operator << (ostream &out, const PandaNode &node) {
 #include "pandaNode.I"
 
 #endif
-

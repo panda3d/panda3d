@@ -1,16 +1,15 @@
-// Filename: threadWin32Impl.h
-// Created by:  drose (07Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadWin32Impl.h
+ * @author drose
+ * @date 2006-02-07
+ */
 
 #ifndef THREADWIN32IMPL_H
 #define THREADWIN32IMPL_H
@@ -27,10 +26,9 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadWin32Impl
-// Description : Uses native Windows calls to implement a thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses native Windows calls to implement a thread.
+ */
 class EXPCL_PANDA_PIPELINE ThreadWin32Impl {
 public:
   INLINE ThreadWin32Impl(Thread *parent_obj);

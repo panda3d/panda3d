@@ -1,16 +1,15 @@
-// Filename: recorderTable.cxx
-// Created by:  drose (27Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file recorderTable.cxx
+ * @author drose
+ * @date 2004-01-27
+ */
 
 #include "recorderTable.h"
 #include "bamReader.h"
@@ -21,11 +20,9 @@
 
 TypeHandle RecorderTable::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 RecorderTable::
 ~RecorderTable() {
   Recorders::iterator ri;
@@ -34,15 +31,11 @@ RecorderTable::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::merge_from
-//       Access: Public
-//  Description: Combines the data in the current table (presumably
-//               just read from disk, and matching exactly with the
-//               disk data) with the data in the indicated table,
-//               specified by the user (which may not exactly match
-//               the disk data).
-////////////////////////////////////////////////////////////////////
+/**
+ * Combines the data in the current table (presumably just read from disk, and
+ * matching exactly with the disk data) with the data in the indicated table,
+ * specified by the user (which may not exactly match the disk data).
+ */
 void RecorderTable::
 merge_from(const RecorderTable &other) {
   Recorders::const_iterator ori;
@@ -52,14 +45,14 @@ merge_from(const RecorderTable &other) {
 
     Recorders::iterator ri = _recorders.find(name);
     if (ri == _recorders.end()) {
-      // This may not be an error, since maybe the data isn't here
-      // yet, but it'll be along later.
+      // This may not be an error, since maybe the data isn't here yet, but
+      // it'll be along later.
       recorder_cat.debug()
         << "No data for " << name << " in session.\n";
 
     } else if ((*ri).second->get_type() == recorder->get_type()) {
-      // If we already had a recorder by that name with the same type,
-      // throw it away (otherwise, keep the one we had before).
+      // If we already had a recorder by that name with the same type, throw
+      // it away (otherwise, keep the one we had before).
       if ((*ri).second != recorder) {
         recorder->ref();
         unref_delete((*ri).second);
@@ -74,8 +67,8 @@ merge_from(const RecorderTable &other) {
     }
   }
 
-  // Now report any recorders in the session file that weren't
-  // specified by the user.
+  // Now report any recorders in the session file that weren't specified by
+  // the user.
   Recorders::const_iterator ri;
   for (ri = _recorders.begin(); ri != _recorders.end(); ++ri) {
     const string &name = (*ri).first;
@@ -87,11 +80,9 @@ merge_from(const RecorderTable &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::record_frame
-//       Access: Published
-//  Description: Calls record_frame on all recorders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls record_frame on all recorders.
+ */
 void RecorderTable::
 record_frame(BamWriter *manager, Datagram &dg) {
   Recorders::iterator ri;
@@ -103,11 +94,9 @@ record_frame(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::play_frame
-//       Access: Published
-//  Description: Calls play_frame on all recorders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls play_frame on all recorders.
+ */
 void RecorderTable::
 play_frame(DatagramIterator &scan, BamReader *manager) {
   Recorders::iterator ri;
@@ -119,11 +108,9 @@ play_frame(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::set_flags
-//       Access: Published
-//  Description: Sets the given flags on all recorders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the given flags on all recorders.
+ */
 void RecorderTable::
 set_flags(short flags) {
   Recorders::iterator ri;
@@ -135,11 +122,9 @@ set_flags(short flags) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::clear_flags
-//       Access: Published
-//  Description: Clears the given flags on all recorders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the given flags on all recorders.
+ */
 void RecorderTable::
 clear_flags(short flags) {
   Recorders::iterator ri;
@@ -151,11 +136,9 @@ clear_flags(short flags) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void RecorderTable::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -170,23 +153,18 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Lens.
+ */
 void RecorderTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void RecorderTable::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -202,14 +180,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Lens is encountered
-//               in the Bam file.  It should create the Lens
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type Lens is encountered in the Bam file.  It should create the Lens and
+ * extract its information from the file.
+ */
 TypedWritable *RecorderTable::
 make_from_bam(const FactoryParams &params) {
   RecorderTable *table = new RecorderTable;
@@ -222,13 +197,10 @@ make_from_bam(const FactoryParams &params) {
   return table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new RecorderTable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new RecorderTable.
+ */
 void RecorderTable::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

@@ -1,9 +1,8 @@
-/*
-// Filename: lexer.l
-// Created by:  drose (16Jan99)
-// 
-////////////////////////////////////////////////////////////////////
-*/
+/**
+ * @file lexer.lxx
+ * @author drose
+ * @date 1999-01-16
+ */
 
 %{
 #include "pandabase.h"
@@ -28,8 +27,8 @@ static int yyinput(void);        // declared by flex.
 // Static variables
 ////////////////////////////////////////////////////////////////////
 
-// This mutex protects all of these global variables. 
-LightMutex egg_lock; 
+// This mutex protects all of these global variables.
+LightMutex egg_lock;
 
 // We'll increment line_number and col_number as we parse the file, so
 // that we can report the position of an error.
@@ -116,12 +115,12 @@ eggyyerror(const string &msg) {
     if (!egg_filename.empty()) {
       out << " in " << egg_filename;
     }
-    out 
+    out
       << " at line " << line_number << ", column " << col_number << ":\n"
       << setiosflags(Notify::get_literal_flag())
       << current_line << "\n";
-    indent(out, col_number-1) 
-      << "^\n" << msg << "\n\n" 
+    indent(out, col_number-1)
+      << "^\n" << msg << "\n\n"
       << resetiosflags(Notify::get_literal_flag()) << flush;
   }
   error_count++;
@@ -142,12 +141,12 @@ eggyywarning(const string &msg) {
     if (!egg_filename.empty()) {
       out << " in " << egg_filename;
     }
-    out 
+    out
       << " at line " << line_number << ", column " << col_number << ":\n"
       << setiosflags(Notify::get_literal_flag())
       << current_line << "\n";
-    indent(out, col_number-1) 
-      << "^\n" << msg << "\n\n" 
+    indent(out, col_number-1)
+      << "^\n" << msg << "\n\n"
       << resetiosflags(Notify::get_literal_flag()) << flush;
   }
   warning_count++;
@@ -263,7 +262,7 @@ eat_c_comment() {
   int col = col_number;
 
   int c, last_c;
-  
+
   last_c = '\0';
   c = read_char(line, col);
   while (c != EOF && !(last_c == '*' && c == '/')) {
@@ -323,12 +322,12 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   yyless(1);
 }
 
-[ \t\r] { 
+[ \t\r] {
   // Eat whitespace.
   accept();
 }
 
-"//".* { 
+"//".* {
   // Eat C++-style comments.
   accept();
 }
@@ -336,12 +335,12 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 "/*" {
   // Eat C-style comments.
   accept();
-  eat_c_comment(); 
+  eat_c_comment();
 }
 
 [{}] {
   // Send curly braces as themselves.
-  accept(); 
+  accept();
   return eggyytext[0];
 }
 
@@ -690,69 +689,69 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 
 
 
-{NUMERIC} { 
+{NUMERIC} {
   // An integer or floating-point number.
-  accept(); 
-  eggyylval._number = patof(eggyytext); 
+  accept();
+  eggyylval._number = patof(eggyytext);
   eggyylval._string = yytext;
-  return EGG_NUMBER; 
+  return EGG_NUMBER;
 }
 
 {HEX} {
   // A hexadecimal integer number.
-  accept(); 
+  accept();
   eggyylval._ulong = strtoul(yytext+2, NULL, 16);
   eggyylval._string = yytext;
-  return EGG_ULONG; 
+  return EGG_ULONG;
 }
 
 {BINARY} {
   // A binary integer number.
-  accept(); 
+  accept();
   eggyylval._ulong = strtoul(yytext+2, NULL, 2);
   eggyylval._string = yytext;
-  return EGG_ULONG; 
+  return EGG_ULONG;
 }
 
 "nan"{HEX} {
   // not-a-number.  These sometimes show up in egg files accidentally.
-  accept(); 
+  accept();
   memset(&eggyylval._number, 0, sizeof(eggyylval._number));
   *(unsigned long *)&eggyylval._number = strtoul(yytext+3, NULL, 0);
   eggyylval._string = yytext;
   return EGG_NUMBER;
 }
 
-"inf" { 
+"inf" {
   // infinity.  As above.
-  accept(); 
+  accept();
   eggyylval._number = HUGE_VAL;
   eggyylval._string = yytext;
-  return EGG_NUMBER; 
+  return EGG_NUMBER;
 }
 
 "-inf" {
   // minus infinity.  As above.
-  accept(); 
+  accept();
   eggyylval._number = -HUGE_VAL;
   eggyylval._string = yytext;
-  return EGG_NUMBER; 
+  return EGG_NUMBER;
 }
 
-"1.#inf" { 
+"1.#inf" {
   // infinity, on Win32.  As above.
-  accept(); 
+  accept();
   eggyylval._number = HUGE_VAL;
   eggyylval._string = yytext;
-  return EGG_NUMBER; 
+  return EGG_NUMBER;
 }
 
 "-1.#inf" {
   // minus infinity, on Win32.  As above.
-  accept(); 
+  accept();
   eggyylval._number = -HUGE_VAL;
   eggyylval._string = yytext;
-  return EGG_NUMBER; 
+  return EGG_NUMBER;
 }
 
 
@@ -763,7 +762,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return EGG_STRING;
 }
 
-[^ \t\n\r{}"]+ { 
+[^ \t\n\r{}"]+ {
   // Unquoted string.
   accept();
   eggyylval._string = yytext;

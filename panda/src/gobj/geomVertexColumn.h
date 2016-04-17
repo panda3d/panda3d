@@ -1,16 +1,15 @@
-// Filename: geomVertexColumn.h
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexColumn.h
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #ifndef GEOMVERTEXCOLUMN_H
 #define GEOMVERTEXCOLUMN_H
@@ -30,13 +29,11 @@ class DatagramIterator;
 class GeomVertexReader;
 class GeomVertexWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexColumn
-// Description : This defines how a single column is interleaved
-//               within a vertex array stored within a Geom.  The
-//               GeomVertexArrayFormat class maintains a list of these
-//               to completely define a particular array structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines how a single column is interleaved within a vertex array
+ * stored within a Geom.  The GeomVertexArrayFormat class maintains a list of
+ * these to completely define a particular array structure.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexColumn : public GeomEnums {
 private:
   INLINE GeomVertexColumn();
@@ -108,11 +105,10 @@ private:
   int _total_bytes;
   Packer *_packer;
 
-  // This nested class provides the implementation for packing and
-  // unpacking data in a very general way, but also provides the hooks
-  // for implementing the common, very direct code paths (for
-  // instance, 3-component float32 to LVecBase3f) as quickly as
-  // possible.
+  // This nested class provides the implementation for packing and unpacking
+  // data in a very general way, but also provides the hooks for implementing
+  // the common, very direct code paths (for instance, 3-component float32 to
+  // LVecBase3f) as quickly as possible.
   class Packer : public MemoryBase {
   public:
     virtual ~Packer();
@@ -165,11 +161,10 @@ private:
   };
 
 
-  // This is a specialization on the generic Packer that handles
-  // points, which are special because the fourth component, if not
-  // present in the data, is implicitly 1.0; and if it is present,
-  // then any three-component or smaller return is implicitly divided
-  // by the fourth component.
+  // This is a specialization on the generic Packer that handles points, which
+  // are special because the fourth component, if not present in the data, is
+  // implicitly 1.0; and if it is present, then any three-component or smaller
+  // return is implicitly divided by the fourth component.
   class Packer_point : public Packer {
   public:
     virtual float get_data1f(const unsigned char *pointer);
@@ -198,8 +193,8 @@ private:
   };
 
   // This is similar to Packer_point, in that the fourth component is
-  // implicitly 1.0 if it is not present in the data, but we never
-  // divide by alpha.  It also transforms integer colors to the 0-1 range.
+  // implicitly 1.0 if it is not present in the data, but we never divide by
+  // alpha.  It also transforms integer colors to the 0-1 range.
   class Packer_color : public Packer {
   public:
     virtual float get_data1f(const unsigned char *pointer);
@@ -228,8 +223,8 @@ private:
   };
 
 
-  // These are the specializations on the generic Packer that handle
-  // the direct code paths.
+  // These are the specializations on the generic Packer that handle the
+  // direct code paths.
 
   class Packer_float32_3 : public Packer {
   public:

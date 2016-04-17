@@ -1,16 +1,15 @@
-// Filename: collisionSphere.h
-// Created by:  drose (24Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionSphere.h
+ * @author drose
+ * @date 2000-04-24
+ */
 
 #ifndef COLLISIONSPHERE_H
 #define COLLISIONSPHERE_H
@@ -20,10 +19,9 @@
 #include "parabola.h"
 #include "collisionBox.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionSphere
-// Description : A spherical collision volume or object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A spherical collision volume or object.
+ */
 class EXPCL_PANDA_COLLIDE CollisionSphere : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSphere(const LPoint3 &center, PN_stdfloat radius);
@@ -125,5 +123,3 @@ private:
 #include "collisionSphere.I"
 
 #endif
-
-

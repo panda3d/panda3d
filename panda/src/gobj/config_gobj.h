@@ -1,16 +1,15 @@
-// Filename: config_gobj.h
-// Created by:  drose (01Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_gobj.h
+ * @author drose
+ * @date 1999-10-01
+ */
 
 #ifndef CONFIG_GOBJ_H
 #define CONFIG_GOBJ_H
@@ -29,18 +28,6 @@
 NotifyCategoryDecl(gobj, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
 NotifyCategoryDecl(shader, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
 
-BEGIN_PUBLISH
-enum ShaderUtilization {
-  SUT_none,
-  SUT_basic,
-  SUT_advanced,
-  SUT_unspecified,
-};
-END_PUBLISH
-
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, ShaderUtilization sut);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, ShaderUtilization &sut);
-
 // Configure variables for gobj package.
 extern EXPCL_PANDA_GOBJ ConfigVariableInt max_texture_dimension;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble texture_scale;
@@ -49,7 +36,6 @@ extern EXPCL_PANDA_GOBJ ConfigVariableList exclude_texture_scale;
 
 
 extern EXPCL_PANDA_GOBJ ConfigVariableBool keep_texture_ram;
-extern EXPCL_PANDA_GOBJ ConfigVariableBool compressed_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool driver_compress_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool driver_generate_mipmaps;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_buffers;
@@ -76,9 +62,6 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_auto_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt simple_image_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble simple_image_threshold;
-
-extern EXPCL_PANDA_GOBJ ConfigVariableEnum<ShaderUtilization> shader_utilization;
-extern EXPCL_PANDA_GOBJ ConfigVariableBool shader_auto_utilization;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_min_frames;

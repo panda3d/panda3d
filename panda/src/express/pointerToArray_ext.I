@@ -1,26 +1,21 @@
-// Filename: pointerToArray_ext.I
-// Created by:  rdb (08Feb15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointerToArray_ext.I
+ * @author rdb
+ * @date 2015-02-08
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__init__
-//       Access: Published
-//  Description: This special constructor accepts a Python list of
-//               elements, or a Python string (or a bytes object,
-//               in Python 3), or any object that supports the
-//               Python buffer protocol.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special constructor accepts a Python list of elements, or a Python
+ * string (or a bytes object, in Python 3), or any object that supports the
+ * Python buffer protocol.
+ */
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
@@ -64,10 +59,10 @@ __init__(PyObject *self, PyObject *source) {
     return;
   }
 
-  // If we were passed a Python string, then instead of storing it
-  // character-at-a-time, just load the whole string as a data
-  // buffer.  Not sure if this case is still necessary - don't Python
-  // str/bytes objects export the buffer protocol, as above?
+  // If we were passed a Python string, then instead of storing it character-
+  // at-a-time, just load the whole string as a data buffer.  Not sure if this
+  // case is still necessary - don't Python strbytes objects export the buffer
+  // protocol, as above?
 #if PY_MAJOR_VERSION >= 3
   if (PyBytes_Check(source)) {
     int size = PyBytes_Size(source);
@@ -81,8 +76,7 @@ __init__(PyObject *self, PyObject *source) {
     int num_elements = size / sizeof(Element);
     this->_this->insert(this->_this->begin(), num_elements, Element());
 
-    // Hope there aren't any constructors or destructors involved
-    // here.
+    // Hope there aren't any constructors or destructors involved here.
     if (size != 0) {
       const char *data = PyBytes_AsString(source);
       memcpy(this->_this->p(), data, size);
@@ -102,8 +96,7 @@ __init__(PyObject *self, PyObject *source) {
     int num_elements = size / sizeof(Element);
     this->_this->insert(this->_this->begin(), num_elements, Element());
 
-    // Hope there aren't any constructors or destructors involved
-    // here.
+    // Hope there aren't any constructors or destructors involved here.
     if (size != 0) {
       const char *data = PyString_AsString(source);
       memcpy(this->_this->p(), data, size);
@@ -112,8 +105,8 @@ __init__(PyObject *self, PyObject *source) {
   }
 #endif
 
-  // Now construct the internal list by copying the elements
-  // one-at-a-time from Python.
+  // Now construct the internal list by copying the elements one-at-a-time
+  // from Python.
   PyObject *push_back = PyObject_GetAttrString(self, "push_back");
   if (push_back == NULL) {
     PyErr_BadArgument();
@@ -143,37 +136,28 @@ __init__(PyObject *self, PyObject *source) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__getitem__
-//       Access: Published
-//  Description: Same as get_element(), this returns the nth element
-//               of the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Same as get_element(), this returns the nth element of the array.
+ */
 template<class Element>
 INLINE const Element &Extension<PointerToArray<Element> >::
 __getitem__(size_t n) const {
   return this->_this->get_element(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__setitem__
-//       Access: Published
-//  Description: Same as set_element(), this replaces the nth element
-//               of the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Same as set_element(), this replaces the nth element of the array.
+ */
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __setitem__(size_t n, const Element &value) {
   this->_this->set_element(n, value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__init__
-//       Access: Public
-//  Description: This special constructor accepts a Python list of
-//               elements, or a Python string (or a bytes object,
-//               in Python 3).
-////////////////////////////////////////////////////////////////////
+/**
+ * This special constructor accepts a Python list of elements, or a Python
+ * string (or a bytes object, in Python 3).
+ */
 template<class Element>
 INLINE void Extension<ConstPointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
@@ -182,12 +166,9 @@ __init__(PyObject *self, PyObject *source) {
   *(this->_this) = MOVE(array);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__getitem__
-//       Access: Published
-//  Description: Same as get_element(), this returns the nth element
-//               of the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Same as get_element(), this returns the nth element of the array.
+ */
 template<class Element>
 INLINE const Element &Extension<ConstPointerToArray<Element> >::
 __getitem__(size_t n) const {
@@ -195,13 +176,10 @@ __getitem__(size_t n) const {
 }
 
 #if PY_VERSION_HEX >= 0x02060000
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__getbuffer__
-//       Access: Published
-//  Description: This is used to implement the buffer protocol, in
-//               order to allow efficient access to the array data
-//               through a Python multiview object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python multiview object.
+ */
 template<class Element>
 INLINE int Extension<PointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
@@ -227,9 +205,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->ndim = 1;
   view->shape = NULL;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
-    // This leaks, which sucks, but __releasebuffer__ doesn't give us
-    // the same pointer, so we would need to store it elsewhere if we
-    // wanted to delete it there.  Eh, it's just an int, who cares.
+    // This leaks, which sucks, but __releasebuffer__ doesn't give us the same
+    // pointer, so we would need to store it elsewhere if we wanted to delete
+    // it there.  Eh, it's just an int, who cares.
     view->shape = new Py_ssize_t(this->_this->size());
   }
   view->strides = NULL;
@@ -238,19 +216,17 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   }
   view->suboffsets = NULL;
 
-  // Store a reference to ourselves on the Py_buffer object
-  // as a reminder that we have increased our refcount.
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
   this->_this->ref();
   view->internal = (void*) this->_this;
 
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__releasebuffer__
-//       Access: Published
-//  Description: Releases the buffer allocated by __getbuffer__.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the buffer allocated by __getbuffer__.
+ */
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
@@ -263,13 +239,10 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__getbuffer__
-//       Access: Published
-//  Description: This is used to implement the buffer protocol, in
-//               order to allow efficient access to the array data
-//               through a Python multiview object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python multiview object.
+ */
 template<class Element>
 INLINE int Extension<ConstPointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
@@ -301,9 +274,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->ndim = 1;
   view->shape = NULL;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
-    // This leaks, which sucks, but __releasebuffer__ doesn't give us
-    // the same pointer, so we would need to store it elsewhere if we
-    // wanted to delete it there.  Eh, it's just an int, who cares.
+    // This leaks, which sucks, but __releasebuffer__ doesn't give us the same
+    // pointer, so we would need to store it elsewhere if we wanted to delete
+    // it there.  Eh, it's just an int, who cares.
     view->shape = new Py_ssize_t(this->_this->size());
   }
   view->strides = NULL;
@@ -312,19 +285,17 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   }
   view->suboffsets = NULL;
 
-  // Store a reference to ourselves on the Py_buffer object
-  // as a reminder that we have increased our refcount.
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
   this->_this->ref();
   view->internal = (void*) this->_this;
 
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__releasebuffer__
-//       Access: Published
-//  Description: Releases the buffer allocated by __getbuffer__.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the buffer allocated by __getbuffer__.
+ */
 template<class Element>
 INLINE void Extension<ConstPointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {

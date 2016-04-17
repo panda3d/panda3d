@@ -1,16 +1,15 @@
-// Filename: keyboardButton.h
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file keyboardButton.h
+ * @author drose
+ * @date 2000-03-01
+ */
 
 #ifndef KEYBOARDBUTTON_H
 #define KEYBOARDBUTTON_H
@@ -19,12 +18,10 @@
 
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : KeyboardButton
-// Description : This class is just used as a convenient namespace for
-//               grouping all of these handy functions that return
-//               buttons which map to standard keyboard keys.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is just used as a convenient namespace for grouping all of these
+ * handy functions that return buttons which map to standard keyboard keys.
+ */
 class EXPCL_PANDA_PUTIL KeyboardButton {
 PUBLISHED:
   static ButtonHandle ascii_key(char ascii_equivalent);

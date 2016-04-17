@@ -1,16 +1,15 @@
-// Filename: memoryHook.h
-// Created by:  drose (28Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memoryHook.h
+ * @author drose
+ * @date 2007-06-28
+ */
 
 #ifndef MEMORYHOOK_H
 #define MEMORYHOOK_H
@@ -23,23 +22,18 @@
 
 class DeletedBufferChain;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryHook
-// Description : This class provides a wrapper around the various
-//               possible malloc schemes Panda might employ.  It also
-//               exists to allow the MemoryUsage class in Panda to
-//               insert callback hooks to track the size of allocated
-//               pointers.
-//
-//               The PANDA_MALLOC_* and PANDA_FREE_* macros are
-//               defined to vector through through this class (except
-//               in production builds) to facilitate that.  Every
-//               memory allocation call in Panda should therefore use
-//               these macros instead of direct calls to malloc or
-//               free.  (C++ new and delete operators may be employed
-//               for classes which inherit from MemoryBase; otherwise,
-//               use the PANDA_MALLOC macros.)
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a wrapper around the various possible malloc schemes
+ * Panda might employ.  It also exists to allow the MemoryUsage class in Panda
+ * to insert callback hooks to track the size of allocated pointers.
+ *
+ * The PANDA_MALLOC_* and PANDA_FREE_* macros are defined to vector through
+ * through this class (except in production builds) to facilitate that.  Every
+ * memory allocation call in Panda should therefore use these macros instead
+ * of direct calls to malloc or free.  (C++ new and delete operators may be
+ * employed for classes which inherit from MemoryBase; otherwise, use the
+ * PANDA_MALLOC macros.)
+ */
 class EXPCL_DTOOL MemoryHook {
 public:
   MemoryHook();

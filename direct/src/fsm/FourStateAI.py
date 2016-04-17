@@ -6,8 +6,8 @@ __all__ = ['FourStateAI']
 
 from direct.directnotify import DirectNotifyGlobal
 #import DistributedObjectAI
-import ClassicFSM
-import State
+from . import ClassicFSM
+from . import State
 from direct.task import Task
 
 
@@ -128,7 +128,7 @@ class FourStateAI:
                            [names[1]]),
             }
         self.fsm = ClassicFSM.ClassicFSM('FourState',
-                           self.states.values(),
+                           list(self.states.values()),
                            # Initial State
                            names[0],
                            # Final State

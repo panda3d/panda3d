@@ -1,16 +1,15 @@
-// Filename: fftCompressor.cxx
-// Created by:  drose (11Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fftCompressor.cxx
+ * @author drose
+ * @date 2000-12-11
+ */
 
 #include "fftCompressor.h"
 #include "config_mathutil.h"
@@ -24,10 +23,8 @@
 
 #ifdef HAVE_FFTW
 
-//  hack.....
-// this is a hack to help interrogate sort out a macro
-// in the system poll and select definitions 
-//    
+// hack..... this is a hack to help interrogate sort out a macro in the system
+// poll and select definitions
 #ifdef howmany
 #undef howmany
 #endif
@@ -38,8 +35,8 @@
   #include "rfftw.h"
 #endif
 
-// These FFTW support objects can only be defined if we actually have
-// the FFTW library available.
+// These FFTW support objects can only be defined if we actually have the FFTW
+// library available.
 static rfftw_plan get_real_compress_plan(int length);
 static rfftw_plan get_real_decompress_plan(int length);
 
@@ -49,12 +46,9 @@ static RealPlans _real_decompress_plans;
 
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::Constructor
-//       Access: Public
-//  Description: Constructs a new compressor object with default
-//               parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new compressor object with default parameters.
+ */
 FFTCompressor::
 FFTCompressor() {
   _bam_minor_version = 0;
@@ -63,17 +57,13 @@ FFTCompressor() {
   _transpose_quats = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::is_compression_available
-//       Access: Public, Static
-//  Description: Returns true if the FFTW library is compiled in, so
-//               that this class is actually capable of doing useful
-//               compression/decompression work.  Returns false
-//               otherwise, in which case any attempt to write a
-//               compressed stream will actually write an uncompressed
-//               stream, and any attempt to read a compressed stream
-//               will fail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the FFTW library is compiled in, so that this class is
+ * actually capable of doing useful compression/decompression work.  Returns
+ * false otherwise, in which case any attempt to write a compressed stream
+ * will actually write an uncompressed stream, and any attempt to read a
+ * compressed stream will fail.
+ */
 bool FFTCompressor::
 is_compression_available() {
 #ifndef HAVE_FFTW
@@ -83,29 +73,22 @@ is_compression_available() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::set_quality
-//       Access: Public
-//  Description: Sets the quality factor for the compression.  This is
-//               an integer in the range 0 - 100 that roughly controls
-//               how aggressively the reals are compressed; lower
-//               numbers mean smaller output, and more data loss.
-//
-//               There are a few special cases.  Quality -1 means to
-//               use whatever individual parameters are set in the
-//               user's Configrc file, rather than the single quality
-//               dial.  Quality 101 or higher means to generate
-//               lossless output (this is the default if libfftw is
-//               not available).
-//
-//               Quality 102 writes all four components of quaternions
-//               to the output file, rather than just three, quality
-//               103 converts hpr to matrix (instead of quat) and
-//               writes a 9-component matrix, and quality 104 just
-//               writes out hpr directly.  Quality levels 102 and
-//               greater are strictly for debugging purposes, and are
-//               only available if NDEBUG is not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the quality factor for the compression.  This is an integer in the
+ * range 0 - 100 that roughly controls how aggressively the reals are
+ * compressed; lower numbers mean smaller output, and more data loss.
+ *
+ * There are a few special cases.  Quality -1 means to use whatever individual
+ * parameters are set in the user's Configrc file, rather than the single
+ * quality dial.  Quality 101 or higher means to generate lossless output
+ * (this is the default if libfftw is not available).
+ *
+ * Quality 102 writes all four components of quaternions to the output file,
+ * rather than just three, quality 103 converts hpr to matrix (instead of
+ * quat) and writes a 9-component matrix, and quality 104 just writes out hpr
+ * directly.  Quality levels 102 and greater are strictly for debugging
+ * purposes, and are only available if NDEBUG is not defined.
+ */
 void FFTCompressor::
 set_quality(int quality) {
 #ifndef HAVE_FFTW
@@ -120,17 +103,14 @@ set_quality(int quality) {
   _quality = quality;
 
   if (_quality < 0) {
-    // A negative quality indicates we should read the various
-    // parameters from individual config variables.
+    // A negative quality indicates we should read the various parameters from
+    // individual config variables.
     _fft_offset = fft_offset;
     _fft_factor = fft_factor;
     _fft_exponent = fft_exponent;
 
   } else if (_quality < 40) {
-    // 0 - 40 :
-    //   fft-offset 1.0 - 0.001
-    //   fft-factor 1.0
-    //   fft-exponent 4.0
+    // 0 - 40 : fft-offset 1.0 - 0.001 fft-factor 1.0 fft-exponent 4.0
 
     double t = (double)_quality / 40.0;
     _fft_offset = interpolate(t, 1.0, 0.001);
@@ -138,10 +118,7 @@ set_quality(int quality) {
     _fft_exponent = 4.0;
 
   } else if (_quality < 95) {
-    // 40 - 95:
-    //   fft-offset 0.001
-    //   fft-factor 1.0 - 0.1
-    //   fft-exponent 4.0
+    // 40 - 95: fft-offset 0.001 fft-factor 1.0 - 0.1 fft-exponent 4.0
 
     double t = (double)(_quality - 40) / 55.0;
     _fft_offset = 0.001;
@@ -149,10 +126,7 @@ set_quality(int quality) {
     _fft_exponent = 4.0;
 
   } else {
-    // 95 - 100:
-    //   fft-offset 0.001
-    //   fft-factor 0.1 - 0.0
-    //   fft-exponent 4.0
+    // 95 - 100: fft-offset 0.001 fft-factor 0.1 - 0.0 fft-exponent 4.0
 
     double t = (double)(_quality - 95) / 5.0;
     _fft_offset = 0.001;
@@ -162,78 +136,59 @@ set_quality(int quality) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::get_quality
-//       Access: Public
-//  Description: Returns the quality number that was previously set
-//               via set_quality().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the quality number that was previously set via set_quality().
+ */
 int FFTCompressor::
 get_quality() const {
   return _quality;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::set_use_error_threshold
-//       Access: Public
-//  Description: Enables or disables the use of the error threshold
-//               measurement to put a cap on the amount of damage done
-//               by lossy compression.  When this is enabled, the
-//               potential results of the compression are analyzed
-//               before the data is written; if it is determined that
-//               the compression will damage a particular string of
-//               reals too much, that particular string of reals is
-//               written uncompressed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables the use of the error threshold measurement to put a cap
+ * on the amount of damage done by lossy compression.  When this is enabled,
+ * the potential results of the compression are analyzed before the data is
+ * written; if it is determined that the compression will damage a particular
+ * string of reals too much, that particular string of reals is written
+ * uncompressed.
+ */
 void FFTCompressor::
 set_use_error_threshold(bool use_error_threshold) {
   _use_error_threshold = use_error_threshold;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::get_use_error_threshold
-//       Access: Public
-//  Description: Returns whether the error threshold measurement is
-//               enabled.  See set_use_error_threshold().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns whether the error threshold measurement is enabled.  See
+ * set_use_error_threshold().
+ */
 bool FFTCompressor::
 get_use_error_threshold() const {
   return _use_error_threshold;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::set_transpose_quats
-//       Access: Public
-//  Description: Sets the transpose_quats flag.  This is provided
-//               mainly for backward compatibility with old bam files
-//               that were written out with the quaternions
-//               inadvertently transposed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the transpose_quats flag.  This is provided mainly for backward
+ * compatibility with old bam files that were written out with the quaternions
+ * inadvertently transposed.
+ */
 void FFTCompressor::
 set_transpose_quats(bool flag) {
   _transpose_quats = flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::get_transpose_quats
-//       Access: Public
-//  Description: Returns the transpose_quats flag.  See
-//               set_transpose_quats().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transpose_quats flag.  See set_transpose_quats().
+ */
 bool FFTCompressor::
 get_transpose_quats() const {
   return _transpose_quats;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::write_header
-//       Access: Public
-//  Description: Writes the compression parameters to the indicated
-//               datagram.  It is necessary to call this before
-//               writing anything else to the datagram, since these
-//               parameters will be necessary to correctly decompress
-//               the data later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the compression parameters to the indicated datagram.  It is
+ * necessary to call this before writing anything else to the datagram, since
+ * these parameters will be necessary to correctly decompress the data later.
+ */
 void FFTCompressor::
 write_header(Datagram &datagram) {
   datagram.add_int8(_quality);
@@ -244,12 +199,9 @@ write_header(Datagram &datagram) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::write_reals
-//       Access: Public
-//  Description: Writes an array of floating-point numbers to the
-//               indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes an array of floating-point numbers to the indicated datagram.
+ */
 void FFTCompressor::
 write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
   datagram.add_int32(length);
@@ -284,15 +236,14 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
   // First, check the compressability.
   bool reject_compression = false;
 
-  // This logic needs a closer examination.  Not sure it's useful
-  // as-is.
+  // This logic needs a closer examination.  Not sure it's useful as-is.
   /*
   if (_use_error_threshold) {
     // Don't encode the data if it moves too erratically.
     PN_stdfloat error = get_compressability(array, length);
     if (error > fft_error_threshold) {
-      // No good: the data probably won't compress well.  Just write
-      // out lossless data.
+      // No good: the data probably won't compress well.  Just write out
+      // lossless data.
       reject_compression = true;
     }
   }
@@ -323,8 +274,8 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
   rfftw_one(plan, data, half_complex);
 
 
-  // Now encode the numbers, run-length encoded by size, so we only
-  // write out the number of bits we need for each number.
+  // Now encode the numbers, run-length encoded by size, so we only write out
+  // the number of bits we need for each number.
 
   vector_double run;
   RunWidth run_width = RW_invalid;
@@ -358,9 +309,9 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
       num_width = RW_double;
     }
 
-    // A special case: if we're writing a string of one-byters and we
-    // come across a single intervening zero, don't interrupt the run
-    // just for that.
+    // A special case: if we're writing a string of one-byters and we come
+    // across a single intervening zero, don't interrupt the run just for
+    // that.
     if (run_width == RW_8 && num_width == RW_0) {
       if (i + 1 >= length || half_complex[i + 1] != 0.0) {
         num_width = RW_8;
@@ -382,18 +333,15 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::write_hprs
-//       Access: Public
-//  Description: Writes an array of HPR angles to the indicated
-//               datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes an array of HPR angles to the indicated datagram.
+ */
 void FFTCompressor::
 write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
 #ifndef NDEBUG
   if (_quality >= 104) {
-    // If quality level is at least 104, we don't even convert hpr at
-    // all.  This is just for debugging.
+    // If quality level is at least 104, we don't even convert hpr at all.
+    // This is just for debugging.
     vector_stdfloat h, p, r;
 
     h.reserve(length);
@@ -418,8 +366,8 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
     return;
   }
   if (_quality >= 103) {
-    // If quality level is 103, we convert hpr to a table of matrices.
-    // This is just for debugging.
+    // If quality level is 103, we convert hpr to a table of matrices.  This
+    // is just for debugging.
     vector_stdfloat
       m00, m01, m02,
       m10, m11, m12,
@@ -464,13 +412,13 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
   }
 #endif
 
-  // First, convert the HPR's to quats.  We expect quats to have
-  // better FFT consistency, and therefore compress better, even
-  // though they have an extra component.
+  // First, convert the HPR's to quats.  We expect quats to have better FFT
+  // consistency, and therefore compress better, even though they have an
+  // extra component.
 
-  // However, because the quaternion will be normalized, we don't even
-  // have to write out all three components; any three can be used to
-  // determine the fourth (provided we ensure consistency of sign).
+  // However, because the quaternion will be normalized, we don't even have to
+  // write out all three components; any three can be used to determine the
+  // fourth (provided we ensure consistency of sign).
 
   vector_stdfloat qr, qi, qj, qk;
 
@@ -481,7 +429,7 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
 
   for (int i = 0; i < length; i++) {
     LMatrix3 mat;
-    compose_matrix(mat, LVecBase3(1.0, 1.0, 1.0), LVecBase3(0.0, 0.0, 0.0), 
+    compose_matrix(mat, LVecBase3(1.0, 1.0, 1.0), LVecBase3(0.0, 0.0, 0.0),
                    array[i]);
     if (_transpose_quats) {
       mat.transpose_in_place();
@@ -491,16 +439,15 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
     rot.normalize();  // This may not be necessary, but let's not take chances.
 
     if (rot.get_r() < 0) {
-      // Since rot == -rot, we can flip the quarternion if need be to
-      // keep the r component positive.  This has two advantages.
-      // One, it makes it possible to infer r completely given i, j,
-      // and k (since we know it must be >= 0), and two, it helps
-      // protect against poor continuity caused by inadvertent
-      // flipping of the quarternion's sign between frames.
+      // Since rot == -rot, we can flip the quarternion if need be to keep the
+      // r component positive.  This has two advantages.  One, it makes it
+      // possible to infer r completely given i, j, and k (since we know it
+      // must be >= 0), and two, it helps protect against poor continuity
+      // caused by inadvertent flipping of the quarternion's sign between
+      // frames.
 
-      // The choice of leaving r implicit rather than any of the other
-      // three seems to work the best in terms of guaranteeing
-      // continuity.
+      // The choice of leaving r implicit rather than any of the other three
+      // seems to work the best in terms of guaranteeing continuity.
       rot.set(-rot.get_r(), -rot.get_i(), -rot.get_j(), -rot.get_k());
     }
 
@@ -530,8 +477,8 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
     qk.push_back(rot.get_k());
   }
 
-  // If quality is at least 102, we write all four quat components,
-  // instead of just the three.  This is just for debugging.
+  // If quality is at least 102, we write all four quat components, instead of
+  // just the three.  This is just for debugging.
 #ifndef NDEBUG
   if (_quality >= 102) {
     if (length == 0) {
@@ -552,16 +499,13 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::read_header
-//       Access: Public
-//  Description: Reads the compression header that was written
-//               previously.  This fills in the compression parameters
-//               necessary to correctly decompress the following data.
-//
-//               Returns true if the header is read successfully,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the compression header that was written previously.  This fills in
+ * the compression parameters necessary to correctly decompress the following
+ * data.
+ *
+ * Returns true if the header is read successfully, false otherwise.
+ */
 bool FFTCompressor::
 read_header(DatagramIterator &di, int bam_minor_version) {
   _bam_minor_version = bam_minor_version;
@@ -591,16 +535,12 @@ read_header(DatagramIterator &di, int bam_minor_version) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::read_reals
-//       Access: Public
-//  Description: Reads an array of floating-point numbers.  The result
-//               is pushed onto the end of the indicated vector, which
-//               is not cleared first; it is the user's responsibility
-//               to ensure that the array is initially empty.  Returns
-//               true if the data is read correctly, false if there is
-//               an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an array of floating-point numbers.  The result is pushed onto the
+ * end of the indicated vector, which is not cleared first; it is the user's
+ * responsibility to ensure that the array is initially empty.  Returns true
+ * if the data is read correctly, false if there is an error.
+ */
 bool FFTCompressor::
 read_reals(DatagramIterator &di, vector_stdfloat &array) {
   int length = di.get_int32();
@@ -632,11 +572,11 @@ read_reals(DatagramIterator &di, vector_stdfloat &array) {
     return true;
   }
 
-  // Normal case: read in the FFT array, and convert it back to
-  // (nearly) the original numbers.
+  // Normal case: read in the FFT array, and convert it back to (nearly) the
+  // original numbers.
 
-  // First, check the reject_compression flag.  If it's set, we
-  // decided to just write out the stream uncompressed.
+  // First, check the reject_compression flag.  If it's set, we decided to
+  // just write out the stream uncompressed.
   bool reject_compression = di.get_bool();
   if (reject_compression) {
     array.reserve(array.size() + length);
@@ -674,26 +614,22 @@ read_reals(DatagramIterator &di, vector_stdfloat &array) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::read_hprs
-//       Access: Public
-//  Description: Reads an array of HPR angles.  The result is pushed
-//               onto the end of the indicated vector, which is not
-//               cleared first; it is the user's responsibility to
-//               ensure that the array is initially empty.
-//
-//               new_hpr is a temporary, transitional parameter.  If
-//               it is set false, the hprs are decompressed according
-//               to the old, broken hpr calculation; if true, the hprs
-//               are decompressed according to the new, correct hpr
-//               calculation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an array of HPR angles.  The result is pushed onto the end of the
+ * indicated vector, which is not cleared first; it is the user's
+ * responsibility to ensure that the array is initially empty.
+ *
+ * new_hpr is a temporary, transitional parameter.  If it is set false, the
+ * hprs are decompressed according to the old, broken hpr calculation; if
+ * true, the hprs are decompressed according to the new, correct hpr
+ * calculation.
+ */
 bool FFTCompressor::
 read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
 #ifndef NDEBUG
   if (_quality >= 104) {
-    // If quality level is at least 104, we don't even convert hpr to
-    // quat.  This is just for debugging.
+    // If quality level is at least 104, we don't even convert hpr to quat.
+    // This is just for debugging.
     vector_stdfloat h, p, r;
     bool okflag = true;
     okflag =
@@ -711,8 +647,8 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
     return okflag;
   }
   if (_quality >= 103) {
-    // If quality level is 103, we read in a table of 3x3 rotation
-    // matrices.  This is just for debugging.
+    // If quality level is 103, we read in a table of 3x3 rotation matrices.
+    // This is just for debugging.
     vector_stdfloat
       m00, m01, m02,
       m10, m11, m12,
@@ -810,29 +746,23 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::read_hprs
-//       Access: Public
-//  Description: Reads an array of HPR angles.  The result is pushed
-//               onto the end of the indicated vector, which is not
-//               cleared first; it is the user's responsibility to
-//               ensure that the array is initially empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an array of HPR angles.  The result is pushed onto the end of the
+ * indicated vector, which is not cleared first; it is the user's
+ * responsibility to ensure that the array is initially empty.
+ */
 bool FFTCompressor::
 read_hprs(DatagramIterator &di, pvector<LVecBase3> &array) {
   return read_hprs(di, array, true);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::free_storage
-//       Access: Public, Static
-//  Description: Frees memory that has been allocated during past runs
-//               of the FFTCompressor.  This is an optional call, but
-//               it may be made from time to time to empty the global
-//               cache that the compressor objects keep to facilitate
-//               fast compression/decompression.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees memory that has been allocated during past runs of the FFTCompressor.
+ * This is an optional call, but it may be made from time to time to empty the
+ * global cache that the compressor objects keep to facilitate fast
+ * compression/decompression.
+ */
 void FFTCompressor::
 free_storage() {
 #ifdef HAVE_FFTW
@@ -853,13 +783,10 @@ free_storage() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::write_run
-//       Access: Private
-//  Description: Writes a sequence of integers that all require the
-//               same number of bits.  Returns the number of integers
-//               written, i.e. run.size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a sequence of integers that all require the same number of bits.
+ * Returns the number of integers written, i.e.  run.size().
+ */
 int FFTCompressor::
 write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
           const vector_double &run) {
@@ -869,21 +796,19 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
   nassertr(run_width != RW_invalid, 0);
 
   if (run_width != RW_double) {
-    // If the width is anything other than RW_double, we write a
-    // single byte indicating the width and length of the upcoming
-    // run.
+    // If the width is anything other than RW_double, we write a single byte
+    // indicating the width and length of the upcoming run.
 
     if (run.size() <= RW_length_mask &&
         ((int)run_width | run.size()) != RW_double) {
-      // If there are enough bits remaining in the byte, use them to
-      // indicate the length of the run.  We have to be a little
-      // careful, however, not to accidentally write a byte that looks
-      // like an RW_double flag.
+      // If there are enough bits remaining in the byte, use them to indicate
+      // the length of the run.  We have to be a little careful, however, not
+      // to accidentally write a byte that looks like an RW_double flag.
       datagram.add_uint8((int)run_width | run.size());
 
     } else {
-      // Otherwise, write zero as the length, to indicate that we'll
-      // write the actual length in the following 16-bit word.
+      // Otherwise, write zero as the length, to indicate that we'll write the
+      // actual length in the following 16-bit word.
       datagram.add_uint8(run_width);
 
       // Assuming, of course, that the length fits within 16 bits.
@@ -921,9 +846,9 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
 
   case RW_double:
     for (ri = run.begin(); ri != run.end(); ++ri) {
-      // In the case of RW_double, we only write the numbers one at a
-      // time, each time preceded by the RW_double flag.  Hopefully
-      // this will happen only rarely.
+      // In the case of RW_double, we only write the numbers one at a time,
+      // each time preceded by the RW_double flag.  Hopefully this will happen
+      // only rarely.
       datagram.add_int8((PN_int8)RW_double);
       datagram.add_float64(*ri);
     }
@@ -936,15 +861,12 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
   return run.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::read_run
-//       Access: Private
-//  Description: Reads a sequence of integers that all require the
-//               same number of bits.  Returns the number of integers
-//               read.  It is the responsibility of the user to clear
-//               the vector before calling this function, or the
-//               numbers read will be appended to the end.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a sequence of integers that all require the same number of bits.
+ * Returns the number of integers read.  It is the responsibility of the user
+ * to clear the vector before calling this function, or the numbers read will
+ * be appended to the end.
+ */
 int FFTCompressor::
 read_run(DatagramIterator &di, vector_double &run) {
   PN_uint8 start = di.get_uint8();
@@ -952,8 +874,8 @@ read_run(DatagramIterator &di, vector_double &run) {
   int length;
 
   if ((start & 0xff) == RW_double) {
-    // RW_double is a special case, and requires the whole byte.  In
-    // this case, we don't encode a length, but assume it's only one.
+    // RW_double is a special case, and requires the whole byte.  In this
+    // case, we don't encode a length, but assume it's only one.
     run_width = RW_double;
     length = 1;
 
@@ -963,8 +885,8 @@ read_run(DatagramIterator &di, vector_double &run) {
   }
 
   if (length == 0) {
-    // If the length was zero, it means the actual length follows as a
-    // 16-bit word.
+    // If the length was zero, it means the actual length follows as a 16-bit
+    // word.
     length = di.get_uint16();
   }
   nassertr(length != 0, 0);
@@ -1010,12 +932,10 @@ read_run(DatagramIterator &di, vector_double &run) {
   return length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::get_scale_factor
-//       Access: Private
-//  Description: Returns the appropriate scaling for the given
-//               position within the halfcomplex array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the appropriate scaling for the given position within the
+ * halfcomplex array.
+ */
 double FFTCompressor::
 get_scale_factor(int i, int length) const {
   int m = (length / 2) + 1;
@@ -1026,31 +946,25 @@ get_scale_factor(int i, int length) const {
     _fft_factor * pow((double)(m-1 - k) / (double)(m-1), _fft_exponent);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::interpolate
-//       Access: Private, Static
-//  Description: Returns a number between a and b, inclusive,
-//               according to the value of t between 0 and 1,
-//               inclusive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number between a and b, inclusive, according to the value of t
+ * between 0 and 1, inclusive.
+ */
 double FFTCompressor::
 interpolate(double t, double a, double b) {
   return a + t * (b - a);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::get_compressability
-//       Access: Private
-//  Description: Returns a factor that indicates how erratically the
-//               values are changing.  The lower the result, the
-//               calmer the numbers, and the greater its likelihood of
-//               being successfully compressed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a factor that indicates how erratically the values are changing.
+ * The lower the result, the calmer the numbers, and the greater its
+ * likelihood of being successfully compressed.
+ */
 PN_stdfloat FFTCompressor::
 get_compressability(const PN_stdfloat *data, int length) const {
-  // The result returned is actually the standard deviation of the
-  // table of deltas between consecutive frames.  This number is
-  // larger if the frames have wildly different values.
+  // The result returned is actually the standard deviation of the table of
+  // deltas between consecutive frames.  This number is larger if the frames
+  // have wildly different values.
 
   if (length <= 2) {
     return 0.0;
@@ -1079,11 +993,10 @@ get_compressability(const PN_stdfloat *data, int length) const {
 
 #ifdef HAVE_FFTW
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_real_compress_plan
-//  Description: Returns a FFTW plan suitable for compressing a float
-//               array of the indicated length.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FFTW plan suitable for compressing a float array of the indicated
+ * length.
+ */
 static rfftw_plan
 get_real_compress_plan(int length) {
   RealPlans::iterator pi;
@@ -1099,11 +1012,10 @@ get_real_compress_plan(int length) {
   return plan;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_real_decompress_plan
-//  Description: Returns a FFTW plan suitable for decompressing a float
-//               array of the indicated length.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FFTW plan suitable for decompressing a float array of the
+ * indicated length.
+ */
 static rfftw_plan
 get_real_decompress_plan(int length) {
   RealPlans::iterator pi;

@@ -1,16 +1,15 @@
-// Filename: collisionEntry.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionEntry.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef COLLISIONENTRY_H
 #define COLLISIONENTRY_H
@@ -30,19 +29,16 @@
 #include "nodePath.h"
 #include "clipPlaneAttrib.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionEntry
-// Description : Defines a single collision event.  One of these is
-//               created for each collision detected by a
-//               CollisionTraverser, to be dealt with by the
-//               CollisionHandler.
-//
-//               A CollisionEntry provides slots for a number of data
-//               values (such as intersection point and normal) that
-//               might or might not be known for each collision.  It
-//               is up to the handler to determine what information is
-//               known and to do the right thing with it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a single collision event.  One of these is created for each
+ * collision detected by a CollisionTraverser, to be dealt with by the
+ * CollisionHandler.
+ *
+ * A CollisionEntry provides slots for a number of data values (such as
+ * intersection point and normal) that might or might not be known for each
+ * collision.  It is up to the handler to determine what information is known
+ * and to do the right thing with it.
+ */
 class EXPCL_PANDA_COLLIDE CollisionEntry : public TypedWritableReferenceCount {
 public:
   INLINE CollisionEntry();
@@ -98,8 +94,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 PUBLISHED:
-  MAKE_PROPERTY(from, get_from);
-  MAKE_PROPERTY(into, get_into);
+  MAKE_PROPERTY(from_solid, get_from);
+  MAKE_PROPERTY(into_solid, get_into);
   MAKE_PROPERTY(from_node, get_from_node);
   MAKE_PROPERTY(into_node, get_into_node);
   MAKE_PROPERTY(from_node_path, get_from_node_path);
@@ -120,7 +116,7 @@ public:
   INLINE const ClipPlaneAttrib *get_into_clip_planes() const;
 
 private:
-  INLINE void test_intersection(CollisionHandler *record, 
+  INLINE void test_intersection(CollisionHandler *record,
                                 const CollisionTraverser *trav) const;
   void check_clip_planes();
 
@@ -152,7 +148,7 @@ private:
 
   LPoint3 _contact_pos;
   LVector3 _contact_normal;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -179,6 +175,3 @@ INLINE ostream &operator << (ostream &out, const CollisionEntry &entry);
 #include "collisionEntry.I"
 
 #endif
-
-
-

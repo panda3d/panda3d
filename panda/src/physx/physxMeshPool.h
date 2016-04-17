@@ -1,16 +1,15 @@
-// Filename: physxMeshPool.h
-// Created by:  enn0x (14Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxMeshPool.h
+ * @author enn0x
+ * @date 2009-10-14
+ */
 
 #ifndef PHYSXMESHPOOL_H
 #define PHYSXMESHPOOL_H
@@ -28,14 +27,12 @@ class PhysxTriangleMesh;
 class PhysxClothMesh;
 class PhysxSoftBodyMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMeshPool
-// Description : This class unifies all references to the same
-//               filename, so that multiple attempts to load the
-//               same mesh will return the same pointer.
-//               The mesh filename is automatically resolved before
-//               an attempt to load the mesh is made.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class unifies all references to the same filename, so that multiple
+ * attempts to load the same mesh will return the same pointer.  The mesh
+ * filename is automatically resolved before an attempt to load the mesh is
+ * made.
+ */
 class EXPCL_PANDAPHYSX PhysxMeshPool {
 
 PUBLISHED:

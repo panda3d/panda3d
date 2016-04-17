@@ -1,16 +1,15 @@
-// Filename: cppEnumType.h
-// Created by:  drose (25Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppEnumType.h
+ * @author drose
+ * @date 1999-10-25
+ */
 
 #ifndef CPPENUMTYPE_H
 #define CPPENUMTYPE_H
@@ -26,16 +25,17 @@ class CPPInstance;
 class CPPScope;
 
 
-///////////////////////////////////////////////////////////////////
-//       Class : CPPEnumType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPEnumType : public CPPExtensionType {
 public:
   CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
               const CPPFile &file);
   CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
               CPPScope *current_scope, const CPPFile &file);
+
+  CPPType *get_element_type();
 
   CPPInstance *add_element(const string &name,
                            CPPExpression *value = (CPPExpression *)NULL);

@@ -1,16 +1,15 @@
-// Filename: eglGraphicsStateGuardian.h
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsStateGuardian.h
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #ifndef EGLGRAPHICSSTATEGUARDIAN_H
 #define EGLGRAPHICSSTATEGUARDIAN_H
@@ -19,11 +18,10 @@
 #include "eglGraphicsPipe.h"
 #include "get_x11.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsStateGuardian
-// Description : A tiny specialization on GLESGraphicsStateGuardian
-//               to add some egl-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLESGraphicsStateGuardian to add some egl-specific
+ * information.
+ */
 #ifdef OPENGLES_2
 class eglGraphicsStateGuardian : public GLES2GraphicsStateGuardian {
 #else

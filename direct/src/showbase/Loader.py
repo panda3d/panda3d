@@ -6,7 +6,6 @@ from panda3d.core import *
 from panda3d.core import Loader as PandaLoader
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.DirectObject import DirectObject
-import types
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
@@ -139,8 +138,7 @@ class Loader(DirectObject):
         if allowInstance:
             loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFAllowInstance)
 
-        if isinstance(modelPath, types.StringTypes) or \
-           isinstance(modelPath, Filename):
+        if not isinstance(modelPath, (tuple, list, set)):
             # We were given a single model pathname.
             modelList = [modelPath]
             if phaseChecker:
@@ -270,8 +268,7 @@ class Loader(DirectObject):
             # Maybe we were given a node
             modelNode = model
 
-        elif isinstance(model, types.StringTypes) or \
-             isinstance(model, Filename):
+        elif isinstance(model, (str, Filename)):
             # If we were given a filename, we have to ask the loader
             # to resolve it for us.
             options = LoaderOptions(LoaderOptions.LFSearch | LoaderOptions.LFNoDiskCache | LoaderOptions.LFCacheOnly)
@@ -284,7 +281,7 @@ class Loader(DirectObject):
             assert Loader.notify.debug("%s resolves to %s" % (model, modelNode.getFullpath()))
 
         else:
-            raise 'Invalid parameter to unloadModel: %s' % (model)
+            raise TypeError('Invalid parameter to unloadModel: %s' % (model))
 
         assert Loader.notify.debug("Unloading model: %s" % (modelNode.getFullpath()))
         ModelPool.releaseModel(modelNode)
@@ -301,8 +298,7 @@ class Loader(DirectObject):
         else:
             loaderOptions = LoaderOptions(loaderOptions)
 
-        if isinstance(modelPath, types.StringTypes) or \
-           isinstance(modelPath, Filename):
+        if not isinstance(modelPath, (tuple, list, set)):
             # We were given a single model pathname.
             modelList = [modelPath]
             nodeList = [node]
@@ -324,7 +320,7 @@ class Loader(DirectObject):
                 nodeList[i] = nodeList[i].node()
 
         # From here on, we deal with a list of (filename, node) pairs.
-        modelList = zip(modelList, nodeList)
+        modelList = list(zip(modelList, nodeList))
 
         if callback is None:
             # We got no callback, so it's a synchronous save.
@@ -795,12 +791,8 @@ class Loader(DirectObject):
         just as in loadModel(); otherwise, the loading happens before
         loadSound() returns."""
 
-        if isinstance(soundPath, types.StringTypes) or \
-           isinstance(soundPath, Filename):
+        if not isinstance(soundPath, (MovieAudio, tuple, list, set)):
             # We were given a single sound pathname.
-            soundList = [soundPath]
-            gotList = False
-        elif isinstance(soundPath, MovieAudio):
             soundList = [soundPath]
             gotList = False
         else:
