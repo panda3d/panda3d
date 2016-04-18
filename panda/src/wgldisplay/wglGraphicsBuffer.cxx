@@ -74,10 +74,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
-  if (_fb_properties.is_single_buffered()) {
-    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
-  } else {
-    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
+  if (_pbuffer_bound) {
+    if (_fb_properties.is_single_buffered()) {
+      wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
+    } else {
+      wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
+    }
   }
 
   if (!rebuild_bitplanes()) {
@@ -146,7 +148,7 @@ bind_texture_to_pbuffer() {
   for (size_t i = 0; i != cdata->_textures.size(); ++i) {
     const RenderTexture &rt = cdata->_textures[i];
     RenderTexturePlane plane = rt._plane;
-    if (plane == RTP_color) {
+    if (plane == RTP_color && rt._rtm_mode == RTM_bind_or_copy) {
       tex_index = i;
       break;
     }
