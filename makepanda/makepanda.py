@@ -561,6 +561,10 @@ if (COMPILER == "MSVC"):
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
             #LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
+
+    if not PkgSkip("FREETYPE") and os.path.isdir(GetThirdpartyDir() + "freetype/include/freetype2"):
+        IncDirectory("FREETYPE", GetThirdpartyDir() + "freetype/include/freetype2")
+
     IncDirectory("ALWAYS", GetThirdpartyDir() + "extras/include")
     LibName("WINSOCK", "wsock32.lib")
     LibName("WINSOCK2", "wsock32.lib")
@@ -587,7 +591,14 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
-    if (PkgSkip("PNG")==0):      LibName("PNG",      GetThirdpartyDir() + "png/lib/libpng_static.lib")
+    if (PkgSkip("OPENSSL")==0):
+        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
+        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
+    if (PkgSkip("PNG")==0):
+        if os.path.isfile(GetThirdpartyDir() + "png/lib/libpng16_static.lib"):
+            LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
+        else:
+            LibName("PNG", GetThirdpartyDir() + "png/lib/libpng_static.lib")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
     if (PkgSkip("TIFF")==0):     LibName("TIFF",     GetThirdpartyDir() + "tiff/lib/libtiff.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
@@ -596,8 +607,6 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     GetThirdpartyDir() + "nvidiacg/lib/cgGL.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    GetThirdpartyDir() + "nvidiacg/lib/cgD3D9.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", GetThirdpartyDir() + "nvidiacg/lib/cg.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
     if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
@@ -703,7 +712,7 @@ if (COMPILER == "MSVC"):
         IncDirectory("SPEEDTREE", SDK["SPEEDTREE"] + "/Include")
     if (PkgSkip("BULLET")==0):
         suffix = '.lib'
-        if GetTargetArch() == 'x64':
+        if GetTargetArch() == 'x64' and os.path.isfile(GetThirdpartyDir() + "bullet/lib/BulletCollision_x64.lib"):
             suffix = '_x64.lib'
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/LinearMath" + suffix)
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletCollision" + suffix)

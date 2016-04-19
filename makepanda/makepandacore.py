@@ -1122,12 +1122,12 @@ def GetThirdpartyDir():
     target_arch = GetTargetArch()
 
     if (target == 'windows'):
+        vc = SDK["VISUALSTUDIO_VERSION"].split('.')[0]
+
         if target_arch == 'x64':
-            THIRDPARTYDIR = base + "/win-libs-vc10-x64/"
-            if not os.path.isdir(THIRDPARTYDIR):
-                THIRDPARTYDIR = base + "/win-libs-vc10/"
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-x64/"
         else:
-            THIRDPARTYDIR = base + "/win-libs-vc10/"
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
     elif (target == 'darwin'):
         # OSX thirdparty binaries are universal, where possible.
@@ -2287,8 +2287,8 @@ def SetupVisualStudioEnviron():
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
-        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10240.0\\"
-        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10240.0\\"
+        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10586.0\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10586.0\\"
         AddToPathEnv("INCLUDE", inc_dir + "shared")
         AddToPathEnv("INCLUDE", inc_dir + "ucrt")
         AddToPathEnv("INCLUDE", inc_dir + "um")
