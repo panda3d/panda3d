@@ -236,6 +236,15 @@ get_morph_delta(size_t n) const {
 }
 
 /**
+ * Returns a standard vertex format containing no arrays at all, useful for
+ * pull-style vertex rendering.
+ */
+INLINE const GeomVertexFormat *GeomVertexFormat::
+get_empty() {
+  return get_registry()->_empty;
+}
+
+/**
  * Returns a standard vertex format with just a 3-component vertex position.
  */
 INLINE const GeomVertexFormat *GeomVertexFormat::

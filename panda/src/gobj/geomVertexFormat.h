@@ -125,6 +125,8 @@ PUBLISHED:
   void write_with_data(ostream &out, int indent_level,
                        const GeomVertexData *data) const;
 
+  INLINE static const GeomVertexFormat *get_empty();
+
   // Some standard vertex formats.  No particular requirement to use one of
   // these, but the DirectX renderers can use these formats directly, whereas
   // any other format will have to be converted first.
@@ -226,6 +228,8 @@ private:
 
     Formats _formats;
     LightReMutex _lock;
+
+    CPT(GeomVertexFormat) _empty;
 
     CPT(GeomVertexFormat) _v3;
     CPT(GeomVertexFormat) _v3n3;

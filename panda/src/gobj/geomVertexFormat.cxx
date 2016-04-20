@@ -890,6 +890,8 @@ Registry() {
  */
 void GeomVertexFormat::Registry::
 make_standard_formats() {
+  _empty = register_format(new GeomVertexFormat);
+
   _v3 = register_format(new GeomVertexArrayFormat
                         (InternalName::get_vertex(), 3,
                          NT_stdfloat, C_point));
@@ -1011,10 +1013,6 @@ register_format(GeomVertexFormat *format) {
     new_format = (*fi);
     if (!new_format->is_registered()) {
       new_format->do_register();
-      if (new_format->get_num_arrays() == 0) {
-        gobj_cat.warning()
-          << "Empty GeomVertexFormat registered.\n";
-      }
     }
   }
 
