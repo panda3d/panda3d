@@ -599,8 +599,12 @@ if (COMPILER == "MSVC"):
             LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
         else:
             LibName("PNG", GetThirdpartyDir() + "png/lib/libpng_static.lib")
+    if (PkgSkip("TIFF")==0):
+        if os.path.isfile(GetThirdpartyDir() + "tiff/lib/libtiff.lib"):
+            LibName("TIFF", GetThirdpartyDir() + "tiff/lib/libtiff.lib")
+        else:
+            LibName("TIFF", GetThirdpartyDir() + "tiff/lib/tiff.lib")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF",     GetThirdpartyDir() + "tiff/lib/libtiff.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/quat.lib")
