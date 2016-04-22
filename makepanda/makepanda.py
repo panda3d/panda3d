@@ -6521,7 +6521,6 @@ def MakeInstallerNSIS(file, title, installdir):
         'BUILT'       : panda,
         'SOURCE'      : psource,
         'PYVER'       : SDK["PYTHONVERSION"][6:9],
-        'PYEXTRAS'    : os.path.join(os.path.abspath(GetThirdpartyBase()), 'win-extras'),
         'REGVIEW'     : regview,
     }
 
