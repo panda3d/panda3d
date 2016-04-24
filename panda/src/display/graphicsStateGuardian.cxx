@@ -2201,7 +2201,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       bool force) {
   _munger = munger;
   _data_reader = data_reader;
-  return _data_reader->has_vertex();
+
+  // Always draw if we have a shader, since the shader might use a different
+  // mechanism for fetching vertex data.
+  return _data_reader->has_vertex() || (_target_shader && _target_shader->has_shader());
 }
 
 /**

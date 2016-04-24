@@ -8,7 +8,6 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task
 from .DirectFrame import *
 from .DirectButton import *
-import types
 
 
 class DirectScrolledListItem(DirectButton):
@@ -49,7 +48,7 @@ class DirectScrolledList(DirectFrame):
     def __init__(self, parent = None, **kw):
         assert self.notify.debugStateCall(self)
         self.index = 0
-        self.forceHeight = None
+        self.__forceHeight = None
 
         """ If one were to want a scrolledList that makes and adds its items
            as needed, simply pass in an items list of strings (type 'str')
@@ -115,12 +114,12 @@ class DirectScrolledList(DirectFrame):
 
     def setForceHeight(self):
         assert self.notify.debugStateCall(self)
-        self.forceHeight = self["forceHeight"]
+        self.__forceHeight = self["forceHeight"]
 
     def recordMaxHeight(self):
         assert self.notify.debugStateCall(self)
-        if self.forceHeight is not None:
-            self.maxHeight = self.forceHeight
+        if self.__forceHeight is not None:
+            self.maxHeight = self.__forceHeight
         else:
             self.maxHeight = 0.0
             for item in self["items"]:
@@ -130,24 +129,24 @@ class DirectScrolledList(DirectFrame):
     def setScrollSpeed(self):
         assert self.notify.debugStateCall(self)
         # Items per second to move
-        self.scrollSpeed = self["scrollSpeed"]
-        if self.scrollSpeed <= 0:
-            self.scrollSpeed = 1
+        self.__scrollSpeed = self["scrollSpeed"]
+        if self.__scrollSpeed <= 0:
+            self.__scrollSpeed = 1
 
     def setNumItemsVisible(self):
         assert self.notify.debugStateCall(self)
         # Items per second to move
-        self.numItemsVisible = self["numItemsVisible"]
+        self.__numItemsVisible = self["numItemsVisible"]
 
     def destroy(self):
         assert self.notify.debugStateCall(self)
         taskMgr.remove(self.taskName("scroll"))
         if hasattr(self, "currentSelected"):
             del self.currentSelected
-        if self.incButtonCallback:
-            self.incButtonCallback = None
-        if self.decButtonCallback:
-            self.decButtonCallback = None
+        if self.__incButtonCallback:
+            self.__incButtonCallback = None
+        if self.__decButtonCallback:
+            self.__decButtonCallback = None
         self.incButton.destroy()
         self.decButton.destroy()
         DirectFrame.destroy(self)
@@ -169,10 +168,10 @@ class DirectScrolledList(DirectFrame):
         #for i in range(len(self["items"])):
         #    print "buttontext[", i,"]", self["items"][i]["text"]
 
-        if(len(self["items"])==0):
+        if len(self["items"]) == 0:
             return 0
 
-        if(type(self["items"][0])!=types.InstanceType):
+        if type(self["items"][0]) == type(''):
             self.notify.warning("getItemIndexForItemID: cant find itemID for non-class list items!")
             return 0
 
@@ -309,7 +308,7 @@ class DirectScrolledList(DirectFrame):
     def __incButtonDown(self, event):
         assert self.notify.debugStateCall(self)
         task = Task(self.__scrollByTask)
-        task.setDelay(1.0 / self.scrollSpeed)
+        task.setDelay(1.0 / self.__scrollSpeed)
         task.prevTime = 0.0
         task.delta = 1
         taskName = self.taskName("scroll")
@@ -317,13 +316,13 @@ class DirectScrolledList(DirectFrame):
         taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
         messenger.send('wakeup')
-        if self.incButtonCallback:
-            self.incButtonCallback()
+        if self.__incButtonCallback:
+            self.__incButtonCallback()
 
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
         task = Task(self.__scrollByTask)
-        task.setDelay(1.0 / self.scrollSpeed)
+        task.setDelay(1.0 / self.__scrollSpeed)
         task.prevTime = 0.0
         task.delta = -1
         taskName = self.taskName("scroll")
@@ -331,8 +330,8 @@ class DirectScrolledList(DirectFrame):
         taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
         messenger.send('wakeup')
-        if self.decButtonCallback:
-            self.decButtonCallback()
+        if self.__decButtonCallback:
+            self.__decButtonCallback()
 
     def __buttonUp(self, event):
         assert self.notify.debugStateCall(self)
@@ -345,7 +344,7 @@ class DirectScrolledList(DirectFrame):
         Add this string and extraArg to the list
         """
         assert self.notify.debugStateCall(self)
-        if(type(item) == types.InstanceType):
+        if type(item) != type(''):
             # cant add attribs to non-classes (like strings & ints)
             item.itemID = self.nextItemID
             self.nextItemID += 1
@@ -354,7 +353,7 @@ class DirectScrolledList(DirectFrame):
             item.reparentTo(self.itemFrame)
         if refresh:
             self.refresh()
-        if(type(item) == types.InstanceType):
+        if type(item) != type(''):
             return item.itemID  # to pass to scrollToItemID
 
     def removeItem(self, item, refresh=1):
@@ -466,11 +465,11 @@ class DirectScrolledList(DirectFrame):
 
     def setIncButtonCallback(self):
         assert self.notify.debugStateCall(self)
-        self.incButtonCallback = self["incButtonCallback"]
+        self.__incButtonCallback = self["incButtonCallback"]
 
     def setDecButtonCallback(self):
         assert self.notify.debugStateCall(self)
-        self.decButtonCallback = self["decButtonCallback"]
+        self.__decButtonCallback = self["decButtonCallback"]
 
 
 """

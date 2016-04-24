@@ -47,6 +47,9 @@ PUBLISHED:
 
   INLINE const LVecBase4 &get_frame() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(frame, get_frame);
+
 public:
   virtual void output(ostream &out) const;
 

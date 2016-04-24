@@ -17,10 +17,10 @@
 INLINE DrawableRegion::
 DrawableRegion() :
   _screenshot_buffer_type(RenderBuffer::T_front),
-  _draw_buffer_type(RenderBuffer::T_back)
+  _draw_buffer_type(RenderBuffer::T_back),
+  _clear_mask(0)
 {
-  for (int i=0; i<RTP_COUNT; i++) {
-    _clear_active[i] = false;
+  for (int i = 0; i < RTP_COUNT; ++i) {
     _clear_value[i] = LColor(0.0f, 0.0f, 0.0f, 0.0f);
   }
   _clear_value[RTP_depth] = LColor(1.0f,1.0f,1.0f,1.0f);
@@ -35,11 +35,11 @@ INLINE DrawableRegion::
 DrawableRegion(const DrawableRegion &copy) :
   _screenshot_buffer_type(copy._screenshot_buffer_type),
   _draw_buffer_type(copy._draw_buffer_type),
+  _clear_mask(copy._clear_mask),
   _pixel_zoom(copy._pixel_zoom),
   _pixel_factor(copy._pixel_factor)
 {
-  for (int i=0; i<RTP_COUNT; i++) {
-    _clear_active[i] = copy._clear_active[i];
+  for (int i = 0; i < RTP_COUNT; ++i) {
     _clear_value[i] = copy._clear_value[i];
   }
 }
@@ -51,8 +51,8 @@ INLINE void DrawableRegion::
 operator = (const DrawableRegion &copy) {
   _screenshot_buffer_type = copy._screenshot_buffer_type;
   _draw_buffer_type = copy._draw_buffer_type;
-  for (int i=0; i<RTP_COUNT; i++) {
-    _clear_active[i] = copy._clear_active[i];
+  _clear_mask = copy._clear_mask;
+  for (int i = 0; i < RTP_COUNT; ++i) {
     _clear_value[i] = copy._clear_value[i];
   }
   _pixel_zoom = copy._pixel_zoom;
@@ -64,8 +64,8 @@ operator = (const DrawableRegion &copy) {
  */
 INLINE void DrawableRegion::
 copy_clear_settings(const DrawableRegion &copy) {
-  for (int i=0; i<RTP_COUNT; i++) {
-    _clear_active[i] = copy._clear_active[i];
+  _clear_mask = copy._clear_mask;
+  for (int i = 0; i < RTP_COUNT; ++i) {
     _clear_value[i] = copy._clear_value[i];
   }
   update_pixel_factor();

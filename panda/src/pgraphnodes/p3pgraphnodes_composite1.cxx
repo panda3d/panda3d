@@ -7,3 +7,5 @@
 #include "fadeLodNodeData.cxx"
 #include "lightLensNode.cxx"
 #include "lightNode.cxx"
+#include "lodNode.cxx"
+#include "lodNodeType.cxx"

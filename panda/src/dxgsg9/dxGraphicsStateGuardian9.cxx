@@ -4118,19 +4118,18 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
     return D3DBLEND_SRCALPHASAT;
 
   case ColorBlendAttrib::O_incoming1_color:
-    return D3DBLEND_SRCCOLOR2;
+    return (D3DBLEND)16; //D3DBLEND_SRCCOLOR2;
 
   case ColorBlendAttrib::O_one_minus_incoming1_color:
-    return D3DBLEND_INVSRCCOLOR2;
+    return (D3DBLEND)17; //D3DBLEND_INVSRCCOLOR2;
 
   case ColorBlendAttrib::O_incoming1_alpha:
-    // Not supported by DX.
-    return D3DBLEND_SRCCOLOR2;
+    // Not supported by DX9.
+    return (D3DBLEND)18;
 
   case ColorBlendAttrib::O_one_minus_incoming1_alpha:
-    // Not supported by DX.
-    return D3DBLEND_INVSRCCOLOR2;
-
+    // Not supported by DX9.
+    return (D3DBLEND)19;
   }
 
   dxgsg9_cat.error()

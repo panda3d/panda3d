@@ -29,6 +29,7 @@
 #include "selectiveChildNode.h"
 #include "sequenceNode.h"
 #include "shaderGenerator.h"
+#include "sphereLight.h"
 #include "spotlight.h"
 #include "switchNode.h"
 #include "uvScrollNode.h"
@@ -123,6 +124,7 @@ init_libpgraphnodes() {
   SelectiveChildNode::init_type();
   SequenceNode::init_type();
   ShaderGenerator::init_type();
+  SphereLight::init_type();
   Spotlight::init_type();
   SwitchNode::init_type();
   UvScrollNode::init_type();
@@ -137,6 +139,7 @@ init_libpgraphnodes() {
   PointLight::register_with_read_factory();
   SelectiveChildNode::register_with_read_factory();
   SequenceNode::register_with_read_factory();
+  SphereLight::register_with_read_factory();
   Spotlight::register_with_read_factory();
   SwitchNode::register_with_read_factory();
   UvScrollNode::register_with_read_factory();

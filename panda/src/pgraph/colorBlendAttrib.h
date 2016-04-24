@@ -104,6 +104,17 @@ PUBLISHED:
   INLINE static bool involves_constant_color(Operand operand);
   INLINE static bool involves_color_scale(Operand operand);
 
+PUBLISHED:
+  MAKE_PROPERTY(rgb_mode, get_mode);
+  MAKE_PROPERTY(rgb_operand_a, get_operand_a);
+  MAKE_PROPERTY(rgb_operand_b, get_operand_b);
+
+  MAKE_PROPERTY(alpha_mode, get_alpha_mode);
+  MAKE_PROPERTY(alpha_operand_a, get_alpha_operand_a);
+  MAKE_PROPERTY(alpha_operand_b, get_alpha_operand_b);
+
+  MAKE_PROPERTY(color, get_color);
+
 public:
   virtual void output(ostream &out) const;
 

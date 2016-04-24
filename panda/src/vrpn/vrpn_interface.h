@@ -27,6 +27,14 @@
   #endif
 #endif
 
+// VPRN misses an include to this in vrpn_Shared.h.
+#include <stdint.h>
+
+// Prevent VRPN from defining this function, which we don't need,
+// and cause compilation errors in MSVC 2015.
+#include "vrpn_Configure.h"
+#undef VRPN_EXPORT_GETTIMEOFDAY
+
 #include "vrpn_Connection.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Analog.h"

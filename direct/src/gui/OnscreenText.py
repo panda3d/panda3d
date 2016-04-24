@@ -4,7 +4,6 @@ __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm'
 
 from panda3d.core import *
 from . import DirectGuiGlobals as DGG
-from direct.showbase.DirectObject import DirectObject
 import sys
 
 ## These are the styles of text we might commonly see.  They set the
@@ -17,7 +16,7 @@ ScreenPrompt = 3
 NameConfirm = 4
 BlackOnWhite = 5
 
-class OnscreenText(DirectObject, NodePath):
+class OnscreenText(NodePath):
 
     def __init__(self, text = '',
                  style = Plain,

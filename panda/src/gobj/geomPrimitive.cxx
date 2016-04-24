@@ -2231,7 +2231,8 @@ get_num_primitives() const {
  */
 bool GeomPrimitivePipelineReader::
 check_valid(const GeomVertexDataPipelineReader *data_reader) const {
-  if (get_num_vertices() != 0  &&
+  if (get_num_vertices() != 0 &&
+      data_reader->get_num_arrays() > 0 &&
       get_max_vertex() >= data_reader->get_num_rows()) {
 
 #ifndef NDEBUG

@@ -23,6 +23,7 @@
 #include "nodeVertexTransform.h"
 #include "rigidBodyCombiner.h"
 #include "pipeOcclusionCullTraverser.h"
+#include "shaderTerrainMesh.h"
 
 #include "dconfig.h"
 
@@ -123,6 +124,7 @@ init_libgrutil() {
   RigidBodyCombiner::init_type();
   PipeOcclusionCullTraverser::init_type();
   SceneGraphAnalyzerMeter::init_type();
+  ShaderTerrainMesh::init_type();
 
 #ifdef HAVE_AUDIO
   MovieTexture::init_type();
