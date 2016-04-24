@@ -268,7 +268,7 @@ class MetaInterval(CMetaInterval):
             self.addInterval(ival, maxDuration - ival.getDuration(), TRACK_START)
         self.popLevel(duration)
 
-    def addTrack(self, list, name, relTime, relTo, duration):
+    def addTrack(self, trackList, name, relTime, relTo, duration):
         # Adds a "track list".  This is a list of tuples of the form:
         #
         #   (<delay>, <Interval>,
@@ -281,19 +281,19 @@ class MetaInterval(CMetaInterval):
         # (TRACK_START).  If the relative code is omitted, the default
         # is TRACK_START.
         self.pushLevel(name, relTime, relTo)
-        for tuple in list:
-            if isinstance(tuple, tuple) or \
-               isinstance(tuple, list):
-                relTime = tuple[0]
-                ival = tuple[1]
-                if len(tuple) >= 3:
-                    relTo = tuple[2]
+        for tupleObj in trackList:
+            if isinstance(tupleObj, tuple) or \
+               isinstance(tupleObj, list):
+                relTime = tupleObj[0]
+                ival = tupleObj[1]
+                if len(tupleObj) >= 3:
+                    relTo = tupleObj[2]
                 else:
                     relTo = TRACK_START
                 self.addInterval(ival, relTime, relTo)
 
             else:
-                self.notify.error("Not a tuple in Track: %s" % (tuple,))
+                self.notify.error("Not a tuple in Track: %s" % (tupleObj,))
         self.popLevel(duration)
 
     def addInterval(self, ival, relTime, relTo):
@@ -593,22 +593,22 @@ class Track(MetaInterval):
         meta.addTrack(self.ivals, self.getName(),
                       relTime, relTo, self.phonyDuration)
 
-    def validateComponent(self, tuple):
+    def validateComponent(self, tupleObj):
         # This is called only in debug mode to verify that the
         # indicated component added to the MetaInterval is appropriate
         # to this type of MetaInterval.  In most cases except Track,
         # this is the same as asking that the component is itself an
         # Interval.
 
-        if not (isinstance(tuple, tuple) or \
-                isinstance(tuple, list)):
+        if not (isinstance(tupleObj, tuple) or \
+                isinstance(tupleObj, list)):
             # It's not a tuple.
             return 0
 
-        relTime = tuple[0]
-        ival = tuple[1]
-        if len(tuple) >= 3:
-            relTo = tuple[2]
+        relTime = tupleObj[0]
+        ival = tupleObj[1]
+        if len(tupleObj) >= 3:
+            relTo = tupleObj[2]
         else:
             relTo = TRACK_START
 
