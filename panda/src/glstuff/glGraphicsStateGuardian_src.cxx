@@ -11502,7 +11502,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   if (needs_reload && gtc->_immutable) {
-    GLCAT.warning() << "Attempt to modify texture with immutable storage, recreating texture.\n";
+    GLCAT.info() << "Attempt to modify texture with immutable storage, recreating texture.\n";
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
 
