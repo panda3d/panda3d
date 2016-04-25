@@ -43,6 +43,7 @@ public:
                        GraphicsOutput *host);
   virtual ~VulkanGraphicsWindow();
 
+  virtual void clear(Thread *current_thread);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
@@ -54,6 +55,8 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
+  bool setup_render_pass();
+
   void destroy_swapchain();
   bool create_swapchain();
 
@@ -62,6 +65,7 @@ private:
   VkSwapchainKHR _swapchain;
   VkRenderPass _render_pass;
   VkSemaphore _present_complete;
+  int _current_clear_mask;
 
   LVecBase2i _swapchain_size;
   VkSurfaceFormatKHR _surface_format;
@@ -83,6 +87,7 @@ private:
   VkImage _depth_stencil_image;
   VkImageView _depth_stencil_view;
   VkDeviceMemory _depth_stencil_memory;
+  VkImageAspectFlags _depth_stencil_aspect_mask;
 
 public:
   static TypeHandle get_class_type() {

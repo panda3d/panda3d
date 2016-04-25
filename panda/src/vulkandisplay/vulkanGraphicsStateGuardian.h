@@ -98,6 +98,10 @@ public:
 
   virtual void reset();
 
+  virtual bool framebuffer_copy_to_texture(Texture *tex, int view, int z,
+                                           const DisplayRegion *dr,
+                                           const RenderBuffer &rb);
+
 private:
   bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
                          VkPrimitiveTopology topology);

@@ -1348,7 +1348,8 @@ clear(DrawableRegion *clearable) {
   VkClearAttachment attachments[2];
   int ai = 0;
 
-  if (clearable->get_clear_color_active()) {
+  if (clearable->get_clear_color_active() &&
+      _current_properties->get_color_bits() > 0) {
     LColor color = clearable->get_clear_color();
     VkClearAttachment &attachment = attachments[ai++];
     attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1359,8 +1360,10 @@ clear(DrawableRegion *clearable) {
     attachment.clearValue.color.float32[3] = color[3];
   }
 
-  if (clearable->get_clear_depth_active() ||
-      clearable->get_clear_stencil_active()) {
+  if ((clearable->get_clear_depth_active() ||
+       clearable->get_clear_stencil_active()) &&
+      (_current_properties->get_depth_bits() > 0 ||
+       _current_properties->get_stencil_bits() > 0)) {
     VkClearAttachment &attachment = attachments[ai++];
     attachment.aspectMask = 0;
     if (clearable->get_clear_depth_active()) {
@@ -1705,6 +1708,18 @@ end_draw_primitives() {
  */
 void VulkanGraphicsStateGuardian::
 reset() {
+}
+
+/**
+ * Copy the pixels within the indicated display region from the framebuffer
+ * into texture memory.
+ *
+ * If z > -1, it is the cube map index into which to copy.
+ */
+bool VulkanGraphicsStateGuardian::
+framebuffer_copy_to_texture(Texture *tex, int view, int z, const DisplayRegion *,
+                            const RenderBuffer &) {
+  return false;
 }
 
 /**
