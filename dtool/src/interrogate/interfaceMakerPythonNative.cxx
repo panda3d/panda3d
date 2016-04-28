@@ -1738,7 +1738,7 @@ write_module_class(ostream &out, Object *obj) {
 
       switch (rfi->second._wrapper_type) {
       case WT_no_params:
-      case WT_iter_next: // TODO: fix iter_next to return NULL instead of None
+      case WT_iter_next:
         // PyObject *func(PyObject *self)
         {
           out << "//////////////////\n";
@@ -1751,9 +1751,15 @@ write_module_class(ostream &out, Object *obj) {
           out << "    return NULL;\n";
           out << "  }\n\n";
 
+          int return_flags = RF_pyobject | RF_err_null;
+          if (rfi->second._wrapper_type == WT_iter_next) {
+            // If the function returns NULL, we should return NULL to indicate
+            // a StopIteration, rather than returning None.
+            return_flags |= RF_preserve_null;
+          }
           string expected_params;
           write_function_forset(out, def._remaps, 0, 0, expected_params, 2, true, true,
-                                AT_no_args, RF_pyobject | RF_err_null, false);
+                                AT_no_args, return_flags, false);
 
           out << "  if (!_PyErr_OCCURRED()) {\n";
           out << "    return Dtool_Raise_BadArgumentsError(\n";
@@ -5856,8 +5862,15 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "Py_INCREF(Py_None);\n";
       indent(out, indent_level) << "return Py_None;\n";
 
+    } else if (return_flags & RF_preserve_null) {
+      indent(out, indent_level) << "if (" << return_expr << " == NULL) {\n";
+      indent(out, indent_level) << "  return NULL;\n";
+      indent(out, indent_level) << "} else {\n";
+      pack_return_value(out, indent_level + 2, remap, return_expr, return_flags);
+      indent(out, indent_level) << "}\n";
+
     } else {
-      pack_return_value(out, indent_level, remap, return_expr);
+      pack_return_value(out, indent_level, remap, return_expr, return_flags);
     }
 
   } else if (return_flags & RF_coerced) {
@@ -6014,7 +6027,7 @@ error_raise_return(ostream &out, int indent_level, int return_flags,
  */
 void InterfaceMakerPythonNative::
 pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
-                  string return_expr) {
+                  string return_expr, int return_flags) {
 
   ParameterRemap *return_type = remap->_return_type;
   CPPType *orig_type = return_type->get_orig_type();
