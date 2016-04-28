@@ -185,8 +185,39 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (!buffer._layout_defined) {
     // If this is the first time we are using these images, they are still in
     // the UNDEFINED layout.
-    barriers[0].srcAccessMask = 0;
-    barriers[0].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    if (!get_clear_color_active()) {
+      // If the attachment is set to LOAD, we need to clear it for the first
+      // time if we don't want the validation layer to yell at us.  This means
+      // we need to transition it to TRANSFER_DST_OPTIMAL first.
+      VkImageMemoryBarrier barrier;
+      barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+      barrier.pNext = NULL;
+      barrier.srcAccessMask = 0;
+      barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+      barrier.srcQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
+      barrier.dstQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
+      barrier.image = buffer._image;
+      barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      barrier.subresourceRange.baseMipLevel = 0;
+      barrier.subresourceRange.levelCount = 1;
+      barrier.subresourceRange.baseArrayLayer = 0;
+      barrier.subresourceRange.layerCount = 1;
+      vkCmdPipelineBarrier(cmd, 0, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                           0, NULL, 0, NULL, 1, &barrier);
+
+      // Now clear the image to some arbitrary color.  We'll just pick the
+      // color returned by get_clear_color(), even if it is meaningless.
+      vkCmdClearColorImage(cmd, buffer._image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           &clears[0].color, 1, &barrier.subresourceRange);
+
+      barriers[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barriers[0].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    } else {
+      barriers[0].srcAccessMask = 0;
+      barriers[0].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    }
     buffer._layout_defined = true;
   }
 

@@ -1964,16 +1964,26 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
     attrib_desc[i].binding = array_index;
     attrib_desc[i].offset = column->get_start();
 
+    bool normalized = (column->get_contents() == GeomEnums::C_color);
+
     // Determine which Vulkan format to map this column to.  The formats are
     // laid out somewhat (though not entirely) consistently, so we can use a
     // trick to jump to the format for the right number of components.
     int fmt_jump = column->get_num_components() - 1;
     switch (column->get_numeric_type()) {
     case GeomEnums::NT_uint8:
-      if (fmt_jump < 3) {
-        attrib_desc[i].format = (VkFormat)(VK_FORMAT_R8_UINT + 7 * fmt_jump);
+      if (normalized) {
+        if (fmt_jump < 3) {
+          attrib_desc[i].format = (VkFormat)(VK_FORMAT_R8_UNORM + 7 * fmt_jump);
+        } else {
+          attrib_desc[i].format = VK_FORMAT_R8G8B8A8_UNORM;
+        }
       } else {
-        attrib_desc[i].format = VK_FORMAT_R8G8B8A8_UINT;
+        if (fmt_jump < 3) {
+          attrib_desc[i].format = (VkFormat)(VK_FORMAT_R8_UINT + 7 * fmt_jump);
+        } else {
+          attrib_desc[i].format = VK_FORMAT_R8G8B8A8_UINT;
+        }
       }
       break;
     case GeomEnums::NT_uint16:
@@ -1983,16 +1993,28 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
       attrib_desc[i].format = (VkFormat)(VK_FORMAT_R32_UINT + 3 * fmt_jump);
       break;
     case GeomEnums::NT_packed_dcba:
-      attrib_desc[i].format = VK_FORMAT_B8G8R8A8_UINT;
+      if (normalized) {
+        attrib_desc[i].format = VK_FORMAT_B8G8R8A8_UNORM;
+      } else {
+        attrib_desc[i].format = VK_FORMAT_B8G8R8A8_UINT;
+      }
       break;
     case GeomEnums::NT_packed_dabc:
-      attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
+      if (normalized) {
+        attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+      } else {
+        attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
+      }
       break;
+#ifndef STDFLOAT_DOUBLE
     case GeomEnums::NT_stdfloat:
-      assert(false);
+#endif
     case GeomEnums::NT_float32:
       attrib_desc[i].format = (VkFormat)(VK_FORMAT_R32_SFLOAT + 3 * fmt_jump);
       break;
+#ifdef STDFLOAT_DOUBLE
+    case GeomEnums::NT_stdfloat:
+#endif
     case GeomEnums::NT_float64:
       attrib_desc[i].format = (VkFormat)(VK_FORMAT_R64_SFLOAT + 3 * fmt_jump);
       break;
