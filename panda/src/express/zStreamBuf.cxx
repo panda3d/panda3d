@@ -171,6 +171,59 @@ close_write() {
 }
 
 /**
+ * Implements seeking within the stream.  ZStreamBuf only allows seeking back
+ * to the beginning of the stream.
+ */
+streampos ZStreamBuf::
+seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
+  // Necessary for tellg() to work after seeking to 0.
+  if (dir == ios::cur && off == 0) {
+    if (_source->tellg() == 0) {
+      return 0;
+    } else {
+      return -1;
+    }
+  }
+
+  if (off != 0 || dir != ios::beg) {
+    // We only know how to reposition to the beginning.
+    return -1;
+  }
+
+  if (which != ios::in) {
+    // We can only do this with the input stream.
+    return -1;
+  }
+
+  size_t n = egptr() - gptr();
+  gbump(n);
+
+  _source->seekg(0, ios::beg);
+  if (_source->tellg() == 0) {
+    _z_source.next_in = Z_NULL;
+    _z_source.avail_in = 0;
+    _z_source.next_out = Z_NULL;
+    _z_source.avail_out = 0;
+    int result = inflateReset(&_z_source);
+    if (result < 0) {
+      show_zlib_error("inflateReset", result, _z_source);
+    }
+    return 0;
+  }
+
+  return -1;
+}
+
+/**
+ * Implements seeking within the stream.  ZStreamBuf only allows seeking back
+ * to the beginning of the stream.
+ */
+streampos ZStreamBuf::
+seekpos(streampos pos, ios_openmode which) {
+  return seekoff(pos, ios::beg, which);
+}
+
+/**
  * Called by the system ostream implementation when its internal buffer is
  * filled, plus one character.
  */
