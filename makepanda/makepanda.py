@@ -1254,15 +1254,15 @@ def CompileCxx(obj,src,opts):
         elif GetTarget() == 'emscripten':
             cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -s NO_FILESYSTEM=1"
 
-            if 'VORBIS' in opts:
+            if 'VORBIS' in opts and not PkgSkip("VORBIS"):
                 cmd += " -s USE_VORBIS=1"
-            if 'BULLET' in opts:
+            if 'BULLET' in opts and not PkgSkip("BULLET"):
                 cmd += " -s USE_BULLET=1"
-            if 'ZLIB' in opts:
+            if 'ZLIB' in opts and not PkgSkip("ZLIB"):
                 cmd += " -s USE_ZLIB=1"
-            if 'FREETYPE' in opts:
+            if 'FREETYPE' in opts and not PkgSkip("FREETYPE"):
                 cmd += " -s USE_FREETYPE=1"
-            if 'PNG' in opts:
+            if 'PNG' in opts and not PkgSkip("PNG"):
                 cmd += " -s USE_LIBPNG=1"
 
         else:
