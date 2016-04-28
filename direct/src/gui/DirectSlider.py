@@ -3,9 +3,9 @@
 __all__ = ['DirectSlider']
 
 from panda3d.core import *
-import DirectGuiGlobals as DGG
-from DirectFrame import *
-from DirectButton import *
+from . import DirectGuiGlobals as DGG
+from .DirectFrame import *
+from .DirectButton import *
 
 """
 import DirectSlider
@@ -124,4 +124,4 @@ class DirectSlider(DirectFrame):
         self._optionInfo['value'][DGG._OPT_VALUE] = self.guiItem.getValue()
 
         if self['command']:
-            apply(self['command'], self['extraArgs'])
+            self['command'](*self['extraArgs'])

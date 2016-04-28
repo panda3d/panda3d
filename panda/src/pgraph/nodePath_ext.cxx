@@ -156,7 +156,11 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     }
   }
 
+#if PY_MAJOR_VERSION >= 3
+  PyObject *result = Py_BuildValue("(O(y#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
+#else
   PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
+#endif
   Py_DECREF(func);
   Py_DECREF(this_class);
   return result;

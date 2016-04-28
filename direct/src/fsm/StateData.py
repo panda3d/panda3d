@@ -5,7 +5,6 @@ __all__ = ['StateData']
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 
-from direct.directnotify import DirectNotifyGlobal
 
 class StateData(DirectObject):
     """

@@ -36,7 +36,7 @@ public:
   void make_handle_resident();
   GLuint64 get_handle();
 
-#ifdef OPENGLES
+#ifdef OPENGLES_1
   static CONSTEXPR bool needs_barrier(GLbitfield barrier) { return false; };
 #else
   bool needs_barrier(GLbitfield barrier);

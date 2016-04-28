@@ -1,7 +1,7 @@
 """ Class used to create and control radamec device """
 from math import *
 from direct.showbase.DirectObject import DirectObject
-from DirectDeviceManager import *
+from .DirectDeviceManager import *
 
 from direct.directnotify import DirectNotifyGlobal
 

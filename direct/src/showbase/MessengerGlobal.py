@@ -2,6 +2,6 @@
 
 __all__ = ['messenger']
 
-import Messenger
+from . import Messenger
 
 messenger = Messenger.Messenger()

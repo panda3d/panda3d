@@ -95,18 +95,18 @@ class ContainerReport(Job):
                     self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
                 continue
 
-            if type(parentObj) is types.DictType:
+            if type(parentObj) is dict:
                 key = None
                 attr = None
-                keys = parentObj.keys()
+                keys = list(parentObj.keys())
                 try:
                     keys.sort()
-                except TypeError, e:
+                except TypeError as e:
                     self.notify.warning('non-sortable dict keys: %s: %s' % (self._id2pathStr[id(parentObj)], repr(e)))
                 for key in keys:
                     try:
                         attr = parentObj[key]
-                    except KeyError, e:
+                    except KeyError as e:
                         self.notify.warning('could not index into %s with key %s' % (self._id2pathStr[id(parentObj)],
                                                                                      key))
                     if id(attr) not in self._visitedIds:
@@ -134,7 +134,7 @@ class ContainerReport(Job):
                         index = 0
                         while 1:
                             try:
-                                attr = itr.next()
+                                attr = next(itr)
                             except:
                                 # some custom classes don't do well when iterated
                                 attr = None
@@ -146,7 +146,7 @@ class ContainerReport(Job):
                                     self._id2pathStr[id(attr)] = self._id2pathStr[id(parentObj)] + '[%s]' % index
                             index += 1
                         del attr
-                    except StopIteration, e:
+                    except StopIteration as e:
                         pass
                     del itr
                     continue
@@ -213,11 +213,11 @@ class ContainerReport(Job):
         if type not in self._type2id2len:
             return
         len2ids = invertDictLossless(self._type2id2len[type])
-        lengths = len2ids.keys()
+        lengths = list(len2ids.keys())
         lengths.sort()
         lengths.reverse()
-        print '====='
-        print '===== %s' % type
+        print('=====')
+        print('===== %s' % type)
         count = 0
         stop = False
         for l in lengths:
@@ -232,13 +232,13 @@ class ContainerReport(Job):
                     yield None
             pathStrList.sort()
             for pathstr in pathStrList:
-                print '%s: %s' % (l, pathstr)
+                print('%s: %s' % (l, pathstr))
             if limit is not None and count >= limit:
                 return
 
     def _output(self, **kArgs):
-        print "===== ContainerReport: \'%s\' =====" % (self._name,)
-        initialTypes = (types.DictType, types.ListType, types.TupleType)
+        print("===== ContainerReport: \'%s\' =====" % (self._name,))
+        initialTypes = (dict, list, tuple)
         for type in initialTypes:
             for i in self._outputType(type, **kArgs):
                 yield None

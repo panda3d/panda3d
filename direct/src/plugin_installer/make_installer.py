@@ -298,7 +298,7 @@ def getDllVersion(filename):
     tempfile = 'tversion.txt'
     tempdata = open(tempfile, 'w+')
     cmd = 'cscript //nologo "%s" "%s"' % (versionInfo, filename)
-    print cmd
+    print(cmd)
     result = subprocess.call(cmd, stdout = tempdata)
     if result:
         sys.exit(result)
@@ -326,18 +326,18 @@ def makeCabFile(ocx, pluginDependencies):
     infFile = 'temp.inf'
     inf = open(infFile, 'w')
 
-    print >> inf, '[Add.Code]\n%s=%s\n%s=%s' % (infFile, infFile, ocx, ocx)
+    info.write('[Add.Code]\n%s=%s\n%s=%s\n' % (infFile, infFile, ocx, ocx))
     dependencies = pluginDependencies[ocx]
     for filename in dependencies:
-        print >> inf, '%s=%s' % (filename, filename)
-    print >> inf, '\n[%s]\nfile=thiscab' % (infFile)
-    print >> inf, '\n[%s]\nfile=thiscab\nclsid={924B4927-D3BA-41EA-9F7E-8A89194AB3AC}\nRegisterServer=yes\nFileVersion=%s' % (ocx, getDllVersion(ocxFullpath))
+        inf.write('%s=%s\n' % (filename, filename))
+    inf.write('\n[%s]\nfile=thiscab\n' % (infFile))
+    inf.write('\n[%s]\nfile=thiscab\nclsid={924B4927-D3BA-41EA-9F7E-8A89194AB3AC}\nRegisterServer=yes\nFileVersion=%s\n' % (ocx, getDllVersion(ocxFullpath)))
 
     fullpaths = []
     for filename in dependencies:
         fullpath = findExecutable(filename)
         fullpaths.append(fullpath)
-        print >> inf, '\n[%s]\nfile=thiscab\nDestDir=11\nRegisterServer=yes\nFileVersion=%s' % (filename, getDllVersion(fullpath))
+        inf.write('\n[%s]\nfile=thiscab\nDestDir=11\nRegisterServer=yes\nFileVersion=%s\n' % (filename, getDllVersion(fullpath)))
     inf.close()
 
     # Now process the inf file with cabarc.
@@ -350,20 +350,20 @@ def makeCabFile(ocx, pluginDependencies):
     for fullpath in fullpaths:
         cmd += ' "%s"' % (fullpath)
     cmd += ' "%s" %s' % (ocxFullpath, infFile)
-    print cmd
+    print(cmd)
     result = subprocess.call(cmd)
     if result:
         sys.exit(result)
     if not os.path.exists(cabFilename):
-        print "Couldn't generate %s" % (cabFilename)
+        print("Couldn't generate %s" % (cabFilename))
         sys.exit(1)
 
-    print "Successfully generated %s" % (cabFilename)
+    print("Successfully generated %s" % (cabFilename))
 
     if options.spc and options.pvk:
         # Now we have to sign the cab file.
         cmd = '"%s" -spc "%s" -k "%s" "%s"' % (signcode, options.spc, options.pvk, cabFilename)
-        print cmd
+        print(cmd)
         result = subprocess.call(cmd)
         if result:
             sys.exit(result)
@@ -502,8 +502,8 @@ def makeInstaller():
             CMD += ' -i "%s"' % (infoFilename)
             CMD += ' -d "%s"' % (descriptionFilename)
 
-        print ""
-        print CMD
+        print("")
+        print(CMD)
 
         # Don't check the exit status of packagemaker; it's not always
         # reliable.
@@ -518,7 +518,7 @@ def makeInstaller():
             shutil.rmtree(tmpresdir)
 
         if not os.path.exists(pkgname):
-            print "Unable to create %s." % (pkgname)
+            print("Unable to create %s." % (pkgname))
             sys.exit(1)
 
         # Pack the .pkg into a .dmg
@@ -530,8 +530,8 @@ def makeInstaller():
 
         tmpdmg = tempfile.mktemp('', 'p3d-setup') + ".dmg"
         CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
-        print ""
-        print CMD
+        print("")
+        print(CMD)
         result = subprocess.call(CMD, shell = True)
         if result:
             sys.exit(result)
@@ -541,8 +541,8 @@ def makeInstaller():
         if os.path.exists("p3d-setup.dmg"):
             os.remove("p3d-setup.dmg")
         CMD = 'hdiutil convert "%s" -format UDBZ -o "p3d-setup.dmg"' % tmpdmg
-        print ""
-        print CMD
+        print("")
+        print(CMD)
         result = subprocess.call(CMD, shell = True)
         if result:
             sys.exit(result)
@@ -569,13 +569,12 @@ def makeInstaller():
         if options.regview:
             CMD += '/DREGVIEW=%s ' % (options.regview)
 
-        dependencies = dependentFiles.items()
-        for i in range(len(dependencies)):
-            CMD += '/DDEP%s="%s" ' % (i, dependencies[i][0])
-            CMD += '/DDEP%sP="%s" ' % (i, dependencies[i][1])
-        dependencies = pluginDependencies[npapi]
-        for i in range(len(dependencies)):
-            CMD += '/DNPAPI_DEP%s="%s" ' % (i, dependencies[i])
+        for i, dep in enumerate(dependentFiles.items()):
+            CMD += '/DDEP%s="%s" ' % (i, dep[0])
+            CMD += '/DDEP%sP="%s" ' % (i, dep[1])
+
+        for i, dep in enumerate(pluginDependencies[npapi]):
+            CMD += '/DNPAPI_DEP%s="%s" ' % (i, dep)
 
         if options.start:
             CMD += '/DADD_START_MENU '
@@ -588,9 +587,9 @@ def makeInstaller():
 
         CMD += '"' + this_dir + '\\p3d_installer.nsi"'
 
-        print ""
-        print CMD
-        print "packing..."
+        print("")
+        print(CMD)
+        print("packing...")
         result = subprocess.call(CMD)
         if result:
             sys.exit(result)

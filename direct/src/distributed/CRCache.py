@@ -1,7 +1,7 @@
 """CRCache module: contains the CRCache class"""
 
 from direct.directnotify import DirectNotifyGlobal
-import DistributedObject
+from . import DistributedObject
 
 class CRCache:
     notify = DirectNotifyGlobal.directNotify.newCategory("CRCache")

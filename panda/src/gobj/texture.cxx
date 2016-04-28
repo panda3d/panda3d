@@ -830,8 +830,11 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
         } else if (format.at(s) == 'R') {
           component = 2;
         } else if (format.at(s) == 'A') {
-          nassertv(cdata->_num_components != 3);
-          component = cdata->_num_components - 1;
+          if (cdata->_num_components != 3) {
+            component = cdata->_num_components - 1;
+          } else {
+            // Ignore.
+          }
         } else if (format.at(s) == '0') {
           // Ignore.
         } else if (format.at(s) == '1') {
@@ -859,8 +862,11 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
       } else if (format.at(s) == 'R') {
         component = 2;
       } else if (format.at(s) == 'A') {
-        nassertv(cdata->_num_components != 3);
-        component = cdata->_num_components - 1;
+        if (cdata->_num_components != 3) {
+          component = cdata->_num_components - 1;
+        } else {
+          // Ignore.
+        }
       } else if (format.at(s) == '0') {
         // Ignore.
       } else if (format.at(s) == '1') {
@@ -6088,18 +6094,23 @@ do_get_uncompressed_ram_image(CData *cdata) {
  * Rather than just returning a pointer to the data, like
  * get_uncompressed_ram_image, this function first processes the data and
  * reorders the components using the specified format string, and places these
- * into a new char array.  The 'format' argument should specify in which order
- * the components of the texture must be.  For example, valid format strings
- * are "RGBA", "GA", "ABRG" or "AAA". A component can also be written as "0"
- * or "1", which means an empty/black or a full/white channel, respectively.
+ * into a new char array.
+ *
+ * The 'format' argument should specify in which order the components of the
+ * texture must be.  For example, valid format strings are "RGBA", "GA",
+ * "ABRG" or "AAA".  A component can also be written as "0" or "1", which
+ * means an empty/black or a full/white channel, respectively.
+ *
  * This function is particularly useful to copy an image in-memory to a
  * different library (for example, PIL or wxWidgets) that require a different
  * component order than Panda's internal format, BGRA. Note, however, that
  * this conversion can still be too slow if you want to do it every frame, and
- * should thus be avoided for that purpose.  The only requirement for the
- * reordering is that an uncompressed image must be available.  If the RAM
- * image is compressed, it will attempt to re-load the texture from disk, if
- * it doesn't find an uncompressed image there, it will return NULL.
+ * should thus be avoided for that purpose.
+ *
+ * The only requirement for the reordering is that an uncompressed image must
+ * be available.  If the RAM image is compressed, it will attempt to re-load
+ * the texture from disk, if it doesn't find an uncompressed image there, it
+ * will return NULL.
  */
 CPTA_uchar Texture::
 get_ram_image_as(const string &requested_format) {
@@ -6125,92 +6136,177 @@ get_ram_image_as(const string &requested_format) {
     return CPTA_uchar(data);
   }
 
+  // Check if we have an alpha channel, and remember which channel we use.
+  int alpha = -1;
+  if (Texture::has_alpha(cdata->_format)) {
+    alpha = cdata->_num_components - 1;
+  }
+
+  // Validate the format beforehand.
+  for (size_t i = 0; i < format.size(); ++i) {
+    if (format[i] != 'B' && format[i] != 'G' && format[i] != 'R' &&
+        format[i] != 'A' && format[i] != '0' && format[i] != '1') {
+      gobj_cat.error() << "Unexpected component character '"
+        << format[i] << "', expected one of RGBA01!\n";
+      return CPTA_uchar(get_class_type());
+    }
+  }
+
   // Create a new empty array that can hold our image.
   PTA_uchar newdata = PTA_uchar::empty_array(imgsize * format.size() * cdata->_component_width, get_class_type());
 
   // These ifs are for optimization of commonly used image types.
-  if (format == "RGBA" && cdata->_num_components == 4 && cdata->_component_width == 1) {
-    imgsize *= 4;
-    for (int p = 0; p < imgsize; p += 4) {
-      newdata[p    ] = data[p + 2];
-      newdata[p + 1] = data[p + 1];
-      newdata[p + 2] = data[p    ];
-      newdata[p + 3] = data[p + 3];
-    }
-    return newdata;
-  }
-  if (format == "RGB" && cdata->_num_components == 3 && cdata->_component_width == 1) {
-    imgsize *= 3;
-    for (int p = 0; p < imgsize; p += 3) {
-      newdata[p    ] = data[p + 2];
-      newdata[p + 1] = data[p + 1];
-      newdata[p + 2] = data[p    ];
-    }
-    return newdata;
-  }
-  if (format == "A" && cdata->_component_width == 1 && cdata->_num_components != 3) {
-    // We can generally rely on alpha to be the last component.
-    int component = cdata->_num_components - 1;
-    for (int p = 0; p < imgsize; ++p) {
-      newdata[p] = data[component];
-    }
-    return newdata;
-  }
   if (cdata->_component_width == 1) {
+    if (format == "RGBA" && cdata->_num_components == 4) {
+      const PN_uint32 *src = (const PN_uint32 *)data.p();
+      PN_uint32 *dst = (PN_uint32 *)newdata.p();
+
+      for (int p = 0; p < imgsize; ++p) {
+        PN_uint32 v = *src++;
+        *dst++ = ((v & 0xff00ff00u)) |
+                 ((v & 0x00ff0000u) >> 16) |
+                 ((v & 0x000000ffu) << 16);
+      }
+      return newdata;
+    }
+    if (format == "RGB" && cdata->_num_components == 4) {
+      const PN_uint32 *src = (const PN_uint32 *)data.p();
+      PN_uint32 *dst = (PN_uint32 *)newdata.p();
+
+      // Convert blocks of 4 pixels at a time, so that we can treat both the
+      // source and destination as 32-bit integers.
+      int blocks = imgsize >> 2;
+      for (int i = 0; i < blocks; ++i) {
+        PN_uint32 v0 = *src++;
+        PN_uint32 v1 = *src++;
+        PN_uint32 v2 = *src++;
+        PN_uint32 v3 = *src++;
+        *dst++ = ((v0 & 0x00ff0000u) >> 16) |
+                 ((v0 & 0x0000ff00u)) |
+                 ((v0 & 0x000000ffu) << 16) |
+                 ((v1 & 0x00ff0000u) << 8);
+        *dst++ = ((v1 & 0x0000ff00u) >> 8) |
+                 ((v1 & 0x000000ffu) << 8) |
+                 ((v2 & 0x00ff0000u)) |
+                 ((v2 & 0x0000ff00u) << 16);
+        *dst++ = ((v2 & 0x000000ffu)) |
+                 ((v3 & 0x00ff0000u) >> 8) |
+                 ((v3 & 0x0000ff00u) << 8) |
+                 ((v3 & 0x000000ffu) << 24);
+      }
+
+      // If the image size wasn't a multiple of 4, we may have a handful of
+      // pixels left over.  Convert those the slower way.
+      PN_uint8 *tail = (PN_uint8 *)dst;
+      for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
+        PN_uint32 v = *src++;
+        *tail++ = (v & 0x00ff0000u) >> 16;
+        *tail++ = (v & 0x0000ff00u) >> 8;
+        *tail++ = (v & 0x000000ffu);
+      }
+      return newdata;
+    }
+    if (format == "BGR" && cdata->_num_components == 4) {
+      const PN_uint32 *src = (const PN_uint32 *)data.p();
+      PN_uint32 *dst = (PN_uint32 *)newdata.p();
+
+      // Convert blocks of 4 pixels at a time, so that we can treat both the
+      // source and destination as 32-bit integers.
+      int blocks = imgsize >> 2;
+      for (int i = 0; i < blocks; ++i) {
+        PN_uint32 v0 = *src++;
+        PN_uint32 v1 = *src++;
+        PN_uint32 v2 = *src++;
+        PN_uint32 v3 = *src++;
+        *dst++ = (v0 & 0x00ffffffu) | ((v1 & 0x000000ffu) << 24);
+        *dst++ = ((v1 & 0x00ffff00u) >> 8) |  ((v2 & 0x0000ffffu) << 16);
+        *dst++ = ((v2 & 0x00ff0000u) >> 16) | ((v3 & 0x00ffffffu) << 8);
+      }
+
+      // If the image size wasn't a multiple of 4, we may have a handful of
+      // pixels left over.  Convert those the slower way.
+      PN_uint8 *tail = (PN_uint8 *)dst;
+      for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
+        PN_uint32 v = *src++;
+        *tail++ = (v & 0x000000ffu);
+        *tail++ = (v & 0x0000ff00u) >> 8;
+        *tail++ = (v & 0x00ff0000u) >> 16;
+      }
+      return newdata;
+    }
+    const PN_uint8 *src = (const PN_uint8 *)data.p();
+    PN_uint8 *dst = (PN_uint8 *)newdata.p();
+
+    if (format == "RGB" && cdata->_num_components == 3) {
+      for (int i = 0; i < imgsize; ++i) {
+        *dst++ = src[2];
+        *dst++ = src[1];
+        *dst++ = src[0];
+        src += 3;
+      }
+      return newdata;
+    }
+    if (format == "A" && cdata->_num_components != 3) {
+      // We can generally rely on alpha to be the last component.
+      for (int p = 0; p < imgsize; ++p) {
+        dst[p] = src[alpha];
+        src += cdata->_num_components;
+      }
+      return newdata;
+    }
+    // Fallback case for other 8-bit-per-channel formats.
     for (int p = 0; p < imgsize; ++p) {
-      for (uchar s = 0; s < format.size(); ++s) {
-        signed char component = -1;
-        if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
-          component = 0;
-        } else if (format.at(s) == 'G') {
-          component = 1;
-        } else if (format.at(s) == 'R') {
-          component = 2;
-        } else if (format.at(s) == 'A') {
-          nassertr(cdata->_num_components != 3, CPTA_uchar(get_class_type()));
-          component = cdata->_num_components - 1;
-        } else if (format.at(s) == '0') {
-          newdata[p * format.size() + s] = 0x00;
-        } else if (format.at(s) == '1') {
-          newdata[p * format.size() + s] = 0xff;
+      for (size_t i = 0; i < format.size(); ++i) {
+        if (format[i] == 'B' || (cdata->_num_components <= 2 && format[i] != 'A')) {
+          *dst++ = src[0];
+        } else if (format[i] == 'G') {
+          *dst++ = src[1];
+        } else if (format[i] == 'R') {
+          *dst++ = src[2];
+        } else if (format[i] == 'A') {
+          if (alpha >= 0) {
+            *dst++ = src[alpha];
+          } else {
+            *dst++ = 0xff;
+          }
+        } else if (format[i] == '1') {
+          *dst++ = 0xff;
         } else {
-          gobj_cat.error() << "Unexpected component character '"
-            << format.at(s) << "', expected one of RGBA!\n";
-          return CPTA_uchar(get_class_type());
-        }
-        if (component >= 0) {
-          newdata[p * format.size() + s] = data[p * cdata->_num_components + component];
+          *dst++ = 0x00;
         }
       }
+      src += cdata->_num_components;
     }
     return newdata;
   }
+
+  // The slow and general case.
   for (int p = 0; p < imgsize; ++p) {
-    for (uchar s = 0; s < format.size(); ++s) {
-      signed char component = -1;
-      if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
+    for (size_t i = 0; i < format.size(); ++i) {
+      int component = 0;
+      if (format[i] == 'B' || (cdata->_num_components <= 2 && format[i] != 'A')) {
         component = 0;
-      } else if (format.at(s) == 'G') {
+      } else if (format[i] == 'G') {
         component = 1;
-      } else if (format.at(s) == 'R') {
+      } else if (format[i] == 'R') {
         component = 2;
-      } else if (format.at(s) == 'A') {
-        nassertr(cdata->_num_components != 3, CPTA_uchar(get_class_type()));
-        component = cdata->_num_components - 1;
-      } else if (format.at(s) == '0') {
-        memset((void*)(newdata + (p * format.size() + s) * cdata->_component_width),  0, cdata->_component_width);
-      } else if (format.at(s) == '1') {
-        memset((void*)(newdata + (p * format.size() + s) * cdata->_component_width), -1, cdata->_component_width);
+      } else if (format[i] == 'A') {
+        if (alpha >= 0) {
+          component = alpha;
+        } else {
+          memset((void*)(newdata + (p * format.size() + i) * cdata->_component_width), -1, cdata->_component_width);
+          continue;
+        }
+      } else if (format[i] == '1') {
+        memset((void*)(newdata + (p * format.size() + i) * cdata->_component_width), -1, cdata->_component_width);
+        continue;
       } else {
-        gobj_cat.error() << "Unexpected component character '"
-          << format.at(s) << "', expected one of RGBA!\n";
-        return CPTA_uchar(get_class_type());
+        memset((void*)(newdata + (p * format.size() + i) * cdata->_component_width),  0, cdata->_component_width);
+        continue;
       }
-      if (component >= 0) {
-        memcpy((void*)(newdata + (p * format.size() + s) * cdata->_component_width),
-               (void*)(data + (p * cdata->_num_components + component) * cdata->_component_width),
-               cdata->_component_width);
-      }
+      memcpy((void*)(newdata + (p * format.size() + i) * cdata->_component_width),
+             (void*)(data + (p * cdata->_num_components + component) * cdata->_component_width),
+             cdata->_component_width);
     }
   }
   return newdata;

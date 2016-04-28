@@ -5,9 +5,7 @@ from direct.distributed.MsgTypesCMU import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
-from direct.distributed.PyDatagramIterator import PyDatagramIterator
-import time
-import types
+
 
 class ServerRepository:
 
@@ -153,7 +151,7 @@ class ServerRepository:
         for client in flush:
             client.connection.flush()
 
-        return task.again
+        return Task.again
 
     def setTcpHeaderSize(self, headerSize):
         """Sets the header size of TCP packets.  At the present, legal
@@ -299,7 +297,7 @@ class ServerRepository:
             retVal = self.qcl.getNewConnection(rendezvous, netAddress,
                                                newConnection)
             if not retVal:
-                return task.cont
+                return Task.cont
 
             # Crazy dereferencing
             newConnection = newConnection.p()
@@ -321,13 +319,13 @@ class ServerRepository:
             self.lastConnection = newConnection
             self.sendDoIdRange(client)
 
-        return task.cont
+        return Task.cont
 
     def readerPollUntilEmpty(self, task):
         """ continuously polls for new messages on the server """
         while self.readerPollOnce():
             pass
-        return task.cont
+        return Task.cont
 
     def readerPollOnce(self):
         """ checks for available messages to the server """
@@ -691,7 +689,7 @@ class ServerRepository:
         for client in self.clientsByConnection.values():
             if not self.qcr.isConnectionOk(client.connection):
                 self.handleClientDisconnect(client)
-        return task.cont
+        return Task.cont
 
     def sendToZoneExcept(self, zoneId, datagram, exceptionList):
         """sends a message to everyone who has interest in the

@@ -480,19 +480,16 @@ class Thread(_Verbose):
                     # Lib/traceback.py)
                     exc_type, exc_value, exc_tb = self.__exc_info()
                     try:
-                        print>>self.__stderr, (
-                            "Exception in thread " + self.getName() +
-                            " (most likely raised during interpreter shutdown):")
-                        print>>self.__stderr, (
-                            "Traceback (most recent call last):")
+                        self.__stderr.write("Exception in thread " + self.getName() +
+                            " (most likely raised during interpreter shutdown):\n")
+                        self.__stderr.write("Traceback (most recent call last):\n")
                         while exc_tb:
-                            print>>self.__stderr, (
-                                '  File "%s", line %s, in %s' %
+                            self.__stderr.write('  File "%s", line %s, in %s\n' %
                                 (exc_tb.tb_frame.f_code.co_filename,
                                     exc_tb.tb_lineno,
                                     exc_tb.tb_frame.f_code.co_name))
                             exc_tb = exc_tb.tb_next
-                        print>>self.__stderr, ("%s: %s" % (exc_type, exc_value))
+                        self.__stderr.write("%s: %s\n" % (exc_type, exc_value))
                     # Make sure that exc_tb gets deleted since it is a memory
                     # hog; deleting everything else is just for thoroughness
                     finally:
@@ -710,7 +707,7 @@ def activeCount():
 
 def enumerate():
     _active_limbo_lock.acquire()
-    active = _active.values() + _limbo.values()
+    active = list(_active.values()) + list(_limbo.values())
     _active_limbo_lock.release()
     return active
 
@@ -794,7 +791,7 @@ if __debug__:
             def run(self):
                 while self.count > 0:
                     item = self.queue.get()
-                    print item
+                    print(item)
                     self.count = self.count - 1
 
         NP = 3

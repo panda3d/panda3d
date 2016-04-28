@@ -16,20 +16,6 @@
 /**
  *
  */
-FactoryParams::
-FactoryParams() {
-}
-
-/**
- *
- */
-FactoryParams::
-~FactoryParams() {
-}
-
-/**
- *
- */
 void FactoryParams::
 add_param(FactoryParam *param) {
   nassertv(param != (FactoryParam *)NULL);

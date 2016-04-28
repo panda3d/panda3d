@@ -15,11 +15,11 @@ import glob
 import shutil
 
 import direct
-from pandac.PandaModules import Filename, DSearchPath, getModelPath, ExecutionEnvironment
+from panda3d.core import Filename, DSearchPath, getModelPath, ExecutionEnvironment
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__
-    print >> sys.stderr, msg
+    sys.stderr.write(__doc__)
+    sys.stderr.write(msg + '\n')
     sys.exit(code)
 
 def makeBundle(startDir):
@@ -71,18 +71,18 @@ def makeBundle(startDir):
     # Copy in Info.plist, the icon file, and the compiled executable.
     shutil.copyfile(Filename(fstartDir, "panda3d_mac.plist").toOsSpecific(), plistFilename.toOsSpecific())
     shutil.copyfile(icons.toOsSpecific(), iconFilename.toOsSpecific())
-    print panda3d_mac, exeFilename
+    print('%s %s' % (panda3d_mac, exeFilename))
     shutil.copyfile(panda3d_mac.toOsSpecific(), exeFilename.toOsSpecific())
     os.chmod(exeFilename.toOsSpecific(), 0o755)
 
     # All done!
     bundleFilename.touch()
-    print bundleFilename.toOsSpecific()
+    print(bundleFilename.toOsSpecific())
 
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     for opt, arg in opts:

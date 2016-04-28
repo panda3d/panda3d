@@ -1,0 +1,65 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file flacAudioCursor.h
+ * @author rdb
+ * @date 2013-08-23
+ */
+
+#ifndef FLACAUDIOCURSOR_H
+#define FLACAUDIOCURSOR_H
+
+#include "pandabase.h"
+#include "movieAudioCursor.h"
+
+#define DR_FLAC_NO_STDIO
+extern "C" {
+  #include "dr_flac.h"
+}
+
+class FlacAudio;
+
+/**
+ * Interfaces with the libvorbisfile library to implement decoding of Ogg
+ * Vorbis audio files.
+ */
+class EXPCL_PANDA_MOVIES FlacAudioCursor : public MovieAudioCursor {
+PUBLISHED:
+  FlacAudioCursor(FlacAudio *src, istream *stream);
+  virtual ~FlacAudioCursor();
+  virtual void seek(double offset);
+
+public:
+  virtual void read_samples(int n, PN_int16 *data);
+
+  bool _is_valid;
+
+protected:
+  drflac *_drflac;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    MovieAudioCursor::init_type();
+    register_type(_type_handle, "FlacAudioCursor",
+                  MovieAudioCursor::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "flacAudioCursor.I"
+
+#endif // FLACAUDIOCURSOR_H

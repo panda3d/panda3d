@@ -134,6 +134,8 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
       _mesh->addTriangle(v0, v1, v2, remove_duplicate_vertices);
     }
   }
+
+  delete [] vertices;
 }
 
 /**
@@ -163,6 +165,8 @@ add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_dupli
 
     _mesh->addTriangle(v0, v1, v2, remove_duplicate_vertices);
   }
+
+  delete [] vertices;
 }
 
 /**

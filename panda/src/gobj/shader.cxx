@@ -2362,15 +2362,14 @@ r_preprocess_source(ostream &out, const Filename &fn,
   bool had_include = false;
   int lineno = 0;
   while (getline(*source, line)) {
-    // We always forward the actual line - the GLSL compiler will silently
-    // ignore #pragma lines anyway.
     ++lineno;
-    out << line << "\n";
 
     // Check if this line contains a #pragma.
     char pragma[64];
     if (line.size() < 8 ||
         sscanf(line.c_str(), " # pragma %63s", pragma) != 1) {
+      // Just pass the line through unmodified.
+      out << line << "\n";
 
       // One exception: check for an #endif after an include.  We have to
       // restore the line number in case the include happened under an #if
@@ -2435,8 +2434,11 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
     } else if (strcmp(pragma, "optionNV") == 0) {
       // This is processed by NVIDIA drivers.  Don't touch it.
+      out << line << "\n";
 
     } else {
+      // Forward it, the driver will ignore it if it doesn't know it.
+      out << line << "\n";
       shader_cat.warning()
         << "Ignoring unknown pragma directive \"" << pragma << "\" at line "
         << lineno << " of file " << fn << ":\n  " << line << "\n";

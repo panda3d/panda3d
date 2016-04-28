@@ -35,6 +35,9 @@ public:
   void open_write(ostream *dest, bool owns_dest, int compression_level);
   void close_write();
 
+  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual streampos seekpos(streampos pos, ios_openmode which);
+
 protected:
   virtual int overflow(int c);
   virtual int sync();

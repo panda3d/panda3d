@@ -9,7 +9,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import PythonUtil
 from direct.stdpy.threading import RLock
-import types
+
 
 class FSMException(Exception):
     pass
@@ -238,7 +238,7 @@ class FSM(DirectObject):
 
         self.fsmLock.acquire()
         try:
-            assert isinstance(request, types.StringTypes)
+            assert isinstance(request, str)
             self.notify.debug("%s.forceTransition(%s, %s" % (
                 self.name, request, str(args)[1:]))
 
@@ -266,7 +266,7 @@ class FSM(DirectObject):
 
         self.fsmLock.acquire()
         try:
-            assert isinstance(request, types.StringTypes)
+            assert isinstance(request, str)
             self.notify.debug("%s.demand(%s, %s" % (
                 self.name, request, str(args)[1:]))
             if not self.state:
@@ -305,14 +305,14 @@ class FSM(DirectObject):
 
         self.fsmLock.acquire()
         try:
-            assert isinstance(request, types.StringTypes)
+            assert isinstance(request, str)
             self.notify.debug("%s.request(%s, %s" % (
                 self.name, request, str(args)[1:]))
 
             filter = self.getCurrentFilter()
-            result = list(filter(request, args))
+            result = filter(request, args)
             if result:
-                if isinstance(result, types.StringTypes):
+                if isinstance(result, str):
                     # If the return value is a string, it's just the name
                     # of the state.  Wrap it in a tuple for consistency.
                     result = (result,) + args

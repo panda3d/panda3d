@@ -1,7 +1,6 @@
-###  Tools
 __all__ = ["Dtool_ObjectToDict", "Dtool_funcToMethod"]
 
-import imp, sys, os
+import sys
 
 def Dtool_ObjectToDict(cls, name, obj):
     cls.DtoolClassDict[name] = obj

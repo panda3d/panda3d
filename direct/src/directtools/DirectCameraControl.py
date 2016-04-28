@@ -1,8 +1,8 @@
 from direct.showbase.DirectObject import DirectObject
-from DirectUtil import *
-from DirectGeometry import *
-from DirectGlobals import *
-from DirectSelection import SelectionRay
+from .DirectUtil import *
+from .DirectGeometry import *
+from .DirectGlobals import *
+from .DirectSelection import SelectionRay
 from direct.interval.IntervalGlobal import Sequence, Func
 from direct.directnotify import DirectNotifyGlobal
 from direct.task import Task
@@ -233,13 +233,13 @@ class DirectCameraControl(DirectObject):
         self.updateCoaMarkerSize()
 
     def mouseFlyStartTopWin(self):
-        print "Moving mouse 2 in new window"
+        print("Moving mouse 2 in new window")
         #altIsDown = base.getAlt()
         #if altIsDown:
         #    print "Alt is down"
 
     def mouseFlyStopTopWin(self):
-        print "Stopping mouse 2 in new window"
+        print("Stopping mouse 2 in new window")
 
     def spawnXZTranslateOrHPanYZoom(self):
         # Kill any existing tasks

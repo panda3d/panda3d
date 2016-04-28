@@ -1133,12 +1133,12 @@ def GetThirdpartyDir():
     target_arch = GetTargetArch()
 
     if (target == 'windows'):
+        vc = SDK["VISUALSTUDIO_VERSION"].split('.')[0]
+
         if target_arch == 'x64':
-            THIRDPARTYDIR = base + "/win-libs-vc10-x64/"
-            if not os.path.isdir(THIRDPARTYDIR):
-                THIRDPARTYDIR = base + "/win-libs-vc10/"
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-x64/"
         else:
-            THIRDPARTYDIR = base + "/win-libs-vc10/"
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
     elif (target == 'darwin'):
         # OSX thirdparty binaries are universal, where possible.
@@ -1423,9 +1423,15 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
     for i, j in PkgConfigGetDefSymbols(pkgname, tool).items():
         DefSymbol(opt, i, j)
 
-def LocateLibrary(lib, lpath=[]):
-    """ Returns True if this library was found in the given search path, False otherwise. """
+def LocateLibrary(lib, lpath=[], prefer_static=False):
+    """Searches for the library in the search path, returning its path if found,
+    or None if it was not found."""
     target = GetTarget()
+
+    if prefer_static and target != 'windows':
+        for dir in lpath:
+            if os.path.isfile(os.path.join(dir, 'lib%s.a' % lib)):
+                return os.path.join(dir, 'lib%s.a' % lib)
 
     for dir in lpath:
         if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
@@ -1498,6 +1504,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         LibName(target_pkg, "-lswresample")
         return
 
+    # First check if the package is in the thirdparty directory.
     pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
     if not custom_loc and os.path.isdir(pkg_dir):
         if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
@@ -1508,32 +1515,55 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         if os.path.isdir(os.path.join(pkg_dir, "include")):
             IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
 
-        if os.path.isdir(os.path.join(pkg_dir, "lib")):
-            LibDirectory(target_pkg, os.path.join(pkg_dir, "lib"))
+            # Handle cases like freetype2 where the include dir is a subdir under "include"
+            for i in incs:
+                if os.path.isdir(os.path.join(pkg_dir, "include", i)):
+                    IncDirectory(target_pkg, os.path.join(pkg_dir, "include", i))
 
-        if (PkgSkip("PYTHON") == 0):
+        lpath = [os.path.join(pkg_dir, "lib")]
+
+        if not PkgSkip("PYTHON"):
             py_lib_dir = os.path.join(pkg_dir, "lib", SDK["PYTHONVERSION"])
             if os.path.isdir(py_lib_dir):
-                LibDirectory(target_pkg, py_lib_dir)
+                lpath.append(py_lib_dir)
 
-        # TODO: check for a .pc file in the lib/pkg-config/ dir
+        # TODO: check for a .pc file in the lib/pkgconfig/ dir
         if (tool != None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
             tool = os.path.join(pkg_dir, "bin", tool)
             for i in PkgConfigGetLibs(None, tool):
-                LibName(target_pkg, i)
+                if i.startswith('-l'):
+                    # To make sure we don't pick up the system copy, write out
+                    # the full path instead.
+                    libname = i[2:]
+                    location = LocateLibrary(libname, lpath, prefer_static=True)
+                    if location is not None:
+                        LibName(target_pkg, location)
+                    else:
+                        print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
+                        LibName(target_pkg, i)
+                else:
+                    LibName(target_pkg, i)
             for i, j in PkgConfigGetDefSymbols(None, tool).items():
                 DefSymbol(target_pkg, i, j)
             return
 
+        # Now search for the libraries in the package's lib directories.
         for l in libs:
             libname = l
             if l.startswith("lib"):
                 libname = l[3:]
-            # This is for backward compatibility - in the thirdparty dir, we kept some libs with "panda" prefix, like libpandatiff.
-            if len(glob.glob(os.path.join(pkg_dir, "lib", "libpanda%s.*" % (libname)))) > 0 \
-               and len(glob.glob(os.path.join(pkg_dir, "lib", "lib%s.*" % (libname)))) == 0:
-                libname = "panda" + libname
-            LibName(target_pkg, "-l" + libname)
+
+            location = LocateLibrary(libname, lpath, prefer_static=True)
+            if location is not None:
+                LibName(target_pkg, location)
+            else:
+                # This is for backward compatibility - in the thirdparty dir,
+                # we kept some libs with "panda" prefix, like libpandatiff.
+                location = LocateLibrary("panda" + libname, lpath, prefer_static=True)
+                if location is not None:
+                    LibName(target_pkg, location)
+                else:
+                    print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
 
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)
@@ -2301,8 +2331,8 @@ def SetupVisualStudioEnviron():
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
-        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10240.0\\"
-        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10240.0\\"
+        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10586.0\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10586.0\\"
         AddToPathEnv("INCLUDE", inc_dir + "shared")
         AddToPathEnv("INCLUDE", inc_dir + "ucrt")
         AddToPathEnv("INCLUDE", inc_dir + "um")

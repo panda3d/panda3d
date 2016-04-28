@@ -5,7 +5,7 @@ __all__ = ['ProjectileInterval']
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-from Interval import Interval
+from .Interval import Interval
 from direct.showbase import PythonUtil
 
 class ProjectileInterval(Interval):

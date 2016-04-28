@@ -22,6 +22,7 @@
 #include "pnmFileTypePNM.h"
 #include "pnmFileTypePfm.h"
 #include "pnmFileTypeTIFF.h"
+#include "pnmFileTypeStbImage.h"
 #include "sgi.h"
 
 #include "config_pnmimage.h"
@@ -238,6 +239,12 @@ init_libpnmimagetypes() {
   PNMFileTypeTIFF::init_type();
   PNMFileTypeTIFF::register_with_read_factory();
   tr->register_type(new PNMFileTypeTIFF);
+#endif
+
+#ifdef HAVE_STB_IMAGE
+  PNMFileTypeStbImage::init_type();
+  PNMFileTypeStbImage::register_with_read_factory();
+  tr->register_type(new PNMFileTypeStbImage);
 #endif
 
   // And register with the PandaSystem.

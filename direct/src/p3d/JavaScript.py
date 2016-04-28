@@ -4,8 +4,6 @@ code that runs in a browser via the web plugin. """
 
 __all__ = ["UndefinedObject", "Undefined", "ConcreteStruct", "BrowserObject", "MethodWrapper"]
 
-import types
-
 class UndefinedObject:
     """ This is a special object that is returned by the browser to
     represent an "undefined" or "void" value, typically the value for
@@ -42,7 +40,7 @@ class ConcreteStruct:
         returns all properties of the object.  You can override this
         to restrict the set of properties that are uploaded. """
 
-        return self.__dict__.items()
+        return list(self.__dict__.items())
 
 class BrowserObject:
     """ This class provides the Python wrapper around some object that
@@ -109,7 +107,7 @@ class BrowserObject:
                     # problems.
                     needsResponse = False
 
-                if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
+                if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], str):
                     # As another special hack, we make dom.eval() a
                     # special case, and map it directly into an eval()
                     # call.  If the string begins with 'void ', we further
@@ -207,7 +205,7 @@ class BrowserObject:
             # for numeric keys so we can properly support Python's
             # iterators, but we return KeyError for string keys to
             # emulate mapping objects.
-            if isinstance(key, types.StringTypes):
+            if isinstance(key, str):
                 raise KeyError(key)
             else:
                 raise IndexError(key)
@@ -219,7 +217,7 @@ class BrowserObject:
                                              propertyName = str(key),
                                              value = value)
         if not result:
-            if isinstance(key, types.StringTypes):
+            if isinstance(key, str):
                 raise KeyError(key)
             else:
                 raise IndexError(key)
@@ -228,7 +226,7 @@ class BrowserObject:
         result = self.__runner.scriptRequest('del_property', self,
                                              propertyName = str(key))
         if not result:
-            if isinstance(key, types.StringTypes):
+            if isinstance(key, str):
                 raise KeyError(key)
             else:
                 raise IndexError(key)
@@ -269,7 +267,7 @@ class MethodWrapper:
                 # problems.
                 needsResponse = False
 
-            if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
+            if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], str):
                 # As another special hack, we make dom.eval() a
                 # special case, and map it directly into an eval()
                 # call.  If the string begins with 'void ', we further
