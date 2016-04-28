@@ -2207,6 +2207,7 @@ DTOOL_CONFIG=[
     ("HAVE_SOFTIMAGE_PIC",             '1',                      '1'),
     ("HAVE_BMP",                       '1',                      '1'),
     ("HAVE_PNM",                       '1',                      '1'),
+    ("HAVE_STB_IMAGE",                 '1',                      '1'),
     ("HAVE_VORBIS",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
