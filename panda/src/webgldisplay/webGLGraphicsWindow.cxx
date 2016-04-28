@@ -168,10 +168,16 @@ set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
 
   if (properties.has_size()) {
-    emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
-    _properties.set_size(properties.get_size());
+    //emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
+        int width, height, fullscreen;
+        emscripten_get_canvas_size(&width, &height, &fullscreen);
+    printf("WebGLGraphicsWindow::set_properties_now ( %i x %i ) but browser forced to ( %i x %i )\n",
+        properties.get_x_size(), properties.get_y_size(), width,height );
+    _properties.set_size( width,height );
     properties.clear_size();
+
     set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
+
     throw_event(get_window_event(), this);
   }
 
