@@ -11087,7 +11087,9 @@ do_issue_tex_gen() {
  */
 bool CLP(GraphicsStateGuardian)::
 specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
+#ifndef OPENGLES
   nassertr(gtc->_handle == 0 /* can't modify tex with active handle */, false);
+#endif
 
   Texture *tex = gtc->get_texture();
 
