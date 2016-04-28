@@ -332,11 +332,7 @@ static drflac* drflac_open_memory(const void* data, size_t dataSize);
 #include <endian.h>
 #endif
 
-#ifdef _MSC_VER
-#define DRFLAC_INLINE __forceinline
-#else
-#define DRFLAC_INLINE inline
-#endif
+#define DRFLAC_INLINE ALWAYS_INLINE
 
 #define DRFLAC_BLOCK_TYPE_STREAMINFO                    0
 #define DRFLAC_BLOCK_TYPE_PADDING                       1

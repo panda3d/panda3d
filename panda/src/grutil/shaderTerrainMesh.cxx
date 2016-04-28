@@ -386,7 +386,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
         vtx_pos.set_x(max(0.0f, min(1.0f, vtx_pos.get_x())));
         vtx_pos.set_y(max(0.0f, min(1.0f, vtx_pos.get_y())));
       }
-      vertex_writer.add_data3f(vtx_pos);
+      vertex_writer.add_data3(vtx_pos);
     }
   }
 

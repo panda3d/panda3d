@@ -178,7 +178,7 @@ streampos ZStreamBuf::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   // Necessary for tellg() to work after seeking to 0.
   if (dir == ios::cur && off == 0) {
-    if (_source->tellg() == 0) {
+    if (_source->tellg() == (streampos)0) {
       return 0;
     } else {
       return -1;
@@ -199,7 +199,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   gbump(n);
 
   _source->seekg(0, ios::beg);
-  if (_source->tellg() == 0) {
+  if (_source->tellg() == (streampos)0) {
     _z_source.next_in = Z_NULL;
     _z_source.avail_in = 0;
     _z_source.next_out = Z_NULL;
