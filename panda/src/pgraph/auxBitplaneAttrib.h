@@ -63,6 +63,9 @@ PUBLISHED:
 
   INLINE int get_outputs() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(outputs, get_outputs);
+
 public:
   virtual void output(ostream &out) const;
 

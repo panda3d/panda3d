@@ -35,8 +35,14 @@
  */
 class EXPCL_PANDA_PUTIL FactoryParams {
 public:
-  FactoryParams();
-  ~FactoryParams();
+  INLINE FactoryParams();
+  INLINE FactoryParams(const FactoryParams &copy);
+  INLINE ~FactoryParams();
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE FactoryParams(FactoryParams &&from) NOEXCEPT;
+  INLINE void operator = (FactoryParams &&from) NOEXCEPT;
+#endif
 
   void add_param(FactoryParam *param);
   void clear();
@@ -46,10 +52,15 @@ public:
 
   FactoryParam *get_param_of_type(TypeHandle type) const;
 
+  INLINE void *get_user_data() const;
+
 private:
   typedef pvector< PT(TypedReferenceCount) > Params;
 
   Params _params;
+  void *_user_data;
+
+  friend class FactoryBase;
 };
 
 template<class ParamType>

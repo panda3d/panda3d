@@ -62,7 +62,7 @@ struct EXPCL_PANDABULLET BulletContactResult : public btCollisionWorld::ContactR
 
 PUBLISHED:
   INLINE int get_num_contacts() const;
-  INLINE BulletContact &get_contact(int idx);
+  INLINE BulletContact get_contact(int idx);
   MAKE_SEQ(get_contacts, get_num_contacts, get_contact);
 
 public:

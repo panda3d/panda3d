@@ -272,8 +272,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_bool(_active);
   dg.add_uint32(_camera_mask.get_word());
 
-  manager->write_pointer(dg, _initial_state);
-  dg.add_stdfloat(_lod_scale);
+  if (manager->get_file_minor_ver() >= 41) {
+    manager->write_pointer(dg, _initial_state);
+    dg.add_stdfloat(_lod_scale);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,7 +288,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int Camera::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = LensNode::complete_pointers(p_list, manager);
-  _initial_state = DCAST(RenderState, p_list[pi++]);
+
+  if (manager->get_file_minor_ver() >= 41) {
+    _initial_state = DCAST(RenderState, p_list[pi++]);
+  }
   return pi;
 }
 

@@ -52,6 +52,11 @@ PUBLISHED:
   INLINE unsigned short get_mode_type() const;
   INLINE unsigned short get_mode_quality() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(mode, get_mode);
+  MAKE_PROPERTY(mode_type, get_mode_type);
+  MAKE_PROPERTY(mode_quality, get_mode_quality);
+
 public:
   virtual void output(ostream &out) const;
 

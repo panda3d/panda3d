@@ -129,16 +129,23 @@ null_glActiveTexture(GLenum gl_texture_stage) {
 
 #ifdef OPENGLES_2
 #define _glBlendEquation glBlendEquation
+#define _glBlendEquationSeparate glBlendEquationSeparate
+#define _glBlendFuncSeparate glBlendFuncSeparate
 #define _glBlendColor glBlendColor
 #else
 static void APIENTRY
 null_glBlendEquation(GLenum) {
 }
-#endif
+
+static void APIENTRY
+null_glBlendFuncSeparate(GLenum src, GLenum dest, GLenum, GLenum) {
+  glBlendFunc(src, dest);
+}
 
 static void APIENTRY
 null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 }
+#endif
 
 #ifndef OPENGLES_1
 // We have a default shader that will be applied when there isn't any shader
@@ -1954,6 +1961,9 @@ reset() {
 #endif
 
 #ifdef OPENGLES_1
+  _supports_framebuffer_multisample = false;
+  _supports_framebuffer_blit = false;
+
   if (has_extension("GL_OES_framebuffer_object")) {
     _supports_framebuffer_object = true;
     _glIsRenderbuffer = (PFNGLISRENDERBUFFEROESPROC)
@@ -2011,9 +2021,76 @@ reset() {
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
   _glGenerateMipmap = glGenerateMipmap;
 
-#else
-  // TODO: add ARB3.0 version
-  if (has_extension("GL_EXT_framebuffer_object")) {
+  if (is_at_least_gles_version(3, 0)) {
+    _supports_framebuffer_multisample = true;
+    _supports_framebuffer_blit = true;
+
+    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
+      get_extension_func("glRenderbufferStorageMultisample");
+    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
+      get_extension_func("glBlitFramebuffer");
+  } else {
+    if (has_extension("GL_ANGLE_framebuffer_multisample")) {
+      _supports_framebuffer_multisample = true;
+      _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEANGLEPROC)
+        get_extension_func("glRenderbufferStorageMultisampleANGLE");
+    } else {
+      _supports_framebuffer_multisample = false;
+    }
+    if (has_extension("GL_ANGLE_framebuffer_blit")) {
+      _supports_framebuffer_blit = true;
+      _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERANGLEPROC)
+        get_extension_func("glBlitFramebufferANGLE");
+    } else {
+      _supports_framebuffer_blit = false;
+    }
+  }
+#else  // Desktop OpenGL case.
+  if (is_at_least_gl_version(3, 0) || has_extension("GL_ARB_framebuffer_object")) {
+    _supports_framebuffer_object = true;
+    _supports_framebuffer_multisample = true;
+    _supports_framebuffer_blit = true;
+
+    _glIsRenderbuffer = (PFNGLISRENDERBUFFERPROC)
+      get_extension_func("glIsRenderbuffer");
+    _glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC)
+      get_extension_func("glBindRenderbuffer");
+    _glDeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSPROC)
+      get_extension_func("glDeleteRenderbuffers");
+    _glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)
+      get_extension_func("glGenRenderbuffers");
+    _glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)
+      get_extension_func("glRenderbufferStorage");
+    _glGetRenderbufferParameteriv = (PFNGLGETRENDERBUFFERPARAMETERIVPROC)
+      get_extension_func("glGetRenderbufferParameteriv");
+    _glIsFramebuffer = (PFNGLISFRAMEBUFFERPROC)
+      get_extension_func("glIsFramebuffer");
+    _glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)
+      get_extension_func("glBindFramebuffer");
+    _glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)
+      get_extension_func("glDeleteFramebuffers");
+    _glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)
+      get_extension_func("glGenFramebuffers");
+    _glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)
+      get_extension_func("glCheckFramebufferStatus");
+    _glFramebufferTexture1D = (PFNGLFRAMEBUFFERTEXTURE1DPROC)
+      get_extension_func("glFramebufferTexture1D");
+    _glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)
+      get_extension_func("glFramebufferTexture2D");
+    _glFramebufferTexture3D = (PFNGLFRAMEBUFFERTEXTURE3DPROC)
+      get_extension_func("glFramebufferTexture3D");
+    _glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)
+      get_extension_func("glFramebufferRenderbuffer");
+    _glGetFramebufferAttachmentParameteriv = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC)
+      get_extension_func("glGetFramebufferAttachmentParameteriv");
+    _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
+      get_extension_func("glGenerateMipmap");
+    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
+      get_extension_func("glRenderbufferStorageMultisampleEXT");
+    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)
+      get_extension_func("glBlitFramebuffer");
+
+  } else if (has_extension("GL_EXT_framebuffer_object")) {
     _supports_framebuffer_object = true;
     _glIsRenderbuffer = (PFNGLISRENDERBUFFEREXTPROC)
       get_extension_func("glIsRenderbufferEXT");
@@ -2050,14 +2127,25 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPEXTPROC)
       get_extension_func("glGenerateMipmapEXT");
 
-  } else if (is_at_least_gl_version(3, 0)) {
-    // This case should go away when we support the ARB/3.0 version of FBOs.
-    _supports_framebuffer_object = false;
-    _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
-      get_extension_func("glGenerateMipmap");
+    if (has_extension("GL_EXT_framebuffer_multisample")) {
+      _supports_framebuffer_multisample = true;
+      _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
+        get_extension_func("glRenderbufferStorageMultisampleEXT");
+    } else {
+      _supports_framebuffer_multisample = false;
+    }
+    if (has_extension("GL_EXT_framebuffer_blit")) {
+      _supports_framebuffer_blit = true;
+      _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
+        get_extension_func("glBlitFramebufferEXT");
+    } else {
+      _supports_framebuffer_blit = false;
+    }
 
   } else {
     _supports_framebuffer_object = false;
+    _supports_framebuffer_multisample = false;
+    _supports_framebuffer_blit = false;
     _glGenerateMipmap = NULL;
   }
 #endif
@@ -2086,46 +2174,13 @@ reset() {
   }
 #endif  // !OPENGLES_1
 
-  _supports_framebuffer_multisample = false;
-  if (is_at_least_gles_version(3, 0)) {
-    _supports_framebuffer_multisample = true;
-    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
-      get_extension_func("glRenderbufferStorageMultisample");
-
-#ifdef OPENGLES
-  } else if (has_extension("GL_APPLE_framebuffer_multisample")) {
-    _supports_framebuffer_multisample = true;
-    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEAPPLEPROC)
-      get_extension_func("glRenderbufferStorageMultisampleAPPLE");
-#else
-  } else if (has_extension("GL_EXT_framebuffer_multisample")) {
-    _supports_framebuffer_multisample = true;
-    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
-      get_extension_func("glRenderbufferStorageMultisampleEXT");
-#endif
-  }
-
 #ifndef OPENGLES
   _supports_framebuffer_multisample_coverage_nv = false;
-  if (has_extension("GL_NV_framebuffer_multisample_coverage")) {
+  if (_supports_framebuffer_multisample &&
+      has_extension("GL_NV_framebuffer_multisample_coverage")) {
     _supports_framebuffer_multisample_coverage_nv = true;
     _glRenderbufferStorageMultisampleCoverage = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)
       get_extension_func("glRenderbufferStorageMultisampleCoverageNV");
-  }
-#endif
-
-#ifndef OPENGLES_1
-  _supports_framebuffer_blit = false;
-
-  if (is_at_least_gles_version(3, 0)) {
-    _supports_framebuffer_blit = true;
-    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
-      get_extension_func("glBlitFramebuffer");
-
-  } else if (has_extension("GL_EXT_framebuffer_blit")) {
-    _supports_framebuffer_blit = true;
-    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
-      get_extension_func("glBlitFramebufferEXT");
   }
 #endif
 
@@ -2296,29 +2351,115 @@ reset() {
   }
 #endif
 
-  // In OpenGL ES 2.x, this is supported in the core.
-#ifndef OPENGLES_2
-  _glBlendEquation = NULL;
-  bool supports_blend_equation = false;
-  if (is_at_least_gl_version(1, 2)) {
-    supports_blend_equation = true;
-    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
-      get_extension_func("glBlendEquation");
-  } else if (has_extension("GL_OES_blend_subtract")) {
-    supports_blend_equation = true;
+#ifdef OPENGLES_1
+  // In OpenGL ES 1, blending is supported via extensions.
+  if (has_extension("GL_OES_blend_subtract")) {
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func("glBlendEquationOES");
+
+    if (_glBlendEquation == NULL) {
+      _glBlendEquation = null_glBlendEquation;
+      GLCAT.warning()
+        << "BlendEquationOES advertised as supported by OpenGL ES runtime, but "
+           "could not get pointer to extension function.\n";
+    }
+  } else {
+    _glBlendEquation = null_glBlendEquation;
+  }
+
+  if (has_extension("GL_OES_blend_equation_separate")) {
+    _glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEOESPROC)
+      get_extension_func("glBlendEquationSeparateOES");
+
+    if (_glBlendEquation == NULL) {
+      _supports_blend_equation_separate = false;
+      GLCAT.warning()
+        << "BlendEquationSeparateOES advertised as supported by OpenGL ES "
+           "runtime, but could not get pointer to extension function.\n";
+    } else {
+      _supports_blend_equation_separate = true;
+    }
+  } else {
+    _supports_blend_equation_separate = false;
+    _glBlendEquationSeparate = NULL;
+  }
+
+  if (has_extension("GL_OES_blend_func_separate")) {
+    _glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEOESPROC)
+      get_extension_func("glBlendFuncSeparateOES");
+
+    if (_glBlendFuncSeparate == NULL) {
+      _glBlendFuncSeparate = null_glBlendFuncSeparate;
+      GLCAT.warning()
+        << "BlendFuncSeparateOES advertised as supported by OpenGL ES runtime, but "
+           "could not get pointer to extension function.\n";
+    }
+  } else {
+    _glBlendFuncSeparate = null_glBlendFuncSeparate;
+  }
+
+#elif defined(OPENGLES)
+  // In OpenGL ES 2.x and above, this is supported in the core.
+  _supports_blend_equation_separate = false;
+
+#else
+  if (is_at_least_gl_version(1, 2)) {
+    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
+      get_extension_func("glBlendEquation");
+
   } else if (has_extension("GL_EXT_blend_minmax")) {
-    supports_blend_equation = true;
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func("glBlendEquationEXT");
+
+  } else {
+    _glBlendEquation = null_glBlendEquation;
   }
-  if (supports_blend_equation && _glBlendEquation == NULL) {
-    GLCAT.warning()
-      << "BlendEquation advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
-  }
+
   if (_glBlendEquation == NULL) {
     _glBlendEquation = null_glBlendEquation;
+    GLCAT.warning()
+      << "BlendEquation advertised as supported by OpenGL runtime, but could "
+         "not get pointer to extension function.\n";
+  }
+
+  if (is_at_least_gl_version(2, 0)) {
+    _supports_blend_equation_separate = true;
+    _glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEPROC)
+      get_extension_func("glBlendEquationSeparate");
+
+  } else if (has_extension("GL_EXT_blend_equation_separate")) {
+    _supports_blend_equation_separate = true;
+    _glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEEXTPROC)
+      get_extension_func("glBlendEquationSeparateEXT");
+
+  } else {
+    _supports_blend_equation_separate = false;
+    _glBlendEquationSeparate = NULL;
+  }
+
+  if (_supports_blend_equation_separate && _glBlendEquationSeparate == NULL) {
+    _supports_blend_equation_separate = false;
+    GLCAT.warning()
+      << "BlendEquationSeparate advertised as supported by OpenGL runtime, "
+         "but could not get pointer to extension function.\n";
+  }
+
+  if (is_at_least_gl_version(1, 4)) {
+    _glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEPROC)
+      get_extension_func("glBlendFuncSeparate");
+
+  } else if (has_extension("GL_EXT_blend_func_separate")) {
+    _glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEEXTPROC)
+      get_extension_func("glBlendFuncSeparateEXT");
+
+  } else {
+    _glBlendFuncSeparate = null_glBlendFuncSeparate;
+  }
+
+  if (_glBlendFuncSeparate == NULL) {
+    _glBlendFuncSeparate = null_glBlendFuncSeparate;
+    GLCAT.warning()
+      << "BlendFuncSeparate advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
   }
 #endif
 
@@ -2342,6 +2483,15 @@ reset() {
   if (_glBlendColor == NULL) {
     _glBlendColor = null_glBlendColor;
   }
+#endif
+
+#ifdef OPENGLES_1
+  // OpenGL ES 1 doesn't support dual-source blending.
+#elif defined(OPENGLES)
+  _supports_dual_source_blending = has_extension("GL_EXT_blend_func_extended");
+#else
+  _supports_dual_source_blending =
+    is_at_least_gl_version(3, 3) || has_extension("GL_ARB_blend_func_extended");
 #endif
 
 #ifdef OPENGLES
@@ -6914,6 +7064,7 @@ do_issue_blending() {
   _target_rs->get_attrib_def(target_color_blend);
   CPT(ColorBlendAttrib) color_blend = target_color_blend;
   ColorBlendAttrib::Mode color_blend_mode = target_color_blend->get_mode();
+  ColorBlendAttrib::Mode alpha_blend_mode = target_color_blend->get_alpha_mode();
 
   const TransparencyAttrib *target_transparency;
   _target_rs->get_attrib_def(target_transparency);
@@ -6926,9 +7077,17 @@ do_issue_blending() {
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    _glBlendEquation(get_blend_equation_type(color_blend_mode));
-    glBlendFunc(get_blend_func(color_blend->get_operand_a()),
-                get_blend_func(color_blend->get_operand_b()));
+
+    if (_supports_blend_equation_separate) {
+      _glBlendEquationSeparate(get_blend_equation_type(color_blend_mode),
+                               get_blend_equation_type(alpha_blend_mode));
+    } else {
+      _glBlendEquation(get_blend_equation_type(color_blend_mode));
+    }
+    _glBlendFuncSeparate(get_blend_func(color_blend->get_operand_a()),
+                         get_blend_func(color_blend->get_operand_b()),
+                         get_blend_func(color_blend->get_alpha_operand_a()),
+                         get_blend_func(color_blend->get_alpha_operand_b()));
 
 #ifndef OPENGLES_1
     LColor c;
@@ -6943,9 +7102,17 @@ do_issue_blending() {
 #endif
 
     if (GLCAT.is_spam()) {
-      GLCAT.spam() << "glBlendEquation(" << color_blend_mode << ")\n";
-      GLCAT.spam() << "glBlendFunc(" << color_blend->get_operand_a()
-                                     << color_blend->get_operand_b() << ")\n";
+      if (_supports_blend_equation_separate) {
+        GLCAT.spam() << "glBlendEquationSeparate(" << color_blend_mode << ", "
+                                                   << alpha_blend_mode << ")\n";
+      } else {
+        GLCAT.spam() << "glBlendEquation(" << color_blend_mode << ")\n";
+      }
+      GLCAT.spam() << "glBlendFuncSeparate("
+                   << color_blend->get_operand_a() << ", "
+                   << color_blend->get_operand_b() << ", "
+                   << color_blend->get_alpha_operand_a() << ", "
+                   << color_blend->get_alpha_operand_b() << ")\n";
 #ifndef OPENGLES_1
       GLCAT.spam() << "glBlendColor(" << c << ")\n";
 #endif
@@ -9325,6 +9492,13 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
   case ColorBlendAttrib::O_one_minus_constant_alpha:
   case ColorBlendAttrib::O_one_minus_alpha_scale:
     break;
+
+  // No dual-source blending, either.
+  case ColorBlendAttrib::O_incoming1_color:
+  case ColorBlendAttrib::O_one_minus_incoming1_color:
+  case ColorBlendAttrib::O_incoming1_alpha:
+  case ColorBlendAttrib::O_one_minus_incoming1_alpha:
+    break;
 #else
   case ColorBlendAttrib::O_constant_color:
   case ColorBlendAttrib::O_color_scale:
@@ -9341,6 +9515,18 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
   case ColorBlendAttrib::O_one_minus_constant_alpha:
   case ColorBlendAttrib::O_one_minus_alpha_scale:
     return GL_ONE_MINUS_CONSTANT_ALPHA;
+
+  case ColorBlendAttrib::O_incoming1_color:
+    return GL_SRC1_COLOR;
+
+  case ColorBlendAttrib::O_one_minus_incoming1_color:
+    return GL_ONE_MINUS_SRC1_COLOR;
+
+  case ColorBlendAttrib::O_incoming1_alpha:
+    return GL_SRC1_ALPHA;
+
+  case ColorBlendAttrib::O_one_minus_incoming1_alpha:
+    return GL_ONE_MINUS_SRC1_ALPHA;
 #endif
 
   case ColorBlendAttrib::O_incoming_color_saturate:
@@ -11337,7 +11523,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   if (needs_reload && gtc->_immutable) {
-    GLCAT.warning() << "Attempt to modify texture with immutable storage, recreating texture.\n";
+    GLCAT.info() << "Attempt to modify texture with immutable storage, recreating texture.\n";
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
 

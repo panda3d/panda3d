@@ -126,6 +126,10 @@ public:
   INLINE ISocketStream(streambuf *buf);
   virtual ~ISocketStream();
 
+#if _MSC_VER >= 1800
+  INLINE ISocketStream(const ISocketStream &copy) = delete;
+#endif
+
 PUBLISHED:
   enum ReadState {
     RS_initial,
@@ -155,6 +159,10 @@ class EXPCL_PANDAEXPRESS OSocketStream : public ostream, public SSWriter {
 public:
   INLINE OSocketStream(streambuf *buf);
 
+#if _MSC_VER >= 1800
+  INLINE OSocketStream(const OSocketStream &copy) = delete;
+#endif
+
 PUBLISHED:
   virtual bool is_closed() = 0;
   virtual void close() = 0;
@@ -169,6 +177,10 @@ PUBLISHED:
 class EXPCL_PANDAEXPRESS SocketStream : public iostream, public SSReader, public SSWriter {
 public:
   INLINE SocketStream(streambuf *buf);
+
+#if _MSC_VER >= 1800
+  INLINE SocketStream(const SocketStream &copy) = delete;
+#endif
 
 PUBLISHED:
   virtual bool is_closed() = 0;

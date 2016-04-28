@@ -265,3 +265,8 @@ init_libdxgsg9() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("DirectX9");
 }
+
+// Necessary to allow use of dxerr from MSVC 2015
+#if _MSC_VER >= 1900
+int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
+#endif

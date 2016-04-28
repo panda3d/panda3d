@@ -36,6 +36,9 @@ PUBLISHED:
   INLINE bool is_off() const;
   INLINE Material *get_material() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(material, get_material);
+
 public:
   virtual void output(ostream &out) const;
 

@@ -34,6 +34,9 @@ PUBLISHED:
   INLINE bool is_off() const;
   INLINE Fog *get_fog() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(fog, get_fog);
+
 public:
   virtual void output(ostream &out) const;
 

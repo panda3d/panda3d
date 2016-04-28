@@ -561,6 +561,10 @@ if (COMPILER == "MSVC"):
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
             #LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
+
+    if not PkgSkip("FREETYPE") and os.path.isdir(GetThirdpartyDir() + "freetype/include/freetype2"):
+        IncDirectory("FREETYPE", GetThirdpartyDir() + "freetype/include/freetype2")
+
     IncDirectory("ALWAYS", GetThirdpartyDir() + "extras/include")
     LibName("WINSOCK", "wsock32.lib")
     LibName("WINSOCK2", "wsock32.lib")
@@ -587,17 +591,26 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
-    if (PkgSkip("PNG")==0):      LibName("PNG",      GetThirdpartyDir() + "png/lib/libpng_static.lib")
+    if (PkgSkip("OPENSSL")==0):
+        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
+        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
+    if (PkgSkip("PNG")==0):
+        if os.path.isfile(GetThirdpartyDir() + "png/lib/libpng16_static.lib"):
+            LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
+        else:
+            LibName("PNG", GetThirdpartyDir() + "png/lib/libpng_static.lib")
+    if (PkgSkip("TIFF")==0):
+        if os.path.isfile(GetThirdpartyDir() + "tiff/lib/libtiff.lib"):
+            LibName("TIFF", GetThirdpartyDir() + "tiff/lib/libtiff.lib")
+        else:
+            LibName("TIFF", GetThirdpartyDir() + "tiff/lib/tiff.lib")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF",     GetThirdpartyDir() + "tiff/lib/libtiff.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/quat.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     GetThirdpartyDir() + "nvidiacg/lib/cgGL.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    GetThirdpartyDir() + "nvidiacg/lib/cgD3D9.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", GetThirdpartyDir() + "nvidiacg/lib/cg.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
     if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
@@ -703,7 +716,7 @@ if (COMPILER == "MSVC"):
         IncDirectory("SPEEDTREE", SDK["SPEEDTREE"] + "/Include")
     if (PkgSkip("BULLET")==0):
         suffix = '.lib'
-        if GetTargetArch() == 'x64':
+        if GetTargetArch() == 'x64' and os.path.isfile(GetThirdpartyDir() + "bullet/lib/BulletCollision_x64.lib"):
             suffix = '_x64.lib'
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/LinearMath" + suffix)
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletCollision" + suffix)
@@ -2237,6 +2250,7 @@ DTOOL_CONFIG=[
     ("HAVE_SOFTIMAGE_PIC",             '1',                      '1'),
     ("HAVE_BMP",                       '1',                      '1'),
     ("HAVE_PNM",                       '1',                      '1'),
+    ("HAVE_STB_IMAGE",                 '1',                      '1'),
     ("HAVE_VORBIS",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
@@ -3467,8 +3481,7 @@ if (not RUNTIME):
   TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3putil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
   TargetAdd('libp3putil_igate.obj', input='libp3putil.in', opts=["DEPENDENCYONLY"])
-  TargetAdd('p3putil_typedWritable_ext.obj', opts=OPTS, input='typedWritable_ext.cxx')
-  TargetAdd('p3putil_pythonCallbackObject.obj', opts=OPTS, input='pythonCallbackObject.cxx')
+  TargetAdd('p3putil_ext_composite.obj', opts=OPTS, input='p3putil_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/audio/
@@ -4077,8 +4090,7 @@ if (not RUNTIME):
   if PkgSkip("FREETYPE")==0:
     TargetAdd('core.pyd', input="libp3pnmtext_igate.obj")
 
-  TargetAdd('core.pyd', input='p3putil_typedWritable_ext.obj')
-  TargetAdd('core.pyd', input='p3putil_pythonCallbackObject.obj')
+  TargetAdd('core.pyd', input='p3putil_ext_composite.obj')
   TargetAdd('core.pyd', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('core.pyd', input='p3event_pythonTask.obj')
   TargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
@@ -6600,7 +6612,6 @@ def MakeInstallerNSIS(file, title, installdir):
         'BUILT'       : panda,
         'SOURCE'      : psource,
         'PYVER'       : SDK["PYTHONVERSION"][6:9],
-        'PYEXTRAS'    : os.path.join(os.path.abspath(GetThirdpartyBase()), 'win-extras'),
         'REGVIEW'     : regview,
     }
 
@@ -6977,8 +6988,8 @@ def MakeInstallerOSX():
         oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/pandac" % GetOutputDir())
         oscmd("cp -R %s/direct                dstroot/pythoncode/Developer/Panda3D/direct" % GetOutputDir())
         oscmd("ln -s %s                       dstroot/pythoncode/usr/local/bin/ppython" % SDK["PYTHONEXEC"])
-        oscmd("cp -R %s/*.so                  dstroot/pythoncode/Developer/Panda3D/" % GetOutputDir())
-        oscmd("cp -R %s/*.py                  dstroot/pythoncode/Developer/Panda3D/" % GetOutputDir())
+        oscmd("cp -R %s/*.so                  dstroot/pythoncode/Developer/Panda3D/" % GetOutputDir(), True)
+        oscmd("cp -R %s/*.py                  dstroot/pythoncode/Developer/Panda3D/" % GetOutputDir(), True)
         if os.path.isdir(GetOutputDir()+"/Pmw"):
             oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/Pmw" % GetOutputDir())
             compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/Pmw")

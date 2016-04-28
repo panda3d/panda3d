@@ -49,6 +49,7 @@ PUBLISHED:
   INLINE static CPT(RenderAttrib) make_default();
 
   INLINE Mode get_mode() const;
+  MAKE_PROPERTY(mode, get_mode);
 
 public:
   virtual void output(ostream &out) const;

@@ -36,6 +36,10 @@ PUBLISHED:
   INLINE PN_stdfloat get_reference_alpha() const;
   INLINE PandaCompareFunc get_mode() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(reference_alpha, get_reference_alpha);
+  MAKE_PROPERTY(mode, get_mode);
+
 public:
   virtual void output(ostream &out) const;
 

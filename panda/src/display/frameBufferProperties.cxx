@@ -480,6 +480,13 @@ get_quality(const FrameBufferProperties &reqs) const {
     quality -= 10000000;
   }
 
+  // Deduct for software-only renderers in absence of a special request.
+  // Cost: 2,000,000
+
+  if (get_force_software() && !reqs.get_force_software()) {
+    quality -= 2000000;
+  }
+
   // Deduct for missing depth, color, alpha, stencil, or accum.  Cost:
   // 1,000,000
 

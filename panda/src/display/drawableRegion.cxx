@@ -27,8 +27,12 @@ DrawableRegion::
  */
 void DrawableRegion::
 set_clear_active(int n, bool clear_active) {
-  nassertv((n >= 0)&&(n < RTP_COUNT));
-  _clear_active[n] = clear_active;
+  nassertv(n >= 0 && n < RTP_COUNT);
+  if (clear_active) {
+    _clear_mask |= 1 << n;
+  } else {
+    _clear_mask &= ~(1 << n);
+  }
   update_pixel_factor();
 }
 
@@ -37,8 +41,8 @@ set_clear_active(int n, bool clear_active) {
  */
 bool DrawableRegion::
 get_clear_active(int n) const {
-  nassertr((n >= 0)&&(n < RTP_COUNT), false);
-  return _clear_active[n];
+  nassertr(n >= 0 && n < RTP_COUNT, false);
+  return (_clear_mask & (1 << n)) != 0;
 }
 
 /**
@@ -66,9 +70,7 @@ get_clear_value(int n) const {
  */
 void DrawableRegion::
 disable_clears() {
-  for (int i = 0; i < RTP_COUNT; ++i) {
-    _clear_active[i] = false;
-  }
+  _clear_mask = 0;
   update_pixel_factor();
 }
 
@@ -79,12 +81,7 @@ disable_clears() {
  */
 bool DrawableRegion::
 is_any_clear_active() const {
-  for (int i = 0; i < RTP_COUNT; ++i) {
-    if (get_clear_active(i)) {
-      return true;
-    }
-  }
-  return false;
+  return (_clear_mask != 0);
 }
 
 /**

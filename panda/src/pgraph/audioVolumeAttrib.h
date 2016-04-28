@@ -40,6 +40,9 @@ PUBLISHED:
   INLINE PN_stdfloat get_volume() const;
   CPT(RenderAttrib) set_volume(PN_stdfloat volume) const;
 
+PUBLISHED:
+  MAKE_PROPERTY2(volume, has_volume, get_volume);
+
 public:
   virtual void output(ostream &out) const;
 

@@ -48,6 +48,9 @@ PUBLISHED:
 
   INLINE unsigned int get_channels() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(channels, get_channels);
+
 public:
   virtual void output(ostream &out) const;
 
