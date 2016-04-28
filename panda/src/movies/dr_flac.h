@@ -387,12 +387,12 @@ drflac* drflac_open_file(const char* filename)
     FILE* pFile;
 #ifdef _MSC_VER
     if (fopen_s(&pFile, filename, "rb") != 0) {
-        return false;
+        return NULL;
     }
 #else
     pFile = fopen(filename, "rb");
     if (pFile == NULL) {
-        return false;
+        return NULL;
     }
 #endif
 
@@ -420,7 +420,7 @@ static drflac* drflac_open_file(const char* filename)
 {
     HANDLE hFile = CreateFileA(filename, FILE_GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-        return false;
+        return NULL;
     }
 
     return drflac_open(drflac__on_read_stdio, drflac__on_seek_stdio, (void*)hFile);
@@ -486,7 +486,7 @@ static drflac* drflac_open_memory(const void* data, size_t dataSize)
 {
     drflac_memory* pUserData = (drflac_memory*)malloc(sizeof(*pUserData));
     if (pUserData == NULL) {
-        return false;
+        return NULL;
     }
 
     pUserData->data = (const unsigned char*)data;
@@ -2438,12 +2438,12 @@ static bool drflac__seek_to_sample__seek_table(drflac* pFlac, uint64_t sampleInd
 static drflac* drflac_open(drflac_read_proc onRead, drflac_seek_proc onSeek, void* pUserData)
 {
     if (onRead == NULL || onSeek == NULL) {
-        return false;
+        return NULL;
     }
 
     unsigned char id[4];
     if (onRead(pUserData, id, 4) != 4 || id[0] != 'f' || id[1] != 'L' || id[2] != 'a' || id[3] != 'C') {
-        return false;    // Not a FLAC stream.
+        return NULL;    // Not a FLAC stream.
     }
 
     drflac tempFlac;
@@ -2460,32 +2460,32 @@ static drflac* drflac_open(drflac_read_proc onRead, drflac_seek_proc onSeek, voi
     bool isLastBlock;
     int blockType = drflac__read_block_header(&tempFlac, &blockSize, &isLastBlock);
     if (blockType != DRFLAC_BLOCK_TYPE_STREAMINFO && blockSize != 34) {
-        return false;
+        return NULL;
     }
 
     if (!drflac__seek_bits(&tempFlac, 16)) {   // minBlockSize
-        return false;
+        return NULL;
     }
     if (!drflac__read_uint16(&tempFlac, 16, &tempFlac.maxBlockSize)) {
-        return false;
+        return NULL;
     }
     if (!drflac__seek_bits(&tempFlac, 48)) {   // minFrameSize + maxFrameSize
-        return false;
+        return NULL;
     }
     if (!drflac__read_uint32(&tempFlac, 20, &tempFlac.sampleRate)) {
-        return false;
+        return NULL;
     }
     if (!drflac__read_uint8(&tempFlac, 3, &tempFlac.channels)) {
-        return false;
+        return NULL;
     }
     if (!drflac__read_uint8(&tempFlac, 5, &tempFlac.bitsPerSample)) {
-        return false;
+        return NULL;
     }
     if (!drflac__read_uint64(&tempFlac, 36, &tempFlac.totalSampleCount)) {
-        return false;
+        return NULL;
     }
     if (!drflac__seek_bits(&tempFlac, 128)) {  // MD5
-        return false;
+        return NULL;
     }
 
     tempFlac.channels += 1;
@@ -2536,7 +2536,7 @@ static drflac* drflac_open(drflac_read_proc onRead, drflac_seek_proc onSeek, voi
         }
 
         if (!drflac__seek_bits(&tempFlac, blockSize*8)) {
-            return false;
+            return NULL;
         }
     }
 
