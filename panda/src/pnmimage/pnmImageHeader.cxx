@@ -93,6 +93,20 @@ make_reader(const Filename &filename, PNMFileType *type,
   } else {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     owns_file = true;
+// PMPP
+#ifdef EMSCRIPTEN
+#ifdef CPPPARSER
+#warning vfs hack at pnmImageHeader.cxx:99
+#else
+    int rx = EM_ASM_INT( {  return Module.callfs( Module.Pointer_stringify($0) ); }, filename.c_str() );
+    if (rx<1 )
+        printf("PNMImageHeader::make_reader vfs hit %s FAILED\n",filename.c_str() );        
+    else
+        printf("PNMImageHeader::make_reader vfs hit %s SUCCESS\n",filename.c_str() );        
+#endif
+#endif
+// /PMPP
+    
     file = vfs->open_read_file(filename, true);
   }
 
