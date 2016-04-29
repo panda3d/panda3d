@@ -1149,6 +1149,24 @@ do_get_file(const Filename &filename, int open_flags) const {
   // Also transparently look for a regular file suffixed .pz.
   Filename strpath_pz = strpath + ".pz";
 
+//PMPP
+#ifdef EMSCRIPTEN
+#ifdef CPPPARSER
+#warning vfs hack at virtualFileSystem.cxx:1155
+#else
+    if ( strpath_pz.exists() ){
+        // compressed file already here
+    } else {
+        if ( strpath.exists() ){
+            // raw file is already here
+        } else {
+            int rx = EM_ASM_INT( {  return Module.callfs( Module.Pointer_stringify($0) ); }, strpath.c_str() );
+        }
+    }
+#endif
+#endif
+// /PMPP
+
   // Now scan all the mount points, from the back (since later mounts override
   // more recent ones), until a match is found.
   PT(VirtualFile) found_file = NULL;
