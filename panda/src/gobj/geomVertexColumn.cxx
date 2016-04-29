@@ -378,19 +378,9 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_pointer(dg, _name);
   dg.add_uint8(_num_components);
   dg.add_uint8(_numeric_type);
-
-  if (_contents == C_normal && manager->get_file_minor_ver() < 38) {
-    // Panda 1.9 did not have C_normal.
-    dg.add_uint8(C_vector);
-  } else {
-    dg.add_uint8(_contents);
-  }
-
+  dg.add_uint8(_contents);
   dg.add_uint16(_start);
-
-  if (manager->get_file_minor_ver() >= 29) {
-    dg.add_uint8(_column_alignment);
-  }
+  dg.add_uint8(_column_alignment);
 }
 
 /**

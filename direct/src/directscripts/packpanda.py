@@ -274,7 +274,7 @@ def CompileFiles(file):
     if (os.path.isfile(file)):
         if (file.endswith(".egg")):
             egg2bam(file, file[:-4]+'.bam')
-        elif (file.endswith(".egg.pz") or file.endswith(".egg.gz")):
+        elif (file.endswith(".egg.pz")):
             egg2bam(file, file[:-7]+'.bam')
         elif (file.endswith(".py")):
             py2pyc(file)

@@ -2325,7 +2325,7 @@ INLINE bool Texture::
 is_txo_filename(const Filename &fullpath) {
   string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
-  if (extension == "pz" || extension == "gz") {
+  if (extension == "pz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
   }
 #endif  // HAVE_ZLIB
@@ -2340,7 +2340,7 @@ INLINE bool Texture::
 is_dds_filename(const Filename &fullpath) {
   string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
-  if (extension == "pz" || extension == "gz") {
+  if (extension == "pz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
   }
 #endif  // HAVE_ZLIB

@@ -461,10 +461,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
     manager->write_pointer(dg, sn._stage);
     manager->write_pointer(dg, sn._transform);
-
-    if (manager->get_file_minor_ver() >= 24) {
-      dg.add_int32(sn._override);
-    }
+    dg.add_int32(sn._override);
   }
 }
 

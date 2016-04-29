@@ -592,12 +592,8 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
     if (PkgSkip("OPENSSL")==0):
-        if os.path.isfile(GetThirdpartyDir() + "openssl/lib/libpandassl.lib"):
-            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
-            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
-        else:
-            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libeay32.lib")
-            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/ssleay32.lib")
+        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
+        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
     if (PkgSkip("PNG")==0):
         if os.path.isfile(GetThirdpartyDir() + "png/lib/libpng16_static.lib"):
             LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
@@ -4104,8 +4100,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
 
   TargetAdd('core.pyd', input='core_module.obj')
-  if not GetLinkAllStatic() and GetTarget() != 'emscripten':
-     TargetAdd('core.pyd', input='libp3tinyxml.ilb')
+  #TargetAdd('core.pyd', input='libp3tinyxml.ilb')
   TargetAdd('core.pyd', input='libp3interrogatedb.dll')
   TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('core.pyd', opts=['PYTHON', 'WINSOCK2'])

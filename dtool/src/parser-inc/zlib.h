@@ -21,8 +21,8 @@
 
 #include "zconf.h"
 
-typedef struct z_stream_s z_stream;
-typedef struct gz_header_s gz_header;
+class z_stream {
+};
 
 #endif
 

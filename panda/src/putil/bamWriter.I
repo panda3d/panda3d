@@ -43,16 +43,6 @@ get_file_major_ver() const {
 }
 
 /**
- * Changes the minor .bam version to write.  This should be called before
- * init().  Each Panda version has only a fairly narrow range of versions it
- * is able to write; consult the .bam documentation for more information.
- */
-INLINE void BamWriter::
-set_file_minor_ver(int minor_ver) {
-  _file_minor = minor_ver;
-}
-
-/**
  * Returns the minor version number of the Bam file currently being written.
  */
 INLINE int BamWriter::

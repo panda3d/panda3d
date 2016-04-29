@@ -893,7 +893,7 @@ load(const Filename &file_name) {
   sd->_basename = file_name.get_basename();
 
   string extension = sd->_basename.get_extension();
-  if (extension == "pz" || extension == "gz") {
+  if (extension == "pz") {
     extension = Filename(sd->_basename.get_basename_wo_extension()).get_extension();
   }
 

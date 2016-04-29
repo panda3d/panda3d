@@ -53,12 +53,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
   dg.add_stdfloat(_u_speed);
   dg.add_stdfloat(_v_speed);
-  if (manager->get_file_minor_ver() >= 33) {
-    dg.add_stdfloat(_w_speed);
-  }
-  if (manager->get_file_minor_ver() >= 22) {
-    dg.add_stdfloat(_r_speed);
-  }
+  dg.add_stdfloat(_w_speed);
+  dg.add_stdfloat(_r_speed);
 }
 
 /**

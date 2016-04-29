@@ -195,8 +195,7 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
           << type->get_name() << ".\n";
       } else {
         pnmimage_cat.debug()
-          << "Unable to guess image file type from its extension ("
-          << filename.get_extension() << ").\n";
+          << "Unable to guess image file type from its extension.\n";
       }
     }
   }
