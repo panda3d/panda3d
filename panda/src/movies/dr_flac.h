@@ -92,7 +92,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 
 // As data is read from the client it is placed into an internal buffer for fast access. This controls the
 // size of that buffer. Larger values means more speed, but also more memory. In my testing there is diminishing
@@ -332,11 +332,7 @@ static drflac* drflac_open_memory(const void* data, size_t dataSize);
 #include <endian.h>
 #endif
 
-#ifdef _MSC_VER
-#define DRFLAC_INLINE __forceinline
-#else
-#define DRFLAC_INLINE inline
-#endif
+#define DRFLAC_INLINE ALWAYS_INLINE
 
 #define DRFLAC_BLOCK_TYPE_STREAMINFO                    0
 #define DRFLAC_BLOCK_TYPE_PADDING                       1
@@ -2248,7 +2244,7 @@ done_reading_block_header:
     }
 
     if (pIsLastBlockOut) {
-        *pIsLastBlockOut = isLastBlock;
+        *pIsLastBlockOut = (isLastBlock != 0);
     }
 
     return blockType;
@@ -2354,7 +2350,7 @@ static bool drflac__seek_to_sample__brute_force(drflac* pFlac, uint64_t sampleIn
         return false;
     }
 
-    return drflac_read_s16(pFlac, samplesToDecode, NULL);
+    return (drflac_read_s16(pFlac, samplesToDecode, NULL) != 0);
 }
 
 static bool drflac__seek_to_sample__seek_table(drflac* pFlac, uint64_t sampleIndex)

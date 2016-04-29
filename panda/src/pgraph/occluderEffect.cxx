@@ -146,10 +146,17 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   // write the number of on occluders
   dg.add_uint16(get_num_on_occluders());
+
   // write the on occluders pointers if any
   Occluders::const_iterator nti;
-  for (nti = _on_occluders.begin(); nti != _on_occluders.end(); ++nti) {
-    (*nti).write_datagram(manager, dg);
+  if (manager->get_file_minor_ver() < 40) {
+    for (nti = _on_occluders.begin(); nti != _on_occluders.end(); ++nti) {
+      manager->write_pointer(dg, nti->node());
+    }
+  } else {
+    for (nti = _on_occluders.begin(); nti != _on_occluders.end(); ++nti) {
+      (*nti).write_datagram(manager, dg);
+    }
   }
 }
 

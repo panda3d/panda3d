@@ -8663,8 +8663,19 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
   me.add_uint8(cdata->_primary_file_num_channels);
   me.add_uint8(cdata->_alpha_file_channel);
   me.add_bool(has_rawdata);
-  me.add_uint8(cdata->_texture_type);
-  me.add_bool(cdata->_has_read_mipmaps);
+
+  if (manager->get_file_minor_ver() < 25 &&
+      cdata->_texture_type == TT_cube_map) {
+    // Between Panda3D releases 1.7.2 and 1.8.0 (bam versions 6.24 and 6.25),
+    // we added TT_2d_texture_array, shifting the definition for TT_cube_map.
+    me.add_uint8(TT_2d_texture_array);
+  } else {
+    me.add_uint8(cdata->_texture_type);
+  }
+
+  if (manager->get_file_minor_ver() >= 32) {
+    me.add_bool(cdata->_has_read_mipmaps);
+  }
 }
 
 /**
@@ -8673,7 +8684,18 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
  */
 void Texture::
 do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
-  cdata->_default_sampler.write_datagram(me);
+  if (manager->get_file_minor_ver() >= 36) {
+    cdata->_default_sampler.write_datagram(me);
+  } else {
+    const SamplerState &s = cdata->_default_sampler;
+    me.add_uint8(s.get_wrap_u());
+    me.add_uint8(s.get_wrap_v());
+    me.add_uint8(s.get_wrap_w());
+    me.add_uint8(s.get_minfilter());
+    me.add_uint8(s.get_magfilter());
+    me.add_int16(s.get_anisotropic_degree());
+    s.get_border_color().write_datagram(me);
+  }
 
   me.add_uint8(cdata->_compression);
   me.add_uint8(cdata->_quality_level);
@@ -8685,7 +8707,9 @@ do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
     me.add_uint8(cdata->_usage_hint);
   }
 
-  me.add_uint8(cdata->_auto_texture_scale);
+  if (manager->get_file_minor_ver() >= 28) {
+    me.add_uint8(cdata->_auto_texture_scale);
+  }
   me.add_uint32(cdata->_orig_file_x_size);
   me.add_uint32(cdata->_orig_file_y_size);
 
@@ -8711,11 +8735,15 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint32(cdata->_y_size);
   me.add_uint32(cdata->_z_size);
 
-  me.add_uint32(cdata->_pad_x_size);
-  me.add_uint32(cdata->_pad_y_size);
-  me.add_uint32(cdata->_pad_z_size);
+  if (manager->get_file_minor_ver() >= 30) {
+    me.add_uint32(cdata->_pad_x_size);
+    me.add_uint32(cdata->_pad_y_size);
+    me.add_uint32(cdata->_pad_z_size);
+  }
 
-  me.add_uint32(cdata->_num_views);
+  if (manager->get_file_minor_ver() >= 26) {
+    me.add_uint32(cdata->_num_views);
+  }
   me.add_uint8(cdata->_component_type);
   me.add_uint8(cdata->_component_width);
   me.add_uint8(cdata->_ram_image_compression);

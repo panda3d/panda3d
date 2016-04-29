@@ -51,6 +51,12 @@ ConfigureDef(config_util);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
+ConfigVariableInt bam_version
+("bam-version", "",
+ PRC_DESC("Set this to specify which version .bam files to generate.  Each "
+          "Panda version only supports outputting a limited number of .bam "
+          "versions.  The default is to use the latest supported version."));
+
 ConfigVariableEnum<BamEnums::BamEndian> bam_endian
 ("bam-endian", BamEnums::BE_native,
  PRC_DESC("The default endianness to use for writing major numeric data "
