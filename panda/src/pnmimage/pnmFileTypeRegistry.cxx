@@ -127,7 +127,7 @@ get_type_from_extension(const string &filename) const {
   }
 
 #ifdef HAVE_ZLIB
-  if (extension == "pz") {
+  if (extension == "pz" || extension == "gz") {
     // If the extension is .pz, then we've got a Panda-compressed image file.
     // Back up some more and get the extension before that.
     size_t prev_dot = filename.rfind('.', dot - 1);

@@ -438,7 +438,10 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_uint8(_rgb_scale);
     me.add_uint8(_alpha_scale);
     me.add_bool(_saved_result);
-    me.add_int32(_tex_view_offset);
+
+    if (manager->get_file_minor_ver() >= 26) {
+      me.add_int32(_tex_view_offset);
+    }
 
     me.add_uint8(_combine_rgb_mode);
     me.add_uint8(_num_combine_rgb_operands);
