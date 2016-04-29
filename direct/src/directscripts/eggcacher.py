@@ -55,7 +55,7 @@ class EggCacher:
             size = os.path.getsize(path)
             eggs.append((path,size))
             return
-        if (path.endswith(".egg.pz")):
+        if (path.endswith(".egg.pz") or path.endswith(".egg.gz")):
             size = os.path.getsize(path)
             if (self.pzkeep): eggs.append((path,size))
             else: eggs.append((path[:-3],size))

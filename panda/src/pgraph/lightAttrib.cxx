@@ -898,18 +898,31 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   // write the number of off_lights
   dg.add_uint16(get_num_off_lights());
+
   // write the off lights pointers if any
   Lights::const_iterator fi;
-  for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
-    (*fi).write_datagram(manager, dg);
+  if (manager->get_file_minor_ver() < 40) {
+    for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
+      manager->write_pointer(dg, fi->node());
+    }
+  } else {
+    for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
+      (*fi).write_datagram(manager, dg);
+    }
   }
 
   // write the number of on lights
   dg.add_uint16(get_num_on_lights());
   // write the on lights pointers if any
   Lights::const_iterator nti;
-  for (nti = _on_lights.begin(); nti != _on_lights.end(); ++nti) {
-    (*nti).write_datagram(manager, dg);
+  if (manager->get_file_minor_ver() < 40) {
+    for (nti = _on_lights.begin(); nti != _on_lights.end(); ++nti) {
+      manager->write_pointer(dg, nti->node());
+    }
+  } else {
+    for (nti = _on_lights.begin(); nti != _on_lights.end(); ++nti) {
+      (*nti).write_datagram(manager, dg);
+    }
   }
 }
 
