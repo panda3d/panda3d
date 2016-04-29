@@ -338,26 +338,8 @@ void StencilAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
-  if (manager->get_file_minor_ver() < 35) {
-    dg.add_int32(_stencil_render_states[SRS_front_comparison_function] != M_none);
-    dg.add_int32(_stencil_render_states[SRS_back_comparison_function] != M_none);
-
-    for (int index = 0; index < SRS_total; ++index) {
-      if (index == SRS_front_comparison_function ||
-          index == SRS_back_comparison_function) {
-        if (_stencil_render_states[index] == M_none) {
-          dg.add_uint32(7);
-        } else {
-          dg.add_uint32(_stencil_render_states[index] - 1);
-        }
-      } else {
-        dg.add_uint32(_stencil_render_states[index]);
-      }
-    }
-  } else {
-    for (int index = 0; index < SRS_total; ++index) {
-      dg.add_uint32(_stencil_render_states[index]);
-    }
+  for (int index = 0; index < SRS_total; ++index) {
+    dg.add_uint32(_stencil_render_states[index]);
   }
 }
 

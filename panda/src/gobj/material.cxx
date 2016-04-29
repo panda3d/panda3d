@@ -257,7 +257,7 @@ set_roughness(PN_stdfloat roughness) {
   // Calculate the specular exponent from the roughness as it is used in
   // Blinn-Phong shading model.  We use the popular Disney method of squaring
   // the roughness to get a more perceptually linear scale.  From:
-  // http://graphicrants.blogspot.de/2013/08/specular-brdf-reference.html
+  // http:graphicrants.blogspot.de201308specular-brdf-reference.html
   if (roughness <= 0 || IS_NEARLY_ZERO(roughness)) {
     _shininess = make_inf((PN_stdfloat)0);
   } else {
@@ -481,35 +481,26 @@ void Material::
 write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(get_name());
 
-  if (manager->get_file_minor_ver() >= 39) {
-    me.add_int32(_flags);
+  me.add_int32(_flags);
 
-    if (_flags & F_metallic) {
-      // Metalness workflow.
-      _base_color.write_datagram(me);
-      me.add_stdfloat(_metallic);
-    } else {
-      _ambient.write_datagram(me);
-      _diffuse.write_datagram(me);
-      _specular.write_datagram(me);
-    }
-    _emission.write_datagram(me);
-
-    if (_flags & F_roughness) {
-      me.add_stdfloat(_roughness);
-    } else {
-      me.add_stdfloat(_shininess);
-    }
-
-    me.add_stdfloat(_refractive_index);
+  if (_flags & F_metallic) {
+    // Metalness workflow.
+    _base_color.write_datagram(me);
+    me.add_stdfloat(_metallic);
   } else {
     _ambient.write_datagram(me);
     _diffuse.write_datagram(me);
     _specular.write_datagram(me);
-    _emission.write_datagram(me);
-    me.add_stdfloat(_shininess);
-    me.add_int32(_flags & 0x7f);
   }
+  _emission.write_datagram(me);
+
+  if (_flags & F_roughness) {
+    me.add_stdfloat(_roughness);
+  } else {
+    me.add_stdfloat(_shininess);
+  }
+
+  me.add_stdfloat(_refractive_index);
 }
 
 /**

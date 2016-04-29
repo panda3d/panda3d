@@ -998,8 +998,7 @@ build_install_plans(TiXmlDocument *doc) {
           FileSpec new_file = patchfile->_file;
           string new_filename = new_file.get_filename();
           size_t dot = new_filename.rfind('.');
-          string extension = new_filename.substr(dot);
-          assert(extension == ".pz" || extension == ".gz");
+          assert(new_filename.substr(dot) == ".pz");
           new_filename = new_filename.substr(0, dot);
           new_file.set_filename(new_filename);
           step = new InstallStepUncompressFile
@@ -1835,7 +1834,7 @@ thread_step() {
   z.next_in = (Bytef *)decompress_buffer;
   z.avail_in = (size_t)read_count;
 
-  int result = inflateInit2(&z, 32 + 15);
+  int result = inflateInit(&z);
   if (result < 0) {
     nout << z.msg << "\n";
     return IT_step_failed;

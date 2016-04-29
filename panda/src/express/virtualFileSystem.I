@@ -88,7 +88,7 @@ ls_all(const Filename &filename) const {
  * Convenience function; returns the entire contents of the indicated file as
  * a string.
  *
- * If auto_unwrap is true, an explicitly-named .pz/.gz file is automatically
+ * If auto_unwrap is true, an explicitly-named .pz file is automatically
  * decompressed and the decompressed contents are returned.  This is different
  * than vfs-implicit-pz, which will automatically decompress a file if the
  * extension .pz is *not* given.
@@ -118,7 +118,7 @@ write_file(const Filename &filename, const string &data, bool auto_wrap) {
  * file, if it exists and can be read.  Returns true on success, false
  * otherwise.
  *
- * If auto_unwrap is true, an explicitly-named .pz/.gz file is automatically
+ * If auto_unwrap is true, an explicitly-named .pz file is automatically
  * decompressed and the decompressed contents are returned.  This is different
  * than vfs-implicit-pz, which will automatically decompress a file if the
  * extension .pz is *not* given.
@@ -134,7 +134,7 @@ read_file(const Filename &filename, string &result, bool auto_unwrap) const {
  * file, if it exists and can be read.  Returns true on success, false
  * otherwise.
  *
- * If auto_unwrap is true, an explicitly-named .pz/.gz file is automatically
+ * If auto_unwrap is true, an explicitly-named .pz file is automatically
  * decompressed and the decompressed contents are returned.  This is different
  * than vfs-implicit-pz, which will automatically decompress a file if the
  * extension .pz is *not* given.

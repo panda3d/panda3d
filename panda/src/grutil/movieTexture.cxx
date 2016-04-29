@@ -816,10 +816,7 @@ do_write_datagram_rawdata(Texture::CData *cdata_tex, BamWriter *manager, Datagra
   CDReader cdata(_cycler);
 
   dg.add_uint16(cdata_tex->_z_size);
-  if (manager->get_file_minor_ver() >= 26) {
-    dg.add_uint16(cdata_tex->_num_views);
-  }
-
+  dg.add_uint16(cdata_tex->_num_views);
   nassertv(cdata->_pages.size() == (size_t)(cdata_tex->_z_size * cdata_tex->_num_views));
   for (size_t n = 0; n < cdata->_pages.size(); ++n) {
     const VideoPage &page = cdata->_pages[n];

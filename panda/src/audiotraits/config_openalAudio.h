@@ -22,7 +22,7 @@
 ConfigureDecl(config_openalAudio, EXPCL_OPENAL_AUDIO, EXPTP_OPENAL_AUDIO);
 NotifyCategoryDecl(openalAudio, EXPCL_OPENAL_AUDIO, EXPTP_OPENAL_AUDIO);
 
-extern "C" EXPCL_OPENAL_AUDIO void init_libOpenALAudio();
+extern EXPCL_OPENAL_AUDIO void init_libOpenALAudio();
 extern "C" EXPCL_OPENAL_AUDIO Create_AudioManager_proc *get_audio_manager_func_openal_audio();
 
 extern ConfigVariableString openal_device;

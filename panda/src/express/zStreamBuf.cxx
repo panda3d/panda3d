@@ -87,9 +87,9 @@ open_read(istream *source, bool owns_source) {
   _z_source.opaque = Z_NULL;
   _z_source.msg = (char *)"no error message";
 
-  int result = inflateInit2(&_z_source, 32 + 15);
+  int result = inflateInit(&_z_source);
   if (result < 0) {
-    show_zlib_error("inflateInit2", result, _z_source);
+    show_zlib_error("inflateInit", result, _z_source);
     close_read();
   }
   thread_consider_yield();
@@ -178,7 +178,7 @@ streampos ZStreamBuf::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   // Necessary for tellg() to work after seeking to 0.
   if (dir == ios::cur && off == 0) {
-    if (_source->tellg() == (streampos)0) {
+    if (_source->tellg() == 0) {
       return 0;
     } else {
       return -1;
@@ -199,7 +199,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   gbump(n);
 
   _source->seekg(0, ios::beg);
-  if (_source->tellg() == (streampos)0) {
+  if (_source->tellg() == 0) {
     _z_source.next_in = Z_NULL;
     _z_source.avail_in = 0;
     _z_source.next_out = Z_NULL;

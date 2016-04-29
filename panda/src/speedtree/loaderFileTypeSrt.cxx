@@ -42,7 +42,7 @@ get_extension() const {
 
 /**
  * Returns true if this file type can transparently load compressed files
- * (with a .pz or .gz extension), false otherwise.
+ * (with a .pz extension), false otherwise.
  */
 bool LoaderFileTypeSrt::
 supports_compressed() const {

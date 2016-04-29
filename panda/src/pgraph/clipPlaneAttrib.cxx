@@ -872,32 +872,18 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   // write the number of off_planes
   dg.add_uint16(get_num_off_planes());
-
   // write the off planes pointers if any
   Planes::const_iterator fi;
-  if (manager->get_file_minor_ver() < 40) {
-    for (fi = _off_planes.begin(); fi != _off_planes.end(); ++fi) {
-      manager->write_pointer(dg, fi->node());
-    }
-  } else {
-    for (fi = _off_planes.begin(); fi != _off_planes.end(); ++fi) {
-      (*fi).write_datagram(manager, dg);
-    }
+  for (fi = _off_planes.begin(); fi != _off_planes.end(); ++fi) {
+    (*fi).write_datagram(manager, dg);
   }
 
   // write the number of on planes
   dg.add_uint16(get_num_on_planes());
-
   // write the on planes pointers if any
   Planes::const_iterator nti;
-  if (manager->get_file_minor_ver() < 40) {
-    for (nti = _on_planes.begin(); nti != _on_planes.end(); ++nti) {
-      manager->write_pointer(dg, nti->node());
-    }
-  } else {
-    for (nti = _on_planes.begin(); nti != _on_planes.end(); ++nti) {
-      (*nti).write_datagram(manager, dg);
-    }
+  for (nti = _on_planes.begin(); nti != _on_planes.end(); ++nti) {
+    (*nti).write_datagram(manager, dg);
   }
 }
 

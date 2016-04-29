@@ -778,16 +778,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     manager->write_pointer(dg, stage);
     manager->write_pointer(dg, tex);
     dg.add_uint16((*si)._implicit_sort);
-
-    if (manager->get_file_minor_ver() >= 23) {
-      dg.add_int32((*si)._override);
-    }
-
-    if (manager->get_file_minor_ver() >= 36) {
-      dg.add_bool((*si)._has_sampler);
-      if ((*si)._has_sampler) {
-        (*si)._sampler.write_datagram(dg);
-      }
+    dg.add_int32((*si)._override);
+    dg.add_bool((*si)._has_sampler);
+    if ((*si)._has_sampler) {
+      (*si)._sampler.write_datagram(dg);
     }
   }
 }

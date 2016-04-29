@@ -162,10 +162,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   dg.add_int32(_offset);
-  if (manager->get_file_minor_ver() >= 31) {
-    dg.add_stdfloat(_min_value);
-    dg.add_stdfloat(_max_value);
-  }
+  dg.add_stdfloat(_min_value);
+  dg.add_stdfloat(_max_value);
 }
 
 /**

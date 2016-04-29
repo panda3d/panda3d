@@ -591,7 +591,7 @@ load_model(const NodePath &parent, Filename filename) {
   bool is_image = false;
   string extension = filename.get_extension();
 #ifdef HAVE_ZLIB
-  if (extension == "pz" || extension == "gz") {
+  if (extension == "pz") {
     extension = Filename(filename.get_basename_wo_extension()).get_extension();
   }
 #endif  // HAVE_ZLIB

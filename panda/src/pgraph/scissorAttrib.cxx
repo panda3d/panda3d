@@ -177,9 +177,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   _frame.write_datagram(dg);
-  if (manager->get_file_minor_ver() >= 34) {
-    dg.add_bool(_off);
-  }
+  dg.add_bool(_off);
 }
 
 /**

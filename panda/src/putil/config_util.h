@@ -33,7 +33,6 @@ NotifyCategoryDecl(bam, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 // a global constant, we'll make it a member of MemoryUsage.  extern
 // EXPCL_PANDA_PUTIL const bool track_memory_usage;
 
-extern EXPCL_PANDA_PUTIL ConfigVariableInt bam_version;
 extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamEndian> bam_endian;
 extern EXPCL_PANDA_PUTIL ConfigVariableBool bam_stdfloat_double;
 extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode;

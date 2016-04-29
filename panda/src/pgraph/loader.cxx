@@ -140,10 +140,10 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     extension = this_filename.get_extension();
   }
 
-  bool compressed = false;
+  bool pz_file = false;
 #ifdef HAVE_ZLIB
-  if (extension == "pz" || extension == "gz") {
-    compressed = true;
+  if (extension == "pz") {
+    pz_file = true;
     extension = Filename(this_filename.get_basename_wo_extension()).get_extension();
   }
 #endif  // HAVE_ZLIB
@@ -182,7 +182,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
         << extension << ") does not support loading.\n";
     }
     return NULL;
-  } else if (compressed && !requested_type->supports_compressed()) {
+  } else if (pz_file && !requested_type->supports_compressed()) {
     if (report_errors) {
       loader_cat.error()
         << requested_type->get_name() << " file type (."
@@ -382,10 +382,10 @@ save_file(const Filename &filename, const LoaderOptions &options,
     extension = this_filename.get_extension();
   }
 
-  bool compressed = false;
+  bool pz_file = false;
 #ifdef HAVE_ZLIB
-  if (extension == "pz" || extension == "gz") {
-    compressed = true;
+  if (extension == "pz") {
+    pz_file = true;
     extension = Filename(this_filename.get_basename_wo_extension()).get_extension();
   }
 #endif  // HAVE_ZLIB
@@ -422,7 +422,7 @@ save_file(const Filename &filename, const LoaderOptions &options,
     }
     return false;
 
-  } else if (compressed && !requested_type->supports_compressed()) {
+  } else if (pz_file && !requested_type->supports_compressed()) {
     if (report_errors) {
       loader_cat.error()
         << requested_type->get_name() << " file type (."

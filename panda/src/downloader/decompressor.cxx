@@ -55,7 +55,7 @@ Decompressor::
 int Decompressor::
 initiate(const Filename &source_file) {
   string extension = source_file.get_extension();
-  if (extension == "pz" || extension == "gz") {
+  if (extension == "pz") {
     Filename dest_file = source_file;
     dest_file = source_file.get_fullpath_wo_extension();
     return initiate(source_file, dest_file);

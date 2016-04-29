@@ -196,9 +196,7 @@ register_with_read_factory() {
 void PointLight::
 write_datagram(BamWriter *manager, Datagram &dg) {
   LightLensNode::write_datagram(manager, dg);
-  if (manager->get_file_minor_ver() >= 39) {
-    dg.add_bool(_has_specular_color);
-  }
+  dg.add_bool(_has_specular_color);
   manager->write_cdata(dg, _cycler);
 }
 

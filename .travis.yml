@@ -3,11 +3,9 @@ sudo: false
 matrix:
   include:
     - compiler: gcc
-      env: PYTHONV=python2.7 FLAGS=
+      env: PYTHONV=python2.7
     - compiler: clang
-      env: PYTHONV=python3 FLAGS=--installer
-    - compiler: clang
-      env: PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
+      env: PYTHONV=python3
 addons:
   apt:
     packages:
@@ -28,7 +26,7 @@ addons:
     - python-dev
     - python3-dev
     - zlib1g-dev
-script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
+script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT --installer --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
 notifications:
   irc:
     channels:
