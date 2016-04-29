@@ -383,10 +383,10 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
       // Stitched vertices at the cornders
       if (x == -1 || y == -1 || x == size + 1 || y == size + 1) {
         vtx_pos.set_z(-1.0f / (PN_stdfloat)size);
-        vtx_pos.set_x(max(0.0f, min(1.0f, vtx_pos.get_x())));
-        vtx_pos.set_y(max(0.0f, min(1.0f, vtx_pos.get_y())));
+        vtx_pos.set_x(max((PN_stdfloat)0, min((PN_stdfloat)1, vtx_pos.get_x())));
+        vtx_pos.set_y(max((PN_stdfloat)0, min((PN_stdfloat)1, vtx_pos.get_y())));
       }
-      vertex_writer.add_data3f(vtx_pos);
+      vertex_writer.add_data3(vtx_pos);
     }
   }
 

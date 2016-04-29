@@ -76,6 +76,7 @@ PUBLISHED:
 
   INLINE int get_file_major_ver() const;
   INLINE int get_file_minor_ver() const;
+  INLINE void set_file_minor_ver(int minor_ver);
 
   INLINE BamEndian get_file_endian() const;
   INLINE bool get_file_stdfloat_double() const;
