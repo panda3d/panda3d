@@ -708,7 +708,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint16(_stride);
   dg.add_uint16(_total_bytes);
   dg.add_uint8(_pad_to);
-  dg.add_uint16(_divisor);
+
+  if (manager->get_file_minor_ver() > 36) {
+    dg.add_uint16(_divisor);
+  }
 
   consider_sort_columns();
 

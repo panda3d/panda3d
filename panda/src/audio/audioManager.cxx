@@ -36,25 +36,35 @@ namespace {
   }
 }
 
-Create_AudioManager_proc* AudioManager::_create_AudioManager
-    =create_NullAudioManager;
+Create_AudioManager_proc *AudioManager::_create_AudioManager = NULL;
 
-void AudioManager::register_AudioManager_creator(Create_AudioManager_proc* proc) {
-  nassertv(_create_AudioManager==create_NullAudioManager);
-  _create_AudioManager=proc;
+void AudioManager::
+register_AudioManager_creator(Create_AudioManager_proc* proc) {
+  nassertv(_create_AudioManager == NULL);
+  _create_AudioManager = proc;
 }
-
-
 
 // Factory method for getting a platform specific AudioManager:
 PT(AudioManager) AudioManager::create_AudioManager() {
   audio_debug("create_AudioManager()\n  audio_library_name=\""<<audio_library_name<<"\"");
+
+  if (_create_AudioManager != NULL) {
+    // Someone was already so good as to register an audio manager creation function,
+    // perhaps by statically linking the requested library.  Let's use that, then.
+    PT(AudioManager) am = (*_create_AudioManager)();
+    if (!am->is_exact_type(NullAudioManager::get_class_type()) && !am->is_valid()) {
+      audio_error("  " << am->get_type() << " is not valid, will use NullAudioManager");
+      am = create_NullAudioManager();
+    }
+    return am;
+  }
+
   static bool lib_load = false;
   if (!lib_load) {
     lib_load = true;
-    if (!audio_library_name.empty() && !(audio_library_name == "null")) {
+    if (!audio_library_name.empty() && audio_library_name != "null") {
       Filename dl_name = Filename::dso_filename(
-          "lib"+string(audio_library_name)+".so");
+          "lib" + string(audio_library_name) + ".so");
       dl_name.to_os_specific();
       audio_debug("  dl_name=\""<<dl_name<<"\"");
       void *handle = load_dso(get_plugin_path().get_value(), dl_name);
@@ -84,11 +94,20 @@ PT(AudioManager) AudioManager::create_AudioManager() {
         } else {
           typedef Create_AudioManager_proc *FuncType();
           Create_AudioManager_proc *factory_func = (*(FuncType *)dso_symbol)();
-          AudioManager::register_AudioManager_creator(factory_func);
+
+          // Note that the audio manager module may register itself upon load.
+          if (_create_AudioManager == NULL) {
+            AudioManager::register_AudioManager_creator(factory_func);
+          }
         }
       }
     }
   }
+
+  if (_create_AudioManager == NULL) {
+    _create_AudioManager = create_NullAudioManager;
+  }
+
   PT(AudioManager) am = (*_create_AudioManager)();
   if (!am->is_exact_type(NullAudioManager::get_class_type()) && !am->is_valid()) {
     audio_error("  " << am->get_type() << " is not valid, will use NullAudioManager");

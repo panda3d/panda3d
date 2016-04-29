@@ -40,7 +40,18 @@ register_with_read_factory() {
 void ParamNodePath::
 write_datagram(BamWriter *manager, Datagram &dg) {
   ParamValueBase::write_datagram(manager, dg);
-  _node_path.write_datagram(manager, dg);
+
+  if (manager->get_file_minor_ver() < 40) {
+    // Before bam 6.40, we did not support writing NodePaths.  Instaed, we
+    // write the PandaNode pointer and pray there is an unambiguous path.
+    if (_node_path.is_empty()) {
+      manager->write_pointer(dg, NULL);
+    } else {
+      manager->write_pointer(dg, _node_path.node());
+    }
+  } else {
+    _node_path.write_datagram(manager, dg);
+  }
 }
 
 /**

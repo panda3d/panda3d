@@ -137,7 +137,7 @@ class PatchMaker:
 
             startFile, startPv, plan = self.getRecreateFilePlan()
 
-            if startFile.getExtension() == 'pz':
+            if startFile.getExtension() in ('pz', 'gz'):
                 # If the starting file is compressed, we have to
                 # decompress it first.
                 assert startPv.tempFile is None

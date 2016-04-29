@@ -41,7 +41,7 @@ get_extension() const {
 
 /**
  * Returns true if this file type can transparently load compressed files
- * (with a .pz extension), false otherwise.
+ * (with a .pz or .gz extension), false otherwise.
  */
 bool LoaderFileTypeStf::
 supports_compressed() const {

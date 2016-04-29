@@ -276,7 +276,7 @@ read_pfm(PfmFile &pfm) {
 
   // Reposition the file at the beginning.
   _file->seekg(0, ios::beg);
-  if (_file->tellg() != 0) {
+  if (_file->tellg() != (streampos)0) {
     pnmimage_cat.error()
       << "Could not reposition file pointer to the beginning.\n";
     return false;
@@ -427,7 +427,7 @@ int StbImageReader::
 read_data(xel *array, xelval *alpha) {
   // Reposition the file at the beginning.
   _file->seekg(0, ios::beg);
-  if (_file->tellg() != 0) {
+  if (_file->tellg() != (streampos)0) {
     pnmimage_cat.error()
       << "Could not reposition file pointer to the beginning.\n";
     return 0;
