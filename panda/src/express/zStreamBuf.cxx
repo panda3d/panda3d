@@ -87,9 +87,9 @@ open_read(istream *source, bool owns_source) {
   _z_source.opaque = Z_NULL;
   _z_source.msg = (char *)"no error message";
 
-  int result = inflateInit(&_z_source);
+  int result = inflateInit2(&_z_source, 32 + 15);
   if (result < 0) {
-    show_zlib_error("inflateInit", result, _z_source);
+    show_zlib_error("inflateInit2", result, _z_source);
     close_read();
   }
   thread_consider_yield();
