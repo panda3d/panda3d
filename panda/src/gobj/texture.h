@@ -159,6 +159,7 @@ PUBLISHED:
     F_rgb10_a2,
 
     F_rg,
+    F_r16i
   };
 
   // Deprecated.  See SamplerState.FilterType.
