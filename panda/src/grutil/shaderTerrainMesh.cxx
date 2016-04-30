@@ -35,7 +35,7 @@
 #include "typeHandle.h"
 
 ConfigVariableBool stm_use_hexagonal_layout
-("stm-use-hexagonal-layout", true,
+("stm-use-hexagonal-layout", false,
  PRC_DESC("Set this to true to use a hexagonal vertex layout. This approximates "
           "the heightfield in a better way, however the CLOD transitions might be "
           "visible due to the vertices not matching exactly."));
@@ -81,7 +81,6 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   PandaNode("ShaderTerrainMesh"),
   _size(0),
   _chunk_size(32),
-  _heightfield_source(""),
   _generate_patches(false),
   _data_texture(NULL),
   _chunk_geom(NULL),
@@ -107,7 +106,7 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
  * @return true if the terrain was initialized, false if an error occured
  */
 bool ShaderTerrainMesh::generate() {
-  if (!do_load_heightfield())
+  if (!do_check_heightfield())
     return false;
 
   if (_chunk_size < 8 || !check_power_of_two(_chunk_size)) {
@@ -120,28 +119,29 @@ bool ShaderTerrainMesh::generate() {
     return false;
   }
 
+  do_extract_heightfield();
   do_create_chunks();
   do_compute_bounds(&_base_chunk);
   do_create_chunk_geom();
   do_init_data_texture();
-  do_convert_heightfield();
+
+  // Clear image after using it, otherwise we have two copies of the heightfield
+  // in memory.
+  _heightfield.clear();
 
   return true;
 }
 
 /**
- * @brief Converts the internal used PNMImage to a Texture
- * @details This converts the internal used PNMImage to a texture object. The
- *   reason for this is, that we need the PNMimage for computing the chunk
- *   bounds, but don't need it afterwards. However, since we have it in ram,
- *   we can just put its contents into a Texture object, which enables the
- *   user to call get_heightfield() instead of manually loading the texture
- *   from disk again to set it as shader input (Panda does not cache PNMImages)
+ * @brief Converts the internal used Texture to a PNMImage
+ * @details This converts the texture passed with set_heightfield to a PNMImage,
+ *   so we can read the pixels in a fast way. This is only used while generating
+ *   the chunks, and the PNMImage is destroyed afterwards.
  */
-void ShaderTerrainMesh::do_convert_heightfield() {
-  _heightfield_tex = new Texture();
-  _heightfield_tex->load(_heightfield);
-  _heightfield_tex->set_keep_ram_image(true);
+void ShaderTerrainMesh::do_extract_heightfield() {
+  nassertv(_heightfield_tex->has_ram_image()); // Heightfield not in RAM, extract ram image first
+
+  _heightfield_tex->store(_heightfield);
 
   if (_heightfield.get_maxval() != 65535) {
     shader_terrain_cat.warning() << "Using non 16-bit heightfield!" << endl;
@@ -150,31 +150,23 @@ void ShaderTerrainMesh::do_convert_heightfield() {
   }
   _heightfield_tex->set_minfilter(SamplerState::FT_linear);
   _heightfield_tex->set_magfilter(SamplerState::FT_linear);
-  _heightfield.clear();
 }
 
 /**
- * @brief Intermal method to load the heightfield
- * @details This method loads the heightfield from the heightfield path,
+ * @brief Intermal method to check the heightfield
+ * @details This method cecks the heightfield generated from the heightfield texture,
  *   and performs some basic checks, including a check for a power of two,
  *   and same width and height.
  *
- * @return true if the heightfield was loaded and meets the requirements
+ * @return true if the heightfield meets the requirements
  */
-bool ShaderTerrainMesh::do_load_heightfield() {
-
-  if(!_heightfield.read(_heightfield_source)) {
-    shader_terrain_cat.error() << "Could not load heightfield from " << _heightfield_source << endl;
-    return false;
-  }
-
-  if (_heightfield.get_x_size() != _heightfield.get_y_size()) {
+bool ShaderTerrainMesh::do_check_heightfield() {
+  if (_heightfield_tex->get_x_size() != _heightfield_tex->get_y_size()) {
     shader_terrain_cat.error() << "Only square heightfields are supported!";
     return false;
   }
 
-  _size = _heightfield.get_x_size();
-
+  _size = _heightfield_tex->get_x_size();
   if (_size < 32 || !check_power_of_two(_size)) {
     shader_terrain_cat.error() << "Invalid heightfield! Needs to be >= 32 and a power of two (was: "
          << _size << ")!" << endl;
@@ -687,8 +679,8 @@ void ShaderTerrainMesh::do_emit_chunk(Chunk* chunk, TraversalData* data) {
   data_entry.size = chunk->size / _chunk_size;
   data_entry.clod = chunk->last_clod;
 
-  data->emitted_chunks ++;
-  data->storage_ptr ++;
+  data->emitted_chunks++;
+  data->storage_ptr++;
 }
 
 /**
@@ -701,7 +693,9 @@ void ShaderTerrainMesh::do_emit_chunk(Chunk* chunk, TraversalData* data) {
  * @return World-Space point
  */
 LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
-  nassertr(_heightfield_tex != NULL, LPoint3(0));
+  nassertr(_heightfield_tex != NULL, LPoint3(0)); // Heightfield not set yet
+  nassertr(_heightfield_tex->has_ram_image(), LPoint3(0)); // Heightfield not in memory
+
   PT(TexturePeeker) peeker = _heightfield_tex->peek();
   nassertr(peeker != NULL, LPoint3(0));
 
