@@ -2666,10 +2666,10 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
   istringstream log(info_log);
   string line;
   while (getline(log, line)) {
-    int fileno, lineno;
+    int fileno, lineno, colno;
     int prefixlen = 0;
 
-    // First is AMDIntel driver syntax, second is NVIDIA syntax.
+    // This first format is used by the majority of compilers.
     if (sscanf(line.c_str(), "ERROR: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
         && prefixlen > 0) {
 
@@ -2688,9 +2688,18 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
     } else if (sscanf(line.c_str(), "%d(%d) : %n", &fileno, &lineno, &prefixlen) == 2
                && prefixlen > 0) {
 
+      // This is the format NVIDIA uses.
       Filename fn = _shader->get_filename_from_index(fileno, type);
       GLCAT.error(false)
         << fn << "(" << lineno << ") : " << (line.c_str() + prefixlen) << "\n";
+
+    } else if (sscanf(line.c_str(), "%d:%d(%d): %n", &fileno, &lineno, &colno, &prefixlen) == 3
+               && prefixlen > 0) {
+
+      // This is the format for Mesa's OpenGL ES 2 implementation.
+      Filename fn = _shader->get_filename_from_index(fileno, type);
+      GLCAT.error(false)
+        << fn << ":" << lineno << "(" << colno << "): " << (line.c_str() + prefixlen) << "\n";
 
     } else if (!fatal) {
       GLCAT.warning(false) << line << "\n";

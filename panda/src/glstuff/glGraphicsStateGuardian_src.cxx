@@ -8350,6 +8350,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_blue:
       case Texture::F_r8i:
       case Texture::F_r16:
+      case Texture::F_r16i:
       case Texture::F_r32:
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
@@ -8555,6 +8556,7 @@ get_external_image_format(Texture *tex) const {
 
 #ifndef OPENGLES_1
   case Texture::F_r8i:
+  case Texture::F_r16i:
   case Texture::F_r32i:
     return GL_RED_INTEGER;
   case Texture::F_rg8i:
@@ -8612,6 +8614,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rg8i:
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
+      case Texture::F_r16i:
       case Texture::F_r32i:
       case Texture::F_r11_g11_b10:
       case Texture::F_rgb9_e5:
@@ -9092,6 +9095,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_R16;
     } else {
       return GL_R16_SNORM;
+    }
+  case Texture::F_r16i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_R16UI;
+    } else {
+      return GL_R16I;
     }
   case Texture::F_rg16:
     if (tex->get_component_type() == Texture::T_float) {
@@ -12683,6 +12692,16 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_unsigned_byte;
     format = Texture::F_rgba8i;
     break;
+
+  case GL_R16I:
+    type = Texture::T_short;
+    format = Texture::F_r16i;
+    break;
+  case GL_R16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_r16i;
+    break;
+
 #endif
 
 #ifndef OPENGLES_1
