@@ -514,6 +514,7 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_r16:
+  case Texture::F_r16i:
   case Texture::F_rg8i:
     bpp = 2;
     break;
@@ -1532,6 +1533,10 @@ write(ostream &out, int indent_level) const {
   case F_r16:
     out << "r16";
     break;
+  case F_r16i:
+    out << "r16i";
+    break;
+
   case F_rg16:
     out << "rg16";
     break;
@@ -1950,6 +1955,8 @@ format_format(Format format) {
     return "rgba32";
   case F_r16:
     return "r16";
+  case F_r16i:
+    return "r16i";  
   case F_rg16:
     return "rg16";
   case F_rgb16:
@@ -2049,6 +2056,8 @@ string_format(const string &str) {
     return F_rgba32;
   } else if (cmp_nocase(str, "r16") == 0 || cmp_nocase(str, "red16") == 0) {
     return F_r16;
+  } else if (cmp_nocase(str, "r16i") == 0) {
+    return F_r16i;
   } else if (cmp_nocase(str, "rg16") == 0 || cmp_nocase(str, "r16g16") == 0) {
     return F_rg16;
   } else if (cmp_nocase(str, "rgb16") == 0 || cmp_nocase(str, "r16g16b16") == 0) {
@@ -5745,6 +5754,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_alpha:
   case F_luminance:
   case F_r16:
+  case F_r16i:
   case F_sluminance:
   case F_r32i:
   case F_r32:
