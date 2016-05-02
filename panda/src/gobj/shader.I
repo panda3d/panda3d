@@ -56,6 +56,7 @@ get_filename(ShaderType type) const {
  */
 INLINE void Shader::
 set_filename(ShaderType type, const Filename &filename) {
+  _filename._separate=true;
   switch (type) {
   case ST_vertex:
     _filename._vertex = filename;
