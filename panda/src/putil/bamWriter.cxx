@@ -41,8 +41,43 @@ BamWriter(DatagramSink *target) :
   _next_pta_id = 1;
   _long_pta_id = false;
 
-  _file_major = _bam_major_ver;
-  _file_minor = _bam_minor_ver;
+  // Check which version .bam files we should write.
+  if (bam_version.get_num_words() > 0) {
+    if (bam_version.get_num_words() != 2) {
+      util_cat.error()
+        << "bam-version configuration variable requires two arguments.\n";
+    }
+    _file_major = bam_version[0];
+    _file_minor = bam_version[1];
+
+    if (_file_major < _bam_major_ver || _file_minor < 21) {
+      util_cat.error()
+        << "bam-version is set to " << bam_version << ", but this version of "
+           "Panda3D cannot produce .bam files older than 6.21.  Set "
+           "bam-version to 6 21 in Config.prc to suppress this error, or "
+           "leave it blank to write version " << _bam_major_ver << "."
+           << _bam_minor_ver << " files.\n";
+      _file_major = 6;
+      _file_minor = 21;
+      bam_version.set_string_value("6 21");
+
+    } else if (_file_major > _bam_major_ver || _file_minor > _bam_minor_ver) {
+      util_cat.error()
+        << "bam-version is set to " << bam_version << ", but this version of "
+           "Panda3D cannot produce .bam files newer than " << _bam_major_ver
+        << "." << _bam_minor_ver << ".  Set bam-version to a supported "
+           "version or leave it blank to write version " << _bam_major_ver
+        << "." << _bam_minor_ver << " files.\n";
+
+      _file_major = _bam_major_ver;
+      _file_minor = _bam_minor_ver;
+      bam_version.set_word(0, _bam_major_ver);
+      bam_version.set_word(1, _bam_minor_ver);
+    }
+  } else {
+    _file_major = _bam_major_ver;
+    _file_minor = _bam_minor_ver;
+  }
   _file_endian = bam_endian;
   _file_stdfloat_double = bam_stdfloat_double;
   _file_texture_mode = bam_texture_mode;
@@ -98,18 +133,24 @@ init() {
   _next_pta_id = 1;
   _long_pta_id = false;
 
-  _file_major = _bam_major_ver;
-  _file_minor = _bam_minor_ver;
+  nassertr_always(_file_major == _bam_major_ver, false);
+  nassertr_always(_file_minor <= _bam_minor_ver && _file_minor >= 21, false);
+
   _file_endian = bam_endian;
   _file_texture_mode = bam_texture_mode;
 
   // Write out the current major and minor BAM file version numbers.
   Datagram header;
 
-  header.add_uint16(_bam_major_ver);
-  header.add_uint16(_bam_minor_ver);
+  header.add_uint16(_file_major);
+  header.add_uint16(_file_minor);
   header.add_uint8(_file_endian);
-  header.add_bool(_file_stdfloat_double);
+
+  if (_file_major >= 6 || _file_minor >= 27) {
+    header.add_bool(_file_stdfloat_double);
+  } else {
+    _file_stdfloat_double = false;
+  }
 
   if (!_target->put_datagram(header)) {
     util_cat.error()
