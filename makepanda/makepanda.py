@@ -78,7 +78,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "VORBIS", "FFMPEG", "SWSCALE", "SWRESAMPLE",         # Audio decoding
   "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
   "SPEEDTREE",                                         # SpeedTree
-  "ZLIB", "PNG", "JPEG", "TIFF", "SQUISH", "FREETYPE", # 2D Formats support
+  "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH", "FREETYPE", # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", # 3D Formats support
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
@@ -604,6 +604,11 @@ if (COMPILER == "MSVC"):
             LibName("TIFF", GetThirdpartyDir() + "tiff/lib/libtiff.lib")
         else:
             LibName("TIFF", GetThirdpartyDir() + "tiff/lib/tiff.lib")
+    if (PkgSkip("OPENEXR")==0):
+        LibName("OPENEXR",     GetThirdpartyDir() + "openexr/lib/IlmImf-2_2.lib")
+        LibName("OPENEXR",     GetThirdpartyDir() + "openexr/lib/IlmThread-2_2.lib")
+        LibName("OPENEXR",     GetThirdpartyDir() + "openexr/lib/Iex-2_2.lib")
+        LibName("OPENEXR",     GetThirdpartyDir() + "openexr/lib/Half.lib")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
@@ -778,6 +783,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
         SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
+        SmartPkgEnable("OPENEXR",   "",          ("openexr"), "ImfOutputFile.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
@@ -2201,6 +2207,7 @@ DTOOL_CONFIG=[
     ("PHAVE_JPEGINT_H",                '1',                      '1'),
     ("HAVE_VIDEO4LINUX",               'UNDEF',                  '1'),
     ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_OPENEXR",                   'UNDEF',                  'UNDEF'),
     ("HAVE_SGI_RGB",                   '1',                      '1'),
     ("HAVE_TGA",                       '1',                      '1'),
     ("HAVE_IMG",                       '1',                      '1'),
@@ -3824,7 +3831,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF']
+  OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF', 'OPENEXR']
   TargetAdd('p3pnmimagetypes_composite1.obj', opts=OPTS, input='p3pnmimagetypes_composite1.cxx')
   TargetAdd('p3pnmimagetypes_composite2.obj', opts=OPTS, input='p3pnmimagetypes_composite2.cxx')
 
@@ -3869,7 +3876,7 @@ if (not RUNTIME):
 
 if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG',
-      'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
+      'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
       'SQUISH', 'NVIDIACG', 'VORBIS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
