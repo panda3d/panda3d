@@ -15,7 +15,7 @@ imported directly or indirectly by the original startfile.py.
 
 Usage:
 
-  pfreeze.py [opts] startfile
+  pfreeze.py [opts] [startfile]
 
 Options:
 
@@ -40,6 +40,11 @@ Options:
      of the __path__ variable, and thus must be actually imported to
      determine the true value of __path__.
 
+  -P path
+     Specifies an additional directory in which we should search for
+     Python modules.  This is equivalent to setting the PYTHONPATH
+     environment variable.  May be repeated.
+
   -s
      Adds the standard set of modules that are necessary for embedding
      the Python interpreter.  Implicitly set if an executable is
@@ -55,7 +60,7 @@ from direct.showutil import FreezeTool
 def usage(code, msg = ''):
     if __doc__:
         sys.stderr.write(__doc__ + '\n')
-    sys.stderr.write(msg + '\n')
+    sys.stderr.write(str(msg) + '\n')
     sys.exit(code)
 
 # We're not protecting the next part under a __name__ == __main__
@@ -67,7 +72,7 @@ basename = None
 addStartupModules = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:sh')
+    opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:P:slh')
 except getopt.error as msg:
     usage(1, msg)
 
@@ -83,8 +88,12 @@ for opt, arg in opts:
     elif opt == '-p':
         for module in arg.split(','):
             freezer.handleCustomPath(module)
+    elif opt == '-P':
+        sys.path.append(arg)
     elif opt == '-s':
         addStartupModules = True
+    elif opt == '-l':
+        freezer.linkExtensionModules = True
     elif opt == '-h':
         usage(0)
     else:
@@ -126,7 +135,7 @@ if args:
 
 elif outputType == 'exe':
     # We must have a main module when making an executable.
-    usage(0)
+    usage(1, 'A main file needs to be specified when creating an executable.')
 
 freezer.done(addStartupModules = addStartupModules)
 

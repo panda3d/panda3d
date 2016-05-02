@@ -8,7 +8,7 @@ import marshal
 import imp
 import platform
 from io import StringIO
-from distutils.sysconfig import PREFIX, get_python_inc, get_python_version, get_config_var
+import distutils.sysconfig as sysconf
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -29,9 +29,23 @@ isDebugBuild = (python.lower().endswith('_d'))
 # These are modules that Python always tries to import up-front.  They
 # must be frozen in any main.exe.
 startupModules = [
-    'os', 'encodings.cp1252',
-    'encodings.latin_1', 'encodings.utf_8', 'io',
+    'encodings.cp1252', 'encodings.latin_1', 'encodings.utf_8',
     ]
+if sys.version_info >= (3, 0):
+    startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
+
+# These are some special init functions for some built-in Python modules that
+# deviate from the standard naming convention.  A value of None means that a
+# dummy entry should be written to the inittab.
+builtinInitFuncs = {
+    'builtins': None,
+    '__builtin__': None,
+    'sys': None,
+    'exceptions': None,
+    '_imp': 'PyInit_imp',
+    '_warnings': '_PyWarnings_Init',
+    'marshal': 'PyMarshal_Init',
+}
 
 # These are missing modules that we've reported already this session.
 reportedMissing = {}
@@ -60,8 +74,8 @@ class CompilationEnvironment:
 
         # Paths to Python stuff.
         self.Python = None
-        self.PythonIPath = get_python_inc()
-        self.PythonVersion = get_config_var("LDVERSION") or get_python_version()
+        self.PythonIPath = sysconf.get_python_inc()
+        self.PythonVersion = sysconf.get_config_var("LDVERSION") or sysconf.get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -85,7 +99,7 @@ class CompilationEnvironment:
 
     def determineStandardSetup(self):
         if self.platform.startswith('win'):
-            self.Python = PREFIX
+            self.Python = sysconf.PREFIX
 
             if ('VCINSTALLDIR' in os.environ):
                 self.MSVC = os.environ['VCINSTALLDIR']
@@ -122,13 +136,15 @@ class CompilationEnvironment:
 
             # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
             if ('MAKEPANDA' in os.environ):
-                self.compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
+                self.compileObjExe = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
+                self.compileObjDll = self.compileObjExe
                 self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
                 self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
             else:
                 os.environ['PATH'] += ';' + self.MSVC + '\\bin' + self.suffix64 + ';' + self.MSVC + '\\Common7\\IDE;' + self.PSDK + '\\bin'
 
-                self.compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
+                self.compileObjExe = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
+                self.compileObjDll = self.compileObjExe
                 self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\\lib%(suffix64)s" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
                 self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\\lib%(suffix64)s" /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
 
@@ -141,22 +157,26 @@ class CompilationEnvironment:
                 self.arch = '-arch ppc'
             elif proc == 'amd64':
                 self.arch = '-arch x86_64'
-            self.compileObj = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
+            self.compileObjExe = "gcc -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
+            self.compileObjDll = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
             self.linkDll = "gcc %(arch)s -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
 
         else:
             # Unix
-            self.compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 %(filename)s -I%(pythonIPath)s"
-            self.linkExe = "gcc -o %(basename)s %(basename)s.o -L/usr/local/lib -lpython%(pythonVersion)s"
-            self.linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -L/usr/local/lib -lpython%(pythonVersion)s"
+            lib_dir = sysconf.get_python_lib(plat_specific=1, standard_lib=1)
+            #python_a = os.path.join(lib_dir, "config", "libpython%(pythonVersion)s.a")
+            self.compileObjExe = "%(CC)s %(CFLAGS)s -c -o %(basename)s.o -pthread -O2 %(filename)s -I%(pythonIPath)s"
+            self.compileObjDll = "%(CC)s %(CFLAGS)s %(CCSHARED)s -c -o %(basename)s.o -O2 %(filename)s -I%(pythonIPath)s"
+            self.linkExe = "%(CC)s -o %(basename)s %(basename)s.o -L/usr/local/lib -lpython%(pythonVersion)s"
+            self.linkDll = "%(LDSHARED)s -o %(basename)s.so %(basename)s.o -L/usr/local/lib -lpython%(pythonVersion)s"
 
             if (os.path.isdir("/usr/PCBSD/local/lib")):
                 self.linkExe += " -L/usr/PCBSD/local/lib"
                 self.linkDll += " -L/usr/PCBSD/local/lib"
 
-    def compileExe(self, filename, basename):
-        compile = self.compileObj % {
+    def compileExe(self, filename, basename, extraLink=[]):
+        compile = self.compileObjExe % dict({
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
@@ -167,12 +187,12 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }
+            }, **sysconf.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
 
-        link = self.linkExe % {
+        link = self.linkExe % dict({
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
@@ -182,13 +202,14 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }
+            }, **sysconf.get_config_vars())
+        link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
             raise Exception('failed to link %s.' % basename)
 
-    def compileDll(self, filename, basename):
-        compile = self.compileObj % {
+    def compileDll(self, filename, basename, extraLink=[]):
+        compile = self.compileObjDll % dict({
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
@@ -199,12 +220,12 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }
+            }, **sysconf.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
 
-        link = self.linkDll % {
+        link = self.linkDll % dict({
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
@@ -215,7 +236,8 @@ class CompilationEnvironment:
             'filename' : filename,
             'basename' : basename,
             'dllext' : self.dllext,
-            }
+            }, **sysconf.get_config_vars())
+        link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
             raise Exception('failed to link %s.' % basename)
@@ -264,6 +286,8 @@ Py_FrozenMain(int argc, char **argv)
 #endif
 
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
+    Py_NoSiteFlag = 1;
+    Py_NoUserSiteDirectory = 1;
 
     if ((p = Py_GETENV("PYTHONINSPECT")) && *p != '\\0')
         inspect = 1;
@@ -463,10 +487,6 @@ main(int argc, char *argv[]) {
 
 # Our own glue code to start up a Python shared library.
 dllInitCode = """
-static PyMethodDef nullMethods[] = {
-  {NULL, NULL}
-};
-
 /*
  * Call this function to extend the frozen modules array with a new
  * array of frozen modules, provided in a C-style array, at runtime.
@@ -508,10 +528,29 @@ extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
   return orig_count + new_count;
 }
 
-%(dllexport)svoid init%(moduleName)s() {
+#if PY_MAJOR_VERSION >= 3
+static PyModuleDef mdef = {
+  PyModuleDef_HEAD_INIT,
+  "%(moduleName)s",
+  "",
+  -1,
+  NULL, NULL, NULL, NULL, NULL
+};
+
+%(dllexport)sPyObject *PyInit_%(moduleName)s(void) {
+  extend_frozen_modules(_PyImport_FrozenModules, sizeof(_PyImport_FrozenModules) / sizeof(struct _frozen));
+  return PyModule_Create(&mdef);
+}
+#else
+static PyMethodDef nullMethods[] = {
+  {NULL, NULL}
+};
+
+%(dllexport)svoid init%(moduleName)s(void) {
   extend_frozen_modules(_PyImport_FrozenModules, sizeof(_PyImport_FrozenModules) / sizeof(struct _frozen));
   Py_InitModule("%(moduleName)s", nullMethods);
 }
+#endif
 """
 
 programFile = """
@@ -526,8 +565,6 @@ struct _frozen _PyImport_FrozenModules[] = {
 %(moduleList)s
   {NULL, NULL, 0}
 };
-
-%(initCode)s
 """
 
 # Windows needs this bit.
@@ -664,8 +701,13 @@ class Freezer:
         # addToMultifile().  It contains a list of all the extension
         # modules that were discovered, which have not been added to
         # the output.  The list is a list of tuples of the form
-        # (moduleName, filename).
+        # (moduleName, filename).  filename will be None for built-in
+        # modules.
         self.extras = []
+
+        # Set this to true if extension modules should be linked in to
+        # the resulting executable.
+        self.linkExtensionModules = False
 
         # End of public interface.  These remaining members should not
         # be directly manipulated by callers.
@@ -675,6 +717,10 @@ class Freezer:
         if previous:
             self.previousModules = dict(previous.modules)
             self.modules = dict(previous.modules)
+
+        # Exclude doctest by default; it is not very useful in production
+        # builds.  It can be explicitly included if desired.
+        self.modules['doctest'] = self.ModuleDef('doctest', exclude = True)
 
         self.mf = None
 
@@ -951,8 +997,8 @@ class Freezer:
         for mdef in includes:
             try:
                 self.__loadModule(mdef)
-            except ImportError:
-                print("Unknown module: %s" % (mdef.moduleName))
+            except ImportError as ex:
+                print("Unknown module: %s (%s)" % (mdef.moduleName, str(ex)))
 
         # Also attempt to import any implicit modules.  If any of
         # these fail to import, we don't really care.
@@ -1296,40 +1342,90 @@ class Freezer:
             if mdef.forbid:
                 # Explicitly disallow importing this module.
                 moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
-            else:
-                assert not mdef.exclude
-                # Allow importing this module.
-                module = self.mf.modules.get(origName, None)
-                code = getattr(module, "__code__", None)
-                if code:
-                    code = marshal.dumps(code)
+                continue
 
-                    mangledName = self.mangleName(moduleName)
-                    moduleDefs.append(self.makeModuleDef(mangledName, code))
-                    moduleList.append(self.makeModuleListEntry(mangledName, code, moduleName, module))
+            assert not mdef.exclude
+            # Allow importing this module.
+            module = self.mf.modules.get(origName, None)
+            code = getattr(module, "__code__", None)
+            if code:
+                code = marshal.dumps(code)
 
-                elif moduleName in startupModules:
-                    # Forbid the loading of this startup module.
-                    moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
+                mangledName = self.mangleName(moduleName)
+                moduleDefs.append(self.makeModuleDef(mangledName, code))
+                moduleList.append(self.makeModuleListEntry(mangledName, code, moduleName, module))
+                continue
 
-                else:
-                    # This is a module with no associated Python
-                    # code.  It must be an extension module.  Get the
-                    # filename.
-                    extensionFilename = getattr(module, '__file__', None)
-                    if extensionFilename:
-                        self.extras.append((moduleName, extensionFilename))
-                    else:
-                        # It doesn't even have a filename; it must
-                        # be a built-in module.  No worries about
-                        # this one, then.
-                        pass
+            #if moduleName in startupModules:
+            #    # Forbid the loading of this startup module.
+            #    moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
+            #    continue
+
+            # This is a module with no associated Python code.  It is either
+            # an extension module or a builtin module.  Get the filename, if
+            # it is the former.
+            extensionFilename = getattr(module, '__file__', None)
+
+            if extensionFilename or self.linkExtensionModules:
+                self.extras.append((moduleName, extensionFilename))
+
+            # If it is a submodule of a frozen module, Python will have
+            # trouble importing it as a builtin module.  Synthesize a frozen
+            # module that loads it as builtin.
+            if '.' in moduleName and self.linkExtensionModules:
+                code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec')
+                code = marshal.dumps(code)
+                mangledName = self.mangleName(moduleName)
+                moduleDefs.append(self.makeModuleDef(mangledName, code))
+                moduleList.append(self.makeModuleListEntry(mangledName, code, moduleName, None))
+            elif '.' in moduleName:
+                # Nothing we can do about this case except warn the user they
+                # are in for some trouble.
+                print('WARNING: Python cannot import extension modules under '
+                      'frozen Python packages; %s will be inaccessible.  '
+                      'passing either -l to link in extension modules or use '
+                      '-x %s to exclude the entire package.' % (moduleName, moduleName.split('.')[0]))
 
         text = programFile % {
             'moduleDefs': '\n'.join(moduleDefs),
             'moduleList': '\n'.join(moduleList),
-            'initCode': initCode
             }
+
+        if self.linkExtensionModules and self.extras:
+            # Python 3 case.
+            text += '#if PY_MAJOR_VERSION >= 3\n'
+            for module, fn in self.extras:
+                libName = module.split('.')[-1]
+                initFunc = builtinInitFuncs.get(module, 'PyInit_' + libName)
+                if initFunc:
+                    text += 'extern PyObject *%s(void);\n' % (initFunc)
+            text += '\n'
+            text += 'struct _inittab _PyImport_Inittab[] = {\n'
+            for module, fn in self.extras:
+                libName = module.split('.')[-1]
+                initFunc = builtinInitFuncs.get(module, 'PyInit_' + libName) or 'NULL'
+                text += '  {"%s", %s},\n' % (module, initFunc)
+            text += '  {0, 0},\n'
+            text += '};\n\n'
+
+            # Python 2 case.
+            text += '#else\n'
+            for module, fn in self.extras:
+                libName = module.split('.')[-1]
+                initFunc = builtinInitFuncs.get(module, 'init' + libName)
+                if initFunc:
+                    text += 'extern void %s(void);\n' % (initFunc)
+            text += '\n'
+            text += 'struct _inittab _PyImport_Inittab[] = {\n'
+            for module, fn in self.extras:
+                libName = module.split('.')[-1]
+                initFunc = builtinInitFuncs.get(module, 'init' + libName) or 'NULL'
+                text += '  {"%s", %s},\n' % (module, initFunc)
+            text += '  {0, 0},\n'
+            text += '};\n'
+            text += '#endif\n\n'
+
+        text += initCode
 
         if filename is not None:
             file = open(filename, 'w')
@@ -1397,8 +1493,14 @@ class Freezer:
 
         self.writeCode(filename, initCode=initCode)
 
+        extraLink = []
+        if self.linkExtensionModules:
+            for mod, fn in self.extras:
+                if fn:
+                    extraLink.append(fn)
+
         try:
-            compileFunc(filename, basename)
+            compileFunc(filename, basename, extraLink=extraLink)
         finally:
             if not self.keepTemporaryFiles:
                 if os.path.exists(filename):
