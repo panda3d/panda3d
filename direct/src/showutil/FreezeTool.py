@@ -255,7 +255,8 @@ frozenMainCode = """
 #ifdef MS_WINDOWS
 extern void PyWinFreeze_ExeInit(void);
 extern void PyWinFreeze_ExeTerm(void);
-extern int PyInitFrozenExtensions(void);
+
+extern DL_IMPORT(int) PyImport_ExtendInittab(struct _inittab *newtab);
 #endif
 
 /* Main program */
@@ -324,7 +325,7 @@ Py_FrozenMain(int argc, char **argv)
 #endif
 
 #ifdef MS_WINDOWS
-    PyInitFrozenExtensions();
+    PyImport_ExtendInittab(extensions);
 #endif /* MS_WINDOWS */
 
     if (argc >= 1) {
@@ -368,8 +369,8 @@ Py_FrozenMain(int argc, char **argv)
 #endif
     Py_Finalize();
 
-error:
 #if PY_MAJOR_VERSION >= 3
+error:
     PyMem_RawFree(argv_copy);
     if (argv_copy2) {
         for (i = 0; i < argc; i++)
@@ -567,20 +568,6 @@ struct _frozen _PyImport_FrozenModules[] = {
 };
 """
 
-# Windows needs this bit.
-frozenExtensions = """
-
-static struct _inittab extensions[] = {
-        /* Sentinel */
-        {0, 0}
-};
-extern DL_IMPORT(int) PyImport_ExtendInittab(struct _inittab *newtab);
-
-int PyInitFrozenExtensions()
-{
-        return PyImport_ExtendInittab(extensions);
-}
-"""
 
 okMissing = [
     '__main__', '_dummy_threading', 'Carbon', 'Carbon.Files',
@@ -682,14 +669,13 @@ class Freezer:
         if self.platform.startswith('win'):
             self.objectExtension = '.obj'
 
-        self.keepTemporaryFiles = True
+        self.keepTemporaryFiles = False
 
         # Change any of these to change the generated startup and glue
         # code.
         self.frozenMainCode = frozenMainCode
         self.frozenDllMainCode = frozenDllMainCode
         self.mainInitCode = mainInitCode
-        self.frozenExtensions = frozenExtensions
 
         # Set this true to encode Python files in a Multifile as their
         # original source if possible, or false to encode them as
@@ -1392,38 +1378,63 @@ class Freezer:
             }
 
         if self.linkExtensionModules and self.extras:
+            # Should we link in extension modules?  If so, we write out a new
+            # built-in module table that directly hooks up with the init
+            # functions.  On Linux, we completely override Python's own
+            # built-in module table; on Windows, we can't do this, so we
+            # instead use PyImport_ExtendInittab to add to it.
+
             # Python 3 case.
             text += '#if PY_MAJOR_VERSION >= 3\n'
             for module, fn in self.extras:
-                libName = module.split('.')[-1]
-                initFunc = builtinInitFuncs.get(module, 'PyInit_' + libName)
-                if initFunc:
-                    text += 'extern PyObject *%s(void);\n' % (initFunc)
+                if sys.platform != "win32" or fn:
+                    libName = module.split('.')[-1]
+                    initFunc = builtinInitFuncs.get(module, 'PyInit_' + libName)
+                    if initFunc:
+                        text += 'extern DL_IMPORT(PyObject) *%s(void);\n' % (initFunc)
             text += '\n'
-            text += 'struct _inittab _PyImport_Inittab[] = {\n'
+
+            if sys.platform == "win32":
+                text += 'static struct _inittab extensions[] = {\n'
+            else:
+                text += 'struct _inittab _PyImport_Inittab[] = {\n'
+
             for module, fn in self.extras:
-                libName = module.split('.')[-1]
-                initFunc = builtinInitFuncs.get(module, 'PyInit_' + libName) or 'NULL'
-                text += '  {"%s", %s},\n' % (module, initFunc)
+                if sys.platform != "win32" or fn:
+                    libName = module.split('.')[-1]
+                    initFunc = builtinInitFuncs.get(module, 'PyInit_' + libName) or 'NULL'
+                    text += '  {"%s", %s},\n' % (module, initFunc)
             text += '  {0, 0},\n'
             text += '};\n\n'
 
             # Python 2 case.
             text += '#else\n'
             for module, fn in self.extras:
-                libName = module.split('.')[-1]
-                initFunc = builtinInitFuncs.get(module, 'init' + libName)
-                if initFunc:
-                    text += 'extern void %s(void);\n' % (initFunc)
+                if sys.platform != "win32" or fn:
+                    libName = module.split('.')[-1]
+                    initFunc = builtinInitFuncs.get(module, 'init' + libName)
+                    if initFunc:
+                        text += 'extern DL_IMPORT(void) %s(void);\n' % (initFunc)
             text += '\n'
-            text += 'struct _inittab _PyImport_Inittab[] = {\n'
+
+            if sys.platform == "win32":
+                text += 'static struct _inittab extensions[] = {\n'
+            else:
+                text += 'struct _inittab _PyImport_Inittab[] = {\n'
+
             for module, fn in self.extras:
-                libName = module.split('.')[-1]
-                initFunc = builtinInitFuncs.get(module, 'init' + libName) or 'NULL'
-                text += '  {"%s", %s},\n' % (module, initFunc)
+                if sys.platform != "win32" or fn:
+                    libName = module.split('.')[-1]
+                    initFunc = builtinInitFuncs.get(module, 'init' + libName) or 'NULL'
+                    text += '  {"%s", %s},\n' % (module, initFunc)
             text += '  {0, 0},\n'
             text += '};\n'
             text += '#endif\n\n'
+
+        elif sys.platform == "win32":
+            text += 'static struct _inittab extensions[] = {\n'
+            text += '  {0, 0},\n'
+            text += '};\n\n'
 
         text += initCode
 
@@ -1471,7 +1482,6 @@ class Freezer:
                 'dllimport' : dllimport,
                 }
             if self.platform.startswith('win'):
-                initCode += self.frozenExtensions
                 target = basename + '.exe'
             else:
                 target = basename
@@ -1493,20 +1503,46 @@ class Freezer:
 
         self.writeCode(filename, initCode=initCode)
 
+        # Keep track of the files we should clean up after use.
+        cleanFiles = [filename, basename + self.objectExtension]
+
         extraLink = []
         if self.linkExtensionModules:
             for mod, fn in self.extras:
-                if fn:
+                if not fn:
+                    continue
+                if sys.platform == 'win32':
+                    # We can't link with a .pyd directly on Windows.  Check
+                    # if there is a corresponding .lib file in the Python libs
+                    # directory.
+                    libsdir = os.path.join(sys.exec_prefix, 'libs')
+                    libfile = os.path.join(libsdir, mod + '.lib')
+                    if os.path.isfile(libfile):
+                        extraLink.append(mod + '.lib')
+                        continue
+
+                    # No, so we have to generate a .lib file.  This is pretty
+                    # easy given that we know the only symbol we need is a
+                    # initmodule or PyInit_module function.
+                    modname = mod.split('.')[-1]
+                    libfile = modname + '.lib'
+                    if sys.version_info >= (3, 0):
+                        symbolName = 'PyInit_' + modname
+                    else:
+                        symbolName = 'init' + modname
+                    os.system('lib /nologo /def /export:%s /name:%s.pyd /out:%s' % (symbolName, modname, libfile))
+                    extraLink.append(libfile)
+                    cleanFiles += [libfile, modname + '.exp']
+                else:
                     extraLink.append(fn)
 
         try:
             compileFunc(filename, basename, extraLink=extraLink)
         finally:
             if not self.keepTemporaryFiles:
-                if os.path.exists(filename):
-                    os.unlink(filename)
-                if os.path.exists(basename + self.objectExtension):
-                    os.unlink(basename + self.objectExtension)
+                for file in cleanFiles:
+                    if os.path.exists(file):
+                        os.unlink(file)
 
         return target
 
