@@ -23,9 +23,13 @@
 #include "pnmWriter.h"
 
 #include <ImfInputFile.h>
-#include <ImfNamespace.h>
+#include <OpenEXRConfig.h>
 
+#ifdef OPENEXR_IMF_NAMESPACE
 namespace IMF = OPENEXR_IMF_NAMESPACE;
+#else
+namespace IMF = Imf;
+#endif
 
 class ImfStdIstream;
 
