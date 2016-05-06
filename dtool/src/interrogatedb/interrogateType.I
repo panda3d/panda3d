@@ -206,6 +206,14 @@ is_enum() const {
 }
 
 /**
+ * Returns true if enum values are only available under a scope.
+ */
+INLINE bool InterrogateType::
+is_scoped_enum() const {
+  return (_flags & F_scoped_enum) != 0;
+}
+
+/**
  *
  */
 INLINE int InterrogateType::

@@ -103,10 +103,6 @@ inline PyObject* doPy_RETURN_FALSE()
 #define nb_inplace_divide nb_inplace_true_divide
 
 #define PyLongOrInt_Check(x) PyLong_Check(x)
-#define PyLongOrInt_FromSize_t PyLong_FromSize_t
-#define PyLongOrInt_FromSsize_t PyLong_FromSsize_t
-#define PyLongOrInt_FromLong PyLong_FromLong
-#define PyLongOrInt_FromUnsignedLong PyLong_FromUnsignedLong
 #define PyLongOrInt_AS_LONG PyLong_AS_LONG
 #define PyInt_Check PyLong_Check
 #define PyInt_AsLong PyLong_AsLong
@@ -114,9 +110,6 @@ inline PyObject* doPy_RETURN_FALSE()
 #else
 #define PyLongOrInt_Check(x) (PyInt_Check(x) || PyLong_Check(x))
 // PyInt_FromSize_t automatically picks the right type.
-#define PyLongOrInt_FromSize_t PyInt_FromSize_t
-#define PyLongOrInt_FromSsize_t PyInt_FromSsize_t
-#define PyLongOrInt_FromLong PyInt_FromLong
 #define PyLongOrInt_AS_LONG PyInt_AsLong
 
 // For more portably defining hash functions.
@@ -159,9 +152,6 @@ typedef void *(*DowncastFunction)(void *, Dtool_PyTypedObject *);
 typedef void *(*CoerceFunction)(PyObject *, void *);
 typedef void (*ModuleClassInitFunction)(PyObject *module);
 
-// inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int
-// type); inline void     Dtool_Deallocate_General(PyObject * self); inline
-// int      DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2); THIS IS THE
 // INSTANCE CONTAINER FOR ALL panda py objects....
 struct Dtool_PyInstDef {
   PyObject_HEAD
@@ -300,17 +290,7 @@ EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyT
 EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                                               void **answer, const char *method_name);
 
-template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&into) {
-  if (DtoolCanThisBeAPandaInstance(self)) {
-    Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-    if (target_class != NULL) {
-      into = (T*) ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, target_class);
-      return (into != NULL);
-    }
-  }
-  into = NULL;
-  return false;
-}
+template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&into);
 
 // Functions related to error reporting.
 EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
@@ -349,6 +329,12 @@ EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
 #endif
 
 /**
+ * Wrapper around Python 3.4's enum library, which does not have a C API.
+ */
+EXPCL_INTERROGATEDB PyObject *Dtool_EnumType_Create(const char *name, PyObject *names,
+                                                    const char *module = NULL);
+
+/**
 
  */
 EXPCL_INTERROGATEDB PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int RunTimeType);
@@ -359,29 +345,10 @@ EXPCL_INTERROGATEDB PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyT
 
 // These template methods allow use when the Dtool_PyTypedObject is not known.
 // They require a get_class_type() to be defined for the class.
-template<class T> INLINE PyObject *DTool_CreatePyInstance(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
-  return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, true);
-}
-
-template<class T> INLINE PyObject *DTool_CreatePyInstance(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
-  return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, false);
-}
-
-template<class T> INLINE PyObject *DTool_CreatePyInstanceTyped(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
-  return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, true, obj->get_type().get_index());
-}
-
-template<class T> INLINE PyObject *DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
-  return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
-}
+template<class T> INLINE PyObject *DTool_CreatePyInstance(const T *obj, bool memory_rules);
+template<class T> INLINE PyObject *DTool_CreatePyInstance(T *obj, bool memory_rules);
+template<class T> INLINE PyObject *DTool_CreatePyInstanceTyped(const T *obj, bool memory_rules);
+template<class T> INLINE PyObject *DTool_CreatePyInstanceTyped(T *obj, bool memory_rules);
 
 // Macro(s) class definition .. Used to allocate storage and init some values
 // for a Dtool Py Type object.
@@ -474,17 +441,40 @@ copy_from_copy_constructor(PyObject *self, PyObject *noargs);
 EXPCL_INTERROGATEDB PyObject *
 map_deepcopy_to_copy(PyObject *self, PyObject *args);
 
-#if PY_MAJOR_VERSION < 3
-// In the Python 3 case, it is defined as a macro, at the beginning of this
-// file.
-EXPCL_INTERROGATEDB PyObject *
-PyLongOrInt_FromUnsignedLong(unsigned long value);
+/**
+ * These functions convert a C++ value into the corresponding Python object.
+ * This used to be generated by the code generator, but it seems more reliable
+ * and maintainable to define these as overloads and have the compiler sort
+ * it out.
+ */
+ALWAYS_INLINE PyObject *Dtool_WrapValue(int value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(unsigned int value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(long value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(unsigned long value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(long long value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(unsigned long long value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(bool value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(double value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const wchar_t *value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string &value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring &value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(char value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value);
+
+#if PY_MAJOR_VERSION >= 0x02060000
+ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value);
 #endif
 
 EXPCL_INTERROGATEDB extern struct Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE;
 EXPCL_INTERROGATEDB extern void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module);
 
 #define Dtool_Ptr_DTOOL_SUPER_BASE (&Dtool_DTOOL_SUPER_BASE)
+
+#include "py_panda.I"
 
 #endif  // HAVE_PYTHON && !CPPPARSER
 

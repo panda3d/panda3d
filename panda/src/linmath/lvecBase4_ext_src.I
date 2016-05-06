@@ -14,16 +14,13 @@
 #ifdef FLOATTYPE_IS_INT
 #if PY_MAJOR_VERSION >= 3
 #define PYNUMBER_FLOATTYPE PyNumber_Long
-#define PY_FROM_FLOATTYPE PyLong_FromLong
 #define PY_AS_FLOATTYPE PyLong_AS_LONG
 #else
 #define PYNUMBER_FLOATTYPE PyNumber_Int
-#define PY_FROM_FLOATTYPE PyInt_FromLong
 #define PY_AS_FLOATTYPE PyInt_AS_LONG
 #endif
 #else
 #define PYNUMBER_FLOATTYPE PyNumber_Float
-#define PY_FROM_FLOATTYPE PyFloat_FromDouble
 #define PY_AS_FLOATTYPE (FLOATTYPE)PyFloat_AsDouble
 #endif
 
@@ -91,9 +88,9 @@ __getattr__(PyObject *self, const string &attr_name) const {
   switch (attr_name.size()) {
     case 1:
       if (attr_name[0] == 'w') {
-        return PY_FROM_FLOATTYPE(_this->_v(3));
+        return Dtool_WrapValue(_this->_v(3));
       } else {
-        return PY_FROM_FLOATTYPE(_this->_v(attr_name[0] - 'x'));
+        return Dtool_WrapValue(_this->_v(attr_name[0] - 'x'));
       }
 
     case 2: {
@@ -233,5 +230,4 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
 }
 
 #undef PYNUMBER_FLOATTYPE
-#undef PY_FROM_FLOATTYPE
 #undef PY_AS_FLOATTYPE

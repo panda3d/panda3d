@@ -2349,21 +2349,23 @@ enum:
         ;
 
 enum_decl:
-        enum_keyword name_no_final ':' enum_element_type
+        enum_keyword ':' enum_element_type
 {
-  current_enum = new CPPEnumType($2, $4, current_scope, @1.file);
-}
-        | enum_keyword name_no_final
-{
-  current_enum = new CPPEnumType($2, current_scope, @1.file);
-}
-        | enum_keyword ':' enum_element_type
-{
-  current_enum = new CPPEnumType(NULL, $3, current_scope, @1.file);
+  current_enum = new CPPEnumType($1, NULL, $3, current_scope, NULL, @1.file);
 }
         | enum_keyword
 {
-  current_enum = new CPPEnumType(NULL, current_scope, @1.file);
+  current_enum = new CPPEnumType($1, NULL, current_scope, NULL, @1.file);
+}
+        | enum_keyword name_no_final ':' enum_element_type
+{
+  CPPScope *new_scope = new CPPScope(current_scope, $2->_names.back(), V_public);
+  current_enum = new CPPEnumType($1, $2, $4, current_scope, new_scope, @1.file);
+}
+        | enum_keyword name_no_final
+{
+  CPPScope *new_scope = new CPPScope(current_scope, $2->_names.back(), V_public);
+  current_enum = new CPPEnumType($1, $2, current_scope, new_scope, @1.file);
 }
         ;
 
@@ -2383,14 +2385,12 @@ enum_body_trailing_comma:
         | enum_body_trailing_comma name ','
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), NULL, current_lexer, @2);
 }
         | enum_body_trailing_comma name '=' const_expr ','
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), $4, current_lexer, @2);
 };
 
 enum_body:
@@ -2398,14 +2398,12 @@ enum_body:
         | enum_body_trailing_comma name
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), NULL, current_lexer, @2);
 }
         | enum_body_trailing_comma name '=' const_expr
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), $4, current_lexer, @2);
 }
         ;
 
@@ -2413,6 +2411,14 @@ enum_keyword:
         KW_ENUM
 {
   $$ = CPPExtensionType::T_enum;
+}
+        | KW_ENUM KW_CLASS
+{
+  $$ = CPPExtensionType::T_enum_class;
+}
+        | KW_ENUM KW_STRUCT
+{
+  $$ = CPPExtensionType::T_enum_struct;
 }
         ;
 
@@ -3495,6 +3501,24 @@ name:
         | KW_OVERRIDE
 {
   $$ = new CPPIdentifier("override", @1);
+}
+        | KW_SIGNED
+{
+  // This is not a keyword in Python, so it is useful to be able to use this
+  // in MAKE_PROPERTY definitions, etc.
+  $$ = new CPPIdentifier("signed", @1);
+}
+        | KW_FLOAT
+{
+  $$ = new CPPIdentifier("float", @1);
+}
+        | KW_PUBLIC
+{
+  $$ = new CPPIdentifier("public", @1);
+}
+        | KW_PRIVATE
+{
+  $$ = new CPPIdentifier("private", @1);
 }
         ;
 

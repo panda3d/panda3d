@@ -336,6 +336,33 @@ PyObject *_Dtool_Return(PyObject *value) {
 }
 
 /**
+ * Creates a Python 3.4-style enum type.  Steals reference to 'names'.
+ */
+PyObject *Dtool_EnumType_Create(const char *name, PyObject *names, const char *module) {
+  static PyObject *enum_class = NULL;
+  static PyObject *enum_meta = NULL;
+  static PyObject *enum_create = NULL;
+  if (enum_meta == NULL) {
+    PyObject *enum_module = PyImport_ImportModule("enum");
+    nassertr_always(enum_module != NULL, NULL);
+
+    enum_class = PyObject_GetAttrString(enum_module, "Enum");
+    enum_meta = PyObject_GetAttrString(enum_module, "EnumMeta");
+    enum_create = PyObject_GetAttrString(enum_meta, "_create_");
+    nassertr(enum_meta != NULL, NULL);
+  }
+
+  PyObject *result = PyObject_CallFunction(enum_create, (char *)"OsN", enum_class, name, names);
+  nassertr(result != NULL, NULL);
+  if (module != NULL) {
+    PyObject *modstr = PyUnicode_FromString(module);
+    PyObject_SetAttrString(result, "__module__", modstr);
+    Py_DECREF(modstr);
+  }
+  return result;
+}
+
+/**
 
  */
 PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int type_index) {
@@ -832,20 +859,5 @@ PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
 PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
   return PyObject_CallMethod(self, (char *)"__copy__", (char *)"()");
 }
-
-/**
- * Similar to PyLong_FromUnsignedLong(), but returns either a regular integer
- * or a long integer, according to whether the indicated value will fit.
- */
-#if PY_MAJOR_VERSION < 3
-EXPCL_INTERROGATEDB PyObject *
-PyLongOrInt_FromUnsignedLong(unsigned long value) {
-  if ((long)value < 0) {
-    return PyLong_FromUnsignedLong(value);
-  } else {
-    return PyInt_FromLong((long)value);
-  }
-}
-#endif
 
 #endif  // HAVE_PYTHON

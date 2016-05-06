@@ -2838,6 +2838,10 @@ define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
     return;
   }
 
+  if (cpptype->is_scoped()) {
+    itype._flags |= InterrogateType::F_scoped_enum;
+  }
+
   int next_value = 0;
 
   CPPEnumType::Elements::const_iterator ei;
@@ -2919,6 +2923,8 @@ define_extension_type(InterrogateType &itype, CPPExtensionType *cpptype) {
   // But we can at least indicate which of the various extension types it is.
   switch (cpptype->_type) {
   case CPPExtensionType::T_enum:
+  case CPPExtensionType::T_enum_class:
+  case CPPExtensionType::T_enum_struct:
     itype._flags |= InterrogateType::F_enum;
     break;
 
