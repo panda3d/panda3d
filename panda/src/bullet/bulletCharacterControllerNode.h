@@ -53,6 +53,11 @@ PUBLISHED:
   bool can_jump() const;
   void do_jump();
 
+  MAKE_PROPERTY(shape, get_shape);
+  MAKE_PROPERTY(gravity, get_gravity, set_gravity);
+  MAKE_PROPERTY(max_slope, get_max_slope, set_max_slope);
+  MAKE_PROPERTY(on_ground, is_on_ground);
+
 public:
   INLINE virtual btPairCachingGhostObject *get_ghost() const;
   INLINE virtual btCharacterControllerInterface *get_character() const;

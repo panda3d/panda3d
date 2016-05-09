@@ -49,6 +49,10 @@ PUBLISHED:
   INLINE LPoint3 get_current_diff() const;
   INLINE LVector3 get_accumulated_impulse() const;
 
+  MAKE_PROPERTY(current_error, get_current_error);
+  MAKE_PROPERTY(current_diff, get_current_diff);
+  MAKE_PROPERTY(accumulated_impulse, get_accumulated_impulse);
+
 public:
   BulletTranslationalLimitMotor(btTranslationalLimitMotor &motor);
 

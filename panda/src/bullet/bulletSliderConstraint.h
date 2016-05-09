@@ -74,6 +74,21 @@ PUBLISHED:
   INLINE CPT(TransformState) get_frame_a() const;
   INLINE CPT(TransformState) get_frame_b() const;
 
+  MAKE_PROPERTY(linear_pos, get_linear_pos);
+  MAKE_PROPERTY(angular_pos, get_angular_pos);
+  MAKE_PROPERTY(lower_linear_limit, get_lower_linear_limit, set_lower_linear_limit);
+  MAKE_PROPERTY(upper_linear_limit, get_upper_linear_limit, set_upper_linear_limit);
+  MAKE_PROPERTY(lower_angular_limit, get_lower_angular_limit, set_lower_angular_limit);
+  MAKE_PROPERTY(upper_angular_limit, get_upper_angular_limit, set_upper_angular_limit);
+  MAKE_PROPERTY(powered_linear_motor, get_powered_linear_motor, set_powered_linear_motor);
+  MAKE_PROPERTY(target_linear_motor_velocity, get_target_linear_motor_velocity, set_target_linear_motor_velocity);
+  MAKE_PROPERTY(max_linear_motor_force, get_max_linear_motor_force, set_max_linear_motor_force);
+  MAKE_PROPERTY(powered_angular_motor, get_powered_angular_motor, set_powered_angular_motor);
+  MAKE_PROPERTY(target_angular_motor_velocity, get_target_angular_motor_velocity, set_target_angular_motor_velocity);
+  MAKE_PROPERTY(max_angular_motor_force, get_max_angular_motor_force, set_max_angular_motor_force);
+  MAKE_PROPERTY(frame_a, get_frame_a);
+  MAKE_PROPERTY(frame_b, get_frame_b);
+
 public:
   virtual btTypedConstraint *ptr() const;
 

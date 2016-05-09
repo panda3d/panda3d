@@ -46,6 +46,13 @@ PUBLISHED:
   INLINE PN_stdfloat get_friction_slip() const;
   INLINE PN_stdfloat get_max_suspension_force() const;
 
+  MAKE_PROPERTY(suspension_stiffness, get_suspension_stiffness, set_suspension_stiffness);
+  MAKE_PROPERTY(suspension_compression, get_suspension_compression, set_suspension_compression);
+  MAKE_PROPERTY(suspension_damping, get_suspension_damping, set_suspension_damping);
+  MAKE_PROPERTY(max_suspension_travel_cm, get_max_suspension_travel_cm, set_max_suspension_travel_cm);
+  MAKE_PROPERTY(friction_slip, get_friction_slip, set_friction_slip);
+  MAKE_PROPERTY(max_suspension_force, get_max_suspension_force, set_max_suspension_force);
+
 private:
   btRaycastVehicle::btVehicleTuning _;
 

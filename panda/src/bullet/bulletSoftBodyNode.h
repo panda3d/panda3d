@@ -50,6 +50,13 @@ PUBLISHED:
   INLINE PN_stdfloat get_area() const;
   INLINE int is_attached() const;
 
+  MAKE_PROPERTY(pos, get_pos);
+  MAKE_PROPERTY(velocity, get_velocity);
+  MAKE_PROPERTY(normal, get_normal);
+  MAKE_PROPERTY(inv_mass, get_inv_mass);
+  MAKE_PROPERTY(area, get_area);
+  MAKE_PROPERTY(attached, is_attached);
+
 public:
   BulletSoftBodyNodeElement(btSoftBody::Node &node);
 
@@ -202,6 +209,13 @@ PUBLISHED:
       const char *ele,
       const char *face,
       const char *node);
+
+  MAKE_PROPERTY(cfg, get_cfg);
+  MAKE_PROPERTY(world_info, get_world_info);
+  MAKE_PROPERTY(wind_velocity, get_wind_velocity, set_wind_velocity);
+  MAKE_PROPERTY(aabb, get_aabb);
+  MAKE_PROPERTY(num_clusters, get_num_clusters);
+  MAKE_PROPERTY(num_nodes, get_num_nodes);
 
 public:
   virtual btCollisionObject *get_object() const;

@@ -39,6 +39,13 @@ PUBLISHED:
   int get_shape_part() const;
   int get_triangle_index() const;
 
+  MAKE_PROPERTY(node, get_node);
+  MAKE_PROPERTY(hit_pos, get_hit_pos);
+  MAKE_PROPERTY(hit_normal, get_hit_normal);
+  MAKE_PROPERTY(hit_fraction, get_hit_fraction);
+  MAKE_PROPERTY(shape_part, get_shape_part);
+  MAKE_PROPERTY(triangle_index, get_triangle_index);
+
 private:
   const btCollisionObject *_object;
   btVector3 _normal;
@@ -68,6 +75,11 @@ PUBLISHED:
   int get_num_hits() const;
   const BulletRayHit get_hit(int idx) const;
   MAKE_SEQ(get_hits, get_num_hits, get_hit);
+
+  MAKE_PROPERTY(from_pos, get_from_pos);
+  MAKE_PROPERTY(to_pos, get_to_pos);
+  MAKE_PROPERTY(closest_hit_fraction, get_closest_hit_fraction);
+  MAKE_PROPERTY(num_hits, get_num_hits);
 
 public:
   virtual bool needsCollision(btBroadphaseProxy* proxy0) const;

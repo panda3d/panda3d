@@ -37,6 +37,8 @@ PUBLISHED:
   INLINE LPoint3 get_sphere_pos(int index) const;
   INLINE PN_stdfloat get_sphere_radius(int index) const;
 
+  MAKE_PROPERTY(sphere_count, get_sphere_count);
+
 public:
   virtual btCollisionShape *ptr() const;
 

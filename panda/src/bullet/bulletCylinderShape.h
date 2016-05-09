@@ -36,6 +36,10 @@ PUBLISHED:
   INLINE LVecBase3 get_half_extents_without_margin() const;
   INLINE LVecBase3 get_half_extents_with_margin() const;
 
+  MAKE_PROPERTY(radius, get_radius);
+  MAKE_PROPERTY(half_extents_without_margin, get_half_extents_without_margin);
+  MAKE_PROPERTY(half_extents_with_margin, get_half_extents_with_margin);
+
 public:
   virtual btCollisionShape *ptr() const;
 

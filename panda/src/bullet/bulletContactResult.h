@@ -39,6 +39,14 @@ PUBLISHED:
   INLINE int get_part_id0() const;
   INLINE int get_part_id1() const;
 
+  MAKE_PROPERTY(manifold_point, get_manifold_point);
+  MAKE_PROPERTY(node0, get_node0);
+  MAKE_PROPERTY(node1, get_node1);
+  MAKE_PROPERTY(index0, get_idx0);
+  MAKE_PROPERTY(index1, get_idx1);
+  MAKE_PROPERTY(part_id0, get_part_id0);
+  MAKE_PROPERTY(part_id1, get_part_id1);
+
 private:
   static btManifoldPoint _empty;
 

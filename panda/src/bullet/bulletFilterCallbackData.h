@@ -36,6 +36,10 @@ PUBLISHED:
   INLINE void set_collide(bool collide);
   INLINE bool get_collide() const;
 
+  MAKE_PROPERTY(node_0, get_node_0);
+  MAKE_PROPERTY(node_1, get_node_1);
+  MAKE_PROPERTY(collide, get_collide, set_collide);
+
 private:
   PandaNode *_node0;
   PandaNode *_node1;

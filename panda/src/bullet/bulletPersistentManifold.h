@@ -42,6 +42,10 @@ PUBLISHED:
 
   void clear_manifold();
 
+  MAKE_PROPERTY(num_manifold_points, get_num_manifold_points);
+  MAKE_PROPERTY(contact_breaking_threshold, get_contact_breaking_threshold);
+  MAKE_PROPERTY(contact_processing_threshold, get_contact_processing_threshold);
+
 public:
   BulletPersistentManifold(btPersistentManifold *manifold);
 

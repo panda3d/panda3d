@@ -415,6 +415,15 @@ set_active(bool active, bool force) {
 }
 
 /**
+ *
+ */
+void BulletBodyNode::
+force_active(bool active) {
+
+  set_active(active, true);
+}
+
+/**
  * If true, this object will be deactivated after a certain amount of time has
  * passed without movement.  If false, the object will always remain active.
  */

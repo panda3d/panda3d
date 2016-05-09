@@ -55,7 +55,7 @@ PUBLISHED:
   // Static and kinematic
   INLINE bool is_static() const;
   INLINE bool is_kinematic() const;
-
+  
   INLINE void set_static(bool value);
   INLINE void set_kinematic(bool value);
 
@@ -78,6 +78,7 @@ PUBLISHED:
   // Deactivation
   bool is_active() const;
   void set_active(bool active, bool force=false);
+  void force_active(bool active);
 
   void set_deactivation_time(PN_stdfloat dt);
   PN_stdfloat get_deactivation_time() const;
@@ -85,7 +86,7 @@ PUBLISHED:
   void set_deactivation_enabled(bool enabled);
   bool is_deactivation_enabled() const;
 
-  // Debug Visualistion
+  // Debug Visualisation
   INLINE void set_debug_enabled(const bool enabled);
   INLINE bool is_debug_enabled() const;
 
@@ -99,6 +100,7 @@ PUBLISHED:
 #if BT_BULLET_VERSION >= 281
   INLINE PN_stdfloat get_rolling_friction() const;
   INLINE void set_rolling_friction(PN_stdfloat friction);
+  MAKE_PROPERTY(rolling_friction, get_rolling_friction, set_rolling_friction);
 #endif
 
   INLINE bool has_anisotropic_friction() const;
@@ -113,6 +115,23 @@ PUBLISHED:
 
   // Special
   void set_transform_dirty();
+
+  MAKE_PROPERTY(num_shapes, get_num_shapes);
+  MAKE_PROPERTY(shape_bounds, get_shape_bounds);
+  MAKE_PROPERTY(static, is_static, set_static);
+  MAKE_PROPERTY(kinematic, is_kinematic, set_kinematic);
+  MAKE_PROPERTY(collision_notification, notifies_collisions, notify_collisions);
+  MAKE_PROPERTY(collision_response, get_collision_response, set_collision_response);
+  MAKE_PROPERTY(contact_processing_threshold, get_contact_processing_threshold, set_contact_processing_threshold);
+  MAKE_PROPERTY(active, is_active, force_active);
+  MAKE_PROPERTY(deactivation_time, get_deactivation_time, set_deactivation_time);
+  MAKE_PROPERTY(deactivation_enabled, is_deactivation_enabled, set_deactivation_enabled);
+  MAKE_PROPERTY(debug_enabled, is_debug_enabled, set_debug_enabled);
+  MAKE_PROPERTY(restitution, get_restitution, set_restitution);
+  MAKE_PROPERTY(friction, get_friction, set_friction);
+  MAKE_PROPERTY(anisotropic_friction, get_anisotropic_friction, set_anisotropic_friction);
+  MAKE_PROPERTY(ccd_swept_sphere_radius, get_ccd_swept_sphere_radius, set_ccd_swept_sphere_radius);
+  MAKE_PROPERTY(ccd_motion_threshold, get_ccd_motion_threshold, set_ccd_motion_threshold);
 
 public:
   virtual btCollisionObject *get_object() const = 0;
