@@ -35,18 +35,18 @@ class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
   virtual ~UserDataAudio();
   virtual PT(MovieAudioCursor) open();
 
-  void append(PN_int16 *data, int n);
+  void append(int16_t *data, int n);
   void append(DatagramIterator *src, int len=0x40000000);
   void append(const string &str);
   void done(); // A promise not to write any more samples.
 
  private:
-  void read_samples(int n, PN_int16 *data);
+  void read_samples(int n, int16_t *data);
   void update_cursor();
   int _desired_rate;
   int _desired_channels;
   UserDataAudioCursor *_cursor;
-  pdeque<PN_int16> _data;
+  pdeque<int16_t> _data;
   bool _aborted;
   bool _remove_after_read;
   friend class UserDataAudioCursor;

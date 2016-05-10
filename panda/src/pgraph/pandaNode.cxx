@@ -4109,7 +4109,7 @@ write_up_list(const PandaNode::Up &up_list,
       num_parents++;
     }
   }
-  nassertv(num_parents == (int)(PN_uint16)num_parents);
+  nassertv(num_parents == (int)(uint16_t)num_parents);
   dg.add_uint16(num_parents);
   for (ui = up_list.begin(); ui != up_list.end(); ++ui) {
     PandaNode *parent_node = (*ui).get_parent();
@@ -4126,7 +4126,7 @@ void PandaNode::CData::
 write_down_list(const PandaNode::Down &down_list,
                 BamWriter *manager, Datagram &dg) const {
   int num_children = down_list.size();
-  nassertv(num_children == (int)(PN_uint16)num_children);
+  nassertv(num_children == (int)(uint16_t)num_children);
   dg.add_uint16(num_children);
 
   // Should we smarten up the writing of the sort number?  Most of the time

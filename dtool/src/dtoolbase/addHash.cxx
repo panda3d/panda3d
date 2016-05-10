@@ -17,33 +17,33 @@
  * Adds a linear sequence of bytes to the hash.
  */
 size_t AddHash::
-add_hash(size_t start, const PN_uint8 *bytes, size_t num_bytes) {
+add_hash(size_t start, const uint8_t *bytes, size_t num_bytes) {
   size_t num_words = num_bytes >> 2;
   size_t remaining_bytes = num_bytes - (num_words << 2);
-  size_t hash = (size_t)hashword((const PN_uint32 *)bytes, num_words, (PN_uint32)start);
+  size_t hash = (size_t)hashword((const uint32_t *)bytes, num_words, (uint32_t)start);
 
   switch (remaining_bytes) {
   case 3:
     {
-      PN_uint32 remaining;
+      uint32_t remaining;
       remaining = (bytes[num_bytes - 3] << 16) | (bytes[num_bytes - 2] << 8) | (bytes[num_bytes - 1]);
-      hash = (size_t)hashword(&remaining, 1, (PN_uint32)hash);
+      hash = (size_t)hashword(&remaining, 1, (uint32_t)hash);
     }
     break;
 
   case 2:
     {
-      PN_uint32 remaining;
+      uint32_t remaining;
       remaining = (bytes[num_bytes - 2] << 8) | (bytes[num_bytes - 1]);
-      hash = (size_t)hashword(&remaining, 1, (PN_uint32)hash);
+      hash = (size_t)hashword(&remaining, 1, (uint32_t)hash);
     }
     break;
 
   case 1:
     {
-      PN_uint32 remaining;
+      uint32_t remaining;
       remaining = (bytes[num_bytes - 1]);
-      hash = (size_t)hashword(&remaining, 1, (PN_uint32)hash);
+      hash = (size_t)hashword(&remaining, 1, (uint32_t)hash);
     }
     break;
 

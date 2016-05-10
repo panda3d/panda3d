@@ -39,26 +39,26 @@ PUBLISHED:
   MAKE_PROPERTY(ostream, get_ostream);
 
   BLOCKING INLINE void add_bool(bool value);
-  BLOCKING INLINE void add_int8(PN_int8 value);
-  BLOCKING INLINE void add_uint8(PN_uint8 value);
+  BLOCKING INLINE void add_int8(int8_t value);
+  BLOCKING INLINE void add_uint8(uint8_t value);
 
   // The default numeric packing is little-endian.
-  BLOCKING INLINE void add_int16(PN_int16 value);
-  BLOCKING INLINE void add_int32(PN_int32 value);
-  BLOCKING INLINE void add_int64(PN_int64 value);
-  BLOCKING INLINE void add_uint16(PN_uint16 value);
-  BLOCKING INLINE void add_uint32(PN_uint32 value);
-  BLOCKING INLINE void add_uint64(PN_uint64 value);
+  BLOCKING INLINE void add_int16(int16_t value);
+  BLOCKING INLINE void add_int32(int32_t value);
+  BLOCKING INLINE void add_int64(int64_t value);
+  BLOCKING INLINE void add_uint16(uint16_t value);
+  BLOCKING INLINE void add_uint32(uint32_t value);
+  BLOCKING INLINE void add_uint64(uint64_t value);
   BLOCKING INLINE void add_float32(float value);
   BLOCKING INLINE void add_float64(PN_float64 value);
 
   // These functions pack numbers big-endian, in case that's desired.
-  BLOCKING INLINE void add_be_int16(PN_int16 value);
-  BLOCKING INLINE void add_be_int32(PN_int32 value);
-  BLOCKING INLINE void add_be_int64(PN_int64 value);
-  BLOCKING INLINE void add_be_uint16(PN_uint16 value);
-  BLOCKING INLINE void add_be_uint32(PN_uint32 value);
-  BLOCKING INLINE void add_be_uint64(PN_uint64 value);
+  BLOCKING INLINE void add_be_int16(int16_t value);
+  BLOCKING INLINE void add_be_int32(int32_t value);
+  BLOCKING INLINE void add_be_int64(int64_t value);
+  BLOCKING INLINE void add_be_uint16(uint16_t value);
+  BLOCKING INLINE void add_be_uint32(uint32_t value);
+  BLOCKING INLINE void add_be_uint64(uint64_t value);
   BLOCKING INLINE void add_be_float32(float value);
   BLOCKING INLINE void add_be_float64(PN_float64 value);
 

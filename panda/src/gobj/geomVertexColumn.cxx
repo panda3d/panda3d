@@ -165,12 +165,12 @@ setup() {
   switch (_numeric_type) {
   case NT_uint16:
   case NT_int16:
-    _component_bytes = 2;  // sizeof(PN_uint16)
+    _component_bytes = 2;  // sizeof(uint16_t)
     break;
 
   case NT_uint32:
   case NT_int32:
-    _component_bytes = 4;  // sizeof(PN_uint32)
+    _component_bytes = 4;  // sizeof(uint32_t)
     break;
 
   case NT_uint8:
@@ -180,7 +180,7 @@ setup() {
 
   case NT_packed_dcba:
   case NT_packed_dabc:
-    _component_bytes = 4;  // sizeof(PN_uint32)
+    _component_bytes = 4;  // sizeof(uint32_t)
     _num_values *= 4;
     break;
 
@@ -197,7 +197,7 @@ setup() {
     break;
 
   case NT_packed_ufloat:
-    _component_bytes = 4;  // sizeof(PN_uint32)
+    _component_bytes = 4;  // sizeof(uint32_t)
     _num_values *= 3;
     break;
   }
@@ -451,23 +451,23 @@ float GeomVertexColumn::Packer::
 get_data1f(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return *(const PN_uint8 *)pointer;
+    return *(const uint8_t *)pointer;
 
   case NT_uint16:
-    return *(const PN_uint16 *)pointer;
+    return *(const uint16_t *)pointer;
 
   case NT_uint32:
-    return *(const PN_uint32 *)pointer;
+    return *(const uint32_t *)pointer;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword);
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword);
     }
 
@@ -478,17 +478,17 @@ get_data1f(const unsigned char *pointer) {
     return *(const PN_float64 *)pointer;
 
   case NT_int8:
-    return *(const PN_int8 *)pointer;
+    return *(const int8_t *)pointer;
 
   case NT_int16:
-    return *(const PN_int16 *)pointer;
+    return *(const int16_t *)pointer;
 
   case NT_int32:
-    return *(const PN_int32 *)pointer;
+    return *(const int32_t *)pointer;
 
   case NT_packed_ufloat:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_ufloat_a(dword);
     }
 
@@ -512,28 +512,28 @@ get_data2f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword));
       }
@@ -541,7 +541,7 @@ get_data2f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword));
       }
@@ -567,21 +567,21 @@ get_data2f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
@@ -616,28 +616,28 @@ get_data3f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword));
@@ -646,7 +646,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword));
@@ -673,28 +673,28 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_ufloat_a(dword),
                 GeomVertexData::unpack_ufloat_b(dword),
                 GeomVertexData::unpack_ufloat_c(dword));
@@ -734,28 +734,28 @@ get_data4f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword),
@@ -765,7 +765,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword),
@@ -793,21 +793,21 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
@@ -828,23 +828,23 @@ double GeomVertexColumn::Packer::
 get_data1d(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return *(const PN_uint8 *)pointer;
+    return *(const uint8_t *)pointer;
 
   case NT_uint16:
-    return *(const PN_uint16 *)pointer;
+    return *(const uint16_t *)pointer;
 
   case NT_uint32:
-    return *(const PN_uint32 *)pointer;
+    return *(const uint32_t *)pointer;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword);
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword);
     }
 
@@ -859,17 +859,17 @@ get_data1d(const unsigned char *pointer) {
     return 0.0;
 
   case NT_int8:
-    return *(const PN_int8 *)pointer;
+    return *(const int8_t *)pointer;
 
   case NT_int16:
-    return *(const PN_int16 *)pointer;
+    return *(const int16_t *)pointer;
 
   case NT_int32:
-    return *(const PN_int32 *)pointer;
+    return *(const int32_t *)pointer;
 
   case NT_packed_ufloat:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_ufloat_a(dword);
     }
   }
@@ -890,28 +890,28 @@ get_data2d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -919,7 +919,7 @@ get_data2d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -945,21 +945,21 @@ get_data2d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
@@ -994,28 +994,28 @@ get_data3d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword));
@@ -1024,7 +1024,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword));
@@ -1051,28 +1051,28 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_ufloat_a(dword),
                  GeomVertexData::unpack_ufloat_b(dword),
                  GeomVertexData::unpack_ufloat_c(dword));
@@ -1112,28 +1112,28 @@ get_data4d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -1143,7 +1143,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -1171,21 +1171,21 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
@@ -1209,20 +1209,20 @@ get_data1i(const unsigned char *pointer) {
     return *pointer;
 
   case NT_uint16:
-    return *(const PN_uint16 *)pointer;
+    return *(const uint16_t *)pointer;
 
   case NT_uint32:
-    return *(const PN_uint32 *)pointer;
+    return *(const uint32_t *)pointer;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword);
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword);
     }
 
@@ -1237,17 +1237,17 @@ get_data1i(const unsigned char *pointer) {
     break;
 
   case NT_int8:
-    return *(const PN_int8 *)pointer;
+    return *(const int8_t *)pointer;
 
   case NT_int16:
-    return *(const PN_int16 *)pointer;
+    return *(const int16_t *)pointer;
 
   case NT_int32:
-    return *(const PN_int32 *)pointer;
+    return *(const int32_t *)pointer;
 
   case NT_packed_ufloat:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return (int)GeomVertexData::unpack_ufloat_a(dword);
     }
   }
@@ -1273,21 +1273,21 @@ get_data2i(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2i.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -1295,7 +1295,7 @@ get_data2i(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2i.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -1321,21 +1321,21 @@ get_data2i(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
@@ -1374,21 +1374,21 @@ get_data3i(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3i.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword));
@@ -1397,7 +1397,7 @@ get_data3i(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3i.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword));
@@ -1424,28 +1424,28 @@ get_data3i(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3i.set((int)GeomVertexData::unpack_ufloat_a(dword),
                  (int)GeomVertexData::unpack_ufloat_b(dword),
                  (int)GeomVertexData::unpack_ufloat_c(dword));
@@ -1489,21 +1489,21 @@ get_data4i(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4i.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -1513,7 +1513,7 @@ get_data4i(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4i.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -1541,21 +1541,21 @@ get_data4i(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
@@ -1578,15 +1578,15 @@ set_data1f(unsigned char *pointer, float data) {
   case 1:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      *(PN_uint8 *)pointer = (unsigned int)data;
+      *(uint8_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint16:
-      *(PN_uint16 *)pointer = (unsigned int)data;
+      *(uint16_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint32:
-      *(PN_uint32 *)pointer = (unsigned int)data;
+      *(uint32_t *)pointer = (unsigned int)data;
       break;
 
     case NT_packed_dcba:
@@ -1607,15 +1607,15 @@ set_data1f(unsigned char *pointer, float data) {
       break;
 
     case NT_int8:
-      *(PN_int8 *)pointer = (int)data;
+      *(int8_t *)pointer = (int)data;
       break;
 
     case NT_int16:
-      *(PN_int16 *)pointer = (int)data;
+      *(int16_t *)pointer = (int)data;
       break;
 
     case NT_int32:
-      *(PN_int32 *)pointer = (int)data;
+      *(int32_t *)pointer = (int)data;
       break;
 
     case NT_packed_ufloat:
@@ -1652,7 +1652,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -1660,7 +1660,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -1668,7 +1668,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -1701,7 +1701,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -1709,7 +1709,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -1717,7 +1717,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -1757,7 +1757,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1766,7 +1766,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1775,7 +1775,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1811,7 +1811,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1820,7 +1820,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1829,7 +1829,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1837,7 +1837,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -1870,7 +1870,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1880,7 +1880,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1890,7 +1890,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1899,11 +1899,11 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -1932,7 +1932,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1942,7 +1942,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1952,7 +1952,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1977,15 +1977,15 @@ set_data1d(unsigned char *pointer, double data) {
   case 1:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      *(PN_uint8 *)pointer = (unsigned int)data;
+      *(uint8_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint16:
-      *(PN_uint16 *)pointer = (unsigned int)data;
+      *(uint16_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint32:
-      *(PN_uint32 *)pointer = (unsigned int)data;
+      *(uint32_t *)pointer = (unsigned int)data;
       break;
 
     case NT_packed_dcba:
@@ -2006,15 +2006,15 @@ set_data1d(unsigned char *pointer, double data) {
       break;
 
     case NT_int8:
-      *(PN_int8 *)pointer = (int)data;
+      *(int8_t *)pointer = (int)data;
       break;
 
     case NT_int16:
-      *(PN_int16 *)pointer = (int)data;
+      *(int16_t *)pointer = (int)data;
       break;
 
     case NT_int32:
-      *(PN_int32 *)pointer = (int)data;
+      *(int32_t *)pointer = (int)data;
       break;
 
     case NT_packed_ufloat:
@@ -2050,7 +2050,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -2058,7 +2058,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -2066,7 +2066,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -2099,7 +2099,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -2107,7 +2107,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -2115,7 +2115,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -2155,7 +2155,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2164,7 +2164,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2173,7 +2173,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2209,7 +2209,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2218,7 +2218,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2227,7 +2227,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2235,7 +2235,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -2268,7 +2268,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2278,7 +2278,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2288,7 +2288,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2297,11 +2297,11 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -2330,7 +2330,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2340,7 +2340,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2350,7 +2350,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2380,12 +2380,12 @@ set_data1i(unsigned char *pointer, int data) {
       break;
 
     case NT_uint16:
-      *(PN_uint16 *)pointer = data;
-      nassertv(*(PN_uint16 *)pointer == data);
+      *(uint16_t *)pointer = data;
+      nassertv(*(uint16_t *)pointer == data);
       break;
 
     case NT_uint32:
-      *(PN_uint32 *)pointer = data;
+      *(uint32_t *)pointer = data;
       break;
 
     case NT_packed_dcba:
@@ -2406,17 +2406,17 @@ set_data1i(unsigned char *pointer, int data) {
       break;
 
     case NT_int8:
-      *(PN_int8 *)pointer = data;
-      nassertv(*(PN_int8 *)pointer == data);
+      *(int8_t *)pointer = data;
+      nassertv(*(int8_t *)pointer == data);
       break;
 
     case NT_int16:
-      *(PN_int16 *)pointer = data;
-      nassertv(*(PN_int16 *)pointer == data);
+      *(int16_t *)pointer = data;
+      nassertv(*(int16_t *)pointer == data);
       break;
 
     case NT_int32:
-      *(PN_int32 *)pointer = data;
+      *(int32_t *)pointer = data;
       break;
 
     case NT_packed_ufloat:
@@ -2458,7 +2458,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2466,7 +2466,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2499,7 +2499,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2507,7 +2507,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2515,7 +2515,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2561,7 +2561,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2570,7 +2570,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2606,7 +2606,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2615,7 +2615,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2624,7 +2624,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2632,7 +2632,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -2672,7 +2672,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2682,7 +2682,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2691,11 +2691,11 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -2724,7 +2724,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2734,7 +2734,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2744,7 +2744,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2829,28 +2829,28 @@ get_data4f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword),
@@ -2860,7 +2860,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword),
@@ -2888,21 +2888,21 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
@@ -2985,28 +2985,28 @@ get_data4d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -3016,7 +3016,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -3044,21 +3044,21 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
@@ -3130,7 +3130,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3140,7 +3140,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3150,7 +3150,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3159,11 +3159,11 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -3192,7 +3192,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3202,7 +3202,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3212,7 +3212,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3286,7 +3286,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3296,7 +3296,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3306,7 +3306,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3315,11 +3315,11 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -3348,7 +3348,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3358,7 +3358,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3368,7 +3368,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3391,23 +3391,23 @@ float GeomVertexColumn::Packer_color::
 get_data1f(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return (*(const PN_uint8 *)pointer) / 255.0f;
+    return (*(const uint8_t *)pointer) / 255.0f;
 
   case NT_uint16:
-    return (*(const PN_uint16 *)pointer) / 65535.0f;
+    return (*(const uint16_t *)pointer) / 65535.0f;
 
   case NT_uint32:
-    return (*(const PN_uint32 *)pointer) / 4294967295.0f;
+    return (*(const uint32_t *)pointer) / 4294967295.0f;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword) / 255.0f;
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword) / 255.0f;
     }
 
@@ -3449,7 +3449,7 @@ get_data3f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
         _v3 /= 255.0f;
       }
@@ -3457,7 +3457,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
         _v3 /= 65535.0f;
       }
@@ -3465,7 +3465,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
         _v3 /= 4294967295.0f;
       }
@@ -3499,7 +3499,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_ufloat_a(dword),
                 GeomVertexData::unpack_ufloat_b(dword),
                 GeomVertexData::unpack_ufloat_c(dword));
@@ -3528,7 +3528,7 @@ get_data4f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
         _v4 /= 255.0f;
       }
@@ -3536,7 +3536,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
         _v4 /= 65535.0f;
       }
@@ -3544,7 +3544,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
         _v4 /= 4294967295.0f;
       }
@@ -3552,7 +3552,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword),
@@ -3563,7 +3563,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword),
@@ -3606,23 +3606,23 @@ double GeomVertexColumn::Packer_color::
 get_data1d(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return (*(const PN_uint8 *)pointer) / 255.0;
+    return (*(const uint8_t *)pointer) / 255.0;
 
   case NT_uint16:
-    return (*(const PN_uint16 *)pointer) / 65535.0;
+    return (*(const uint16_t *)pointer) / 65535.0;
 
   case NT_uint32:
-    return (*(const PN_uint32 *)pointer) / 4294967295.0;
+    return (*(const uint32_t *)pointer) / 4294967295.0;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword) / 255.0;
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword) / 255.0;
     }
 
@@ -3664,7 +3664,7 @@ get_data3d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
         _v3d /= 255.0;
       }
@@ -3672,7 +3672,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
         _v3d /= 65535.0;
       }
@@ -3680,7 +3680,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
         _v3d /= 4294967295.0;
       }
@@ -3714,7 +3714,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_ufloat_a(dword),
                  GeomVertexData::unpack_ufloat_b(dword),
                  GeomVertexData::unpack_ufloat_c(dword));
@@ -3743,7 +3743,7 @@ get_data4d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
         _v4d /= 255.0;
       }
@@ -3751,7 +3751,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
         _v4d /= 65535.0;
       }
@@ -3759,7 +3759,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
         _v4d /= 4294967295.0;
       }
@@ -3767,7 +3767,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -3778,7 +3778,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -3848,7 +3848,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_uint8:
       {
         LVecBase3f scaled = data * 255.0f;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -3858,7 +3858,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_uint16:
       {
         LVecBase3f scaled = data * 65535.0f;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -3868,7 +3868,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_uint32:
       {
         LVecBase3f scaled = data * 4294967295.0f;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3878,7 +3878,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_packed_dcba:
       {
         LVecBase3f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0f, scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -3886,7 +3886,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_packed_dabc:
       {
         LVecBase3f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0f, scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -3917,7 +3917,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
   } else {
@@ -3937,7 +3937,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_uint8:
       {
         LVecBase4f scaled = data * 255.0f;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -3948,7 +3948,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_uint16:
       {
         LVecBase4f scaled = data * 65535.0f;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -3959,7 +3959,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_uint32:
       {
         LVecBase4f scaled = data * 4294967295.0f;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3970,7 +3970,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_packed_dcba:
       {
         LVecBase4f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -3978,7 +3978,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_packed_dabc:
       {
         LVecBase4f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -4051,7 +4051,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_uint8:
       {
         LVecBase3d scaled = data * 255.0;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4061,7 +4061,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_uint16:
       {
         LVecBase3d scaled = data * 65535.0;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4071,7 +4071,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_uint32:
       {
         LVecBase3d scaled = data * 4294967295.0;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -4081,7 +4081,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_packed_dcba:
       {
         LVecBase3d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0, scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -4089,7 +4089,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_packed_dabc:
       {
         LVecBase3d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0, scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -4120,7 +4120,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
   } else {
@@ -4140,7 +4140,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_uint8:
       {
         LVecBase4d scaled = data * 255.0;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4151,7 +4151,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_uint16:
       {
         LVecBase4d scaled = data * 65535.0;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4162,7 +4162,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_uint32:
       {
         LVecBase4d scaled = data * 4294967295.0;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -4173,7 +4173,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_packed_dcba:
       {
         LVecBase4d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -4181,7 +4181,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_packed_dabc:
       {
         LVecBase4d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -4457,7 +4457,7 @@ get_data4d(const unsigned char *pointer) {
  */
 const LVecBase4f &GeomVertexColumn::Packer_argb_packed::
 get_data4f(const unsigned char *pointer) {
-  PN_uint32 dword = *(const PN_uint32 *)pointer;
+  uint32_t dword = *(const uint32_t *)pointer;
   _v4.set(GeomVertexData::unpack_abcd_b(dword),
           GeomVertexData::unpack_abcd_c(dword),
           GeomVertexData::unpack_abcd_d(dword),
@@ -4473,7 +4473,7 @@ void GeomVertexColumn::Packer_argb_packed::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   // when packing an argb, we want to make sure we cap the input values at 1
   // since going above one will cause the value to be truncated.
-  *(PN_uint32 *)pointer = GeomVertexData::pack_abcd
+  *(uint32_t *)pointer = GeomVertexData::pack_abcd
     ((unsigned int)(min(max(data[3], 0.0f), 1.0f) * 255.0f),
      (unsigned int)(min(max(data[0], 0.0f), 1.0f) * 255.0f),
      (unsigned int)(min(max(data[1], 0.0f), 1.0f) * 255.0f),
@@ -4537,7 +4537,7 @@ get_data4f(const unsigned char *pointer) {
  */
 int GeomVertexColumn::Packer_uint16_1::
 get_data1i(const unsigned char *pointer) {
-  return *(const PN_uint16 *)pointer;
+  return *(const uint16_t *)pointer;
 }
 
 /**
@@ -4545,6 +4545,6 @@ get_data1i(const unsigned char *pointer) {
  */
 void GeomVertexColumn::Packer_uint16_1::
 set_data1i(unsigned char *pointer, int data) {
-  *(PN_uint16 *)pointer = data;
-  nassertv(*(PN_uint16 *)pointer == data);
+  *(uint16_t *)pointer = data;
+  nassertv(*(uint16_t *)pointer == data);
 }

@@ -25,9 +25,9 @@
 DatagramUDPHeader::
 DatagramUDPHeader(const NetDatagram &datagram) {
   const string &str = datagram.get_message();
-  PN_uint16 checksum = 0;
+  uint16_t checksum = 0;
   for (size_t p = 0; p < str.size(); p++) {
-    checksum += (PN_uint16)(PN_uint8)str[p];
+    checksum += (uint16_t)(uint8_t)str[p];
   }
 
   // Now pack the header.
@@ -51,9 +51,9 @@ bool DatagramUDPHeader::
 verify_datagram(const NetDatagram &datagram) const {
   const string &str = datagram.get_message();
 
-  PN_uint16 checksum = 0;
+  uint16_t checksum = 0;
   for (size_t p = 0; p < str.size(); p++) {
-    checksum += (PN_uint16)(PN_uint8)str[p];
+    checksum += (uint16_t)(uint8_t)str[p];
   }
 
   if (checksum == get_datagram_checksum()) {

@@ -156,7 +156,7 @@ public:
     int _size;
     int _status;
     HashVal _hash;
-    PN_int32 _num_files;
+    int32_t _num_files;
     FileRecords _file_records;
   };
 
@@ -182,7 +182,7 @@ public:
     bool write_header(ostream &write_stream);
     bool write_bogus_header(StreamWriter &sw);
   private:
-    PN_int32 _header_length;
+    int32_t _header_length;
   };
 
 PUBLISHED:
@@ -197,8 +197,8 @@ public:
   Db _server_db;
 
   // Magic number for knowing this is a download Db
-  static PN_uint32 _magic_number;
-  static PN_uint32 _bogus_magic_number;
+  static uint32_t _magic_number;
+  static uint32_t _bogus_magic_number;
   typedef pvector<HashVal> VectorHash;
   typedef pmap<Filename, VectorHash> VersionMap;
 

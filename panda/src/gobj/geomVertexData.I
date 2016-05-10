@@ -273,7 +273,7 @@ get_modified(Thread *current_thread) const {
 /**
  * Packs four values in a DirectX-style NT_packed_abcd value.
  */
-INLINE PN_uint32 GeomVertexData::
+INLINE uint32_t GeomVertexData::
 pack_abcd(unsigned int a, unsigned int b,
           unsigned int c, unsigned int d) {
   return (((a & 0xff) << 24) |
@@ -286,7 +286,7 @@ pack_abcd(unsigned int a, unsigned int b,
  * Returns the first packed value from a DirectX-style NT_packed_abcd.
  */
 INLINE unsigned int GeomVertexData::
-unpack_abcd_a(PN_uint32 data) {
+unpack_abcd_a(uint32_t data) {
   return (data >> 24) & 0xff;
 }
 
@@ -294,7 +294,7 @@ unpack_abcd_a(PN_uint32 data) {
  * Returns the second packed value from a DirectX-style NT_packed_abcd.
  */
 INLINE unsigned int GeomVertexData::
-unpack_abcd_b(PN_uint32 data) {
+unpack_abcd_b(uint32_t data) {
   return (data >> 16) & 0xff;
 }
 
@@ -302,7 +302,7 @@ unpack_abcd_b(PN_uint32 data) {
  * Returns the third packed value from a DirectX-style NT_packed_abcd.
  */
 INLINE unsigned int GeomVertexData::
-unpack_abcd_c(PN_uint32 data) {
+unpack_abcd_c(uint32_t data) {
   return (data >> 8) & 0xff;
 }
 
@@ -310,19 +310,19 @@ unpack_abcd_c(PN_uint32 data) {
  * Returns the fourth packed value from a DirectX-style NT_packed_abcd.
  */
 INLINE unsigned int GeomVertexData::
-unpack_abcd_d(PN_uint32 data) {
+unpack_abcd_d(uint32_t data) {
   return data & 0xff;
 }
 
 /**
  * Packs three float values in an unsigned 32-bit int.
  */
-INLINE PN_uint32 GeomVertexData::
+INLINE uint32_t GeomVertexData::
 pack_ufloat(float a, float b, float c) {
   // Since we have to clamp both low exponents and negative numbers to 0, it's
   // easier to see a float as having a 9-bit signed exponent.
   union {
-    PN_int32 _packed;
+    int32_t _packed;
     float _float;
   } f0, f1, f2;
 
@@ -335,7 +335,7 @@ pack_ufloat(float a, float b, float c) {
   // normalized float 4. exponent 0: denormal float 5. zero or anything
   // negative, clamped to 0
 
-  PN_uint32 packed = 0;
+  uint32_t packed = 0;
 
   if ((f0._packed & 0x7f800000) == 0x7f800000 && (unsigned)f0._packed != 0xff800000u) {
     packed |= (f0._packed >> 17) & 0x7ffu;
@@ -374,14 +374,14 @@ pack_ufloat(float a, float b, float c) {
  * Unpacks an unsigned float11 value from an uint32.
  */
 INLINE float GeomVertexData::
-unpack_ufloat_a(PN_uint32 data) {
+unpack_ufloat_a(uint32_t data) {
   if ((data & 0x7c0) == 0) {
     // Denormal float (includes zero).
     return ldexpf((data & 63) / 64.0f, -14);
   }
 
   union {
-    PN_uint32 _packed;
+    uint32_t _packed;
     float _float;
   } value;
   value._packed = ((data & 0x7ff) << 17);
@@ -400,14 +400,14 @@ unpack_ufloat_a(PN_uint32 data) {
  * Unpacks an unsigned float11 value from an uint32.
  */
 INLINE float GeomVertexData::
-unpack_ufloat_b(PN_uint32 data) {
+unpack_ufloat_b(uint32_t data) {
   if ((data & 0x3e0000) == 0) {
     // Denormal float (includes zero).
     return ldexpf(((data >> 11) & 63) / 64.0f, -14);
   }
 
   union {
-    PN_uint32 _packed;
+    uint32_t _packed;
     float _float;
   } value;
   value._packed = ((data & 0x3ff800) << 6);
@@ -426,14 +426,14 @@ unpack_ufloat_b(PN_uint32 data) {
  * Unpacks an unsigned float10 value from an uint32.
  */
 INLINE float GeomVertexData::
-unpack_ufloat_c(PN_uint32 data) {
+unpack_ufloat_c(uint32_t data) {
   if ((data & 0xf8000000u) == 0) {
     // Denormal float (includes zero).
     return ldexpf(((data >> 22) & 31) / 32.0f, -14);
   }
 
   union {
-    PN_uint32 _packed;
+    uint32_t _packed;
     float _float;
   } value;
   value._packed = ((data & 0xffc00000u) >> 4);

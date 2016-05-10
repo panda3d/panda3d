@@ -28,7 +28,7 @@
  */
 class EXPCL_DTOOL AtomicAdjustI386Impl {
 public:
-  typedef ALIGN_4BYTE PN_int32 Integer;
+  typedef ALIGN_4BYTE int32_t Integer;
   typedef void *UnalignedPointer;
   typedef ALIGN_4BYTE UnalignedPointer Pointer;
 

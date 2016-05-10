@@ -110,15 +110,15 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
 
     union {
       unsigned char p[2];
-      PN_uint16 v;
+      uint16_t v;
     } v;
 
     v.p[0] = (unsigned char)(color[0] * 255.0f);
     v.p[1] = (unsigned char)(color[3] * 255.0f);
 
-    PN_uint16 *image = (PN_uint16 *)modify_ram_image().p();
+    uint16_t *image = (uint16_t *)modify_ram_image().p();
     for (int yi = y; yi < y + y_size; yi++) {
-      PN_uint16 *row = image + yi * _size[0] ;
+      uint16_t *row = image + yi * _size[0] ;
       for (int xi = x; xi < x + x_size; xi++) {
         row[xi] = v.v;
       }
@@ -145,7 +145,7 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
     // RGBA.
     union {
       unsigned char p[4];
-      PN_uint32 v;
+      uint32_t v;
     } v;
 
     v.p[0] = (unsigned char)(color[2] * 255.0f);
@@ -153,9 +153,9 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
     v.p[2] = (unsigned char)(color[0] * 255.0f);
     v.p[3] = (unsigned char)(color[3] * 255.0f);
 
-    PN_uint32 *image = (PN_uint32 *)modify_ram_image().p();
+    uint32_t *image = (uint32_t *)modify_ram_image().p();
     for (int yi = y; yi < y + y_size; yi++) {
-      PN_uint32 *row = image + yi * _size[0];
+      uint32_t *row = image + yi * _size[0];
       for (int xi = x; xi < x + x_size; xi++) {
         row[xi] = v.v;
       }

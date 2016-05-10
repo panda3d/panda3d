@@ -91,7 +91,7 @@ public:
   int _samples_per_buffer;
 
 public:
-  virtual void read_samples(int n, PN_int16 *data);
+  virtual void read_samples(int n, int16_t *data);
   virtual int ready() const;
 
 public:
@@ -324,7 +324,7 @@ MicrophoneAudioCursorDS::
  *
  */
 void MicrophoneAudioCursorDS::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   int orign = n;
   if (_handle) {
     while (1) {
@@ -334,7 +334,7 @@ read_samples(int n, PN_int16 *data) {
       }
 
       // Find start of data in buffer.
-      PN_int16 *src = (PN_int16*)(_buffers[index]._storage);
+      int16_t *src = (int16_t*)(_buffers[index]._storage);
       src += (_offset * _audio_channels);
 
       // Decide how many samples to extract from this buffer.

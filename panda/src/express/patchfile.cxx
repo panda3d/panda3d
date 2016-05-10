@@ -61,19 +61,19 @@ const int _v1_header_length = 4 + 2 + 4 + 16 + 4 + 16;
  */
 
 // Defines
-const PN_uint32 Patchfile::_v0_magic_number = 0xfeebfaab;
-const PN_uint32 Patchfile::_magic_number = 0xfeebfaac;
+const uint32_t Patchfile::_v0_magic_number = 0xfeebfaab;
+const uint32_t Patchfile::_magic_number = 0xfeebfaac;
 
 // Created version 1 on 11202 to store length and MD5 of original file.  To
 // version 2 on 11202 to store copy offsets as relative.
-const PN_uint16 Patchfile::_current_version = 2;
+const uint16_t Patchfile::_current_version = 2;
 
-const PN_uint32 Patchfile::_HASH_BITS = 24;
-const PN_uint32 Patchfile::_HASHTABLESIZE = PN_uint32(1) << Patchfile::_HASH_BITS;
-const PN_uint32 Patchfile::_DEFAULT_FOOTPRINT_LENGTH = 9; // this produced the smallest patch file for libpanda.dll when tested, 12/20/2000
-const PN_uint32 Patchfile::_NULL_VALUE = PN_uint32(0) - 1;
-const PN_uint32 Patchfile::_MAX_RUN_LENGTH = (PN_uint32(1) << 16) - 1;
-const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << Patchfile::_HASH_BITS) - 1;
+const uint32_t Patchfile::_HASH_BITS = 24;
+const uint32_t Patchfile::_HASHTABLESIZE = uint32_t(1) << Patchfile::_HASH_BITS;
+const uint32_t Patchfile::_DEFAULT_FOOTPRINT_LENGTH = 9; // this produced the smallest patch file for libpanda.dll when tested, 12/20/2000
+const uint32_t Patchfile::_NULL_VALUE = uint32_t(0) - 1;
+const uint32_t Patchfile::_MAX_RUN_LENGTH = (uint32_t(1) << 16) - 1;
+const uint32_t Patchfile::_HASH_MASK = (uint32_t(1) << Patchfile::_HASH_BITS) - 1;
 
 /**
  * Create a patch file and initializes internal data
@@ -118,7 +118,7 @@ init(PT(Buffer) buffer) {
  */
 Patchfile::
 ~Patchfile() {
-  if (_hash_table != (PN_uint32 *)NULL) {
+  if (_hash_table != (uint32_t *)NULL) {
     PANDA_FREE_ARRAY(_hash_table);
   }
 
@@ -261,9 +261,9 @@ run() {
   // Now patch the file using the given buffer
   int buflen;
   int bytes_read;
-  PN_uint16 ADD_length;
-  PN_uint16 COPY_length;
-  PN_int32 COPY_offset;
+  uint16_t ADD_length;
+  uint16_t COPY_length;
+  int32_t COPY_offset;
 
   if (_initiated == false) {
     express_cat.error()
@@ -305,9 +305,9 @@ run() {
         << _write_stream.tellp() << ")" << endl;
     }
 
-    PN_uint32 bytes_left = (PN_uint32)ADD_length;
+    uint32_t bytes_left = (uint32_t)ADD_length;
     while (bytes_left > 0) {
-      PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
+      uint32_t bytes_this_time = (uint32_t) min(bytes_left, (uint32_t) buflen);
       _patch_stream->read(_buffer->_buffer, bytes_this_time);
       if (_patch_stream->fail()) {
         express_cat.error()
@@ -368,10 +368,10 @@ run() {
       }
 
       // read the copy bytes from original file and write them to output
-      PN_uint32 bytes_left = (PN_uint32)COPY_length;
+      uint32_t bytes_left = (uint32_t)COPY_length;
 
       while (bytes_left > 0) {
-        PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
+        uint32_t bytes_this_time = (uint32_t) min(bytes_left, (uint32_t) buflen);
         _origfile_stream->read(_buffer->_buffer, bytes_this_time);
         if (_origfile_stream->fail()) {
           express_cat.error()
@@ -535,7 +535,7 @@ internal_read_header(const Filename &patch_file) {
 
   // check the magic number
   nassertr(_buffer->get_length() >= _v0_header_length, false);
-  PN_uint32 magic_number = patch_reader.get_uint32();
+  uint32_t magic_number = patch_reader.get_uint32();
   if (magic_number != _magic_number && magic_number != _v0_magic_number) {
     express_cat.error()
       << "Invalid patch file: " << _patch_file << endl;
@@ -555,7 +555,7 @@ internal_read_header(const Filename &patch_file) {
 
   if (_version_number >= 1) {
     // Get the length of the source file.
-    /*PN_uint32 source_file_length =*/ patch_reader.get_uint32();
+    /*uint32_t source_file_length =*/ patch_reader.get_uint32();
 
     // get the MD5 of the source file.
     _MD5_ofSource.read_stream(patch_reader);
@@ -578,22 +578,22 @@ internal_read_header(const Filename &patch_file) {
 /**
  *
  */
-PN_uint32 Patchfile::
+uint32_t Patchfile::
 calc_hash(const char *buffer) {
 #ifdef USE_MD5_FOR_HASHTABLE_INDEX_VALUES
   HashVal hash;
   hash.hash_buffer(buffer, _footprint_length);
 
-  // cout << PN_uint16(hash.get_value(0)) << " ";
+  // cout << uint16_t(hash.get_value(0)) << " ";
 
-  return PN_uint16(hash.get_value(0));
+  return uint16_t(hash.get_value(0));
 #else
-  PN_uint32 hash_value = 0;
+  uint32_t hash_value = 0;
 
   for(int i = 0; i < (int)_footprint_length; i++) {
     // this is probably not such a good hash.  to be replaced --> TRIED MD5,
     // was not worth it for the execution-time hit on 800Mhz PC
-    hash_value ^= PN_uint32(*buffer) << ((i * 2) % Patchfile::_HASH_BITS);
+    hash_value ^= uint32_t(*buffer) << ((i * 2) % Patchfile::_HASH_BITS);
     buffer++;
   }
 
@@ -624,10 +624,10 @@ calc_hash(const char *buffer) {
  * can rapidly produce a list of offsets that all have the same footprint.
  */
 void Patchfile::
-build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
-  PN_uint32 *hash_table, PN_uint32 *link_table) {
+build_hash_link_tables(const char *buffer_orig, uint32_t length_orig,
+  uint32_t *hash_table, uint32_t *link_table) {
 
-  PN_uint32 i;
+  uint32_t i;
 
   // clear hash table
   for(i = 0; i < _HASHTABLESIZE; i++) {
@@ -644,7 +644,7 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
   // run through original file and hash each footprint
   for(i = 0; i < (length_orig - _footprint_length); i++) {
 
-    PN_uint32 hash_value = calc_hash(&buffer_orig[i]);
+    uint32_t hash_value = calc_hash(&buffer_orig[i]);
 
     // we must now store this file index in the hash table at the offset of
     // the hash value
@@ -669,7 +669,7 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
       hash_table[hash_value] = i;
     } else {
       // hash entry is taken, go to the link table
-      PN_uint32 link_offset = hash_table[hash_value];
+      uint32_t link_offset = hash_table[hash_value];
 
       while (_NULL_VALUE != link_table[link_offset]) {
         link_offset = link_table[link_offset];
@@ -684,9 +684,9 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
  *
  * This function calculates the length of a match between two strings of bytes
  */
-PN_uint32 Patchfile::
-calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
-                  PN_uint32 min_length) {
+uint32_t Patchfile::
+calc_match_length(const char* buf1, const char* buf2, uint32_t max_length,
+                  uint32_t min_length) {
   // early out: look ahead and sample the end of the minimum range
   if (min_length > 2) {
     if (min_length >= max_length)
@@ -698,7 +698,7 @@ calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
     }
   }
 
-  PN_uint32 length = 0;
+  uint32_t length = 0;
   while ((length < max_length) && (*buf1 == *buf2)) {
     buf1++, buf2++, length++;
   }
@@ -711,15 +711,15 @@ calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
  * matches a string in the new file.
  */
 void Patchfile::
-find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_length,
-  PN_uint32 *hash_table, PN_uint32 *link_table, const char* buffer_orig,
-  PN_uint32 length_orig, const char* buffer_new, PN_uint32 length_new) {
+find_longest_match(uint32_t new_pos, uint32_t &copy_pos, uint16_t &copy_length,
+  uint32_t *hash_table, uint32_t *link_table, const char* buffer_orig,
+  uint32_t length_orig, const char* buffer_new, uint32_t length_new) {
 
   // set length to a safe value
   copy_length = 0;
 
   // get offset of matching string (in orig file) from hash table
-  PN_uint32 hash_value = calc_hash(&buffer_new[new_pos]);
+  uint32_t hash_value = calc_hash(&buffer_new[new_pos]);
 
   // if no match, bail
   if (_NULL_VALUE == hash_table[hash_value])
@@ -728,7 +728,7 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
   copy_pos = hash_table[hash_value];
 
   // calc match length
-  copy_length = (PN_uint16)calc_match_length(&buffer_new[new_pos],
+  copy_length = (uint16_t)calc_match_length(&buffer_new[new_pos],
                                              &buffer_orig[copy_pos],
                                              min(min((length_new - new_pos),
                                                      (length_orig - copy_pos)),
@@ -736,12 +736,12 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
                                              0);
 
   // run through link table, see if we find any longer matches
-  PN_uint32 match_offset;
-  PN_uint16 match_length;
+  uint32_t match_offset;
+  uint16_t match_length;
   match_offset = link_table[copy_pos];
 
   while (match_offset != _NULL_VALUE) {
-    match_length = (PN_uint16)calc_match_length(&buffer_new[new_pos],
+    match_length = (uint16_t)calc_match_length(&buffer_new[new_pos],
                                                 &buffer_orig[match_offset],
                                                 min(min((length_new - new_pos),
                                                         (length_orig - match_offset)),
@@ -763,8 +763,8 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
  *
  */
 void Patchfile::
-emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer) {
-  nassertv(length == (PN_uint16)length); //we only write a uint16
+emit_ADD(ostream &write_stream, uint32_t length, const char* buffer) {
+  nassertv(length == (uint16_t)length); //we only write a uint16
 
   if (express_cat.is_spam()) {
     express_cat.spam()
@@ -773,11 +773,11 @@ emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer) {
 
   // write ADD length
   StreamWriter patch_writer(write_stream);
-  patch_writer.add_uint16((PN_uint16)length);
+  patch_writer.add_uint16((uint16_t)length);
 
   // if there are bytes to add, add them
   if (length > 0) {
-    patch_writer.append_data(buffer, (PN_uint16)length);
+    patch_writer.append_data(buffer, (uint16_t)length);
   }
 
   _add_pos += length;
@@ -787,10 +787,10 @@ emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer) {
  *
  */
 void Patchfile::
-emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 copy_pos) {
-  nassertv(length == (PN_uint16)length); //we only write a uint16
+emit_COPY(ostream &write_stream, uint32_t length, uint32_t copy_pos) {
+  nassertv(length == (uint16_t)length); //we only write a uint16
 
-  PN_int32 offset = (int)copy_pos - (int)_last_copy_pos;
+  int32_t offset = (int)copy_pos - (int)_last_copy_pos;
   if (express_cat.is_spam()) {
     express_cat.spam()
       << "COPY: " << length << " bytes from offset " << offset
@@ -799,9 +799,9 @@ emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 copy_pos) {
 
   // write COPY length
   StreamWriter patch_writer(write_stream);
-  patch_writer.add_uint16((PN_uint16)length);
+  patch_writer.add_uint16((uint16_t)length);
 
-  if ((PN_uint16)length != 0) {
+  if ((uint16_t)length != 0) {
     // write COPY offset
     patch_writer.add_int32(offset);
     _last_copy_pos = copy_pos + length;
@@ -816,14 +816,14 @@ emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 copy_pos) {
  */
 void Patchfile::
 emit_add_and_copy(ostream &write_stream,
-                  PN_uint32 add_length, const char *add_buffer,
-                  PN_uint32 copy_length, PN_uint32 copy_pos) {
+                  uint32_t add_length, const char *add_buffer,
+                  uint32_t copy_length, uint32_t copy_pos) {
   if (add_length == 0 && copy_length == 0) {
     // Don't accidentally emit a termination code.
     return;
   }
 
-  static const PN_uint16 max_write = 65535;
+  static const uint16_t max_write = 65535;
   while (add_length > max_write) {
     // Overflow.  This chunk is too large to fit into a single ADD block, so
     // we have to write it as multiple ADDs.
@@ -852,8 +852,8 @@ emit_add_and_copy(ostream &write_stream,
  */
 void Patchfile::
 cache_add_and_copy(ostream &write_stream,
-                   PN_uint32 add_length, const char *add_buffer,
-                   PN_uint32 copy_length, PN_uint32 copy_pos) {
+                   uint32_t add_length, const char *add_buffer,
+                   uint32_t copy_length, uint32_t copy_pos) {
   if (add_length != 0) {
     if (_cache_copy_length != 0) {
       // Have to flush.
@@ -912,7 +912,7 @@ write_header(ostream &write_stream,
 
   stream_orig.seekg(0, ios::end);
   streampos source_file_length = stream_orig.tellg();
-  patch_writer.add_uint32((PN_uint32)source_file_length);
+  patch_writer.add_uint32((uint32_t)source_file_length);
 
   // calc MD5 of original file
   _MD5_ofSource.hash_stream(stream_orig);
@@ -926,7 +926,7 @@ write_header(ostream &write_stream,
 
   stream_new.seekg(0, ios::end);
   streampos result_file_length = stream_new.tellg();
-  patch_writer.add_uint32((PN_uint32)result_file_length);
+  patch_writer.add_uint32((uint32_t)result_file_length);
 
   // calc MD5 of resultant patched file
   _MD5_ofResult.hash_stream(stream_new);
@@ -958,12 +958,12 @@ write_terminator(ostream &write_stream) {
  */
 bool Patchfile::
 compute_file_patches(ostream &write_stream,
-                     PN_uint32 offset_orig, PN_uint32 offset_new,
+                     uint32_t offset_orig, uint32_t offset_new,
                      istream &stream_orig, istream &stream_new) {
   // read in original file
   stream_orig.seekg(0, ios::end);
   nassertr(stream_orig, false);
-  PN_uint32 source_file_length = stream_orig.tellg();
+  uint32_t source_file_length = stream_orig.tellg();
   if (express_cat.is_debug()) {
     express_cat.debug()
       << "Allocating " << source_file_length << " bytes to read orig\n";
@@ -975,7 +975,7 @@ compute_file_patches(ostream &write_stream,
 
   // read in new file
   stream_new.seekg(0, ios::end);
-  PN_uint32 result_file_length = stream_new.tellg();
+  uint32_t result_file_length = stream_new.tellg();
   nassertr(stream_new, false);
   if (express_cat.is_debug()) {
     express_cat.debug()
@@ -987,12 +987,12 @@ compute_file_patches(ostream &write_stream,
   stream_new.read(buffer_new, result_file_length);
 
   // allocate hashlink tables
-  if (_hash_table == (PN_uint32 *)NULL) {
+  if (_hash_table == (uint32_t *)NULL) {
     if (express_cat.is_debug()) {
       express_cat.debug()
         << "Allocating hashtable of size " << _HASHTABLESIZE << " * 4\n";
     }
-    _hash_table = (PN_uint32 *)PANDA_MALLOC_ARRAY(_HASHTABLESIZE * sizeof(PN_uint32));
+    _hash_table = (uint32_t *)PANDA_MALLOC_ARRAY(_HASHTABLESIZE * sizeof(uint32_t));
   }
 
   if (express_cat.is_debug()) {
@@ -1000,23 +1000,23 @@ compute_file_patches(ostream &write_stream,
       << "Allocating linktable of size " << source_file_length << " * 4\n";
   }
 
-  PN_uint32 *link_table = (PN_uint32 *)PANDA_MALLOC_ARRAY(source_file_length * sizeof(PN_uint32));
+  uint32_t *link_table = (uint32_t *)PANDA_MALLOC_ARRAY(source_file_length * sizeof(uint32_t));
 
   // build hash and link tables for original file
   build_hash_link_tables(buffer_orig, source_file_length, _hash_table, link_table);
 
   // run through new file
 
-  PN_uint32 new_pos = 0;
-  PN_uint32 start_pos = new_pos; // this is the position for the start of ADD operations
+  uint32_t new_pos = 0;
+  uint32_t start_pos = new_pos; // this is the position for the start of ADD operations
 
-  if(((PN_uint32) result_file_length) >= _footprint_length)
+  if(((uint32_t) result_file_length) >= _footprint_length)
   {
     while (new_pos < (result_file_length - _footprint_length)) {
 
       // find best match for current position
-      PN_uint32 COPY_pos;
-      PN_uint16 COPY_length;
+      uint32_t COPY_pos;
+      uint16_t COPY_length;
 
       find_longest_match(new_pos, COPY_pos, COPY_length, _hash_table, link_table,
         buffer_orig, source_file_length, buffer_new, result_file_length);
@@ -1036,7 +1036,7 @@ compute_file_patches(ostream &write_stream,
         }
         cache_add_and_copy(write_stream, num_skipped, &buffer_new[start_pos],
                            COPY_length, COPY_pos + offset_orig);
-        new_pos += (PN_uint32)COPY_length;
+        new_pos += (uint32_t)COPY_length;
         start_pos = new_pos;
       }
     }
@@ -1053,7 +1053,7 @@ compute_file_patches(ostream &write_stream,
   if (start_pos != result_file_length) {
     // emit ADD for all remaining bytes
 
-    PN_uint32 remaining_bytes = result_file_length - start_pos;
+    uint32_t remaining_bytes = result_file_length - start_pos;
     cache_add_and_copy(write_stream, remaining_bytes, &buffer_new[start_pos],
                        0, 0);
     start_pos += remaining_bytes;
@@ -1075,7 +1075,7 @@ compute_file_patches(ostream &write_stream,
  */
 bool Patchfile::
 compute_mf_patches(ostream &write_stream,
-                   PN_uint32 offset_orig, PN_uint32 offset_new,
+                   uint32_t offset_orig, uint32_t offset_new,
                    istream &stream_orig, istream &stream_new) {
   Multifile mf_orig, mf_new;
   IStreamWrapper stream_origw(stream_orig);
@@ -1219,7 +1219,7 @@ read_tar(TarDef &tar, istream &stream) {
  */
 bool Patchfile::
 compute_tar_patches(ostream &write_stream,
-                    PN_uint32 offset_orig, PN_uint32 offset_new,
+                    uint32_t offset_orig, uint32_t offset_new,
                     istream &stream_orig, istream &stream_new,
                     TarDef &tar_orig, TarDef &tar_new) {
 
@@ -1424,7 +1424,7 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
 bool Patchfile::
 do_compute_patches(const Filename &file_orig, const Filename &file_new,
                    ostream &write_stream,
-                   PN_uint32 offset_orig, PN_uint32 offset_new,
+                   uint32_t offset_orig, uint32_t offset_new,
                    istream &stream_orig, istream &stream_new) {
   nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new, false);
 
@@ -1505,7 +1505,7 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
  */
 bool Patchfile::
 patch_subfile(ostream &write_stream,
-              PN_uint32 offset_orig, PN_uint32 offset_new,
+              uint32_t offset_orig, uint32_t offset_new,
               const Filename &filename,
               IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
               IStreamWrapper &stream_new, streampos new_start, streampos new_end) {

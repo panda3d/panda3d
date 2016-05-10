@@ -103,7 +103,7 @@ get_ip_string() const {
  * Returns the IP address to which this address refers, as a 32-bit integer,
  * in host byte order.
  */
-PN_uint32 NetAddress::
+uint32_t NetAddress::
 get_ip() const {
   return _addr.GetIPAddressRaw();
 }
@@ -113,11 +113,11 @@ get_ip() const {
  * components; component 0 is the first (leftmost), and component 3 is the
  * last (rightmost) in the dotted number convention.
  */
-PN_uint8 NetAddress::
+uint8_t NetAddress::
 get_ip_component(int n) const {
   nassertr(n >= 0 && n < 4, 0);
-  PN_uint32 ip_long = _addr.GetIPAddressRaw();
-  const PN_uint8 *ip = (const PN_uint8 *)&ip_long;
+  uint32_t ip_long = _addr.GetIPAddressRaw();
+  const uint8_t *ip = (const uint8_t *)&ip_long;
   return ip[n];
 }
 

@@ -275,15 +275,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_LBUTTONDOWN:
     if (_potential_drag_mode != DM_none) {
       set_drag_mode(_potential_drag_mode);
-      _drag_start_x = (PN_int16)LOWORD(lparam);
-      _drag_start_y = (PN_int16)HIWORD(lparam);
+      _drag_start_x = (int16_t)LOWORD(lparam);
+      _drag_start_y = (int16_t)HIWORD(lparam);
       SetCapture(_window);
     }
     return 0;
 
   case WM_MOUSEMOVE:
     if (_drag_mode == DM_left_margin) {
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       _left_margin += (x - _drag_start_x);
       _drag_start_x = x;
       InvalidateRect(hwnd, NULL, TRUE);
@@ -291,7 +291,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       return 0;
 
     } else if (_drag_mode == DM_right_margin) {
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       _right_margin += (_drag_start_x - x);
       _drag_start_x = x;
       InvalidateRect(hwnd, NULL, TRUE);
@@ -361,8 +361,8 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // Vector any uncaught WM_LBUTTONDOWN into the main window, so we can drag
     // margins, etc.
     if (_potential_drag_mode != DM_none) {
-      PN_int16 x = LOWORD(lparam) + _graph_left;
-      PN_int16 y = HIWORD(lparam) + _graph_top;
+      int16_t x = LOWORD(lparam) + _graph_left;
+      int16_t y = HIWORD(lparam) + _graph_top;
       return window_proc(_window, msg, wparam, MAKELPARAM(x, y));
     }
     break;
