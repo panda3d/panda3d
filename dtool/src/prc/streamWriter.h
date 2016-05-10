@@ -36,6 +36,7 @@ PUBLISHED:
   INLINE ~StreamWriter();
 
   INLINE ostream *get_ostream() const;
+  MAKE_PROPERTY(ostream, get_ostream);
 
   BLOCKING INLINE void add_bool(bool value);
   BLOCKING INLINE void add_int8(PN_int8 value);

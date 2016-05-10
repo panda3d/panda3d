@@ -110,6 +110,7 @@ PUBLISHED:
   MAKE_SEQ(get_arrays, get_num_arrays, get_array);
   INLINE PT(GeomVertexArrayData) modify_array(int i);
   INLINE void set_array(int i, const GeomVertexArrayData *array);
+  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array);
 
   INLINE const TransformTable *get_transform_table() const;
   void set_transform_table(const TransformTable *table);

@@ -75,9 +75,24 @@ PUBLISHED:
   INLINE size_t get_num_unique_references() const;
   INLINE const ConfigDeclaration *get_unique_reference(size_t n) const;
   MAKE_SEQ(get_unique_references, get_num_unique_references, get_unique_reference);
+  MAKE_SEQ_PROPERTY(declarations, get_num_declarations, get_declaration);
 
   void output(ostream &out) const;
   void write(ostream &out) const;
+
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY(used, is_used);
+  MAKE_PROPERTY(closed, is_closed);
+  MAKE_PROPERTY(trust_level, get_trust_level);
+  MAKE_PROPERTY(dynamic, is_dynamic);
+
+  MAKE_PROPERTY(value_type, get_value_type, set_value_type);
+  MAKE_PROPERTY(description, get_description, set_description);
+  MAKE_PROPERTY(default_value, get_default_value, set_default_value);
+
+  MAKE_SEQ_PROPERTY(references, get_num_references, get_reference);
+  MAKE_SEQ_PROPERTY(trusted_references, get_num_trusted_references, get_trusted_reference);
+  MAKE_SEQ_PROPERTY(unique_references, get_num_unique_references, get_unique_reference);
 
 private:
   void add_declaration(ConfigDeclaration *decl);

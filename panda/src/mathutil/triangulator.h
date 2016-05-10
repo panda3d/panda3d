@@ -40,6 +40,7 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   INLINE const LPoint2d &get_vertex(int n) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
 
   void clear_polygon();
   void add_polygon_vertex(int index);

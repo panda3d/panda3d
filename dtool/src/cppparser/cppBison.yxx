@@ -284,9 +284,11 @@ pop_struct() {
 %token KW_INLINE
 %token KW_INT
 %token KW_LONG
+%token KW_MAKE_MAP_PROPERTY
 %token KW_MAKE_PROPERTY
 %token KW_MAKE_PROPERTY2
 %token KW_MAKE_SEQ
+%token KW_MAKE_SEQ_PROPERTY
 %token KW_MUTABLE
 %token KW_NAMESPACE
 %token KW_NEW
@@ -548,6 +550,118 @@ declaration:
 
     CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
                                                          setter_func, current_scope, @1.file);
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
+
+  } else {
+    CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
+    CPPFunctionGroup *setter_func = NULL;
+
+    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @7);
+    } else {
+      setter_func = setter->as_function_group();
+    }
+
+    CPPDeclaration *deleter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    if (deleter == (CPPDeclaration *)NULL || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid delete method: " + $9->get_fully_scoped_name(), @9);
+      deleter = NULL;
+    }
+
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                         setter_func, current_scope, @1.file);
+    if (deleter) {
+      make_property->_del_function = deleter->as_function_group();
+    }
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+  }
+
+  CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(), NULL, current_scope, @1.file);
+  make_property->_length_function = length_getter->as_function_group();
+  current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+}
+        | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+
+  } else {
+    CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    CPPFunctionGroup *setter_func = NULL;
+
+    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
+    } else {
+      setter_func = setter->as_function_group();
+    }
+
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                         setter_func, current_scope, @1.file);
+    make_property->_length_function = length_getter->as_function_group();
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+
+  } else {
+    CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    CPPFunctionGroup *setter_func = NULL;
+
+    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
+    } else {
+      setter_func = setter->as_function_group();
+    }
+
+    CPPDeclaration *deleter = $11->find_symbol(current_scope, global_scope, current_lexer);
+    if (deleter == (CPPDeclaration *)NULL || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid delete method: " + $11->get_fully_scoped_name(), @11);
+      deleter = NULL;
+    }
+
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                         setter_func, current_scope, @1.file);
+    make_property->_length_function = length_getter->as_function_group();
+    if (deleter) {
+      make_property->_del_function = deleter->as_function_group();
+    }
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
@@ -3519,6 +3633,10 @@ name:
         | KW_PRIVATE
 {
   $$ = new CPPIdentifier("private", @1);
+}
+        | KW_STATIC
+{
+  $$ = new CPPIdentifier("static", @1);
 }
         ;
 

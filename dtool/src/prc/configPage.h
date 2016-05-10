@@ -44,6 +44,8 @@ PUBLISHED:
 
   INLINE bool is_special() const;
   INLINE bool is_implicit() const;
+  MAKE_PROPERTY(special, is_special);
+  MAKE_PROPERTY(implicit, is_implicit);
 
   void set_sort(int sort);
   INLINE int get_sort() const;
@@ -71,6 +73,8 @@ PUBLISHED:
   string get_variable_name(size_t n) const;
   string get_string_value(size_t n) const;
   bool is_variable_used(size_t n) const;
+
+  MAKE_SEQ_PROPERTY(declarations, get_num_declarations, modify_declaration);
 
   void output(ostream &out) const;
   void output_brief_signature(ostream &out) const;

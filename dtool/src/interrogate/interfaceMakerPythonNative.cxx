@@ -1013,12 +1013,20 @@ write_class_details(ostream &out, Object *obj) {
   }
 
   // Write the constructors.
+  std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
   for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
     Function *func = (*fi);
-    std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
 
     string expected_params;
     write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
+  }
+  if (obj->_constructors.size() == 0) {
+    // We still need to write a dummy constructor to prevent inheriting the
+    // constructor from a base class.
+    out << fname << " {\n"
+      "  Dtool_Raise_TypeError(\"cannot init abstract class\");\n"
+      "  return -1;\n"
+      "}\n\n";
   }
 
   CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
@@ -2618,7 +2626,8 @@ write_module_class(ostream &out, Object *obj) {
 
       string getter = "&Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter";
       string setter = "NULL";
-      if (property->_setter != NULL && is_function_legal(property->_setter)) {
+      if (property->_length_function == NULL &&
+          property->_setter != NULL && is_function_legal(property->_setter)) {
         setter = "&Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter";
       }
 
@@ -2931,11 +2940,7 @@ write_module_class(ostream &out, Object *obj) {
   // Py_ssize_t tp_dictoffset;
   out << "    0, // tp_dictoffset\n";
   // initproc tp_init;
-  if (obj->_constructors.size() > 0) {
-    out << "    Dtool_Init_" << ClassName << ",\n";
-  } else {
-    out << "    0,\n";
-  }
+  out << "    Dtool_Init_" << ClassName << ",\n";
   // allocfunc tp_alloc;
   out << "    PyType_GenericAlloc,\n";
   // newfunc tp_new;
@@ -3970,13 +3975,7 @@ collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
               goto abort_iteration;
             }
           }
-        } else if (TypeManager::is_bool(type)) {
-        } else if (TypeManager::is_char(type)) {
-        } else if (TypeManager::is_wchar(type)) {
-          goto abort_iteration;
-        } else if (TypeManager::is_longlong(type)) {
         } else if (TypeManager::is_integer(type)) {
-        } else if (TypeManager::is_double(type)) {
         } else if (TypeManager::is_float(type)) {
         } else if (TypeManager::is_const_char_pointer(type)) {
         } else if (TypeManager::is_pointer_to_PyTypeObject(type)) {
@@ -6138,8 +6137,9 @@ void InterfaceMakerPythonNative::
 write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                const std::string &cClassName, MakeSeq *make_seq) {
 
-  out << "/******************************************************************\n" << " * Python make_seq wrapper\n";
-  out << " *******************************************************************/\n";
+  out << "/*\n"
+         " * Python make_seq wrapper\n"
+         " */\n";
 
   out << "static PyObject *" << make_seq->_name + "(PyObject *self, PyObject *) {\n";
 
@@ -6228,10 +6228,156 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
   const InterrogateElement &ielem = property->_ielement;
 
-  if (property->_getter != NULL) {
+  if (property->_length_function != NULL) {
+    // This is actually a sequence.  Wrap this with a special class.
+    FunctionRemap *len_remap = property->_length_function->_remaps.front();
+    vector_string pexprs;
+
+    out << "/**\n"
+           " * sequence length function for property " << cClassName << "::" << ielem.get_name() << "\n"
+           " */\n"
+           "static Py_ssize_t Dtool_" + ClassName + "_" + ielem.get_name() + "_Len(PyObject *self) {\n";
+    if (property->_length_function->_has_this) {
+      out <<
+        "  " << cClassName  << " *local_this = NULL;\n"
+        "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+        "    return NULL;\n"
+        "  }\n"
+        "  return (Py_ssize_t)" << len_remap->get_call_str("local_this", pexprs) << ";\n";
+    } else {
+      out << "  return (Py_ssize_t)" << len_remap->get_call_str("", pexprs) << ";\n";
+    }
+    out << "}\n\n";
+
+    // Now write out the getitem helper function.
+    if (property->_getter != NULL) {
+      out <<
+        "/**\n"
+        " * sequence getter for property " << cClassName << "::" << ielem.get_name() << "\n"
+        " */\n"
+        "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getitem(PyObject *self, Py_ssize_t index) {\n"
+        "  " << cClassName << " *local_this = NULL;\n"
+        "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+        "    return NULL;\n"
+        "  }\n";
+
+      // This is a getitem of a sequence type.  This means we *need* to raise
+      // IndexError if we're out of bounds.
+      out << "  if (index < 0 || index >= (Py_ssize_t)"
+          << len_remap->get_call_str("local_this", pexprs) << ") {\n";
+      out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << "." << ielem.get_name() << "[] index out of range\");\n";
+      out << "    return NULL;\n";
+      out << "  }\n";
+
+      if (property->_has_function != NULL) {
+        out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "(index)) {\n"
+            << "    Py_INCREF(Py_None);\n"
+            << "    return Py_None;\n"
+            << "  }\n";
+      }
+
+      std::set<FunctionRemap*> remaps;
+
+      // Extract only the getters that take one argument.
+      Function::Remaps::iterator it;
+      for (it = property->_getter->_remaps.begin();
+           it != property->_getter->_remaps.end();
+           ++it) {
+        FunctionRemap *remap = *it;
+        int min_num_args = remap->get_min_num_args();
+        int max_num_args = remap->get_max_num_args();
+        if (min_num_args <= 1 && max_num_args >= 1) {
+          remaps.insert(remap);
+        }
+      }
+
+      string expected_params;
+      write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
+                            AT_no_args, RF_pyobject | RF_err_null, false, true, "index");
+
+      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "    return Dtool_Raise_BadArgumentsError(\n";
+      output_quoted(out, 6, expected_params);
+      out << ");\n"
+             "  }\n"
+             "}\n\n";
+    }
+
+    // Write out a setitem if this is not a read-only property.
+    if (property->_setter != NULL) {
+      out << "static int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setitem(PyObject *self, Py_ssize_t index, PyObject *arg) {\n";
+      out << "  " << cClassName  << " *local_this = NULL;\n";
+      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+          << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+      out << "    return -1;\n";
+      out << "  }\n\n";
+
+      out << "  if (arg == (PyObject *)NULL) {\n";
+      if (property->_deleter != NULL) {
+        out << "    local_this->" << property->_deleter->_ifunc.get_name() << "(index);\n"
+            << "    return 0;\n";
+      } else {
+        out << "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << "[] attribute\");\n"
+               "    return -1;\n";
+      }
+      out << "  }\n";
+
+      if (property->_clear_function != NULL) {
+        out << "  if (arg == Py_None) {\n"
+            << "    local_this->" << property->_clear_function->_ifunc.get_name() << "(index);\n"
+            << "    return 0;\n"
+            << "  }\n";
+      }
+
+      std::set<FunctionRemap*> remaps;
+
+      // Extract only the setters that take two arguments.
+      Function::Remaps::iterator it;
+      for (it = property->_setter->_remaps.begin();
+           it != property->_setter->_remaps.end();
+           ++it) {
+        FunctionRemap *remap = *it;
+        int min_num_args = remap->get_min_num_args();
+        int max_num_args = remap->get_max_num_args();
+        if (min_num_args <= 2 && max_num_args >= 2) {
+          remaps.insert(remap);
+        }
+      }
+
+      string expected_params;
+      write_function_forset(out, remaps, 2, 2,
+                            expected_params, 2, true, true, AT_single_arg,
+                            RF_int, false, false, "index");
+
+      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "    Dtool_Raise_BadArgumentsError(\n";
+      output_quoted(out, 6, expected_params);
+      out << ");\n";
+      out << "  }\n";
+      out << "  return -1;\n";
+      out << "}\n\n";
+    }
+
+    // Now write the getter, which returns a special wrapper object.
+    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n"
+           "  Py_INCREF(self);\n"
+           "  Dtool_SequenceWrapper *wrap = PyObject_New(Dtool_SequenceWrapper, &Dtool_SequenceWrapper_Type);\n"
+           "  wrap->_base = self;\n"
+           "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
+           "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Getitem;\n";
+    if (property->_setter != NULL) {
+      out << "  wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Setitem;\n";
+    } else {
+      out << "  wrap->_setitem_func = NULL;\n";
+    }
+    out << "  return (PyObject *)wrap;\n"
+           "}\n\n";
+
+  } else if (property->_getter != NULL) {
+    // Write out a regular, unwrapped getter.
+    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     FunctionRemap *remap = property->_getter->_remaps.front();
 
-    out << "PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     if (remap->_const_method) {
       out << "  const " << cClassName  << " *local_this = NULL;\n";
       out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
@@ -6258,50 +6404,61 @@ write_getset(ostream &out, Object *obj, Property *property) {
                           expected_params, 2, false, true, AT_no_args,
                           RF_pyobject | RF_err_null, false, false);
     out << "}\n\n";
-  }
 
-  if (property->_setter != NULL) {
-    out << "int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *) {\n";
-    out << "  " << cClassName  << " *local_this = NULL;\n";
-    out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
-        << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
-    out << "    return -1;\n";
-    out << "  }\n\n";
+    // Write out a setter if this is not a read-only property.
+    if (property->_setter != NULL) {
+      out << "static int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *) {\n";
+      out << "  " << cClassName  << " *local_this = NULL;\n";
+      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+          << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+      out << "    return -1;\n";
+      out << "  }\n\n";
 
-    if (property->_clear_function != NULL) {
-      out << "  if (arg == Py_None) {\n"
-          << "    local_this->" << property->_clear_function->_ifunc.get_name() << "();\n"
-          << "    return 0;\n"
-          << "  }\n";
-    }
-
-    std::set<FunctionRemap*> remaps;
-
-    // Extract only the setters that take one argument.
-    Function::Remaps::iterator it;
-    for (it = property->_setter->_remaps.begin();
-         it != property->_setter->_remaps.end();
-         ++it) {
-      FunctionRemap *remap = *it;
-      int min_num_args = remap->get_min_num_args();
-      int max_num_args = remap->get_max_num_args();
-      if (min_num_args <= 1 && max_num_args >= 1) {
-        remaps.insert(remap);
+      out << "  if (arg == (PyObject *)NULL) {\n";
+      if (property->_deleter != NULL) {
+        out << "    local_this->" << property->_deleter->_ifunc.get_name() << "();\n"
+            << "    return 0;\n";
+      } else {
+        out << "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << " attribute\");\n"
+               "    return -1;\n";
       }
+      out << "  }\n";
+
+      if (property->_clear_function != NULL) {
+        out << "  if (arg == Py_None) {\n"
+            << "    local_this->" << property->_clear_function->_ifunc.get_name() << "();\n"
+            << "    return 0;\n"
+            << "  }\n";
+      }
+
+      std::set<FunctionRemap*> remaps;
+
+      // Extract only the setters that take one argument.
+      Function::Remaps::iterator it;
+      for (it = property->_setter->_remaps.begin();
+           it != property->_setter->_remaps.end();
+           ++it) {
+        FunctionRemap *remap = *it;
+        int min_num_args = remap->get_min_num_args();
+        int max_num_args = remap->get_max_num_args();
+        if (min_num_args <= 1 && max_num_args >= 1) {
+          remaps.insert(remap);
+        }
+      }
+
+      string expected_params;
+      write_function_forset(out, remaps, 1, 1,
+                            expected_params, 2, true, true, AT_single_arg,
+                            RF_int, false, false);
+
+      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "    Dtool_Raise_BadArgumentsError(\n";
+      output_quoted(out, 6, expected_params);
+      out << ");\n";
+      out << "  }\n";
+      out << "  return -1;\n";
+      out << "}\n\n";
     }
-
-    string expected_params;
-    write_function_forset(out, remaps, 1, 1,
-                          expected_params, 2, true, true, AT_single_arg,
-                          RF_int, false, false);
-
-    out << "  if (!_PyErr_OCCURRED()) {\n";
-    out << "    Dtool_Raise_BadArgumentsError(\n";
-    output_quoted(out, 6, expected_params);
-    out << ");\n";
-    out << "  }\n";
-    out << "  return -1;\n";
-    out << "}\n\n";
   }
 }
 
@@ -6424,6 +6581,19 @@ record_object(TypeIndex type_index) {
       if (is_function_legal(clear_function)) {
         property->_clear_function = clear_function;
       }
+    }
+
+    if (ielement.has_del_function()) {
+      FunctionIndex func_index = ielement.get_del_function();
+      Function *del_function = record_function(itype, func_index);
+      if (is_function_legal(del_function)) {
+        property->_deleter = del_function;
+      }
+    }
+
+    if (ielement.is_sequence()) {
+      FunctionIndex func_index = ielement.get_length_function();
+      property->_length_function = record_function(itype, func_index);
     }
 
     if (property->_getter != NULL) {

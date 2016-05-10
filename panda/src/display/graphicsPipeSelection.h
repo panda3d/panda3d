@@ -39,6 +39,7 @@ PUBLISHED:
   int get_num_pipe_types() const;
   TypeHandle get_pipe_type(int n) const;
   MAKE_SEQ(get_pipe_types, get_num_pipe_types, get_pipe_type);
+  MAKE_SEQ_PROPERTY(pipe_types, get_num_pipe_types, get_pipe_type);
   void print_pipe_types() const;
 
   PT(GraphicsPipe) make_pipe(const string &type_name,

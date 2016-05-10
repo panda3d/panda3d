@@ -29,14 +29,17 @@ class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
 PUBLISHED:
   PhysicalNode(const string &name);
   INLINE void clear();
-  INLINE Physical *get_physical(int index) const;
-  INLINE int get_num_physicals() const;
+  INLINE Physical *get_physical(size_t index) const;
+  INLINE size_t get_num_physicals() const;
   MAKE_SEQ(get_physicals, get_num_physicals, get_physical);
   INLINE void add_physical(Physical *physical);
 
   void add_physicals_from(const PhysicalNode &other);
+  void set_physical(size_t index, Physical *physical);
   void remove_physical(Physical *physical);
-  void remove_physical(int index);
+  void remove_physical(size_t index);
+
+  MAKE_SEQ_PROPERTY(physicals, get_num_physicals, get_physical, set_physical, remove_physical);
 
   virtual void write(ostream &out, unsigned int indent=0) const;
 

@@ -34,6 +34,7 @@ PUBLISHED:
   INLINE ~StreamReader();
 
   INLINE istream *get_istream() const;
+  MAKE_PROPERTY(istream, get_istream);
 
   BLOCKING INLINE bool get_bool();
   BLOCKING INLINE PN_int8 get_int8();

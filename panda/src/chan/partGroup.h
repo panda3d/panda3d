@@ -70,6 +70,7 @@ PUBLISHED:
   int get_num_children() const;
   PartGroup *get_child(int n) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
+  MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
 
   PartGroup *get_child_named(const string &name) const;
   PartGroup *find_child(const string &name) const;
