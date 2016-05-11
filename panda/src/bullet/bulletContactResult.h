@@ -42,8 +42,8 @@ PUBLISHED:
   MAKE_PROPERTY(manifold_point, get_manifold_point);
   MAKE_PROPERTY(node0, get_node0);
   MAKE_PROPERTY(node1, get_node1);
-  MAKE_PROPERTY(index0, get_idx0);
-  MAKE_PROPERTY(index1, get_idx1);
+  MAKE_PROPERTY(idx0, get_idx0);
+  MAKE_PROPERTY(idx1, get_idx1);
   MAKE_PROPERTY(part_id0, get_part_id0);
   MAKE_PROPERTY(part_id1, get_part_id1);
 
@@ -72,6 +72,7 @@ PUBLISHED:
   INLINE int get_num_contacts() const;
   INLINE BulletContact get_contact(int idx);
   MAKE_SEQ(get_contacts, get_num_contacts, get_contact);
+  MAKE_SEQ_PROPERTY(contacts, get_num_contacts, get_contact);
 
 public:
 #if BT_BULLET_VERSION >= 281

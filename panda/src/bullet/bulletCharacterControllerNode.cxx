@@ -281,7 +281,6 @@ set_gravity(PN_stdfloat gravity) {
   _character->setGravity((btScalar)gravity);
 }
 
-
 /**
  *
  */

@@ -164,12 +164,19 @@ PUBLISHED:
   MAKE_PROPERTY(world_info, get_world_info);
   MAKE_PROPERTY2(debug_node, has_debug_node, get_debug_node, set_debug_node, clear_debug_node);
   MAKE_PROPERTY(num_ghosts, get_num_ghosts);
+  MAKE_SEQ_PROPERTY(ghosts, get_num_ghosts, get_ghost);
   MAKE_PROPERTY(num_rigid_bodies, get_num_rigid_bodies);
+  MAKE_SEQ_PROPERTY(rigid_bodies, get_num_rigid_bodies, get_rigid_body);
   MAKE_PROPERTY(num_soft_bodies, get_num_soft_bodies);
+  MAKE_SEQ_PROPERTY(soft_bodies, get_num_soft_bodies, get_soft_body);
   MAKE_PROPERTY(num_characters, get_num_characters);
+  MAKE_SEQ_PROPERTY(characters, get_num_characters, get_character);
   MAKE_PROPERTY(num_vehicles, get_num_vehicles);
+  MAKE_SEQ_PROPERTY(vehicles, get_num_vehicles, get_vehicle);
   MAKE_PROPERTY(num_constraints, get_num_constraints);
+  MAKE_SEQ_PROPERTY(constraints, get_num_constraints, get_constraint);
   MAKE_PROPERTY(num_manifolds, get_num_manifolds);
+  MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, get_manifold);
 
 PUBLISHED: // Deprecated methods, will become private soon
   void attach_ghost(BulletGhostNode *node);

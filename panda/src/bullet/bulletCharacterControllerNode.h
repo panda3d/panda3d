@@ -39,14 +39,16 @@ PUBLISHED:
 
   BulletShape *get_shape() const;
 
+  void set_gravity(PN_stdfloat gravity);
   PN_stdfloat get_gravity() const;
-  PN_stdfloat get_max_slope() const;
 
   void set_fall_speed(PN_stdfloat fall_speed);
   void set_jump_speed(PN_stdfloat jump_speed);
   void set_max_jump_height(PN_stdfloat max_jump_height);
+  
   void set_max_slope(PN_stdfloat max_slope);
-  void set_gravity(PN_stdfloat gravity);
+  PN_stdfloat get_max_slope() const;
+
   void set_use_ghost_sweep_test(bool value);
 
   bool is_on_ground() const;

@@ -215,7 +215,9 @@ PUBLISHED:
   MAKE_PROPERTY(wind_velocity, get_wind_velocity, set_wind_velocity);
   MAKE_PROPERTY(aabb, get_aabb);
   MAKE_PROPERTY(num_clusters, get_num_clusters);
+  MAKE_SEQ_PROPERTY(materials, get_num_materials, get_material);
   MAKE_PROPERTY(num_nodes, get_num_nodes);
+  MAKE_SEQ_PROPERTY(nodes, get_num_nodes, get_node);
 
 public:
   virtual btCollisionObject *get_object() const;

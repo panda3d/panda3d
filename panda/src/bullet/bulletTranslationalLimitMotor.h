@@ -32,8 +32,8 @@ PUBLISHED:
 
   INLINE void set_motor_enabled(int axis, bool enable);
   INLINE void set_low_limit(const LVecBase3 &limit);
-  INLINE void set_high_limit(const LVecBase3 & limit);
-  INLINE void set_target_velocity(const LVecBase3&velocity);
+  INLINE void set_high_limit(const LVecBase3 &limit);
+  INLINE void set_target_velocity(const LVecBase3 &velocity);
   INLINE void set_max_motor_force(const LVecBase3 &force);
   INLINE void set_damping(PN_stdfloat damping);
   INLINE void set_softness(PN_stdfloat softness);

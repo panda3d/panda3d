@@ -50,8 +50,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_current_position() const;
   INLINE PN_stdfloat get_accumulated_impulse() const;
 
-  MAKE_PROPERTY(motor_enabled, get_motor_enabled, set_motor_enabled);
   MAKE_PROPERTY(limited, is_limited);
+  MAKE_PROPERTY(motor_enabled, get_motor_enabled, set_motor_enabled);
   MAKE_PROPERTY(current_limit, get_current_limit);
   MAKE_PROPERTY(current_error, get_current_error);
   MAKE_PROPERTY(current_position, get_current_position);

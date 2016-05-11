@@ -80,6 +80,7 @@ PUBLISHED:
   MAKE_PROPERTY(to_pos, get_to_pos);
   MAKE_PROPERTY(closest_hit_fraction, get_closest_hit_fraction);
   MAKE_PROPERTY(num_hits, get_num_hits);
+  MAKE_SEQ_PROPERTY(hits, get_num_hits, get_hit);
 
 public:
   virtual bool needsCollision(btBroadphaseProxy* proxy0) const;

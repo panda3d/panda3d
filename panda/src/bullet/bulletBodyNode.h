@@ -117,11 +117,16 @@ PUBLISHED:
   void set_transform_dirty();
 
   MAKE_PROPERTY(num_shapes, get_num_shapes);
+  MAKE_SEQ_PROPERTY(shapes, get_num_shapes, get_shape);
+  MAKE_SEQ_PROPERTY(shape_pos, get_num_shapes, get_shape_pos);
+  MAKE_SEQ_PROPERTY(shape_mat, get_num_shapes, get_shape_mat);
+  MAKE_SEQ_PROPERTY(shape_transform, get_num_shapes, get_shape_transform);
   MAKE_PROPERTY(shape_bounds, get_shape_bounds);
   MAKE_PROPERTY(static, is_static, set_static);
   MAKE_PROPERTY(kinematic, is_kinematic, set_kinematic);
   MAKE_PROPERTY(collision_notification, notifies_collisions, notify_collisions);
   MAKE_PROPERTY(collision_response, get_collision_response, set_collision_response);
+  MAKE_PROPERTY(contact_response, has_contact_response);
   MAKE_PROPERTY(contact_processing_threshold, get_contact_processing_threshold, set_contact_processing_threshold);
   MAKE_PROPERTY(active, is_active, force_active);
   MAKE_PROPERTY(deactivation_time, get_deactivation_time, set_deactivation_time);

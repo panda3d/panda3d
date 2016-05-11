@@ -94,6 +94,13 @@ PUBLISHED:
   // Tuning
   INLINE BulletVehicleTuning &get_tuning();
 
+  MAKE_PROPERTY(chassis, get_chassis);
+  MAKE_PROPERTY(current_speed_km_hour, get_current_speed_km_hour);
+  MAKE_PROPERTY(forward_vector, get_forward_vector);
+  MAKE_PROPERTY(num_wheels, get_num_wheels);
+  MAKE_SEQ_PROPERTY(wheels, get_num_wheels, get_wheel);
+  MAKE_PROPERTY(tuning, get_tuning);
+
 public:
   INLINE btRaycastVehicle *get_vehicle() const;
 
