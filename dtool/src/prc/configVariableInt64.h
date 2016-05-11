@@ -25,34 +25,34 @@
 class EXPCL_DTOOLCONFIG ConfigVariableInt64 : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableInt64(const string &name);
-  INLINE ConfigVariableInt64(const string &name, PN_int64 default_value,
+  INLINE ConfigVariableInt64(const string &name, int64_t default_value,
                              const string &description = string(),
                              int flags = 0);
   INLINE ConfigVariableInt64(const string &name, const string &default_value,
                              const string &description = string(),
                              int flags = 0);
 
-  INLINE void operator = (PN_int64 value);
-  INLINE operator PN_int64 () const;
+  INLINE void operator = (int64_t value);
+  INLINE operator int64_t () const;
 
   INLINE size_t size() const;
-  INLINE PN_int64 operator [] (size_t n) const;
+  INLINE int64_t operator [] (size_t n) const;
 
-  INLINE void set_value(PN_int64 value);
-  INLINE PN_int64 get_value() const;
-  INLINE PN_int64 get_default_value() const;
+  INLINE void set_value(int64_t value);
+  INLINE int64_t get_value() const;
+  INLINE int64_t get_default_value() const;
   MAKE_PROPERTY(value, get_value, set_value);
   MAKE_PROPERTY(default_value, get_default_value);
 
-  INLINE PN_int64 get_word(size_t n) const;
-  INLINE void set_word(size_t n, PN_int64 value);
+  INLINE int64_t get_word(size_t n) const;
+  INLINE void set_word(size_t n, int64_t value);
 
 private:
-  void set_default_value(PN_int64 default_value);
+  void set_default_value(int64_t default_value);
 
 private:
   AtomicAdjust::Integer _local_modified;
-  PN_int64 _cache;
+  int64_t _cache;
 };
 
 #include "configVariableInt64.I"

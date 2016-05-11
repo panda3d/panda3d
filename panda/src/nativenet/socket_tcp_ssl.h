@@ -285,12 +285,12 @@ inline void Socket_TCP_SSL::DetailErrorFormat(void)
 {
     return; // turn on fir debuging
 
-    PN_uint32 l;
+    uint32_t l;
     char buf[256];
     char buf2[4096];
     const char *file,*data;
     int line,flags;
-    PN_uint32 es;
+    uint32_t es;
 
     es=CRYPTO_thread_id();
     while ((l=ERR_get_error_line_data(&file,&line,&data,&flags)) != 0)

@@ -99,6 +99,8 @@ PUBLISHED:
   MAKE_SEQ(get_rows, size, get_row);
   MAKE_SEQ(get_cols, size, get_col);
   MAKE_SEQ(get_row3s, size, get_row3);
+  MAKE_SEQ_PROPERTY(rows, size, get_row);
+  MAKE_SEQ_PROPERTY(cols, size, get_col);
 
   // these versions inline better
   INLINE_LINMATH void get_row(FLOATNAME(LVecBase4) &result_vec, int row) const;

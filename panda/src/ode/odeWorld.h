@@ -77,10 +77,10 @@ PUBLISHED:
 
   INLINE int compare_to(const OdeWorld &other) const;
 
-  void init_surface_table(PN_uint8 num_surfaces);
+  void init_surface_table(uint8_t num_surfaces);
   // void assign_surface_body(OdeBody& body, int surface);
   void add_body_dampening(OdeBody& body, int surface);
-  void set_surface_entry(PN_uint8 pos1, PN_uint8 pos2,
+  void set_surface_entry(uint8_t pos1, uint8_t pos2,
                          dReal mu,
                          dReal bounce,
                          dReal bounce_vel,
@@ -93,7 +93,7 @@ PUBLISHED:
   operator bool () const;
 
 public:
-  sSurfaceParams& get_surface(PN_uint8 surface1, PN_uint8 surface2);
+  sSurfaceParams& get_surface(uint8_t surface1, uint8_t surface2);
   void set_surface(int pos1, int pos2, sSurfaceParams& entry);
   sBodyParams get_surface_body(dBodyID id);
   void set_dampen_on_bodies(dBodyID id1, dBodyID id2,dReal damp);
@@ -102,7 +102,7 @@ public:
 private:
   dWorldID _id;
   sSurfaceParams *_surface_table;
-  PN_uint8 _num_surfaces;
+  uint8_t _num_surfaces;
   typedef pmap<dBodyID, sBodyParams> BodyDampenMap;
   BodyDampenMap _body_dampen_map;
 

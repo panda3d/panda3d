@@ -383,8 +383,8 @@ read_stream_data(int bytelen, unsigned char *buffer) {
     if (samples > _sd->_stream->ready()) {
       samples = _sd->_stream->ready();
     }
-    cursor->read_samples(samples, (PN_int16 *)buffer);
-    size_t hval = AddHash::add_hash(0, (PN_uint8*)buffer, samples*channels*2);
+    cursor->read_samples(samples, (int16_t *)buffer);
+    size_t hval = AddHash::add_hash(0, (uint8_t*)buffer, samples*channels*2);
     audio_debug("Streaming " << cursor->get_source()->get_name() << " at " << t << " hash " << hval);
     fill += samples;
     space -= samples;

@@ -53,9 +53,14 @@ PUBLISHED:
   INLINE PN_stdfloat get_min_coverage();
   INLINE void set_vertices(const LPoint3 &v0, const LPoint3 &v1,
                            const LPoint3 &v2, const LPoint3 &v3);
-  INLINE int get_num_vertices() const;
-  INLINE const LPoint3 &get_vertex(int n) const;
+  INLINE size_t get_num_vertices() const;
+  INLINE const LPoint3 &get_vertex(size_t n) const;
+  INLINE void set_vertex(size_t n, const LPoint3 &v);
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
+
+  MAKE_PROPERTY(double_sided, is_double_sided, set_double_sided);
+  MAKE_PROPERTY(min_coverage, get_min_coverage, set_min_coverage);
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex, set_vertex);
 
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,

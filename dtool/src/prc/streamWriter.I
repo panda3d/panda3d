@@ -92,7 +92,7 @@ add_bool(bool b) {
  * Adds a signed 8-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_int8(PN_int8 value) {
+add_int8(int8_t value) {
   append_data(&value, 1);
 }
 
@@ -100,7 +100,7 @@ add_int8(PN_int8 value) {
  * Adds an unsigned 8-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_uint8(PN_uint8 value) {
+add_uint8(uint8_t value) {
   append_data(&value, 1);
 }
 
@@ -108,7 +108,7 @@ add_uint8(PN_uint8 value) {
  * Adds a signed 16-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_int16(PN_int16 value) {
+add_int16(int16_t value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -117,7 +117,7 @@ add_int16(PN_int16 value) {
  * Adds a signed 32-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_int32(PN_int32 value) {
+add_int32(int32_t value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -126,7 +126,7 @@ add_int32(PN_int32 value) {
  * Adds a signed 64-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_int64(PN_int64 value) {
+add_int64(int64_t value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -135,7 +135,7 @@ add_int64(PN_int64 value) {
  * Adds an unsigned 16-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_uint16(PN_uint16 value) {
+add_uint16(uint16_t value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -144,7 +144,7 @@ add_uint16(PN_uint16 value) {
  * Adds an unsigned 32-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_uint32(PN_uint32 value) {
+add_uint32(uint32_t value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -153,7 +153,7 @@ add_uint32(PN_uint32 value) {
  * Adds an unsigned 64-bit integer to the stream.
  */
 INLINE void StreamWriter::
-add_uint64(PN_uint64 value) {
+add_uint64(uint64_t value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -186,7 +186,7 @@ add_float64(PN_float64 value) {
  * Adds a signed 16-bit big-endian integer to the streamWriter.
  */
 INLINE void StreamWriter::
-add_be_int16(PN_int16 value) {
+add_be_int16(int16_t value) {
   BigEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -195,7 +195,7 @@ add_be_int16(PN_int16 value) {
  * Adds a signed 32-bit big-endian integer to the streamWriter.
  */
 INLINE void StreamWriter::
-add_be_int32(PN_int32 value) {
+add_be_int32(int32_t value) {
   BigEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -204,7 +204,7 @@ add_be_int32(PN_int32 value) {
  * Adds a signed 64-bit big-endian integer to the streamWriter.
  */
 INLINE void StreamWriter::
-add_be_int64(PN_int64 value) {
+add_be_int64(int64_t value) {
   BigEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -213,7 +213,7 @@ add_be_int64(PN_int64 value) {
  * Adds an unsigned 16-bit big-endian integer to the streamWriter.
  */
 INLINE void StreamWriter::
-add_be_uint16(PN_uint16 value) {
+add_be_uint16(uint16_t value) {
   BigEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -222,7 +222,7 @@ add_be_uint16(PN_uint16 value) {
  * Adds an unsigned 32-bit big-endian integer to the streamWriter.
  */
 INLINE void StreamWriter::
-add_be_uint32(PN_uint32 value) {
+add_be_uint32(uint32_t value) {
   BigEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -231,7 +231,7 @@ add_be_uint32(PN_uint32 value) {
  * Adds an unsigned 64-bit big-endian integer to the streamWriter.
  */
 INLINE void StreamWriter::
-add_be_uint64(PN_uint64 value) {
+add_be_uint64(uint64_t value) {
   BigEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -267,10 +267,10 @@ add_be_float64(PN_float64 value) {
 INLINE void StreamWriter::
 add_string(const string &str) {
   // The max sendable length for a string is 2^16.
-  nassertv(str.length() <= (PN_uint16)0xffff);
+  nassertv(str.length() <= (uint16_t)0xffff);
 
   // Strings always are preceded by their length
-  add_uint16((PN_uint16)str.length());
+  add_uint16((uint16_t)str.length());
 
   // Add the string
   append_data(str);
@@ -282,7 +282,7 @@ add_string(const string &str) {
 INLINE void StreamWriter::
 add_string32(const string &str) {
   // Strings always are preceded by their length
-  add_uint32((PN_uint32)str.length());
+  add_uint32((uint32_t)str.length());
 
   // Add the string
   append_data(str);

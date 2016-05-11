@@ -1996,7 +1996,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
   int num_attribs = _filled_slots.get_num_on_bits();
-  nassertv(num_attribs == (int)(PN_uint16)num_attribs);
+  nassertv(num_attribs == (int)(uint16_t)num_attribs);
   dg.add_uint16(num_attribs);
 
   // **** We should smarten up the writing of the override number--most of the

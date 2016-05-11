@@ -1782,9 +1782,9 @@ get_function(CPPInstance *function, string description,
 }
 
 /**
- * Adds the indicated make_property to the database, if it is not already
- * present.  In either case, returns the MakeSeqIndex of the make_seq within
- * the database.
+ * Adds the indicated make_property or make_seq_property to the database, if
+ * it is not already present.  In either case, returns the ElementIndex
+ * of the created property within the database.
  */
 ElementIndex InterrogateBuilder::
 get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CPPScope *scope) {
@@ -1805,20 +1805,58 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     return index;
   }
 
+  // If we have a length function (ie. this is a sequence property), we should
+  // find the function that will give us the length.
+  FunctionIndex length_function = 0;
+  bool is_seq = false;
+
+  CPPFunctionGroup::Instances::const_iterator fi;
+  CPPFunctionGroup *fgroup = make_property->_length_function;
+  if (fgroup != NULL) {
+    is_seq = true;
+
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype =
+        function->_type->as_function_type();
+      if (ftype != NULL) {
+        length_function = get_function(function, "", struct_type,
+                                       struct_type->get_scope(), 0);
+        if (length_function != 0) {
+          break;
+        }
+      }
+    }
+    if (length_function == 0) {
+      cerr << "No instance of length method '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
   // Find the getter so we can get its return type.
   CPPInstance *getter = NULL;
   CPPType *return_type = NULL;
 
-  CPPFunctionGroup *fgroup = make_property->_get_function;
+  fgroup = make_property->_get_function;
   if (fgroup != NULL) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype == NULL) {
+        continue;
+      }
 
       // The getter must either take no arguments, or all defaults.
-      if (ftype != NULL && (ftype->_parameters->_parameters.size() == 0 ||
-          ftype->_parameters->_parameters[0]->_initializer != NULL)) {
+      if (ftype->_parameters->_parameters.size() == (int)is_seq ||
+          (ftype->_parameters->_parameters.size() > (int)is_seq &&
+           ftype->_parameters->_parameters[(int)is_seq]->_initializer != NULL)) {
+        // If this is a sequence getter, it must take an index argument.
+        if (is_seq && !TypeManager::is_integer(ftype->_parameters->_parameters[0]->_type)) {
+          continue;
+        }
+
         getter = function;
         return_type = ftype->_return_type;
 
@@ -1860,6 +1898,28 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     }
   }
 
+  // And the "deleter".
+  CPPInstance *deleter = NULL;
+
+  fgroup = make_property->_del_function;
+  if (fgroup != NULL) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype != NULL && ftype->_parameters->_parameters.size() == (int)is_seq) {
+        deleter = function;
+        break;
+      }
+    }
+
+    if (deleter == NULL || return_type == NULL) {
+      cerr << "No instance of delete-function '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
   // It isn't here, so we'll have to define it.
   ElementIndex index = idb->get_next_index();
@@ -1875,22 +1935,30 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     iproperty._type = 0;
   }
 
+  if (length_function != 0) {
+    iproperty._flags |= InterrogateElement::F_sequence;
+    iproperty._length_function = length_function;
+  }
+
   if (getter != NULL) {
     iproperty._flags |= InterrogateElement::F_has_getter;
     iproperty._getter = get_function(getter, "", struct_type,
                                      struct_type->get_scope(), 0);
-    if (iproperty._getter == 0) {
-      cerr << "failed " << *getter << "\n";
-    }
+    nassertr(iproperty._getter, 0);
   }
 
   if (hasser != NULL) {
     iproperty._flags |= InterrogateElement::F_has_has_function;
     iproperty._has_function = get_function(hasser, "", struct_type,
                                            struct_type->get_scope(), 0);
-    if (iproperty._has_function == 0) {
-      cerr << "failed " << *hasser << "\n";
-    }
+    nassertr(iproperty._has_function, 0);
+  }
+
+  if (deleter != NULL) {
+    iproperty._flags |= InterrogateElement::F_has_del_function;
+    iproperty._del_function = get_function(deleter, "", struct_type,
+                                          struct_type->get_scope(), 0);
+    nassertr(iproperty._del_function, 0);
   }
 
   // See if there happens to be a comment before the MAKE_PROPERTY macro.
@@ -1907,9 +1975,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       iproperty._flags |= InterrogateElement::F_has_setter;
       iproperty._setter = get_function(function, "", struct_type,
                                        struct_type->get_scope(), 0);
-      if (iproperty._setter == 0) {
-        cerr << "failed " << *function << "\n";
-      }
+      nassertr(iproperty._setter, 0);
       break;
     }
   }
@@ -1922,15 +1988,12 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       iproperty._flags |= InterrogateElement::F_has_clear_function;
       iproperty._clear_function = get_function(function, "", struct_type,
                                                struct_type->get_scope(), 0);
-      if (iproperty._clear_function == 0) {
-        cerr << "failed " << *function << "\n";
-      }
+      nassertr(iproperty._clear_function, 0);
       break;
     }
   }
 
   idb->add_element(index, iproperty);
-
   return index;
 }
 

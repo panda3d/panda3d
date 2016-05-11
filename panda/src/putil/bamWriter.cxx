@@ -489,7 +489,7 @@ write_handle(Datagram &packet, TypeHandle type) {
   // TypeHandle.  Why not?
   int index = type.get_index();
 
-  // Also make sure the index number fits within a PN_uint16.
+  // Also make sure the index number fits within a uint16_t.
   nassertv(index <= 0xffff);
 
   packet.add_uint16(index);

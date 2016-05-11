@@ -196,7 +196,7 @@ get_int_word(size_t n) const {
  * Returns the int64 value of the nth word of the variable's value, or 0 if
  * there is no nth value.  See also has_int_word().
  */
-INLINE PN_int64 ConfigVariable::
+INLINE int64_t ConfigVariable::
 get_int64_word(size_t n) const {
   nassertr(is_constructed(), 0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
@@ -249,7 +249,7 @@ set_int_word(size_t n, int value) {
  * words.
  */
 INLINE void ConfigVariable::
-set_int64_word(size_t n, PN_int64 value) {
+set_int64_word(size_t n, int64_t value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_int64_word(n, value);
 }

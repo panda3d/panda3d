@@ -226,7 +226,7 @@ pack_uint(DCPackData &, unsigned int, bool &pack_error, bool &) const {
  * Packs the indicated numeric or string value into the stream.
  */
 void DCPackerInterface::
-pack_int64(DCPackData &, PN_int64, bool &pack_error, bool &) const {
+pack_int64(DCPackData &, int64_t, bool &pack_error, bool &) const {
   pack_error = true;
 }
 
@@ -234,7 +234,7 @@ pack_int64(DCPackData &, PN_int64, bool &pack_error, bool &) const {
  * Packs the indicated numeric or string value into the stream.
  */
 void DCPackerInterface::
-pack_uint64(DCPackData &, PN_uint64, bool &pack_error, bool &) const {
+pack_uint64(DCPackData &, uint64_t, bool &pack_error, bool &) const {
   pack_error = true;
 }
 
@@ -284,7 +284,7 @@ unpack_uint(const char *, size_t, size_t &, unsigned int &, bool &pack_error, bo
  * Unpacks the current numeric or string value from the stream.
  */
 void DCPackerInterface::
-unpack_int64(const char *, size_t, size_t &, PN_int64 &, bool &pack_error, bool &) const {
+unpack_int64(const char *, size_t, size_t &, int64_t &, bool &pack_error, bool &) const {
   pack_error = true;
 }
 
@@ -292,7 +292,7 @@ unpack_int64(const char *, size_t, size_t &, PN_int64 &, bool &pack_error, bool 
  * Unpacks the current numeric or string value from the stream.
  */
 void DCPackerInterface::
-unpack_uint64(const char *, size_t, size_t &, PN_uint64 &, bool &pack_error, bool &) const {
+unpack_uint64(const char *, size_t, size_t &, uint64_t &, bool &pack_error, bool &) const {
   pack_error = true;
 }
 

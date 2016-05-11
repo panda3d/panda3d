@@ -2458,9 +2458,11 @@ check_keyword(const string &name) {
   if (name == "__inline__") return KW_INLINE;
   if (name == "int") return KW_INT;
   if (name == "long") return KW_LONG;
+  if (name == "__make_map_property") return KW_MAKE_MAP_PROPERTY;
   if (name == "__make_property") return KW_MAKE_PROPERTY;
   if (name == "__make_property2") return KW_MAKE_PROPERTY2;
   if (name == "__make_seq") return KW_MAKE_SEQ;
+  if (name == "__make_seq_property") return KW_MAKE_SEQ_PROPERTY;
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;
   if (name == "noexcept") return KW_NOEXCEPT;

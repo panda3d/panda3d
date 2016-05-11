@@ -46,10 +46,10 @@ LwoInputFile::
  */
 int LwoInputFile::
 get_vx() {
-  PN_uint16 top = get_be_uint16();
+  uint16_t top = get_be_uint16();
   if ((top & 0xff00) == 0xff00) {
     // The first byte is 0xff, which indicates we have a 4-byte integer.
-    PN_uint16 bottom = get_be_uint16();
+    uint16_t bottom = get_be_uint16();
     return ((int)(top & 0xff) << 16) | bottom;
   }
 

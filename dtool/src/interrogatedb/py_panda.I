@@ -192,6 +192,14 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value) {
   return value;
 }
 
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::vector<unsigned char> &value) {
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
+#else
+  return PyString_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
+#endif
+}
+
 #if PY_MAJOR_VERSION >= 0x02060000
 ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value) {
   if (value == (Py_buffer *)NULL) {
@@ -201,3 +209,11 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value) {
   }
 }
 #endif
+
+template<class T1, class T2>
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::pair<T1, T2> &value) {
+  PyObject *tuple = PyTuple_New(2);
+  PyTuple_SET_ITEM(tuple, 0, Dtool_WrapValue(value.first));
+  PyTuple_SET_ITEM(tuple, 1, Dtool_WrapValue(value.second));
+  return tuple;
+}

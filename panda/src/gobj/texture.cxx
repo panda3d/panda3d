@@ -1035,7 +1035,7 @@ clear_ram_mipmap_image(int n) {
 PTA_uchar Texture::
 modify_simple_ram_image() {
   CDWriter cdata(_cycler, true);
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
   return cdata->_simple_ram_image._image;
 }
 
@@ -1053,7 +1053,7 @@ new_simple_ram_image(int x_size, int y_size) {
   cdata->_simple_y_size = y_size;
   cdata->_simple_ram_image._image = PTA_uchar::empty_array(expected_page_size);
   cdata->_simple_ram_image._page_size = expected_page_size;
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
   cdata->inc_simple_image_modified();
 
   return cdata->_simple_ram_image._image;
@@ -1139,7 +1139,7 @@ generate_simple_ram_image() {
   convert_from_pnmimage(image, expected_page_size, x_size, 0, 0, 0, scaled, 4, 1);
 
   do_set_simple_ram_image(cdata, image, x_size, y_size);
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
 }
 
 /**
@@ -5206,7 +5206,7 @@ do_uncompress_ram_image_bc4(const RamImage &compressed_image,
     unsigned const char *src = compressed_image._image.p() + z * compressed_image._page_size;
 
     // Unconvert one 4 x 4 block at a time.
-    PN_uint8 tbl[8];
+    uint8_t tbl[8];
     for (int y = 0; y < y_blocks; ++y) {
       for (int x = 0; x < x_blocks; ++x) {
         unsigned char *blk = dest;
@@ -5273,8 +5273,8 @@ do_uncompress_ram_image_bc5(const RamImage &compressed_image,
     unsigned const char *src = compressed_image._image.p() + z * compressed_image._page_size;
 
     // Unconvert one 4 x 4 block at a time.
-    PN_uint8 red[8];
-    PN_uint8 grn[8];
+    uint8_t red[8];
+    uint8_t grn[8];
     for (int y = 0; y < y_blocks; ++y) {
       for (int x = 0; x < x_blocks; ++x) {
         unsigned char *blk = dest;
@@ -6168,11 +6168,11 @@ get_ram_image_as(const string &requested_format) {
   // These ifs are for optimization of commonly used image types.
   if (cdata->_component_width == 1) {
     if (format == "RGBA" && cdata->_num_components == 4) {
-      const PN_uint32 *src = (const PN_uint32 *)data.p();
-      PN_uint32 *dst = (PN_uint32 *)newdata.p();
+      const uint32_t *src = (const uint32_t *)data.p();
+      uint32_t *dst = (uint32_t *)newdata.p();
 
       for (int p = 0; p < imgsize; ++p) {
-        PN_uint32 v = *src++;
+        uint32_t v = *src++;
         *dst++ = ((v & 0xff00ff00u)) |
                  ((v & 0x00ff0000u) >> 16) |
                  ((v & 0x000000ffu) << 16);
@@ -6180,17 +6180,17 @@ get_ram_image_as(const string &requested_format) {
       return newdata;
     }
     if (format == "RGB" && cdata->_num_components == 4) {
-      const PN_uint32 *src = (const PN_uint32 *)data.p();
-      PN_uint32 *dst = (PN_uint32 *)newdata.p();
+      const uint32_t *src = (const uint32_t *)data.p();
+      uint32_t *dst = (uint32_t *)newdata.p();
 
       // Convert blocks of 4 pixels at a time, so that we can treat both the
       // source and destination as 32-bit integers.
       int blocks = imgsize >> 2;
       for (int i = 0; i < blocks; ++i) {
-        PN_uint32 v0 = *src++;
-        PN_uint32 v1 = *src++;
-        PN_uint32 v2 = *src++;
-        PN_uint32 v3 = *src++;
+        uint32_t v0 = *src++;
+        uint32_t v1 = *src++;
+        uint32_t v2 = *src++;
+        uint32_t v3 = *src++;
         *dst++ = ((v0 & 0x00ff0000u) >> 16) |
                  ((v0 & 0x0000ff00u)) |
                  ((v0 & 0x000000ffu) << 16) |
@@ -6207,9 +6207,9 @@ get_ram_image_as(const string &requested_format) {
 
       // If the image size wasn't a multiple of 4, we may have a handful of
       // pixels left over.  Convert those the slower way.
-      PN_uint8 *tail = (PN_uint8 *)dst;
+      uint8_t *tail = (uint8_t *)dst;
       for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
-        PN_uint32 v = *src++;
+        uint32_t v = *src++;
         *tail++ = (v & 0x00ff0000u) >> 16;
         *tail++ = (v & 0x0000ff00u) >> 8;
         *tail++ = (v & 0x000000ffu);
@@ -6217,17 +6217,17 @@ get_ram_image_as(const string &requested_format) {
       return newdata;
     }
     if (format == "BGR" && cdata->_num_components == 4) {
-      const PN_uint32 *src = (const PN_uint32 *)data.p();
-      PN_uint32 *dst = (PN_uint32 *)newdata.p();
+      const uint32_t *src = (const uint32_t *)data.p();
+      uint32_t *dst = (uint32_t *)newdata.p();
 
       // Convert blocks of 4 pixels at a time, so that we can treat both the
       // source and destination as 32-bit integers.
       int blocks = imgsize >> 2;
       for (int i = 0; i < blocks; ++i) {
-        PN_uint32 v0 = *src++;
-        PN_uint32 v1 = *src++;
-        PN_uint32 v2 = *src++;
-        PN_uint32 v3 = *src++;
+        uint32_t v0 = *src++;
+        uint32_t v1 = *src++;
+        uint32_t v2 = *src++;
+        uint32_t v3 = *src++;
         *dst++ = (v0 & 0x00ffffffu) | ((v1 & 0x000000ffu) << 24);
         *dst++ = ((v1 & 0x00ffff00u) >> 8) |  ((v2 & 0x0000ffffu) << 16);
         *dst++ = ((v2 & 0x00ff0000u) >> 16) | ((v3 & 0x00ffffffu) << 8);
@@ -6235,17 +6235,17 @@ get_ram_image_as(const string &requested_format) {
 
       // If the image size wasn't a multiple of 4, we may have a handful of
       // pixels left over.  Convert those the slower way.
-      PN_uint8 *tail = (PN_uint8 *)dst;
+      uint8_t *tail = (uint8_t *)dst;
       for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
-        PN_uint32 v = *src++;
+        uint32_t v = *src++;
         *tail++ = (v & 0x000000ffu);
         *tail++ = (v & 0x0000ff00u) >> 8;
         *tail++ = (v & 0x00ff0000u) >> 16;
       }
       return newdata;
     }
-    const PN_uint8 *src = (const PN_uint8 *)data.p();
-    PN_uint8 *dst = (PN_uint8 *)newdata.p();
+    const uint8_t *src = (const uint8_t *)data.p();
+    uint8_t *dst = (uint8_t *)newdata.p();
 
     if (format == "RGB" && cdata->_num_components == 3) {
       for (int i = 0; i < imgsize; ++i) {
@@ -6335,7 +6335,7 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
   cdata->_simple_y_size = y_size;
   cdata->_simple_ram_image._image = image.cast_non_const();
   cdata->_simple_ram_image._page_size = image.size();
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
   cdata->inc_simple_image_modified();
 }
 
@@ -7019,9 +7019,9 @@ read_dds_level_abgr8(Texture *tex, CData *cdata, const DDSHeader &header, int n,
     unsigned char *p = image.p() + y * row_bytes;
     in.read((char *)p, row_bytes);
 
-    PN_uint32 *pw = (PN_uint32 *)p;
+    uint32_t *pw = (uint32_t *)p;
     for (int x = 0; x < x_size; ++x) {
-      PN_uint32 w = *pw;
+      uint32_t w = *pw;
 #ifdef WORDS_BIGENDIAN
       // bigendian: convert R, G, B, A to B, G, R, A.
       w = ((w & 0xff00) << 16) | ((w & 0xff000000U) >> 16) | (w & 0xff00ff);
@@ -7075,7 +7075,7 @@ read_dds_level_abgr16(Texture *tex, CData *cdata, const DDSHeader &header, int n
     unsigned char *p = image.p() + y * row_bytes;
     in.read((char *)p, row_bytes);
 
-    PN_uint16 *pw = (PN_uint16 *)p;
+    uint16_t *pw = (uint16_t *)p;
     for (int x = 0; x < x_size; ++x) {
       swap(pw[0], pw[2]);
       pw += 4;
@@ -7102,7 +7102,7 @@ read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header, int n
     unsigned char *p = image.p() + y * row_bytes;
     in.read((char *)p, row_bytes);
 
-    PN_uint32 *pw = (PN_uint32 *)p;
+    uint32_t *pw = (uint32_t *)p;
     for (int x = 0; x < x_size; ++x) {
       swap(pw[0], pw[2]);
       pw += 4;
@@ -7331,8 +7331,8 @@ read_dds_level_bc1(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       for (int ci = 0; ci < num_cols; ++ci) {
         // . . . and (b) within each block, we reverse the 4 individual rows
         // of 4 pixels.
-        PN_uint32 *cells = (PN_uint32 *)p;
-        PN_uint32 w = cells[1];
+        uint32_t *cells = (uint32_t *)p;
+        uint32_t w = cells[1];
         w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
         cells[1] = w;
 
@@ -7346,8 +7346,8 @@ read_dds_level_bc1(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
     in.read((char *)p, row_length);
 
     for (int ci = 0; ci < num_cols; ++ci) {
-      PN_uint32 *cells = (PN_uint32 *)p;
-      PN_uint32 w = cells[1];
+      uint32_t *cells = (uint32_t *)p;
+      uint32_t w = cells[1];
       w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
       cells[1] = w;
 
@@ -7401,11 +7401,11 @@ read_dds_level_bc2(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       for (int ci = 0; ci < num_cols; ++ci) {
         // . . . and (b) within each block, we reverse the 4 individual rows
         // of 4 pixels.
-        PN_uint32 *cells = (PN_uint32 *)p;
+        uint32_t *cells = (uint32_t *)p;
 
         // Alpha.  The block is four 16-bit words of pixel data.
-        PN_uint32 w0 = cells[0];
-        PN_uint32 w1 = cells[1];
+        uint32_t w0 = cells[0];
+        uint32_t w1 = cells[1];
         w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
         w1 = ((w1 & 0xffff) << 16) | ((w1 & 0xffff0000U) >> 16);
         cells[0] = w1;
@@ -7413,7 +7413,7 @@ read_dds_level_bc2(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
 
         // Color.  Only the second 32-bit dword of the color block represents
         // the pixel data.
-        PN_uint32 w = cells[3];
+        uint32_t w = cells[3];
         w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
         cells[3] = w;
 
@@ -7427,13 +7427,13 @@ read_dds_level_bc2(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
     in.read((char *)p, row_length);
 
     for (int ci = 0; ci < num_cols; ++ci) {
-      PN_uint32 *cells = (PN_uint32 *)p;
+      uint32_t *cells = (uint32_t *)p;
 
-      PN_uint32 w0 = cells[0];
+      uint32_t w0 = cells[0];
       w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
       cells[0] = w0;
 
-      PN_uint32 w = cells[3];
+      uint32_t w = cells[3];
       w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
       cells[3] = w;
 
@@ -7487,7 +7487,7 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       for (int ci = 0; ci < num_cols; ++ci) {
         // . . . and (b) within each block, we reverse the 4 individual rows
         // of 4 pixels.
-        PN_uint32 *cells = (PN_uint32 *)p;
+        uint32_t *cells = (uint32_t *)p;
 
         // Alpha.  The block is one 16-bit word of reference values, followed
         // by six words of pixel values, in 12-bit rows.  Tricky to invert.
@@ -7507,7 +7507,7 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
 
         // Color.  Only the second 32-bit dword of the color block represents
         // the pixel data.
-        PN_uint32 w = cells[3];
+        uint32_t w = cells[3];
         w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
         cells[3] = w;
 
@@ -7521,7 +7521,7 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
     in.read((char *)p, row_length);
 
     for (int ci = 0; ci < num_cols; ++ci) {
-      PN_uint32 *cells = (PN_uint32 *)p;
+      uint32_t *cells = (uint32_t *)p;
 
       unsigned char p2 = p[2];
       unsigned char p3 = p[3];
@@ -7531,11 +7531,11 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       p[3] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
       p[4] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
 
-      PN_uint32 w0 = cells[0];
+      uint32_t w0 = cells[0];
       w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
       cells[0] = w0;
 
-      PN_uint32 w = cells[3];
+      uint32_t w = cells[3];
       w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
       cells[3] = w;
 

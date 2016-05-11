@@ -80,13 +80,13 @@ format_string(int value) {
 }
 
 INLINE string
-format_string(PN_int64 value) {
+format_string(int64_t value) {
   char buffer[21];
   char *p = buffer + 20;
   *p = 0;
 
   if (value < 0) {
-    PN_uint64 posv = (PN_uint64)-value;
+    uint64_t posv = (uint64_t)-value;
     do {
       *--p = '0' + (posv % 10);
       posv /= 10;

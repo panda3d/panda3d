@@ -109,6 +109,29 @@ close() {
   return *this;
 }
 
+/**
+ * Returns the encryption algorithm that was read from the stream.
+ */
+INLINE const string &OEncryptStream::
+get_algorithm() const {
+  return _buf.get_algorithm();
+}
+
+/**
+ * Returns the encryption key length, in bits, that was read from the stream.
+ */
+INLINE int OEncryptStream::
+get_key_length() const {
+  return _buf.get_key_length();
+}
+
+/**
+ * Returns the value that was was read from the stream.
+ */
+INLINE int OEncryptStream::
+get_iteration_count() const {
+  return _buf.get_iteration_count();
+}
 
 /**
  * Specifies the encryption algorithm that should be used for future calls to

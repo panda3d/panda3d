@@ -55,7 +55,7 @@ PUBLISHED:
   INLINE size_t get_num_blends() const;
   INLINE const TransformBlend &get_blend(size_t n) const;
   MAKE_SEQ(get_blends, get_num_blends, get_blend);
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
   void set_blend(size_t n, const TransformBlend &blend);
   void remove_blend(size_t n);
@@ -69,6 +69,12 @@ PUBLISHED:
   INLINE SparseArray &modify_rows();
 
   void write(ostream &out, int indent_level) const;
+
+  MAKE_SEQ_PROPERTY(blends, get_num_blends, get_blend, set_blend, remove_blend);
+  MAKE_PROPERTY(modified, get_modified);
+  MAKE_PROPERTY(num_transforms, get_num_transforms);
+  MAKE_PROPERTY(max_simultaneous_transforms, get_max_simultaneous_transforms);
+  MAKE_PROPERTY(rows, get_rows, set_rows);
 
 private:
   class CData;

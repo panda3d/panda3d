@@ -23,16 +23,15 @@ clear() {
 
  */
 INLINE Physical *PhysicalNode::
-get_physical(int index) const {
-  nassertr(index >= 0 && index < (int)_physicals.size(),
-           (Physical *) NULL);
+get_physical(size_t index) const {
+  nassertr(index < _physicals.size(), (Physical *) NULL);
   return _physicals[index];
 }
 
 /**
 
  */
-INLINE int PhysicalNode::
+INLINE size_t PhysicalNode::
 get_num_physicals() const {
   return _physicals.size();
 }

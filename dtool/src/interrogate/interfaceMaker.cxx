@@ -86,10 +86,12 @@ MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
 InterfaceMaker::Property::
 Property(const InterrogateElement &ielement) :
   _ielement(ielement),
+  _length_function(NULL),
   _getter(NULL),
   _setter(NULL),
   _has_function(NULL),
-  _clear_function(NULL)
+  _clear_function(NULL),
+  _deleter(NULL)
 {
 }
 

@@ -123,11 +123,11 @@ void get_memory_information (DisplayInformation *display_information) {
 }
 
 typedef union {
-  PN_uint64 long_integer;
+  uint64_t long_integer;
 }
 LONG_INTEGER;
 
-PN_uint64 cpu_time_function (void) {
+uint64_t cpu_time_function (void) {
 #ifdef _WIN64
   return __rdtsc();
 #else
@@ -594,7 +594,7 @@ int update_cpu_frequency_function(int processor_number, DisplayInformation *disp
       processor_power_information = processor_power_information_array;
       for (i = 0; i < MAXIMUM_PROCESSORS; i++) {
         if (processor_power_information->Number == processor_number) {
-          PN_uint64 value;
+          uint64_t value;
 
           value = processor_power_information->MaxMhz;
           display_information->_maximum_cpu_frequency = value * 1000000;
@@ -662,7 +662,7 @@ count_number_of_cpus(DisplayInformation *display_information) {
       num_cpu_cores++;
 
       // A hyperthreaded core supplies more than one logical processor.
-      num_logical_cpus += count_bits_in_word((PN_uint64)(ptr->ProcessorMask));
+      num_logical_cpus += count_bits_in_word((uint64_t)(ptr->ProcessorMask));
     }
     ++ptr;
   }
@@ -810,8 +810,8 @@ lookup_cpu_data() {
   _display_information->_cpu_time_function = cpu_time_function;
 
   // determine CPU frequency
-  PN_uint64 time;
-  PN_uint64 end_time;
+  uint64_t time;
+  uint64_t end_time;
   LARGE_INTEGER counter;
   LARGE_INTEGER end;
   LARGE_INTEGER frequency;

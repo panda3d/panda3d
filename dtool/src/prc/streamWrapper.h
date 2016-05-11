@@ -53,6 +53,7 @@ PUBLISHED:
   ~IStreamWrapper();
 
   INLINE istream *get_istream() const;
+  MAKE_PROPERTY(istream, get_istream);
 
 public:
   void read(char *buffer, streamsize num_bytes);
@@ -79,6 +80,7 @@ PUBLISHED:
   ~OStreamWrapper();
 
   INLINE ostream *get_ostream() const;
+  MAKE_PROPERTY(ostream, get_ostream);
 
 public:
   void write(const char *buffer, streamsize num_bytes);
@@ -114,6 +116,7 @@ PUBLISHED:
   ~StreamWrapper();
 
   INLINE iostream *get_iostream() const;
+  MAKE_PROPERTY(iostream, get_iostream);
 
 private:
   iostream *_iostream;

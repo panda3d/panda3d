@@ -108,6 +108,9 @@ PUBLISHED:
   const Interface &get_interface(int n);
   MAKE_SEQ(get_interfaces, get_num_interfaces, get_interface);
 
+  MAKE_PROPERTY(host_name, get_host_name);
+  MAKE_SEQ_PROPERTY(interfaces, get_num_interfaces, get_interface);
+
 protected:
   void new_connection(const PT(Connection) &connection);
   virtual void flush_read_connection(Connection *connection);

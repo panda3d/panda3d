@@ -849,7 +849,7 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
       // In the case of RW_double, we only write the numbers one at a time,
       // each time preceded by the RW_double flag.  Hopefully this will happen
       // only rarely.
-      datagram.add_int8((PN_int8)RW_double);
+      datagram.add_int8((int8_t)RW_double);
       datagram.add_float64(*ri);
     }
     break;
@@ -869,7 +869,7 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
  */
 int FFTCompressor::
 read_run(DatagramIterator &di, vector_double &run) {
-  PN_uint8 start = di.get_uint8();
+  uint8_t start = di.get_uint8();
   RunWidth run_width;
   int length;
 

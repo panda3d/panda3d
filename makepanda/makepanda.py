@@ -2203,7 +2203,7 @@ DTOOL_CONFIG=[
     ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
     ("PHAVE_SYS_SOUNDCARD_H",          'UNDEF',                  '1'),
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
-    ("PHAVE_STDINT_H",                 'UNDEF',                  '1'),
+    ("PHAVE_STDINT_H",                 '1',                      '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
     ("HAVE_XRANDR",                    'UNDEF',                  '1'),

@@ -158,7 +158,7 @@ set_host(const std::string &hostname, unsigned short port) {
   }
 
 
-  PN_uint32 addr = (PN_uint32)inet_addr(hostname.c_str());
+  uint32_t addr = (uint32_t)inet_addr(hostname.c_str());
   if (addr == INADDR_NONE) {
     hp = gethostbyname(hostname.c_str());
     if (hp == NULL) {
@@ -195,7 +195,7 @@ set_host(const std::string &hostname) {
  *
  */
 INLINE bool Socket_Address::
-set_host(PN_uint32 in_hostname, unsigned short port) {
+set_host(uint32_t in_hostname, unsigned short port) {
   memcpy(&_addr.sin_addr, &in_hostname, sizeof(in_hostname));
   _addr.sin_port = htons(port);
   _addr.sin_family = AF_INET;
@@ -227,7 +227,7 @@ operator < (const Socket_Address &in) const {
  */
 INLINE bool Socket_Address::
 is_mcast_range(void) const {
-  PN_uint32 address = ntohl(_addr.sin_addr.s_addr);
+  uint32_t address = ntohl(_addr.sin_addr.s_addr);
   // 224.0.0.0-239.255.255.255 .. e0,ef
   return (address >= 0xe0000000 && address < 0xefffffff);
 }
