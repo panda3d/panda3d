@@ -48,6 +48,8 @@ PUBLISHED:
   string get_variable_name(size_t n) const;
   bool is_variable_used(size_t n) const;
 
+  MAKE_SEQ_PROPERTY(variables, get_num_variables, get_variable);
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 

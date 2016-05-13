@@ -17,7 +17,7 @@
 #include "wavAudio.h"
 
 // Tables for decompressing mu-law and A-law wav files.
-static PN_int16 mulaw_table[256] = {
+static int16_t mulaw_table[256] = {
   -32124,-31100,-30076,-29052,-28028,-27004,-25980,-24956,
   -23932,-22908,-21884,-20860,-19836,-18812,-17788,-16764,
   -15996,-15484,-14972,-14460,-13948,-13436,-12924,-12412,
@@ -52,7 +52,7 @@ static PN_int16 mulaw_table[256] = {
       56,    48,    40,    32,    24,    16,     8,     0
 };
 
-static PN_int16 alaw_table[256] = {
+static int16_t alaw_table[256] = {
   -5504, -5248, -6016, -5760, -4480, -4224, -4992, -4736,
   -7552, -7296, -8064, -7808, -6528, -6272, -7040, -6784,
   -2752, -2624, -3008, -2880, -2240, -2112, -2496, -2368,
@@ -143,7 +143,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
       _block_align = _reader.get_uint16();
 
       // We can round up to next multiple of 8.
-      PN_uint16 bps = _reader.get_uint16();
+      uint16_t bps = _reader.get_uint16();
       bps = (bps + 7) & 0xfff8;
 
       // How many bytes in this chunk we've read so far.
@@ -324,7 +324,7 @@ seek(double t) {
  * audio will be interleaved.
  */
 void WavAudioCursor::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
   int read_samples = min(desired, ((int) (_data_size - _data_pos)) / _bytes_per_sample);
 
@@ -359,7 +359,7 @@ read_samples(int n, PN_int16 *data) {
 
     } case 4: {
       // Downsample.
-      const PN_int32 scale_factor = 0x7fffffff / 0x7fff;
+      const int32_t scale_factor = 0x7fffffff / 0x7fff;
 
       for (int i = 0; i < read_samples; ++i) {
         data[i] = _reader.get_int32() / scale_factor;
@@ -368,7 +368,7 @@ read_samples(int n, PN_int16 *data) {
 
     } case 8: {
       // Downsample.
-      const PN_int64 scale_factor = 0x7fffffffffffffffLL / 0x7fffLL;
+      const int64_t scale_factor = 0x7fffffffffffffffLL / 0x7fffLL;
 
       for (int i = 0; i < read_samples; ++i) {
         data[i] = _reader.get_int64() / scale_factor;
@@ -386,13 +386,13 @@ read_samples(int n, PN_int16 *data) {
     switch (_bytes_per_sample) {
     case 4:
       for (int i = 0; i < read_samples; ++i) {
-        data[i] = (PN_int16) (_reader.get_float32() * 0x7fff);
+        data[i] = (int16_t) (_reader.get_float32() * 0x7fff);
       }
       break;
 
     case 8:
       for (int i = 0; i < read_samples; ++i) {
-        data[i] = (PN_int16) (_reader.get_float64() * 0x7fff);
+        data[i] = (int16_t) (_reader.get_float64() * 0x7fff);
       }
       break;
 

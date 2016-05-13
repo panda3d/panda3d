@@ -22,42 +22,53 @@
 #include "indent.h"
 
 /**
- * Creates an untyped, unscoped enum.
+ * Creates an untyped enum.
  */
 CPPEnumType::
-CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
-            const CPPFile &file) :
-  CPPExtensionType(T_enum, ident, current_scope, file),
-  _parent_scope(current_scope),
+CPPEnumType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
+            CPPScope *scope, const CPPFile &file) :
+  CPPExtensionType(type, ident, current_scope, file),
+  _scope(scope),
   _element_type(NULL),
   _last_value(NULL)
 {
+  _parent_scope = (type == T_enum) ? current_scope : scope;
+
   if (ident != NULL) {
     ident->_native_scope = current_scope;
   }
 }
 
 /**
- * Creates a typed but unscoped enum.
+ * Creates a typed enum.
  */
 CPPEnumType::
-CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
-            CPPScope *current_scope, const CPPFile &file) :
-  CPPExtensionType(T_enum, ident, current_scope, file),
-  _parent_scope(current_scope),
+CPPEnumType(Type type, CPPIdentifier *ident, CPPType *element_type,
+            CPPScope *current_scope, CPPScope *scope, const CPPFile &file) :
+  CPPExtensionType(type, ident, current_scope, file),
+  _scope(scope),
   _element_type(element_type),
   _last_value(NULL)
 {
+  _parent_scope = (type == T_enum) ? current_scope : scope;
   if (ident != NULL) {
     ident->_native_scope = current_scope;
   }
+}
+
+/**
+ * Returns true if this is a scoped enum.
+ */
+bool CPPEnumType::
+is_scoped() const {
+  return (_type != T_enum);
 }
 
 /**
  * Returns the integral type used to store enum values.
  */
 CPPType *CPPEnumType::
-get_element_type() {
+get_underlying_type() {
   if (_element_type == NULL) {
     // This enum is untyped.  Use a suitable default, ie.  'int'. In the
     // future, we might want to check whether it fits in an int.
@@ -78,11 +89,18 @@ get_element_type() {
  *
  */
 CPPInstance *CPPEnumType::
-add_element(const string &name, CPPExpression *value) {
+add_element(const string &name, CPPExpression *value, CPPPreprocessor *preprocessor, const cppyyltype &pos) {
   CPPIdentifier *ident = new CPPIdentifier(name);
   ident->_native_scope = _parent_scope;
 
-  CPPInstance *inst = new CPPInstance(get_element_type(), ident);
+  CPPInstance *inst;
+  if (_type == T_enum) {
+    // Weakly typed enum.
+    inst = new CPPInstance(get_underlying_type(), ident);
+  } else {
+    // C++11-style strongly typed enum.
+    inst = new CPPInstance(this, ident);
+  }
   inst->_storage_class |= CPPInstance::SC_constexpr;
   _elements.push_back(inst);
 
@@ -104,6 +122,41 @@ add_element(const string &name, CPPExpression *value) {
   }
   inst->_initializer = value;
   _last_value = value;
+
+  if (preprocessor != (CPPPreprocessor *)NULL) {
+    // Same-line comment?
+    CPPCommentBlock *comment =
+      preprocessor->get_comment_on(pos.first_line, pos.file);
+
+    if (comment == (CPPCommentBlock *)NULL) {
+      // Nope.  Check for a comment before this line.
+      comment =
+        preprocessor->get_comment_before(pos.first_line, pos.file);
+
+      if (comment != NULL) {
+        // This is a bit of a hack, but it prevents us from picking up a same-
+        // line comment from the previous line.
+        if (comment->_line_number != pos.first_line - 1 ||
+            comment->_col_number <= pos.first_column) {
+
+          inst->_leading_comment = comment;
+        }
+      }
+    } else {
+      inst->_leading_comment = comment;
+    }
+  }
+
+  // Add the value to the enum scope (as per C++11), assuming it's not anonymous.
+  if (_scope != NULL) {
+    _scope->add_enum_value(inst);
+  }
+
+  // Now add it to the containing scope as well if it's not an "enum class".
+  if (!is_scoped() && _parent_scope != NULL) {
+    _parent_scope->add_enum_value(inst);
+  }
+
   return inst;
 }
 

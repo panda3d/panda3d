@@ -884,8 +884,8 @@ seek(int frame, bool backward) {
  */
 void FfmpegVideoCursor::
 do_seek(int frame, bool backward) {
-  PN_int64 target_ts = (PN_int64)frame;
-  if (target_ts < (PN_int64)(_initial_dts)) {
+  int64_t target_ts = (int64_t)frame;
+  if (target_ts < (int64_t)(_initial_dts)) {
     // Attempts to seek before the first packet will fail.
     target_ts = _initial_dts;
   }

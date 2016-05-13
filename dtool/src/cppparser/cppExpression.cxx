@@ -949,7 +949,7 @@ determine_type() const {
 
         case CPPDeclaration::ST_enum:
           // Convert into integral type.
-          return t1->as_enum_type()->get_element_type();
+          return t1->as_enum_type()->get_underlying_type();
 
         case CPPDeclaration::ST_simple:
           {

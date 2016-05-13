@@ -684,6 +684,19 @@ remove_vertex(EggVertex *vertex) {
   }
 }
 
+/**
+ * Removes the indicated vertex from the primitive.
+ */
+void EggPrimitive::
+remove_vertex(size_t index) {
+  nassertv(index < size());
+  iterator i = begin() + index;
+
+  // erase() calls prepare_remove_vertex().
+  erase(i);
+
+  test_vref_integrity();
+}
 
 /**
  * Replaces the current primitive's list of vertices with a copy of the list

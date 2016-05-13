@@ -26,7 +26,7 @@ ConfigVariableInt64(const string &name) :
  *
  */
 INLINE ConfigVariableInt64::
-ConfigVariableInt64(const string &name, PN_int64 default_value,
+ConfigVariableInt64(const string &name, int64_t default_value,
                     const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_int64, description, flags),
@@ -60,7 +60,7 @@ ConfigVariableInt64(const string &name, const string &default_value,
  * Reassigns the variable's local value.
  */
 INLINE void ConfigVariableInt64::
-operator = (PN_int64 value) {
+operator = (int64_t value) {
   set_value(value);
 }
 
@@ -68,7 +68,7 @@ operator = (PN_int64 value) {
  * Returns the variable's value.
  */
 INLINE ConfigVariableInt64::
-operator PN_int64 () const {
+operator int64_t () const {
   return get_value();
 }
 
@@ -83,7 +83,7 @@ size() const {
 /**
  * Returns the value of the variable's nth word.
  */
-INLINE PN_int64 ConfigVariableInt64::
+INLINE int64_t ConfigVariableInt64::
 operator [] (size_t n) const {
   return get_word(n);
 }
@@ -92,7 +92,7 @@ operator [] (size_t n) const {
  * Reassigns the variable's local value.
  */
 INLINE void ConfigVariableInt64::
-set_value(PN_int64 value) {
+set_value(int64_t value) {
   set_string_value("");
   set_int64_word(0, value);
 }
@@ -100,9 +100,9 @@ set_value(PN_int64 value) {
 /**
  * Returns the variable's value.
  */
-INLINE PN_int64 ConfigVariableInt64::
+INLINE int64_t ConfigVariableInt64::
 get_value() const {
-  TAU_PROFILE("PN_int64 ConfigVariableInt64::get_value() const", " ", TAU_USER);
+  TAU_PROFILE("int64_t ConfigVariableInt64::get_value() const", " ", TAU_USER);
   if (!is_cache_valid(_local_modified)) {
     mark_cache_valid(((ConfigVariableInt64 *)this)->_local_modified);
     ((ConfigVariableInt64 *)this)->_cache = get_int64_word(0);
@@ -113,7 +113,7 @@ get_value() const {
 /**
  * Returns the variable's default value.
  */
-INLINE PN_int64 ConfigVariableInt64::
+INLINE int64_t ConfigVariableInt64::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
   if (decl != (ConfigDeclaration *)NULL) {
@@ -125,7 +125,7 @@ get_default_value() const {
 /**
  * Returns the variable's nth value.
  */
-INLINE PN_int64 ConfigVariableInt64::
+INLINE int64_t ConfigVariableInt64::
 get_word(size_t n) const {
   return get_int64_word(n);
 }
@@ -135,6 +135,6 @@ get_word(size_t n) const {
  * variable's overall value.
  */
 INLINE void ConfigVariableInt64::
-set_word(size_t n, PN_int64 value) {
+set_word(size_t n, int64_t value) {
   set_int64_word(n, value);
 }

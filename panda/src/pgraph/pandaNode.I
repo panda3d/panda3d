@@ -932,7 +932,7 @@ operator = (PandaNode::Children &&from) NOEXCEPT {
 /**
  * Returns the number of children of the node.
  */
-INLINE int PandaNode::Children::
+INLINE size_t PandaNode::Children::
 get_num_children() const {
   nassertr(_down != (Down *)NULL, 0);
   return _down->size();
@@ -942,9 +942,9 @@ get_num_children() const {
  * Returns the nth child of the node.
  */
 INLINE PandaNode *PandaNode::Children::
-get_child(int n) const {
+get_child(size_t n) const {
   nassertr(_down != (Down *)NULL, NULL);
-  nassertr(n >= 0 && n < (int)_down->size(), NULL);
+  nassertr(n < (size_t)_down->size(), NULL);
   return (*_down)[n].get_child();
 }
 
@@ -953,9 +953,9 @@ get_child(int n) const {
  * number that was passed to add_child()).  See get_num_children().
  */
 INLINE int PandaNode::Children::
-get_child_sort(int n) const {
+get_child_sort(size_t n) const {
   nassertr(_down != (Down *)NULL, -1);
-  nassertr(n >= 0 && n < (int)_down->size(), -1);
+  nassertr(n < _down->size(), -1);
   return (*_down)[n].get_sort();
 }
 
@@ -1014,7 +1014,7 @@ operator = (PandaNode::Stashed &&from) NOEXCEPT {
 /**
  * Returns the number of stashed children of the node.
  */
-INLINE int PandaNode::Stashed::
+INLINE size_t PandaNode::Stashed::
 get_num_stashed() const {
   nassertr(_stashed != (Down *)NULL, 0);
   return _stashed->size();
@@ -1024,9 +1024,9 @@ get_num_stashed() const {
  * Returns the nth stashed child of the node.
  */
 INLINE PandaNode *PandaNode::Stashed::
-get_stashed(int n) const {
+get_stashed(size_t n) const {
   nassertr(_stashed != (Down *)NULL, NULL);
-  nassertr(n >= 0 && n < (int)_stashed->size(), NULL);
+  nassertr(n < _stashed->size(), NULL);
   return (*_stashed)[n].get_child();
 }
 
@@ -1035,9 +1035,9 @@ get_stashed(int n) const {
  * number that was passed to add_child()).  See get_num_stashed().
  */
 INLINE int PandaNode::Stashed::
-get_stashed_sort(int n) const {
+get_stashed_sort(size_t n) const {
   nassertr(_stashed != (Down *)NULL, -1);
-  nassertr(n >= 0 && n < (int)_stashed->size(), -1);
+  nassertr(n < _stashed->size(), -1);
   return (*_stashed)[n].get_sort();
 }
 
@@ -1096,7 +1096,7 @@ operator = (PandaNode::Parents &&from) NOEXCEPT {
 /**
  * Returns the number of parents of the node.
  */
-INLINE int PandaNode::Parents::
+INLINE size_t PandaNode::Parents::
 get_num_parents() const {
   nassertr(_up != (Up *)NULL, 0);
   return _up->size();
@@ -1106,9 +1106,9 @@ get_num_parents() const {
  * Returns the nth parent of the node.
  */
 INLINE PandaNode *PandaNode::Parents::
-get_parent(int n) const {
+get_parent(size_t n) const {
   nassertr(_up != (Up *)NULL, NULL);
-  nassertr(n >= 0 && n < (int)_up->size(), NULL);
+  nassertr(n < _up->size(), NULL);
   return (*_up)[n].get_parent();
 }
 

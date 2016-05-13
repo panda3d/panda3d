@@ -86,6 +86,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase3) get_col(int col) const;
   MAKE_SEQ(get_rows, size, get_row);
   MAKE_SEQ(get_cols, size, get_col);
+  MAKE_SEQ_PROPERTY(rows, size, get_row);
+  MAKE_SEQ_PROPERTY(cols, size, get_col);
 
   INLINE_LINMATH FLOATNAME(LVecBase2) get_row2(int row) const;
   INLINE_LINMATH FLOATNAME(LVecBase2) get_col2(int col) const;

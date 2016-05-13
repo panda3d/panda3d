@@ -68,6 +68,7 @@ PUBLISHED:
   INLINE void set_solid(int n, CollisionSolid *solid);
   INLINE void remove_solid(int n);
   INLINE int add_solid(const CollisionSolid *solid);
+  MAKE_SEQ_PROPERTY(solids, get_num_solids, get_solid, set_solid, remove_solid);
 
   INLINE int get_collider_sort() const;
   INLINE void set_collider_sort(int sort);

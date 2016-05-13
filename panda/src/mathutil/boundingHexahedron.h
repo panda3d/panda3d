@@ -62,6 +62,9 @@ PUBLISHED:
   INLINE_MATHUTIL LPlane get_plane(int n) const;
   MAKE_SEQ(get_planes, get_num_planes, get_plane);
 
+  MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
+  MAKE_SEQ_PROPERTY(planes, get_num_planes, get_plane);
+
 public:
   virtual const BoundingHexahedron *as_bounding_hexahedron() const;
 

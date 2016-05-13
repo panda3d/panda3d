@@ -48,13 +48,17 @@ PUBLISHED:
   INLINE size_t get_num_transforms() const;
   INLINE const VertexTransform *get_transform(size_t n) const;
   MAKE_SEQ(get_transforms, get_num_transforms, get_transform);
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
   void set_transform(size_t n, const VertexTransform *transform);
   void remove_transform(size_t n);
   size_t add_transform(const VertexTransform *transform);
 
   void write(ostream &out) const;
+
+  MAKE_PROPERTY(registered, is_registered);
+  MAKE_PROPERTY(modified, get_modified);
+  MAKE_SEQ_PROPERTY(transforms, get_num_transforms, get_transform, set_transform, remove_transform);
 
 private:
   void do_register();

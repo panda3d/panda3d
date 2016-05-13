@@ -2867,6 +2867,17 @@ def GetOrigExt(x):
 def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
+def GetExtensionSuffix():
+    if sys.version_info >= (3, 0):
+        suffix = sysconfig.get_config_var('EXT_SUFFIX')
+        if suffix:
+            return suffix
+    target = GetTarget()
+    if target == 'windows':
+        return '.pyd'
+    else:
+        return '.so'
+
 def CalcLocation(fn, ipath):
     if fn.startswith("panda3d/") and fn.endswith(".py"):
         return OUTPUTDIR + "/" + fn
@@ -2888,6 +2899,7 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".xml")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".egg")): return OUTPUTDIR+"/models/"+fn
     if (fn.endswith(".egg.pz")):return OUTPUTDIR+"/models/"+fn
+    if (fn.endswith(".pyd")): return OUTPUTDIR+"/panda3d/"+fn[:-4]+GetExtensionSuffix()
     if (target == 'windows'):
         if (fn.endswith(".def")):   return CxxFindSource(fn, ipath)
         if (fn.endswith(".rc")):    return CxxFindSource(fn, ipath)
@@ -2896,7 +2908,6 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".res")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".tlb")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".pyd"
         if (fn.endswith(".ocx")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".ocx"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
         if (fn.endswith(".dlo")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
@@ -2913,7 +2924,6 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".plist")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".p3d")):   return OUTPUTDIR+"/bin/"+fn[:-4]
@@ -2926,7 +2936,6 @@ def CalcLocation(fn, ipath):
         # On Android, we build the libraries into built/tmp, then copy them.
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".so"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/tmp/lib"+fn[:-4]+".so"
@@ -2944,7 +2953,6 @@ def CalcLocation(fn, ipath):
     else:
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]

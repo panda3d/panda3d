@@ -54,6 +54,9 @@ PUBLISHED:
   INLINE PartBundleHandle *get_bundle_handle(int n) const;
   MAKE_SEQ(get_bundle_handles, get_num_bundles, get_bundle_handle);
 
+  MAKE_SEQ_PROPERTY(bundles, get_num_bundles, get_bundle);
+  MAKE_SEQ_PROPERTY(bundle_handles, get_num_bundles, get_bundle_handle);
+
 protected:
   void add_bundle(PartBundle *bundle);
   void add_bundle_handle(PartBundleHandle *handle);

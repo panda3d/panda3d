@@ -99,7 +99,7 @@ is_equal(const Key &a, const Key &b) const {
 template<class Key, class Compare>
 INLINE size_t integer_hash<Key, Compare>::
 add_hash(size_t hash, const Key &key) {
-  PN_uint32 key32 = (PN_uint32)(key);
+  uint32_t key32 = (uint32_t)(key);
   return AddHash::add_hash(hash, &key32, 1);
 }
 
@@ -109,7 +109,7 @@ add_hash(size_t hash, const Key &key) {
 INLINE size_t pointer_hash::
 add_hash(size_t hash, const void *key) {
   // We don't mind if this loses precision.
-  PN_uint32 key32 = (PN_uint32)reinterpret_cast<uintptr_t>(key);
+  uint32_t key32 = (uint32_t)reinterpret_cast<uintptr_t>(key);
   return AddHash::add_hash(hash, &key32, 1);
 }
 
@@ -147,7 +147,7 @@ operator () (const Key &a, const Key &b) const {
 template<class Key>
 INLINE size_t floating_point_hash<Key>::
 add_hash(size_t hash, const Key &key) const {
-  PN_uint32 key32 = (PN_uint32)(key / _threshold + 0.5f);
+  uint32_t key32 = (uint32_t)(key / _threshold + 0.5f);
   return AddHash::add_hash(hash, &key32, 1);
 }
 
@@ -173,7 +173,7 @@ add_hash(size_t hash, const Key &key) {
   }
 #endif
   size_t num_bytes = (key.size() * sizeof(key[0]));
-  return AddHash::add_hash(hash, (const PN_uint8 *)&key[0], num_bytes);
+  return AddHash::add_hash(hash, (const uint8_t *)&key[0], num_bytes);
 }
 
 /**

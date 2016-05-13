@@ -83,25 +83,25 @@ get_bool() {
 /**
  * Extracts a signed 8-bit integer.
  */
-INLINE PN_int8 StreamReader::
+INLINE int8_t StreamReader::
 get_int8() {
-  return (PN_int8)_in->get();
+  return (int8_t)_in->get();
 }
 
 /**
  * Extracts an unsigned 8-bit integer.
  */
-INLINE PN_uint8 StreamReader::
+INLINE uint8_t StreamReader::
 get_uint8() {
-  return (PN_uint8)_in->get();
+  return (uint8_t)_in->get();
 }
 
 /**
  * Extracts a signed 16-bit integer.
  */
-INLINE PN_int16 StreamReader::
+INLINE int16_t StreamReader::
 get_int16() {
-  PN_int16 readval, retval;
+  int16_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -111,9 +111,9 @@ get_int16() {
 /**
  * Extracts a signed 32-bit integer.
  */
-INLINE PN_int32 StreamReader::
+INLINE int32_t StreamReader::
 get_int32() {
-  PN_int32 readval, retval;
+  int32_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -123,9 +123,9 @@ get_int32() {
 /**
  * Extracts a signed 64-bit integer.
  */
-INLINE PN_int64 StreamReader::
+INLINE int64_t StreamReader::
 get_int64() {
-  PN_int64 readval, retval;
+  int64_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -135,9 +135,9 @@ get_int64() {
 /**
  * Extracts an unsigned 16-bit integer.
  */
-INLINE PN_uint16 StreamReader::
+INLINE uint16_t StreamReader::
 get_uint16() {
-  PN_uint16 readval, retval;
+  uint16_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -147,9 +147,9 @@ get_uint16() {
 /**
  * Extracts an unsigned 32-bit integer.
  */
-INLINE PN_uint32 StreamReader::
+INLINE uint32_t StreamReader::
 get_uint32() {
-  PN_uint32 readval, retval;
+  uint32_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -159,9 +159,9 @@ get_uint32() {
 /**
  * Extracts an unsigned 64-bit integer.
  */
-INLINE PN_uint64 StreamReader::
+INLINE uint64_t StreamReader::
 get_uint64() {
-  PN_uint64 readval, retval;
+  uint64_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -202,9 +202,9 @@ get_float64() {
 /**
  * Extracts a signed big-endian 16-bit integer.
  */
-INLINE PN_int16 StreamReader::
+INLINE int16_t StreamReader::
 get_be_int16() {
-  PN_int16 readval, retval;
+  int16_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -214,9 +214,9 @@ get_be_int16() {
 /**
  * Extracts a signed big-endian 32-bit integer.
  */
-INLINE PN_int32 StreamReader::
+INLINE int32_t StreamReader::
 get_be_int32() {
-  PN_int32 readval, retval;
+  int32_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -226,9 +226,9 @@ get_be_int32() {
 /**
  * Extracts a signed big-endian 64-bit integer.
  */
-INLINE PN_int64 StreamReader::
+INLINE int64_t StreamReader::
 get_be_int64() {
-  PN_int64 readval, retval;
+  int64_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -238,9 +238,9 @@ get_be_int64() {
 /**
  * Extracts an unsigned big-endian 16-bit integer.
  */
-INLINE PN_uint16 StreamReader::
+INLINE uint16_t StreamReader::
 get_be_uint16() {
-  PN_uint16 readval, retval;
+  uint16_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -250,9 +250,9 @@ get_be_uint16() {
 /**
  * Extracts an unsigned big-endian 32-bit integer.
  */
-INLINE PN_uint32 StreamReader::
+INLINE uint32_t StreamReader::
 get_be_uint32() {
-  PN_uint32 readval, retval;
+  uint32_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
@@ -262,9 +262,9 @@ get_be_uint32() {
 /**
  * Extracts an unsigned big-endian 64-bit integer.
  */
-INLINE PN_uint64 StreamReader::
+INLINE uint64_t StreamReader::
 get_be_uint64() {
-  PN_uint64 readval, retval;
+  uint64_t readval, retval;
   _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));

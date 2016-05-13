@@ -20,7 +20,7 @@ InterrogateDatabase *InterrogateDatabase::_global_ptr = NULL;
 int InterrogateDatabase::_file_major_version = 0;
 int InterrogateDatabase::_file_minor_version = 0;
 int InterrogateDatabase::_current_major_version = 3;
-int InterrogateDatabase::_current_minor_version = 1;
+int InterrogateDatabase::_current_minor_version = 2;
 
 /**
  *

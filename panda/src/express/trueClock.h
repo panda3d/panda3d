@@ -54,7 +54,7 @@ PUBLISHED:
 
   INLINE static TrueClock *get_global_ptr();
 
-  bool set_cpu_affinity(PN_uint32 mask) const;
+  bool set_cpu_affinity(uint32_t mask) const;
 
 protected:
   TrueClock();
@@ -69,10 +69,10 @@ protected:
   void set_time_scale(double time, double new_time_scale);
 
   bool _has_high_res;
-  PN_int64 _init_count;
+  int64_t _init_count;
   double _frequency, _recip_frequency;
   int _init_tc;
-  PN_uint64 _init_tod;
+  uint64_t _init_tod;
 
   // The rest of the data structures in this block are strictly for
   // implementing paranoid_clock: they are designed to allow us to cross-check

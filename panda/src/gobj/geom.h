@@ -95,6 +95,7 @@ PUBLISHED:
   void add_primitive(const GeomPrimitive *primitive);
   void remove_primitive(int i);
   void clear_primitives();
+  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive);
 
   INLINE PT(Geom) decompose() const;
   INLINE PT(Geom) doubleside() const;

@@ -90,7 +90,7 @@ get_short_raw_time() {
  * accurate and seems to lose seconds of time per hour, and (d) someone could
  * be running a program such as Speed Gear which munges this value anyway.
  */
-    PN_int64 count;
+    int64_t count;
     QueryPerformanceCounter((LARGE_INTEGER *)&count);
 
     time = (double)(count - _init_count) * _recip_frequency;
@@ -114,7 +114,7 @@ typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
 typedef BOOL (WINAPI * PFNGETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR*, DWORD_PTR*);
 
 bool TrueClock::
-set_cpu_affinity(PN_uint32 mask) const {
+set_cpu_affinity(uint32_t mask) const {
   HMODULE hker = GetModuleHandle("kernel32");
   if (hker != 0) {
     PFNGETPROCESSAFFINITYMASK gp = (PFNGETPROCESSAFFINITYMASK)
@@ -163,7 +163,7 @@ TrueClock() {
   }
 
   if (get_use_high_res_clock()) {
-    PN_int64 int_frequency;
+    int64_t int_frequency;
     _has_high_res =
       (QueryPerformanceFrequency((LARGE_INTEGER *)&int_frequency) != 0);
     if (_has_high_res) {
@@ -223,7 +223,7 @@ TrueClock() {
 double TrueClock::
 correct_time(double time) {
   // First, get the current time of day measurement.
-  PN_uint64 int_tod;
+  uint64_t int_tod;
   GetSystemTimeAsFileTime((FILETIME *)&int_tod);
   double tod = (double)(int_tod - _init_tod) * _00000001;
 
@@ -595,7 +595,7 @@ get_short_raw_time() {
  *
  */
 bool TrueClock::
-set_cpu_affinity(PN_uint32 mask) const {
+set_cpu_affinity(uint32_t mask) const {
   return false;
 }
 

@@ -187,15 +187,9 @@ get_tag_keys() const {
   vector_string keys;
   _this->get_tag_keys(keys);
 
-  PyObject *result = PyList_New(keys.size());
+  PyObject *result = PyTuple_New(keys.size());
   for (size_t i = 0; i < keys.size(); ++i) {
-    const string &tag_name = keys[i];
-#if PY_MAJOR_VERSION >= 3
-    PyObject *str = PyUnicode_FromStringAndSize(tag_name.data(), tag_name.size());
-#else
-    PyObject *str = PyString_FromStringAndSize(tag_name.data(), tag_name.size());
-#endif
-    PyList_SET_ITEM(result, i, str);
+    PyTuple_SET_ITEM(result, i, Dtool_WrapValue(keys[i]));
   }
 
   return result;
@@ -209,15 +203,9 @@ get_python_tag_keys() const {
   vector_string keys;
   get_python_tag_keys(keys);
 
-  PyObject *result = PyList_New(keys.size());
+  PyObject *result = PyTuple_New(keys.size());
   for (size_t i = 0; i < keys.size(); ++i) {
-    const string &tag_name = keys[i];
-#if PY_MAJOR_VERSION >= 3
-    PyObject *str = PyUnicode_FromStringAndSize(tag_name.data(), tag_name.size());
-#else
-    PyObject *str = PyString_FromStringAndSize(tag_name.data(), tag_name.size());
-#endif
-    PyList_SET_ITEM(result, i, str);
+    PyTuple_SET_ITEM(result, i, Dtool_WrapValue(keys[i]));
   }
 
   return result;

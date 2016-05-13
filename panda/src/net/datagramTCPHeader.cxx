@@ -31,7 +31,7 @@ DatagramTCPHeader(const NetDatagram &datagram, int header_size) {
 
   case datagram_tcp16_header_size:
     {
-      PN_uint16 size = str.length();
+      uint16_t size = str.length();
       nassertv(size == str.length());
       _header.add_uint16(size);
     }
@@ -39,7 +39,7 @@ DatagramTCPHeader(const NetDatagram &datagram, int header_size) {
 
   case datagram_tcp32_header_size:
     {
-      PN_uint32 size = str.length();
+      uint32_t size = str.length();
       nassertv(size == str.length());
       _header.add_uint32(size);
     }

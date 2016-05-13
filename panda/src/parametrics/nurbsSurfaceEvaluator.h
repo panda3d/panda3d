@@ -79,6 +79,11 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+  MAKE_PROPERTY(u_order, get_u_order, set_u_order);
+  MAKE_PROPERTY(v_order, get_v_order, set_v_order);
+  MAKE_SEQ_PROPERTY(u_knots, get_num_u_knots, get_u_knot, set_u_knot);
+  MAKE_SEQ_PROPERTY(v_knots, get_num_v_knots, get_v_knot, set_v_knot);
+
 public:
   typedef epvector<LVecBase4> Vert4Array;
   typedef pvector<LPoint3> Vert3Array;

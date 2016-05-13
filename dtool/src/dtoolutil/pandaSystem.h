@@ -50,6 +50,7 @@ PUBLISHED:
   size_t get_num_systems() const;
   string get_system(size_t n) const;
   MAKE_SEQ(get_systems, get_num_systems, get_system);
+  MAKE_SEQ_PROPERTY(systems, get_num_systems, get_system);
 
   string get_system_tag(const string &system, const string &tag) const;
 
