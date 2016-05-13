@@ -642,6 +642,8 @@ map_key(int which) {
     return KeyboardButton::caps_lock();
   case 27:
     return KeyboardButton::escape();
+  case 32:
+    return KeyboardButton::space();
   case 33:
     return KeyboardButton::page_up();
   case 34:

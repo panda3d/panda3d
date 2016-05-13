@@ -482,50 +482,40 @@ set_time_scale(double time, double new_time_scale) {
 
 #elif defined(__EMSCRIPTEN__)
 
-////////////////////////////////////////////////////////////////////
-//
-// The Emscripten implementation.  This uses either the JavaScript
-// function performance.now() if available, otherwise Date.now().
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The Emscripten implementation.  This uses either the JavaScript function
+ * performance.now() if available, otherwise Date.now().
+ */
 
 #include <emscripten.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_long_time, Emscripten implementation
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 double TrueClock::
 get_long_time() {
   return emscripten_get_now() * 0.001;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_short_raw_time, Emscripten implementation
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 double TrueClock::
 get_short_raw_time() {
   return emscripten_get_now() * 0.001;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::set_cpu_affinity, Emscripten implementation
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool TrueClock::
-set_cpu_affinity(PN_uint32 mask) const {
+set_cpu_affinity(uint32_t mask) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::Constructor, Emscripten implementation
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TrueClock::
 TrueClock() {
 }

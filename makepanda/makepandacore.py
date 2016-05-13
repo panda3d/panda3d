@@ -2875,6 +2875,8 @@ def GetExtensionSuffix():
     target = GetTarget()
     if target == 'windows':
         return '.pyd'
+    elif target == 'emscripten':
+        return '.bc'
     else:
         return '.so'
 
