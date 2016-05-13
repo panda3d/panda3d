@@ -116,7 +116,6 @@ PUBLISHED:
   // Special
   void set_transform_dirty();
 
-  MAKE_PROPERTY(num_shapes, get_num_shapes);
   MAKE_SEQ_PROPERTY(shapes, get_num_shapes, get_shape);
   MAKE_SEQ_PROPERTY(shape_pos, get_num_shapes, get_shape_pos);
   MAKE_SEQ_PROPERTY(shape_mat, get_num_shapes, get_shape_mat);

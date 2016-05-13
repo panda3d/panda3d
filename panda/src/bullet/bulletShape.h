@@ -45,7 +45,7 @@ PUBLISHED:
   PN_stdfloat get_margin() const;
 
   BoundingSphere get_shape_bounds() const;
-
+  
   MAKE_PROPERTY(polyhedral, is_polyhedral);
   MAKE_PROPERTY(convex, is_convex);
   MAKE_PROPERTY(convex_2d, is_convex_2d);
@@ -59,7 +59,6 @@ PUBLISHED:
 
 public:
   virtual btCollisionShape *ptr() const = 0;
-
   LVecBase3 get_local_scale() const;
   void set_local_scale(const LVecBase3 &scale);
 

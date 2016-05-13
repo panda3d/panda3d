@@ -216,7 +216,6 @@ PUBLISHED:
   MAKE_PROPERTY(aabb, get_aabb);
   MAKE_PROPERTY(num_clusters, get_num_clusters);
   MAKE_SEQ_PROPERTY(materials, get_num_materials, get_material);
-  MAKE_PROPERTY(num_nodes, get_num_nodes);
   MAKE_SEQ_PROPERTY(nodes, get_num_nodes, get_node);
 
 public:

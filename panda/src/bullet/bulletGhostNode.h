@@ -39,7 +39,6 @@ PUBLISHED:
   INLINE PandaNode *get_overlapping_node(int idx) const;
   MAKE_SEQ(get_overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
   
-  MAKE_PROPERTY(num_overlapping_nodes, get_num_overlapping_nodes);
   MAKE_SEQ_PROPERTY(overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
 
 public:
