@@ -108,7 +108,7 @@ set_int_word(size_t n, int value) {
  * words.
  */
 void ConfigDeclaration::
-set_int64_word(size_t n, PN_int64 value) {
+set_int64_word(size_t n, int64_t value) {
   set_string_word(n, format_string(value));
 
   _words[n]._flags |= (F_checked_int64 | F_valid_int64);
@@ -294,8 +294,8 @@ check_int64_word(size_t n) {
         ++pi;
         // Negative number.
         while (pi != word._str.end() && isdigit(*pi)) {
-          PN_int64 next = word._int_64 * 10 - (int)((*pi) - '0');
-          if ((PN_int64)(next / 10) != word._int_64) {
+          int64_t next = word._int_64 * 10 - (int)((*pi) - '0');
+          if ((int64_t)(next / 10) != word._int_64) {
             // Overflow.
             overflow = true;
           }
@@ -306,8 +306,8 @@ check_int64_word(size_t n) {
       } else {
         // Positive number.
         while (pi != word._str.end() && isdigit(*pi)) {
-          PN_int64 next = word._int_64 * 10 + (int)((*pi) - '0');
-          if ((PN_int64)(next / 10) != word._int_64) {
+          int64_t next = word._int_64 * 10 + (int)((*pi) - '0');
+          if ((int64_t)(next / 10) != word._int_64) {
             // Overflow.
             overflow = true;
           }

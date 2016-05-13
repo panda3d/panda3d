@@ -15,8 +15,8 @@
  * Adds a linear sequence of uint32 words to the hash.
  */
 INLINE size_t AddHash::
-add_hash(size_t start, const PN_uint32 *words, size_t num_words) {
-  return (size_t)hashword(words, num_words, (PN_uint32)start);
+add_hash(size_t start, const uint32_t *words, size_t num_words) {
+  return (size_t)hashword(words, num_words, (uint32_t)start);
 }
 
 /**
@@ -24,7 +24,7 @@ add_hash(size_t start, const PN_uint32 *words, size_t num_words) {
  */
 INLINE size_t AddHash::
 add_hash(size_t start, const PN_float32 *floats, size_t num_floats) {
-  return add_hash(start, (const PN_uint32 *)floats, num_floats);
+  return add_hash(start, (const uint32_t *)floats, num_floats);
 }
 
 /**
@@ -32,5 +32,5 @@ add_hash(size_t start, const PN_float32 *floats, size_t num_floats) {
  */
 INLINE size_t AddHash::
 add_hash(size_t start, const PN_float64 *floats, size_t num_floats) {
-  return add_hash(start, (const PN_uint32 *)floats, num_floats * 2);
+  return add_hash(start, (const uint32_t *)floats, num_floats * 2);
 }

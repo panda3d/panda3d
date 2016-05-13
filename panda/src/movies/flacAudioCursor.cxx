@@ -114,7 +114,7 @@ seek(double t) {
  * audio will be interleaved.
  */
 void FlacAudioCursor::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
   _samples_read += drflac_read_s16(_drflac, desired, data) / _audio_channels;
 }

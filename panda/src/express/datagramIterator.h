@@ -36,25 +36,25 @@ PUBLISHED:
   INLINE ~DatagramIterator();
 
   INLINE bool get_bool();
-  INLINE PN_int8 get_int8();
-  INLINE PN_uint8 get_uint8();
+  INLINE int8_t get_int8();
+  INLINE uint8_t get_uint8();
 
-  INLINE PN_int16 get_int16();
-  INLINE PN_int32 get_int32();
-  INLINE PN_int64 get_int64();
-  INLINE PN_uint16 get_uint16();
-  INLINE PN_uint32 get_uint32();
-  INLINE PN_uint64 get_uint64();
+  INLINE int16_t get_int16();
+  INLINE int32_t get_int32();
+  INLINE int64_t get_int64();
+  INLINE uint16_t get_uint16();
+  INLINE uint32_t get_uint32();
+  INLINE uint64_t get_uint64();
   INLINE PN_float32 get_float32();
   INLINE PN_float64 get_float64();
   INLINE PN_stdfloat get_stdfloat();
 
-  INLINE PN_int16 get_be_int16();
-  INLINE PN_int32 get_be_int32();
-  INLINE PN_int64 get_be_int64();
-  INLINE PN_uint16 get_be_uint16();
-  INLINE PN_uint32 get_be_uint32();
-  INLINE PN_uint64 get_be_uint64();
+  INLINE int16_t get_be_int16();
+  INLINE int32_t get_be_int32();
+  INLINE int64_t get_be_int64();
+  INLINE uint16_t get_be_uint16();
+  INLINE uint32_t get_be_uint32();
+  INLINE uint64_t get_be_uint64();
   INLINE PN_float32 get_be_float32();
   INLINE PN_float64 get_be_float64();
 

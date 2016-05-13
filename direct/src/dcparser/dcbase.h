@@ -102,17 +102,7 @@ typedef string Filename;
 #define pmap map
 #define pset set
 
-#ifdef WIN32
-typedef __int64 PN_int64;
-typedef unsigned __int64 PN_uint64;
-#else
-typedef long long PN_int64;
-typedef unsigned long long PN_uint64;
-#endif
-
-typedef unsigned char PN_uint8;
-typedef unsigned short PN_uint16;
-typedef unsigned int PN_uint32;
+#include <stdint.h>
 
 typedef ifstream pifstream;
 typedef ofstream pofstream;
@@ -121,8 +111,8 @@ typedef fstream pfstream;
 #endif  // WITHIN_PANDA
 
 // typedef       unsigned long   CHANNEL_TYPE;
-typedef       PN_uint64   CHANNEL_TYPE;
-typedef       PN_uint32   DOID_TYPE;
-typedef       PN_uint32   ZONEID_TYPE;
+typedef       uint64_t   CHANNEL_TYPE;
+typedef       uint32_t   DOID_TYPE;
+typedef       uint32_t   ZONEID_TYPE;
 
 #endif  // DCBASE_H

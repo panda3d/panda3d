@@ -511,10 +511,10 @@ TypeRegistry() {
   // Here's a few sanity checks on the sizes of our words.  We have to put it
   // here, at runtime, since there doesn't appear to be a cross-platform
   // compile-time way to verify that we've chosen the right word sizes.
-  assert(sizeof(PN_uint8) == 1 && sizeof(PN_int8) == 1);
-  assert(sizeof(PN_uint16) == 2 && sizeof(PN_int16) == 2);
-  assert(sizeof(PN_uint32) == 4 && sizeof(PN_int32) == 4);
-  assert(sizeof(PN_uint64) == 8 && sizeof(PN_int64) == 8);
+  assert(sizeof(uint8_t) == 1 && sizeof(int8_t) == 1);
+  assert(sizeof(uint16_t) == 2 && sizeof(int16_t) == 2);
+  assert(sizeof(uint32_t) == 4 && sizeof(int32_t) == 4);
+  assert(sizeof(uint64_t) == 8 && sizeof(int64_t) == 8);
 
   assert(sizeof(PN_float32) == 4);
   assert(sizeof(PN_float64) == 8);

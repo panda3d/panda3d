@@ -75,9 +75,6 @@ PUBLISHED:
   INLINE PN_stdfloat get_target_triangle_width() const;
   MAKE_PROPERTY(target_triangle_width, get_target_triangle_width, set_target_triangle_width);
 
-  INLINE Texture* get_heightfield_tex() const;
-  MAKE_PROPERTY(heightfield_tex, get_heightfield_tex);
-
   LPoint3 uv_to_world(const LTexCoord& coord) const;
   INLINE LPoint3 uv_to_world(PN_stdfloat u, PN_stdfloat v) const;
 

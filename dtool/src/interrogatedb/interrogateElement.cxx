@@ -27,7 +27,9 @@ output(ostream &out) const {
       << _getter << " "
       << _setter << " "
       << _has_function << " "
-      << _clear_function << " ";
+      << _clear_function << " "
+      << _del_function << " "
+      << _length_function << " ";
   idf_output_string(out, _scoped_name);
   idf_output_string(out, _comment, '\n');
 }
@@ -41,6 +43,9 @@ input(istream &in) {
   in >> _flags >> _type >> _getter >> _setter;
   if (InterrogateDatabase::get_file_minor_version() >= 1) {
     in >> _has_function >> _clear_function;
+    if (InterrogateDatabase::get_file_minor_version() >= 2) {
+      in >> _del_function >> _length_function;
+    }
   }
   idf_input_string(in, _scoped_name);
   idf_input_string(in, _comment);
@@ -55,4 +60,8 @@ remap_indices(const IndexRemapper &remap) {
   _type = remap.map_from(_type);
   _getter = remap.map_from(_getter);
   _setter = remap.map_from(_setter);
+  _has_function = remap.map_from(_has_function);
+  _clear_function = remap.map_from(_clear_function);
+  _del_function = remap.map_from(_del_function);
+  _length_function = remap.map_from(_length_function);
 }

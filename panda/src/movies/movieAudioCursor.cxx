@@ -46,7 +46,7 @@ MovieAudioCursor::
  * audio will be interleaved.
  */
 void MovieAudioCursor::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
 
   // This is the null implementation, which generates pure silence.  Normally,
   // this method will be overridden by a subclass.
@@ -71,7 +71,7 @@ read_samples(int n, PN_int16 *data) {
  */
 void MovieAudioCursor::
 read_samples(int n, Datagram *dg) {
-  PN_int16 tmp[4096];
+  int16_t tmp[4096];
   while (n > 0) {
     int blocksize = (4096 / _audio_channels);
     if (blocksize > n) blocksize = n;
@@ -95,14 +95,14 @@ read_samples(int n, Datagram *dg) {
 string MovieAudioCursor::
 read_samples(int n) {
   ostringstream result;
-  PN_int16 tmp[4096];
+  int16_t tmp[4096];
   while (n > 0) {
     int blocksize = (4096 / _audio_channels);
     if (blocksize > n) blocksize = n;
     int words = blocksize * _audio_channels;
     read_samples(blocksize, tmp);
     for (int i=0; i<words; i++) {
-      PN_int16 word = tmp[i];
+      int16_t word = tmp[i];
       result.put((char)(word & 255));
       result.put((char)((word>>8) & 255));
     }

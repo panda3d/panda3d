@@ -44,6 +44,10 @@ PUBLISHED:
   MAKE_SEQ(get_extensions, get_num_extensions, get_extension);
   virtual string get_suggested_extension() const;
 
+  MAKE_PROPERTY(name, get_name);
+  MAKE_SEQ_PROPERTY(extensions, get_num_extensions, get_extension);
+  MAKE_PROPERTY(suggested_extension, get_suggested_extension);
+
 public:
   virtual bool has_magic_number() const;
   virtual bool matches_magic_number(const string &magic_number) const;

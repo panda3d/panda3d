@@ -19,30 +19,7 @@
 // This header file defines a number of typedefs that correspond to the
 // various numeric types for unsigned and signed numbers of various widths.
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
-typedef signed __int8  PN_int8;
-typedef signed __int16 PN_int16;
-typedef signed __int32 PN_int32;
-typedef signed __int64 PN_int64;
-
-typedef unsigned __int8  PN_uint8;
-typedef unsigned __int16 PN_uint16;
-typedef unsigned __int32 PN_uint32;
-typedef unsigned __int64 PN_uint64;
-
-#else
-
-typedef signed char PN_int8;
-typedef short int PN_int16;
-typedef int PN_int32;
-typedef long long int PN_int64;
-
-typedef unsigned char PN_uint8;
-typedef unsigned short int PN_uint16;
-typedef unsigned int PN_uint32;
-typedef unsigned long long int PN_uint64;
-
-#endif
+#include <stdint.h>
 
 typedef double PN_float64;
 typedef float PN_float32;

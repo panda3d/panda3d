@@ -1163,7 +1163,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
         // 32-bit index case.
         PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
         idx_handle->unclean_set_num_rows(quads.size() * 6);
-        PN_uint32 *idx_ptr = (PN_uint32 *)idx_handle->get_write_pointer();
+        uint32_t *idx_ptr = (uint32_t *)idx_handle->get_write_pointer();
 
         QuadDefs::const_iterator qi;
         for (qi = quads.begin(); qi != quads.end(); ++qi) {
@@ -1219,7 +1219,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
         // 16-bit index case.
         PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
         idx_handle->unclean_set_num_rows(quads.size() * 6);
-        PN_uint16 *idx_ptr = (PN_uint16 *)idx_handle->get_write_pointer();
+        uint16_t *idx_ptr = (uint16_t *)idx_handle->get_write_pointer();
 
         QuadDefs::const_iterator qi;
         for (qi = quads.begin(); qi != quads.end(); ++qi) {

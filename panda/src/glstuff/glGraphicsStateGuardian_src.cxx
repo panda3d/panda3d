@@ -10704,7 +10704,7 @@ upload_usage_texture(int width, int height) {
 
 
   // Allocate a temporary array large enough to contain the toplevel mipmap.
-  PN_uint32 *buffer = (PN_uint32 *)PANDA_MALLOC_ARRAY(width * height * 4);
+  uint32_t *buffer = (uint32_t *)PANDA_MALLOC_ARRAY(width * height * 4);
 
   int n = 0;
   while (true) {
@@ -10717,7 +10717,7 @@ upload_usage_texture(int width, int height) {
       struct {
         unsigned char r, g, b, a;
       } b;
-      PN_uint32 w;
+      uint32_t w;
     } store;
 
     store.b.r = (unsigned char)(c[0] * 255.0f);

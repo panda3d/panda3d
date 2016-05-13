@@ -100,5 +100,5 @@ tell() const {
  */
 INLINE void MovieAudioCursor::
 skip_samples(int n) {
-  read_samples(n, (PN_int16*)0);
+  read_samples(n, (int16_t*)0);
 }

@@ -25,14 +25,7 @@ match_files(const Filename &cwd) const {
 
   PyObject *result = PyList_New(contents.size());
   for (size_t i = 0; i < contents.size(); ++i) {
-    const string &filename = contents[i];
-#if PY_MAJOR_VERSION >= 3
-    // This function expects UTF-8.
-    PyObject *str = PyUnicode_FromStringAndSize(filename.data(), filename.size());
-#else
-    PyObject *str = PyString_FromStringAndSize(filename.data(), filename.size());
-#endif
-    PyList_SET_ITEM(result, i, str);
+    PyList_SET_ITEM(result, i, Dtool_WrapValue(contents[i]));
   }
 
   return result;

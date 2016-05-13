@@ -25,8 +25,8 @@
  */
 class EXPCL_DTOOL AddHash {
 public:
-  INLINE static size_t add_hash(size_t start, const PN_uint32 *words, size_t num_words);
-  static size_t add_hash(size_t start, const PN_uint8 *bytes, size_t num_bytes);
+  INLINE static size_t add_hash(size_t start, const uint32_t *words, size_t num_words);
+  static size_t add_hash(size_t start, const uint8_t *bytes, size_t num_bytes);
   INLINE static size_t add_hash(size_t start, const PN_float32 *floats, size_t num_floats);
   INLINE static size_t add_hash(size_t start, const PN_float64 *floats, size_t num_floats);
 };

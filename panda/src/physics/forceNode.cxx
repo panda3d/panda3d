@@ -65,6 +65,20 @@ add_forces_from(const ForceNode &other) {
 }
 
 /**
+ * replace operation
+ */
+void ForceNode::
+set_force(size_t index, BaseForce *force) {
+  nassertv(index <= _forces.size());
+
+  _forces[index]->_force_node = (ForceNode *)NULL;
+  _forces[index]->_force_node_path.clear();
+  _forces[index] = force;
+  force->_force_node = this;
+  force->_force_node_path = NodePath(this);
+}
+
+/**
  * remove operation
  */
 void ForceNode::
@@ -81,8 +95,8 @@ remove_force(BaseForce *f) {
  * remove operation
  */
 void ForceNode::
-remove_force(int index) {
-  nassertv(index >= 0 && index <= (int)_forces.size());
+remove_force(size_t index) {
+  nassertv(index <= _forces.size());
 
   pvector< PT(BaseForce) >::iterator remove;
   remove = _forces.begin() + index;

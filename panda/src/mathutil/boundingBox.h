@@ -53,6 +53,9 @@ PUBLISHED:
   INLINE_MATHUTIL LPlane get_plane(int n) const;
   MAKE_SEQ(get_planes, get_num_planes, get_plane);
 
+  MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
+  MAKE_SEQ_PROPERTY(planes, get_num_planes, get_plane);
+
   INLINE_MATHUTIL void set_min_max(const LPoint3 &min, const LPoint3 &max);
 
 public:

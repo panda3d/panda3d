@@ -11,16 +11,6 @@
  * @date 2011-01-02
  */
 
-#ifdef FLOATTYPE_IS_INT
-#if PY_MAJOR_VERSION >= 3
-#define PY_FROM_FLOATTYPE PyLong_FromLong
-#else
-#define PY_FROM_FLOATTYPE PyInt_FromLong
-#endif
-#else
-#define PY_FROM_FLOATTYPE PyFloat_FromDouble
-#endif
-
 /**
  *
  */
@@ -56,9 +46,9 @@ __getattr__(PyObject *self, const string &attr_name) const {
   switch (attr_name.size()) {
     case 1:
       if (attr_name[0] == 'w') {
-        return PY_FROM_FLOATTYPE(_this->_v(3));
+        return Dtool_WrapValue(_this->_v(3));
       } else {
-        return PY_FROM_FLOATTYPE(_this->_v(attr_name[0] - 'x'));
+        return Dtool_WrapValue(_this->_v(attr_name[0] - 'x'));
       }
 
     case 2: {
@@ -95,5 +85,3 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   // Upcall to LVecBase4.
   return invoke_extension<FLOATNAME(LVecBase4)>(_this).__setattr__(self, attr_name, assign);
 }
-
-#undef PY_FROM_FLOATTYPE

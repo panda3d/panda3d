@@ -120,6 +120,11 @@ PUBLISHED:
   MAKE_SEQ(get_morph_bases, get_num_morphs, get_morph_base);
   MAKE_SEQ(get_morph_deltas, get_num_morphs, get_morph_delta);
 
+  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array, remove_array);
+  MAKE_SEQ_PROPERTY(columns, get_num_columns, get_column);
+  MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
+  MAKE_SEQ_PROPERTY(vectors, get_num_vectors, get_vector);
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
   void write_with_data(ostream &out, int indent_level,

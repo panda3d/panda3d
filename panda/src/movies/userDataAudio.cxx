@@ -58,7 +58,7 @@ open() {
  * audio will be interleaved.
  */
 void UserDataAudio::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   int ready = (_data.size() / _desired_channels);
   int desired = n * _desired_channels;
   int avail = ready * _desired_channels;
@@ -78,7 +78,7 @@ read_samples(int n, PN_int16 *data) {
  * Appends audio samples to the buffer.
  */
 void UserDataAudio::
-append(PN_int16 *data, int n) {
+append(int16_t *data, int n) {
   nassertv(!_aborted);
   int words = n * _desired_channels;
   for (int i=0; i<words; i++) {
@@ -114,7 +114,7 @@ append(const string &str) {
   for (int i=0; i<words; i++) {
     int c1 = ((unsigned char)str[i*2+0]);
     int c2 = ((unsigned char)str[i*2+1]);
-    PN_int16 n = (c1 | (c2 << 8));
+    int16_t n = (c1 | (c2 << 8));
     _data.push_back(n);
   }
 }

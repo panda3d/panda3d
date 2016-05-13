@@ -124,33 +124,8 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
  *
  */
 void CPPScope::
-add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
-               const cppyyltype &pos) {
+add_enum_value(CPPInstance *inst) {
   inst->_vis = _current_vis;
-
-  if (inst->_leading_comment == (CPPCommentBlock *)NULL) {
-    // Same-line comment?
-    CPPCommentBlock *comment =
-      preprocessor->get_comment_on(pos.first_line, pos.file);
-
-    if (comment == (CPPCommentBlock *)NULL) {
-      // Nope.  Check for a comment before this line.
-      comment =
-        preprocessor->get_comment_before(pos.first_line, pos.file);
-
-      if (comment != NULL) {
-        // This is a bit of a hack, but it prevents us from picking up a same-
-        // line comment from the previous line.
-        if (comment->_line_number != pos.first_line - 1 ||
-            comment->_col_number <= pos.first_column) {
-
-          inst->_leading_comment = comment;
-        }
-      }
-    } else {
-      inst->_leading_comment = comment;
-    }
-  }
 
   string name = inst->get_simple_name();
   if (!name.empty()) {
@@ -183,6 +158,8 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
     break;
 
   case CPPExtensionType::T_enum:
+  case CPPExtensionType::T_enum_struct:
+  case CPPExtensionType::T_enum_class:
     _enums[name] = type;
     break;
   }
@@ -606,6 +583,11 @@ find_scope(const string &name, bool recurse) const {
     if (st != NULL) {
       return st->_scope;
     }
+
+    CPPEnumType *et = type->as_enum_type();
+    if (et != NULL) {
+      return et->_scope;
+    }
   }
 
   Using::const_iterator ui;
@@ -645,11 +627,16 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
   }
 
   CPPStructType *st = type->as_struct_type();
-  if (st == NULL) {
-    return NULL;
+  if (st != NULL) {
+    return st->_scope;
   }
 
-  return st->_scope;
+  CPPEnumType *et = type->as_enum_type();
+  if (et != NULL) {
+    return et->_scope;
+  }
+
+  return NULL;
 }
 
 /**
