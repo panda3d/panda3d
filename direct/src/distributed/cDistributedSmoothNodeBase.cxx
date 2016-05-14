@@ -358,7 +358,7 @@ finish_send_update(DCPacker &packer) {
  * Appends the timestamp and sends the update.
  */
 void CDistributedSmoothNodeBase::
-set_curr_l(PN_uint64 l) {
+set_curr_l(uint64_t l) {
   _currL[1] = l;
 }
 

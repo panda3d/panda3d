@@ -82,9 +82,13 @@ PUBLISHED:
   AsyncTaskCollection get_tasks() const;
   AsyncTaskCollection get_active_tasks() const;
   AsyncTaskCollection get_sleeping_tasks() const;
+  MAKE_PROPERTY(tasks, get_tasks);
+  MAKE_PROPERTY(active_tasks, get_active_tasks);
+  MAKE_PROPERTY(sleeping_tasks, get_sleeping_tasks);
 
   void poll();
   double get_next_wake_time() const;
+  MAKE_PROPERTY(next_wake_time, get_next_wake_time);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

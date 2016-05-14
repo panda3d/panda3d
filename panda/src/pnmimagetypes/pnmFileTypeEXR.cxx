@@ -24,6 +24,11 @@
 #include <ImfOutputFile.h>
 #include <ImfChannelList.h>
 #include <ImfVersion.h>
+#include <ImfIO.h>
+
+#ifndef IMATH_NAMESPACE
+#define IMATH_NAMESPACE Imath
+#endif
 
 TypeHandle PNMFileTypeEXR::_type_handle;
 
@@ -214,7 +219,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   const char *possible_channel_names[] = { "R", "G", "B", "Y", "A", NULL };
   for (const char **pni = possible_channel_names; *pni != NULL; ++pni) {
     std::string name = *pni;
-    IMF::ChannelList::ConstIterator ci = channels.find(name);
+    IMF::ChannelList::ConstIterator ci = channels.find(name.c_str());
     if (ci != channels.end()) {
       // Found a match.
       if (name == "Y" && !_channel_names.empty()) {

@@ -354,7 +354,7 @@ clear() {
 /**
  *
  */
-INLINE int EggPrimitive::
+INLINE size_t EggPrimitive::
 get_num_vertices() const {
   return size();
 }
@@ -365,8 +365,8 @@ get_num_vertices() const {
  * mess with the iterators.
  */
 INLINE void EggPrimitive::
-set_vertex(int index, EggVertex *vertex) {
-  nassertv(index >= 0 && index < (int)size());
+set_vertex(size_t index, EggVertex *vertex) {
+  nassertv(index < size());
   replace(begin() + index, vertex);
 }
 
@@ -374,8 +374,8 @@ set_vertex(int index, EggVertex *vertex) {
  * Returns a particular index based on its index number.
  */
 INLINE EggVertex *EggPrimitive::
-get_vertex(int index) const {
-  nassertr(index >= 0 && index < (int)size(), NULL);
+get_vertex(size_t index) const {
+  nassertr(index < size(), NULL);
   return *(begin() + index);
 }
 

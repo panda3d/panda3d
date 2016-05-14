@@ -18,6 +18,6 @@
 #pragma implementation
 #endif
 
-template class BitMask<PN_uint16, 16>;
-template class BitMask<PN_uint32, 32>;
-template class BitMask<PN_uint64, 64>;
+template class BitMask<uint16_t, 16>;
+template class BitMask<uint32_t, 32>;
+template class BitMask<uint64_t, 64>;

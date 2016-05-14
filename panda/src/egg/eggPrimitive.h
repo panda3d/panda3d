@@ -105,6 +105,14 @@ PUBLISHED:
   INLINE void set_bface_flag(bool flag);
   INLINE bool get_bface_flag() const;
 
+  MAKE_PROPERTY(sort_name, get_sort_name);
+  MAKE_PROPERTY(shading, get_shading);
+  MAKE_PROPERTY(connected_shading, get_connected_shading);
+
+  MAKE_SEQ_PROPERTY(textures, get_num_textures, get_texture);
+  MAKE_PROPERTY2(material, has_material, get_material, set_material, clear_material);
+  MAKE_PROPERTY(bface_flag, get_bface_flag, set_bface_flag);
+
   void copy_attributes(const EggAttributes &other);
   void copy_attributes(const EggPrimitive &other);
 
@@ -166,15 +174,19 @@ PUBLISHED:
 
   EggVertex *add_vertex(EggVertex *vertex);
   EggVertex *remove_vertex(EggVertex *vertex);
+  void remove_vertex(size_t index);
   void copy_vertices(const EggPrimitive &other);
 
   // These are shorthands if you don't want to use the iterators.
-  INLINE int get_num_vertices() const;
-  INLINE void set_vertex(int index, EggVertex *vertex);
-  INLINE EggVertex *get_vertex(int index) const;
+  INLINE size_t get_num_vertices() const;
+  INLINE void set_vertex(size_t index, EggVertex *vertex);
+  INLINE EggVertex *get_vertex(size_t index) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE EggVertexPool *get_pool() const;
+
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex, set_vertex, remove_vertex);
+  MAKE_PROPERTY(pool, get_pool);
 
   virtual void write(ostream &out, int indent_level) const=0;
 

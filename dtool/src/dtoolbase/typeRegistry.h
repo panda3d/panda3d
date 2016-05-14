@@ -79,6 +79,9 @@ PUBLISHED:
   // ptr() returns the pointer to the global TypeRegistry object.
   static TypeRegistry *ptr();
 
+  MAKE_SEQ_PROPERTY(typehandles, get_num_typehandles, get_typehandle);
+  MAKE_SEQ_PROPERTY(root_classes, get_num_root_classes, get_root_class);
+
 private:
   // The TypeRegistry class should never be constructed by user code.  There
   // is only one in the universe, and it constructs itself!

@@ -127,15 +127,15 @@ init_libexpress() {
 
   // This is a fine place to ensure that the numeric types have been chosen
   // correctly.
-  nassertv(sizeof(PN_int8) == 1 && sizeof(PN_uint8) == 1);
-  nassertv(sizeof(PN_int16) == 2 && sizeof(PN_uint16) == 2);
-  nassertv(sizeof(PN_int32) == 4 && sizeof(PN_uint32) == 4);
-  nassertv(sizeof(PN_int64) == 8 && sizeof(PN_uint64) == 8);
+  nassertv(sizeof(int8_t) == 1 && sizeof(uint8_t) == 1);
+  nassertv(sizeof(int16_t) == 2 && sizeof(uint16_t) == 2);
+  nassertv(sizeof(int32_t) == 4 && sizeof(uint32_t) == 4);
+  nassertv(sizeof(int64_t) == 8 && sizeof(uint64_t) == 8);
   nassertv(sizeof(PN_float32) == 4);
   nassertv(sizeof(PN_float64) == 8);
 
   // Also, ensure that we have the right endianness.
-  PN_uint32 word;
+  uint32_t word;
   memcpy(&word, "\1\2\3\4", 4);
 #ifdef WORDS_BIGENDIAN
   nassertv(word == 0x01020304);

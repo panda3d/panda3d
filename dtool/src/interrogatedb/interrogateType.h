@@ -65,6 +65,7 @@ public:
   INLINE int get_array_size() const;
 
   INLINE bool is_enum() const;
+  INLINE bool is_scoped_enum() const;
   INLINE int number_of_enum_values() const;
   INLINE const string &get_enum_value_name(int n) const;
   INLINE const string &get_enum_value_scoped_name(int n) const;
@@ -136,6 +137,7 @@ private:
     F_unpublished          = 0x100000,
     F_typedef              = 0x200000,
     F_array                = 0x400000,
+    F_scoped_enum          = 0x800000,
   };
 
 public:

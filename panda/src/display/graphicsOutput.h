@@ -195,6 +195,7 @@ PUBLISHED:
   INLINE void set_child_sort(int child_sort);
   INLINE void clear_child_sort();
   INLINE int get_child_sort() const;
+  MAKE_PROPERTY(child_sort, get_child_sort, set_child_sort);
 
   INLINE void trigger_copy();
 
@@ -216,10 +217,12 @@ PUBLISHED:
   int get_num_display_regions() const;
   PT(DisplayRegion) get_display_region(int n) const;
   MAKE_SEQ(get_display_regions, get_num_display_regions, get_display_region);
+  MAKE_SEQ_PROPERTY(display_regions, get_num_display_regions, get_display_region);
 
   int get_num_active_display_regions() const;
   PT(DisplayRegion) get_active_display_region(int n) const;
   MAKE_SEQ(get_active_display_regions, get_num_active_display_regions, get_active_display_region);
+  MAKE_SEQ_PROPERTY(active_display_regions, get_num_active_display_regions, get_active_display_region);
 
   GraphicsOutput *make_texture_buffer(
       const string &name, int x_size, int y_size,

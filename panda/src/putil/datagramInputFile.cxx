@@ -126,7 +126,7 @@ get_datagram(Datagram &data) {
 
   // First, get the size of the upcoming datagram.
   StreamReader reader(_in, false);
-  PN_uint32 num_bytes_32 = reader.get_uint32();
+  uint32_t num_bytes_32 = reader.get_uint32();
   if (_in->fail() || _in->eof()) {
     return false;
   }
@@ -139,7 +139,7 @@ get_datagram(Datagram &data) {
   }
 
   streamsize num_bytes = (streamsize)num_bytes_32;
-  if (num_bytes_32 == (PN_uint32)-1) {
+  if (num_bytes_32 == (uint32_t)-1) {
     // Another special case for a value larger than 32 bits.
     num_bytes = reader.get_uint64();
   }
@@ -205,7 +205,7 @@ save_datagram(SubfileInfo &info) {
   }
 
   streamsize num_bytes = (streamsize)num_bytes_32;
-  if (num_bytes_32 == (PN_uint32)-1) {
+  if (num_bytes_32 == (uint32_t)-1) {
     // Another special case for a value larger than 32 bits.
     num_bytes = reader.get_uint64();
   }

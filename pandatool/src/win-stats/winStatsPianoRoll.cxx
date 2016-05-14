@@ -214,14 +214,14 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_LBUTTONDOWN:
     if (_potential_drag_mode == DM_none) {
       set_drag_mode(DM_scale);
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       _drag_scale_start = pixel_to_height(x);
       SetCapture(_graph_window);
       return 0;
 
     } else if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
       set_drag_mode(DM_guide_bar);
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       _drag_start_x = x;
       SetCapture(_graph_window);
       return 0;
@@ -231,8 +231,8 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_MOUSEMOVE:
     if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
       // When the mouse is over a color bar, highlight it.
-      PN_int16 x = LOWORD(lparam);
-      PN_int16 y = HIWORD(lparam);
+      int16_t x = LOWORD(lparam);
+      int16_t y = HIWORD(lparam);
       _label_stack.highlight_label(get_collector_under_pixel(x, y));
 
       // Now we want to get a WM_MOUSELEAVE when the mouse leaves the graph
@@ -251,7 +251,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
 
     if (_drag_mode == DM_scale) {
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       double ratio = (double)x / (double)get_xsize();
       if (ratio > 0.0f) {
         set_horizontal_scale(_drag_scale_start / ratio);
@@ -261,7 +261,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     } else if (_drag_mode == DM_new_guide_bar) {
       // We haven't created the new guide bar yet; we won't until the mouse
       // comes within the graph's region.
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       if (x >= 0 && x < get_xsize()) {
         set_drag_mode(DM_guide_bar);
         _drag_guide_bar = add_user_guide_bar(pixel_to_height(x));
@@ -269,7 +269,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
 
     } else if (_drag_mode == DM_guide_bar) {
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       move_user_guide_bar(_drag_guide_bar, pixel_to_height(x));
       return 0;
     }
@@ -287,7 +287,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       return 0;
 
     } else if (_drag_mode == DM_guide_bar) {
-      PN_int16 x = LOWORD(lparam);
+      int16_t x = LOWORD(lparam);
       if (x < 0 || x >= get_xsize()) {
         remove_user_guide_bar(_drag_guide_bar);
       } else {
@@ -303,8 +303,8 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     {
       // Double-clicking on a color bar in the graph is the same as double-
       // clicking on the corresponding label.
-      PN_int16 x = LOWORD(lparam);
-      PN_int16 y = HIWORD(lparam);
+      int16_t x = LOWORD(lparam);
+      int16_t y = HIWORD(lparam);
       clicked_label(get_collector_under_pixel(x, y));
       return 0;
     }

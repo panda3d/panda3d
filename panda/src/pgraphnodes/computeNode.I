@@ -45,7 +45,7 @@ clear_dispatches() {
 /**
  * Returns the number of times add_dispatch has been called on this object.
  */
-INLINE int ComputeNode::
+INLINE size_t ComputeNode::
 get_num_dispatches() const {
   Dispatcher::CDReader cdata(_dispatcher->_cycler);
   return cdata->_dispatches.size();
@@ -55,10 +55,30 @@ get_num_dispatches() const {
  * Returns the group counts of the nth dispatch associated with this object.
  */
 INLINE const LVecBase3i &ComputeNode::
-get_dispatch(int n) const {
+get_dispatch(size_t n) const {
   Dispatcher::CDReader cdata(_dispatcher->_cycler);
-  nassertr(n >= 0 && (size_t)n < cdata->_dispatches.size(), LVecBase3i::zero());
+  nassertr(n < cdata->_dispatches.size(), LVecBase3i::zero());
   return cdata->_dispatches[n];
+}
+
+/**
+ * Sets the group counts of the nth dispatch associated with this object.
+ */
+INLINE void ComputeNode::
+set_dispatch(size_t n, const LVecBase3i &dispatch) {
+  Dispatcher::CDWriter cdata(_dispatcher->_cycler);
+  nassertv(n < cdata->_dispatches.size());
+  cdata->_dispatches[n] = dispatch;
+}
+
+/**
+ * Erases the given dispatch index from the list.
+ */
+INLINE void ComputeNode::
+remove_dispatch(size_t n) {
+  Dispatcher::CDWriter cdata(_dispatcher->_cycler);
+  nassertv(n < cdata->_dispatches.size());
+  cdata->_dispatches.erase(cdata->_dispatches.begin() + n);
 }
 
 /**

@@ -1099,7 +1099,7 @@ void GeomNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   CPT(GeomList) geoms = _geoms.get_read_pointer();
   int num_geoms = geoms->size();
-  nassertv(num_geoms == (int)(PN_uint16)num_geoms);
+  nassertv(num_geoms == (int)(uint16_t)num_geoms);
   dg.add_uint16(num_geoms);
 
   GeomList::const_iterator gi;

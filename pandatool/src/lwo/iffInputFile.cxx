@@ -83,7 +83,7 @@ set_input(istream *input, bool owns_istream) {
 /**
  * Extracts a signed 8-bit integer.
  */
-PN_int8 IffInputFile::
+int8_t IffInputFile::
 get_int8() {
   Datagram dg;
   if (!read_bytes(dg, 1)) {
@@ -96,7 +96,7 @@ get_int8() {
 /**
  * Extracts an unsigned 8-bit integer.
  */
-PN_uint8 IffInputFile::
+uint8_t IffInputFile::
 get_uint8() {
   Datagram dg;
   if (!read_bytes(dg, 1)) {
@@ -109,7 +109,7 @@ get_uint8() {
 /**
  * Extracts a signed 16-bit big-endian integer.
  */
-PN_int16 IffInputFile::
+int16_t IffInputFile::
 get_be_int16() {
   Datagram dg;
   if (!read_bytes(dg, 2)) {
@@ -122,7 +122,7 @@ get_be_int16() {
 /**
  * Extracts a signed 32-bit big-endian integer.
  */
-PN_int32 IffInputFile::
+int32_t IffInputFile::
 get_be_int32() {
   Datagram dg;
   if (!read_bytes(dg, 4)) {
@@ -135,7 +135,7 @@ get_be_int32() {
 /**
  * Extracts an unsigned 16-bit big-endian integer.
  */
-PN_uint16 IffInputFile::
+uint16_t IffInputFile::
 get_be_uint16() {
   Datagram dg;
   if (!read_bytes(dg, 2)) {
@@ -148,7 +148,7 @@ get_be_uint16() {
 /**
  * Extracts an unsigned 32-bit big-endian integer.
  */
-PN_uint32 IffInputFile::
+uint32_t IffInputFile::
 get_be_uint32() {
   Datagram dg;
   if (!read_bytes(dg, 4)) {
@@ -215,7 +215,7 @@ get_chunk() {
   }
 
   IffId id = get_id();
-  PN_uint32 length = get_be_uint32();
+  uint32_t length = get_be_uint32();
 
   if (!is_eof()) {
     PT(IffChunk) chunk = make_new_chunk(id);
@@ -265,7 +265,7 @@ get_subchunk(IffChunk *context) {
   }
 
   IffId id = get_id();
-  PN_uint16 length = get_be_uint16();
+  uint16_t length = get_be_uint16();
 
   if (!is_eof()) {
     PT(IffChunk) chunk = context->make_new_chunk(this, id);

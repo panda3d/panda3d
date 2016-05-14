@@ -203,10 +203,13 @@ PUBLISHED:
   int get_num_nodes(Thread *current_thread = Thread::get_current_thread()) const;
   PandaNode *get_node(int index, Thread *current_thread = Thread::get_current_thread()) const;
   MAKE_SEQ(get_nodes, get_num_nodes, get_node);
+  MAKE_SEQ_PROPERTY(nodes, get_num_nodes, get_node);
   NodePath get_ancestor(int index, Thread *current_thread = Thread::get_current_thread()) const;
   MAKE_SEQ(get_ancestors, get_num_nodes, get_ancestor);
+  MAKE_SEQ_PROPERTY(ancestors, get_num_nodes, get_ancestor);
 
   INLINE ErrorType get_error_type() const;
+  MAKE_PROPERTY(error_type, get_error_type);
 
   INLINE PandaNode *get_top_node(Thread *current_thread = Thread::get_current_thread()) const;
   NodePath get_top(Thread *current_thread = Thread::get_current_thread()) const;
@@ -228,11 +231,17 @@ PUBLISHED:
   INLINE NodePath get_child(int n, Thread *current_thread = Thread::get_current_thread()) const;
   NodePathCollection get_stashed_children(Thread *current_thread = Thread::get_current_thread()) const;
 
+  MAKE_PROPERTY(children, get_children);
+  MAKE_PROPERTY(stashed_children, get_stashed_children);
+
   INLINE int count_num_descendants() const;
 
   INLINE bool has_parent(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE NodePath get_parent(Thread *current_thread = Thread::get_current_thread()) const;
   int get_sort(Thread *current_thread = Thread::get_current_thread()) const;
+
+  MAKE_PROPERTY2(parent, has_parent, get_parent);
+  MAKE_PROPERTY(sort, get_sort);
 
   NodePath find(const string &path) const;
   NodePath find_path_to(PandaNode *node) const;
@@ -910,6 +919,7 @@ PUBLISHED:
 
   INLINE void set_name(const string &name);
   INLINE string get_name() const;
+  MAKE_PROPERTY(name, get_name, set_name);
 
   BLOCKING bool write_bam_file(const Filename &filename) const;
   BLOCKING bool write_bam_stream(ostream &out) const;

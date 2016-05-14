@@ -80,6 +80,14 @@ PUBLISHED:
 
   INLINE double get_real_time() const;
 
+  MAKE_PROPERTY(client_name, get_client_name, set_client_name);
+  MAKE_PROPERTY(max_rate, get_max_rate, set_max_rate);
+  MAKE_SEQ_PROPERTY(collectors, get_num_collectors, get_collector);
+  MAKE_SEQ_PROPERTY(threads, get_num_threads, get_thread);
+  MAKE_PROPERTY(main_thread, get_main_thread);
+  MAKE_PROPERTY(current_thread, get_current_thread);
+  MAKE_PROPERTY(real_time, get_real_time);
+
   INLINE static bool connect(const string &hostname = string(), int port = -1);
   INLINE static void disconnect();
   INLINE static bool is_connected();

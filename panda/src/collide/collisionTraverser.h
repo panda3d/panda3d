@@ -60,6 +60,7 @@ PUBLISHED:
   MAKE_SEQ(get_colliders, get_num_colliders, get_collider);
   CollisionHandler *get_handler(const NodePath &collider) const;
   void clear_colliders();
+  MAKE_SEQ_PROPERTY(colliders, get_num_colliders, get_collider);
 
   void traverse(const NodePath &root);
 

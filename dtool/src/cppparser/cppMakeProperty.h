@@ -46,10 +46,14 @@ public:
   virtual CPPMakeProperty *as_make_property();
 
   CPPIdentifier *_ident;
+  // If length_function is not NULL, this is actually a sequence property,
+  // and the other functions take an additional index argument.
+  CPPFunctionGroup *_length_function;
   CPPFunctionGroup *_has_function;
   CPPFunctionGroup *_get_function;
   CPPFunctionGroup *_set_function;
   CPPFunctionGroup *_clear_function;
+  CPPFunctionGroup *_del_function;
 };
 
 #endif

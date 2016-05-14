@@ -101,6 +101,7 @@ PUBLISHED:
   int get_num_windows() const;
   GraphicsOutput *get_window(int n) const;
   MAKE_SEQ(get_windows, get_num_windows, get_window);
+  MAKE_SEQ_PROPERTY(windows, get_num_windows, get_window);
 
   BLOCKING void render_frame();
   BLOCKING void open_windows();

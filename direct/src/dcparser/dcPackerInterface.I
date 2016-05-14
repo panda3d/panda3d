@@ -142,7 +142,7 @@ do_pack_int32(char *buffer, int value) {
  *
  */
 INLINE void DCPackerInterface::
-do_pack_int64(char *buffer, PN_int64 value) {
+do_pack_int64(char *buffer, int64_t value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -185,7 +185,7 @@ do_pack_uint32(char *buffer, unsigned int value) {
  *
  */
 INLINE void DCPackerInterface::
-do_pack_uint64(char *buffer, PN_uint64 value) {
+do_pack_uint64(char *buffer, uint64_t value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -244,16 +244,16 @@ do_unpack_int32(const char *buffer) {
 /**
  *
  */
-INLINE PN_int64 DCPackerInterface::
+INLINE int64_t DCPackerInterface::
 do_unpack_int64(const char *buffer) {
-  return (PN_int64)((PN_uint64)(unsigned char)buffer[0] |
-                    ((PN_uint64)(unsigned char)buffer[1] << 8) |
-                    ((PN_uint64)(unsigned char)buffer[2] << 16) |
-                    ((PN_uint64)(unsigned char)buffer[3] << 24) |
-                    ((PN_uint64)(unsigned char)buffer[4] << 32) |
-                    ((PN_uint64)(unsigned char)buffer[5] << 40) |
-                    ((PN_uint64)(unsigned char)buffer[6] << 48) |
-                    ((PN_int64)(signed char)buffer[7] << 54));
+  return (int64_t)((uint64_t)(unsigned char)buffer[0] |
+                    ((uint64_t)(unsigned char)buffer[1] << 8) |
+                    ((uint64_t)(unsigned char)buffer[2] << 16) |
+                    ((uint64_t)(unsigned char)buffer[3] << 24) |
+                    ((uint64_t)(unsigned char)buffer[4] << 32) |
+                    ((uint64_t)(unsigned char)buffer[5] << 40) |
+                    ((uint64_t)(unsigned char)buffer[6] << 48) |
+                    ((int64_t)(signed char)buffer[7] << 54));
 }
 /**
  *
@@ -286,16 +286,16 @@ do_unpack_uint32(const char *buffer) {
 /**
  *
  */
-INLINE PN_uint64 DCPackerInterface::
+INLINE uint64_t DCPackerInterface::
 do_unpack_uint64(const char *buffer) {
-  return ((PN_uint64)(unsigned char)buffer[0] |
-          ((PN_uint64)(unsigned char)buffer[1] << 8) |
-          ((PN_uint64)(unsigned char)buffer[2] << 16) |
-          ((PN_uint64)(unsigned char)buffer[3] << 24) |
-          ((PN_uint64)(unsigned char)buffer[4] << 32) |
-          ((PN_uint64)(unsigned char)buffer[5] << 40) |
-          ((PN_uint64)(unsigned char)buffer[6] << 48) |
-          ((PN_int64)(signed char)buffer[7] << 54));
+  return ((uint64_t)(unsigned char)buffer[0] |
+          ((uint64_t)(unsigned char)buffer[1] << 8) |
+          ((uint64_t)(unsigned char)buffer[2] << 16) |
+          ((uint64_t)(unsigned char)buffer[3] << 24) |
+          ((uint64_t)(unsigned char)buffer[4] << 32) |
+          ((uint64_t)(unsigned char)buffer[5] << 40) |
+          ((uint64_t)(unsigned char)buffer[6] << 48) |
+          ((int64_t)(signed char)buffer[7] << 54));
 }
 
 
@@ -342,8 +342,8 @@ validate_int_limits(int value, int num_bits, bool &range_error) {
  * true if it does not.
  */
 INLINE void DCPackerInterface::
-validate_int64_limits(PN_int64 value, int num_bits, bool &range_error) {
-  PN_int64 mask = ((PN_int64)1 << (num_bits - 1)) - 1;
+validate_int64_limits(int64_t value, int num_bits, bool &range_error) {
+  int64_t mask = ((int64_t)1 << (num_bits - 1)) - 1;
   value |= mask;
 
   if (value != mask && value != -1) {
@@ -373,8 +373,8 @@ validate_uint_limits(unsigned int value, int num_bits, bool &range_error) {
  * range_error true if it does not.
  */
 INLINE void DCPackerInterface::
-validate_uint64_limits(PN_uint64 value, int num_bits, bool &range_error) {
-  PN_uint64 mask = ((PN_uint64)1 << num_bits) - 1;
+validate_uint64_limits(uint64_t value, int num_bits, bool &range_error) {
+  uint64_t mask = ((uint64_t)1 << num_bits) - 1;
   value &= ~mask;
 
   if (value != 0) {

@@ -74,6 +74,7 @@ PUBLISHED:
   size_t get_num_children() const;
   NotifyCategory *get_child(size_t i) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
+  MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
 
   static void set_server_delta(long delta);
 

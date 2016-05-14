@@ -146,17 +146,6 @@ INLINE bool ShaderTerrainMesh::get_update_enabled() const {
 }
 
 /**
- * @brief Returns a handle to the heightfield texture
- * @details This returns a handle to the internally used heightfield texture. This
- *   can be used to set the heightfield as a shader input.
- *
- * @return Handle to the heightfield texture
- */
-INLINE Texture* ShaderTerrainMesh::get_heightfield_tex() const {
-  return _heightfield_tex;
-}
-
-/**
  * @brief Clears all children
  * @details This clears all children on the chunk and sets them to NULL. This will
  *   effectively free all memory consumed by this chunk and its children.

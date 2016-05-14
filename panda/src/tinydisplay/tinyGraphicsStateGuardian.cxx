@@ -960,7 +960,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     switch (reader->get_index_type()) {
     case Geom::NT_uint8:
       {
-        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+        uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -975,7 +975,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint16:
       {
-        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+        uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -990,7 +990,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint32:
       {
-        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+        uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -1051,7 +1051,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
       switch (reader->get_index_type()) {
       case Geom::NT_uint8:
         {
-          PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+          uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
           if (index == NULL) {
             return false;
           }
@@ -1076,7 +1076,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
 
       case Geom::NT_uint16:
         {
-          PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+          uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
           if (index == NULL) {
             return false;
           }
@@ -1101,7 +1101,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
 
       case Geom::NT_uint32:
         {
-          PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+          uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
           if (index == NULL) {
             return false;
           }
@@ -1182,7 +1182,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
     switch (reader->get_index_type()) {
     case Geom::NT_uint8:
       {
-        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+        uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -1196,7 +1196,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint16:
       {
-        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+        uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -1210,7 +1210,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint32:
       {
-        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+        uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -1259,7 +1259,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
     switch (reader->get_index_type()) {
     case Geom::NT_uint8:
       {
-        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+        uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -1272,7 +1272,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint16:
       {
-        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+        uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }
@@ -1285,7 +1285,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint32:
       {
-        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+        uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
         if (index == NULL) {
           return false;
         }

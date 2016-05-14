@@ -635,7 +635,7 @@ ShaderPtrData(const LVecBase2i &vec) :
 INLINE void Shader::ShaderPtrData::
 write_datagram(Datagram &dg) const {
   dg.add_uint8(_type);
-  dg.add_uint32((PN_uint32)_size);
+  dg.add_uint32((uint32_t)_size);
 
   if (_type == SPT_double) {
     const double *data = (const double *) _ptr;

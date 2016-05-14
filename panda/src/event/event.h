@@ -55,6 +55,10 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+  MAKE_PROPERTY(name, get_name, set_name);
+  MAKE_SEQ_PROPERTY(parameters, get_num_parameters, get_parameter);
+  MAKE_PROPERTY2(receiver, has_receiver, get_receiver, set_receiver, clear_receiver);
+
 protected:
   typedef pvector<EventParameter> ParameterList;
   ParameterList _parameters;
