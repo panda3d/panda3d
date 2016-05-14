@@ -397,7 +397,7 @@ class TaskManager:
                 'Task %s does not accept arguments.' % (repr(task)))
 
         if name is not None:
-            assert isinstance(name, str), 'Name must be a string type'
+            assert isinstance(name, basestring), 'Name must be a string type'
             task.setName(name)
         assert task.hasName()
 
@@ -431,7 +431,7 @@ class TaskManager:
         all tasks with the indicated name are removed.  Returns the
         number of tasks removed. """
 
-        if isinstance(taskOrName, str):
+        if isinstance(taskOrName, basestring):
             tasks = self.mgr.findTasks(taskOrName)
             return self.mgr.remove(tasks)
         elif isinstance(taskOrName, AsyncTask):
