@@ -19,6 +19,11 @@ try:
 except ImportError:
     signal = None
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 from panda3d.core import *
 from direct.extensions_native import HTTPChannel_extensions
 
