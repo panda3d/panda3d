@@ -685,7 +685,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
   int num_effects = _effects.size();
-  nassertv(num_effects == (int)(PN_uint16)num_effects);
+  nassertv(num_effects == (int)(uint16_t)num_effects);
   dg.add_uint16(num_effects);
 
   Effects::const_iterator ai;

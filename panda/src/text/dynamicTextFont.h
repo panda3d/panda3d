@@ -114,6 +114,7 @@ PUBLISHED:
   int get_num_pages() const;
   DynamicTextPage *get_page(int n) const;
   MAKE_SEQ(get_pages, get_num_pages, get_page);
+  MAKE_SEQ_PROPERTY(pages, get_num_pages, get_page);
 
   int garbage_collect();
   void clear();

@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-EXPCL_DTOOL PN_uint32 hashword(const PN_uint32 *k,                   /* the key, an array of PN_uint32 values */
-                               size_t          length,               /* the length of the key, in PN_uint32s */
-                               PN_uint32        initval);
+EXPCL_DTOOL uint32_t hashword(const uint32_t *k,                   /* the key, an array of uint32_t values */
+                               size_t          length,               /* the length of the key, in uint32_ts */
+                               uint32_t        initval);
 
 #ifdef __cplusplus
 };  /* end of extern "C" */

@@ -51,6 +51,38 @@ get_filename(ShaderType type) const {
 }
 
 /**
+ * Sets the Shader's filename for the given shader type.  Useful for
+ * associating a shader created with Shader.make with a name for diagnostics.
+ */
+INLINE void Shader::
+set_filename(ShaderType type, const Filename &filename) {
+  _filename._separate = true;
+  switch (type) {
+  case ST_vertex:
+    _filename._vertex = filename;
+    break;
+  case ST_fragment:
+    _filename._fragment = filename;
+    break;
+  case ST_geometry:
+    _filename._geometry = filename;
+    break;
+  case ST_tess_control:
+    _filename._tess_control = filename;
+    break;
+  case ST_tess_evaluation:
+    _filename._tess_evaluation = filename;
+    break;
+  case ST_compute:
+    _filename._compute = filename;
+    break;
+  default:
+    _filename._shared = filename;
+    _filename._separate = false;
+  }
+}
+
+/**
  * Return the Shader's text for the given shader type.
  */
 INLINE const string &Shader::
@@ -603,7 +635,7 @@ ShaderPtrData(const LVecBase2i &vec) :
 INLINE void Shader::ShaderPtrData::
 write_datagram(Datagram &dg) const {
   dg.add_uint8(_type);
-  dg.add_uint32((PN_uint32)_size);
+  dg.add_uint32((uint32_t)_size);
 
   if (_type == SPT_double) {
     const double *data = (const double *) _ptr;

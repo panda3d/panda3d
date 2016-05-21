@@ -333,9 +333,9 @@ mark_joint_parent() {
  */
 void MayaNodeDesc::
 check_pseudo_joints(bool joint_above) {
-  static PN_uint32 space_count = 0;
+  static uint32_t space_count = 0;
   string space;
-  for (PN_uint32 idx=0; idx<space_count; ++idx) {
+  for (uint32_t idx=0; idx<space_count; ++idx) {
     space.append(" ");
   }
   if (mayaegg_cat.is_spam()) {

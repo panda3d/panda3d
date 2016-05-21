@@ -8334,6 +8334,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_blue:
       case Texture::F_r8i:
       case Texture::F_r16:
+      case Texture::F_r16i:
       case Texture::F_r32:
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
@@ -8539,6 +8540,7 @@ get_external_image_format(Texture *tex) const {
 
 #ifndef OPENGLES_1
   case Texture::F_r8i:
+  case Texture::F_r16i:
   case Texture::F_r32i:
     return GL_RED_INTEGER;
   case Texture::F_rg8i:
@@ -8596,6 +8598,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rg8i:
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
+      case Texture::F_r16i:
       case Texture::F_r32i:
       case Texture::F_r11_g11_b10:
       case Texture::F_rgb9_e5:
@@ -9071,6 +9074,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_R16;
     } else {
       return GL_R16_SNORM;
+    }
+  case Texture::F_r16i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_R16UI;
+    } else {
+      return GL_R16I;
     }
   case Texture::F_rg16:
     if (tex->get_component_type() == Texture::T_float) {
@@ -10674,7 +10683,7 @@ upload_usage_texture(int width, int height) {
 
 
   // Allocate a temporary array large enough to contain the toplevel mipmap.
-  PN_uint32 *buffer = (PN_uint32 *)PANDA_MALLOC_ARRAY(width * height * 4);
+  uint32_t *buffer = (uint32_t *)PANDA_MALLOC_ARRAY(width * height * 4);
 
   int n = 0;
   while (true) {
@@ -10687,7 +10696,7 @@ upload_usage_texture(int width, int height) {
       struct {
         unsigned char r, g, b, a;
       } b;
-      PN_uint32 w;
+      uint32_t w;
     } store;
 
     store.b.r = (unsigned char)(c[0] * 255.0f);
@@ -11066,7 +11075,9 @@ do_issue_tex_gen() {
  */
 bool CLP(GraphicsStateGuardian)::
 specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
+#ifndef OPENGLES
   nassertr(gtc->_handle == 0 /* can't modify tex with active handle */, false);
+#endif
 
   Texture *tex = gtc->get_texture();
 
@@ -11502,7 +11513,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   if (needs_reload && gtc->_immutable) {
-    GLCAT.warning() << "Attempt to modify texture with immutable storage, recreating texture.\n";
+    GLCAT.info() << "Attempt to modify texture with immutable storage, recreating texture.\n";
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
 
@@ -12660,6 +12671,16 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_unsigned_byte;
     format = Texture::F_rgba8i;
     break;
+
+  case GL_R16I:
+    type = Texture::T_short;
+    format = Texture::F_r16i;
+    break;
+  case GL_R16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_r16i;
+    break;
+
 #endif
 
 #ifndef OPENGLES_1

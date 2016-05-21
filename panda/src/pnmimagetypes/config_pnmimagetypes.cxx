@@ -22,6 +22,8 @@
 #include "pnmFileTypePNM.h"
 #include "pnmFileTypePfm.h"
 #include "pnmFileTypeTIFF.h"
+#include "pnmFileTypeEXR.h"
+#include "pnmFileTypeStbImage.h"
 #include "sgi.h"
 
 #include "config_pnmimage.h"
@@ -40,6 +42,7 @@ NotifyCategoryDefName(pnmimage_jpg, "jpg", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_png, "png", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_pnm, "pnm", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tiff, "tiff", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_exr, "exr", pnmimage_cat);
 
 ConfigVariableEnum<SGIStorageType> sgi_storage_type
 ("sgi-storage-type", SST_rle,
@@ -240,6 +243,18 @@ init_libpnmimagetypes() {
   tr->register_type(new PNMFileTypeTIFF);
 #endif
 
+#ifdef HAVE_OPENEXR
+  PNMFileTypeEXR::init_type();
+  PNMFileTypeEXR::register_with_read_factory();
+  tr->register_type(new PNMFileTypeEXR);
+#endif
+
+#ifdef HAVE_STB_IMAGE
+  PNMFileTypeStbImage::init_type();
+  PNMFileTypeStbImage::register_with_read_factory();
+  tr->register_type(new PNMFileTypeStbImage);
+#endif
+
   // And register with the PandaSystem.
   PandaSystem *ps = PandaSystem::get_global_ptr();
 
@@ -251,5 +266,8 @@ init_libpnmimagetypes() {
 #endif
 #ifdef HAVE_TIFF
   ps->add_system("libtiff");
+#endif
+#ifdef HAVE_OPENEXR
+  ps->add_system("openexr");
 #endif
 }

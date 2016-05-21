@@ -1068,11 +1068,11 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // to set certain properties as a "type"; the other one as a "state".  We'll
   // try to honor both.
   static const int max_type_data = 32;
-  PN_int32 type_data[max_type_data];
+  int32_t type_data[max_type_data];
   int next_type_data = 0;
 
   static const int max_state_data = 32;
-  PN_int32 state_data[max_state_data];
+  int32_t state_data[max_state_data];
   int next_state_data = 0;
 
   static const int max_set_data = 32;
@@ -1162,7 +1162,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   nassertv(next_set_data < max_set_data);
 
   // Add the process ID as a convenience for other applications.
-  PN_int32 pid = getpid();
+  int32_t pid = getpid();
   XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_pid,
                   XA_CARDINAL, 32, PropModeReplace,
                   (unsigned char *)&pid, 1);

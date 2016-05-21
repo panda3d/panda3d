@@ -159,6 +159,7 @@ PUBLISHED:
     F_rgb10_a2,
 
     F_rg,
+    F_r16i
   };
 
   // Deprecated.  See SamplerState.FilterType.
@@ -976,7 +977,7 @@ protected:
     RamImage _simple_ram_image;
     int _simple_x_size;
     int _simple_y_size;
-    PN_int32 _simple_image_date_generated;
+    int32_t _simple_image_date_generated;
 
     // This is the color that should be used when no image was given.
     bool _has_clear_color;

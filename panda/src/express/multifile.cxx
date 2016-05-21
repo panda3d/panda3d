@@ -860,7 +860,7 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
   // Now encode that list of certs to a stream in DER form.
   stringstream der_stream;
   StreamWriter der_writer(der_stream);
-  der_writer.add_uint32((PN_uint32)cert_chain.size());
+  der_writer.add_uint32((uint32_t)cert_chain.size());
 
   CertChain::const_iterator ci;
   for (ci = cert_chain.begin(); ci != cert_chain.end(); ++ci) {

@@ -60,6 +60,7 @@ PUBLISHED:
   bool is_concave() const;
 
 PUBLISHED:
+  MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
   MAKE_PROPERTY(valid, is_valid);
   MAKE_PROPERTY(concave, is_concave);
 

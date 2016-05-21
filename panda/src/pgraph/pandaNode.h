@@ -680,10 +680,10 @@ private:
   static PStatCollector _reset_prev_pcollector;
   static PStatCollector _update_bounds_pcollector;
 
-public:
+PUBLISHED:
   // This class is returned from get_children().  Use it to walk through the
   // list of children.  This is faster, and safer, than walking through the
-  // children one at a time via get_num_children()get_child(), since the list
+  // children one at a time via get_num_children()/get_child(), since the list
   // of children is saved out ahead of time, rather than having to reacquire
   // the lock with each iteration, or to keep the lock held for the entire
   // pass.
@@ -699,9 +699,13 @@ public:
     INLINE void operator = (Children &&from) NOEXCEPT;
 #endif
 
-    INLINE int get_num_children() const;
-    INLINE PandaNode *get_child(int n) const;
-    INLINE int get_child_sort(int n) const;
+    INLINE size_t get_num_children() const;
+    INLINE PandaNode *get_child(size_t n) const;
+    INLINE int get_child_sort(size_t n) const;
+
+  PUBLISHED:
+    INLINE PandaNode *operator [](size_t n) const { return get_child(n); }
+    INLINE size_t size() const { return get_num_children(); }
 
   private:
     CPT(Down) _down;
@@ -720,9 +724,13 @@ public:
     INLINE void operator = (Stashed &&from) NOEXCEPT;
 #endif
 
-    INLINE int get_num_stashed() const;
-    INLINE PandaNode *get_stashed(int n) const;
-    INLINE int get_stashed_sort(int n) const;
+    INLINE size_t get_num_stashed() const;
+    INLINE PandaNode *get_stashed(size_t n) const;
+    INLINE int get_stashed_sort(size_t n) const;
+
+  PUBLISHED:
+    INLINE PandaNode *operator [](size_t n) const { return get_stashed(n); }
+    INLINE size_t size() const { return get_num_stashed(); }
 
   private:
     CPT(Down) _stashed;
@@ -741,19 +749,29 @@ public:
     INLINE void operator = (Parents &&from) NOEXCEPT;
 #endif
 
-    INLINE int get_num_parents() const;
-    INLINE PandaNode *get_parent(int n) const;
+    INLINE size_t get_num_parents() const;
+    INLINE PandaNode *get_parent(size_t n) const;
+
+  PUBLISHED:
+    INLINE PandaNode *operator [](size_t n) const { return get_parent(n); }
+    INLINE size_t size() const { return get_num_parents(); }
 
   private:
     CPT(Up) _up;
   };
 
+public:
   INLINE Children get_children(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE Stashed get_stashed(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE Parents get_parents(Thread *current_thread = Thread::get_current_thread()) const;
 
   typedef bool SceneRootFunc(const PandaNode *);
   static void set_scene_root_func(SceneRootFunc *func);
+
+PUBLISHED:
+  MAKE_PROPERTY(children, get_children);
+  MAKE_PROPERTY(stashed, get_stashed);
+  MAKE_PROPERTY(parents, get_parents);
 
 private:
   static SceneRootFunc *_scene_root_func;

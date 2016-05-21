@@ -24,6 +24,8 @@ InterrogateElement(InterrogateModuleDef *def) :
   _setter = 0;
   _has_function = 0;
   _clear_function = 0;
+  _del_function = 0;
+  _length_function = 0;
 }
 
 /**
@@ -48,6 +50,8 @@ operator = (const InterrogateElement &copy) {
   _setter = copy._setter;
   _has_function = copy._has_function;
   _clear_function = copy._clear_function;
+  _del_function = copy._del_function;
+  _length_function = copy._length_function;
 }
 
 /**
@@ -161,6 +165,38 @@ has_clear_function() const {
 INLINE FunctionIndex InterrogateElement::
 get_clear_function() const {
   return _clear_function;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateElement::
+has_del_function() const {
+  return (_flags & F_has_del_function) != 0;
+}
+
+/**
+ *
+ */
+INLINE FunctionIndex InterrogateElement::
+get_del_function() const {
+  return _del_function;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateElement::
+is_sequence() const {
+  return (_flags & F_sequence) != 0;
+}
+
+/**
+ *
+ */
+INLINE FunctionIndex InterrogateElement::
+get_length_function() const {
+  return _length_function;
 }
 
 

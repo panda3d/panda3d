@@ -99,6 +99,7 @@ PUBLISHED:
   static PT(Shader) make_compute(ShaderLanguage lang, const string &body);
 
   INLINE Filename get_filename(ShaderType type = ST_none) const;
+  INLINE void set_filename(ShaderType type, const Filename &filename);
   INLINE const string &get_text(ShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;

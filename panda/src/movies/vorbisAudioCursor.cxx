@@ -109,7 +109,7 @@ seek(double t) {
  * audio will be interleaved.
  */
 void VorbisAudioCursor::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
   char *buffer = (char*) data;

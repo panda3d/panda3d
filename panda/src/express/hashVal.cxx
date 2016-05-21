@@ -258,7 +258,7 @@ hash_buffer(const char *buffer, int length) {
  * at the indicated buffer and the following 8 positions.
  */
 void HashVal::
-encode_hex(PN_uint32 val, char *buffer) {
+encode_hex(uint32_t val, char *buffer) {
   buffer[0] = tohex(val >> 28);
   buffer[1] = tohex(val >> 24);
   buffer[2] = tohex(val >> 20);
@@ -273,7 +273,7 @@ encode_hex(PN_uint32 val, char *buffer) {
  * Decodes the indicated eight-digit hex string into an unsigned integer.
  */
 void HashVal::
-decode_hex(const char *buffer, PN_uint32 &val) {
+decode_hex(const char *buffer, uint32_t &val) {
   unsigned int bytes[8];
   for (int i = 0; i < 8; i++) {
     bytes[i] = fromhex(buffer[i]);

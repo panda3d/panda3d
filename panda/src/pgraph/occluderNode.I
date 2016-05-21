@@ -31,7 +31,7 @@ set_vertices(const LPoint3 &v0, const LPoint3 &v1,
  * Returns the number of vertices in the occluder polygon.  This should always
  * return 4.
  */
-INLINE int OccluderNode::
+INLINE size_t OccluderNode::
 get_num_vertices() const {
   return _vertices.size();
 }
@@ -40,9 +40,18 @@ get_num_vertices() const {
  * Returns the nth vertex of the occluder polygon.
  */
 INLINE const LPoint3 &OccluderNode::
-get_vertex(int n) const {
-  nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3::zero());
+get_vertex(size_t n) const {
+  nassertr(n < _vertices.size(), LPoint3::zero());
   return _vertices[n];
+}
+
+/**
+ * Sets the nth vertex of the occluder polygon.
+ */
+INLINE void OccluderNode::
+set_vertex(size_t n, const LPoint3 &v) {
+  nassertv(n < _vertices.size());
+  _vertices[n] = v;
 }
 
 /**

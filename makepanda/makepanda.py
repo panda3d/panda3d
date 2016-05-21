@@ -79,7 +79,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "VORBIS", "FFMPEG", "SWSCALE", "SWRESAMPLE",         # Audio decoding
   "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
   "SPEEDTREE",                                         # SpeedTree
-  "ZLIB", "PNG", "JPEG", "TIFF", "SQUISH", "FREETYPE", # 2D Formats support
+  "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH", "FREETYPE", # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", # 3D Formats support
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
@@ -597,8 +597,12 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
     if (PkgSkip("OPENSSL")==0):
-        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
-        LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
+        if os.path.isfile(GetThirdpartyDir() + "openssl/lib/libpandassl.lib"):
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
+        else:
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libeay32.lib")
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/ssleay32.lib")
     if (PkgSkip("PNG")==0):
         if os.path.isfile(GetThirdpartyDir() + "png/lib/libpng16_static.lib"):
             LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
@@ -609,6 +613,15 @@ if (COMPILER == "MSVC"):
             LibName("TIFF", GetThirdpartyDir() + "tiff/lib/libtiff.lib")
         else:
             LibName("TIFF", GetThirdpartyDir() + "tiff/lib/tiff.lib")
+    if (PkgSkip("OPENEXR")==0):
+        suffix = ""
+        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_2.lib"):
+            suffix = "-2_2"
+        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + ".lib")
+        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread" + suffix + ".lib")
+        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex" + suffix + ".lib")
+        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half.lib")
+        IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/OpenEXR")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
@@ -620,7 +633,6 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",GetThirdpartyDir() + "artoolkit/lib/libAR.lib")
-    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", GetThirdpartyDir() + "fcollada/lib/FCollada.lib")
     if (PkgSkip("ASSIMP")==0):   PkgDisable("ASSIMP")  # Not yet supported
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cv.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/highgui.lib")
@@ -633,6 +645,9 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil.lib")
     if (PkgSkip("SWSCALE")==0):  LibName("SWSCALE",  GetThirdpartyDir() + "ffmpeg/lib/swscale.lib")
     if (PkgSkip("SWRESAMPLE")==0):LibName("SWRESAMPLE",GetThirdpartyDir() + "ffmpeg/lib/swresample.lib")
+    if (PkgSkip("FCOLLADA")==0):
+        LibName("FCOLLADA", GetThirdpartyDir() + "fcollada/lib/FCollada.lib")
+        IncDirectory("FCOLLADA", GetThirdpartyDir() + "fcollada/include/FCollada")
     if (PkgSkip("SQUISH")==0):
         if GetOptimize() <= 2:
             LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squishd.lib")
@@ -645,7 +660,11 @@ if (COMPILER == "MSVC"):
             LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/" + SDK["PYTHONVERSION"] + "/boost_python-vc100-mt-1_54.lib")
         if (GetOptimize() <= 3):
             LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketDebugger.lib")
-    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/OpenAL32.lib")
+    if (PkgSkip("OPENAL")==0):
+        LibName("OPENAL", GetThirdpartyDir() + "openal/lib/OpenAL32.lib")
+        if not os.path.isfile(GetThirdpartyDir() + "openal/bin/OpenAL32.dll"):
+            # Link OpenAL Soft statically.
+            DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
     if (PkgSkip("ODE")==0):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")
@@ -783,6 +802,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
         SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
+        SmartPkgEnable("OPENEXR",   "OpenEXR",   ("IlmImf", "Imath", "Half", "Iex", "IexMath", "IlmThread"), ("OpenEXR", "OpenEXR/ImfOutputFile.h"))
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
@@ -2189,7 +2209,7 @@ DTOOL_CONFIG=[
     ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
     ("PHAVE_SYS_SOUNDCARD_H",          'UNDEF',                  '1'),
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
-    ("PHAVE_STDINT_H",                 'UNDEF',                  '1'),
+    ("PHAVE_STDINT_H",                 '1',                      '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
     ("HAVE_XRANDR",                    'UNDEF',                  '1'),
@@ -2207,12 +2227,14 @@ DTOOL_CONFIG=[
     ("PHAVE_JPEGINT_H",                '1',                      '1'),
     ("HAVE_VIDEO4LINUX",               'UNDEF',                  '1'),
     ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_OPENEXR",                   'UNDEF',                  'UNDEF'),
     ("HAVE_SGI_RGB",                   '1',                      '1'),
     ("HAVE_TGA",                       '1',                      '1'),
     ("HAVE_IMG",                       '1',                      '1'),
     ("HAVE_SOFTIMAGE_PIC",             '1',                      '1'),
     ("HAVE_BMP",                       '1',                      '1'),
     ("HAVE_PNM",                       '1',                      '1'),
+    ("HAVE_STB_IMAGE",                 '1',                      '1'),
     ("HAVE_VORBIS",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
@@ -3830,7 +3852,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF']
+  OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF', 'OPENEXR', 'EXCEPTIONS']
   TargetAdd('p3pnmimagetypes_composite1.obj', opts=OPTS, input='p3pnmimagetypes_composite1.cxx')
   TargetAdd('p3pnmimagetypes_composite2.obj', opts=OPTS, input='p3pnmimagetypes_composite2.cxx')
 
@@ -3875,7 +3897,7 @@ if (not RUNTIME):
 
 if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG',
-      'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
+      'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
       'SQUISH', 'NVIDIACG', 'VORBIS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
@@ -4038,7 +4060,8 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
 
   TargetAdd('core.pyd', input='core_module.obj')
-  TargetAdd('core.pyd', input='libp3tinyxml.ilb')
+  if not GetLinkAllStatic() and GetTarget() != 'emscripten':
+     TargetAdd('core.pyd', input='libp3tinyxml.ilb')
   TargetAdd('core.pyd', input='libp3interrogatedb.dll')
   TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('core.pyd', opts=['PYTHON', 'WINSOCK2'])
@@ -4258,7 +4281,7 @@ if PkgSkip("OPENAL") == 0 and not RUNTIME:
   TargetAdd('openal_audio_openal_audio_composite1.obj', opts=OPTS, input='openal_audio_composite1.cxx')
   TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite1.obj')
   TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'OPENAL'])
+  TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL'])
 
 #
 # DIRECTORY: panda/src/downloadertools/

@@ -412,7 +412,7 @@ wait_for_readers(double timeout) {
       wait_timeout = min(wait_timeout, stop - now);
     }
 
-    PN_uint32 wait_timeout_ms = (PN_uint32)(wait_timeout * 1000.0);
+    uint32_t wait_timeout_ms = (uint32_t)(wait_timeout * 1000.0);
     if (any_threaded) {
       // If there are any threaded ConnectionReaders, we can't block at all.
       wait_timeout_ms = 0;
@@ -517,7 +517,7 @@ scan_interfaces() {
             // Now, we can infer the netmask by the difference between the
             // network address (the first address) and the broadcast address
             // (the last address).
-            PN_uint32 netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
+            uint32_t netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
             Socket_Address sa;
             sa.set_host(netmask, 0);
             iface.set_netmask(NetAddress(sa));

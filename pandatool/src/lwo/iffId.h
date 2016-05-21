@@ -40,7 +40,7 @@ public:
 
 private:
   union {
-    PN_uint32 _n;
+    uint32_t _n;
     char _c[4];
   } _id;
 };

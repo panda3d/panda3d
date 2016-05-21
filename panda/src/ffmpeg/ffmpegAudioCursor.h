@@ -48,7 +48,7 @@ PUBLISHED:
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, PN_int16 *data);
+  virtual void read_samples(int n, int16_t *data);
 
 protected:
   void fetch_packet();
@@ -66,9 +66,9 @@ protected:
   double _audio_timebase;
 
   AVFrame  *_frame;
-  PN_int16 *_buffer;
+  int16_t *_buffer;
   int       _buffer_size;
-  PN_int16 *_buffer_alloc;
+  int16_t *_buffer_alloc;
   int       _buffer_head;
   int       _buffer_tail;
 

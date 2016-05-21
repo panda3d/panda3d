@@ -149,25 +149,25 @@ and these came close:
 /*
 --------------------------------------------------------------------
  This works on all machines.  To be useful, it requires
- -- that the key be an array of PN_uint32's, and
- -- that the length be the number of PN_uint32's in the key
+ -- that the key be an array of uint32_t's, and
+ -- that the length be the number of uint32_t's in the key
 
  The function hashword() is identical to hashlittle() on little-endian
  machines, and identical to hashbig() on big-endian machines,
- except that the length has to be measured in PN_uint32s rather than in
+ except that the length has to be measured in uint32_ts rather than in
  bytes.  hashlittle() is more complicated than hashword() only because
  hashlittle() has to dance around fitting the key bytes into registers.
 --------------------------------------------------------------------
 */
-PN_uint32 hashword(
-const PN_uint32 *k,                   /* the key, an array of PN_uint32 values */
-size_t          length,               /* the length of the key, in PN_uint32s */
-PN_uint32        initval)         /* the previous hash, or an arbitrary value */
+uint32_t hashword(
+const uint32_t *k,                   /* the key, an array of uint32_t values */
+size_t          length,               /* the length of the key, in uint32_ts */
+uint32_t        initval)         /* the previous hash, or an arbitrary value */
 {
-  PN_uint32 a,b,c;
+  uint32_t a,b,c;
 
   /* Set up the internal state */
-  a = b = c = 0xdeadbeef + (((PN_uint32)length)<<2) + initval;
+  a = b = c = 0xdeadbeef + (((uint32_t)length)<<2) + initval;
 
   /*------------------------------------------------- handle most of the key */
   while (length > 3)
@@ -180,7 +180,7 @@ PN_uint32        initval)         /* the previous hash, or an arbitrary value */
     k += 3;
   }
 
-  /*------------------------------------------- handle the last 3 PN_uint32's */
+  /*------------------------------------------- handle the last 3 uint32_t's */
   switch(length)                     /* all the case statements fall through */
   { 
   case 3 : c+=k[2];
@@ -211,7 +211,7 @@ use a bitmask.  For example, if you need only 10 bits, do
   h = (h & hashmask(10));
 In which case, the hash table should have hashsize(10) elements.
 
-If you are hashing n strings (PN_uint8 **)k, do it like this:
+If you are hashing n strings (uint8_t **)k, do it like this:
   for (i=0, h=0; i<n; ++i) h = hashlittle( k[i], len[i], h);
 
 By Bob Jenkins, 2006.  bob_jenkins@burtleburtle.net.  You may use this
@@ -222,19 +222,19 @@ acceptable.  Do NOT use for cryptographic purposes.
 -------------------------------------------------------------------------------
 */
 
-PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
+uint32_t hashlittle( const void *key, size_t length, uint32_t initval)
 {
-  PN_uint32 a,b,c;                                          /* internal state */
+  uint32_t a,b,c;                                          /* internal state */
   union { const void *ptr; size_t i; } u;     /* needed for Mac Powerbook G4 */
 
   /* Set up the internal state */
-  a = b = c = 0xdeadbeef + ((PN_uint32)length) + initval;
+  a = b = c = 0xdeadbeef + ((uint32_t)length) + initval;
 
   u.ptr = key;
   if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
-    const PN_uint32 *k =(PN_uint32*) key;                           /* read 32-bit chunks */
+    const uint32_t *k =(uint32_t*) key;                           /* read 32-bit chunks */
 #ifdef VALGRIND
-    const PN_uint8  *k8;
+    const uint8_t  *k8;
 #endif
 
     /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
@@ -279,20 +279,20 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
 
 #else /* make valgrind happy */
 
-    k8 = (const PN_uint8 *)k;
+    k8 = (const uint8_t *)k;
     switch(length)
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
-    case 11: c+=((PN_uint32)k8[10])<<16;  /* fall through */
-    case 10: c+=((PN_uint32)k8[9])<<8;    /* fall through */
+    case 11: c+=((uint32_t)k8[10])<<16;  /* fall through */
+    case 10: c+=((uint32_t)k8[9])<<8;    /* fall through */
     case 9 : c+=k8[8];                   /* fall through */
     case 8 : b+=k[1]; a+=k[0]; break;
-    case 7 : b+=((PN_uint32)k8[6])<<16;   /* fall through */
-    case 6 : b+=((PN_uint32)k8[5])<<8;    /* fall through */
+    case 7 : b+=((uint32_t)k8[6])<<16;   /* fall through */
+    case 6 : b+=((uint32_t)k8[5])<<8;    /* fall through */
     case 5 : b+=k8[4];                   /* fall through */
     case 4 : a+=k[0]; break;
-    case 3 : a+=((PN_uint32)k8[2])<<16;   /* fall through */
-    case 2 : a+=((PN_uint32)k8[1])<<8;    /* fall through */
+    case 3 : a+=((uint32_t)k8[2])<<16;   /* fall through */
+    case 2 : a+=((uint32_t)k8[1])<<8;    /* fall through */
     case 1 : a+=k8[0]; break;
     case 0 : return c;
     }
@@ -300,45 +300,45 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
 #endif /* !valgrind */
 
   } else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0)) {
-    const PN_uint16 *k = (PN_uint16*)key;                           /* read 16-bit chunks */
-    const PN_uint8  *k8;
+    const uint16_t *k = (uint16_t*)key;                           /* read 16-bit chunks */
+    const uint8_t  *k8;
 
     /*--------------- all but last block: aligned reads and different mixing */
     while (length > 12)
     {
-      a += k[0] + (((PN_uint32)k[1])<<16);
-      b += k[2] + (((PN_uint32)k[3])<<16);
-      c += k[4] + (((PN_uint32)k[5])<<16);
+      a += k[0] + (((uint32_t)k[1])<<16);
+      b += k[2] + (((uint32_t)k[3])<<16);
+      c += k[4] + (((uint32_t)k[5])<<16);
       mix(a,b,c);
       length -= 12;
       k += 6;
     }
 
     /*----------------------------- handle the last (probably partial) block */
-    k8 = (const PN_uint8 *)k;
+    k8 = (const uint8_t *)k;
     switch(length)
     {
-    case 12: c+=k[4]+(((PN_uint32)k[5])<<16);
-             b+=k[2]+(((PN_uint32)k[3])<<16);
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+    case 12: c+=k[4]+(((uint32_t)k[5])<<16);
+             b+=k[2]+(((uint32_t)k[3])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
-    case 11: c+=((PN_uint32)k8[10])<<16;     /* fall through */
+    case 11: c+=((uint32_t)k8[10])<<16;     /* fall through */
     case 10: c+=k[4];
-             b+=k[2]+(((PN_uint32)k[3])<<16);
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+             b+=k[2]+(((uint32_t)k[3])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
     case 9 : c+=k8[8];                      /* fall through */
-    case 8 : b+=k[2]+(((PN_uint32)k[3])<<16);
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+    case 8 : b+=k[2]+(((uint32_t)k[3])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
-    case 7 : b+=((PN_uint32)k8[6])<<16;      /* fall through */
+    case 7 : b+=((uint32_t)k8[6])<<16;      /* fall through */
     case 6 : b+=k[2];
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
     case 5 : b+=k8[4];                      /* fall through */
-    case 4 : a+=k[0]+(((PN_uint32)k[1])<<16);
+    case 4 : a+=k[0]+(((uint32_t)k[1])<<16);
              break;
-    case 3 : a+=((PN_uint32)k8[2])<<16;      /* fall through */
+    case 3 : a+=((uint32_t)k8[2])<<16;      /* fall through */
     case 2 : a+=k[0];
              break;
     case 1 : a+=k8[0];
@@ -347,23 +347,23 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
     }
 
   } else {                        /* need to read the key one byte at a time */
-    const PN_uint8 *k =(PN_uint8*) key;
+    const uint8_t *k =(uint8_t*) key;
 
     /*--------------- all but the last block: affect some 32 bits of (a,b,c) */
     while (length > 12)
     {
       a += k[0];
-      a += ((PN_uint32)k[1])<<8;
-      a += ((PN_uint32)k[2])<<16;
-      a += ((PN_uint32)k[3])<<24;
+      a += ((uint32_t)k[1])<<8;
+      a += ((uint32_t)k[2])<<16;
+      a += ((uint32_t)k[3])<<24;
       b += k[4];
-      b += ((PN_uint32)k[5])<<8;
-      b += ((PN_uint32)k[6])<<16;
-      b += ((PN_uint32)k[7])<<24;
+      b += ((uint32_t)k[5])<<8;
+      b += ((uint32_t)k[6])<<16;
+      b += ((uint32_t)k[7])<<24;
       c += k[8];
-      c += ((PN_uint32)k[9])<<8;
-      c += ((PN_uint32)k[10])<<16;
-      c += ((PN_uint32)k[11])<<24;
+      c += ((uint32_t)k[9])<<8;
+      c += ((uint32_t)k[10])<<16;
+      c += ((uint32_t)k[11])<<24;
       mix(a,b,c);
       length -= 12;
       k += 12;
@@ -372,17 +372,17 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
     /*-------------------------------- last block: affect all 32 bits of (c) */
     switch(length)                   /* all the case statements fall through */
     {
-    case 12: c+=((PN_uint32)k[11])<<24;
-    case 11: c+=((PN_uint32)k[10])<<16;
-    case 10: c+=((PN_uint32)k[9])<<8;
+    case 12: c+=((uint32_t)k[11])<<24;
+    case 11: c+=((uint32_t)k[10])<<16;
+    case 10: c+=((uint32_t)k[9])<<8;
     case 9 : c+=k[8];
-    case 8 : b+=((PN_uint32)k[7])<<24;
-    case 7 : b+=((PN_uint32)k[6])<<16;
-    case 6 : b+=((PN_uint32)k[5])<<8;
+    case 8 : b+=((uint32_t)k[7])<<24;
+    case 7 : b+=((uint32_t)k[6])<<16;
+    case 6 : b+=((uint32_t)k[5])<<8;
     case 5 : b+=k[4];
-    case 4 : a+=((PN_uint32)k[3])<<24;
-    case 3 : a+=((PN_uint32)k[2])<<16;
-    case 2 : a+=((PN_uint32)k[1])<<8;
+    case 4 : a+=((uint32_t)k[3])<<24;
+    case 3 : a+=((uint32_t)k[2])<<16;
+    case 2 : a+=((uint32_t)k[1])<<8;
     case 1 : a+=k[0];
              break;
     case 0 : return c;
@@ -407,21 +407,21 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
 void hashlittle2( 
   const void *key,       /* the key to hash */
   size_t      length,    /* length of the key */
-  PN_uint32   *pc,        /* IN: primary initval, OUT: primary hash */
-  PN_uint32   *pb)        /* IN: secondary initval, OUT: secondary hash */
+  uint32_t   *pc,        /* IN: primary initval, OUT: primary hash */
+  uint32_t   *pb)        /* IN: secondary initval, OUT: secondary hash */
 {
-  PN_uint32 a,b,c;                                          /* internal state */
+  uint32_t a,b,c;                                          /* internal state */
   union { const void *ptr; size_t i; } u;     /* needed for Mac Powerbook G4 */
 
   /* Set up the internal state */
-  a = b = c = 0xdeadbeef + ((PN_uint32)length) + *pc;
+  a = b = c = 0xdeadbeef + ((uint32_t)length) + *pc;
   c += *pb;
 
   u.ptr = key;
   if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
-    const PN_uint32 *k = (PN_uint32*)key;                           /* read 32-bit chunks */
+    const uint32_t *k = (uint32_t*)key;                           /* read 32-bit chunks */
 #ifdef VALGRIND
-    const PN_uint8  *k8;
+    const uint8_t  *k8;
 #endif
 
     /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
@@ -466,20 +466,20 @@ void hashlittle2(
 
 #else /* make valgrind happy */
 
-    k8 = (const PN_uint8 *)k;
+    k8 = (const uint8_t *)k;
     switch(length)
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
-    case 11: c+=((PN_uint32)k8[10])<<16;  /* fall through */
-    case 10: c+=((PN_uint32)k8[9])<<8;    /* fall through */
+    case 11: c+=((uint32_t)k8[10])<<16;  /* fall through */
+    case 10: c+=((uint32_t)k8[9])<<8;    /* fall through */
     case 9 : c+=k8[8];                   /* fall through */
     case 8 : b+=k[1]; a+=k[0]; break;
-    case 7 : b+=((PN_uint32)k8[6])<<16;   /* fall through */
-    case 6 : b+=((PN_uint32)k8[5])<<8;    /* fall through */
+    case 7 : b+=((uint32_t)k8[6])<<16;   /* fall through */
+    case 6 : b+=((uint32_t)k8[5])<<8;    /* fall through */
     case 5 : b+=k8[4];                   /* fall through */
     case 4 : a+=k[0]; break;
-    case 3 : a+=((PN_uint32)k8[2])<<16;   /* fall through */
-    case 2 : a+=((PN_uint32)k8[1])<<8;    /* fall through */
+    case 3 : a+=((uint32_t)k8[2])<<16;   /* fall through */
+    case 2 : a+=((uint32_t)k8[1])<<8;    /* fall through */
     case 1 : a+=k8[0]; break;
     case 0 : *pc=c; *pb=b; return;  /* zero length strings require no mixing */
     }
@@ -487,45 +487,45 @@ void hashlittle2(
 #endif /* !valgrind */
 
   } else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0)) {
-    const PN_uint16 *k = (PN_uint16*)key;                           /* read 16-bit chunks */
-    const PN_uint8  *k8;
+    const uint16_t *k = (uint16_t*)key;                           /* read 16-bit chunks */
+    const uint8_t  *k8;
 
     /*--------------- all but last block: aligned reads and different mixing */
     while (length > 12)
     {
-      a += k[0] + (((PN_uint32)k[1])<<16);
-      b += k[2] + (((PN_uint32)k[3])<<16);
-      c += k[4] + (((PN_uint32)k[5])<<16);
+      a += k[0] + (((uint32_t)k[1])<<16);
+      b += k[2] + (((uint32_t)k[3])<<16);
+      c += k[4] + (((uint32_t)k[5])<<16);
       mix(a,b,c);
       length -= 12;
       k += 6;
     }
 
     /*----------------------------- handle the last (probably partial) block */
-    k8 = (const PN_uint8 *)k;
+    k8 = (const uint8_t *)k;
     switch(length)
     {
-    case 12: c+=k[4]+(((PN_uint32)k[5])<<16);
-             b+=k[2]+(((PN_uint32)k[3])<<16);
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+    case 12: c+=k[4]+(((uint32_t)k[5])<<16);
+             b+=k[2]+(((uint32_t)k[3])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
-    case 11: c+=((PN_uint32)k8[10])<<16;     /* fall through */
+    case 11: c+=((uint32_t)k8[10])<<16;     /* fall through */
     case 10: c+=k[4];
-             b+=k[2]+(((PN_uint32)k[3])<<16);
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+             b+=k[2]+(((uint32_t)k[3])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
     case 9 : c+=k8[8];                      /* fall through */
-    case 8 : b+=k[2]+(((PN_uint32)k[3])<<16);
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+    case 8 : b+=k[2]+(((uint32_t)k[3])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
-    case 7 : b+=((PN_uint32)k8[6])<<16;      /* fall through */
+    case 7 : b+=((uint32_t)k8[6])<<16;      /* fall through */
     case 6 : b+=k[2];
-             a+=k[0]+(((PN_uint32)k[1])<<16);
+             a+=k[0]+(((uint32_t)k[1])<<16);
              break;
     case 5 : b+=k8[4];                      /* fall through */
-    case 4 : a+=k[0]+(((PN_uint32)k[1])<<16);
+    case 4 : a+=k[0]+(((uint32_t)k[1])<<16);
              break;
-    case 3 : a+=((PN_uint32)k8[2])<<16;      /* fall through */
+    case 3 : a+=((uint32_t)k8[2])<<16;      /* fall through */
     case 2 : a+=k[0];
              break;
     case 1 : a+=k8[0];
@@ -534,23 +534,23 @@ void hashlittle2(
     }
 
   } else {                        /* need to read the key one byte at a time */
-    const PN_uint8 *k = (PN_uint8*)key;
+    const uint8_t *k = (uint8_t*)key;
 
     /*--------------- all but the last block: affect some 32 bits of (a,b,c) */
     while (length > 12)
     {
       a += k[0];
-      a += ((PN_uint32)k[1])<<8;
-      a += ((PN_uint32)k[2])<<16;
-      a += ((PN_uint32)k[3])<<24;
+      a += ((uint32_t)k[1])<<8;
+      a += ((uint32_t)k[2])<<16;
+      a += ((uint32_t)k[3])<<24;
       b += k[4];
-      b += ((PN_uint32)k[5])<<8;
-      b += ((PN_uint32)k[6])<<16;
-      b += ((PN_uint32)k[7])<<24;
+      b += ((uint32_t)k[5])<<8;
+      b += ((uint32_t)k[6])<<16;
+      b += ((uint32_t)k[7])<<24;
       c += k[8];
-      c += ((PN_uint32)k[9])<<8;
-      c += ((PN_uint32)k[10])<<16;
-      c += ((PN_uint32)k[11])<<24;
+      c += ((uint32_t)k[9])<<8;
+      c += ((uint32_t)k[10])<<16;
+      c += ((uint32_t)k[11])<<24;
       mix(a,b,c);
       length -= 12;
       k += 12;
@@ -559,17 +559,17 @@ void hashlittle2(
     /*-------------------------------- last block: affect all 32 bits of (c) */
     switch(length)                   /* all the case statements fall through */
     {
-    case 12: c+=((PN_uint32)k[11])<<24;
-    case 11: c+=((PN_uint32)k[10])<<16;
-    case 10: c+=((PN_uint32)k[9])<<8;
+    case 12: c+=((uint32_t)k[11])<<24;
+    case 11: c+=((uint32_t)k[10])<<16;
+    case 10: c+=((uint32_t)k[9])<<8;
     case 9 : c+=k[8];
-    case 8 : b+=((PN_uint32)k[7])<<24;
-    case 7 : b+=((PN_uint32)k[6])<<16;
-    case 6 : b+=((PN_uint32)k[5])<<8;
+    case 8 : b+=((uint32_t)k[7])<<24;
+    case 7 : b+=((uint32_t)k[6])<<16;
+    case 6 : b+=((uint32_t)k[5])<<8;
     case 5 : b+=k[4];
-    case 4 : a+=((PN_uint32)k[3])<<24;
-    case 3 : a+=((PN_uint32)k[2])<<16;
-    case 2 : a+=((PN_uint32)k[1])<<8;
+    case 4 : a+=((uint32_t)k[3])<<24;
+    case 3 : a+=((uint32_t)k[2])<<16;
+    case 2 : a+=((uint32_t)k[1])<<8;
     case 1 : a+=k[0];
              break;
     case 0 : *pc=c; *pb=b; return;  /* zero length strings require no mixing */
@@ -588,19 +588,19 @@ void hashlittle2(
  * from hashlittle() on all machines.  hashbig() takes advantage of
  * big-endian byte ordering. 
  */
-PN_uint32 hashbig( const void *key, size_t length, PN_uint32 initval)
+uint32_t hashbig( const void *key, size_t length, uint32_t initval)
 {
-  PN_uint32 a,b,c;
+  uint32_t a,b,c;
   union { const void *ptr; size_t i; } u; /* to cast key to (size_t) happily */
 
   /* Set up the internal state */
-  a = b = c = 0xdeadbeef + ((PN_uint32)length) + initval;
+  a = b = c = 0xdeadbeef + ((uint32_t)length) + initval;
 
   u.ptr = key;
   if (HASH_BIG_ENDIAN && ((u.i & 0x3) == 0)) {
-    const PN_uint32 *k = (PN_uint32*)key;                           /* read 32-bit chunks */
+    const uint32_t *k = (uint32_t*)key;                           /* read 32-bit chunks */
 #ifdef VALGRIND
-    const PN_uint8  *k8;
+    const uint8_t  *k8;
 #endif
 
     /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
@@ -645,44 +645,44 @@ PN_uint32 hashbig( const void *key, size_t length, PN_uint32 initval)
 
 #else  /* make valgrind happy */
 
-    k8 = (const PN_uint8 *)k;
+    k8 = (const uint8_t *)k;
     switch(length)                   /* all the case statements fall through */
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
-    case 11: c+=((PN_uint32)k8[10])<<8;  /* fall through */
-    case 10: c+=((PN_uint32)k8[9])<<16;  /* fall through */
-    case 9 : c+=((PN_uint32)k8[8])<<24;  /* fall through */
+    case 11: c+=((uint32_t)k8[10])<<8;  /* fall through */
+    case 10: c+=((uint32_t)k8[9])<<16;  /* fall through */
+    case 9 : c+=((uint32_t)k8[8])<<24;  /* fall through */
     case 8 : b+=k[1]; a+=k[0]; break;
-    case 7 : b+=((PN_uint32)k8[6])<<8;   /* fall through */
-    case 6 : b+=((PN_uint32)k8[5])<<16;  /* fall through */
-    case 5 : b+=((PN_uint32)k8[4])<<24;  /* fall through */
+    case 7 : b+=((uint32_t)k8[6])<<8;   /* fall through */
+    case 6 : b+=((uint32_t)k8[5])<<16;  /* fall through */
+    case 5 : b+=((uint32_t)k8[4])<<24;  /* fall through */
     case 4 : a+=k[0]; break;
-    case 3 : a+=((PN_uint32)k8[2])<<8;   /* fall through */
-    case 2 : a+=((PN_uint32)k8[1])<<16;  /* fall through */
-    case 1 : a+=((PN_uint32)k8[0])<<24; break;
+    case 3 : a+=((uint32_t)k8[2])<<8;   /* fall through */
+    case 2 : a+=((uint32_t)k8[1])<<16;  /* fall through */
+    case 1 : a+=((uint32_t)k8[0])<<24; break;
     case 0 : return c;
     }
 
 #endif /* !VALGRIND */
 
   } else {                        /* need to read the key one byte at a time */
-    const PN_uint8 *k = (PN_uint8*)key;
+    const uint8_t *k = (uint8_t*)key;
 
     /*--------------- all but the last block: affect some 32 bits of (a,b,c) */
     while (length > 12)
     {
-      a += ((PN_uint32)k[0])<<24;
-      a += ((PN_uint32)k[1])<<16;
-      a += ((PN_uint32)k[2])<<8;
-      a += ((PN_uint32)k[3]);
-      b += ((PN_uint32)k[4])<<24;
-      b += ((PN_uint32)k[5])<<16;
-      b += ((PN_uint32)k[6])<<8;
-      b += ((PN_uint32)k[7]);
-      c += ((PN_uint32)k[8])<<24;
-      c += ((PN_uint32)k[9])<<16;
-      c += ((PN_uint32)k[10])<<8;
-      c += ((PN_uint32)k[11]);
+      a += ((uint32_t)k[0])<<24;
+      a += ((uint32_t)k[1])<<16;
+      a += ((uint32_t)k[2])<<8;
+      a += ((uint32_t)k[3]);
+      b += ((uint32_t)k[4])<<24;
+      b += ((uint32_t)k[5])<<16;
+      b += ((uint32_t)k[6])<<8;
+      b += ((uint32_t)k[7]);
+      c += ((uint32_t)k[8])<<24;
+      c += ((uint32_t)k[9])<<16;
+      c += ((uint32_t)k[10])<<8;
+      c += ((uint32_t)k[11]);
       mix(a,b,c);
       length -= 12;
       k += 12;
@@ -692,17 +692,17 @@ PN_uint32 hashbig( const void *key, size_t length, PN_uint32 initval)
     switch(length)                   /* all the case statements fall through */
     {
     case 12: c+=k[11];
-    case 11: c+=((PN_uint32)k[10])<<8;
-    case 10: c+=((PN_uint32)k[9])<<16;
-    case 9 : c+=((PN_uint32)k[8])<<24;
+    case 11: c+=((uint32_t)k[10])<<8;
+    case 10: c+=((uint32_t)k[9])<<16;
+    case 9 : c+=((uint32_t)k[8])<<24;
     case 8 : b+=k[7];
-    case 7 : b+=((PN_uint32)k[6])<<8;
-    case 6 : b+=((PN_uint32)k[5])<<16;
-    case 5 : b+=((PN_uint32)k[4])<<24;
+    case 7 : b+=((uint32_t)k[6])<<8;
+    case 6 : b+=((uint32_t)k[5])<<16;
+    case 5 : b+=((uint32_t)k[4])<<24;
     case 4 : a+=k[3];
-    case 3 : a+=((PN_uint32)k[2])<<8;
-    case 2 : a+=((PN_uint32)k[1])<<16;
-    case 1 : a+=((PN_uint32)k[0])<<24;
+    case 3 : a+=((uint32_t)k[2])<<8;
+    case 2 : a+=((uint32_t)k[1])<<16;
+    case 1 : a+=((uint32_t)k[0])<<24;
              break;
     case 0 : return c;
     }
@@ -718,9 +718,9 @@ PN_uint32 hashbig( const void *key, size_t length, PN_uint32 initval)
 /* used for timings */
 void driver1()
 {
-  PN_uint8 buf[256];
-  PN_uint32 i;
-  PN_uint32 h=0;
+  uint8_t buf[256];
+  uint32_t i;
+  uint32_t h=0;
   time_t a,z;
 
   time(&a);
@@ -740,11 +740,11 @@ void driver1()
 #define MAXLEN  70
 void driver2()
 {
-  PN_uint8 qa[MAXLEN+1], qb[MAXLEN+2], *a = &qa[0], *b = &qb[1];
-  PN_uint32 c[HASHSTATE], d[HASHSTATE], i=0, j=0, k, l, m=0, z;
-  PN_uint32 e[HASHSTATE],f[HASHSTATE],g[HASHSTATE],h[HASHSTATE];
-  PN_uint32 x[HASHSTATE],y[HASHSTATE];
-  PN_uint32 hlen;
+  uint8_t qa[MAXLEN+1], qb[MAXLEN+2], *a = &qa[0], *b = &qb[1];
+  uint32_t c[HASHSTATE], d[HASHSTATE], i=0, j=0, k, l, m=0, z;
+  uint32_t e[HASHSTATE],f[HASHSTATE],g[HASHSTATE],h[HASHSTATE];
+  uint32_t x[HASHSTATE],y[HASHSTATE];
+  uint32_t hlen;
 
   printf("No more than %d trials should ever be needed \n",MAXPAIR/2);
   for (hlen=0; hlen < MAXLEN; ++hlen)
@@ -757,14 +757,14 @@ void driver2()
 	for (m=1; m<8; ++m) /*------------ for serveral possible initvals, */
 	{
 	  for (l=0; l<HASHSTATE; ++l)
-	    e[l]=f[l]=g[l]=h[l]=x[l]=y[l]=~((PN_uint32)0);
+	    e[l]=f[l]=g[l]=h[l]=x[l]=y[l]=~((uint32_t)0);
 
       	  /*---- check that every output bit is affected by that input bit */
 	  for (k=0; k<MAXPAIR; k+=2)
 	  { 
-	    PN_uint32 finished=1;
+	    uint32_t finished=1;
 	    /* keys have one bit different */
-	    for (l=0; l<hlen+1; ++l) {a[l] = b[l] = (PN_uint8)0;}
+	    for (l=0; l<hlen+1; ++l) {a[l] = b[l] = (uint8_t)0;}
 	    /* have a and b be two keys differing in only one bit */
 	    a[i] ^= (k<<j);
 	    a[i] ^= (k>>(8-j));
@@ -810,23 +810,23 @@ void driver2()
 /* Check for reading beyond the end of the buffer and alignment problems */
 void driver3()
 {
-  PN_uint8 buf[MAXLEN+20], *b;
-  PN_uint32 len;
-  PN_uint8 q[] = "This is the time for all good men to come to the aid of their country...";
-  PN_uint32 h;
-  PN_uint8 qq[] = "xThis is the time for all good men to come to the aid of their country...";
-  PN_uint32 i;
-  PN_uint8 qqq[] = "xxThis is the time for all good men to come to the aid of their country...";
-  PN_uint32 j;
-  PN_uint8 qqqq[] = "xxxThis is the time for all good men to come to the aid of their country...";
-  PN_uint32 ref,x,y;
-  PN_uint8 *p;
+  uint8_t buf[MAXLEN+20], *b;
+  uint32_t len;
+  uint8_t q[] = "This is the time for all good men to come to the aid of their country...";
+  uint32_t h;
+  uint8_t qq[] = "xThis is the time for all good men to come to the aid of their country...";
+  uint32_t i;
+  uint8_t qqq[] = "xxThis is the time for all good men to come to the aid of their country...";
+  uint32_t j;
+  uint8_t qqqq[] = "xxxThis is the time for all good men to come to the aid of their country...";
+  uint32_t ref,x,y;
+  uint8_t *p;
 
   printf("Endianness.  These lines should all be the same (for values filled in):\n");
   printf("%.8x                            %.8x                            %.8x\n",
-         hashword((const PN_uint32 *)q, (sizeof(q)-1)/4, 13),
-         hashword((const PN_uint32 *)q, (sizeof(q)-5)/4, 13),
-         hashword((const PN_uint32 *)q, (sizeof(q)-9)/4, 13));
+         hashword((const uint32_t *)q, (sizeof(q)-1)/4, 13),
+         hashword((const uint32_t *)q, (sizeof(q)-5)/4, 13),
+         hashword((const uint32_t *)q, (sizeof(q)-9)/4, 13));
   p = q;
   printf("%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
          hashlittle(p, sizeof(q)-1, 13), hashlittle(p, sizeof(q)-2, 13),
@@ -868,11 +868,11 @@ void driver3()
       for (j=0; j<i; ++j) *(b+j)=0;
 
       /* these should all be equal */
-      ref = hashlittle(b, len, (PN_uint32)1);
-      *(b+i)=(PN_uint8)~0;
-      *(b-1)=(PN_uint8)~0;
-      x = hashlittle(b, len, (PN_uint32)1);
-      y = hashlittle(b, len, (PN_uint32)1);
+      ref = hashlittle(b, len, (uint32_t)1);
+      *(b+i)=(uint8_t)~0;
+      *(b-1)=(uint8_t)~0;
+      x = hashlittle(b, len, (uint32_t)1);
+      y = hashlittle(b, len, (uint32_t)1);
       if ((ref != x) || (ref != y)) 
       {
 	printf("alignment error: %.8x %.8x %.8x %d %d\n",ref,x,y,
@@ -885,8 +885,8 @@ void driver3()
 /* check for problems with nulls */
  void driver4()
 {
-  PN_uint8 buf[1];
-  PN_uint32 h,i,state[HASHSTATE];
+  uint8_t buf[1];
+  uint32_t h,i,state[HASHSTATE];
 
 
   buf[0] = ~0;

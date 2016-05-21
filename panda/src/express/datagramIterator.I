@@ -75,14 +75,14 @@ get_bool() {
 /**
  * Extracts a signed 8-bit integer.
  */
-INLINE PN_int8 DatagramIterator::
+INLINE int8_t DatagramIterator::
 get_int8() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index < _datagram->get_length(), 0);
   // Get the Data:
   const char *ptr = (const char *)_datagram->get_data();
-  PN_int8 tempvar = (PN_int8)ptr[_current_index];
+  int8_t tempvar = (int8_t)ptr[_current_index];
   ++_current_index;
 
   return tempvar;
@@ -91,14 +91,14 @@ get_int8() {
 /**
  * Extracts an unsigned 8-bit integer.
  */
-INLINE PN_uint8 DatagramIterator::
+INLINE uint8_t DatagramIterator::
 get_uint8() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index < _datagram->get_length(), 0);
   // Get the Data:
   const char *ptr = (const char *)_datagram->get_data();
-  PN_uint8 tempvar = (PN_uint8)ptr[_current_index];
+  uint8_t tempvar = (uint8_t)ptr[_current_index];
   ++_current_index;
 
   return tempvar;
@@ -107,12 +107,12 @@ get_uint8() {
 /**
  * Extracts a signed 16-bit integer.
  */
-INLINE PN_int16 DatagramIterator::
+INLINE int16_t DatagramIterator::
 get_int16() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_int16 tempvar;
+  int16_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -126,12 +126,12 @@ get_int16() {
 /**
  * Extracts a signed 32-bit integer.
  */
-INLINE PN_int32 DatagramIterator::
+INLINE int32_t DatagramIterator::
 get_int32() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_int32 tempvar;
+  int32_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -145,12 +145,12 @@ get_int32() {
 /**
  * Extracts a signed 64-bit integer.
  */
-INLINE PN_int64 DatagramIterator::
+INLINE int64_t DatagramIterator::
 get_int64() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_int64 tempvar;
+  int64_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -164,12 +164,12 @@ get_int64() {
 /**
  * Extracts an unsigned 16-bit integer.
  */
-INLINE PN_uint16 DatagramIterator::
+INLINE uint16_t DatagramIterator::
 get_uint16() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_uint16 tempvar;
+  uint16_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -183,12 +183,12 @@ get_uint16() {
 /**
  * Extracts an unsigned 32-bit integer.
  */
-INLINE PN_uint32 DatagramIterator::
+INLINE uint32_t DatagramIterator::
 get_uint32() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_uint32 tempvar;
+  uint32_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -202,12 +202,12 @@ get_uint32() {
 /**
  * Extracts an unsigned 64-bit integer.
  */
-INLINE PN_uint64 DatagramIterator::
+INLINE uint64_t DatagramIterator::
 get_uint64() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_uint64 tempvar;
+  uint64_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -274,12 +274,12 @@ get_stdfloat() {
 /**
  * Extracts a signed 16-bit big-endian integer.
  */
-INLINE PN_int16 DatagramIterator::
+INLINE int16_t DatagramIterator::
 get_be_int16() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_int16 tempvar;
+  int16_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -293,12 +293,12 @@ get_be_int16() {
 /**
  * Extracts a signed 32-bit big-endian integer.
  */
-INLINE PN_int32 DatagramIterator::
+INLINE int32_t DatagramIterator::
 get_be_int32() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_int32 tempvar;
+  int32_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -312,12 +312,12 @@ get_be_int32() {
 /**
  * Extracts a signed 64-bit big-endian integer.
  */
-INLINE PN_int64 DatagramIterator::
+INLINE int64_t DatagramIterator::
 get_be_int64() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_int64 tempvar;
+  int64_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -331,12 +331,12 @@ get_be_int64() {
 /**
  * Extracts an unsigned 16-bit big-endian integer.
  */
-INLINE PN_uint16 DatagramIterator::
+INLINE uint16_t DatagramIterator::
 get_be_uint16() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_uint16 tempvar;
+  uint16_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -350,12 +350,12 @@ get_be_uint16() {
 /**
  * Extracts an unsigned 32-bit big-endian integer.
  */
-INLINE PN_uint32 DatagramIterator::
+INLINE uint32_t DatagramIterator::
 get_be_uint32() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_uint32 tempvar;
+  uint32_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:
@@ -369,12 +369,12 @@ get_be_uint32() {
 /**
  * Extracts an unsigned 64-bit big-endian integer.
  */
-INLINE PN_uint64 DatagramIterator::
+INLINE uint64_t DatagramIterator::
 get_be_uint64() {
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
-  PN_uint64 tempvar;
+  uint64_t tempvar;
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
   // Get the Data:

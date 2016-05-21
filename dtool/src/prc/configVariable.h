@@ -56,13 +56,13 @@ protected:
   INLINE string get_string_word(size_t n) const;
   INLINE bool get_bool_word(size_t n) const;
   INLINE int get_int_word(size_t n) const;
-  INLINE PN_int64 get_int64_word(size_t n) const;
+  INLINE int64_t get_int64_word(size_t n) const;
   INLINE double get_double_word(size_t n) const;
 
   INLINE void set_string_word(size_t n, const string &value);
   INLINE void set_bool_word(size_t n, bool value);
   INLINE void set_int_word(size_t n, int value);
-  INLINE void set_int64_word(size_t n, PN_int64 value);
+  INLINE void set_int64_word(size_t n, int64_t value);
   INLINE void set_double_word(size_t n, double value);
 
 protected:

@@ -110,6 +110,7 @@ PUBLISHED:
   MAKE_SEQ(get_arrays, get_num_arrays, get_array);
   INLINE PT(GeomVertexArrayData) modify_array(int i);
   INLINE void set_array(int i, const GeomVertexArrayData *array);
+  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array);
 
   INLINE const TransformTable *get_transform_table() const;
   void set_transform_table(const TransformTable *table);
@@ -169,17 +170,17 @@ PUBLISHED:
   void clear_cache_stage();
 
 public:
-  static INLINE PN_uint32 pack_abcd(unsigned int a, unsigned int b,
+  static INLINE uint32_t pack_abcd(unsigned int a, unsigned int b,
                                     unsigned int c, unsigned int d);
-  static INLINE unsigned int unpack_abcd_a(PN_uint32 data);
-  static INLINE unsigned int unpack_abcd_b(PN_uint32 data);
-  static INLINE unsigned int unpack_abcd_c(PN_uint32 data);
-  static INLINE unsigned int unpack_abcd_d(PN_uint32 data);
+  static INLINE unsigned int unpack_abcd_a(uint32_t data);
+  static INLINE unsigned int unpack_abcd_b(uint32_t data);
+  static INLINE unsigned int unpack_abcd_c(uint32_t data);
+  static INLINE unsigned int unpack_abcd_d(uint32_t data);
 
-  static INLINE PN_uint32 pack_ufloat(float a, float b, float c);
-  static INLINE float unpack_ufloat_a(PN_uint32 data);
-  static INLINE float unpack_ufloat_b(PN_uint32 data);
-  static INLINE float unpack_ufloat_c(PN_uint32 data);
+  static INLINE uint32_t pack_ufloat(float a, float b, float c);
+  static INLINE float unpack_ufloat_a(uint32_t data);
+  static INLINE float unpack_ufloat_b(uint32_t data);
+  static INLINE float unpack_ufloat_c(uint32_t data);
 
 private:
   static void do_set_color(GeomVertexData *vdata, const LColor &color);

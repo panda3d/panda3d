@@ -110,13 +110,13 @@ put_datagram(const Datagram &data) {
   // First, write the size of the upcoming datagram.
   StreamWriter writer(_out, false);
   size_t num_bytes = data.get_length();
-  if (num_bytes == (PN_uint32)-1 || num_bytes != (PN_uint32)num_bytes) {
+  if (num_bytes == (uint32_t)-1 || num_bytes != (uint32_t)num_bytes) {
     // Write a large value as a 64-bit size.
-    writer.add_uint32((PN_uint32)-1);
+    writer.add_uint32((uint32_t)-1);
     writer.add_uint64(num_bytes);
   } else {
     // Write a value that fits in 32 bits.
-    writer.add_uint32((PN_uint32)num_bytes);
+    writer.add_uint32((uint32_t)num_bytes);
   }
 
   // Now, write the datagram itself.
@@ -154,13 +154,13 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
   streamsize num_remaining = size;
 
   StreamWriter writer(_out, false);
-  if (num_remaining == (PN_uint32)-1 || num_remaining != (PN_uint32)num_remaining) {
+  if (num_remaining == (uint32_t)-1 || num_remaining != (uint32_t)num_remaining) {
     // Write a large value as a 64-bit size.
-    writer.add_uint32((PN_uint32)-1);
+    writer.add_uint32((uint32_t)-1);
     writer.add_uint64(num_remaining);
   } else {
     // Write a value that fits in 32 bits.
-    writer.add_uint32((PN_uint32)num_remaining);
+    writer.add_uint32((uint32_t)num_remaining);
   }
 
   static const size_t buffer_size = 4096;
@@ -217,13 +217,13 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
   streamsize num_remaining = source.get_size();
 
   StreamWriter writer(_out, false);
-  if (num_remaining == (PN_uint32)-1 || num_remaining != (PN_uint32)num_remaining) {
+  if (num_remaining == (uint32_t)-1 || num_remaining != (uint32_t)num_remaining) {
     // Write a large value as a 64-bit size.
-    writer.add_uint32((PN_uint32)-1);
+    writer.add_uint32((uint32_t)-1);
     writer.add_uint64(num_remaining);
   } else {
     // Write a value that fits in 32 bits.
-    writer.add_uint32((PN_uint32)num_remaining);
+    writer.add_uint32((uint32_t)num_remaining);
   }
 
   static const size_t buffer_size = 4096;

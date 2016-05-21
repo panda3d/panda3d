@@ -48,7 +48,7 @@ UserDataAudioCursor::
  * audio will be interleaved.
  */
 void UserDataAudioCursor::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
 
   if(source->_remove_after_read) {

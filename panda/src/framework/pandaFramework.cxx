@@ -31,6 +31,12 @@
 #include "transformState.h"
 #include "renderState.h"
 
+#ifdef LINK_ALL_STATIC
+#ifdef HAVE_EGG
+#include "pandaegg.h"
+#endif
+#endif
+
 LoaderOptions PandaFramework::_loader_options;
 
 /**
@@ -101,10 +107,8 @@ open_framework(int &argc, char **&argv) {
 
   // We also want the egg loader.
   #ifdef HAVE_EGG
-  extern EXPCL_PANDAEGG void init_libpandaegg();
   init_libpandaegg();
   #endif
-
 #endif
 
   // Let's explicitly make a call to the image type library to ensure it gets

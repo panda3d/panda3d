@@ -186,7 +186,7 @@ copy_file(VirtualFile *new_file) {
  * (which you should eventually delete when you are done reading). Returns
  * NULL on failure.
  *
- * If auto_unwrap is true, an explicitly-named .pz file is automatically
+ * If auto_unwrap is true, an explicitly-named .pz/.gz file is automatically
  * decompressed and the decompressed contents are returned.  This is different
  * than vfs-implicit-pz, which will automatically decompress a file if the
  * extension .pz is *not* given.
@@ -195,7 +195,9 @@ istream *VirtualFileSimple::
 open_read_file(bool auto_unwrap) const {
 
   // Will we be automatically unwrapping a .pz file?
-  bool do_uncompress = (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"));
+  bool do_uncompress = (_implicit_pz_file ||
+    (auto_unwrap && (_local_filename.get_extension() == "pz" ||
+                     _local_filename.get_extension() == "gz")));
 
   Filename local_filename(_local_filename);
   if (do_uncompress) {
@@ -364,7 +366,9 @@ bool VirtualFileSimple::
 read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
 
   // Will we be automatically unwrapping a .pz file?
-  bool do_uncompress = (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"));
+  bool do_uncompress = (_implicit_pz_file ||
+    (auto_unwrap && (_local_filename.get_extension() == "pz" ||
+                     _local_filename.get_extension() == "gz")));
 
   Filename local_filename(_local_filename);
   if (do_uncompress) {

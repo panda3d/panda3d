@@ -1434,7 +1434,7 @@ packed_argb_to_uint8_rgba(unsigned char *to, int to_stride,
   }
 
   while (num_records > 0) {
-    PN_uint32 dword = *(const PN_uint32 *)from;
+    uint32_t dword = *(const uint32_t *)from;
     to[0] = unpack_abcd_b(dword);
     to[1] = unpack_abcd_c(dword);
     to[2] = unpack_abcd_d(dword);
@@ -1461,7 +1461,7 @@ uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
   }
 
   while (num_records > 0) {
-    *(PN_uint32 *)to = pack_abcd(from[3], from[0], from[1], from[2]);
+    *(uint32_t *)to = pack_abcd(from[3], from[0], from[1], from[2]);
 
     to += to_stride;
     from += from_stride;
@@ -2515,7 +2515,7 @@ set_num_rows(int n) {
 
     case NT_packed_ufloat:
       while (pointer < stop) {
-        *(PN_int32 *)pointer = 0x781e03c0;
+        *(int32_t *)pointer = 0x781e03c0;
         pointer += stride;
       }
       break;

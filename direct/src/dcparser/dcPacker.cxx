@@ -858,14 +858,14 @@ unpack_object() {
 
   case PT_int64:
     {
-      PN_int64 value = unpack_int64();
+      int64_t value = unpack_int64();
       object = PyLong_FromLongLong(value);
     }
     break;
 
   case PT_uint64:
     {
-      PN_uint64 value = unpack_uint64();
+      uint64_t value = unpack_uint64();
       object = PyLong_FromUnsignedLongLong(value);
     }
     break;

@@ -101,6 +101,9 @@ private:
     // Assign to the coerced argument, in the case of a coercion constructor.
     RF_coerced = 0x040,
 
+    // Don't automatically map NULL to None
+    RF_preserve_null = 0x080,
+
     // These indicate what should be returned on error.
     RF_err_notimplemented = 0x002,
     RF_err_null = 0x004,
@@ -164,7 +167,7 @@ private:
                           const string &exc_type, const string &message,
                           const string &format_args = "");
   void pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
-                         std::string return_expr);
+                         std::string return_expr, int return_flags);
 
   void write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                       const std::string &cClassName, MakeSeq *make_seq);

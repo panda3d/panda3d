@@ -40,7 +40,6 @@ public:
   } TriangleIndices;
 
 PUBLISHED:
-
   INLINE CollisionFloorMesh();
 
   INLINE void add_vertex(const LPoint3 &vert);
@@ -54,6 +53,10 @@ PUBLISHED:
   MAKE_SEQ(get_triangles, get_num_triangles, get_triangle);
 
   virtual LPoint3 get_collision_origin() const;
+
+PUBLISHED:
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
+  MAKE_SEQ_PROPERTY(triangles, get_num_triangles, get_triangle);
 
 public:
   CollisionFloorMesh(const CollisionFloorMesh &copy);

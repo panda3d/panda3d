@@ -34,6 +34,10 @@ class EXPCL_PANDA_MOVIES MicrophoneAudio : public MovieAudio {
   INLINE int get_channels() const;
   INLINE int get_rate() const;
 
+  MAKE_SEQ_PROPERTY(options, get_num_options, get_option);
+  MAKE_PROPERTY(channels, get_channels);
+  MAKE_PROPERTY(rate, get_rate);
+
   virtual PT(MovieAudioCursor) open() = 0;
 
 public:

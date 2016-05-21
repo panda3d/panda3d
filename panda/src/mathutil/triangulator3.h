@@ -40,6 +40,9 @@ PUBLISHED:
   void triangulate();
   INLINE const LPlaned &get_plane() const;
 
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
+  MAKE_PROPERTY(plane, get_plane);
+
 private:
   typedef pvector<LPoint3d> Vertices3;
   Vertices3 _vertices3;
