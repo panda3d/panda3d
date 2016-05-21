@@ -2304,7 +2304,7 @@ def SetupVisualStudioEnviron():
 
     binpath = SDK["VISUALSTUDIO"] + "VC\\bin\\" + bindir
     if not os.path.isdir(binpath):
-        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1.")
+        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
 
     AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
