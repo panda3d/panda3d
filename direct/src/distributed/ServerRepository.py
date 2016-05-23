@@ -359,8 +359,11 @@ class ServerRepository:
             #datagram.dumpHex(ostream)
 
         dgi = DatagramIterator(datagram)
-
         type = dgi.getUint16()
+        
+        if dgi.getRemainingSize() == 0 and type != CLIENT_DISCONNECT_CMU:
+            # This prevents a crash where their isn't enough data recieved to unpack corresponding to the msgType.
+            return
 
         if type == CLIENT_DISCONNECT_CMU:
             self.handleClientDisconnect(client)
