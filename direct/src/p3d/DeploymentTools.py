@@ -799,6 +799,8 @@ class Installer:
         """ Builds a portable archive that can be extracted onto the filesystem"""
         arch = platform.rsplit("_", 1)[-1]
         output = Filename(output)
+        runtime_ext = ".exe" if platform.startswith('win') else ""
+
         if output.isDirectory():
             if arch:
                 output = Filename(output, "%s_%s_%s" % (self.shortname.lower(), self.version, arch))
@@ -808,7 +810,7 @@ class Installer:
         output.makeAbsolute()
         extrafiles = self.standalone.getExtraFiles(platform)
 
-        runtime = Filename(Filename.getTempDirectory(), self.shortname)
+        runtime = Filename(Filename.getTempDirectory(), self.shortname + runtime_ext)
         runtime.unlink()
         if self.includeRequires:
             extraTokens = {"host_dir": ".", "start_dir": "."}
@@ -818,12 +820,13 @@ class Installer:
 
         # Temporary directory to store the hostdir in
         hostDir = Filename(self.tempDir, platform + "/")
-        if not hostDir.exists():
-            hostDir.makeDir()
-            self.installPackagesInto(hostDir, platform)
+        if hostDir.exists():
+            hostDir.unlink()
+        hostDir.makeDir()
+        self.installPackagesInto(hostDir, platform)
 
         shutil.copytree(hostDir.toOsSpecific(), output.toOsSpecific())
-        shutil.copy2(runtime.toOsSpecific(), Filename(output, self.shortname).toOsSpecific())
+        shutil.copy2(runtime.toOsSpecific(), Filename(output, self.shortname + runtime_ext).toOsSpecific())
 
         if platform.startswith('linux'):
             arctype = 'tar.gz'
