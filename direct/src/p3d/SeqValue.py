@@ -77,6 +77,12 @@ class SeqValue:
         """ Compares to another seq value. """
         return cmp(self.value, other.value)
 
+    def __lt__(self, other):
+        return self.value < other.value
+
+    def __gt__(self, other):
+        return self.value > other.value
+
     def __bool__(self):
         return bool(self.value)
 
