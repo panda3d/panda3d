@@ -476,7 +476,6 @@ declaration:
         | template_declaration
         | extern_c
         | namespace_declaration
-        | using_declaration
         | friend_declaration
         | KW_TYPEDEF typedef_declaration
         | KW_BEGIN_PUBLISH
@@ -891,6 +890,7 @@ type_like_declaration:
     $2->set_initializer($3);
   }
 }
+        | using_declaration
         ;
 
 multiple_var_declaration:

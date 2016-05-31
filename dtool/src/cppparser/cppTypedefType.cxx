@@ -197,6 +197,17 @@ is_fully_specified() const {
  *
  */
 CPPDeclaration *CPPTypedefType::
+instantiate(const CPPTemplateParameterList *actual_params,
+            CPPScope *current_scope, CPPScope *global_scope,
+            CPPPreprocessor *error_sink) const {
+
+  return _type->instantiate(actual_params, current_scope, global_scope, error_sink);
+}
+
+/**
+ *
+ */
+CPPDeclaration *CPPTypedefType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
 
@@ -320,6 +331,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (complete) {
     if (_using) {
       // It was declared using the "using" keyword.
+      if (is_template()) {
+        get_template_scope()->_parameters.write_formal(out, scope);
+        indent(out, indent_level);
+      }
       out << "using " << name << " = ";
       _type->output(out, 0, scope, false);
     } else {

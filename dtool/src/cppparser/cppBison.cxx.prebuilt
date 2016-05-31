@@ -885,11 +885,11 @@ static const yytype_uint16 yyrline[] =
 {
        0,   424,   424,   425,   429,   436,   437,   438,   442,   443,
      447,   451,   464,   463,   475,   476,   477,   478,   479,   480,
-     481,   482,   495,   504,   508,   516,   520,   524,   535,   556,
-     586,   603,   631,   668,   690,   723,   745,   756,   770,   769,
-     784,   788,   792,   803,   807,   811,   815,   819,   823,   827,
-     831,   835,   839,   843,   847,   855,   856,   860,   861,   865,
-     869,   878,   886,   898,   897,   913,   912,   934,   942,   953,
+     481,   494,   503,   507,   515,   519,   523,   534,   555,   585,
+     602,   630,   667,   689,   722,   744,   755,   769,   768,   783,
+     787,   791,   802,   806,   810,   814,   818,   822,   826,   830,
+     834,   838,   842,   846,   854,   855,   859,   860,   864,   868,
+     877,   885,   893,   898,   897,   913,   912,   934,   942,   953,
      962,   976,   975,   991,   990,  1005,  1020,  1026,  1035,  1042,
     1055,  1054,  1079,  1078,  1106,  1105,  1136,  1135,  1154,  1153,
     1174,  1173,  1205,  1204,  1230,  1243,  1247,  1251,  1255,  1259,
@@ -1071,8 +1071,8 @@ static const yytype_int16 yypact[] =
     -703,   -20,  -703,  -703,  1983,  2722,  2722,  -703,  1244,  -703,
     2722,  -703,  -703,    62,  -703,  -703,  -703,  -703,    66,    48,
      959,  -703,  -703,  -703,  -703,  -703,  -703,  5378,  5378,  -703,
-    5378,   892,  5378,   160,  -703,  5286,   225,   227,   233,   251,
-    5378,  2255,   191,   269,   272,  5378,  5378,   263,  5300,  5378,
+    5378,   892,  5378,   160,  -703,  5335,   225,   227,   233,   251,
+    5378,  2255,   191,   269,   272,  5378,  5378,   263,  5263,  5378,
     5378,  2691,  5378,  5378,  -703,    63,  -703,  -703,  -703,  3269,
     -703,  -703,  -703,  -703,  -703,  -703,  2822,  4474,  2822,  2822,
     2822,  2822,  4474,  2822,  4474,  2822,  2822,  2822,  -703,  -703,
@@ -1126,7 +1126,7 @@ static const yytype_int16 yypact[] =
      552,   623,   -21,   555,   556,   932,  -703,  -703,   623,   557,
      557,   557,   557,   557,   265,  2822,  2822,  -703,  -703,   558,
     -703,  2822,  -703,  4125,   568,   574,  -703,  -703,  -703,   -23,
-     577,   579,   584,  5063,    41,  -703,   582,   623,   587,  5322,
+     577,   579,   584,  5063,    41,  -703,   582,   623,   587,  5309,
     4236,    44,   529,  -703,   308,  -703,  5378,  -703,  -703,  -703,
     -703,  -703,  -703,  -703,   601,   586,   611,  -703,  -703,  4682,
     -703,  -703,   612,   605,   615,  -703,   609,  2822,  2822,  2822,
@@ -1211,11 +1211,11 @@ static const yytype_uint16 yydefact[] =
      593,   261,   269,   343,   344,   346,   347,   328,     0,     0,
      358,   325,   357,   352,   349,   348,   351,   329,     0,   330,
      350,   360,   345,   680,     4,   263,   264,   265,     0,   314,
-       0,   260,   340,   341,   342,     1,    21,   680,   680,    22,
-     680,   680,   680,     0,    38,   680,     0,     0,     0,     0,
+       0,   260,   340,   341,   342,     1,    20,   680,   680,    21,
+     680,   680,   680,     0,    37,   680,     0,     0,     0,     0,
      680,     0,     0,     0,     0,   680,   680,     0,   680,   680,
-     680,     0,   680,   680,     6,     0,    16,     7,    19,     0,
-      14,    59,    15,    17,    18,    40,   680,     0,   680,   680,
+     680,     0,   680,   680,     6,     0,    16,     7,    18,     0,
+      14,    58,    15,    17,    62,    39,   680,     0,   680,   680,
      680,   680,     0,   680,     0,   680,   680,   680,   282,   287,
        0,     0,   553,     0,     0,   281,     0,   680,   680,     0,
        0,     0,   680,   680,   562,   560,   559,   561,   558,   261,
@@ -1228,10 +1228,10 @@ static const yytype_uint16 yydefact[] =
      359,   349,   354,   353,   356,   262,   355,     0,   680,   680,
      680,   680,   680,   680,     0,   290,   248,   680,   673,   674,
      675,     0,   316,   664,   665,   667,   292,   266,   294,   680,
-      51,    50,    52,   680,    41,    46,    23,   680,     0,    44,
-       0,     0,     0,     0,    49,   680,     0,    26,    25,    24,
-      47,    43,     0,     0,   146,     0,    53,     0,    20,     0,
-       0,    45,    48,     0,   289,   271,   280,     0,     0,     0,
+      50,    49,    51,   680,    40,    45,    22,   680,     0,    43,
+       0,     0,     0,     0,    48,   680,     0,    25,    24,    23,
+      46,    42,     0,     0,   146,     0,    52,     0,    19,     0,
+       0,    44,    47,     0,   289,   271,   280,     0,     0,     0,
        0,    12,     0,     0,     0,   288,    63,   273,   274,   275,
      314,     0,   270,     0,   492,   491,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,   283,   680,
@@ -1242,12 +1242,12 @@ static const yytype_uint16 yydefact[] =
        0,   291,     0,   680,     0,   680,   680,   680,   680,   680,
      253,   240,     0,   249,     0,   250,   252,   251,   179,   680,
        0,     0,   680,   680,     0,   180,   183,   680,   178,   680,
-     322,     0,   319,   318,   313,   317,     0,   680,   680,    42,
-      39,   680,     0,     0,     0,     0,     0,   680,   331,     0,
+     322,     0,   319,   318,   313,   317,     0,   680,   680,    41,
+      38,   680,     0,     0,     0,     0,     0,   680,   331,     0,
      680,   289,   271,     0,     0,   288,    71,     0,   337,     0,
-       0,    55,    57,    80,    82,   289,   271,    65,     0,     0,
-     680,   272,   680,     0,   361,   196,     0,     0,    61,   361,
-     201,     0,    62,    60,     0,   278,   316,   276,   538,   552,
+       0,    54,    56,    80,    82,   289,   271,    65,     0,     0,
+     680,   272,   680,     0,   361,   196,     0,     0,    60,   361,
+     201,     0,    61,    59,     0,   278,   316,   276,   538,   552,
      544,   540,   542,   543,     0,   550,     0,   549,   539,   546,
        0,     0,     0,   545,   548,   551,     0,   555,   556,   547,
      541,   533,   494,    96,   680,   680,    95,   656,     0,   583,
@@ -1267,8 +1267,8 @@ static const yytype_uint16 yydefact[] =
        0,   680,   680,     0,     0,   680,   181,   184,   680,   235,
      231,   232,   234,   233,     0,     0,   680,   214,   194,   255,
      320,     0,   293,     0,     0,   299,   298,   336,   680,     0,
-       0,     0,     0,   680,     0,    37,   151,   680,   153,   680,
-       0,   680,     0,    72,   680,   338,   680,    56,   647,   643,
+       0,     0,     0,   680,     0,    36,   151,   680,   153,   680,
+       0,   680,     0,    72,   680,   338,   680,    55,   647,   643,
      646,   649,   650,   186,     0,     0,     0,   645,   651,     0,
      653,   652,     0,     0,     0,   644,     0,     0,     0,     0,
        0,     0,     0,     0,   187,   218,   190,   219,   601,   648,
@@ -1286,9 +1286,9 @@ static const yytype_uint16 yydefact[] =
      239,   195,     0,   324,   671,     0,   670,     0,     0,   300,
        0,   302,   661,   680,     0,   680,     0,     0,     0,     0,
        0,   332,     0,     0,   680,     0,   142,   145,   143,   150,
-       0,   155,   192,    74,   680,     0,    76,    54,     0,     0,
+       0,   155,   192,    74,   680,     0,    76,    53,     0,     0,
        0,   609,     0,     0,     0,     0,   617,   616,   615,   614,
-       0,     0,   613,    58,   189,     0,     0,     0,     0,     0,
+       0,     0,   613,    57,   189,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,   680,
        0,     0,   680,     0,    69,    92,   227,   680,     0,     0,
@@ -1309,7 +1309,7 @@ static const yytype_uint16 yydefact[] =
      195,     0,   536,   535,   537,   534,   680,   680,   176,   101,
        0,     0,     0,   216,     0,     0,   680,   237,   321,     0,
      305,     0,   304,     0,   303,   663,     0,     0,     0,   662,
-     680,   301,   334,     0,    27,     0,     0,     0,    36,   152,
+     680,   301,   334,     0,    26,     0,     0,     0,    35,   152,
      156,   154,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,   193,   495,     0,    78,     0,
        0,     0,     0,   680,     0,     0,     0,     0,     0,     0,
@@ -1326,17 +1326,17 @@ static const yytype_uint16 yydefact[] =
        0,     0,     0,     0,    77,   608,     0,     0,     0,     0,
      607,     0,   611,   612,   602,     0,   638,   637,    88,   680,
       70,     0,   680,    85,   488,     0,   680,   361,   680,   680,
-     680,   680,     0,    28,     0,    33,    35,     0,    30,     0,
+     680,   680,     0,    27,     0,    32,    34,     0,    29,     0,
        0,     0,     0,     0,     0,     0,   531,   517,   518,   519,
      520,   521,   522,   523,   524,   530,     0,   514,   515,   516,
      512,   513,   509,   510,   511,   529,   528,     0,     0,    79,
        0,     0,   610,     0,     0,   636,   680,     0,   680,    91,
      213,   172,     0,   259,   258,   257,   238,     0,     0,     0,
        0,   502,     0,     0,     0,   501,     0,   496,     0,   527,
-     526,     0,     0,     0,     0,     0,   680,    93,   600,    29,
-       0,     0,    31,     0,     0,     0,     0,   525,   605,   604,
+     526,     0,     0,     0,     0,     0,   680,    93,   600,    28,
+       0,     0,    30,     0,     0,     0,     0,   525,   605,   604,
      606,   603,   680,   680,     0,     0,     0,     0,     0,     0,
-     680,    87,    34,    32,   499,   498,   500,   497,    89
+     680,    87,    33,    31,   499,   498,   500,   497,    89
 };
 
   /* YYPGOTO[NTERM-NUM].  */
@@ -1907,24 +1907,24 @@ static const yytype_int16 yytable[] =
       86,    87,   108,   109,     0,     0,     0,   110,     0,    88,
        0,     0,   111,   112,     0,   113,     0,    89,     0,    90,
       91,    92,    93,   114,     0,     0,    94,     0,     0,     0,
-      95,     0,     0,     0,    96,    97,    98,    99,   100,   101,
-     115,     0,  1160,     0,     0,   102,   103,   104,   105,     0,
-       0,     0,     0,     0,   106,   107,    87,     0,   108,   109,
-       0,     0,     0,   110,    88,     0,     0,     0,   111,   112,
-      87,   113,     0,     0,    90,    91,    92,     0,    88,     0,
-       0,     0,     0,     0,     0,   249,     0,     0,    90,    91,
-      92,     0,    87,   100,   258,     0,   115,     0,     0,   249,
-      88,     0,     0,   105,     0,     0,     0,   100,     0,   106,
-      90,    91,    92,     0,   109,     0,     0,   105,     0,     0,
-       0,   249,     0,   106,   112,     0,   113,     0,   109,   100,
-       0,     0,     0,     0,     0,     0,     0,     0,   112,   105,
-     113,     0,     0,     0,     0,   106,     0,     0,    87,   108,
-     109,   115,     0,     0,     0,  -144,    88,     0,     0,     0,
-     112,     0,   113,     0,     0,   115,    90,    91,    92,     0,
-       0,     0,     0,     0,     0,     0,     0,   249,     0,     0,
-       0,     0,     0,     0,     0,   100,     0,   115,     0,     0,
+      95,     0,     0,    87,    96,    97,    98,    99,   100,   101,
+     115,    88,  1160,     0,     0,   102,   103,   104,   105,     0,
+       0,    90,    91,    92,   106,   107,     0,     0,   108,   109,
+       0,     0,   249,   110,     0,     0,     0,     0,   111,   112,
+     100,   113,     0,     0,     0,     0,     0,     0,     0,    87,
+     105,     0,     0,     0,     0,     0,   106,    88,     0,     0,
+       0,   109,     0,     0,     0,     0,   115,    90,    91,    92,
+     111,   112,     0,   113,     0,    87,     0,     0,   249,     0,
+       0,     0,     0,    88,     0,     0,   100,     0,  -144,     0,
+       0,     0,     0,    90,    91,    92,   105,     0,   115,     0,
+       0,     0,   106,     0,   249,     0,   108,   109,     0,     0,
+       0,     0,   100,   258,     0,     0,   111,   112,    87,   113,
+       0,     0,   105,     0,     0,     0,    88,     0,   106,     0,
+       0,     0,     0,   109,     0,     0,    90,    91,    92,     0,
+       0,     0,     0,   112,   115,   113,     0,   249,     0,     0,
+       0,     0,     0,     0,     0,   100,     0,     0,     0,     0,
        0,     0,     0,     0,     0,   105,     0,     0,     0,     0,
-       0,   106,     0,     0,     0,     0,   109,     0,     0,     0,
+     115,   106,     0,     0,     0,     0,   109,     0,     0,     0,
        0,     0,     0,     0,     0,     0,   112,     0,   113,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
@@ -2464,24 +2464,24 @@ static const yytype_int16 yycheck[] =
       49,    50,   107,   108,    -1,    -1,    -1,   112,    -1,    58,
       -1,    -1,   117,   118,    -1,   120,    -1,    66,    -1,    68,
       69,    70,    71,   128,    -1,    -1,    75,    -1,    -1,    -1,
-      79,    -1,    -1,    -1,    83,    84,    85,    86,    87,    88,
-     145,    -1,   147,    -1,    -1,    94,    95,    96,    97,    -1,
-      -1,    -1,    -1,    -1,   103,   104,    50,    -1,   107,   108,
-      -1,    -1,    -1,   112,    58,    -1,    -1,    -1,   117,   118,
-      50,   120,    -1,    -1,    68,    69,    70,    -1,    58,    -1,
-      -1,    -1,    -1,    -1,    -1,    79,    -1,    -1,    68,    69,
-      70,    -1,    50,    87,    88,    -1,   145,    -1,    -1,    79,
-      58,    -1,    -1,    97,    -1,    -1,    -1,    87,    -1,   103,
-      68,    69,    70,    -1,   108,    -1,    -1,    97,    -1,    -1,
-      -1,    79,    -1,   103,   118,    -1,   120,    -1,   108,    87,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   118,    97,
-     120,    -1,    -1,    -1,    -1,   103,    -1,    -1,    50,   107,
-     108,   145,    -1,    -1,    -1,   135,    58,    -1,    -1,    -1,
-     118,    -1,   120,    -1,    -1,   145,    68,    69,    70,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    79,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    87,    -1,   145,    -1,    -1,
+      79,    -1,    -1,    50,    83,    84,    85,    86,    87,    88,
+     145,    58,   147,    -1,    -1,    94,    95,    96,    97,    -1,
+      -1,    68,    69,    70,   103,   104,    -1,    -1,   107,   108,
+      -1,    -1,    79,   112,    -1,    -1,    -1,    -1,   117,   118,
+      87,   120,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    50,
+      97,    -1,    -1,    -1,    -1,    -1,   103,    58,    -1,    -1,
+      -1,   108,    -1,    -1,    -1,    -1,   145,    68,    69,    70,
+     117,   118,    -1,   120,    -1,    50,    -1,    -1,    79,    -1,
+      -1,    -1,    -1,    58,    -1,    -1,    87,    -1,   135,    -1,
+      -1,    -1,    -1,    68,    69,    70,    97,    -1,   145,    -1,
+      -1,    -1,   103,    -1,    79,    -1,   107,   108,    -1,    -1,
+      -1,    -1,    87,    88,    -1,    -1,   117,   118,    50,   120,
+      -1,    -1,    97,    -1,    -1,    -1,    58,    -1,   103,    -1,
+      -1,    -1,    -1,   108,    -1,    -1,    68,    69,    70,    -1,
+      -1,    -1,    -1,   118,   145,   120,    -1,    79,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    87,    -1,    -1,    -1,    -1,
       -1,    -1,    -1,    -1,    -1,    97,    -1,    -1,    -1,    -1,
-      -1,   103,    -1,    -1,    -1,    -1,   108,    -1,    -1,    -1,
+     145,   103,    -1,    -1,    -1,    -1,   108,    -1,    -1,    -1,
       -1,    -1,    -1,    -1,    -1,    -1,   118,    -1,   120,    -1,
       -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
       -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -2634,9 +2634,9 @@ static const yytype_uint16 yyr1[] =
        0,   150,   151,   151,   151,   152,   152,   152,   153,   153,
      154,   154,   156,   155,   157,   157,   157,   157,   157,   157,
      157,   157,   157,   157,   157,   157,   157,   157,   157,   157,
-     157,   157,   157,   157,   157,   157,   157,   157,   159,   158,
+     157,   157,   157,   157,   157,   157,   157,   159,   158,   160,
      160,   160,   160,   160,   160,   160,   160,   160,   160,   160,
-     160,   160,   160,   160,   160,   161,   161,   162,   162,   163,
+     160,   160,   160,   160,   161,   161,   162,   162,   163,   163,
      163,   163,   163,   165,   164,   166,   164,   167,   167,   168,
      168,   170,   169,   171,   169,   169,   172,   172,   173,   173,
      175,   174,   176,   174,   178,   177,   179,   177,   180,   177,
@@ -2706,12 +2706,12 @@ static const yytype_uint16 yyr1[] =
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     2,     2,     2,     1,     2,     2,     1,     3,
-       4,     4,     0,     5,     1,     1,     1,     1,     1,     1,
-       2,     1,     1,     2,     2,     2,     2,     7,     9,    11,
-       9,    11,    13,     9,    13,     9,     7,     5,     0,     3,
-       1,     2,     3,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     6,     1,     3,     1,     4,     1,
-       3,     3,     3,     0,     4,     0,     5,     2,     4,     2,
+       4,     4,     0,     5,     1,     1,     1,     1,     1,     2,
+       1,     1,     2,     2,     2,     2,     7,     9,    11,     9,
+      11,    13,     9,    13,     9,     7,     5,     0,     3,     1,
+       2,     3,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     6,     1,     3,     1,     4,     1,     3,
+       3,     3,     1,     0,     4,     0,     5,     2,     4,     2,
        4,     0,     4,     0,     5,     3,     2,     4,     2,     4,
        0,     6,     0,     6,     0,     7,     0,    11,     0,    12,
        0,     8,     0,     9,     1,     1,     1,     2,     2,     2,
@@ -3597,8 +3597,8 @@ yyreduce:
 #line 3598 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 21:
-#line 483 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 20:
+#line 482 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   if (publish_nest_level != 0) {
     yyerror("Unclosed __begin_publish", publish_loc);
@@ -3614,8 +3614,8 @@ yyreduce:
 #line 3615 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 22:
-#line 496 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 21:
+#line 495 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   if (publish_nest_level != 1) {
     yyerror("Unmatched __end_publish", (yylsp[0]));
@@ -3627,16 +3627,16 @@ yyreduce:
 #line 3628 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 23:
-#line 505 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 22:
+#line 504 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   current_scope->set_current_vis(V_published);
 }
 #line 3636 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 24:
-#line 509 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 23:
+#line 508 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   if (publish_nest_level > 0) {
     current_scope->set_current_vis(V_published);
@@ -3647,24 +3647,24 @@ yyreduce:
 #line 3648 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 25:
-#line 517 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 24:
+#line 516 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   current_scope->set_current_vis(V_protected);
 }
 #line 3656 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 26:
-#line 521 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 25:
+#line 520 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   current_scope->set_current_vis(V_private);
 }
 #line 3664 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 27:
-#line 525 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 26:
+#line 524 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
 
   CPPDeclaration *getter = (yyvsp[-2].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
@@ -3678,8 +3678,8 @@ yyreduce:
 #line 3679 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 28:
-#line 536 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 27:
+#line 535 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *getter = (yyvsp[-4].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3703,8 +3703,8 @@ yyreduce:
 #line 3704 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 29:
-#line 557 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 28:
+#line 556 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *getter = (yyvsp[-6].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3737,8 +3737,8 @@ yyreduce:
 #line 3738 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 30:
-#line 587 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 29:
+#line 586 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *length_getter = (yyvsp[-4].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3758,8 +3758,8 @@ yyreduce:
 #line 3759 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 31:
-#line 604 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 30:
+#line 603 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *length_getter = (yyvsp[-6].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3790,8 +3790,8 @@ yyreduce:
 #line 3791 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 32:
-#line 632 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 31:
+#line 631 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *length_getter = (yyvsp[-8].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3831,8 +3831,8 @@ yyreduce:
 #line 3832 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 33:
-#line 669 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 32:
+#line 668 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *hasser = (yyvsp[-4].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (hasser == (CPPDeclaration *)NULL || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3857,8 +3857,8 @@ yyreduce:
 #line 3858 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 34:
-#line 691 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 33:
+#line 690 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *hasser = (yyvsp[-8].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (hasser == (CPPDeclaration *)NULL || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3894,8 +3894,8 @@ yyreduce:
 #line 3895 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 35:
-#line 724 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 34:
+#line 723 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPDeclaration *length_getter = (yyvsp[-4].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
@@ -3920,8 +3920,8 @@ yyreduce:
 #line 3921 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 36:
-#line 746 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 35:
+#line 745 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPExpression::Result result = (yyvsp[-4].u.expr)->evaluate();
   if (result._type == CPPExpression::RT_error) {
@@ -3935,8 +3935,8 @@ yyreduce:
 #line 3936 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 37:
-#line 757 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 36:
+#line 756 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   // This alternative version of static_assert was introduced in C++17.
   CPPExpression::Result result = (yyvsp[-2].u.expr)->evaluate();
@@ -3949,8 +3949,8 @@ yyreduce:
 #line 3950 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 38:
-#line 770 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 37:
+#line 769 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   CPPScope *new_scope = new CPPScope(current_scope, CPPNameComponent("temp"),
                                      V_public);
@@ -3959,8 +3959,8 @@ yyreduce:
 #line 3960 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 39:
-#line 776 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 38:
+#line 775 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   delete current_scope;
   pop_scope();
@@ -3968,24 +3968,24 @@ yyreduce:
 #line 3969 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 40:
-#line 785 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 39:
+#line 784 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = 0;
 }
 #line 3977 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 41:
-#line 789 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 40:
+#line 788 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_extern;
 }
 #line 3985 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 42:
-#line 793 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 41:
+#line 792 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_extern;
   if ((yyvsp[-1].str) == "C") {
@@ -3999,96 +3999,96 @@ yyreduce:
 #line 4000 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 43:
-#line 804 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 42:
+#line 803 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_static;
 }
 #line 4008 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 44:
-#line 808 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 43:
+#line 807 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_inline;
 }
 #line 4016 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 45:
-#line 812 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 44:
+#line 811 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_virtual;
 }
 #line 4024 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 46:
-#line 816 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 45:
+#line 815 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_explicit;
 }
 #line 4032 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 47:
-#line 820 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 46:
+#line 819 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_register;
 }
 #line 4040 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 48:
-#line 824 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 47:
+#line 823 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_volatile;
 }
 #line 4048 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 49:
-#line 828 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 48:
+#line 827 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_mutable;
 }
 #line 4056 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 50:
-#line 832 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 49:
+#line 831 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_constexpr;
 }
 #line 4064 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 51:
-#line 836 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 50:
+#line 835 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_blocking;
 }
 #line 4072 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 52:
-#line 840 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 51:
+#line 839 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_extension;
 }
 #line 4080 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 53:
-#line 844 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 52:
+#line 843 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   (yyval.u.integer) = (yyvsp[0].u.integer) | (int)CPPInstance::SC_thread_local;
 }
 #line 4088 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 54:
-#line 848 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 53:
+#line 847 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   // Ignore attribute specifiers for now.
   (yyval.u.integer) = (yyvsp[0].u.integer);
@@ -4096,16 +4096,16 @@ yyreduce:
 #line 4097 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 59:
-#line 866 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 58:
+#line 865 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   /* multiple_var_declaration adds itself to the scope. */
 }
 #line 4105 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 60:
-#line 870 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 59:
+#line 869 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   // We don't really care about the storage class here.  In fact, it's
   // not actually legal to define a class or struct using a particular
@@ -4117,8 +4117,8 @@ yyreduce:
 #line 4118 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 61:
-#line 879 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 60:
+#line 878 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   if ((yyvsp[-1].u.instance) != (CPPInstance *)NULL) {
     (yyvsp[-1].u.instance)->_storage_class |= (current_storage_class | (yyvsp[-2].u.integer));
@@ -4129,8 +4129,8 @@ yyreduce:
 #line 4130 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
 
-  case 62:
-#line 887 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
+  case 61:
+#line 886 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
   if ((yyvsp[-1].u.instance) != (CPPInstance *)NULL) {
     (yyvsp[-1].u.instance)->_storage_class |= (current_storage_class | (yyvsp[-2].u.integer));

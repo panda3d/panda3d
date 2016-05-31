@@ -53,6 +53,16 @@ add_enum_value(CPPInstance *inst) {
  *
  */
 void CPPTemplateScope::
+define_typedef_type(CPPTypedefType *type, CPPPreprocessor *error_sink) {
+  type->_template_scope = this;
+  assert(_parent_scope != NULL);
+  _parent_scope->define_typedef_type(type, error_sink);
+}
+
+/**
+ *
+ */
+void CPPTemplateScope::
 define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   type->_template_scope = this;
   assert(_parent_scope != NULL);
