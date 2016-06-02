@@ -361,6 +361,18 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
         }
       }
     }
+    if (struct_type == (CPPType *)NULL ||
+        !TypeManager::is_vector_unsigned_char(struct_type)) {
+      if (TypeManager::is_vector_unsigned_char(param_type)) {
+        if (TypeManager::is_reference(param_type)) {
+          return new ParameterRemapReferenceToConcrete(param_type);
+        } else if (TypeManager::is_const(param_type)) {
+          return new ParameterRemapConstToNonConst(param_type);
+        } else {
+          return new ParameterRemapUnchanged(param_type);
+        }
+      }
+    }
   }
 
   if (manage_reference_counts) {

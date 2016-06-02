@@ -24,7 +24,7 @@
 #include <hash_set>
 #endif
 
-#ifndef USE_STL_ALLOCATOR
+#if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define pset set

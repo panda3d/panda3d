@@ -25,6 +25,12 @@
 // definition.
 #define pvector vector
 
+#elif defined(CPPPARSER)
+// Simplified definition to speed up Interrogate parsing.
+template<class Type>
+class pvector : public vector<Type> {
+};
+
 #else
 
 /**
