@@ -46,7 +46,7 @@ CFLAGS=""
 CXXFLAGS=""
 LDFLAGS=""
 RTDIST=0
-RTDIST_VERSION="dev"
+RTDIST_VERSION=None
 RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
@@ -162,13 +162,13 @@ def usage(problem):
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
-    global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX
+    global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
-        "static","host=","debversion=","rpmrelease=","p3dsuffix=",
+        "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
         "universal", "target=", "arch=", "git-commit="]
     anything = 0
@@ -213,6 +213,7 @@ def parseopts(args):
             elif (option=="--rpmrelease"): RPMRELEASE=value
             elif (option=="--git-commit"): GIT_COMMIT=value
             elif (option=="--p3dsuffix"): P3DSUFFIX=value
+            elif (option=="--rtdist-version"): RTDIST_VERSION=value
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
@@ -399,8 +400,11 @@ if (RUNTIME or RTDIST):
 
 if DISTRIBUTOR == "":
     DISTRIBUTOR = "makepanda"
-else:
+elif not RTDIST_VERSION:
     RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
+
+if not RTDIST_VERSION:
+    RTDIST_VERSION = "dev"
 
 if not IsCustomOutputDir():
     if GetTarget() == "windows" and GetTargetArch() == 'x64':
