@@ -672,7 +672,7 @@ class Installer:
         doc.InsertEndChild(xcontents)
         doc.SaveFile(Filename(hostDir, "contents.xml").toOsSpecific())
 
-    def buildAll(self, outputDir = "."):
+    def buildAll(self, outputDir = ".", portable=False):
         """ Creates a (graphical) installer for every known platform.
         Call this after you have set the desired parameters. """
 
@@ -690,9 +690,9 @@ class Installer:
         for platform in platforms:
             output = Filename(outputDir, platform + "/")
             output.makeDir()
-            self.build(output, platform)
+            self.build(output, platform, portable)
 
-    def build(self, output, platform = None):
+    def build(self, output, platform = None, portable=False):
         """ Builds (graphical) installers and stores it into the path
         indicated by the 'output' argument. You can specify to build for
         a different platform by altering the 'platform' argument.
@@ -701,21 +701,27 @@ class Installer:
         if platform == None:
             platform = PandaSystem.getPlatform()
 
-        if platform.startswith("win"):
-            self.buildNSIS(output, platform)
-            self.buildPortable(output, platform)
-            return
-        elif "_" in platform:
-            osname, arch = platform.split("_", 1)
-            if osname == "linux":
-                self.buildDEB(output, platform)
-                self.buildArch(output, platform)
-                self.buildPortable(output, platform)
-                return
-            elif osname == "osx":
+        if portable:
+            if platform.startswith("osx"):
                 self.buildPKG(output, platform)
+            elif platform.startswith("win") or platform.startswith("linux"):
+                self.buildPortable(output, platform)
+            else:
+                Installer.notify.info("Ignoring unknown platform " + platform)
+        else:
+            if platform.startswith("win"):
+                self.buildNSIS(output, platform)
                 return
-        Installer.notify.info("Ignoring unknown platform " + platform)
+            elif "_" in platform:
+                osname, arch = platform.split("_", 1)
+                if osname == "linux":
+                    self.buildDEB(output, platform)
+                    self.buildArch(output, platform)
+                    return
+                elif osname == "osx":
+                    self.buildPKG(output, platform)
+                    return
+            Installer.notify.info("Ignoring unknown platform " + platform)
 
     def __buildTempLinux(self, platform):
         """ Builds a filesystem for Linux.  Used so that buildDEB,
