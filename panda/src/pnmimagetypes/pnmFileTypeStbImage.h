@@ -22,8 +22,6 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-#include "stb_image.h"
-
 /**
  * For reading images via the public domain stb_image.h library.  This is used
  * when compiling without support for more specific libraries that are more

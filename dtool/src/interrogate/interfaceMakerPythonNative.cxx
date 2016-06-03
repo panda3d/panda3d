@@ -6262,7 +6262,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out <<
         "  " << cClassName  << " *local_this = NULL;\n"
         "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
-        "    return NULL;\n"
+        "    return -1;\n"
         "  }\n"
         "  return (Py_ssize_t)" << len_remap->get_call_str("local_this", pexprs) << ";\n";
     } else {

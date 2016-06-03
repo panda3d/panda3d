@@ -16,10 +16,10 @@ else:
     import cPickle as pickle
     import thread
 
-SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
+SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB = [".lib",".ilb"]
-VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg"])
+VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
 VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
 MAINTHREAD = threading.currentThread()
@@ -1392,7 +1392,12 @@ def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
     for l in result.split(" "):
         if (l.startswith("-D")):
             d = l.replace("-D", "").replace("\"", "").strip().split("=")
-            if (len(d) == 1):
+
+            if d[0] in ('NDEBUG', '_DEBUG'):
+                # Setting one of these flags by accident could cause serious harm.
+                if GetVerbose():
+                    print("Ignoring %s flag provided by %s" % (l, tool))
+            elif len(d) == 1:
                 defs[d[0]] = ""
             else:
                 defs[d[0]] = d[1]

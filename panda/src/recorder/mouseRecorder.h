@@ -77,6 +77,7 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual void write_recorder(BamWriter *manager, Datagram &dg);
 
+  INLINE virtual int get_ref_count() const FINAL { return ReferenceCount::get_ref_count(); };
   INLINE virtual void ref() const FINAL { ReferenceCount::ref(); };
   INLINE virtual bool unref() const FINAL { return ReferenceCount::unref(); };
 

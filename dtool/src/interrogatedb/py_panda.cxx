@@ -172,7 +172,6 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
   return NULL;
 }
 
-#ifndef NDEBUG
 /**
  * This is similar to a PyErr_Occurred() check, except that it also checks
  * Notify to see if an assertion has occurred.  If that is the case, then it
@@ -193,7 +192,6 @@ bool _Dtool_CheckErrorOccurred() {
   }
   return false;
 }
-#endif  // NDEBUG
 
 /**
  * Raises an AssertionError containing the last thrown assert message, and
