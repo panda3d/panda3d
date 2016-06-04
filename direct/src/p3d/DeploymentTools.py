@@ -833,6 +833,8 @@ class Installer:
         hostDir.makeDir()
         self.installPackagesInto(hostDir, platform)
         shutil.copy2(runtime.toOsSpecific(), Filename(hostDir, self.shortname + runtime_ext).toOsSpecific())
+        for file in extrafiles:
+            shutil.copy2(file.toOsSpecific(), Filename(hostDir, file.getBasename()).toOsSpecific())
 
         if not self.createArchive:
             Installer.notify.info("Creating %s..." % output)
