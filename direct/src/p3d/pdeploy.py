@@ -140,6 +140,9 @@ Options:
      If no images are provided, no icon will be generated.
      Only relevant when generating a graphical installer.
 
+  -z
+     Specify this option to generate archived portable builds.
+
   -h
      Display this help
 
@@ -174,9 +177,10 @@ authoremail = ""
 iconFiles = []
 includeRequires = False
 omitDefaultCheckboxes = False
+createArchive = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csOl:L:a:A:e:i:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csOl:L:a:A:e:i:h:z')
 except getopt.error as msg:
     usage(1, msg or 'Invalid option')
 
@@ -212,7 +216,8 @@ for opt, arg in opts:
         authoremail = arg.strip()
     elif opt == '-i':
         iconFiles.append(Filename.fromOsSpecific(arg))
-
+    elif opt == '-z':
+        createArchive = True
     elif opt == '-h':
         usage(0)
     else:
@@ -279,6 +284,7 @@ elif deploy_mode in ('installer', 'portable'):
         tokens["verify_contents"] = "never"
     i = Installer(appFilename, shortname, fullname, version, tokens = tokens)
     i.includeRequires = includeRequires
+    i.createArchive = createArchive
     if omitDefaultCheckboxes:
         i.offerRun = False
         i.offerDesktopShortcut = False

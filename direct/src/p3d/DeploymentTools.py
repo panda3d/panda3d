@@ -472,6 +472,7 @@ class Installer:
         self.authorname = os.environ.get("DEBFULLNAME", "")
         self.authoremail = os.environ.get("DEBEMAIL", "")
         self.icon = None
+        self.createArchive = False
 
         # Try to determine a default author name ourselves.
         uname = None
@@ -807,12 +808,13 @@ class Installer:
         output = Filename(output)
         runtime_ext = ".exe" if platform.startswith('win') else ""
 
+        if arch:
+            output_name = "%s_%s_%s" % (self.shortname.lower(), self.version, arch)
+        else:
+            output_name = "%s_%s" % (self.shortname.lower(), self.version)
+
         if output.isDirectory():
-            if arch:
-                output = Filename(output, "%s_%s_%s" % (self.shortname.lower(), self.version, arch))
-            else:
-                output = Filename(output, "%s_%s" % (self.shortname.lower(), self.version))
-        Installer.notify.info("Creating %s..." % output)
+            output = Filename(output, output_name)
         output.makeAbsolute()
         extrafiles = self.standalone.getExtraFiles(platform)
 
@@ -830,42 +832,38 @@ class Installer:
             hostDir.unlink()
         hostDir.makeDir()
         self.installPackagesInto(hostDir, platform)
+        shutil.copy2(runtime.toOsSpecific(), Filename(hostDir, self.shortname + runtime_ext).toOsSpecific())
 
-        shutil.copytree(hostDir.toOsSpecific(), output.toOsSpecific())
-        shutil.copy2(runtime.toOsSpecific(), Filename(output, self.shortname + runtime_ext).toOsSpecific())
-
-        if platform.startswith('linux'):
-            arctype = 'tar.gz'
+        if not self.createArchive:
+            Installer.notify.info("Creating %s..." % output)
+            shutil.copytree(hostDir.toOsSpecific(), output.toOsSpecific())
         else:
-            arctype = 'zip'
+            if platform.startswith('linux'):
+                arctype = 'tar.gz'
+            else:
+                arctype = 'zip'
 
-        if arch:
-            arc_fn = Filename(output.getDirname(), "%s_%s_%s.%s" % (self.fullname, self.version, arch, arctype))
-        else:
-            arc_fn = Filename(output.getDirname(), "%s_%s.%s" % (self.fullname, self.version, arctype))
+            arc_fn = Filename(output.getDirname(), "%s.%s" % (output_name, arctype))
 
-        Installer.notify.info("Creating %s..." % arc_fn)
-        dir = Filename(output.getDirname())
-        dir.makeAbsolute()
+            Installer.notify.info("Creating %s..." % arc_fn)
+            dir = Filename(output.getDirname())
+            dir.makeAbsolute()
 
-        if arctype == 'tar.gz':
-            tar = tarfile.open(arc_fn.toOsSpecific(), 'w:gz')
-            for root, dirs, files in self.os_walk(output.toOsSpecific()):
-                for name in files:
-                    file = Filename.fromOsSpecific(os.path.join(root, name))
-                    file.makeAbsolute()
-                    file.makeRelativeTo(dir)
-                    tar.add(os.path.join(root, name), str(file))
-            tar.close()
-        else:
-            zip = zipfile.ZipFile(arc_fn.toOsSpecific(), 'w')
-            for root, dirs, files in self.os_walk(output.toOsSpecific()):
-                for name in files:
-                    file = Filename.fromOsSpecific(os.path.join(root, name))
-                    file.makeAbsolute()
-                    file.makeRelativeTo(dir)
-                    zip.write(os.path.join(root, name), str(file))
-            zip.close()
+            if arctype == 'tar.gz':
+                tar = tarfile.open(arc_fn.toOsSpecific(), 'w:gz')
+                tar.add(hostDir.toOsSpecific(), output_name)
+                tar.close()
+            else:
+                zip = zipfile.ZipFile(arc_fn.toOsSpecific(), 'w')
+                for root, dirs, files in self.os_walk(hostDir.toOsSpecific()):
+                    for name in files:
+                        basefile = Filename.fromOsSpecific(os.path.join(root, name))
+                        file = Filename(basefile)
+                        file.makeAbsolute()
+                        file.makeRelativeTo(hostDir)
+                        file = Filename(output_name, file)
+                        zip.write(basefile.toOsSpecific(), str(file))
+                zip.close()
 
     def buildDEB(self, output, platform):
         """ Builds a .deb archive and stores it in the path indicated
