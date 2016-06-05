@@ -30,7 +30,7 @@ INLINE void ShaderTerrainMesh::set_heightfield(Texture* heightfield) {
  * @details This returns the terrain heightfield, previously set with
  *   set_heightfield()
  *
- * @return Path to the heightfield
+ * @return Heightfield texture
  */
 INLINE Texture* ShaderTerrainMesh::get_heightfield() const {
   return _heightfield_tex;
@@ -179,4 +179,22 @@ INLINE ShaderTerrainMesh::Chunk::~Chunk() {
  */
 INLINE LPoint3 ShaderTerrainMesh::uv_to_world(PN_stdfloat u, PN_stdfloat v) const {
   return uv_to_world(LTexCoord(u, v));
+}
+
+/**
+ * @brief This reads a texel from the RAM image.
+ */
+INLINE PN_stdfloat ShaderTerrainMesh::get_texel(size_t x, size_t y) {
+  
+  const unsigned char *p = _tex_ptr + (y * _size + x) * _pixel_width;
+  return (PN_stdfloat)_heightfield_tex->get_unsigned_short(p);
+}
+
+/**
+ * @brief Write a float as two unsigned chars at the indicated memory address.
+ */
+INLINE void ShaderTerrainMesh::set_texel(size_t x, size_t y, PN_stdfloat value) {
+
+  unsigned char *p = _tex_write_ptr + (y * _size + x) * _pixel_width;
+  _heightfield_tex->store_unscaled_short(p, (int)(value * 65535.0 + 0.5));
 }

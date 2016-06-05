@@ -23,6 +23,7 @@
 #include "pnmImage.h"
 #include "texture.h"
 #include "texturePeeker.h"
+#include "pfmFile.h"
 
 /**
  *
@@ -31,20 +32,25 @@ class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
 
 PUBLISHED:
   BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
-  BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up=Z_up);
+  BulletHeightfieldShape(const PfmFile &pfm, PN_stdfloat max_height, bool STM=true, BulletUpAxis up=Z_up);
   INLINE BulletHeightfieldShape(const BulletHeightfieldShape &copy);
   INLINE void operator = (const BulletHeightfieldShape &copy);
   INLINE ~BulletHeightfieldShape();
 
   void set_use_diamond_subdivision(bool flag=true);
 
+  int get_x_size();
+  int get_y_size();
+
 public:
   virtual btCollisionShape *ptr() const;
+  bool update_region(const LVector4i &corners, const PfmFile &field);
 
 private:
-  int _num_rows;
-  int _num_cols;
-  float *_data;
+  void sample_regular(const PfmFile &pfm);
+  int _x_size, _y_size;
+  PN_stdfloat _max_height;
+  vector_float _data;
   btHeightfieldTerrainShape *_shape;
 
 public:

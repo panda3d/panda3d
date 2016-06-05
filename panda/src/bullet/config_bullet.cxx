@@ -70,7 +70,7 @@ PRC_DESC("Specifies the maximum number of individual objects within a "
 
 ConfigVariableInt bullet_gc_lifetime
 ("bullet-gc-lifetime", 256,
-PRC_DESC("Specifies the lifetime of data clean up be the soft body world "
+PRC_DESC("Specifies the lifetime of data clean up by the soft body world "
          "info garbage collector. Default value is 256."));
 
 ConfigVariableEnum<BulletWorld::BroadphaseAlgorithm> bullet_broadphase_algorithm
@@ -104,7 +104,7 @@ PRC_DESC("Specifies the number of iterations for the Bullet contact "
 
 ConfigVariableBool bullet_additional_damping
 ("bullet-additional-damping", false,
-PRC_DESC("Enables additional damping on eachrigid body, in order to reduce "
+PRC_DESC("Enables additional damping on each rigid body, in order to reduce "
          "jitter. Default value is FALSE. Additional damping is an "
          "experimental feature of the Bullet physics engine. Use with "
          "care."));
