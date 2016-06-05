@@ -70,7 +70,6 @@ set_use_diamond_subdivision(bool flag) {
 bool BulletHeightfieldShape::
 update_region(const LVector4i &corners, const PfmFile &field) {
 
-  // bullet_cat.debug() << "Corners update region: " << corners << endl;
   PN_stdfloat step_x = 1.0 / (PN_stdfloat)field.get_x_size();
   PN_stdfloat step_y = 1.0 / (PN_stdfloat)field.get_y_size();
   LPoint3f sample;
@@ -88,7 +87,7 @@ update_region(const LVector4i &corners, const PfmFile &field) {
 
 
 /**
- * @brief Samples from PfmFile and keeps it as it was.
+ * @brief Samples the entire PfmFile without interpolation.
  */
 void BulletHeightfieldShape::
 sample_regular(const PfmFile &pfm) {
@@ -98,10 +97,8 @@ sample_regular(const PfmFile &pfm) {
 
   for (int row=0; row < num_rows; row++) {
     for (int column=0; column < num_cols; column++) {
-      // Transpose
-      _data[_y_size * column + row] =
-        // Flip y
-        _max_height * pfm.get_point1(row, num_cols - column - 1);
+      // Transpose and flip y
+      _data[_y_size * column + row] = _max_height * pfm.get_point1(row, num_cols - column - 1);
     }
   }
 }
@@ -127,8 +124,8 @@ get_x_size() {
 /**
  * @brief Creates a collision shape suited for terrains from a PfmFile.
  * @details The PfmFile is assumed to have one channel with values in the range
- *   [0..1], which translate to 0..max_height elevation.
- * @param STM whether to sample for ShaderTerrainMesh
+ *          0..1, which translate to 0..max_height elevation.
+ * @param STM whether to sample for ShaderTerrainMesh or without interpolation.
  */
 BulletHeightfieldShape::
 BulletHeightfieldShape(const PfmFile &field, PN_stdfloat max_height, bool STM, BulletUpAxis up) {
