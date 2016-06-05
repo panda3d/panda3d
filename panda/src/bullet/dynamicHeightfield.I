@@ -26,13 +26,13 @@ INLINE DynamicHeightfield::
 }
 
 /**
- * @brief Validates that given rows and columns exist in the heightfield.
+ * @brief If given rows and columns don't exist in the heightfield this will adjust accordingly and assert that values are in 0..1 range.
+ * @details The region_corners vector contains a range for the X and Y axes, respectively.
+ *          These ranges are inclusive, i.e. upper_x and upper_y will be included in the update.
  */
 INLINE void DynamicHeightfield::
 make_update_region(int lower_x, int upper_x, int lower_y, int upper_y) {
   
-  // bullet_cat.debug() << "make_update_region: " << lower_x << " " << upper_x  << " "  << lower_y << " " << upper_y << endl;
-  // nassertv(lower_x >= 0 && lower_x < _x_size && upper_x >= 0 && upper_x < _x_size && lower_y >= 0 && lower_y < _y_size && upper_y >= 0 && upper_y < _y_size);
   if (lower_x < 0) {
     bullet_cat.debug() << "Adjusted lower_x to 0!" << endl;
     lower_x = 0;
@@ -77,12 +77,11 @@ make_update_region(int lower_x, int upper_x, int lower_y, int upper_y) {
 }
 
 /**
- * @brief Validates that given rows and columns exist in the heightfield.
+ * @brief Float-accepting version, which will round outwards.
  */
 INLINE void DynamicHeightfield::
 make_update_region(float lower_x, float upper_x, float lower_y, float upper_y) {
   
-  // bullet_cat.debug() << "make_update_region float: " << lower_x << " " << upper_x  << " "  << lower_y << " " << upper_y << endl;
   make_update_region((int)lower_x, (int)ceil(upper_x), (int)lower_y, (int)ceil(upper_y));
 }
 
