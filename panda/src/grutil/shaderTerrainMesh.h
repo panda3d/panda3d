@@ -17,6 +17,7 @@
 #include "pandabase.h"
 #include "luse.h"
 #include "pnmImage.h"
+#include "pfmFile.h"
 #include "geom.h"
 #include "pandaNode.h"
 #include "texture.h"
@@ -75,18 +76,21 @@ PUBLISHED:
   INLINE PN_stdfloat get_target_triangle_width() const;
   MAKE_PROPERTY(target_triangle_width, get_target_triangle_width, set_target_triangle_width);
 
-  LPoint3 uv_to_world(const LTexCoord& coord) const;
+  LPoint3 uv_to_world(const LTexCoord &coord) const;
   INLINE LPoint3 uv_to_world(PN_stdfloat u, PN_stdfloat v) const;
+  LPoint3 heightfield_to_world(const LPoint2 &heightfield_pos) const;
+  LTexCoord world_to_uv(const LPoint3 &world_pos) const;
+  LPoint3 world_to_heightfield(const LPoint3 &world_pos) const;
 
   bool generate();
 
 public:
-
+  bool update_region(const LVector4i& corners, const PfmFile& field);
   // Methods derived from PandaNode
   virtual bool is_renderable() const;
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_combine() const;
-  virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
+  virtual void add_for_draw(CullTraverser* trav, CullTraverserData& data);
 
 private:
 
@@ -117,7 +121,6 @@ private:
     INLINE Chunk();
     INLINE ~Chunk();
   };
-
 
   // Single entry in the data block
   struct ChunkDataEntry {
@@ -150,21 +153,34 @@ private:
   };
 
   bool do_check_heightfield();
-  void do_extract_heightfield();
   void do_init_data_texture();
   void do_create_chunks();
   void do_init_chunk(Chunk* chunk);
-  void do_compute_bounds(Chunk* chunk);
+  void do_compute_bounds(Chunk* chunk, Chunk* start);
   void do_create_chunk_geom();
   void do_traverse(Chunk* chunk, TraversalData* data, bool fully_visible = false);
   void do_emit_chunk(Chunk* chunk, TraversalData* data);
   bool do_check_lod_matches(Chunk* chunk, TraversalData* data);
 
+  void find_region_chunk(Chunk*& deepest, const Chunk* top, const LVector4i& corners);
+  void compute_parent_bounds(Chunk*& parent, Chunk* top, const Chunk* child);
+  void compute_bounds_from_children(Chunk* chunk);
+  void list_chunks(Chunk* chunk);
+
+  bool bind_heightfield(bool write);
+  void unbind_heightfield();
+  INLINE PN_stdfloat get_texel(size_t x, size_t y);
+  INLINE void set_texel(size_t x, size_t y, PN_stdfloat value);
+
+  const unsigned char* _tex_ptr;
+  unsigned char* _tex_write_ptr;
+  size_t _pixel_width;
+
   Chunk _base_chunk;
+
   size_t _size;
   size_t _chunk_size;
   bool _generate_patches;
-  PNMImage _heightfield;
   PT(Texture) _heightfield_tex;
   PT(Geom) _chunk_geom;
   PT(Texture) _data_texture;
@@ -176,7 +192,6 @@ private:
   // PStats stuff
   static PStatCollector _lod_collector;
   static PStatCollector _basic_collector;
-
 
 // Type handle stuff
 public:

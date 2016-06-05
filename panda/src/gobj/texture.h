@@ -1081,6 +1081,7 @@ private:
   friend class PreparedGraphicsObjects;
   friend class TexturePool;
   friend class TexturePeeker;
+  friend class ShaderTerrainMesh;
 };
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level;
