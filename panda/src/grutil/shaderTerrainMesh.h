@@ -16,8 +16,6 @@
 
 #include "pandabase.h"
 #include "luse.h"
-#include "pnmImage.h"
-#include "pfmFile.h"
 #include "geom.h"
 #include "pandaNode.h"
 #include "texture.h"
