@@ -715,8 +715,10 @@ calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const {
   if (net_w == 0.0) {
     return false;
   }
-
   result = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11) / net_w;
+  // if (net_w == 0.25) {
+  //   cout << "bilinear: " << x << "|" << y << "|" << net_w << " " << w11 << " " << p11 << " | " << result << endl;
+  // }
   return true;
 }
 

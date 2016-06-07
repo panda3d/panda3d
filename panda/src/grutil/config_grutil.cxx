@@ -24,6 +24,7 @@
 #include "rigidBodyCombiner.h"
 #include "pipeOcclusionCullTraverser.h"
 #include "shaderTerrainMesh.h"
+#include "dynamicHeightfield.h"
 
 #include "dconfig.h"
 
@@ -125,6 +126,7 @@ init_libgrutil() {
   PipeOcclusionCullTraverser::init_type();
   SceneGraphAnalyzerMeter::init_type();
   ShaderTerrainMesh::init_type();
+  DynamicHeightfield::init_type();
 
 #ifdef HAVE_AUDIO
   MovieTexture::init_type();

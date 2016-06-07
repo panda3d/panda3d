@@ -44,3 +44,20 @@ operator = (const BulletHeightfieldShape &copy) {
   _max_height = copy._max_height;
   _data = copy._data;
 }
+
+/**
+ * @brief Sets a DynamicHeightfield which will propagate changes made to it.
+ * @details It's recommended to construct BulletHeightfieldShape with a 
+ *   heightfield and STM sampling. Then, construct DynamicHeightfield, 
+ *   call read() using the same heightfield and use this method to hook them up.
+ */
+
+INLINE void BulletHeightfieldShape::
+set_dynamic_heightfield(DynamicHeightfield* dynamic_hf) {
+  if (_x_size != dynamic_hf->get_y_size()+1 || _y_size != dynamic_hf->get_x_size()+1) {
+    bullet_cat.error() << "Size mismatch between BulletHeightfieldShape and DynamicHeightfield! DynamicHeightfield was not set." << endl;
+    return;
+  }
+  _dynamic_hf = dynamic_hf;
+  _dynamic_hf->add_observer(this);
+}

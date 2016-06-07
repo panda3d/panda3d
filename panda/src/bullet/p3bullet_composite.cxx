@@ -47,4 +47,3 @@
 #include "bulletVehicle.cxx"
 #include "bulletWheel.cxx"
 #include "bulletWorld.cxx"
-#include "dynamicHeightfield.cxx"
