@@ -88,7 +88,9 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _last_frame_count(-1),
   _target_triangle_width(10.0f),
   _update_enabled(true),
-  _heightfield_tex(NULL)
+  _heightfield_tex(NULL),
+  _tex_read_ptr(NULL),
+  _tex_write_ptr(NULL)
 {
   set_final(true);
   set_bounds(new OmniBoundingVolume());
@@ -144,8 +146,8 @@ bool ShaderTerrainMesh::bind_heightfield(bool write=false) {
     _tex_write_ptr = _heightfield_tex->modify_ram_image().p();
     nassertr(_tex_write_ptr, false);
   } else {
-    _tex_ptr = _heightfield_tex->get_ram_image().p();
-    nassertr(_tex_ptr, false);
+    _tex_read_ptr = _heightfield_tex->get_ram_image().p();
+    nassertr(_tex_read_ptr, false);
   }
   nassertr(_heightfield_tex->has_ram_image() && _heightfield_tex->get_ram_image_compression() == Texture::CM_off, false); // Heightfield not in RAM, extract ram image first. and turn off compression.
   return true;
@@ -156,32 +158,30 @@ bool ShaderTerrainMesh::bind_heightfield(bool write=false) {
  */
 void ShaderTerrainMesh::unbind_heightfield() {
   _tex_write_ptr = NULL;
-  _tex_ptr = NULL;
+  _tex_read_ptr = NULL;
 }
 
 /**
- * @brief Updates a region of the heightfield texture described by corners with data from field. 
+ * @brief Updates a region of the heightfield texture. 
  * @details This does selective recomputation of bounds. This is called by 
  *  DynamicHeightfield when it propagates changes.
  */
-bool ShaderTerrainMesh::update_region(const LVector4i &corners, const PfmFile &field) {
-  // shader_terrain_cat.debug() << "update_region2 basechunk: " << _base_chunk.depth << endl;
+void ShaderTerrainMesh::on_change() {
   if (!bind_heightfield(true)) {
     shader_terrain_cat.error() << "Couldn't bind heightfield for writing! Update failed." << endl;
-    return false;
+    return;
   }
 
-  for (int row = corners.get_w(); row >= corners.get_z(); row--) {
-    for (int col = corners.get_x(); col <= corners.get_y(); col++) {
-      set_texel(col, _size - 1 - row, field.get_point1(col, row));
+  for (int row = _dynamic_hf->region_corners.get_w(); row >= _dynamic_hf->region_corners.get_z(); row--) {
+    for (int col = _dynamic_hf->region_corners.get_x(); col <= _dynamic_hf->region_corners.get_y(); col++) {
+      set_texel(col, _size - 1 - row, _dynamic_hf->get_point1(col, row));
     }
   }
 
   // selectively recompute bounds
-  
   bind_heightfield(false);
   Chunk* deepest = NULL;
-  find_region_chunk(deepest, &_base_chunk, corners);
+  find_region_chunk(deepest, &_base_chunk, _dynamic_hf->region_corners);
 
   if (deepest != NULL) {  
     // shader_terrain_cat.debug() << "Region chunk found. Depth: " << deepest->depth << " Size: " << deepest->size << " X: " << deepest->x << " Y: " << deepest->y << "  min/max/avg: " << deepest->min_height << " / " << deepest->max_height << " / " << deepest->avg_height << endl;
@@ -207,7 +207,6 @@ bool ShaderTerrainMesh::update_region(const LVector4i &corners, const PfmFile &f
   }
 
   unbind_heightfield();
-  return true;
 }
 
 /**

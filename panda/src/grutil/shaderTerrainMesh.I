@@ -37,6 +37,21 @@ INLINE Texture* ShaderTerrainMesh::get_heightfield() const {
 }
 
 /**
+ * @brief Sets a DynamicHeightfield which will propagate changes made to it to this ShaderTerrainMesh.
+ * @details It's recommended to construct ShaderTerrainMesh, set a heightfield 
+ *   and call generate() first. Then construct DynamicHeightfield, call read() 
+ *   and use this method to hook them up.
+ */
+INLINE void ShaderTerrainMesh::set_dynamic_heightfield(DynamicHeightfield* dynamic_hf) {
+  if (_size != dynamic_hf->get_x_size() || _size != dynamic_hf->get_y_size()) {
+    shader_terrain_cat.error() << "Size mismatch between ShaderTerrainMesh and DynamicHeightfield! DynamicHeightfield was not set." << endl;
+    return;
+  }
+  _dynamic_hf = dynamic_hf;
+  _dynamic_hf->add_observer(this);
+}
+
+/**
  * @brief Sets the chunk size
  * @details This sets the chunk size of the terrain. A chunk is basically the
  *   smallest unit in LOD. If the chunk size is too small, the terrain will
@@ -186,7 +201,7 @@ INLINE LPoint3 ShaderTerrainMesh::uv_to_world(PN_stdfloat u, PN_stdfloat v) cons
  */
 INLINE PN_stdfloat ShaderTerrainMesh::get_texel(size_t x, size_t y) {
   
-  const unsigned char *p = _tex_ptr + (y * _size + x) * _pixel_width;
+  const unsigned char *p = _tex_read_ptr + (y * _size + x) * _pixel_width;
   return (PN_stdfloat)_heightfield_tex->get_unsigned_short(p);
 }
 

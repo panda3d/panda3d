@@ -5,4 +5,5 @@
 #include "pipeOcclusionCullTraverser.cxx"
 #include "pfmVizzer.cxx"
 #include "rigidBodyCombiner.cxx"
+#include "dynamicHeightfield.cxx"
 

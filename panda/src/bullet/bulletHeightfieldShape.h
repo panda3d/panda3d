@@ -21,14 +21,13 @@
 #include "bulletShape.h"
 
 #include "pnmImage.h"
-#include "texture.h"
-#include "texturePeeker.h"
 #include "pfmFile.h"
+#include "dynamicHeightfield.h"
 
 /**
  *
  */
-class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
+class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape, public DynamicHeightfield::Observer {
 
 PUBLISHED:
   BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
@@ -42,12 +41,16 @@ PUBLISHED:
   int get_x_size();
   int get_y_size();
 
+  INLINE void set_dynamic_heightfield(DynamicHeightfield* dynamic_hf);
+
 public:
   virtual btCollisionShape *ptr() const;
-  bool update_region(const LVector4i &corners, const PfmFile &field);
+  void on_change();
 
 private:
+  void update_region(const LVector4i &corners, const PfmFile &field);
   void sample_regular(const PfmFile &pfm);
+  PT(DynamicHeightfield) _dynamic_hf;
   int _x_size, _y_size;
   PN_stdfloat _max_height;
   vector_float _data;

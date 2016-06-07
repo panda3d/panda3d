@@ -25,6 +25,7 @@
 #include "pStatCollector.h"
 #include "filename.h"
 #include <stdint.h>
+#include "dynamicHeightfield.h"
 
 extern ConfigVariableBool stm_use_hexagonal_layout;
 extern ConfigVariableInt stm_max_chunk_count;
@@ -48,7 +49,7 @@ NotifyCategoryDecl(shader_terrain, EXPCL_PANDA_GRUTIL, EXPTP_PANDA_GRUTIL);
  *   use in your own shaders. IMPORTANT: If you don't set an appropriate shader
  *   on the terrain, nothing will be visible.
  */
-class EXPCL_PANDA_GRUTIL ShaderTerrainMesh : public PandaNode {
+class EXPCL_PANDA_GRUTIL ShaderTerrainMesh : public PandaNode, public DynamicHeightfield::Observer {
 
 PUBLISHED:
 
@@ -82,8 +83,11 @@ PUBLISHED:
 
   bool generate();
 
+  INLINE void set_dynamic_heightfield(DynamicHeightfield* dynamic_hf); 
+
 public:
-  bool update_region(const LVector4i& corners, const PfmFile& field);
+  void on_change();
+  
   // Methods derived from PandaNode
   virtual bool is_renderable() const;
   virtual bool safe_to_flatten() const;
@@ -170,9 +174,10 @@ private:
   INLINE PN_stdfloat get_texel(size_t x, size_t y);
   INLINE void set_texel(size_t x, size_t y, PN_stdfloat value);
 
-  const unsigned char* _tex_ptr;
+  const unsigned char* _tex_read_ptr;
   unsigned char* _tex_write_ptr;
   size_t _pixel_width;
+  PT(DynamicHeightfield) _dynamic_hf;
 
   Chunk _base_chunk;
 

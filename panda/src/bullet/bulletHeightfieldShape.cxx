@@ -65,9 +65,18 @@ set_use_diamond_subdivision(bool flag) {
 }
 
 /**
+ * @brief This is called by DynamicHeightfield to propagate changes.
+ */
+void BulletHeightfieldShape::
+on_change() {
+
+  update_region(_dynamic_hf->region_corners, *_dynamic_hf);
+}
+
+/**
  * @brief Updates the shape with values from a region of the heightfield (described by two corners) using STM sampling.
  */
-bool BulletHeightfieldShape::
+void BulletHeightfieldShape::
 update_region(const LVector4i &corners, const PfmFile &field) {
 
   PN_stdfloat step_x = 1.0 / (PN_stdfloat)field.get_x_size();
@@ -82,7 +91,7 @@ update_region(const LVector4i &corners, const PfmFile &field) {
       _data[_y_size * (_x_size - 1 - column) + row] = _max_height * sample.get_x();
     }
   }
-  return true;
+  // return true;
 }
 
 
