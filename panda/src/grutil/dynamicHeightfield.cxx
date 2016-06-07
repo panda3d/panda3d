@@ -14,63 +14,6 @@
 
 TypeHandle DynamicHeightfield::_type_handle;
 
-// /**
-//  * @brief Sets a ShaderTerrainMesh instance to propagate changes to.
-//  * @details If the ShaderTerrainMesh doesn't have a heightfield set already,
-//  *  the current one will be set on it and generate() called.
-//  */
-// void DynamicHeightfield::
-// set_listener(ShaderTerrainMesh *stm) {
-
-//   if (_x_size == 0 || _y_size == 0) {
-//     grutil_cat.error() << "No heightfield set! Can't set listener." << endl;
-//     return;
-//   }
-//   // If no (suitable) heightfield is currently set on ShaderTerrainMesh, set the current one.
-//   if (!stm->get_heightfield()) {
-//     Texture *tex = new Texture("STM_dynamic_heightfield");
-//     // it seems an intermediate PNMImage is required to load a PfmFile as a Texture with "unsigned short" component type.
-//     PNMImage intermediate;
-//     this->store(intermediate);
-//     tex->load(intermediate);
-//     stm->set_heightfield(tex);
-//     if (!stm->generate()) {
-//       grutil_cat.error() << "Can't use current heightfield with ShaderTerrainMesh!" << endl;
-//       return;
-//     }
-//   } else {  // a heightfield is set on STM already, check it for size.
-//     Texture *tex = stm->get_heightfield();
-//     if (_x_size != tex->get_x_size() || _y_size != tex->get_y_size()) {
-//       grutil_cat.error() << "Size of ShaderTerrainMesh heightfield doesn't match current heightfield!" << endl;
-//       return;
-//     }
-//   }
-
-//   _stm_ptr = stm;
-// }
-
-// /**
-//  * @brief Sets a BulletHeightfieldShape instance to propagate changes to.
-//  * @details The BulletHeightfieldShape should be constructed using the same
-//  *  heightfield as the current one.
-//  */
-// void DynamicHeightfield::
-// set_listener(BulletHeightfieldShape *bhfs) {
-
-//   if (_x_size == 0 || _y_size == 0) {
-//     grutil_cat.error() << "No heightfield set! Can't set listener." << endl;
-//     return;
-//   }
-//   // If the BulletHeightfieldShape was not constructed with a heightfield of correct size, abort.
-//   if (bhfs->get_y_size() != _x_size + 1 || bhfs->get_x_size() != _y_size + 1) {
-//     grutil_cat.error() << "Can't use current heightfield with BulletHeightfieldShape!" << endl;
-//     return;
-//   }
-
-//   _bhfs_ptr = bhfs;
-// }
-
-
 /**
 * @brief Adds an observer, i.e. an instance whose on_change() will be called.
 */
@@ -80,6 +23,9 @@ add_observer(Observer *observer) {
   _observers.push_back(observer);
 }
 
+/**
+* @brief Removes an observer.
+*/
 void DynamicHeightfield::
 remove_observer(Observer *observer) {
   grutil_cat.debug() << "Removing observer " << observer << endl;
