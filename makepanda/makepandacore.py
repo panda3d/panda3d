@@ -20,10 +20,10 @@ else:
     import cPickle as pickle
     import thread
 
-SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
+SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB = [".lib",".ilb"]
-VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg"])
+VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
 VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
 MAINTHREAD = threading.currentThread()

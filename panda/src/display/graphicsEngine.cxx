@@ -437,6 +437,9 @@ make_output(GraphicsPipe *pipe,
           if (flags & GraphicsPipe::BF_fb_props_optional) {
             display_cat.warning()
               << "FrameBufferProperties available less than requested.\n";
+            display_cat.warning(false)
+              << "  requested: " << fb_prop << "\n"
+              << "  got: " << window->get_fb_properties() << "\n";
             return window;
           }
           display_cat.error()

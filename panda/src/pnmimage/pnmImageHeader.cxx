@@ -375,7 +375,7 @@ make_writer(ostream *file, bool owns_file, const Filename &filename,
     delete file;
   }
 
-  if (!writer->is_valid()) {
+  if (writer != NULL && !writer->is_valid()) {
     delete writer;
     writer = NULL;
   }
