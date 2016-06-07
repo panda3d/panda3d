@@ -2484,6 +2484,7 @@ class Packager:
             GlobPattern('libthr.so*'),
             GlobPattern('ld-linux.so*'),
             GlobPattern('ld-linux-*.so*'),
+            GlobPattern('librt.so*'),
             ]
 
         # A Loader for loading models.

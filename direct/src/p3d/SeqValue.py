@@ -88,4 +88,3 @@ class SeqValue:
 
     def __str__(self):
         return 'SeqValue%s' % (repr(self.value))
-

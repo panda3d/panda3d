@@ -1457,7 +1457,7 @@ def ChooseLib(libs, thirdparty=None):
             print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
-def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config"):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config", thirdparty_dir = None):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
@@ -1487,16 +1487,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
     custom_loc = PkgHasCustomLocation(pkg)
 
-    if pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h"):
-        # Let it be handled by the ffmpeg package
-        LibName(target_pkg, "-lswscale")
-        return
-    if pkg.lower() == "swresample" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswresample/swresample.h"):
-        LibName(target_pkg, "-lswresample")
-        return
+    # Determine the location of the thirdparty directory.
+    if not thirdparty_dir:
+        thirdparty_dir = pkg.lower()
+    pkg_dir = os.path.join(GetThirdpartyDir(), thirdparty_dir)
 
-    # First check if the package is in the thirdparty directory.
-    pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
+    # First check if the library can be found in the thirdparty directory.
     if not custom_loc and os.path.isdir(pkg_dir):
         if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
             FrameworkDirectory(target_pkg, pkg_dir)

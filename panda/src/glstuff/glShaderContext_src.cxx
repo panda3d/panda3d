@@ -2684,7 +2684,6 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
       GLCAT.warning(false)
         << "WARNING: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
 
-
     } else if (sscanf(line.c_str(), "%d(%d) : %n", &fileno, &lineno, &prefixlen) == 2
                && prefixlen > 0) {
 
