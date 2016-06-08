@@ -68,9 +68,9 @@ PythonTask(PyObject *function, const string &name) :
 ////////////////////////////////////////////////////////////////////
 PythonTask::
 ~PythonTask() {
-  Py_DECREF(_function);
-  Py_DECREF(_args);
-  Py_DECREF(__dict__);
+  Py_XDECREF(_function);
+  Py_XDECREF(_args);
+  Py_XDECREF(__dict__);
   Py_XDECREF(_generator);
   Py_XDECREF(_owner);
   Py_XDECREF(_upon_death);
