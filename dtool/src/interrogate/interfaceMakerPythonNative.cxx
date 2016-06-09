@@ -2862,9 +2862,10 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   string gcflag;
-  if (obj->_protocol_types & Object::PT_python_gc) {
+  // Disabled for now because it's too unstable.
+  /*if (obj->_protocol_types & Object::PT_python_gc) {
     gcflag = " | Py_TPFLAGS_HAVE_GC";
-  }
+  }*/
 
   // long tp_flags;
   if (has_local_getbuffer) {

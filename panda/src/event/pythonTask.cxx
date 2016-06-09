@@ -319,12 +319,14 @@ __getattr__(PyObject *attr) const {
  */
 int PythonTask::
 __traverse__(visitproc visit, void *arg) {
+/*
   Py_VISIT(_function);
   Py_VISIT(_args);
   Py_VISIT(_upon_death);
   Py_VISIT(_owner);
   Py_VISIT(__dict__);
   Py_VISIT(_generator);
+*/
   return 0;
 }
 
@@ -333,12 +335,14 @@ __traverse__(visitproc visit, void *arg) {
  */
 int PythonTask::
 __clear__() {
+/*
   Py_CLEAR(_function);
   Py_CLEAR(_args);
   Py_CLEAR(_upon_death);
   Py_CLEAR(_owner);
   Py_CLEAR(__dict__);
   Py_CLEAR(_generator);
+*/
   return 0;
 }
 

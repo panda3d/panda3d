@@ -6652,25 +6652,84 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
   if (maxval == 255 && component_width == 1) {
     // Most common case: one byte per pixel, and the source image shows a
-    // maxval of 255.  No scaling is necessary.
-    for (int j = y_size-1; j >= 0; j--) {
-      for (int i = 0; i < x_size; i++) {
-        if (is_grayscale) {
-          store_unscaled_byte(p, pnmimage.get_gray_val(i, j));
-        } else {
-          store_unscaled_byte(p, pnmimage.get_blue_val(i, j));
-          store_unscaled_byte(p, pnmimage.get_green_val(i, j));
-          store_unscaled_byte(p, pnmimage.get_red_val(i, j));
+    // maxval of 255.  No scaling is necessary.  Because this is such a common
+    // case, we break it out per component for best performance.
+    switch (num_components) {
+    case 1:
+      for (int j = y_size-1; j >= 0; j--) {
+        xel *row = pnmimage.row(j);
+        for (int i = 0; i < x_size; i++) {
+          *p++ = (uchar)PPM_GETB(row[i]);
         }
-        if (has_alpha) {
-          if (img_has_alpha) {
-            store_unscaled_byte(p, pnmimage.get_alpha_val(i, j));
-          } else {
-            store_unscaled_byte(p, 255);
+        p += row_skip;
+      }
+      break;
+
+    case 2:
+      if (img_has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)alpha_row[i];
           }
+          p += row_skip;
+        }
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)255;
+          }
+          p += row_skip;
         }
       }
-      p += row_skip;
+      break;
+
+    case 3:
+      for (int j = y_size-1; j >= 0; j--) {
+        xel *row = pnmimage.row(j);
+        for (int i = 0; i < x_size; i++) {
+          *p++ = (uchar)PPM_GETB(row[i]);
+          *p++ = (uchar)PPM_GETG(row[i]);
+          *p++ = (uchar)PPM_GETR(row[i]);
+        }
+        p += row_skip;
+      }
+      break;
+
+    case 4:
+      if (img_has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)PPM_GETG(row[i]);
+            *p++ = (uchar)PPM_GETR(row[i]);
+            *p++ = (uchar)alpha_row[i];
+          }
+          p += row_skip;
+        }
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)PPM_GETG(row[i]);
+            *p++ = (uchar)PPM_GETR(row[i]);
+            *p++ = (uchar)255;
+          }
+          p += row_skip;
+        }
+      }
+      break;
+
+    default:
+      nassertv(num_components >= 1 && num_components <= 4);
+      break;
     }
 
   } else if (maxval == 65535 && component_width == 2) {
@@ -6845,17 +6904,44 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
   const unsigned char *p = &image[idx];
 
   if (component_width == 1) {
-    for (int j = y_size-1; j >= 0; j--) {
-      for (int i = 0; i < x_size; i++) {
-        if (is_grayscale) {
-          pnmimage.set_gray(i, j, get_unsigned_byte(p));
-        } else {
-          pnmimage.set_blue(i, j, get_unsigned_byte(p));
-          pnmimage.set_green(i, j, get_unsigned_byte(p));
-          pnmimage.set_red(i, j, get_unsigned_byte(p));
+    if (is_grayscale) {
+      if (has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+            alpha_row[i] = *p++;
+          }
         }
-        if (has_alpha) {
-          pnmimage.set_alpha(i, j, get_unsigned_byte(p));
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+          }
+        }
+      }
+    } else {
+      if (has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+            PPM_PUTG(row[i], *p++);
+            PPM_PUTR(row[i], *p++);
+            alpha_row[i] = *p++;
+          }
+        }
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+            PPM_PUTG(row[i], *p++);
+            PPM_PUTR(row[i], *p++);
+          }
         }
       }
     }
@@ -7773,11 +7859,15 @@ compare_images(const PNMImage &a, const PNMImage &b) {
 
   int delta = 0;
   for (int yi = 0; yi < a.get_y_size(); ++yi) {
+    xel *a_row = a.row(yi);
+    xel *b_row = b.row(yi);
+    xelval *a_alpha_row = a.alpha_row(yi);
+    xelval *b_alpha_row = b.alpha_row(yi);
     for (int xi = 0; xi < a.get_x_size(); ++xi) {
-      delta += abs(a.get_red_val(xi, yi) - b.get_red_val(xi, yi));
-      delta += abs(a.get_green_val(xi, yi) - b.get_green_val(xi, yi));
-      delta += abs(a.get_blue_val(xi, yi) - b.get_blue_val(xi, yi));
-      delta += abs(a.get_alpha_val(xi, yi) - b.get_alpha_val(xi, yi));
+      delta += abs(PPM_GETR(a_row[xi]) - PPM_GETR(b_row[xi]));
+      delta += abs(PPM_GETG(a_row[xi]) - PPM_GETG(b_row[xi]));
+      delta += abs(PPM_GETB(a_row[xi]) - PPM_GETB(b_row[xi]));
+      delta += abs(a_alpha_row[xi] - b_alpha_row[xi]);
     }
   }
 
