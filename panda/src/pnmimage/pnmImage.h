@@ -372,6 +372,7 @@ PUBLISHED:
 
 private:
   friend class Row;
+  friend class Texture;
 
   xel *_array;
   xelval *_alpha;
