@@ -403,7 +403,8 @@ align_columns_for_animation() {
       add_column(column->get_name(), 4, column->get_numeric_type(), column->get_contents(), -1, 16);
     } else {
       add_column(column->get_name(), column->get_num_components(),
-                 column->get_numeric_type(), column->get_contents());
+                 column->get_numeric_type(), column->get_contents(),
+                 -1, column->get_column_alignment());
     }
   }
 }

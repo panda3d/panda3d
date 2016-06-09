@@ -244,9 +244,9 @@ convert_vd(const VertexTransform *transform, const GeomVertexData *orig) {
 
   PT(GeomVertexFormat) format = new GeomVertexFormat(*orig->get_format());
   if (!orig->get_format()->has_column(InternalName::get_transform_blend())) {
-    PT(GeomVertexArrayFormat) af = 
-      new GeomVertexArrayFormat(InternalName::get_transform_blend(), 1, 
-                                Geom::NT_uint16, Geom::C_index);
+    PT(GeomVertexArrayFormat) af = new GeomVertexArrayFormat();
+    af->add_column(InternalName::get_transform_blend(), 1,
+                   Geom::NT_uint16, Geom::C_index, 0, 2);
     format->add_array(af);
   }
 
