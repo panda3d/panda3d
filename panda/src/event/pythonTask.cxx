@@ -68,9 +68,9 @@ PythonTask(PyObject *function, const string &name) :
 ////////////////////////////////////////////////////////////////////
 PythonTask::
 ~PythonTask() {
-  Py_XDECREF(_function);
-  Py_XDECREF(_args);
-  Py_XDECREF(__dict__);
+  Py_DECREF(_function);
+  Py_DECREF(_args);
+  Py_DECREF(__dict__);
   Py_XDECREF(_generator);
   Py_XDECREF(_owner);
   Py_XDECREF(_upon_death);
@@ -359,12 +359,14 @@ __getattr__(PyObject *attr) const {
 ////////////////////////////////////////////////////////////////////
 int PythonTask::
 __traverse__(visitproc visit, void *arg) {
+/*
   Py_VISIT(_function);
   Py_VISIT(_args);
   Py_VISIT(_upon_death);
   Py_VISIT(_owner);
   Py_VISIT(__dict__);
   Py_VISIT(_generator);
+*/
   return 0;
 }
 
@@ -375,12 +377,14 @@ __traverse__(visitproc visit, void *arg) {
 ////////////////////////////////////////////////////////////////////
 int PythonTask::
 __clear__() {
+/*
   Py_CLEAR(_function);
   Py_CLEAR(_args);
   Py_CLEAR(_upon_death);
   Py_CLEAR(_owner);
   Py_CLEAR(__dict__);
   Py_CLEAR(_generator);
+*/
   return 0;
 }
 
