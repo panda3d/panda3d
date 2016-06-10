@@ -201,7 +201,9 @@ class ShowBase(DirectObject.DirectObject):
         ## This is used to store the wx.Application object used when want-wx is
         ## set or base.startWx() is called.
         self.wxApp = None
+        self.wxAppCreated = False
         self.tkRoot = None
+        self.tkRootCreated = False
 
         # This is used for syncing multiple PCs in a distributed cluster
         try:
@@ -258,6 +260,17 @@ class ShowBase(DirectObject.DirectObject):
             seed = self.recorder.getRandomSeed()
             random.seed(seed)
             #whrandom.seed(seed & 0xff, (seed >> 8) & 0xff, (seed >> 16) & 0xff)
+
+        # For some reason, wx needs to be initialized before the graphics window
+        if sys.platform == "darwin":
+            if self.config.GetBool("want-wx", 0):
+                wx = importlib.import_module('wx')
+                self.wxApp = wx.App()
+
+            # Same goes for Tk, which uses a conflicting NSApplication
+            if self.config.GetBool("want-tk", 0):
+                Pmw = importlib.import_module('Pmw')
+                self.tkRoot = Pmw.initialise()
 
         # Open the default rendering window.
         if self.windowType != 'none':
@@ -2821,7 +2834,7 @@ class ShowBase(DirectObject.DirectObject):
         updated, but wxPython owns the main loop (which seems to make
         it happier than the other way around). """
 
-        if self.wxApp:
+        if self.wxAppCreated:
             # Don't do this twice.
             return
 
@@ -2831,8 +2844,9 @@ class ShowBase(DirectObject.DirectObject):
         # by modulefinder when packaging an application.
         wx = importlib.import_module('wx')
 
-        # Create a new base.wxApp.
-        self.wxApp = wx.PySimpleApp(redirect = False)
+        if not self.wxApp:
+            # Create a new base.wxApp.
+            self.wxApp = wx.PySimpleApp(redirect = False)
 
         if ConfigVariableBool('wx-main-loop', True):
             # Put wxPython in charge of the main loop.  It really
@@ -2867,6 +2881,7 @@ class ShowBase(DirectObject.DirectObject):
                 return task.again
 
             self.taskMgr.add(wxLoop, 'wxLoop')
+        self.wxAppCreated = True
 
     def __wxTimerCallback(self, event):
         if Thread.getCurrentThread().getCurrentTask():
@@ -2901,7 +2916,7 @@ class ShowBase(DirectObject.DirectObject):
         updated, but Tkinter owns the main loop (which seems to make
         it happier than the other way around). """
 
-        if self.tkRoot:
+        if self.tkRootCreated:
             # Don't do this twice.
             return
 
@@ -2911,7 +2926,8 @@ class ShowBase(DirectObject.DirectObject):
         Pmw = importlib.import_module('Pmw')
 
         # Create a new Tk root.
-        self.tkRoot = Pmw.initialise()
+        if not self.tkRoot:
+            self.tkRoot = Pmw.initialise()
         builtins.tkroot = self.tkRoot
 
         init_app_for_gui()
@@ -2947,6 +2963,7 @@ class ShowBase(DirectObject.DirectObject):
                 return task.again
 
             self.taskMgr.add(tkLoop, 'tkLoop')
+        self.tkRootCreated = True
 
     def __tkTimerCallback(self):
         if not Thread.getCurrentThread().getCurrentTask():
