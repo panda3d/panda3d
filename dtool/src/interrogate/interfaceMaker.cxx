@@ -145,7 +145,8 @@ check_protocols() {
     if (func->_ifunc.get_name() == "__traverse__") {
       // If we have a method named __traverse__, we implement Python's
       // cyclic garbage collection protocol.
-      _protocol_types |= PT_python_gc;
+      //XXX disabled for now because it's too unstable.
+      //_protocol_types |= PT_python_gc;
     }
   }
 

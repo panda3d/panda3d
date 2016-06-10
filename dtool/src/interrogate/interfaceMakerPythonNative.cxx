@@ -2730,10 +2730,9 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   string gcflag;
-  // Disabled for now because it's too unstable.
-  /*if (obj->_protocol_types & Object::PT_python_gc) {
+  if (obj->_protocol_types & Object::PT_python_gc) {
     gcflag = " | Py_TPFLAGS_HAVE_GC";
-  }*/
+  }
 
   // long tp_flags;
   if (has_local_getbuffer) {
@@ -2759,10 +2758,12 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   // traverseproc tp_traverse;
-  write_function_slot(out, 4, slots, "tp_traverse");
+  out << "    0, // tp_traverse\n";
+  //write_function_slot(out, 4, slots, "tp_traverse");
 
   // inquiry tp_clear;
-  write_function_slot(out, 4, slots, "tp_clear");
+  out << "    0, // tp_clear\n";
+  //write_function_slot(out, 4, slots, "tp_clear");
 
   // richcmpfunc tp_richcompare;
   if (has_local_richcompare) {
