@@ -638,6 +638,9 @@ remove_all_windows() {
   // And, hey, let's stop the vertex paging threads, if any.
   VertexDataPage::stop_threads();
 
+  // Stopping the tasks means we have to release the Python GIL while
+  // this method runs (hence it is marked BLOCKING), so that any
+  // Python tasks on other threads won't deadlock grabbing the GIL.
   AsyncTaskManager::get_global_ptr()->stop_threads();
 
 #ifdef DO_PSTATS
