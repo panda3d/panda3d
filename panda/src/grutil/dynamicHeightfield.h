@@ -34,21 +34,14 @@ PUBLISHED:
   INLINE void update(float lower_x, float upper_x, float lower_y, float upper_y);
 
   BLOCKING int pull_spot(const LPoint4f &delta, float xc, float yc, float xr, float yr, float exponent);
-  void copy_sub_image(const PfmFile &copy, int xto, int yto,
-                      int xfrom = 0, int yfrom = 0,
-                      int x_size = -1, int y_size = -1);
-  void add_sub_image(const PfmFile &copy, int xto, int yto,
-                     int xfrom = 0, int yfrom = 0,
-                     int x_size = -1, int y_size = -1,
-                     float pixel_scale = 1.0);
-  void mult_sub_image(const PfmFile &copy, int xto, int yto,
-                      int xfrom = 0, int yfrom = 0,
-                      int x_size = -1, int y_size = -1,
-                      float pixel_scale = 1.0);
-  void divide_sub_image(const PfmFile &copy, int xto, int yto,
-                        int xfrom = 0, int yfrom = 0,
-                        int x_size = -1, int y_size = -1,
-                        float pixel_scale = 1.0);
+  void copy_sub_image(const PfmFile &copy, int xto, int yto, int xfrom, int yfrom,
+                      int x_size, int y_size);
+  void add_sub_image(const PfmFile &copy, int xto, int yto, int xfrom, int yfrom,
+                     int x_size, int y_size, float pixel_scale = 1.0);
+  void mult_sub_image(const PfmFile &copy, int xto, int yto, int xfrom, int yfrom,
+                     int x_size, int y_size, float pixel_scale = 1.0);
+  void divide_sub_image(const PfmFile &copy, int xto, int yto, int xfrom, int yfrom,
+                     int x_size, int y_size, float pixel_scale = 1.0);
 
 public:
   void add_observer(Observer *observer);

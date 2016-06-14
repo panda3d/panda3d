@@ -178,7 +178,7 @@ void ShaderTerrainMesh::on_change() {
     }
   }
 
-  // selectively recompute bounds
+  // Selectively recompute bounds
   bind_heightfield(false);
   Chunk* deepest = NULL;
   find_region_chunk(deepest, &_base_chunk, _dynamic_hf->region_corners);
@@ -188,13 +188,12 @@ void ShaderTerrainMesh::on_change() {
     // compute bounds of deepest and its children.
     do_compute_bounds(&_base_chunk, deepest);
 
-    //recompute bounds of chunks above deepest since we just changed their children's bounds.
+    // Recompute bounds of chunks above deepest since we just changed their children's bounds.
     Chunk* parent = NULL;
     Chunk* child = deepest;
     while (true) {
       compute_parent_bounds(parent, &_base_chunk, child);
       if (parent) {
-        // shader_terrain_cat.debug() << "Parent chunk found. Depth: " << parent->depth << " Size: " << parent->size << " X: " << parent->x << " Y: " << parent->y << endl;
         child = parent;
         parent = NULL;
       } else {  // we've reached _base_chunk.
@@ -202,7 +201,6 @@ void ShaderTerrainMesh::on_change() {
       }
     }
   } else {  // _base_chunk is the smallest corners-containing chunk, so recompute all bounds.
-    // shader_terrain_cat.debug() << "Recomputing all bounds." << endl;
     do_compute_bounds(&_base_chunk, NULL);
   }
 
@@ -353,7 +351,6 @@ void ShaderTerrainMesh::compute_parent_bounds(Chunk*& parent, Chunk* top, const 
     Chunk* candidate = top->children[i];
     if (candidate != NULL) {
       if (candidate == child) {
-        // shader_terrain_cat.debug() << "compute_parent_bounds. " << top->depth << " / " << top->x << " / " << top->y << " Was min/max/avg: " << top->min_height << " / " << top->max_height << " / " << top->avg_height << endl;
         compute_bounds_from_children(top);
         parent = top;
         break;
@@ -418,13 +415,10 @@ void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk, Chunk* start) {
     }
 
   } else if (!start || (start && chunk == start)) {
+    // Either we've found our start chunk and recurse unconditionally from here on down,
+    // or we don't have a start chunk and recurse.
 
-    // shader_terrain_cat.debug() << "Calc and recurse." << endl;
-    // if (start) {
-    //   shader_terrain_cat.debug() << chunk->depth << " X/Y " << chunk->x << " / " << chunk->y << endl;
-    // }
-
-    // chunk may be a leaf!
+    // If chunk is a leaf drop the start chunk and let the first branch (above) handle it.
     if (chunk->size == _chunk_size) {
       do_compute_bounds(chunk, NULL);
       return;
@@ -436,9 +430,9 @@ void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk, Chunk* start) {
     }
     compute_bounds_from_children(chunk);
 
-  } else if (start && chunk != start) {  //we don't calculate anything, but recurse further.
+  } else if (start && chunk != start) {
+    // We don't calculate anything, but recurse further down until we find start chunk.
     
-    // shader_terrain_cat.debug() << "Just recursing... " << start << endl;
     if (chunk->size != _chunk_size) {  // not a leaf
       for (size_t i = 0; i < 4; ++i) {
         do_compute_bounds(chunk->children[i], start);

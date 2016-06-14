@@ -38,8 +38,8 @@ PUBLISHED:
 
   void set_use_diamond_subdivision(bool flag=true);
 
-  int get_x_size();
-  int get_y_size();
+  INLINE int get_x_size() const;
+  INLINE int get_y_size() const;
 
   INLINE void set_dynamic_heightfield(DynamicHeightfield* dynamic_hf);
 

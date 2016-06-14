@@ -46,6 +46,24 @@ operator = (const BulletHeightfieldShape &copy) {
 }
 
 /**
+ *
+ */
+INLINE int BulletHeightfieldShape::
+get_y_size() const {
+
+  return _y_size;
+}
+
+/**
+ *
+ */
+INLINE int BulletHeightfieldShape::
+get_x_size() const {
+
+  return _x_size;
+}
+
+/**
  * @brief Sets a DynamicHeightfield which will propagate changes made to it.
  * @details It's recommended to construct BulletHeightfieldShape with a 
  *   heightfield and STM sampling. Then, construct DynamicHeightfield, 
