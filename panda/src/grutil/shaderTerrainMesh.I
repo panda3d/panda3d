@@ -200,16 +200,14 @@ INLINE LPoint3 ShaderTerrainMesh::uv_to_world(PN_stdfloat u, PN_stdfloat v) cons
  * @brief This reads a texel from the RAM image.
  */
 INLINE PN_stdfloat ShaderTerrainMesh::get_texel(size_t x, size_t y) {
-  
   const unsigned char *p = _tex_read_ptr + (y * _size + x) * _pixel_width;
-  return (PN_stdfloat)_heightfield_tex->get_unsigned_short(p);
+  return (PN_stdfloat)*(uint16_t*)p / 65535.0f;
 }
 
 /**
  * @brief Write a float as two unsigned chars at the indicated memory address.
  */
 INLINE void ShaderTerrainMesh::set_texel(size_t x, size_t y, PN_stdfloat value) {
-
   unsigned char *p = _tex_write_ptr + (y * _size + x) * _pixel_width;
-  _heightfield_tex->store_unscaled_short(p, (int)(value * 65535.0 + 0.5));
+  *(uint16_t*)p = (uint16_t)(value * 65535.0f + 0.5f);
 }
