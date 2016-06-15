@@ -1309,7 +1309,7 @@ set_state_and_transform(const RenderState *state,
   // Put the modelview projection matrix in the push constants.
   CPT(TransformState) combined = _projection_mat->compose(trans);
   LMatrix4f matrix = LCAST(float, combined->get_mat());
-  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, matrix.get_data());
+  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 64, matrix.get_data());
 
   const ColorScaleAttrib *color_scale_attrib;
   state->get_attrib_def(color_scale_attrib);

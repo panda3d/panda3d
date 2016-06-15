@@ -476,14 +476,18 @@ VulkanGraphicsPipe() {
     for (int i = 1; i < VK_FORMAT_RANGE_SIZE; ++i) {
       VkFormatProperties fmt_props;
       vkGetPhysicalDeviceFormatProperties(_gpu, (VkFormat)i, &fmt_props);
+
+      if ((fmt_props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) == 0) {
+        continue;
+      }
+
       VkImageFormatProperties props;
       vkGetPhysicalDeviceImageFormatProperties(_gpu, (VkFormat)i, VK_IMAGE_TYPE_2D,
                                                VK_IMAGE_TILING_OPTIMAL,
                                                VK_IMAGE_USAGE_SAMPLED_BIT,
                                                0, &props);
 
-      if (props.maxExtent.width == 0 ||
-          (fmt_props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) == 0) {
+      if (props.maxExtent.width == 0) {
         continue;
       }
 
