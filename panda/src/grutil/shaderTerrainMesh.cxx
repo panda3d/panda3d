@@ -126,13 +126,13 @@ bool ShaderTerrainMesh::generate() {
     shader_terrain_cat.error() << "Couldn't bind heightfield!" << endl;
     return false;    
   }
+
   do_create_chunks();
-  do_compute_bounds(&_base_chunk, NULL);
+  do_compute_bounds(&_base_chunk);
   do_create_chunk_geom();
   do_init_data_texture();
 
   unbind_heightfield();
-
   return true;
 }
 
@@ -178,32 +178,27 @@ void ShaderTerrainMesh::on_change() {
     }
   }
 
-  // Selectively recompute bounds
-  bind_heightfield(false);
-  Chunk* deepest = NULL;
-  find_region_chunk(deepest, &_base_chunk, _dynamic_hf->region_corners);
+  bind_heightfield(false);  
+  // tests showed that recalculating every chunk's bounds is about 2% slower when using this compared to do_compute_bounds().
+  // recompute bounds of all leaf chunks intersecting the region, and of their parents.
+  pmap<int, pvector<Chunk*>> chunks2update;
+  recompute_intersecting_chunk_bounds(&_base_chunk, _dynamic_hf->region_corners, chunks2update);
 
-  if (deepest != NULL) {  
-    // shader_terrain_cat.debug() << "Region chunk found. Depth: " << deepest->depth << " Size: " << deepest->size << " X: " << deepest->x << " Y: " << deepest->y << "  min/max/avg: " << deepest->min_height << " / " << deepest->max_height << " / " << deepest->avg_height << endl;
-    // compute bounds of deepest and its children.
-    do_compute_bounds(&_base_chunk, deepest);
-
-    // Recompute bounds of chunks above deepest since we just changed their children's bounds.
-    Chunk* parent = NULL;
-    Chunk* child = deepest;
-    while (true) {
-      compute_parent_bounds(parent, &_base_chunk, child);
-      if (parent) {
-        child = parent;
-        parent = NULL;
-      } else {  // we've reached _base_chunk.
-        break;
-      }
-    }
-  } else {  // _base_chunk is the smallest corners-containing chunk, so recompute all bounds.
-    do_compute_bounds(&_base_chunk, NULL);
+  int max_depth = 0;
+  for (pmap<int, pvector<Chunk*>>::iterator it = chunks2update.begin(); it != chunks2update.end(); ++it) {
+    max_depth = max(it->first, max_depth);
   }
 
+  // recalculate bounds from children for chunks at one depth at a time, then decrement depth.
+  for (max_depth; max_depth >= 0; --max_depth) {
+    // shader_terrain_cat.debug() << "Recalculating " << chunks2update[max_depth].size() << " chunks at depth " << max_depth << endl;
+    for (pvector<Chunk*>::iterator it = chunks2update[max_depth].begin(); it != chunks2update[max_depth].end(); ++it) {
+      compute_bounds_from_children(*it);
+    }
+  }
+
+  // finally recompute base_chunk bounds.
+  compute_bounds_from_children(&_base_chunk);
   unbind_heightfield();
 }
 
@@ -242,10 +237,11 @@ bool ShaderTerrainMesh::do_check_heightfield() {
   _heightfield_tex->set_magfilter(SamplerState::FT_linear);
 
   // check texture for 16bit depth etc.
-  nassertr(_heightfield_tex->get_texture_type() == Texture::TT_2d_texture &&
-           _heightfield_tex->get_pad_x_size() == 0 && _heightfield_tex->get_pad_y_size() == 0 &&
-           _heightfield_tex->get_component_type() == Texture::T_unsigned_short &&
-           _heightfield_tex->get_component_width() == 2, false);
+  nassertr(_heightfield_tex->get_texture_type() == Texture::TT_2d_texture, false);
+  nassertr(_heightfield_tex->get_pad_x_size() == 0, false);
+  nassertr(_heightfield_tex->get_pad_y_size() == 0, false);
+  nassertr(_heightfield_tex->get_component_type() == Texture::T_unsigned_short, false);
+  nassertr(_heightfield_tex->get_component_width() == 2, false);
 
   _pixel_width = _heightfield_tex->get_component_width() * _heightfield_tex->get_num_components();
   return true;
@@ -328,34 +324,21 @@ void ShaderTerrainMesh::do_init_chunk(Chunk* chunk) {
 }
 
 /**
- * @brief Will find the smallest (=highest depth) chunk containing the area described by corners, starting from the top chunk.
+ * @brief Will find recursively find intersecting chunks. If it is a leaf this calculates its bounds, if not, the chunk is stored in a map for later processing.
  */
-void ShaderTerrainMesh::find_region_chunk(Chunk*& deepest, const Chunk* top, const LVector4i& corners) {
-  // PNMImage and PfmFile are y-down, Texture and Chunk are y-up.
+void ShaderTerrainMesh::recompute_intersecting_chunk_bounds(Chunk* top, const LVector4i& corners, pmap<int, pvector<Chunk*>>& chunks2update) {
   for (size_t i = 0; i < 4; ++i) {
     Chunk* child = top->children[i];
-    if (child != NULL && child->x <= corners.get_x() && child->x + child->size >= corners.get_y() &&
-        child->y <= _size - 1 - corners.get_w() && child->y + child->size >= _size - 1 - corners.get_z()) {
-      deepest = child;
-      find_region_chunk(deepest, child, corners);
-    }
-  }
-}
-
-/**
- * @brief Will find the parent chunk of any given child chunk, and compute its bounds.
- * @details The parameter parent will contain a pointer to the parent chunk that was found (or NULL).
- */
-void ShaderTerrainMesh::compute_parent_bounds(Chunk*& parent, Chunk* top, const Chunk* child) {
-  for (size_t i = 0; i < 4; ++i) {
-    Chunk* candidate = top->children[i];
-    if (candidate != NULL) {
-      if (candidate == child) {
-        compute_bounds_from_children(top);
-        parent = top;
-        break;
+    if (child && child->x <= corners.get_y() && child->x + child->size >= corners.get_x() &&
+        child->y <= _size - 1 - corners.get_z() && child->y + child->size >= _size - 1 - corners.get_w()) {
+      if (child->size == _chunk_size) {  // intersecting leaf chunk
+        // shader_terrain_cat.debug() << "Intersecting leaf. Depth:" << child->depth << " X/Y " << child->x << "/" << child->y << endl;
+        do_compute_bounds(child);
+      } else {  // intersecting non-leaf chunk
+        // shader_terrain_cat.debug() << "Intersecting chunk. Depth:" << child->depth << " X/Y " << child->x << "/" << child->y << endl;
+        chunks2update[child->depth].push_back(child);
+        recompute_intersecting_chunk_bounds(child, corners, chunks2update);
       }
-      compute_parent_bounds(parent, candidate, child);
     }
   }
 }
@@ -375,21 +358,20 @@ void ShaderTerrainMesh::compute_parent_bounds(Chunk*& parent, Chunk* top, const 
  *   If chunk is NULL, undefined behaviour occurs.
  *
  * @param chunk The parent chunk
- * @param start Optional chunk. If specified, only its children (including leaves) will be recalculated.
  */
-void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk, Chunk* start) {
-  // Final chunk (Leaf)
-  if (!start && chunk->size == _chunk_size) {
 
-    // shader_terrain_cat.debug() << "Leaf reached: " << chunk->depth << " X/Y " << chunk->x << " / " << chunk->y << endl;
+void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk) {
+
+  // Final chunk (Leaf)
+  if (chunk->size == _chunk_size) {
 
     // Iterate over all pixels
     PN_stdfloat avg_height = 0.0, min_height = 1.0, max_height = 0.0;
     for (size_t x = 0; x < _chunk_size; ++x) {
       for (size_t y = 0; y < _chunk_size; ++y) {
+
         // Access data directly, to improve performance
         PN_stdfloat height = get_texel(chunk->x + x, chunk->y + y);
-        
         avg_height += height;
         min_height = min(min_height, height);
         max_height = max(max_height, height);
@@ -414,30 +396,13 @@ void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk, Chunk* start) {
       }
     }
 
-  } else if (!start || (start && chunk == start)) {
-    // Either we've found our start chunk and recurse unconditionally from here on down,
-    // or we don't have a start chunk and recurse.
-
-    // If chunk is a leaf drop the start chunk and let the first branch (above) handle it.
-    if (chunk->size == _chunk_size) {
-      do_compute_bounds(chunk, NULL);
-      return;
-    }
+  } else {
 
     // Perform bounds computation for every child.
     for (size_t i = 0; i < 4; ++i) {
-      do_compute_bounds(chunk->children[i], NULL);
+      do_compute_bounds(chunk->children[i]);
     }
     compute_bounds_from_children(chunk);
-
-  } else if (start && chunk != start) {
-    // We don't calculate anything, but recurse further down until we find start chunk.
-    
-    if (chunk->size != _chunk_size) {  // not a leaf
-      for (size_t i = 0; i < 4; ++i) {
-        do_compute_bounds(chunk->children[i], start);
-      }
-    }
   }
 }
 
