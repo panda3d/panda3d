@@ -166,7 +166,7 @@ private:
   bool do_check_lod_matches(Chunk* chunk, TraversalData* data);
 
   void compute_bounds_from_children(Chunk* chunk);
-  void recompute_intersecting_chunk_bounds(Chunk* top, const LVector4i& corners, pmap<int, pvector<Chunk*>>& chunks2update);
+  void recompute_intersecting_chunk_bounds(Chunk* top, const LVector4i& corners, pmap< int, pvector<Chunk*> >& chunks2update);
   void list_chunks(Chunk* chunk);
 
   bool bind_heightfield(bool write);
