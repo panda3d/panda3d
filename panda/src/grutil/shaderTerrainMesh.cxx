@@ -181,11 +181,11 @@ void ShaderTerrainMesh::on_change() {
   bind_heightfield(false);  
   // tests showed that recalculating every chunk's bounds is about 2% slower when using this compared to do_compute_bounds().
   // recompute bounds of all leaf chunks intersecting the region, and of their parents.
-  pmap<int, pvector<Chunk*>> chunks2update;
+  pmap< int, pvector<Chunk*> > chunks2update;
   recompute_intersecting_chunk_bounds(&_base_chunk, _dynamic_hf->region_corners, chunks2update);
 
   int max_depth = 0;
-  for (pmap<int, pvector<Chunk*>>::iterator it = chunks2update.begin(); it != chunks2update.end(); ++it) {
+  for (pmap< int, pvector<Chunk*> >::iterator it = chunks2update.begin(); it != chunks2update.end(); ++it) {
     max_depth = max(it->first, max_depth);
   }
 
