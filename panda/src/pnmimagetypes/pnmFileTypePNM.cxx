@@ -650,10 +650,10 @@ writePackedRawRow(ostream *                const fileP,
                   const unsigned char * const packed_bits,
                   int                   const cols) {
 
-  int bytesWritten;
   fileP->write((const char *)packed_bits, pbm_packed_bytes(cols));
-  if (fileP->fail())
+  if (fileP->fail()) {
     pm_error("I/O error writing packed row to raw PBM file.");
+  }
 }
 
 static void
