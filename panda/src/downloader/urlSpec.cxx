@@ -47,7 +47,7 @@ URLSpec(const URLSpec &url, const Filename &path) {
     string dirname = get_path();
 
     // Check if the path already ends in a slash.
-    if (!dirname.empty() && dirname.back() == '/') {
+    if (!dirname.empty() && dirname[dirname.size() - 1] == '/') {
       if (path[0] == '/') {
         // And the filename begins with one.  Remove the extra slash.
         dirname.resize(dirname.size() - 1);
