@@ -1976,9 +1976,9 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
     def setRendererColorBlendAttrib(self, rendererName, blendMethodStr, incomingOperandStr, fbufferOperandStr):
-        self.particles.getRenderer().setColorBlendMode(eval('ColorBlendAttrib.'+blendMethodStr),
-                                                       eval('ColorBlendAttrib.'+incomingOperandStr),
-                                                       eval('ColorBlendAttrib.'+fbufferOperandStr))
+        self.particles.getRenderer().setColorBlendMode(getattr(ColorBlendAttrib, blendMethodStr),
+                                                       getattr(ColorBlendAttrib, incomingOperandStr),
+                                                       getattr(ColorBlendAttrib, fbufferOperandStr))
 
         if(blendMethodStr in ['MAdd','MSubtract','MInvSubtract']):
             self.getWidget(rendererName,'Incoming Op.').pack(fill = X)
