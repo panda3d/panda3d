@@ -12,9 +12,10 @@
  */
 
 #include "urlSpec.h"
+#include "filename.h"
+#include "string_utils.h"
 
 #include <ctype.h>
-
 
 /**
  *
@@ -36,23 +37,87 @@ URLSpec() {
 }
 
 /**
+ * Creates a URLSpec by appending a path to the end of the old URLSpec,
+ * inserting an intervening forward slash if necessary.
+ */
+URLSpec::
+URLSpec(const URLSpec &url, const Filename &path) {
+  (*this) = url;
+  if (!path.empty()) {
+    string dirname = get_path();
+
+    // Check if the path already ends in a slash.
+    if (!dirname.empty() && dirname.back() == '/') {
+      if (path[0] == '/') {
+        // And the filename begins with one.  Remove the extra slash.
+        dirname.resize(dirname.size() - 1);
+      }
+    } else {
+      if (path[0] != '/') {
+        // Neither has a slash, so insert one.
+        dirname += '/';
+      }
+    }
+    set_path(dirname + path.get_fullpath());
+  }
+}
+
+/**
+ * Returns a number less than zero if this URLSpec sorts before the other one,
+ * greater than zero if it sorts after, or zero if they are equivalent.
+ */
+int URLSpec::
+compare_to(const URLSpec &other) const {
+  int cmp;
+  if (has_scheme() != other.has_scheme()) {
+    return (has_scheme() < other.has_scheme()) ? -1 : 1;
+  }
+  if (has_scheme()) {
+    cmp = cmp_nocase(get_scheme(), other.get_scheme());
+    if (cmp != 0) {
+      return cmp;
+    }
+  }
+  if (has_username() != other.has_username()) {
+    return (has_username() < other.has_username()) ? -1 : 1;
+  }
+  if (has_username()) {
+    cmp = get_username().compare(other.get_username());
+    if (cmp != 0) {
+      return cmp;
+    }
+  }
+  if (has_server() != other.has_server()) {
+    return (has_server() < other.has_server()) ? -1 : 1;
+  }
+  if (has_server()) {
+    cmp = cmp_nocase(get_server(), other.get_server());
+    if (cmp != 0) {
+      return cmp;
+    }
+  }
+  return get_path_and_query().compare(other.get_path_and_query());
+}
+
+/**
  *
  */
-void URLSpec::
-operator = (const URLSpec &copy) {
-  _url = copy._url;
-  _port = copy._port;
-  _flags = copy._flags;
-  _scheme_end = copy._scheme_end;
-  _username_start = copy._username_start;
-  _username_end = copy._username_end;
-  _server_start = copy._server_start;
-  _server_end = copy._server_end;
-  _port_start = copy._port_start;
-  _port_end = copy._port_end;
-  _path_start = copy._path_start;
-  _path_end = copy._path_end;
-  _query_start = copy._query_start;
+size_t URLSpec::
+get_hash() const {
+  size_t hash = 0;
+  hash = int_hash::add_hash(hash, _flags & (F_has_scheme | F_has_username | F_has_server));
+  if (has_scheme()) {
+    hash = string_hash::add_hash(hash, downcase(get_scheme()));
+  }
+  if (has_username()) {
+    hash = string_hash::add_hash(hash, get_username());
+  }
+  if (has_server()) {
+    hash = string_hash::add_hash(hash, downcase(get_server()));
+  }
+  hash = int_hash::add_hash(hash, get_port());
+  hash = string_hash::add_hash(hash, get_path_and_query());
+  return hash;
 }
 
 /**
@@ -71,7 +136,7 @@ get_scheme() const {
  * Returns the port number specified by the URL, or the default port if not
  * specified.
  */
-int URLSpec::
+uint16_t URLSpec::
 get_port() const {
   if (has_port()) {
     return _port;
@@ -115,14 +180,25 @@ get_default_port_for_scheme(const string &scheme) {
  * Returns a string consisting of the server name, followed by a colon,
  * followed by the port number.  If the port number is not explicitly given in
  * the URL, this string will include the implicit port number.
+ * If the server is an IPv6 address, it will be enclosed in square brackets.
  */
 string URLSpec::
 get_server_and_port() const {
-  if (has_port()) {
-    return _url.substr(_server_start, _port_end - _server_start);
-  }
   ostringstream strm;
-  strm << get_server() << ":" << get_port();
+  string server = get_server();
+  if (server.find(':') != string::npos) {
+    // Protect an IPv6 address by enclosing it in square brackets.
+    strm << '[' << server << ']';
+
+  } else {
+    if (!has_port()) {
+      return server;
+    }
+    strm << server;
+  }
+  if (has_port()) {
+    strm << ":" << get_port();
+  }
   return strm.str();
 }
 
@@ -285,7 +361,15 @@ set_username(const string &username) {
   if (!username.empty()) {
     authority = username + "@";
   }
-  authority += get_server();
+
+  string server = get_server();
+  if (server.find(':') != string::npos) {
+    // Protect an IPv6 address by enclosing it in square brackets.
+    authority += "[" + server + "]";
+  } else {
+    authority += server;
+  }
+
   if (has_port()) {
     authority += ":";
     authority += get_port_str();
@@ -296,6 +380,8 @@ set_username(const string &username) {
 
 /**
  * Replaces the server part of the URL specification.
+ * Unlike set_server_and_port, this method does not require IPv6 addresses to
+ * be enclosed in square brackets.
  */
 void URLSpec::
 set_server(const string &server) {
@@ -307,7 +393,14 @@ set_server(const string &server) {
   if (has_username()) {
     authority = get_username() + "@";
   }
-  authority += server;
+
+  if (server.find(':') != string::npos) {
+    // Protect an IPv6 address by enclosing it in square brackets.
+    authority += "[" + server + "]";
+  } else {
+    authority += server;
+  }
+
   if (has_port()) {
     authority += ":";
     authority += get_port_str();
@@ -329,7 +422,14 @@ set_port(const string &port) {
   if (has_username()) {
     authority = get_username() + "@";
   }
-  authority += get_server();
+
+  string server = get_server();
+  if (server.find(':') != string::npos) {
+    // Protect an IPv6 address by enclosing it in square brackets.
+    authority += "[" + server + "]";
+  } else {
+    authority += server;
+  }
 
   if (!port.empty()) {
     authority += ":";
@@ -344,16 +444,15 @@ set_port(const string &port) {
  * number.
  */
 void URLSpec::
-set_port(int port) {
-  ostringstream str;
-  str << port;
-  set_port(str.str());
+set_port(uint16_t port) {
+  set_port(format_string(port));
 }
 
 /**
  * Replaces the server and port parts of the URL specification simultaneously.
  * The input string should be of the form "server:port", or just "server" to
  * make the port number implicit.
+ * Any IPv6 address must be enclosed in square brackets.
  */
 void URLSpec::
 set_server_and_port(const string &server_and_port) {
@@ -473,6 +572,18 @@ set_url(const string &url, bool server_name_expected) {
   for (p = 0; p < _url.length() && _url[p] != '?'; p++) {
     if (_url[p] == '\\') {
       _url[p] = '/';
+    }
+  }
+
+  // Now normalize the percent-encoding sequences by making them uppercase.
+  for (p = 0; p + 2 < _url.length();) {
+    if (_url[p++] == '%') {
+      if (_url[p] != '%') {
+        _url[p] = toupper(_url[p]);
+        ++p;
+        _url[p] = toupper(_url[p]);
+      }
+      ++p;
     }
   }
 
@@ -781,18 +892,39 @@ parse_authority() {
     _server_start = at_sign + 1;
   }
 
-  // Is there a port?
-  size_t colon = _url.find(':', _server_start);
-  if (colon < _port_end) {
-    // Yep.
+  // Is this an IPv6 address in square brackets?
+  size_t bracket = _url.find('[', _server_start);
+  if (bracket < _port_end) {
+    // We won't include the brackets in the server name.
+    ++_server_start;
+
+    bracket = _url.find(']');
+    if (bracket < _server_end) {
+      _server_end = bracket;
+
+      // Is it followed directly by a port colon?
+      size_t colon = _url.find(':', _server_end);
+      if (colon < _port_end) {
+        _port_start = colon + 1;
+      }
+    }
+  } else {
+    // Is there a port?
+    size_t colon = _url.find(':', _server_start);
+    if (colon < _port_end) {
+      // Yep.
+      _server_end = colon;
+      _port_start = colon + 1;
+    }
+  }
+
+  if (_port_start < _port_end) {
     _flags |= F_has_port;
-    _server_end = colon;
-    _port_start = colon + 1;
 
     // Decode the port into an integer.  Don't bother to error check if it's
     // not really an integer.
     string port_str = _url.substr(_port_start, _port_end - _port_start);
-    _port = atoi(port_str.c_str());
+    _port = (uint16_t)atoi(port_str.c_str());
   }
 
   // Make sure the server name is lowercase only.

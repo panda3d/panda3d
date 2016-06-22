@@ -69,7 +69,7 @@ ConnectionManager::
  * communication.
  */
 PT(Connection) ConnectionManager::
-open_UDP_connection(int port) {
+open_UDP_connection(uint16_t port) {
   return open_UDP_connection("", port);
 }
 
@@ -80,7 +80,8 @@ open_UDP_connection(int port) {
  * sending.
  *
  * This variant accepts both a hostname and port to listen on a particular
- * interface; if the hostname is empty, all interfaces will be available.
+ * interface; if the hostname is empty, all interfaces will be available,
+ * both IPv4 and IPv6.
  *
  * If for_broadcast is true, this UDP connection will be configured to send
  * and/or receive messages on the broadcast address (255.255.255.255);
@@ -90,24 +91,27 @@ open_UDP_connection(int port) {
  * communication.
  */
 PT(Connection) ConnectionManager::
-open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
+open_UDP_connection(const string &hostname, uint16_t port, bool for_broadcast) {
   Socket_UDP *socket = new Socket_UDP;
 
   if (port > 0) {
+    bool okflag;
     NetAddress address;
     if (hostname.empty()) {
-      address.set_any(port);
+      // The empty string means to listen on both IPv4 and IPv6 interfaces.
+      okflag = socket->OpenForInput(port);
     } else {
       address.set_host(hostname, port);
+      okflag = socket->OpenForInput(address.get_addr());
     }
 
-    if (!socket->OpenForInput(address.get_addr())) {
+    if (!okflag) {
       if (hostname.empty()) {
         net_cat.error()
           << "Unable to bind to port " << port << " for UDP.\n";
       } else {
         net_cat.error()
-          << "Unable to bind to " << hostname << ":" << port << " for UDP.\n";
+          << "Unable to bind to " << address << " for UDP.\n";
       }
       delete socket;
       return PT(Connection)();
@@ -124,7 +128,7 @@ open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
         << "Creating UDP " << broadcast_note << "connection for port " << port << "\n";
     } else {
       net_cat.info()
-        << "Creating UDP " << broadcast_note << "connection for " << hostname << ":" << port << "\n";
+        << "Creating UDP " << broadcast_note << "connection for " << address << "\n";
     }
 
   } else {
@@ -150,23 +154,32 @@ open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
   return connection;
 }
 
-
-
 /**
  * Creates a socket to be used as a rendezvous socket for a server to listen
  * for TCP connections.  The socket returned by this call should only be added
  * to a ConnectionListener (not to a generic ConnectionReader).
  *
  * This variant of this method accepts a single port, and will listen to that
- * port on all available interfaces.
+ * port on all available interfaces, both IPv4 and IPv6.
  *
  * backlog is the maximum length of the queue of pending connections.
  */
 PT(Connection) ConnectionManager::
-open_TCP_server_rendezvous(int port, int backlog) {
-  NetAddress address;
-  address.set_any(port);
-  return open_TCP_server_rendezvous(address, backlog);
+open_TCP_server_rendezvous(uint16_t port, int backlog) {
+  Socket_TCP_Listen *socket = new Socket_TCP_Listen;
+  if (!socket->OpenForListen(port, backlog)) {
+    net_cat.info()
+      << "Unable to listen to port " << port << " for TCP.\n";
+    delete socket;
+    return PT(Connection)();
+  }
+
+  net_cat.info()
+    << "Listening for TCP connections on port " << port << "\n";
+
+  PT(Connection) connection = new Connection(this, socket);
+  new_connection(connection);
+  return connection;
 }
 
 /**
@@ -182,14 +195,14 @@ open_TCP_server_rendezvous(int port, int backlog) {
  * backlog is the maximum length of the queue of pending connections.
  */
 PT(Connection) ConnectionManager::
-open_TCP_server_rendezvous(const string &hostname, int port, int backlog) {
-  NetAddress address;
+open_TCP_server_rendezvous(const string &hostname, uint16_t port, int backlog) {
   if (hostname.empty()) {
-    address.set_any(port);
+    return open_TCP_server_rendezvous(port, backlog);
   } else {
+    NetAddress address;
     address.set_host(hostname, port);
+    return open_TCP_server_rendezvous(address, backlog);
   }
-  return open_TCP_server_rendezvous(address, backlog);
 }
 
 /**
@@ -204,24 +217,16 @@ open_TCP_server_rendezvous(const string &hostname, int port, int backlog) {
  */
 PT(Connection) ConnectionManager::
 open_TCP_server_rendezvous(const NetAddress &address, int backlog) {
-  ostringstream strm;
-  if (address.get_ip() == 0) {
-    strm << "port " << address.get_port();
-  } else {
-    strm << address.get_ip_string() << ":" << address.get_port();
-  }
-
   Socket_TCP_Listen *socket = new Socket_TCP_Listen;
-  bool okflag = socket->OpenForListen(address.get_addr(), backlog);
-  if (!okflag) {
+  if (!socket->OpenForListen(address.get_addr(), backlog)) {
     net_cat.info()
-      << "Unable to listen to " << strm.str() << " for TCP.\n";
+      << "Unable to listen to " << address << " for TCP.\n";
     delete socket;
     return PT(Connection)();
   }
 
   net_cat.info()
-    << "Listening for TCP connections on " << strm.str() << "\n";
+    << "Listening for TCP connections on " << address << "\n";
 
   PT(Connection) connection = new Connection(this, socket);
   new_connection(connection);
@@ -263,7 +268,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 
   if (okflag) {
     // So, the connect() operation finished, but did it succeed or fail?
-    if (socket->GetPeerName().GetIPAddressRaw() == 0) {
+    if (socket->GetPeerName().is_any()) {
       // No peer means it failed.
       okflag = false;
     }
@@ -271,8 +276,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 
   if (!okflag) {
     net_cat.error()
-      << "Unable to open TCP connection to server "
-      << address.get_ip_string() << " on port " << address.get_port() << "\n";
+      << "Unable to open TCP connection to server " << address << "\n";
     delete socket;
     return PT(Connection)();
   }
@@ -286,8 +290,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 #endif  // SIMPLE_THREADS
 
   net_cat.info()
-    << "Opened TCP connection to server " << address.get_ip_string()
-    << " on port " << address.get_port() << "\n";
+    << "Opened TCP connection to server " << address << "\n";
 
   PT(Connection) connection = new Connection(this, socket);
   new_connection(connection);
@@ -299,7 +302,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
  * communications to a named host and port.
  */
 PT(Connection) ConnectionManager::
-open_TCP_client_connection(const string &hostname, int port,
+open_TCP_client_connection(const string &hostname, uint16_t port,
                            int timeout_ms) {
   NetAddress address;
   if (!address.set_host(hostname, port)) {
@@ -474,11 +477,12 @@ scan_interfaces() {
 
 #ifdef WIN32_VC
   int flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_UNICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+  ULONG family = support_ipv6 ? AF_UNSPEC : AF_INET;
   ULONG buffer_size = 0;
-  ULONG result = GetAdaptersAddresses(AF_INET, flags, NULL, NULL, &buffer_size);
+  ULONG result = GetAdaptersAddresses(family, flags, NULL, NULL, &buffer_size);
   if (result == ERROR_BUFFER_OVERFLOW) {
     IP_ADAPTER_ADDRESSES *addresses = (IP_ADAPTER_ADDRESSES *)PANDA_MALLOC_ARRAY(buffer_size);
-    result = GetAdaptersAddresses(AF_INET, flags, NULL, addresses, &buffer_size);
+    result = GetAdaptersAddresses(family, flags, NULL, addresses, &buffer_size);
     if (result == ERROR_SUCCESS) {
       IP_ADAPTER_ADDRESSES *p = addresses;
       while (p != NULL) {
@@ -502,7 +506,7 @@ scan_interfaces() {
           IP_ADAPTER_PREFIX *m = p->FirstPrefix;
           int mc = 0;
           while (m != NULL && mc < 3) {
-            addresses[mc] = NetAddress(Socket_Address(*(sockaddr_in *)m->Address.lpSockaddr));
+            addresses[mc] = NetAddress(Socket_Address(*m->Address.lpSockaddr));
             m = m->Next;
             ++mc;
           }
@@ -517,10 +521,13 @@ scan_interfaces() {
             // Now, we can infer the netmask by the difference between the
             // network address (the first address) and the broadcast address
             // (the last address).
-            uint32_t netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
-            Socket_Address sa;
-            sa.set_host(netmask, 0);
-            iface.set_netmask(NetAddress(sa));
+            if (addresses[0].get_addr().get_family() == AF_INET &&
+                addresses[2].get_addr().get_family() == AF_INET) {
+              uint32_t netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
+              Socket_Address sa;
+              sa.set_host(netmask, 0);
+              iface.set_netmask(NetAddress(sa));
+            }
           }
         }
 
@@ -545,19 +552,20 @@ scan_interfaces() {
 
   struct ifaddrs *p = ifa;
   while (p != NULL) {
-    if (p->ifa_addr->sa_family == AF_INET) {
+    if (p->ifa_addr->sa_family == AF_INET ||
+        (support_ipv6 && p->ifa_addr->sa_family == AF_INET6)) {
       Interface iface;
       iface.set_name(p->ifa_name);
       if (p->ifa_addr != NULL) {
-        iface.set_ip(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_addr)));
+        iface.set_ip(NetAddress(Socket_Address(*p->ifa_addr)));
       }
       if (p->ifa_netmask != NULL) {
-        iface.set_netmask(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_netmask)));
+        iface.set_netmask(NetAddress(Socket_Address(*p->ifa_netmask)));
       }
       if ((p->ifa_flags & IFF_BROADCAST) && p->ifa_broadaddr != NULL) {
-        iface.set_broadcast(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_broadaddr)));
+        iface.set_broadcast(NetAddress(Socket_Address(*p->ifa_broadaddr)));
       } else if ((p->ifa_flags & IFF_POINTOPOINT) && p->ifa_dstaddr != NULL) {
-        iface.set_p2p(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_dstaddr)));
+        iface.set_p2p(NetAddress(Socket_Address(*p->ifa_dstaddr)));
       }
       _interfaces.push_back(iface);
     }
@@ -572,10 +580,9 @@ scan_interfaces() {
 
 /**
  * This returns the number of usable network interfaces detected on this
- * machine.  (Currently, only IPv4 interfaces are reported.)  See
- * scan_interfaces() to repopulate this list.
+ * machine.  See scan_interfaces() to repopulate this list.
  */
-int ConnectionManager::
+size_t ConnectionManager::
 get_num_interfaces() {
   if (!_interfaces_scanned) {
     scan_interfaces();
@@ -586,16 +593,15 @@ get_num_interfaces() {
 
 /**
  * Returns the nth usable network interface detected on this machine.
- * (Currently, only IPv4 interfaces are reported.)  See scan_interfaces() to
- * repopulate this list.
+ * See scan_interfaces() to repopulate this list.
  */
 const ConnectionManager::Interface &ConnectionManager::
-get_interface(int n) {
+get_interface(size_t n) {
   if (!_interfaces_scanned) {
     scan_interfaces();
   }
   LightMutexHolder holder(_set_mutex);
-  nassertr(n >= 0 && n < (int)_interfaces.size(), _interfaces[0]);
+  nassertr(n < _interfaces.size(), _interfaces[0]);
   return _interfaces[n];
 }
 
@@ -709,9 +715,9 @@ remove_writer(ConnectionWriter *writer) {
  * Formats a device's MAC address into a string.
  */
 string ConnectionManager::
-format_mac_address(const unsigned char *data, int data_size) {
+format_mac_address(const unsigned char *data, size_t data_size) {
   stringstream strm;
-  for (int di = 0; di < data_size; ++di) {
+  for (size_t di = 0; di < data_size; ++di) {
     if (di != 0) {
       strm << "-";
     }
@@ -728,16 +734,16 @@ void ConnectionManager::Interface::
 output(ostream &out) const {
   out << get_name() << " [";
   if (has_ip()) {
-    out << " " << get_ip();
+    out << " " << get_ip().get_ip_string();
   }
   if (has_netmask()) {
-    out << " netmask " << get_netmask();
+    out << " netmask " << get_netmask().get_ip_string();
   }
   if (has_broadcast()) {
-    out << " broadcast " << get_broadcast();
+    out << " broadcast " << get_broadcast().get_ip_string();
   }
   if (has_p2p()) {
-    out << " p2p " << get_p2p();
+    out << " p2p " << get_p2p().get_ip_string();
   }
   out << " ]";
 }
