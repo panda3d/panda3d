@@ -1198,6 +1198,10 @@ write_sub_module(ostream &out, Object *obj) {
 
     if (!isExportThisRun(wrapped_itype._cpptype)) {
       _external_imports.insert(wrapped_itype._cpptype);
+    } else {
+      // If this is a typedef to a class defined in the same module, make sure
+      // that the class is initialized before we try to define the typedef.
+      out << "  Dtool_PyModuleClassInit_" << class_name << "(module);\n";
     }
   }
 
@@ -2595,6 +2599,12 @@ write_module_class(ostream &out, Object *obj) {
   out << "#if PY_VERSION_HEX >= 0x02050000\n";
   write_function_slot(out, 2, slots, "nb_index");
   out << "#endif\n";
+
+  out << "#if PY_VERSION_HEX >= 0x03050000\n";
+  write_function_slot(out, 2, slots, "nb_matrix_multiply");
+  write_function_slot(out, 2, slots, "nb_inplace_matrix_multiply");
+  out << "#endif\n";
+
   out << "};\n\n";
 
   // NB: it's tempting not to write this table when a class doesn't have them.
@@ -2842,6 +2852,10 @@ write_module_class(ostream &out, Object *obj) {
   // unsigned int tp_version_tag
   out << "#if PY_VERSION_HEX >= 0x02060000\n";
   out << "    0, // tp_version_tag\n";
+  out << "#endif\n";
+  // destructor tp_finalize
+  out << "#if PY_VERSION_HEX >= 0x03040000\n";
+  out << "    0, // tp_finalize\n";
   out << "#endif\n";
   out << "  },\n";
   out << "  Dtool_UpcastInterface_" << ClassName << ",\n";
