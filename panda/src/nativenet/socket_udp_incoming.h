@@ -150,7 +150,7 @@ OpenForInputMCast(const Socket_Address &address) {
            sizeof(struct in6_addr));
     imreq.ipv6mr_interface = 0; // use DEFAULT interface
 
-    status = setsockopt(GetSocket(), IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
+    status = setsockopt(GetSocket(), IPPROTO_IPV6, IPV6_JOIN_GROUP,
                         (const char *)&imreq, sizeof(imreq));
   }
 

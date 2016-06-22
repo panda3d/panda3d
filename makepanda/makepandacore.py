@@ -1543,12 +1543,17 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
             location = LocateLibrary(libname, lpath, prefer_static=True)
             if location is not None:
+                # If it's a .so or .dylib we may have changed it and copied it to the built/lib dir.
+                if location.endswith('.so') or location.endswith('.dylib'):
+                    location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
                 LibName(target_pkg, location)
             else:
                 # This is for backward compatibility - in the thirdparty dir,
                 # we kept some libs with "panda" prefix, like libpandatiff.
                 location = LocateLibrary("panda" + libname, lpath, prefer_static=True)
                 if location is not None:
+                    if location.endswith('.so') or location.endswith('.dylib'):
+                        location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
                     LibName(target_pkg, location)
                 else:
                     print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
