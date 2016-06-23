@@ -71,7 +71,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
       if (handle == (void *)NULL) {
         audio_error("  load_dso(" << dl_name << ") failed, will use NullAudioManager");
         audio_error("    "<<load_dso_error());
-        nassertr(_create_AudioManager == create_NullAudioManager, NULL);
+        nassertr(_create_AudioManager == NULL, NULL);
       } else {
         // Get the special function from the dso, which should return the
         // AudioManager factory function.
