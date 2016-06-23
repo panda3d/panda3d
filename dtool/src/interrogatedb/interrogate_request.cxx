@@ -20,7 +20,11 @@ void
 interrogate_request_database(const char *database_filename) {
   InterrogateModuleDef *def = new InterrogateModuleDef;
   memset(def, 0, sizeof(InterrogateModuleDef));
+#ifdef _WIN32
+  def->database_filename = _strdup(database_filename);
+#else
   def->database_filename = strdup(database_filename);
+#endif
 
   // Don't think of this as a leak; think of it as a one-time database
   // allocation.

@@ -510,7 +510,6 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
 
   GLint data_size = 0;
   GLint param_count = 0;
-  GLsizei param_size;
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param_count);
 

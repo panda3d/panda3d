@@ -1056,7 +1056,7 @@ def CompileCxx(obj,src,opts):
             cmd = "cl "
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
-            cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
+            cmd += "/wd4996 /wd4275 /wd4273 "
 
             # Enable Windows 7 interfaces if we need Touchinput.
             if PkgSkip("TOUCHINPUT") == 0:
