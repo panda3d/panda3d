@@ -73,6 +73,10 @@ PUBLISHED:
 
     DC_flight_stick,
     DC_steering_wheel,
+    DC_dance_pad,
+
+    // Head-mounted display.
+    DC_hmd,
   };
 
 protected:
@@ -101,6 +105,14 @@ PUBLISHED:
     C_y,
     C_trigger,
     C_throttle,
+    C_rudder,
+    C_hat_x,
+    C_hat_y,
+
+    // Steering wheel / pedals
+    C_wheel,
+    C_accelerator,
+    C_brake,
   };
 
   INLINE string get_name() const;

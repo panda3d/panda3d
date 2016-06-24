@@ -28,9 +28,31 @@
 #ifndef XINPUT_CAPS_FFB_SUPPORTED
 #define XINPUT_CAPS_FFB_SUPPORTED 0x0001
 #endif
+#ifndef XINPUT_CAPS_NO_NAVIGATION
+#define XINPUT_CAPS_NO_NAVIGATION 0x0010
+#endif
 
 #ifndef BATTERY_DEVTYPE_GAMEPAD
 #define BATTERY_DEVTYPE_GAMEPAD 0x00
+#endif
+
+#ifndef XINPUT_DEVSUBTYPE_WHEEL
+#define XINPUT_DEVSUBTYPE_WHEEL 0x02
+#endif
+#ifndef XINPUT_DEVSUBTYPE_ARCADE_STICK
+#define XINPUT_DEVSUBTYPE_ARCADE_STICK 0x03
+#endif
+#ifndef XINPUT_DEVSUBTYPE_FLIGHT_STICK
+#define XINPUT_DEVSUBTYPE_FLIGHT_STICK 0x04
+#endif
+#ifndef XINPUT_DEVSUBTYPE_DANCE_PAD
+#define XINPUT_DEVSUBTYPE_DANCE_PAD 0x05
+#endif
+#ifndef XINPUT_DEVSUBTYPE_GUITAR
+#define XINPUT_DEVSUBTYPE_GUITAR 0x06
+#endif
+#ifndef XINPUT_DEVSUBTYPE_DRUM_KIT
+#define XINPUT_DEVSUBTYPE_DRUM_KIT 0x08
 #endif
 
 #ifndef BATTERY_TYPE_DISCONNECTED
@@ -95,29 +117,6 @@ XInputDevice(DWORD user_index) :
 
   _controls.resize(6);
   _buttons.resize(16);
-
-  set_control_map(0, C_left_trigger);
-  set_control_map(1, C_right_trigger);
-  set_control_map(2, C_left_x);
-  set_control_map(3, C_left_y);
-  set_control_map(4, C_right_x);
-  set_control_map(5, C_right_y);
-
-  set_button_map(0, GamepadButton::dpad_up());
-  set_button_map(1, GamepadButton::dpad_down());
-  set_button_map(2, GamepadButton::dpad_left());
-  set_button_map(3, GamepadButton::dpad_right());
-  set_button_map(4, GamepadButton::start());
-  set_button_map(5, GamepadButton::back());
-  set_button_map(6, GamepadButton::lstick());
-  set_button_map(7, GamepadButton::rstick());
-  set_button_map(8, GamepadButton::lshoulder());
-  set_button_map(9, GamepadButton::rshoulder());
-  set_button_map(10, GamepadButton::guide());
-  set_button_map(11, GamepadButton::action_a());
-  set_button_map(12, GamepadButton::action_b());
-  set_button_map(13, GamepadButton::action_x());
-  set_button_map(14, GamepadButton::action_y());
 
   // Check if the device is connected.  If so, initialize it.
   XINPUT_CAPABILITIES caps;
@@ -242,11 +241,79 @@ init_xinput() {
  */
 void XInputDevice::
 init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
-  if (caps.Type == XINPUT_DEVTYPE_GAMEPAD) {
+  // It seems that the Xbox One controller is reported as having a DevType of
+  // zero, at least when I tested in with XInput 1.3 on Windows 7.
+  //if (caps.Type == XINPUT_DEVTYPE_GAMEPAD) {
+
+  // For subtypes and mappings, see this page:
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/hh405050.aspx
+  switch (caps.SubType) {
+  default:
+  case XINPUT_DEVSUBTYPE_GAMEPAD:
     _device_class = DC_gamepad;
-  } else {
-    _device_class = DC_unknown;
+    set_control_map(0, C_left_trigger);
+    set_control_map(1, C_right_trigger);
+    set_control_map(2, C_left_x);
+    set_control_map(3, C_left_y);
+    set_control_map(4, C_right_x);
+    set_control_map(5, C_right_y);
+    break;
+
+  case XINPUT_DEVSUBTYPE_WHEEL:
+    _device_class = DC_steering_wheel;
+    set_control_map(0, C_brake);
+    set_control_map(1, C_accelerator);
+    set_control_map(2, C_wheel);
+    set_control_map(3, C_none);
+    set_control_map(4, C_none);
+    set_control_map(5, C_none);
+    break;
+
+  case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
+    _device_class = DC_flight_stick;
+    set_control_map(0, C_rudder);
+    set_control_map(1, C_throttle);
+    set_control_map(2, C_x);
+    set_control_map(3, C_y);
+    set_control_map(4, C_hat_x);
+    set_control_map(5, C_hat_y);
+    break;
+
+  case XINPUT_DEVSUBTYPE_DANCE_PAD:
+    _device_class = DC_dance_pad;
+    set_control_map(0, C_none);
+    set_control_map(1, C_none);
+    set_control_map(2, C_none);
+    set_control_map(3, C_none);
+    set_control_map(4, C_none);
+    set_control_map(5, C_none);
+    break;
   }
+
+  if (caps.Flags & XINPUT_CAPS_NO_NAVIGATION) {
+    set_button_map(0, ButtonHandle::none());
+    set_button_map(1, ButtonHandle::none());
+    set_button_map(2, ButtonHandle::none());
+    set_button_map(3, ButtonHandle::none());
+    set_button_map(4, ButtonHandle::none());
+    set_button_map(5, ButtonHandle::none());
+  } else {
+    set_button_map(0, GamepadButton::dpad_up());
+    set_button_map(1, GamepadButton::dpad_down());
+    set_button_map(2, GamepadButton::dpad_left());
+    set_button_map(3, GamepadButton::dpad_right());
+    set_button_map(4, GamepadButton::start());
+    set_button_map(5, GamepadButton::back());
+  }
+  set_button_map(6, GamepadButton::lstick());
+  set_button_map(7, GamepadButton::rstick());
+  set_button_map(8, GamepadButton::lshoulder());
+  set_button_map(9, GamepadButton::rshoulder());
+  set_button_map(10, GamepadButton::guide());
+  set_button_map(11, GamepadButton::action_a());
+  set_button_map(12, GamepadButton::action_b());
+  set_button_map(13, GamepadButton::action_x());
+  set_button_map(14, GamepadButton::action_y());
 
   if (caps.Flags & XINPUT_CAPS_FFB_SUPPORTED) {
     _flags |= IDF_has_vibration;
@@ -254,7 +321,7 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
 
   if (get_battery_information != NULL) {
     XINPUT_BATTERY_INFORMATION batt;
-    if (get_battery_information(_index, 0, &batt) == ERROR_SUCCESS) {
+    if (get_battery_information(_index, BATTERY_DEVTYPE_GAMEPAD, &batt) == ERROR_SUCCESS) {
       if (batt.BatteryType != BATTERY_TYPE_DISCONNECTED &&
           batt.BatteryType != BATTERY_TYPE_WIRED) {
         // This device has a battery.  Report the battery level.
@@ -276,7 +343,7 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
     {
       // Reformat the serial number into its original hex string form.
       char sn[10];
-      sprintf(sn, "%08X", businfo.InstanceID);
+      sprintf_s(sn, 10, "%08X", businfo.InstanceID);
       _serial_number.assign(sn, 8);
     }
 
@@ -284,7 +351,7 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
     // first need to construct the device path.  Fortunately, we now have
     // enough information to do so.
     char path[32];
-    sprintf(path, "USB\\VID_%04X&PID_%04X\\%08X", businfo.VendorID, businfo.ProductID, businfo.InstanceID);
+    sprintf_s(path, 32, "USB\\VID_%04X&PID_%04X\\%08X", businfo.VendorID, businfo.ProductID, businfo.InstanceID);
 
     DEVINST inst;
     if (CM_Locate_DevNodeA(&inst, path, 0) != 0) {

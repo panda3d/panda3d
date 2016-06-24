@@ -257,26 +257,50 @@ open_device() {
         axis = C_right_trigger;
         break;
 
+      case ABS_THROTTLE:
+        axis = InputDevice::C_throttle;
+        break;
+
+      case ABS_RUDDER:
+        axis = InputDevice::C_rudder;
+        break;
+
+      case ABS_WHEEL:
+        axis = InputDevice::C_wheel;
+        break;
+
+      case ABS_GAS:
+        axis = InputDevice::C_accelerator;
+        break;
+
+      case ABS_BRAKE:
+        axis = InputDevice::C_brake;
+        break;
+
       case ABS_HAT0X:
-        if (_dpad_left_button == -1) {
+        if (_dpad_left_button == -1 && _device_class == DC_gamepad) {
           // Emulate D-Pad.
           _dpad_x_axis = i;
           _dpad_left_button = (int)_buttons.size();
           _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
           _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+          axis = C_none;
+        } else {
+          axis = C_hat_x;
         }
-        axis = C_none;
         break;
 
       case ABS_HAT0Y:
-        if (_dpad_up_button == -1) {
+        if (_dpad_up_button == -1 && _device_class == DC_gamepad) {
           // Emulate D-Pad.
           _dpad_y_axis = i;
           _dpad_up_button = (int)_buttons.size();
           _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
           _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+          axis = C_none;
+        } else {
+          axis = C_hat_y;
         }
-        axis = C_none;
         break;
 
       default:

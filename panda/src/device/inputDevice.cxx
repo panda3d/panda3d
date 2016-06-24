@@ -170,9 +170,25 @@ set_button_state(int index, bool down) {
     _buttons.resize(index + 1, ButtonState());
   }
 
-  _buttons[index]._state = down ? S_down : S_up;
+  State new_state = down ? S_down : S_up;
+  if (_buttons[index]._state == new_state) {
+    return;
+  }
+  _buttons[index]._state = new_state;
 
   ButtonHandle handle = _buttons[index]._handle;
+
+  if (device_cat.is_spam()) {
+    device_cat.spam()
+      << "Changed button " << index;
+
+    if (handle != ButtonHandle::none()) {
+      device_cat.spam(false) << " (" << handle << ")";
+    }
+
+    device_cat.spam(false) << " to " << (down ? "down" : "up") << "\n";
+  }
+
   if (handle != ButtonHandle::none()) {
     _button_events->add_event(ButtonEvent(handle, down ? ButtonEvent::T_down : ButtonEvent::T_up));
   }
@@ -192,7 +208,7 @@ set_control_state(int index, double state) {
     _controls.resize(index + 1, AnalogState());
   }
 
-  if (device_cat.is_spam()) {
+  if (device_cat.is_spam() && _controls[index]._state != state) {
     device_cat.spam()
       << "Changed control " << index;
 

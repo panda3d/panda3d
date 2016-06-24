@@ -23,11 +23,54 @@
 #include <fcntl.h>
 #include <linux/input.h>
 
-#define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
+#define test_bit(bit, array) ((array)[(bit)>>3] & (1<<((bit)&7)))
 
 static InputDevice::ControlAxis axis_map[] = {
-  InputDevice::C_left_x, InputDevice::C_left_y, InputDevice::C_left_trigger,
-  InputDevice::C_right_x, InputDevice::C_right_y, InputDevice::C_right_trigger
+  // ABS_X = 0x00
+  InputDevice::C_left_x,
+  // ABS_Y = 0x01
+  InputDevice::C_left_y,
+  // ABS_Z = 0x02
+  InputDevice::C_left_trigger,
+  // ABS_RX = 0x03
+  InputDevice::C_right_x,
+  // ABS_RY = 0x04
+  InputDevice::C_right_y,
+  // ABS_RZ = 0x05
+  InputDevice::C_right_trigger,
+  // ABS_THROTTLE = 0x06
+  InputDevice::C_throttle,
+  // ABS_RUDDER = 0x07
+  InputDevice::C_rudder,
+  // ABS_WHEEL = 0x08
+  InputDevice::C_wheel,
+  // ABS_GAS = 0x09
+  InputDevice::C_accelerator,
+  // ABS_BRAKE = 0x0a
+  InputDevice::C_brake,
+
+  InputDevice::C_none,
+  InputDevice::C_none,
+  InputDevice::C_none,
+  InputDevice::C_none,
+  InputDevice::C_none,
+
+  // ABS_HAT0X = 0x10
+  InputDevice::C_hat_x,
+  // ABS_HAT0Y = 0x11
+  InputDevice::C_hat_y,
+
+  // ABS_HAT1X = 0x12
+  // ABS_HAT1Y = 0x13
+  // ABS_HAT2X = 0x14
+  // ABS_HAT2Y = 0x15
+  // ABS_HAT3X = 0x16
+  // ABS_HAT3Y = 0x17
+  // ABS_PRESSURE = 0x18
+  // ABS_DISTANCE = 0x19
+  // ABS_TILT_X = 0x1a
+  // ABS_TILT_Y = 0x1b
+  // ABS_TOOL_WIDTH = 0x1c
 };
 
 TypeHandle EvdevInputDevice::_type_handle;
@@ -189,7 +232,7 @@ init_device() {
   }
 
   bool all_values_zero = true;
-  bool have_dpad_buttons = false;
+  bool emulate_dpad = true;
 
   if (test_bit(EV_KEY, evtypes)) {
     // Check which buttons are on the device.
@@ -213,7 +256,7 @@ init_device() {
           _buttons[bi]._state = S_up;
         }
         if (_buttons[bi]._handle == GamepadButton::dpad_left()) {
-          have_dpad_buttons = true;
+          emulate_dpad = false;
         }
         ++bi;
       }
@@ -241,6 +284,10 @@ init_device() {
     }
   }
 
+  if (_device_class != DC_gamepad) {
+    emulate_dpad = false;
+  }
+
   if (test_bit(EV_ABS, evtypes)) {
     // Check which axes are on the device.
     uint8_t axes[(ABS_CNT + 7) >> 3];
@@ -254,7 +301,25 @@ init_device() {
     int num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
-        set_control_map(i, axis_map[i]);
+        // Emulate D-Pad buttons if necessary.
+        if (i > ABS_HAT0Y) {
+          set_control_map(i, C_none);
+
+        } else if (i == ABS_HAT0X && emulate_dpad) {
+          _dpad_x_axis = i;
+          _dpad_left_button = (int)_buttons.size();
+          _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
+          _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+
+        } else if (i == ABS_HAT0Y && emulate_dpad) {
+          _dpad_y_axis = i;
+          _dpad_up_button = (int)_buttons.size();
+          _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
+          _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+
+        } else {
+          set_control_map(i, axis_map[i]);
+        }
 
         // Check the initial value and ranges.
         struct input_absinfo absinfo;
@@ -283,20 +348,6 @@ init_device() {
           if (absinfo.value != 0) {
             all_values_zero = false;
           }
-        }
-
-        // Emulate D-Pad buttons if necessary.
-        if (i == ABS_HAT0X && !have_dpad_buttons) {
-          _dpad_x_axis = i;
-          _dpad_left_button = (int)_buttons.size();
-          _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
-          _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
-        }
-        if (i == ABS_HAT0Y && !have_dpad_buttons) {
-          _dpad_y_axis = i;
-          _dpad_up_button = (int)_buttons.size();
-          _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
-          _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
         }
       }
     }
