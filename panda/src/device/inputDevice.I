@@ -385,6 +385,16 @@ ButtonState() :
 /**
  *
  */
+INLINE InputDevice::ButtonState::
+ButtonState(ButtonHandle handle) :
+  _handle(handle),
+  _state(S_unknown)
+{
+}
+
+/**
+ *
+ */
 INLINE InputDevice::AnalogState::
 AnalogState() :
   _axis(C_none),

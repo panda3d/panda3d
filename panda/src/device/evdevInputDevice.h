@@ -50,6 +50,12 @@ private:
   };
   pvector<AxisRange> _axis_ranges;
 
+  // These are used for D-pad emulation.
+  int _dpad_x_axis;
+  int _dpad_y_axis;
+  int _dpad_left_button;
+  int _dpad_up_button;
+
 public:
   static ButtonHandle map_button(int code);
 

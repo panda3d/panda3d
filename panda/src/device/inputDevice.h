@@ -238,6 +238,7 @@ public:
   class ButtonState {
   public:
     INLINE ButtonState();
+    INLINE ButtonState(ButtonHandle handle);
 
     ButtonHandle _handle;
     State _state;

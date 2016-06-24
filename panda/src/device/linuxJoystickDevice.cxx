@@ -28,7 +28,11 @@ TypeHandle LinuxJoystickDevice::_type_handle;
 LinuxJoystickDevice::
 LinuxJoystickDevice(int index) :
   _fd(-1),
-  _index(index)
+  _index(index),
+  _dpad_x_axis(-1),
+  _dpad_y_axis(-1),
+  _dpad_left_button(-1),
+  _dpad_up_button(-1)
 {
   LightMutexHolder holder(_lock);
   if (!open_device()) {
@@ -115,7 +119,7 @@ open_device() {
     uint16_t btnmap[512];
     ioctl(_fd, JSIOCGBTNMAP, btnmap);
 
-    for (char i = 0; i < num_buttons; ++i) {
+    for (uint8_t i = 0; i < num_buttons; ++i) {
       ButtonHandle handle = ButtonHandle::none();
       switch (btnmap[i]) {
       case BTN_A:
@@ -181,6 +185,7 @@ open_device() {
 
       case BTN_TRIGGER_HAPPY1:
         handle = GamepadButton::dpad_left();
+        _dpad_left_button = i;
         break;
 
       case BTN_TRIGGER_HAPPY2:
@@ -189,6 +194,7 @@ open_device() {
 
       case BTN_TRIGGER_HAPPY3:
         handle = GamepadButton::dpad_up();
+        _dpad_up_button = i;
         break;
 
       case BTN_TRIGGER_HAPPY4:
@@ -196,6 +202,10 @@ open_device() {
         break;
 
       default:
+        if (device_cat.is_debug()) {
+          device_cat.debug() << "Unmapped /dev/input/js" << _index
+            << " button " << (int)i << ": 0x" << hex << btnmap[i] << "\n";
+        }
         handle = ButtonHandle::none();
         break;
       }
@@ -207,7 +217,7 @@ open_device() {
     uint8_t axmap[512];
     ioctl(_fd, JSIOCGAXMAP, axmap);
 
-    for (char i = 0; i < num_axes; ++i) {
+    for (uint8_t i = 0; i < num_axes; ++i) {
       ControlAxis axis = C_none;
 
       switch (axmap[i]) {
@@ -247,7 +257,33 @@ open_device() {
         axis = C_right_trigger;
         break;
 
+      case ABS_HAT0X:
+        if (_dpad_left_button == -1) {
+          // Emulate D-Pad.
+          _dpad_x_axis = i;
+          _dpad_left_button = (int)_buttons.size();
+          _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
+          _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+        }
+        axis = C_none;
+        break;
+
+      case ABS_HAT0Y:
+        if (_dpad_up_button == -1) {
+          // Emulate D-Pad.
+          _dpad_y_axis = i;
+          _dpad_up_button = (int)_buttons.size();
+          _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
+          _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+        }
+        axis = C_none;
+        break;
+
       default:
+        if (device_cat.is_debug()) {
+          device_cat.debug() << "Unmapped /dev/input/js" << _index
+            << " axis " << (int)i << ": 0x" << hex << (int)axmap[i] << "\n";
+        }
         axis = C_none;
         break;
       }
@@ -362,6 +398,14 @@ process_events() {
       set_button_state(index, (events[i].value != 0));
 
     } else if (events[i].type & JS_EVENT_AXIS) {
+      if (index == _dpad_x_axis) {
+        set_button_state(_dpad_left_button, events[i].value < -1000);
+        set_button_state(_dpad_left_button+1, events[i].value > 1000);
+      } else if (index == _dpad_y_axis) {
+        set_button_state(_dpad_up_button, events[i].value < -1000);
+        set_button_state(_dpad_up_button+1, events[i].value > 1000);
+      }
+
       ControlAxis axis = _controls[index]._axis;
 
       if (axis == C_left_trigger || axis == C_right_trigger || axis == C_trigger) {

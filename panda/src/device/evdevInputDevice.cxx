@@ -43,7 +43,11 @@ EvdevInputDevice(int index) :
   _ff_id(-1),
   _ff_playing(false),
   _ff_strong(-1),
-  _ff_weak(-1) {
+  _ff_weak(-1),
+  _dpad_x_axis(-1),
+  _dpad_y_axis(-1),
+  _dpad_left_button(-1),
+  _dpad_up_button(-1) {
 
   char path[64];
   sprintf(path, "/dev/input/event%d", index);
@@ -185,54 +189,7 @@ init_device() {
   }
 
   bool all_values_zero = true;
-  if (test_bit(EV_ABS, evtypes)) {
-    // Check which axes are on the device.
-    uint8_t axes[(ABS_CNT + 7) >> 3];
-    memset(axes, 0, sizeof(axes));
-
-    AxisRange range;
-    range._scale = 1.0;
-    range._bias = 0.0;
-    _axis_ranges.resize(ABS_CNT, range);
-
-    int num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
-    for (int i = 0; i < num_bits; ++i) {
-      if (test_bit(i, axes)) {
-        if (i >= 0 && i < 6) {
-          set_control_map(i, axis_map[i]);
-
-          // Check the initial value and ranges.
-          struct input_absinfo absinfo;
-          if (ioctl(_fd, EVIOCGABS(i), &absinfo) >= 0) {
-            double factor, bias;
-            if (absinfo.minimum < 0) {
-              // Centered, eg. for sticks.
-              factor = 2.0 / (absinfo.maximum - absinfo.minimum);
-              bias = (absinfo.maximum + absinfo.minimum) / (double)(absinfo.minimum - absinfo.maximum);
-            } else {
-              // 0-based, eg. for triggers.
-              factor = 1.0 / absinfo.maximum;
-              bias = 0.0;
-            }
-
-            // Flip Y axis to match Windows implementation.
-            if (i == ABS_Y || i == ABS_RY) {
-              factor = -factor;
-              bias = -bias;
-            }
-
-            _axis_ranges[i]._scale = factor;
-            _axis_ranges[i]._bias = bias;
-            _controls[i]._state = fma(absinfo.value, factor, bias);
-
-            if (absinfo.value != 0) {
-              all_values_zero = false;
-            }
-          }
-        }
-      }
-    }
-  }
+  bool have_dpad_buttons = false;
 
   if (test_bit(EV_KEY, evtypes)) {
     // Check which buttons are on the device.
@@ -254,6 +211,9 @@ init_device() {
           all_values_zero = false;
         } else {
           _buttons[bi]._state = S_up;
+        }
+        if (_buttons[bi]._handle == GamepadButton::dpad_left()) {
+          have_dpad_buttons = true;
         }
         ++bi;
       }
@@ -278,6 +238,67 @@ init_device() {
 
     } else if (_flags & IDF_has_keyboard) {
       _device_class = DC_keyboard;
+    }
+  }
+
+  if (test_bit(EV_ABS, evtypes)) {
+    // Check which axes are on the device.
+    uint8_t axes[(ABS_CNT + 7) >> 3];
+    memset(axes, 0, sizeof(axes));
+
+    AxisRange range;
+    range._scale = 1.0;
+    range._bias = 0.0;
+    _axis_ranges.resize(ABS_CNT, range);
+
+    int num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
+    for (int i = 0; i < num_bits; ++i) {
+      if (test_bit(i, axes)) {
+        set_control_map(i, axis_map[i]);
+
+        // Check the initial value and ranges.
+        struct input_absinfo absinfo;
+        if (ioctl(_fd, EVIOCGABS(i), &absinfo) >= 0) {
+          double factor, bias;
+          if (absinfo.minimum < 0) {
+            // Centered, eg. for sticks.
+            factor = 2.0 / (absinfo.maximum - absinfo.minimum);
+            bias = (absinfo.maximum + absinfo.minimum) / (double)(absinfo.minimum - absinfo.maximum);
+          } else {
+            // 0-based, eg. for triggers.
+            factor = 1.0 / absinfo.maximum;
+            bias = 0.0;
+          }
+
+          // Flip Y axis to match Windows implementation.
+          if (i == ABS_Y || i == ABS_RY) {
+            factor = -factor;
+            bias = -bias;
+          }
+
+          _axis_ranges[i]._scale = factor;
+          _axis_ranges[i]._bias = bias;
+          _controls[i]._state = fma(absinfo.value, factor, bias);
+
+          if (absinfo.value != 0) {
+            all_values_zero = false;
+          }
+        }
+
+        // Emulate D-Pad buttons if necessary.
+        if (i == ABS_HAT0X && !have_dpad_buttons) {
+          _dpad_x_axis = i;
+          _dpad_left_button = (int)_buttons.size();
+          _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
+          _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+        }
+        if (i == ABS_HAT0Y && !have_dpad_buttons) {
+          _dpad_y_axis = i;
+          _dpad_up_button = (int)_buttons.size();
+          _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
+          _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+        }
+      }
     }
   }
 
@@ -403,6 +424,13 @@ process_events() {
       break;
 
     case EV_ABS:
+      if (code == _dpad_x_axis) {
+        set_button_state(_dpad_left_button, events[i].value < 0);
+        set_button_state(_dpad_left_button+1, events[i].value > 0);
+      } else if (code == _dpad_y_axis) {
+        set_button_state(_dpad_up_button, events[i].value < 0);
+        set_button_state(_dpad_up_button+1, events[i].value > 0);
+      }
       set_control_state(code, fma(events[i].value, _axis_ranges[code]._scale, _axis_ranges[code]._bias));
       break;
 

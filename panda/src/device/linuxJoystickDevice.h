@@ -39,6 +39,12 @@ private:
   int _fd;
   int _index;
 
+  // These are used for D-pad emulation.
+  int _dpad_x_axis;
+  int _dpad_y_axis;
+  int _dpad_left_button;
+  int _dpad_up_button;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
