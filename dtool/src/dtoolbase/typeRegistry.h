@@ -37,14 +37,15 @@ class EXPCL_DTOOL TypeRegistry : public MemoryBase {
 public:
   // User code shouldn't generally need to call TypeRegistry::register_type()
   // or record_derivation() directly; instead, use the register_type
-  // convenience function, defined below.
+  // convenience function, defined in register_type.h.
   bool register_type(TypeHandle &type_handle, const string &name);
+
+PUBLISHED:
   TypeHandle register_dynamic_type(const string &name);
 
   void record_derivation(TypeHandle child, TypeHandle parent);
   void record_alternate_name(TypeHandle type, const string &name);
 
-PUBLISHED:
   TypeHandle find_type(const string &name) const;
   TypeHandle find_type_by_id(int id) const;
 
@@ -77,6 +78,9 @@ PUBLISHED:
 
   // ptr() returns the pointer to the global TypeRegistry object.
   static TypeRegistry *ptr();
+
+  MAKE_SEQ_PROPERTY(typehandles, get_num_typehandles, get_typehandle);
+  MAKE_SEQ_PROPERTY(root_classes, get_num_root_classes, get_root_class);
 
 private:
   // The TypeRegistry class should never be constructed by user code.  There

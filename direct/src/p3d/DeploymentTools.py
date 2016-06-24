@@ -6,7 +6,6 @@ __all__ = ["Standalone", "Installer"]
 
 import os, sys, subprocess, tarfile, shutil, time, zipfile, socket, getpass, struct
 import gzip, plistlib
-from io import BytesIO, TextIOWrapper
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
 from panda3d.core import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile
@@ -24,6 +23,10 @@ except ImportError:
 
 if sys.version_info >= (3, 0):
     xrange = range
+    from io import BytesIO, TextIOWrapper
+else:
+    from io import BytesIO
+    from StringIO import StringIO
 
 # Make sure this matches with the magic in p3dEmbedMain.cxx.
 P3DEMBED_MAGIC = 0xFF3D3D00
@@ -808,17 +811,24 @@ class Installer:
 
         # Create a control file in memory.
         controlfile = BytesIO()
-        cout = TextIOWrapper(controlfile, encoding='utf-8', newline='')
-        cout.write(u"Package: %s\n" % self.shortname.lower())
-        cout.write(u"Version: %s\n" % self.version)
-        cout.write(u"Maintainer: %s <%s>\n" % (self.authorname, self.authoremail))
-        cout.write(u"Section: games\n")
-        cout.write(u"Priority: optional\n")
-        cout.write(u"Architecture: %s\n" % arch)
-        cout.write(u"Installed-Size: %d\n" % -(-totsize // 1024))
-        cout.write(u"Description: %s\n" % self.fullname)
-        cout.write(u"Depends: libc6, libgcc1, libstdc++6, libx11-6\n")
+        if sys.version_info >= (3, 0):
+            cout = TextIOWrapper(controlfile, encoding='utf-8', newline='')
+        else:
+            cout = StringIO()
+
+        cout.write("Package: %s\n" % self.shortname.lower())
+        cout.write("Version: %s\n" % self.version)
+        cout.write("Maintainer: %s <%s>\n" % (self.authorname, self.authoremail))
+        cout.write("Section: games\n")
+        cout.write("Priority: optional\n")
+        cout.write("Architecture: %s\n" % arch)
+        cout.write("Installed-Size: %d\n" % -(-totsize // 1024))
+        cout.write("Description: %s\n" % self.fullname)
+        cout.write("Depends: libc6, libgcc1, libstdc++6, libx11-6\n")
         cout.flush()
+        if sys.version_info < (3, 0):
+            controlfile.write(cout.getvalue().encode('utf-8'))
+
         controlinfo = TarInfoRoot("control")
         controlinfo.mtime = modtime
         controlinfo.size = controlfile.tell()
@@ -893,19 +903,26 @@ class Installer:
 
         # Create a pkginfo file in memory.
         pkginfo = BytesIO()
-        pout = TextIOWrapper(pkginfo, encoding='utf-8', newline='')
-        pout.write(u"# Generated using pdeploy\n")
-        pout.write(u"# %s\n" % time.ctime(modtime))
-        pout.write(u"pkgname = %s\n" % self.shortname.lower())
-        pout.write(u"pkgver = %s\n" % pkgver)
-        pout.write(u"pkgdesc = %s\n" % self.fullname)
-        pout.write(u"builddate = %s\n" % modtime)
-        pout.write(u"packager = %s <%s>\n" % (self.authorname, self.authoremail))
-        pout.write(u"size = %d\n" % totsize)
-        pout.write(u"arch = %s\n" % arch)
+        if sys.version_info >= (3, 0):
+            pout = TextIOWrapper(pkginfo, encoding='utf-8', newline='')
+        else:
+            pout = StringIO()
+
+        pout.write("# Generated using pdeploy\n")
+        pout.write("# %s\n" % time.ctime(modtime))
+        pout.write("pkgname = %s\n" % self.shortname.lower())
+        pout.write("pkgver = %s\n" % pkgver)
+        pout.write("pkgdesc = %s\n" % self.fullname)
+        pout.write("builddate = %s\n" % modtime)
+        pout.write("packager = %s <%s>\n" % (self.authorname, self.authoremail))
+        pout.write("size = %d\n" % totsize)
+        pout.write("arch = %s\n" % arch)
         if self.licensename != "":
-            pout.write(u"license = %s\n" % self.licensename)
+            pout.write("license = %s\n" % self.licensename)
         pout.flush()
+        if sys.version_info < (3, 0):
+            pkginfo.write(pout.getvalue().encode('utf-8'))
+
         pkginfoinfo = TarInfoRoot(".PKGINFO")
         pkginfoinfo.mtime = modtime
         pkginfoinfo.size = pkginfo.tell()

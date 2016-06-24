@@ -75,6 +75,13 @@ PUBLISHED:
   INLINE void set_center(const LPoint3 &center);
   INLINE const LPoint3 &get_center() const;
 
+  MAKE_SEQ_PROPERTY(ins, get_num_switches, get_in);
+  MAKE_SEQ_PROPERTY(outs, get_num_switches, get_out);
+  MAKE_PROPERTY(lowest_switch, get_lowest_switch);
+  MAKE_PROPERTY(highest_switch, get_highest_switch);
+  MAKE_PROPERTY(lod_scale, get_lod_scale, set_lod_scale);
+  MAKE_PROPERTY(center, get_center, set_center);
+
   void show_switch(int index);
   void show_switch(int index, const LColor &color);
   void hide_switch(int index);

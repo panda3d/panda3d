@@ -38,6 +38,8 @@ PUBLISHED:
   INLINE PartBundle *get_bundle();
   INLINE void set_bundle(PartBundle *bundle);
 
+  MAKE_PROPERTY(bundle, get_bundle, set_bundle);
+
 private:
   PT(PartBundle) _bundle;
 };

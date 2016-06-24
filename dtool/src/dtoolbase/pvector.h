@@ -25,6 +25,12 @@
 // definition.
 #define pvector vector
 
+#elif defined(CPPPARSER)
+// Simplified definition to speed up Interrogate parsing.
+template<class Type>
+class pvector : public vector<Type> {
+};
+
 #else
 
 /**
@@ -39,11 +45,25 @@ public:
   typedef vector<Type, allocator> base_class;
   typedef TYPENAME base_class::size_type size_type;
 
-  pvector(TypeHandle type_handle = pvector_type_handle) : base_class(allocator(type_handle)) { }
+  explicit pvector(TypeHandle type_handle = pvector_type_handle) : base_class(allocator(type_handle)) { }
   pvector(const pvector<Type> &copy) : base_class(copy) { }
-  pvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
-  pvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value, allocator(type_handle)) { }
+  explicit pvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
+  explicit pvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value, allocator(type_handle)) { }
   pvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(begin, end, allocator(type_handle)) { }
+
+#ifdef USE_MOVE_SEMANTICS
+  pvector(pvector<Type> &&from) NOEXCEPT : base_class(move(from)) {};
+
+  pvector<Type> &operator =(pvector<Type> &&from) NOEXCEPT {
+    base_class::operator =(move(from));
+    return *this;
+  }
+#endif
+
+  pvector<Type> &operator =(const pvector<Type> &copy) {
+    base_class::operator =(copy);
+    return *this;
+  }
 };
 
 #endif  // USE_STL_ALLOCATOR

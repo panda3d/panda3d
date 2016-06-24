@@ -63,8 +63,13 @@ PUBLISHED:
   INLINE PN_stdfloat get_thickness() const;
   INLINE bool get_perspective() const;
   INLINE const LColor &get_wireframe_color() const;
-
   INLINE int get_geom_rendering(int geom_rendering) const;
+
+PUBLISHED:
+  MAKE_PROPERTY(mode, get_mode);
+  MAKE_PROPERTY(thickness, get_thickness);
+  MAKE_PROPERTY(perspective, get_perspective);
+  MAKE_PROPERTY(wireframe_color, get_wireframe_color);
 
 public:
   virtual void output(ostream &out) const;

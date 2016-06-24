@@ -21,6 +21,14 @@ BioPtr(BIO *bio) : _bio(bio) {
 /**
  *
  */
+INLINE bool BioPtr::
+should_retry() const {
+  return (_bio != NULL) && BIO_should_retry(_bio);
+}
+
+/**
+ *
+ */
 INLINE BIO &BioPtr::
 operator *() const {
   return *_bio;

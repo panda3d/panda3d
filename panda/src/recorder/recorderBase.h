@@ -61,6 +61,7 @@ public:
 
   // We can't let RecorderBase inherit from ReferenceCount, so we define these
   // so we can still manage the reference count.
+  virtual int get_ref_count() const=0;
   virtual void ref() const=0;
   virtual bool unref() const=0;
 

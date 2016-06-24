@@ -86,10 +86,12 @@ MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
 InterfaceMaker::Property::
 Property(const InterrogateElement &ielement) :
   _ielement(ielement),
+  _length_function(NULL),
   _getter(NULL),
   _setter(NULL),
   _has_function(NULL),
-  _clear_function(NULL)
+  _clear_function(NULL),
+  _deleter(NULL)
 {
 }
 
@@ -131,7 +133,8 @@ check_protocols() {
     if (func->_ifunc.get_name() == "__traverse__") {
       // If we have a method named __traverse__, we implement Python's cyclic
       // garbage collection protocol.
-      _protocol_types |= PT_python_gc;
+      //XXX disabled for now because it's too unstable.
+      //_protocol_types |= PT_python_gc;
     }
   }
 
@@ -356,6 +359,18 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
         if (TypeManager::is_basic_string_char(pt_type) ||
             TypeManager::is_basic_string_wchar(pt_type)) {
           return (ParameterRemap *)NULL;
+        }
+      }
+    }
+    if (struct_type == (CPPType *)NULL ||
+        !TypeManager::is_vector_unsigned_char(struct_type)) {
+      if (TypeManager::is_vector_unsigned_char(param_type)) {
+        if (TypeManager::is_reference(param_type)) {
+          return new ParameterRemapReferenceToConcrete(param_type);
+        } else if (TypeManager::is_const(param_type)) {
+          return new ParameterRemapConstToNonConst(param_type);
+        } else {
+          return new ParameterRemapUnchanged(param_type);
         }
       }
     }

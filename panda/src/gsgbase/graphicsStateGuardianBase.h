@@ -223,8 +223,8 @@ PUBLISHED:
   static GraphicsStateGuardianBase *get_default_gsg();
   static void set_default_gsg(GraphicsStateGuardianBase *default_gsg);
 
-  static int get_num_gsgs();
-  static GraphicsStateGuardianBase *get_gsg(int n);
+  static size_t get_num_gsgs();
+  static GraphicsStateGuardianBase *get_gsg(size_t n);
   MAKE_SEQ(get_gsgs, get_num_gsgs, get_gsg);
 
 public:
@@ -232,10 +232,14 @@ public:
   static void remove_gsg(GraphicsStateGuardianBase *gsg);
 
 private:
-  typedef pvector<GraphicsStateGuardianBase *> GSGs;
-  static GSGs _gsgs;
-  static GraphicsStateGuardianBase *_default_gsg;
-  static LightMutex _lock;
+  struct GSGList {
+    LightMutex _lock;
+
+    typedef pvector<GraphicsStateGuardianBase *> GSGs;
+    GSGs _gsgs;
+    GraphicsStateGuardianBase *_default_gsg;
+  };
+  static AtomicAdjust::Pointer _gsg_list;
 
 public:
   static TypeHandle get_class_type() {

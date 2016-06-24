@@ -46,6 +46,7 @@ PUBLISHED:
   INLINE_MATHUTIL int get_num_components() const;
   INLINE_MATHUTIL const GeometricBoundingVolume *get_component(int n) const;
   MAKE_SEQ(get_components, get_num_components, get_component);
+  MAKE_SEQ_PROPERTY(components, get_num_components, get_component);
 
   void clear_components();
   void add_component(const GeometricBoundingVolume *component);

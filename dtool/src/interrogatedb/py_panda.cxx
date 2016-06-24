@@ -172,7 +172,6 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
   return NULL;
 }
 
-#ifndef NDEBUG
 /**
  * This is similar to a PyErr_Occurred() check, except that it also checks
  * Notify to see if an assertion has occurred.  If that is the case, then it
@@ -193,7 +192,6 @@ bool _Dtool_CheckErrorOccurred() {
   }
   return false;
 }
-#endif  // NDEBUG
 
 /**
  * Raises an AssertionError containing the last thrown assert message, and
@@ -333,6 +331,33 @@ PyObject *_Dtool_Return(PyObject *value) {
   }
 #endif
   return value;
+}
+
+/**
+ * Creates a Python 3.4-style enum type.  Steals reference to 'names'.
+ */
+PyObject *Dtool_EnumType_Create(const char *name, PyObject *names, const char *module) {
+  static PyObject *enum_class = NULL;
+  static PyObject *enum_meta = NULL;
+  static PyObject *enum_create = NULL;
+  if (enum_meta == NULL) {
+    PyObject *enum_module = PyImport_ImportModule("enum");
+    nassertr_always(enum_module != NULL, NULL);
+
+    enum_class = PyObject_GetAttrString(enum_module, "Enum");
+    enum_meta = PyObject_GetAttrString(enum_module, "EnumMeta");
+    enum_create = PyObject_GetAttrString(enum_meta, "_create_");
+    nassertr(enum_meta != NULL, NULL);
+  }
+
+  PyObject *result = PyObject_CallFunction(enum_create, (char *)"OsN", enum_class, name, names);
+  nassertr(result != NULL, NULL);
+  if (module != NULL) {
+    PyObject *modstr = PyUnicode_FromString(module);
+    PyObject_SetAttrString(result, "__module__", modstr);
+    Py_DECREF(modstr);
+  }
+  return result;
 }
 
 /**
@@ -544,8 +569,19 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     return (PyObject *)NULL;
   }
 
-  // Initialize the base class of everything.
-  Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(NULL);
+  // Initialize the types we define in py_panda.
+  static bool dtool_inited = false;
+  if (!dtool_inited) {
+    dtool_inited = true;
+
+    if (PyType_Ready(&Dtool_SequenceWrapper_Type) < 0) {
+      PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_SequenceWrapper)");
+      return NULL;
+    }
+
+    // Initialize the base class of everything.
+    Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(NULL);
+  }
 
   // the module level function inits....
   MethodDefmap functions;
@@ -834,18 +870,106 @@ PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
 }
 
 /**
- * Similar to PyLong_FromUnsignedLong(), but returns either a regular integer
- * or a long integer, according to whether the indicated value will fit.
+ * This class is returned from properties that require a settable interface,
+ * ie. something.children[i] = 3.
  */
-#if PY_MAJOR_VERSION < 3
-EXPCL_INTERROGATEDB PyObject *
-PyLongOrInt_FromUnsignedLong(unsigned long value) {
-  if ((long)value < 0) {
-    return PyLong_FromUnsignedLong(value);
-  } else {
-    return PyInt_FromLong((long)value);
-  }
+static void Dtool_SequenceWrapper_dealloc(PyObject *self) {
+  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
+  nassertv(wrap);
+  Py_DECREF(wrap->_base);
 }
+
+static Py_ssize_t Dtool_SequenceWrapper_length(PyObject *self) {
+  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
+  nassertr(wrap, -1);
+  nassertr(wrap->_len_func, -1);
+  return wrap->_len_func(wrap->_base);
+}
+
+static PyObject *Dtool_SequenceWrapper_getitem(PyObject *self, Py_ssize_t index) {
+  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
+  nassertr(wrap, NULL);
+  nassertr(wrap->_getitem_func, NULL);
+  return wrap->_getitem_func(wrap->_base, index);
+}
+
+static int Dtool_SequenceWrapper_setitem(PyObject *self, Py_ssize_t index, PyObject *value) {
+  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
+  nassertr(wrap, -1);
+  nassertr(wrap->_setitem_func, -1);
+  return wrap->_setitem_func(wrap->_base, index, value);
+}
+
+static PySequenceMethods Dtool_SequenceWrapper_SequenceMethods = {
+  Dtool_SequenceWrapper_length,
+  0, // sq_concat
+  0, // sq_repeat
+  Dtool_SequenceWrapper_getitem,
+  0, // sq_slice
+  Dtool_SequenceWrapper_setitem,
+  0, // sq_ass_slice
+  0, // sq_contains
+  0, // sq_inplace_concat
+  0, // sq_inplace_repeat
+};
+
+PyTypeObject Dtool_SequenceWrapper_Type = {
+  PyVarObject_HEAD_INIT(NULL, 0)
+  "sequence wrapper",
+  sizeof(Dtool_SequenceWrapper),
+  0, // tp_itemsize
+  Dtool_SequenceWrapper_dealloc,
+  0, // tp_print
+  0, // tp_getattr
+  0, // tp_setattr
+#if PY_MAJOR_VERSION >= 3
+  0, // tp_reserved
+#else
+  0, // tp_compare
 #endif
+  0, // tp_repr
+  0, // tp_as_number
+  &Dtool_SequenceWrapper_SequenceMethods,
+  0, // tp_as_mapping
+  0, // tp_hash
+  0, // tp_call
+  0, // tp_str
+  PyObject_GenericGetAttr,
+  PyObject_GenericSetAttr,
+  0, // tp_as_buffer
+  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
+  0, // tp_doc
+  0, // tp_traverse
+  0, // tp_clear
+  0, // tp_richcompare
+  0, // tp_weaklistoffset
+  0, // tp_iter
+  0, // tp_iternext
+  0, // tp_methods
+  0, // tp_members
+  0, // tp_getset
+  0, // tp_base
+  0, // tp_dict
+  0, // tp_descr_get
+  0, // tp_descr_set
+  0, // tp_dictoffset
+  0, // tp_init
+  PyType_GenericAlloc,
+  0, // tp_new
+  PyObject_Del,
+  0, // tp_is_gc
+  0, // tp_bases
+  0, // tp_mro
+  0, // tp_cache
+  0, // tp_subclasses
+  0, // tp_weaklist
+  0, // tp_del
+#if PY_VERSION_HEX >= 0x02060000
+  0, // tp_version_tag
+#endif
+#if PY_VERSION_HEX >= 0x03040000
+  0, // tp_finalize
+#endif
+};
 
 #endif  // HAVE_PYTHON

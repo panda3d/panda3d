@@ -106,10 +106,12 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     def __repr__(self):
         outStr = 'DistancePhasedObject('
-        outStr += '%s' % repr(self.getName())
+        outStr += repr(self.getName())
         for param, value in zip(('phaseParamMap', 'autoCleanup', 'enterPrefix', 'exitPrefix', 'phaseCollideMask', 'fromCollideNode'),
-                                ('{}', 'True','\'enter\'','\'exit\'','BitMask32.allOn()','None')):
-            outStr += eval('(\', ' + param + ' = %s\' % repr(self.' + param + '),\'\')[self.' + param + ' == ' + value + ']')
+                                ({}, True, 'enter', 'exit', BitMask32.allOn(), None)):
+            pv = getattr(self, param)
+            if pv != value:
+                outStr += ', %s = %r' % (param, pv)
         outStr += ')'
         return outStr
 
@@ -287,10 +289,12 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
 
     def __repr__(self):
         outStr = 'BufferedDistancePhasedNode('
-        outStr += '%s' % repr(self.getName())
+        outStr += repr(self.getName())
         for param, value in zip(('bufferParamMap', 'autoCleanup', 'enterPrefix', 'exitPrefix', 'phaseCollideMask', 'fromCollideNode'),
-                                ('{}', 'True','\'enter\'','\'exit\'','BitMask32.allOn()', 'None')):
-            outStr += eval('(\', ' + param + ' = %s\' % repr(self.' + param + '),\'\')[self.' + param + ' == ' + value + ']')
+                                ({}, True, 'enter', 'exit', BitMask32.allOn(), None)):
+            pv = getattr(self, param)
+            if pv != value:
+                outStr += ', %s = %r' % (param, pv)
         outStr += ')'
         return outStr
 

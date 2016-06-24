@@ -33,10 +33,12 @@ public:
   virtual void evict_lru();
   void reset_data();
 
+#ifndef OPENGLES
   void make_handle_resident();
   GLuint64 get_handle();
+#endif
 
-#ifdef OPENGLES
+#ifdef OPENGLES_1
   static CONSTEXPR bool needs_barrier(GLbitfield barrier) { return false; };
 #else
   bool needs_barrier(GLbitfield barrier);
@@ -49,9 +51,11 @@ public:
   // This is only used for buffer textures.
   GLuint _buffer;
 
+#ifndef OPENGLES
   // This is the bindless "handle" to the texture object.
   GLuint64 _handle;
   bool _handle_resident;
+#endif
 
   // These are the parameters that we specified with the last glTexImage2D()
   // or glTexStorage2D() call.  If none of these have changed, we can reload

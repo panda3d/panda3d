@@ -284,9 +284,11 @@ pop_struct() {
 %token KW_INLINE
 %token KW_INT
 %token KW_LONG
+%token KW_MAKE_MAP_PROPERTY
 %token KW_MAKE_PROPERTY
 %token KW_MAKE_PROPERTY2
 %token KW_MAKE_SEQ
+%token KW_MAKE_SEQ_PROPERTY
 %token KW_MUTABLE
 %token KW_NAMESPACE
 %token KW_NEW
@@ -474,7 +476,6 @@ declaration:
         | template_declaration
         | extern_c
         | namespace_declaration
-        | using_declaration
         | friend_declaration
         | KW_TYPEDEF typedef_declaration
         | KW_BEGIN_PUBLISH
@@ -548,6 +549,118 @@ declaration:
 
     CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
                                                          setter_func, current_scope, @1.file);
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
+
+  } else {
+    CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
+    CPPFunctionGroup *setter_func = NULL;
+
+    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @7);
+    } else {
+      setter_func = setter->as_function_group();
+    }
+
+    CPPDeclaration *deleter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    if (deleter == (CPPDeclaration *)NULL || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid delete method: " + $9->get_fully_scoped_name(), @9);
+      deleter = NULL;
+    }
+
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                         setter_func, current_scope, @1.file);
+    if (deleter) {
+      make_property->_del_function = deleter->as_function_group();
+    }
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+  }
+
+  CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(), NULL, current_scope, @1.file);
+  make_property->_length_function = length_getter->as_function_group();
+  current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+}
+        | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+
+  } else {
+    CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    CPPFunctionGroup *setter_func = NULL;
+
+    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
+    } else {
+      setter_func = setter->as_function_group();
+    }
+
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                         setter_func, current_scope, @1.file);
+    make_property->_length_function = length_getter->as_function_group();
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+
+  } else {
+    CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    CPPFunctionGroup *setter_func = NULL;
+
+    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
+    } else {
+      setter_func = setter->as_function_group();
+    }
+
+    CPPDeclaration *deleter = $11->find_symbol(current_scope, global_scope, current_lexer);
+    if (deleter == (CPPDeclaration *)NULL || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid delete method: " + $11->get_fully_scoped_name(), @11);
+      deleter = NULL;
+    }
+
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                         setter_func, current_scope, @1.file);
+    make_property->_length_function = length_getter->as_function_group();
+    if (deleter) {
+      make_property->_del_function = deleter->as_function_group();
+    }
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
@@ -777,6 +890,7 @@ type_like_declaration:
     $2->set_initializer($3);
   }
 }
+        | using_declaration
         ;
 
 multiple_var_declaration:
@@ -2349,21 +2463,23 @@ enum:
         ;
 
 enum_decl:
-        enum_keyword name_no_final ':' enum_element_type
+        enum_keyword ':' enum_element_type
 {
-  current_enum = new CPPEnumType($2, $4, current_scope, @1.file);
-}
-        | enum_keyword name_no_final
-{
-  current_enum = new CPPEnumType($2, current_scope, @1.file);
-}
-        | enum_keyword ':' enum_element_type
-{
-  current_enum = new CPPEnumType(NULL, $3, current_scope, @1.file);
+  current_enum = new CPPEnumType($1, NULL, $3, current_scope, NULL, @1.file);
 }
         | enum_keyword
 {
-  current_enum = new CPPEnumType(NULL, current_scope, @1.file);
+  current_enum = new CPPEnumType($1, NULL, current_scope, NULL, @1.file);
+}
+        | enum_keyword name_no_final ':' enum_element_type
+{
+  CPPScope *new_scope = new CPPScope(current_scope, $2->_names.back(), V_public);
+  current_enum = new CPPEnumType($1, $2, $4, current_scope, new_scope, @1.file);
+}
+        | enum_keyword name_no_final
+{
+  CPPScope *new_scope = new CPPScope(current_scope, $2->_names.back(), V_public);
+  current_enum = new CPPEnumType($1, $2, current_scope, new_scope, @1.file);
 }
         ;
 
@@ -2383,14 +2499,12 @@ enum_body_trailing_comma:
         | enum_body_trailing_comma name ','
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), NULL, current_lexer, @2);
 }
         | enum_body_trailing_comma name '=' const_expr ','
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), $4, current_lexer, @2);
 };
 
 enum_body:
@@ -2398,14 +2512,12 @@ enum_body:
         | enum_body_trailing_comma name
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), NULL, current_lexer, @2);
 }
         | enum_body_trailing_comma name '=' const_expr
 {
   assert(current_enum != NULL);
-  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
-  current_scope->add_enum_value(inst, current_lexer, @2);
+  current_enum->add_element($2->get_simple_name(), $4, current_lexer, @2);
 }
         ;
 
@@ -2413,6 +2525,14 @@ enum_keyword:
         KW_ENUM
 {
   $$ = CPPExtensionType::T_enum;
+}
+        | KW_ENUM KW_CLASS
+{
+  $$ = CPPExtensionType::T_enum_class;
+}
+        | KW_ENUM KW_STRUCT
+{
+  $$ = CPPExtensionType::T_enum_struct;
 }
         ;
 
@@ -3495,6 +3615,28 @@ name:
         | KW_OVERRIDE
 {
   $$ = new CPPIdentifier("override", @1);
+}
+        | KW_SIGNED
+{
+  // This is not a keyword in Python, so it is useful to be able to use this
+  // in MAKE_PROPERTY definitions, etc.
+  $$ = new CPPIdentifier("signed", @1);
+}
+        | KW_FLOAT
+{
+  $$ = new CPPIdentifier("float", @1);
+}
+        | KW_PUBLIC
+{
+  $$ = new CPPIdentifier("public", @1);
+}
+        | KW_PRIVATE
+{
+  $$ = new CPPIdentifier("private", @1);
+}
+        | KW_STATIC
+{
+  $$ = new CPPIdentifier("static", @1);
 }
         ;
 

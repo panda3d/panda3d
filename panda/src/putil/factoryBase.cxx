@@ -128,12 +128,18 @@ find_registered_type(TypeHandle handle) {
 
 /**
  * Registers a new kind of thing the Factory will be able to create.
+ *
+ * @param user_data an optional pointer to be passed along to the function.
  */
 void FactoryBase::
-register_factory(TypeHandle handle, BaseCreateFunc *func) {
+register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data) {
   nassertv(handle != TypeHandle::none());
   nassertv(func != (BaseCreateFunc *)NULL);
-  _creators[handle] = func;
+
+  Creator creator;
+  creator._func = func;
+  creator._user_data = user_data;
+  _creators[handle] = creator;
 }
 
 /**
@@ -234,15 +240,16 @@ operator = (const FactoryBase &) {
  * not be created.
  */
 TypedObject *FactoryBase::
-make_instance_exact(TypeHandle handle, const FactoryParams &params) {
+make_instance_exact(TypeHandle handle, FactoryParams params) {
   Creators::const_iterator ci = _creators.find(handle);
   if (ci == _creators.end()) {
     return NULL;
   }
 
-  BaseCreateFunc *func = (BaseCreateFunc *)((*ci).second);
-  nassertr(func != (BaseCreateFunc *)NULL, NULL);
-  return (*func)(params);
+  Creator creator = (*ci).second;
+  nassertr(creator._func != (BaseCreateFunc *)NULL, NULL);
+  params._user_data = creator._user_data;
+  return (*creator._func)(params);
 }
 
 /**
@@ -251,7 +258,7 @@ make_instance_exact(TypeHandle handle, const FactoryParams &params) {
  * instance could not be created.
  */
 TypedObject *FactoryBase::
-make_instance_more_specific(TypeHandle handle, const FactoryParams &params) {
+make_instance_more_specific(TypeHandle handle, FactoryParams params) {
   // First, walk through the established preferred list.  Maybe one of these
   // qualifies.
 
@@ -272,9 +279,10 @@ make_instance_more_specific(TypeHandle handle, const FactoryParams &params) {
   for (ci = _creators.begin(); ci != _creators.end(); ++ci) {
     TypeHandle ctype = (*ci).first;
     if (ctype.is_derived_from(handle)) {
-      BaseCreateFunc *func = (BaseCreateFunc *)((*ci).second);
-      nassertr(func != (BaseCreateFunc *)NULL, NULL);
-      TypedObject *object = (*func)(params);
+      Creator creator = (*ci).second;
+      nassertr(creator._func != (BaseCreateFunc *)NULL, NULL);
+      params._user_data = creator._user_data;
+      TypedObject *object = (*creator._func)(params);
       if (object != (TypedObject *)NULL) {
         return object;
       }

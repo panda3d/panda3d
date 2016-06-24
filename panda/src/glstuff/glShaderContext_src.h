@@ -35,10 +35,8 @@ public:
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
-#ifndef OPENGLES
   void reflect_uniform_block(int i, const char *block_name,
                              char *name_buffer, GLsizei name_buflen);
-#endif
   void reflect_uniform(int i, char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
 
@@ -85,7 +83,9 @@ private:
   GLsizei _slider_table_size;
   GLint _frame_number_loc;
   GLint _frame_number;
+#ifndef OPENGLES
   pmap<GLint, GLuint64> _glsl_uniform_handles;
+#endif
 
   struct ImageInput {
     CPT(InternalName) _name;

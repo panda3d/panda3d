@@ -73,7 +73,7 @@ INLINE string format_string(float value);
 INLINE string format_string(double value);
 INLINE string format_string(unsigned int value);
 INLINE string format_string(int value);
-INLINE string format_string(PN_int64 value);
+INLINE string format_string(int64_t value);
 
 #include "string_utils.I"
 

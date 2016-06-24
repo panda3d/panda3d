@@ -104,7 +104,7 @@ open_device() {
   _name = name;
 
   // Get the number of axes.
-  PN_uint8 num_axes = 0, num_buttons = 0;
+  uint8_t num_axes = 0, num_buttons = 0;
   ioctl(_fd, JSIOCGAXES, &num_axes);
   ioctl(_fd, JSIOCGBUTTONS, &num_buttons);
 
@@ -112,7 +112,7 @@ open_device() {
   _controls.resize(num_axes);
 
   if (num_buttons > 0) {
-    PN_uint16 btnmap[512];
+    uint16_t btnmap[512];
     ioctl(_fd, JSIOCGBTNMAP, btnmap);
 
     for (char i = 0; i < num_buttons; ++i) {
@@ -204,7 +204,7 @@ open_device() {
   }
 
   if (num_axes > 0) {
-    PN_uint8 axmap[512];
+    uint8_t axmap[512];
     ioctl(_fd, JSIOCGAXMAP, axmap);
 
     for (char i = 0; i < num_axes; ++i) {

@@ -460,7 +460,7 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
 
   _count_memory_usage = false;
 
-  PN_int64 max_heap_size = ConfigVariableInt64
+  int64_t max_heap_size = ConfigVariableInt64
     ("max-heap-size", 0,
      PRC_DESC("If this is nonzero, it is the maximum number of bytes expected "
               "to be allocated on the heap before we enter report-memory-usage "

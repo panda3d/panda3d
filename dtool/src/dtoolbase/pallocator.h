@@ -32,7 +32,7 @@
  * can allocate arrays of objects.
  */
 
-#ifndef USE_STL_ALLOCATOR
+#if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not trying to make custom allocators (either we don't know what
 // kind of syntax this STL library wants, or we're compiling with OPTIMIZE 4),
 // then simply use the standard allocator.

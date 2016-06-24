@@ -64,6 +64,18 @@ add_physicals_from(const PhysicalNode &other) {
 }
 
 /**
+ * replace operation
+ */
+void PhysicalNode::
+set_physical(size_t index, Physical *physical) {
+  nassertv(index <= _physicals.size());
+
+  _physicals[index]->_physical_node = (PhysicalNode *) NULL;
+  _physicals[index] = physical;
+  physical->_physical_node = this;
+}
+
+/**
  * remove operation
  */
 void PhysicalNode::
@@ -80,8 +92,8 @@ remove_physical(Physical *physical) {
  * remove operation
  */
 void PhysicalNode::
-remove_physical(int index) {
-  nassertv(index >= 0 && index <= (int)_physicals.size());
+remove_physical(size_t index) {
+  nassertv(index <= _physicals.size());
 
   pvector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;

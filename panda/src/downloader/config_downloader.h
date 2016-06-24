@@ -45,6 +45,7 @@ extern ConfigVariableDouble http_idle_timeout;
 extern ConfigVariableInt http_max_connect_count;
 
 extern EXPCL_PANDAEXPRESS ConfigVariableInt tcp_header_size;
+extern EXPCL_PANDAEXPRESS ConfigVariableBool support_ipv6;
 
 extern EXPCL_PANDAEXPRESS void init_libdownloader();
 

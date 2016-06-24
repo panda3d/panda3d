@@ -16,10 +16,10 @@ else:
     import cPickle as pickle
     import thread
 
-SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
+SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB = [".lib",".ilb"]
-VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg"])
+VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
 VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
 MAINTHREAD = threading.currentThread()
@@ -76,6 +76,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2014","2014"),
                    ("MAYA2015","2015"),
                    ("MAYA2016","2016"),
+                   ("MAYA20165","2016.5")
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -1122,12 +1123,12 @@ def GetThirdpartyDir():
     target_arch = GetTargetArch()
 
     if (target == 'windows'):
+        vc = SDK["VISUALSTUDIO_VERSION"].split('.')[0]
+
         if target_arch == 'x64':
-            THIRDPARTYDIR = base + "/win-libs-vc10-x64/"
-            if not os.path.isdir(THIRDPARTYDIR):
-                THIRDPARTYDIR = base + "/win-libs-vc10/"
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-x64/"
         else:
-            THIRDPARTYDIR = base + "/win-libs-vc10/"
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
     elif (target == 'darwin'):
         # OSX thirdparty binaries are universal, where possible.
@@ -1392,7 +1393,12 @@ def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
     for l in result.split(" "):
         if (l.startswith("-D")):
             d = l.replace("-D", "").replace("\"", "").strip().split("=")
-            if (len(d) == 1):
+
+            if d[0] in ('NDEBUG', '_DEBUG'):
+                # Setting one of these flags by accident could cause serious harm.
+                if GetVerbose():
+                    print("Ignoring %s flag provided by %s" % (l, tool))
+            elif len(d) == 1:
                 defs[d[0]] = ""
             else:
                 defs[d[0]] = d[1]
@@ -1409,9 +1415,15 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
     for i, j in PkgConfigGetDefSymbols(pkgname, tool).items():
         DefSymbol(opt, i, j)
 
-def LocateLibrary(lib, lpath=[]):
-    """ Returns True if this library was found in the given search path, False otherwise. """
+def LocateLibrary(lib, lpath=[], prefer_static=False):
+    """Searches for the library in the search path, returning its path if found,
+    or None if it was not found."""
     target = GetTarget()
+
+    if prefer_static and target != 'windows':
+        for dir in lpath:
+            if os.path.isfile(os.path.join(dir, 'lib%s.a' % lib)):
+                return os.path.join(dir, 'lib%s.a' % lib)
 
     for dir in lpath:
         if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
@@ -1446,7 +1458,7 @@ def ChooseLib(libs, thirdparty=None):
             print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
-def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config"):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config", thirdparty_dir = None):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
@@ -1476,15 +1488,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
     custom_loc = PkgHasCustomLocation(pkg)
 
-    if pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h"):
-        # Let it be handled by the ffmpeg package
-        LibName(target_pkg, "-lswscale")
-        return
-    if pkg.lower() == "swresample" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswresample/swresample.h"):
-        LibName(target_pkg, "-lswresample")
-        return
+    # Determine the location of the thirdparty directory.
+    if not thirdparty_dir:
+        thirdparty_dir = pkg.lower()
+    pkg_dir = os.path.join(GetThirdpartyDir(), thirdparty_dir)
 
-    pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
+    # First check if the library can be found in the thirdparty directory.
     if not custom_loc and os.path.isdir(pkg_dir):
         if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
             FrameworkDirectory(target_pkg, pkg_dir)
@@ -1494,32 +1503,60 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         if os.path.isdir(os.path.join(pkg_dir, "include")):
             IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
 
-        if os.path.isdir(os.path.join(pkg_dir, "lib")):
-            LibDirectory(target_pkg, os.path.join(pkg_dir, "lib"))
+            # Handle cases like freetype2 where the include dir is a subdir under "include"
+            for i in incs:
+                if os.path.isdir(os.path.join(pkg_dir, "include", i)):
+                    IncDirectory(target_pkg, os.path.join(pkg_dir, "include", i))
 
-        if (PkgSkip("PYTHON") == 0):
+        lpath = [os.path.join(pkg_dir, "lib")]
+
+        if not PkgSkip("PYTHON"):
             py_lib_dir = os.path.join(pkg_dir, "lib", SDK["PYTHONVERSION"])
             if os.path.isdir(py_lib_dir):
-                LibDirectory(target_pkg, py_lib_dir)
+                lpath.append(py_lib_dir)
 
-        # TODO: check for a .pc file in the lib/pkg-config/ dir
+        # TODO: check for a .pc file in the lib/pkgconfig/ dir
         if (tool != None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
             tool = os.path.join(pkg_dir, "bin", tool)
             for i in PkgConfigGetLibs(None, tool):
-                LibName(target_pkg, i)
+                if i.startswith('-l'):
+                    # To make sure we don't pick up the system copy, write out
+                    # the full path instead.
+                    libname = i[2:]
+                    location = LocateLibrary(libname, lpath, prefer_static=True)
+                    if location is not None:
+                        LibName(target_pkg, location)
+                    else:
+                        print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
+                        LibName(target_pkg, i)
+                else:
+                    LibName(target_pkg, i)
             for i, j in PkgConfigGetDefSymbols(None, tool).items():
                 DefSymbol(target_pkg, i, j)
             return
 
+        # Now search for the libraries in the package's lib directories.
         for l in libs:
             libname = l
             if l.startswith("lib"):
                 libname = l[3:]
-            # This is for backward compatibility - in the thirdparty dir, we kept some libs with "panda" prefix, like libpandatiff.
-            if len(glob.glob(os.path.join(pkg_dir, "lib", "libpanda%s.*" % (libname)))) > 0 \
-               and len(glob.glob(os.path.join(pkg_dir, "lib", "lib%s.*" % (libname)))) == 0:
-                libname = "panda" + libname
-            LibName(target_pkg, "-l" + libname)
+
+            location = LocateLibrary(libname, lpath, prefer_static=True)
+            if location is not None:
+                # If it's a .so or .dylib we may have changed it and copied it to the built/lib dir.
+                if location.endswith('.so') or location.endswith('.dylib'):
+                    location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
+                LibName(target_pkg, location)
+            else:
+                # This is for backward compatibility - in the thirdparty dir,
+                # we kept some libs with "panda" prefix, like libpandatiff.
+                location = LocateLibrary("panda" + libname, lpath, prefer_static=True)
+                if location is not None:
+                    if location.endswith('.so') or location.endswith('.dylib'):
+                        location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
+                    LibName(target_pkg, location)
+                else:
+                    print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
 
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)
@@ -2274,7 +2311,7 @@ def SetupVisualStudioEnviron():
 
     binpath = SDK["VISUALSTUDIO"] + "VC\\bin\\" + bindir
     if not os.path.isdir(binpath):
-        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1.")
+        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
 
     AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
@@ -2287,8 +2324,8 @@ def SetupVisualStudioEnviron():
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
-        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10240.0\\"
-        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10240.0\\"
+        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10586.0\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10586.0\\"
         AddToPathEnv("INCLUDE", inc_dir + "shared")
         AddToPathEnv("INCLUDE", inc_dir + "ucrt")
         AddToPathEnv("INCLUDE", inc_dir + "um")
@@ -2821,6 +2858,17 @@ def GetOrigExt(x):
 def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
+def GetExtensionSuffix():
+    if sys.version_info >= (3, 0):
+        suffix = sysconfig.get_config_var('EXT_SUFFIX')
+        if suffix:
+            return suffix
+    target = GetTarget()
+    if target == 'windows':
+        return '.pyd'
+    else:
+        return '.so'
+
 def CalcLocation(fn, ipath):
     if fn.startswith("panda3d/") and fn.endswith(".py"):
         return OUTPUTDIR + "/" + fn
@@ -2842,6 +2890,7 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".xml")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".egg")): return OUTPUTDIR+"/models/"+fn
     if (fn.endswith(".egg.pz")):return OUTPUTDIR+"/models/"+fn
+    if (fn.endswith(".pyd")): return OUTPUTDIR+"/panda3d/"+fn[:-4]+GetExtensionSuffix()
     if (target == 'windows'):
         if (fn.endswith(".def")):   return CxxFindSource(fn, ipath)
         if (fn.endswith(".rc")):    return CxxFindSource(fn, ipath)
@@ -2850,7 +2899,6 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".res")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".tlb")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".pyd"
         if (fn.endswith(".ocx")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".ocx"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
         if (fn.endswith(".dlo")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
@@ -2867,7 +2915,6 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".plist")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".p3d")):   return OUTPUTDIR+"/bin/"+fn[:-4]
@@ -2880,7 +2927,6 @@ def CalcLocation(fn, ipath):
         # On Android, we build the libraries into built/tmp, then copy them.
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".so"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/tmp/lib"+fn[:-4]+".so"
@@ -2889,7 +2935,6 @@ def CalcLocation(fn, ipath):
     else:
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]

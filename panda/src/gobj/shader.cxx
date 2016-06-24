@@ -21,6 +21,7 @@
 #include "virtualFileSystem.h"
 #include "config_util.h"
 #include "bamCache.h"
+#include "string_utils.h"
 
 #ifdef HAVE_CG
 #include <Cg/cg.h>
@@ -1625,11 +1626,11 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
     compiler_args[nargs++] = "ATI_draw_buffers";
   }
 
-  char version_arg[16];
+  string version_arg;
   if (!cg_glsl_version.empty() && active != CG_PROFILE_UNKNOWN &&
       cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
 
-    string version_arg("version=");
+    version_arg = "version=";
     version_arg += cg_glsl_version;
 
     compiler_args[nargs++] = "-po";
@@ -2362,15 +2363,14 @@ r_preprocess_source(ostream &out, const Filename &fn,
   bool had_include = false;
   int lineno = 0;
   while (getline(*source, line)) {
-    // We always forward the actual line - the GLSL compiler will silently
-    // ignore #pragma lines anyway.
     ++lineno;
-    out << line << "\n";
 
     // Check if this line contains a #pragma.
     char pragma[64];
     if (line.size() < 8 ||
         sscanf(line.c_str(), " # pragma %63s", pragma) != 1) {
+      // Just pass the line through unmodified.
+      out << line << "\n";
 
       // One exception: check for an #endif after an include.  We have to
       // restore the line number in case the include happened under an #if
@@ -2435,8 +2435,11 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
     } else if (strcmp(pragma, "optionNV") == 0) {
       // This is processed by NVIDIA drivers.  Don't touch it.
+      out << line << "\n";
 
     } else {
+      // Forward it, the driver will ignore it if it doesn't know it.
+      out << line << "\n";
       shader_cat.warning()
         << "Ignoring unknown pragma directive \"" << pragma << "\" at line "
         << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -2611,6 +2614,27 @@ Shader::
   } else {
     _make_table.erase(_text);
   }*/
+}
+
+/**
+ * Returns the filename of the included shader with the given source file
+ * index (as recorded in the #line statement in r_preprocess_source).  We use
+ * this to associate error messages with included files.
+ */
+Filename Shader::
+get_filename_from_index(int index, ShaderType type) const {
+  if (index == 0) {
+    Filename fn = get_filename(type);
+    if (!fn.empty()) {
+      return fn;
+    }
+  } else if (glsl_preprocess && index >= 2048 &&
+             (index - 2048) < (int)_included_files.size()) {
+    return _included_files[(size_t)index - 2048];
+  }
+  // Must be a mistake.  Quietly put back the integer.
+  string str = format_string(index);
+  return Filename(str);
 }
 
 /**

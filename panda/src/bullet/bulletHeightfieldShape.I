@@ -18,7 +18,7 @@ INLINE BulletHeightfieldShape::
 ~BulletHeightfieldShape() {
 
   delete _shape;
-  delete _data;
+  delete [] _data;
 }
 
 /**

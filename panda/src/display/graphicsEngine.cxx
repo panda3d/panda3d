@@ -415,6 +415,9 @@ make_output(GraphicsPipe *pipe,
           if (flags & GraphicsPipe::BF_fb_props_optional) {
             display_cat.warning()
               << "FrameBufferProperties available less than requested.\n";
+            display_cat.warning(false)
+              << "  requested: " << fb_prop << "\n"
+              << "  got: " << window->get_fb_properties() << "\n";
             return window;
           }
           display_cat.error()
@@ -594,6 +597,9 @@ remove_all_windows() {
   // And, hey, let's stop the vertex paging threads, if any.
   VertexDataPage::stop_threads();
 
+  // Stopping the tasks means we have to release the Python GIL while
+  // this method runs (hence it is marked BLOCKING), so that any
+  // Python tasks on other threads won't deadlock grabbing the GIL.
   AsyncTaskManager::get_global_ptr()->stop_threads();
 
 #ifdef DO_PSTATS

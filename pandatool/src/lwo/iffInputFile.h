@@ -43,13 +43,13 @@ public:
 
   INLINE void align();
 
-  PN_int8 get_int8();
-  PN_uint8 get_uint8();
+  int8_t get_int8();
+  uint8_t get_uint8();
 
-  PN_int16 get_be_int16();
-  PN_int32 get_be_int32();
-  PN_uint16 get_be_uint16();
-  PN_uint32 get_be_uint32();
+  int16_t get_be_int16();
+  int32_t get_be_int32();
+  uint16_t get_be_uint16();
+  uint32_t get_be_uint32();
   PN_stdfloat get_be_float32();
 
   string get_string();

@@ -43,16 +43,19 @@
 // fast, but it is not thread-safe.  However, we provide thread locking within
 // MemoryHook.
 
+#define DLMALLOC_EXPORT static
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
 #ifdef _DEBUG
   #define DEBUG 1
 #endif
-#ifdef assert
-  // dlmalloc defines its own assert, which clashes.
-  #undef assert
+#ifdef LINMATH_ALIGN
+// drose: We require 16-byte alignment of certain structures, to
+// support SSE2.  We don't strictly have to align *everything*, but
+// it's just easier to do so.
+#define MALLOC_ALIGNMENT ((size_t)16U)
 #endif
-#include "dlmalloc.h"
+
 #include "dlmalloc_src.cxx"
 
 #define call_malloc dlmalloc

@@ -23,13 +23,13 @@
 // Defines
 
 // Written at the top of the file so we know this is a downloadDb
-PN_uint32 DownloadDb::_magic_number = 0xfeedfeed;
+uint32_t DownloadDb::_magic_number = 0xfeedfeed;
 
 // Written at the top of the file to signify we are not done writing to the
 // file yet.  If you load a db with this magic number that means the previous
 // time it got written out was probably interrupted in the middle of the
 // write.
-PN_uint32 DownloadDb::_bogus_magic_number = 0x11111111;
+uint32_t DownloadDb::_bogus_magic_number = 0x11111111;
 
 
 static string
@@ -505,7 +505,7 @@ add_file_record(PT(FileRecord) fr) {
 DownloadDb::Db::
 Db() {
   // The head is a magic number and the number of multifiles in the db
-  _header_length = sizeof(_magic_number) + sizeof(PN_int32);
+  _header_length = sizeof(_magic_number) + sizeof(int32_t);
 }
 
 
@@ -588,7 +588,7 @@ parse_header(const string &data) {
 
   // Make sure we have a good header
   DatagramIterator di(dg);
-  PN_uint32 magic_number = di.get_uint32();
+  uint32_t magic_number = di.get_uint32();
   downloader_cat.debug()
     << "Parsed magic number: " << magic_number << endl;
   // If the magic number is equal to the bogus magic number it signifies that
@@ -608,7 +608,7 @@ parse_header(const string &data) {
     return -1;
   }
 
-  PN_int32 num_multifiles = di.get_int32();
+  int32_t num_multifiles = di.get_int32();
   downloader_cat.debug()
     << "Parsed number of multifiles: " << num_multifiles << endl;
 
@@ -626,7 +626,7 @@ int DownloadDb::Db::
 parse_record_header(const string &data) {
   Datagram dg(data);
   DatagramIterator di(dg);
-  PN_int32 record_length = di.get_int32();
+  int32_t record_length = di.get_int32();
   downloader_cat.spam()
     << "Parsed record header length: " << record_length << endl;
 
@@ -645,7 +645,7 @@ parse_mfr(const string &data) {
 
   Datagram dg(data);
   DatagramIterator di(dg);
-  PN_int32 mfr_name_length = di.get_int32();
+  int32_t mfr_name_length = di.get_int32();
   mfr->_name = di.extract_bytes(mfr_name_length);
   mfr->_phase = di.get_float64();
   mfr->_size = di.get_int32();
@@ -682,7 +682,7 @@ parse_fr(const string &data) {
 
   Datagram dg(data);
   DatagramIterator di(dg);
-  PN_int32 fr_name_length = di.get_int32();
+  int32_t fr_name_length = di.get_int32();
   fr->_name = di.extract_bytes(fr_name_length);
 
   // At one time, we stored files in the database with a backslash separator.
@@ -725,7 +725,7 @@ read(StreamReader &sr, bool want_server_info) {
   for (int i = 0; i < num_multifiles; i++) {
     // The multifile record header is just one int which represents the size
     // of the record
-    int mfr_header_length = sizeof(PN_int32);
+    int mfr_header_length = sizeof(int32_t);
 
     string mfr_header = sr.extract_bytes(mfr_header_length);
     if (mfr_header.size() != (size_t)mfr_header_length) {
@@ -755,7 +755,7 @@ read(StreamReader &sr, bool want_server_info) {
       for (int j = 0; j < mfr->_num_files; j++) {
         // The file record header is just one int which represents the size of
         // the record
-        int fr_header_length = sizeof(PN_int32);
+        int fr_header_length = sizeof(int32_t);
 
         // Read the header
         string fr_header = sr.extract_bytes(fr_header_length);
@@ -802,11 +802,11 @@ write(StreamWriter &sw, bool want_server_info) {
   // Declare these outside the loop so we do not keep creating and deleting
   // them
   PN_float64 phase;
-  PN_int32 size;
-  PN_int32 status;
-  PN_int32 num_files;
-  PN_int32 name_length;
-  PN_int32 header_length;
+  int32_t size;
+  int32_t status;
+  int32_t num_files;
+  int32_t name_length;
+  int32_t header_length;
 
   // Iterate over the multifiles writing them to the stream
   pvector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
@@ -825,7 +825,7 @@ write(StreamWriter &sw, bool want_server_info) {
       (*i)->_name.length() +      // Size of the name string
       sizeof(phase) + sizeof(size) +
       sizeof(status) + sizeof(num_files) +
-      sizeof(PN_uint32)*4; // Size of hash value
+      sizeof(uint32_t)*4; // Size of hash value
 
     // Add the length of this entire datagram
     sw.add_int32(header_length);

@@ -113,6 +113,12 @@ PUBLISHED:
   INLINE PartBundleNode *get_node(int n) const;
   MAKE_SEQ(get_nodes, get_num_nodes, get_node);
 
+  MAKE_PROPERTY(blend_type, get_blend_type, set_blend_type);
+  MAKE_PROPERTY(anim_blend_flag, get_anim_blend_flag, set_anim_blend_flag);
+  MAKE_PROPERTY(frame_blend_flag, get_frame_blend_flag, set_frame_blend_flag);
+  MAKE_PROPERTY(root_xform, get_root_xform, set_root_xform);
+  MAKE_SEQ_PROPERTY(nodes, get_num_nodes, get_node);
+
   void clear_control_effects();
   INLINE void set_control_effect(AnimControl *control, PN_stdfloat effect);
   INLINE PN_stdfloat get_control_effect(AnimControl *control) const;

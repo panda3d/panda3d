@@ -111,6 +111,12 @@ ConfigVariableInt tcp_header_size
           "length when writing a datagram on a TCP stream.  This may be "
           "0, 2, or 4.  The server and client must agree on this value."));
 
+ConfigVariableBool support_ipv6
+("support-ipv6", true,
+ PRC_DESC("Specifies whether IPv6 support should be enabled.  This should "
+          "be true unless you are experiencing issues with Panda's IPv6 "
+          "support or are using a misconfigured system."));
+
 ConfigureFn(config_downloader) {
   init_libdownloader();
 }

@@ -1,3 +1,45 @@
+------------------------  RELEASE 1.9.3  ------------------------
+
+This issue fixes several bugs that were still found in 1.9.2.
+
+* Fix crash when running in Steam on Linux when using OpenAL
+* Fix crash using wx/tkinter on Mac as long as want-wx/tk is set
+* Fix loading models from 'models' package with models/ prefix
+* Fix random crashes in task system
+* Fix memory leaks in BulletTriangleMesh
+* Fix loading old models with MovingPart<LMatrix4f>
+* Improve performance of CPU vertex animation somewhat
+* Show framebuffer properties when fbprop request fails
+* Fix hang on exit when using Python task on threaded task chain
+* Fix inability to get RGBA renderbuffer in certain cases
+* Work around GLSL issue with #pragma and certain Intel drivers
+* Improve performance of texture load and store operations
+* Fix crashes with pbuffers on Intel cards on Windows
+
+------------------------  RELEASE 1.9.2  ------------------------
+
+This is a minor bugfix release, fixing a few minor issues that
+remained in the 1.9.1 release, including:
+
+* Fix compile errors with more recent versions of ffmpeg
+* Include .lib files for pyd modules in Windows SDK
+* packp3d now recognizes default egg-object-type definitions
+* Fix issues with sphere-into-box and box-into-sphere collisions
+* Texture VRAM usage is now correctly reported by pstats
+* Support for reading BMP files with alpha channel
+* Fix OpenGL crashes in very ancient OpenGL versions
+* Fix rare compile issues and crashes with esoteric Python set-ups
+* Fix crash when extracting texture that's not a multiple of 4 bytes
+* Work around buggy NVIDIA driver that reports _main_* shader inputs
+* Add version of transform_vertices that accepts a SparseArray
+* Clamp shininess to 0 to avoid GL error when shininess < 0
+* Fix various bugs in RopeNode and NurbsCurveEvaluator
+* Fix clock-mode Config.prc settings
+* NodePath render_mode setters no longer reset wireframe color
+* Fix constant reloading of texture when gl-ignore-mipmaps is set
+* BamReader now releases the GIL (so it can be used threaded)
+* Fix AttributeError in direct.stdpy.threading module
+
 ------------------------  RELEASE 1.9.1  ------------------------
 
 This minor release fixes some important regressions and bugs found

@@ -6,5 +6,6 @@
 #include "pnmFileTypeSGIReader.cxx"
 #include "pnmFileTypeSGIWriter.cxx"
 #include "pnmFileTypeSoftImage.cxx"
+#include "pnmFileTypeStbImage.cxx"
 #include "pnmFileTypeTGA.cxx"
 

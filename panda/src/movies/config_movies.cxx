@@ -13,6 +13,8 @@
 
 #include "config_movies.h"
 #include "dconfig.h"
+#include "flacAudio.h"
+#include "flacAudioCursor.h"
 #include "inkblotVideo.h"
 #include "inkblotVideoCursor.h"
 #include "microphoneAudio.h"
@@ -75,6 +77,8 @@ init_libmovies() {
   }
   initialized = true;
 
+  FlacAudio::init_type();
+  FlacAudioCursor::init_type();
   InkblotVideo::init_type();
   InkblotVideoCursor::init_type();
   MicrophoneAudio::init_type();
@@ -93,6 +97,7 @@ init_libmovies() {
 #endif
 
   MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();
+  reg->register_audio_type(&FlacAudio::make, "flac");
   reg->register_audio_type(&WavAudio::make, "wav wave");
 
 #ifdef HAVE_VORBIS

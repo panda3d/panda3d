@@ -51,7 +51,7 @@ PUBLISHED:
   void broadcast_pos_hpr_xyh();
   void broadcast_pos_hpr_xy();
 
-  void set_curr_l(PN_uint64 l);
+  void set_curr_l(uint64_t l);
   void print_curr_l();
 
 private:
@@ -67,7 +67,7 @@ private:
   INLINE void d_setSmXYH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat h);
   INLINE void d_setSmXYZH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h);
   INLINE void d_setSmPosHpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
-  INLINE void d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, PN_uint64 l);
+  INLINE void d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, uint64_t l);
 
   void begin_send_update(DCPacker &packer, const string &field_name);
   void finish_send_update(DCPacker &packer);
@@ -97,7 +97,7 @@ private:
   bool _store_stop;
   // contains most recently sent location info as index 0, index 1 contains
   // most recently set location info
-  PN_uint64 _currL[2];
+  uint64_t _currL[2];
 };
 
 #include "cDistributedSmoothNodeBase.I"

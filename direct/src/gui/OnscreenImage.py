@@ -4,6 +4,12 @@ __all__ = ['OnscreenImage']
 
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
+import sys
+
+if sys.version_info >= (3, 0):
+    stringType = str
+else:
+    stringType = basestring
 
 
 class OnscreenImage(DirectObject, NodePath):
@@ -95,7 +101,7 @@ class OnscreenImage(DirectObject, NodePath):
         # Assign geometry
         if isinstance(image, NodePath):
             self.assign(image.copyTo(parent, sort))
-        elif isinstance(image, str) or \
+        elif isinstance(image, stringType) or \
              isinstance(image, Texture):
             if isinstance(image, Texture):
                 # It's a Texture

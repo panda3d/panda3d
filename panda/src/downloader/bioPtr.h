@@ -27,6 +27,14 @@
 #include "openSSLWrapper.h"  // must be included before any other openssl.
 #include "openssl/ssl.h"
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
 class URLSpec;
 
 /**
@@ -40,6 +48,11 @@ public:
   INLINE BioPtr(BIO *bio);
   BioPtr(const URLSpec &url);
   virtual ~BioPtr();
+
+  void set_nbio(bool nbio);
+  bool connect();
+
+  INLINE bool should_retry() const;
 
   INLINE BIO &operator *() const;
   INLINE BIO *operator -> () const;
@@ -55,6 +68,9 @@ private:
   BIO *_bio;
   string _server_name;
   int _port;
+  struct sockaddr_storage _addr;
+  socklen_t _addrlen;
+  bool _connecting;
 };
 
 #include "bioPtr.I"

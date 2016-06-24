@@ -104,6 +104,7 @@ PUBLISHED:
   INLINE int get_num_columns() const;
   INLINE const GeomVertexColumn *get_column(int i) const;
   MAKE_SEQ(get_columns, get_num_columns, get_column);
+  MAKE_SEQ_PROPERTY(columns, get_num_columns, get_column);
 
   const GeomVertexColumn *get_column(const InternalName *name) const;
   const GeomVertexColumn *get_column(int start_byte, int num_bytes) const;

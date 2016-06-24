@@ -47,6 +47,10 @@ public:
   INLINE FunctionIndex get_has_function() const;
   INLINE bool has_clear_function() const;
   INLINE FunctionIndex get_clear_function() const;
+  INLINE bool has_del_function() const;
+  INLINE FunctionIndex get_del_function() const;
+  INLINE bool is_sequence() const;
+  INLINE FunctionIndex get_length_function() const;
 
   void output(ostream &out) const;
   void input(istream &in);
@@ -60,16 +64,21 @@ private:
     F_has_setter      = 0x0004,
     F_has_has_function= 0x0008,
     F_has_clear_function= 0x0010,
+    F_has_del_function= 0x0020,
+    F_sequence        = 0x0040,
+    F_mapping         = 0x0080,
   };
 
   int _flags;
   string _scoped_name;
   string _comment;
   TypeIndex _type;
+  FunctionIndex _length_function;
   FunctionIndex _getter;
   FunctionIndex _setter;
   FunctionIndex _has_function;
   FunctionIndex _clear_function;
+  FunctionIndex _del_function;
 
   friend class InterrogateBuilder;
 };

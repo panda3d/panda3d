@@ -53,7 +53,7 @@ class Texture;
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
-  ~GraphicsEngine();
+  BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
   GraphicsThreadingModel get_threading_model() const;
@@ -94,13 +94,14 @@ PUBLISHED:
 
   bool add_window(GraphicsOutput *window, int sort);
   bool remove_window(GraphicsOutput *window);
-  void remove_all_windows();
+  BLOCKING void remove_all_windows();
   void reset_all_windows(bool swapchain);
 
   bool is_empty() const;
   int get_num_windows() const;
   GraphicsOutput *get_window(int n) const;
   MAKE_SEQ(get_windows, get_num_windows, get_window);
+  MAKE_SEQ_PROPERTY(windows, get_num_windows, get_window);
 
   BLOCKING void render_frame();
   BLOCKING void open_windows();

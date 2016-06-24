@@ -52,6 +52,9 @@ PUBLISHED:
   INLINE PN_stdfloat get_level(int n) const;
   INLINE PN_stdfloat get_threshold(int n) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(mode, get_mode);
+
 public:
   virtual void output(ostream &out) const;
 

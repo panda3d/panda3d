@@ -92,6 +92,14 @@ set_port(int port) {
 }
 
 /**
+ * Returns true if the IP address has only zeroes.
+ */
+bool NetAddress::
+is_any() const {
+  return _addr.is_any();
+}
+
+/**
  * Returns the IP address to which this address refers, formatted as a string.
  */
 string NetAddress::
@@ -102,8 +110,9 @@ get_ip_string() const {
 /**
  * Returns the IP address to which this address refers, as a 32-bit integer,
  * in host byte order.
+ * @deprecated  Does not work with IPv6 addresses.
  */
-PN_uint32 NetAddress::
+uint32_t NetAddress::
 get_ip() const {
   return _addr.GetIPAddressRaw();
 }
@@ -113,11 +122,11 @@ get_ip() const {
  * components; component 0 is the first (leftmost), and component 3 is the
  * last (rightmost) in the dotted number convention.
  */
-PN_uint8 NetAddress::
+uint8_t NetAddress::
 get_ip_component(int n) const {
   nassertr(n >= 0 && n < 4, 0);
-  PN_uint32 ip_long = _addr.GetIPAddressRaw();
-  const PN_uint8 *ip = (const PN_uint8 *)&ip_long;
+  uint32_t ip_long = _addr.GetIPAddressRaw();
+  const uint8_t *ip = (const uint8_t *)&ip_long;
   return ip[n];
 }
 
@@ -135,7 +144,7 @@ get_addr() const {
  */
 void NetAddress::
 output(ostream &out) const {
-  out << get_ip_string();
+  out << _addr.get_ip_port();
 }
 
 /**

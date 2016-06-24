@@ -363,7 +363,8 @@ align_columns_for_animation() {
       add_column(column->get_name(), 4, column->get_numeric_type(), column->get_contents(), -1, 16);
     } else {
       add_column(column->get_name(), column->get_num_components(),
-                 column->get_numeric_type(), column->get_contents());
+                 column->get_numeric_type(), column->get_contents(),
+                 -1, column->get_column_alignment());
     }
   }
 }
@@ -708,7 +709,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint16(_stride);
   dg.add_uint16(_total_bytes);
   dg.add_uint8(_pad_to);
-  dg.add_uint16(_divisor);
+
+  if (manager->get_file_minor_ver() > 36) {
+    dg.add_uint16(_divisor);
+  }
 
   consider_sort_columns();
 

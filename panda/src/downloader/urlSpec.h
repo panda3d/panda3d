@@ -17,6 +17,8 @@
 #include "pandabase.h"
 #include "pnotify.h"
 
+class Filename;
+
 /**
  * A container for a URL, e.g.  "http://server:port/path".
  *
@@ -27,14 +29,14 @@ class EXPCL_PANDAEXPRESS URLSpec {
 PUBLISHED:
   URLSpec();
   INLINE URLSpec(const string &url, bool server_name_expected = false);
-  INLINE URLSpec(const URLSpec &copy);
+  URLSpec(const URLSpec &url, const Filename &path);
   INLINE void operator = (const string &url);
-  void operator = (const URLSpec &copy);
 
   INLINE bool operator == (const URLSpec &other) const;
   INLINE bool operator != (const URLSpec &other) const;
   INLINE bool operator < (const URLSpec &other) const;
-  INLINE int compare_to(const URLSpec &other) const;
+  int compare_to(const URLSpec &other) const;
+  size_t get_hash() const;
 
   INLINE bool has_scheme() const;
   INLINE bool has_authority() const;
@@ -49,7 +51,7 @@ PUBLISHED:
   INLINE string get_username() const;
   INLINE string get_server() const;
   INLINE string get_port_str() const;
-  int get_port() const;
+  uint16_t get_port() const;
   string get_server_and_port() const;
   bool is_default_port() const;
   static int get_default_port_for_scheme(const string &scheme);
@@ -65,7 +67,7 @@ PUBLISHED:
   void set_username(const string &username);
   void set_server(const string &server);
   void set_port(const string &port);
-  void set_port(int port);
+  void set_port(uint16_t port);
   void set_server_and_port(const string &server_and_port);
   void set_path(const string &path);
   void set_query(const string &query);
@@ -75,8 +77,10 @@ PUBLISHED:
   INLINE operator const string & () const;
   INLINE const char *c_str() const;
   INLINE bool empty() const;
+  INLINE operator bool() const;
   INLINE size_t length() const;
-  INLINE char operator [] (int n) const;
+  INLINE size_t size() const;
+  INLINE char operator [] (size_t n) const;
 
   bool input(istream &in);
   void output(ostream &out) const;
@@ -85,6 +89,16 @@ PUBLISHED:
   static string quote_plus(const string &source, const string &safe = "/");
   static string unquote(const string &source);
   static string unquote_plus(const string &source);
+
+  MAKE_PROPERTY(scheme, get_scheme, set_scheme);
+  MAKE_PROPERTY(authority, get_authority, set_authority);
+  MAKE_PROPERTY(username, get_username, set_username);
+  MAKE_PROPERTY(server, get_server, set_server);
+  MAKE_PROPERTY(port, get_port, set_port);
+  MAKE_PROPERTY(server_and_port, get_server_and_port, set_server_and_port);
+  MAKE_PROPERTY(path, get_path, set_path);
+  MAKE_PROPERTY(query, get_query, set_query);
+  MAKE_PROPERTY(ssl, is_ssl);
 
 private:
   void parse_authority();
@@ -100,7 +114,7 @@ private:
   };
 
   string _url;
-  int _port;
+  uint16_t _port;
   int _flags;
 
   size_t _scheme_end;

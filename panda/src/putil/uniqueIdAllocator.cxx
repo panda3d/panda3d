@@ -20,8 +20,8 @@
 NotifyCategoryDecl(uniqueIdAllocator, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 NotifyCategoryDef(uniqueIdAllocator, "");
 
-const PN_uint32 UniqueIdAllocator::IndexEnd = (PN_uint32)-1;
-const PN_uint32 UniqueIdAllocator::IndexAllocated = (PN_uint32)-2;
+const uint32_t UniqueIdAllocator::IndexEnd = (uint32_t)-1;
+const uint32_t UniqueIdAllocator::IndexAllocated = (uint32_t)-2;
 
 #ifndef NDEBUG //[
   // Non-release build:
@@ -50,7 +50,7 @@ const PN_uint32 UniqueIdAllocator::IndexAllocated = (PN_uint32)-2;
  * Create a free id pool in the range [min:max].
  */
 UniqueIdAllocator::
-UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
+UniqueIdAllocator(uint32_t min, uint32_t max)
   : _min(min), _max(max) {
   uniqueIdAllocator_debug("UniqueIdAllocator("<<min<<", "<<max<<")");
 
@@ -58,10 +58,10 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
   _size = _max-_min+1; // +1 because min and max are inclusive.
   nassertv(_size != 0); // size must be > 0.
 
-  _table = (PN_uint32 *)PANDA_MALLOC_ARRAY(_size * sizeof(PN_uint32));
+  _table = (uint32_t *)PANDA_MALLOC_ARRAY(_size * sizeof(uint32_t));
   nassertv(_table); // This should be redundant if new throws an exception.
 
-  for (PN_uint32 i = 0; i < _size; ++i) {
+  for (uint32_t i = 0; i < _size; ++i) {
     _table[i] = i + 1;
   }
   _table[_size - 1] = IndexEnd;
@@ -84,14 +84,14 @@ UniqueIdAllocator::
  * Returns an id between _min and _max (that were passed to the constructor).
  * IndexEnd is returned if no ids are available.
  */
-PN_uint32 UniqueIdAllocator::
+uint32_t UniqueIdAllocator::
 allocate() {
   if (_next_free == IndexEnd) {
     // ...all ids allocated.
     uniqueIdAllocator_warning("allocate Error: no more free ids.");
     return IndexEnd;
   }
-  PN_uint32 index = _next_free;
+  uint32_t index = _next_free;
   nassertr(_table[index] != IndexAllocated, IndexEnd);
 
   _next_free = _table[_next_free];
@@ -99,7 +99,7 @@ allocate() {
 
   --_free;
 
-  PN_uint32 id = index + _min;
+  uint32_t id = index + _min;
   uniqueIdAllocator_debug("allocate() returning " << id);
   return id;
 }
@@ -116,9 +116,9 @@ allocate() {
  * reserved at any time.
  */
 void UniqueIdAllocator::
-initial_reserve_id(PN_uint32 id) {
+initial_reserve_id(uint32_t id) {
   nassertv(id >= _min && id <= _max); // Attempt to reserve out-of-range id.
-  PN_uint32 index = id - _min; // Convert to _table index.
+  uint32_t index = id - _min; // Convert to _table index.
 
   nassertv(_table[index] != IndexAllocated);
 
@@ -143,7 +143,7 @@ initial_reserve_id(PN_uint32 id) {
  * slot right before it, or if not, it usually won't be far before it.
  */
 
-    PN_uint32 prev_index = index;
+    uint32_t prev_index = index;
     while (prev_index > 0 && _table[prev_index - 1] != index) {
       --prev_index;
     }
@@ -177,11 +177,11 @@ initial_reserve_id(PN_uint32 id) {
  * passed to the constructor).
  */
 void UniqueIdAllocator::
-free(PN_uint32 id) {
+free(uint32_t id) {
   uniqueIdAllocator_debug("free("<<id<<")");
 
   nassertv(id >= _min && id <= _max); // Attempt to free out-of-range id.
-  PN_uint32 index = id - _min; // Convert to _table index.
+  uint32_t index = id - _min; // Convert to _table index.
   nassertv(_table[index] == IndexAllocated); // Attempt to free non-allocated id.
   if (_next_free != IndexEnd) {
     nassertv(_table[_last_free] == IndexEnd);
@@ -223,8 +223,8 @@ output(ostream &out) const {
 void UniqueIdAllocator::
 write(ostream &out) const {
   out << "_min: " << _min << "; _max: " << _max
-      << ";\n_next_free: " << PN_int32(_next_free)
-      << "; _last_free: " << PN_int32(_last_free)
+      << ";\n_next_free: " << int32_t(_next_free)
+      << "; _last_free: " << int32_t(_last_free)
       << "; _size: " << _size
       << "; _free: " << _free
       << "; used: " << _size - _free
@@ -232,13 +232,13 @@ write(ostream &out) const {
       << ";\n";
 
   out << "Table:";
-  for (PN_uint32 i = 0; i < _size; ++i) {
-    out << " " << PN_int32(_table[i]);
+  for (uint32_t i = 0; i < _size; ++i) {
+    out << " " << int32_t(_table[i]);
   }
   out << "\n";
 
   out << "Free chain:";
-  PN_uint32 index = _next_free;
+  uint32_t index = _next_free;
   while (index != IndexEnd) {
     out << " " << index + _min;
     index = _table[index];

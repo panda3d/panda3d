@@ -68,16 +68,17 @@ PUBLISHED:
   bool hash_stream(istream &stream);
   INLINE void hash_ramfile(const Ramfile &ramfile);
   INLINE void hash_string(const string &data);
+  INLINE void hash_bytes(const pvector<unsigned char> &data);
   void hash_buffer(const char *buffer, int length);
 #endif  // HAVE_OPENSSL
 
 private:
-  static void encode_hex(PN_uint32 val, char *buffer);
-  static void decode_hex(const char *buffer, PN_uint32 &val);
+  static void encode_hex(uint32_t val, char *buffer);
+  static void decode_hex(const char *buffer, uint32_t &val);
   INLINE static char tohex(unsigned int nibble);
   INLINE static unsigned int fromhex(char digit);
 
-  PN_uint32 _hv[4];
+  uint32_t _hv[4];
 };
 
 INLINE ostream &operator << (ostream &out, const HashVal &hv);

@@ -70,6 +70,6 @@ make_instance_more_general(const string &type_name,
  */
 template<class Type>
 INLINE void Factory<Type>::
-register_factory(TypeHandle handle, CreateFunc *func) {
-  FactoryBase::register_factory(handle, (BaseCreateFunc *)func);
+register_factory(TypeHandle handle, CreateFunc *func, void *user_data) {
+  FactoryBase::register_factory(handle, (BaseCreateFunc *)func, user_data);
 }

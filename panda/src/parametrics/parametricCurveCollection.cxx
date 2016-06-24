@@ -87,6 +87,7 @@ remove_curve(ParametricCurve *curve) {
   return true;
 }
 
+
 /**
  * Removes the indicated ParametricCurve from the collection, by its index
  * number.
@@ -97,6 +98,20 @@ remove_curve(int index) {
   PT(ParametricCurve) curve = _curves[index];
   prepare_remove_curve(curve);
   _curves.erase(_curves.begin() + index);
+  redraw();
+}
+
+
+/**
+ * Replaces the indicated ParametricCurve from the collection, by its index
+ * number.
+ */
+void ParametricCurveCollection::
+set_curve(int index, ParametricCurve *curve) {
+  nassertv(index >= 0 && index < (int)_curves.size());
+  prepare_remove_curve(_curves[index]);
+  prepare_add_curve(curve);
+  _curves[index] = curve;
   redraw();
 }
 

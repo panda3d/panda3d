@@ -77,12 +77,14 @@ reset_data() {
   // the texture later.
   glGenTextures(1, &_index);
 
+#ifndef OPENGLES
   _handle = 0;
   _handle_resident = false;
+#endif
   _has_storage = false;
   _immutable = false;
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   // Mark the texture as coherent.
   if (gl_enable_memory_barriers) {
     _glgsg->_textures_needing_fetch_barrier.erase(this);
@@ -96,9 +98,9 @@ reset_data() {
 /**
  *
  */
+#ifndef OPENGLES
 void CLP(TextureContext)::
 make_handle_resident() {
-#ifndef OPENGLES
   if (_handle != 0) {
     if (!_handle_resident) {
       _glgsg->_glMakeTextureHandleResident(_handle);
@@ -106,18 +108,17 @@ make_handle_resident() {
     }
     set_resident(true);
   }
-#endif
 }
+#endif
 
 /**
  * Returns a handle for this texture.  Once this has been created, the texture
  * data may still be updated, but its properties may not.
  */
+#ifndef OPENGLES
 INLINE GLuint64 CLP(TextureContext)::
 get_handle() {
-#ifdef OPENGLES
   return 0;
-#else
   if (!_glgsg->_supports_bindless_texture) {
     return false;
   }
@@ -128,10 +129,10 @@ get_handle() {
 
   _immutable = true;
   return _handle;
-#endif
 }
+#endif
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
 /**
  *
  */
@@ -176,4 +177,4 @@ mark_incoherent(bool wrote) {
   _glgsg->_textures_needing_framebuffer_barrier.insert(this);
 }
 
-#endif // OPENGLES
+#endif  // !OPENGLES_1

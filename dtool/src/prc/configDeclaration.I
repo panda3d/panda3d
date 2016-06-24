@@ -187,7 +187,7 @@ get_int_word(size_t n) const {
  * Returns the int64 value of the nth word of the declaration's value, or 0 if
  * there is no nth value.  See also has_int64_word().
  */
-INLINE PN_int64 ConfigDeclaration::
+INLINE int64_t ConfigDeclaration::
 get_int64_word(size_t n) const {
   // We use has_string_word() instead of has_int64_word(), so we can return a
   // partial answer if there was one.

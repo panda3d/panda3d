@@ -674,7 +674,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
         // If the struct name didn't have an explicit template reference
         // before, now it does.
-        if (!_ident->_names.empty() && !_ident->_names.back().has_templ()) {
+        if (_ident != NULL && !_ident->_names.empty() && !_ident->_names.back().has_templ()) {
           if (rep->is_template()) {
             rep->_template_scope = (CPPTemplateScope *)NULL;
             CPPNameComponent nc(get_simple_name());

@@ -61,7 +61,7 @@ class Packager:
                 self.newName = str(self.filename)
 
             ext = Filename(self.newName).getExtension()
-            if ext == 'pz':
+            if ext == 'pz' or ext == 'gz':
                 # Strip off a .pz extension; we can compress files
                 # within the Multifile without it.
                 filename = Filename(self.newName)
@@ -2484,6 +2484,7 @@ class Packager:
             GlobPattern('libthr.so*'),
             GlobPattern('ld-linux.so*'),
             GlobPattern('ld-linux-*.so*'),
+            GlobPattern('librt.so*'),
             ]
 
         # A Loader for loading models.
@@ -3772,7 +3773,7 @@ class Packager:
             self.currentPackage.addFile(filename, newName = newName,
                                         explicit = False, unprocessed = unprocessed)
         else:
-            if ext == 'pz':
+            if ext == 'pz' or ext == 'gz':
                 # Strip off an implicit .pz extension.
                 newFilename = Filename(filename)
                 newFilename.setExtension('')

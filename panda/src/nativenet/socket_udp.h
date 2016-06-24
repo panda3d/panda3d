@@ -21,25 +21,22 @@
  * duplicates code from Socket_UDP_Outgoing, to avoid the problems of multiple
  * inheritance.
  */
-class EXPCL_PANDA_NATIVENET Socket_UDP : public Socket_UDP_Incoming
-{
+class EXPCL_PANDA_NATIVENET Socket_UDP : public Socket_UDP_Incoming {
 public:
 PUBLISHED:
-    inline Socket_UDP() { }
+  inline Socket_UDP() {}
 
-    // use this interface for a tagreted UDP connection
-    inline bool InitToAddress(const Socket_Address & address);
+  // use this interface for a tagreted UDP connection
+  inline bool InitToAddress(const Socket_Address &address);
 public:
-    inline bool Send(const char * data, int len);
+  inline bool Send(const char *data, int len);
 PUBLISHED:
-    inline bool Send(const string &data);
-    // use this interface for a none tagreted UDP connection
-    inline bool InitNoAddress();
+  inline bool Send(const string &data);
 public:
-    inline bool SendTo(const char * data, int len, const Socket_Address & address);
+  inline bool SendTo(const char *data, int len, const Socket_Address &address);
 PUBLISHED:
-    inline bool SendTo(const string &data, const Socket_Address & address);
-    inline bool SetToBroadCast();
+  inline bool SendTo(const string &data, const Socket_Address &address);
+  inline bool SetToBroadCast();
 
 public:
   static TypeHandle get_class_type() {
@@ -58,72 +55,64 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-/**
- * Ask the OS to let us receive BROADCASt packets on  this port..
- */
-inline bool Socket_UDP::SetToBroadCast()
-{
-    int optval = 1;
 
-    if (setsockopt(_socket, SOL_SOCKET, SO_BROADCAST, (char *)&optval, sizeof(optval)) != 0)
-        return false;
-    return true;
+/**
+ * Ask the OS to let us receive broadcast packets on this port.
+ */
+inline bool Socket_UDP::
+SetToBroadCast() {
+  int optval = 1;
+
+  if (setsockopt(_socket, SOL_SOCKET, SO_BROADCAST, (char *)&optval, sizeof(optval)) != 0) {
+    return false;
+  }
+  return true;
 }
+
 /**
- * Connects the Socket to a Specified address
+ * Connects the socket to a Specified address
  */
-inline bool Socket_UDP::InitToAddress(const Socket_Address & address)
-{
-    if (InitNoAddress() != true)
-        return false;
+inline bool Socket_UDP::
+InitToAddress(const Socket_Address &address) {
+  if (InitNoAddress() != true) {
+    return false;
+  }
 
-    if (DO_CONNECT(_socket, &address.GetAddressInfo()) != 0)
-        return ErrorClose();
-
-    return true;
-}
-/**
- * This will set a udp up for targeted sends..
- */
-inline bool Socket_UDP::InitNoAddress()
-{
-    Close();
-    _socket = DO_NEWUDP();
-    if (_socket == BAD_SOCKET)
-        return false;
-
-    return true;
+  if (DO_CONNECT(_socket, &address.GetAddressInfo()) != 0) {
+    return ErrorClose();
+  }
+  return true;
 }
 
 /**
  * Send data to connected address
  */
-inline bool Socket_UDP::Send(const char * data, int len)
-{
+inline bool Socket_UDP::
+Send(const char *data, int len) {
   return (DO_SOCKET_WRITE(_socket, data, len) == len);
 }
 
 /**
  * Send data to connected address
  */
-inline bool Socket_UDP::Send(const string &data)
-{
+inline bool Socket_UDP::
+Send(const string &data) {
   return Send(data.data(), data.size());
 }
 
 /**
  * Send data to specified address
  */
-inline bool Socket_UDP::SendTo(const char * data, int len, const Socket_Address & address)
-{
-    return (DO_SOCKET_WRITE_TO(_socket, data, len, &address.GetAddressInfo()) == len);
+inline bool Socket_UDP::
+SendTo(const char *data, int len, const Socket_Address &address) {
+  return (DO_SOCKET_WRITE_TO(_socket, data, len, &address.GetAddressInfo()) == len);
 }
 
 /**
  * Send data to specified address
  */
-inline bool Socket_UDP::SendTo(const string &data, const Socket_Address & address)
-{
+inline bool Socket_UDP::
+SendTo(const string &data, const Socket_Address &address) {
   return SendTo(data.data(), data.size(), address);
 }
 

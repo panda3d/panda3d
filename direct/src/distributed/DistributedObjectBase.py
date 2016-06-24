@@ -13,7 +13,6 @@ class DistributedObjectBase(DirectObject):
     def __init__(self, cr):
         assert self.notify.debugStateCall(self)
         self.cr = cr
-        self.children = {}
         self.parentId = None
         self.zoneId = None
 
