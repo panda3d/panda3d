@@ -44,6 +44,7 @@ PUBLISHED:
   int add_curves(PandaNode *node);
   bool remove_curve(ParametricCurve *curve);
   void remove_curve(int index);
+  void set_curve(int index, ParametricCurve *curve);
   bool has_curve(ParametricCurve *curve) const;
   void clear();
   void clear_timewarps();
@@ -60,6 +61,13 @@ PUBLISHED:
   MAKE_SEQ(get_timewarp_curves, get_num_timewarps, get_timewarp_curve);
 
   INLINE PN_stdfloat get_max_t() const;
+
+  MAKE_SEQ_PROPERTY(curves, get_num_curves, get_curve, set_curve, remove_curve);
+  MAKE_PROPERTY(xyz_curve, get_xyz_curve);
+  MAKE_PROPERTY(hpr_curve, get_hpr_curve);
+  MAKE_PROPERTY(default_curve, get_default_curve);
+  MAKE_SEQ_PROPERTY(timewarp_curves, get_num_timewarps, get_timewarp_curve);
+  MAKE_PROPERTY(max_t, get_max_t);
 
   void make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit);
   void face_forward(PN_stdfloat segments_per_unit);

@@ -51,7 +51,7 @@ PUBLISHED:
   string read_samples(int n);
 
 public:
-  virtual void read_samples(int n, PN_int16 *data);
+  virtual void read_samples(int n, int16_t *data);
 
 protected:
   PT(MovieAudio) _source;
@@ -62,7 +62,7 @@ protected:
   bool _can_seek_fast;
   bool _aborted;
   double _last_seek;
-  PN_int64 _samples_read;
+  int64_t _samples_read;
 
 public:
   static TypeHandle get_class_type() {

@@ -8,16 +8,17 @@
 /**
  * Base functionality for a TCP rendezvous socket
  */
-class EXPCL_PANDA_NATIVENET Socket_TCP_Listen : public Socket_IP
-{
+class EXPCL_PANDA_NATIVENET Socket_TCP_Listen : public Socket_IP {
 public:
 PUBLISHED:
-    Socket_TCP_Listen() {};
-    ~Socket_TCP_Listen() {};
-    inline bool OpenForListen(const Socket_Address & Inaddess, int backlog_size = 1024);
-    inline bool GetIncomingConnection(Socket_TCP & newsession, Socket_Address &address);
+  Socket_TCP_Listen() {};
+  ~Socket_TCP_Listen() {};
+  inline bool OpenForListen(unsigned short port, int backlog_size = 1024);
+  inline bool OpenForListen(const Socket_Address &address, int backlog_size = 1024);
+  inline bool GetIncomingConnection(Socket_TCP &newsession, Socket_Address &address);
+
 public:
-    inline bool GetIncomingConnection(SOCKET & newsession, Socket_Address &address);
+  inline bool GetIncomingConnection(SOCKET &newsession, Socket_Address &address);
 
 public:
   static TypeHandle get_class_type() {
@@ -40,43 +41,77 @@ private:
 /**
  * This function will initialize a listening Socket
  */
-inline bool Socket_TCP_Listen::OpenForListen(const Socket_Address & Inaddess, int backlog_size )
-{
-    ErrorClose();
-    _socket = DO_NEWTCP();
+inline bool Socket_TCP_Listen::
+OpenForListen(unsigned short port, int backlog_size) {
+  ErrorClose();
 
-    SetReuseAddress();
+  Socket_Address address;
+  if (support_ipv6) {
+    // Create a socket supporting both IPv4 and IPv6.
+    address.set_any_IPv6(port);
+    _socket = DO_NEWTCP(AF_INET6);
+    SetV6Only(false);
+  } else {
+    address.set_any_IP(port);
+    _socket = DO_NEWTCP(AF_INET);
+  }
 
-    if (DO_BIND(_socket, &Inaddess.GetAddressInfo()) != 0) {
-      return ErrorClose();
-    }
+  SetReuseAddress();
 
-    if (DO_LISTEN(_socket, backlog_size) != 0) {
-      return ErrorClose();
-    }
+  if (DO_BIND(_socket, &address.GetAddressInfo()) != 0) {
+    return ErrorClose();
+  }
 
-    return true;
+  if (DO_LISTEN(_socket, backlog_size) != 0) {
+    return ErrorClose();
+  }
+
+  return true;
 }
+
+/**
+ * This function will initialize a listening Socket
+ */
+inline bool Socket_TCP_Listen::
+OpenForListen(const Socket_Address &address, int backlog_size) {
+  ErrorClose();
+
+  _socket = DO_NEWTCP(address.get_family());
+
+  SetReuseAddress();
+
+  if (DO_BIND(_socket, &address.GetAddressInfo()) != 0) {
+    return ErrorClose();
+  }
+
+  if (DO_LISTEN(_socket, backlog_size) != 0) {
+    return ErrorClose();
+  }
+
+  return true;
+}
+
 /**
  * This function is used to accept new connections
  */
-inline bool Socket_TCP_Listen::GetIncomingConnection(SOCKET & newsession, Socket_Address &address)
-{
-    newsession = DO_ACCEPT(_socket, &address.GetAddressInfo());
-    if (newsession == BAD_SOCKET)
-        return false;
-    return true;
+inline bool Socket_TCP_Listen::
+GetIncomingConnection(SOCKET &newsession, Socket_Address &address) {
+  newsession = DO_ACCEPT(_socket, &address.GetAddressInfo());
+  if (newsession == BAD_SOCKET) {
+    return false;
+  }
+  return true;
 }
 
+inline bool Socket_TCP_Listen::
+GetIncomingConnection(Socket_TCP &newsession, Socket_Address &address) {
+  SOCKET sck;
+  if (!GetIncomingConnection(sck, address)) {
+    return false;
+  }
 
-inline bool Socket_TCP_Listen::GetIncomingConnection(Socket_TCP & newsession, Socket_Address &address)
-{
-    SOCKET sck;
-    if(!GetIncomingConnection(sck,address))
-        return false;
-
-    newsession.SetSocket(sck);
-    return true;
+  newsession.SetSocket(sck);
+  return true;
 }
 
 #endif //__SOCKET_TCP_LISTEN_H__

@@ -86,7 +86,7 @@ get_num_contacts() const {
 /**
  *
  */
-INLINE BulletContact &BulletContactResult::
+INLINE BulletContact BulletContactResult::
 get_contact(int idx) {
 
   nassertr(idx >= 0 && idx < (int)_contacts.size(), _empty);

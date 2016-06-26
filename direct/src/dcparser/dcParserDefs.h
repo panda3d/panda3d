@@ -48,8 +48,8 @@ public:
   union U {
     int s_int;
     unsigned int s_uint;
-    PN_int64 int64;
-    PN_uint64 uint64;
+    int64_t int64;
+    uint64_t uint64;
     double real;
     bool flag;
     DCClass *dclass;

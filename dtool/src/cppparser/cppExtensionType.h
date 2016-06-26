@@ -34,6 +34,8 @@ public:
     T_class,
     T_struct,
     T_union,
+    T_enum_class,
+    T_enum_struct,
   };
 
   CPPExtensionType(Type type, CPPIdentifier *ident, CPPScope *current_scope,

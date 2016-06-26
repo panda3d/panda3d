@@ -2242,7 +2242,7 @@ make_vertex_data(const EggRenderState *render_state,
     PT(GeomVertexArrayFormat) anim_array_format = new GeomVertexArrayFormat;
     anim_array_format->add_column
       (InternalName::get_transform_blend(), 1,
-       Geom::NT_uint16, Geom::C_index);
+       Geom::NT_uint16, Geom::C_index, 0, 2);
     temp_format->add_array(anim_array_format);
 
     pmap<string, BitArray> slider_names;

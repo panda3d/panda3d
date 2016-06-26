@@ -23,16 +23,15 @@ clear() {
 
  */
 INLINE BaseForce *ForceNode::
-get_force(int index) const {
-  nassertr(index >= 0 && index < (int)_forces.size(),
-           (BaseForce *) NULL);
+get_force(size_t index) const {
+  nassertr(index < _forces.size(), (BaseForce *) NULL);
   return _forces[index];
 }
 
 /**
 
  */
-INLINE int ForceNode::
+INLINE size_t ForceNode::
 get_num_forces() const {
   return _forces.size();
 }

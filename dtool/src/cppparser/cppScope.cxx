@@ -18,6 +18,7 @@
 #include "cppTypedefType.h"
 #include "cppTypeDeclaration.h"
 #include "cppExtensionType.h"
+#include "cppEnumType.h"
 #include "cppInstance.h"
 #include "cppInstanceIdentifier.h"
 #include "cppIdentifier.h"
@@ -124,37 +125,72 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
  *
  */
 void CPPScope::
-add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
-               const cppyyltype &pos) {
+add_enum_value(CPPInstance *inst) {
   inst->_vis = _current_vis;
-
-  if (inst->_leading_comment == (CPPCommentBlock *)NULL) {
-    // Same-line comment?
-    CPPCommentBlock *comment =
-      preprocessor->get_comment_on(pos.first_line, pos.file);
-
-    if (comment == (CPPCommentBlock *)NULL) {
-      // Nope.  Check for a comment before this line.
-      comment =
-        preprocessor->get_comment_before(pos.first_line, pos.file);
-
-      if (comment != NULL) {
-        // This is a bit of a hack, but it prevents us from picking up a same-
-        // line comment from the previous line.
-        if (comment->_line_number != pos.first_line - 1 ||
-            comment->_col_number <= pos.first_column) {
-
-          inst->_leading_comment = comment;
-        }
-      }
-    } else {
-      inst->_leading_comment = comment;
-    }
-  }
 
   string name = inst->get_simple_name();
   if (!name.empty()) {
     _enum_values[name] = inst;
+  }
+}
+
+/**
+ *
+ */
+void CPPScope::
+define_typedef_type(CPPTypedefType *type, CPPPreprocessor *error_sink) {
+  string name = type->get_simple_name();
+
+  pair<Types::iterator, bool> result =
+    _types.insert(Types::value_type(name, type));
+
+  if (!result.second) {
+    CPPType *other_type = result.first->second;
+    CPPTypedefType *other_td = other_type->as_typedef_type();
+
+    // We don't do redefinitions of typedefs.  But we don't complain as long
+    // as this is actually a typedef to the previous definition.
+    if (other_type != type->_type &&
+        (other_td == NULL || !other_td->_type->is_equivalent(*type->_type))) {
+
+      if (error_sink != NULL) {
+        ostringstream errstr;
+        type->output(errstr, 0, NULL, false);
+        errstr << " has conflicting declaration as ";
+        other_type->output(errstr, 0, NULL, true);
+        error_sink->error(errstr.str(), type->_ident->_loc);
+        error_sink->error("previous definition is here",
+                          other_td->_ident->_loc);
+      }
+    }
+  } else {
+    _types[name] = type;
+  }
+
+  // This might be a templated "using" definition.
+  if (type->is_template()) {
+    CPPTemplateScope *scope = type->get_template_scope();
+    if (scope->_parameters._parameters.size() == 0) {
+      return;
+    }
+
+    string simple_name = type->get_simple_name();
+
+    pair<Templates::iterator, bool> result =
+      _templates.insert(Templates::value_type(simple_name, type));
+
+    if (!result.second) {
+      // The template was not inserted because we already had a template
+      // definition with the given name.  If the previous definition was
+      // incomplete, replace it.
+      CPPDeclaration *old_templ = (*result.first).second;
+      CPPType *old_templ_type = old_templ->as_type();
+      if (old_templ_type == NULL || old_templ_type->is_incomplete()) {
+        // The previous template definition was incomplete, maybe a forward
+        // reference; replace it with the good one.
+        (*result.first).second = type;
+      }
+    }
   }
 }
 
@@ -183,6 +219,8 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
     break;
 
   case CPPExtensionType::T_enum:
+  case CPPExtensionType::T_enum_struct:
+  case CPPExtensionType::T_enum_class:
     _enums[name] = type;
     break;
   }
@@ -606,6 +644,11 @@ find_scope(const string &name, bool recurse) const {
     if (st != NULL) {
       return st->_scope;
     }
+
+    CPPEnumType *et = type->as_enum_type();
+    if (et != NULL) {
+      return et->_scope;
+    }
   }
 
   Using::const_iterator ui;
@@ -645,11 +688,16 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
   }
 
   CPPStructType *st = type->as_struct_type();
-  if (st == NULL) {
-    return NULL;
+  if (st != NULL) {
+    return st->_scope;
   }
 
-  return st->_scope;
+  CPPEnumType *et = type->as_enum_type();
+  if (et != NULL) {
+    return et->_scope;
+  }
+
+  return NULL;
 }
 
 /**
@@ -1048,39 +1096,12 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
                    CPPPreprocessor *error_sink) {
   CPPTypedefType *def = decl->as_typedef_type();
   if (def != NULL) {
-    string name = def->get_simple_name();
-
-    pair<Types::iterator, bool> result =
-      _types.insert(Types::value_type(name, def));
-
-    if (!result.second) {
-      CPPType *other_type = result.first->second;
-      CPPTypedefType *other_td = other_type->as_typedef_type();
-
-      // We don't do redefinitions of typedefs.  But we don't complain as long
-      // as this is actually a typedef to the previous definition.
-      if (other_type != def->_type &&
-          (other_td == NULL || !other_td->_type->is_equivalent(*def->_type))) {
-
-        if (error_sink != NULL) {
-          ostringstream errstr;
-          def->output(errstr, 0, NULL, false);
-          errstr << " has conflicting declaration as ";
-          other_type->output(errstr, 0, NULL, true);
-          error_sink->error(errstr.str(), def->_ident->_loc);
-          error_sink->error("previous definition is here",
-                            other_td->_ident->_loc);
-        }
-      }
-    } else {
-      _types[name] = def;
-    }
+    define_typedef_type(def, error_sink);
 
     CPPExtensionType *et = def->_type->as_extension_type();
     if (et != NULL) {
       define_extension_type(et, error_sink);
     }
-
     return;
   }
 

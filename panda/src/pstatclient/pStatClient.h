@@ -17,7 +17,6 @@
 #include "pandabase.h"
 
 #include "pStatFrameData.h"
-#include "pStatClientImpl.h"
 #include "pStatCollectorDef.h"
 #include "reMutex.h"
 #include "lightMutex.h"
@@ -31,6 +30,7 @@
 #include "numeric_types.h"
 #include "bitArray.h"
 
+class PStatClientImpl;
 class PStatCollector;
 class PStatCollectorDef;
 class PStatThread;
@@ -50,16 +50,16 @@ class GraphicsStateGuardian;
  * is therefore defined as a stub class.
  */
 #ifdef DO_PSTATS
-class EXPCL_PANDA_PSTATCLIENT PStatClient : public ConnectionManager, public Thread::PStatsCallback {
+class EXPCL_PANDA_PSTATCLIENT PStatClient : public Thread::PStatsCallback {
 public:
   PStatClient();
   ~PStatClient();
 
 PUBLISHED:
-  INLINE void set_client_name(const string &name);
-  INLINE string get_client_name() const;
-  INLINE void set_max_rate(double rate);
-  INLINE double get_max_rate() const;
+  void set_client_name(const string &name);
+  string get_client_name() const;
+  void set_max_rate(double rate);
+  double get_max_rate() const;
 
   INLINE int get_num_collectors() const;
   PStatCollector get_collector(int index) const;
@@ -78,7 +78,15 @@ PUBLISHED:
   PStatThread get_main_thread() const;
   PStatThread get_current_thread() const;
 
-  INLINE double get_real_time() const;
+  double get_real_time() const;
+
+  MAKE_PROPERTY(client_name, get_client_name, set_client_name);
+  MAKE_PROPERTY(max_rate, get_max_rate, set_max_rate);
+  MAKE_SEQ_PROPERTY(collectors, get_num_collectors, get_collector);
+  MAKE_SEQ_PROPERTY(threads, get_num_threads, get_thread);
+  MAKE_PROPERTY(main_thread, get_main_thread);
+  MAKE_PROPERTY(current_thread, get_current_thread);
+  MAKE_PROPERTY(real_time, get_real_time);
 
   INLINE static bool connect(const string &hostname = string(), int port = -1);
   INLINE static void disconnect();
@@ -91,11 +99,11 @@ PUBLISHED:
 
   void client_main_tick();
   void client_thread_tick(const string &sync_name);
-  INLINE bool client_connect(string hostname, int port);
+  bool client_connect(string hostname, int port);
   void client_disconnect();
-  INLINE bool client_is_connected() const;
+  bool client_is_connected() const;
 
-  INLINE void client_resume_after_pause();
+  void client_resume_after_pause();
 
   static PStatClient *get_global_pstats();
 
@@ -103,6 +111,7 @@ private:
   INLINE bool has_impl() const;
   INLINE PStatClientImpl *get_impl();
   INLINE const PStatClientImpl *get_impl() const;
+  void make_impl() const;
 
   PStatCollector make_collector_with_relname(int parent_index, string relname);
   PStatCollector make_collector_with_name(int parent_index, const string &name);
@@ -219,7 +228,7 @@ private:
   AtomicAdjust::Integer _threads_size;  // size of the allocated array
   AtomicAdjust::Integer _num_threads;   // number of in-use elements within the array
 
-  PStatClientImpl *_impl;
+  mutable PStatClientImpl *_impl;
 
   static PStatCollector _heap_total_size_pcollector;
   static PStatCollector _heap_overhead_size_pcollector;

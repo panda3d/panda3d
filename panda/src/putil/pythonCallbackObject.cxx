@@ -126,8 +126,10 @@ do_python_callback(CallbackData *cbdata) {
   Py_DECREF(args);
 
   if (result == (PyObject *)NULL) {
-    util_cat.error()
-      << "Exception occurred in " << *this << "\n";
+    if (PyErr_Occurred() != PyExc_SystemExit) {
+      util_cat.error()
+        << "Exception occurred in " << *this << "\n";
+    }
   } else {
     Py_DECREF(result);
   }

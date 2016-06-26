@@ -50,6 +50,11 @@ PUBLISHED:
 
   virtual void write(ostream &out, int indent_level) const;
 
+  MAKE_PROPERTY(order, get_order, set_order);
+  MAKE_PROPERTY(degree, get_degree);
+  MAKE_PROPERTY(closed, is_closed);
+  MAKE_SEQ_PROPERTY(knots, get_num_knots, get_knot, set_knot);
+
 private:
   typedef vector_double Knots;
   Knots _knots;

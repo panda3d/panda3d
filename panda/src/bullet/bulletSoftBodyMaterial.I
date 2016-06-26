@@ -20,7 +20,7 @@ INLINE BulletSoftBodyMaterial::
 }
 
 /**
- * Named constructor intended to be used for asserts with have to return a
+ * Named constructor intended to be used for asserts which have to return a
  * concrete value.
  */
 INLINE BulletSoftBodyMaterial BulletSoftBodyMaterial::
@@ -44,7 +44,7 @@ get_material() const {
  * Getter for the property m_kLST.
  */
 INLINE PN_stdfloat BulletSoftBodyMaterial::
-getLinearStiffness() const {
+get_linear_stiffness() const {
 
   return (PN_stdfloat)_material.m_kLST;
 }
@@ -53,7 +53,7 @@ getLinearStiffness() const {
  * Setter for the property m_kLST.
  */
 INLINE void BulletSoftBodyMaterial::
-setLinearStiffness(PN_stdfloat value) {
+set_linear_stiffness(PN_stdfloat value) {
 
   _material.m_kLST = (btScalar)value;
 }
@@ -62,7 +62,7 @@ setLinearStiffness(PN_stdfloat value) {
  * Getter for the property m_kAST.
  */
 INLINE PN_stdfloat BulletSoftBodyMaterial::
-getAngularStiffness() const {
+get_angular_stiffness() const {
 
   return (PN_stdfloat)_material.m_kAST;
 }
@@ -71,7 +71,7 @@ getAngularStiffness() const {
  * Setter for the property m_kAST.
  */
 INLINE void BulletSoftBodyMaterial::
-setAngularStiffness(PN_stdfloat value) {
+set_angular_stiffness(PN_stdfloat value) {
 
   _material.m_kAST = (btScalar)value;
 }
@@ -80,7 +80,7 @@ setAngularStiffness(PN_stdfloat value) {
  * Getter for the property m_kVST.
  */
 INLINE PN_stdfloat BulletSoftBodyMaterial::
-getVolumePreservation() const {
+get_volume_preservation() const {
 
   return (PN_stdfloat)_material.m_kVST;
 }
@@ -89,7 +89,7 @@ getVolumePreservation() const {
  * Setter for the property m_kVST.
  */
 INLINE void BulletSoftBodyMaterial::
-setVolumePreservation(PN_stdfloat value) {
+set_volume_preservation(PN_stdfloat value) {
 
   _material.m_kVST = (btScalar)value;
 }

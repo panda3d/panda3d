@@ -1955,6 +1955,9 @@ reset() {
 #endif
 
 #ifdef OPENGLES_1
+  _supports_framebuffer_multisample = false;
+  _supports_framebuffer_blit = false;
+
   if (has_extension("GL_OES_framebuffer_object")) {
     _supports_framebuffer_object = true;
     _glIsRenderbuffer = (PFNGLISRENDERBUFFEROESPROC)
@@ -2012,9 +2015,76 @@ reset() {
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
   _glGenerateMipmap = glGenerateMipmap;
 
-#else
-  // TODO: add ARB3.0 version
-  if (has_extension("GL_EXT_framebuffer_object")) {
+  if (is_at_least_gles_version(3, 0)) {
+    _supports_framebuffer_multisample = true;
+    _supports_framebuffer_blit = true;
+
+    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
+      get_extension_func("glRenderbufferStorageMultisample");
+    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
+      get_extension_func("glBlitFramebuffer");
+  } else {
+    if (has_extension("GL_ANGLE_framebuffer_multisample")) {
+      _supports_framebuffer_multisample = true;
+      _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEANGLEPROC)
+        get_extension_func("glRenderbufferStorageMultisampleANGLE");
+    } else {
+      _supports_framebuffer_multisample = false;
+    }
+    if (has_extension("GL_ANGLE_framebuffer_blit")) {
+      _supports_framebuffer_blit = true;
+      _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERANGLEPROC)
+        get_extension_func("glBlitFramebufferANGLE");
+    } else {
+      _supports_framebuffer_blit = false;
+    }
+  }
+#else  // Desktop OpenGL case.
+  if (is_at_least_gl_version(3, 0) || has_extension("GL_ARB_framebuffer_object")) {
+    _supports_framebuffer_object = true;
+    _supports_framebuffer_multisample = true;
+    _supports_framebuffer_blit = true;
+
+    _glIsRenderbuffer = (PFNGLISRENDERBUFFERPROC)
+      get_extension_func("glIsRenderbuffer");
+    _glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC)
+      get_extension_func("glBindRenderbuffer");
+    _glDeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSPROC)
+      get_extension_func("glDeleteRenderbuffers");
+    _glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)
+      get_extension_func("glGenRenderbuffers");
+    _glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)
+      get_extension_func("glRenderbufferStorage");
+    _glGetRenderbufferParameteriv = (PFNGLGETRENDERBUFFERPARAMETERIVPROC)
+      get_extension_func("glGetRenderbufferParameteriv");
+    _glIsFramebuffer = (PFNGLISFRAMEBUFFERPROC)
+      get_extension_func("glIsFramebuffer");
+    _glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)
+      get_extension_func("glBindFramebuffer");
+    _glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)
+      get_extension_func("glDeleteFramebuffers");
+    _glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)
+      get_extension_func("glGenFramebuffers");
+    _glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)
+      get_extension_func("glCheckFramebufferStatus");
+    _glFramebufferTexture1D = (PFNGLFRAMEBUFFERTEXTURE1DPROC)
+      get_extension_func("glFramebufferTexture1D");
+    _glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)
+      get_extension_func("glFramebufferTexture2D");
+    _glFramebufferTexture3D = (PFNGLFRAMEBUFFERTEXTURE3DPROC)
+      get_extension_func("glFramebufferTexture3D");
+    _glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)
+      get_extension_func("glFramebufferRenderbuffer");
+    _glGetFramebufferAttachmentParameteriv = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC)
+      get_extension_func("glGetFramebufferAttachmentParameteriv");
+    _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
+      get_extension_func("glGenerateMipmap");
+    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
+      get_extension_func("glRenderbufferStorageMultisampleEXT");
+    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)
+      get_extension_func("glBlitFramebuffer");
+
+  } else if (has_extension("GL_EXT_framebuffer_object")) {
     _supports_framebuffer_object = true;
     _glIsRenderbuffer = (PFNGLISRENDERBUFFEREXTPROC)
       get_extension_func("glIsRenderbufferEXT");
@@ -2051,14 +2121,25 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPEXTPROC)
       get_extension_func("glGenerateMipmapEXT");
 
-  } else if (is_at_least_gl_version(3, 0)) {
-    // This case should go away when we support the ARB/3.0 version of FBOs.
-    _supports_framebuffer_object = false;
-    _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
-      get_extension_func("glGenerateMipmap");
+    if (has_extension("GL_EXT_framebuffer_multisample")) {
+      _supports_framebuffer_multisample = true;
+      _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
+        get_extension_func("glRenderbufferStorageMultisampleEXT");
+    } else {
+      _supports_framebuffer_multisample = false;
+    }
+    if (has_extension("GL_EXT_framebuffer_blit")) {
+      _supports_framebuffer_blit = true;
+      _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
+        get_extension_func("glBlitFramebufferEXT");
+    } else {
+      _supports_framebuffer_blit = false;
+    }
 
   } else {
     _supports_framebuffer_object = false;
+    _supports_framebuffer_multisample = false;
+    _supports_framebuffer_blit = false;
     _glGenerateMipmap = NULL;
   }
 #endif
@@ -2087,46 +2168,13 @@ reset() {
   }
 #endif  // !OPENGLES_1
 
-  _supports_framebuffer_multisample = false;
-  if (is_at_least_gles_version(3, 0)) {
-    _supports_framebuffer_multisample = true;
-    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
-      get_extension_func("glRenderbufferStorageMultisample");
-
-#ifdef OPENGLES
-  } else if (has_extension("GL_APPLE_framebuffer_multisample")) {
-    _supports_framebuffer_multisample = true;
-    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEAPPLEPROC)
-      get_extension_func("glRenderbufferStorageMultisampleAPPLE");
-#else
-  } else if (has_extension("GL_EXT_framebuffer_multisample")) {
-    _supports_framebuffer_multisample = true;
-    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
-      get_extension_func("glRenderbufferStorageMultisampleEXT");
-#endif
-  }
-
 #ifndef OPENGLES
   _supports_framebuffer_multisample_coverage_nv = false;
-  if (has_extension("GL_NV_framebuffer_multisample_coverage")) {
+  if (_supports_framebuffer_multisample &&
+      has_extension("GL_NV_framebuffer_multisample_coverage")) {
     _supports_framebuffer_multisample_coverage_nv = true;
     _glRenderbufferStorageMultisampleCoverage = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)
       get_extension_func("glRenderbufferStorageMultisampleCoverageNV");
-  }
-#endif
-
-#ifndef OPENGLES_1
-  _supports_framebuffer_blit = false;
-
-  if (is_at_least_gles_version(3, 0)) {
-    _supports_framebuffer_blit = true;
-    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
-      get_extension_func("glBlitFramebuffer");
-
-  } else if (has_extension("GL_EXT_framebuffer_blit")) {
-    _supports_framebuffer_blit = true;
-    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
-      get_extension_func("glBlitFramebufferEXT");
   }
 #endif
 
@@ -8286,6 +8334,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_blue:
       case Texture::F_r8i:
       case Texture::F_r16:
+      case Texture::F_r16i:
       case Texture::F_r32:
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
@@ -8491,6 +8540,7 @@ get_external_image_format(Texture *tex) const {
 
 #ifndef OPENGLES_1
   case Texture::F_r8i:
+  case Texture::F_r16i:
   case Texture::F_r32i:
     return GL_RED_INTEGER;
   case Texture::F_rg8i:
@@ -8548,6 +8598,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rg8i:
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
+      case Texture::F_r16i:
       case Texture::F_r32i:
       case Texture::F_r11_g11_b10:
       case Texture::F_rgb9_e5:
@@ -9023,6 +9074,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_R16;
     } else {
       return GL_R16_SNORM;
+    }
+  case Texture::F_r16i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_R16UI;
+    } else {
+      return GL_R16I;
     }
   case Texture::F_rg16:
     if (tex->get_component_type() == Texture::T_float) {
@@ -10626,7 +10683,7 @@ upload_usage_texture(int width, int height) {
 
 
   // Allocate a temporary array large enough to contain the toplevel mipmap.
-  PN_uint32 *buffer = (PN_uint32 *)PANDA_MALLOC_ARRAY(width * height * 4);
+  uint32_t *buffer = (uint32_t *)PANDA_MALLOC_ARRAY(width * height * 4);
 
   int n = 0;
   while (true) {
@@ -10639,7 +10696,7 @@ upload_usage_texture(int width, int height) {
       struct {
         unsigned char r, g, b, a;
       } b;
-      PN_uint32 w;
+      uint32_t w;
     } store;
 
     store.b.r = (unsigned char)(c[0] * 255.0f);
@@ -11018,7 +11075,9 @@ do_issue_tex_gen() {
  */
 bool CLP(GraphicsStateGuardian)::
 specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
+#ifndef OPENGLES
   nassertr(gtc->_handle == 0 /* can't modify tex with active handle */, false);
+#endif
 
   Texture *tex = gtc->get_texture();
 
@@ -11454,7 +11513,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   if (needs_reload && gtc->_immutable) {
-    GLCAT.warning() << "Attempt to modify texture with immutable storage, recreating texture.\n";
+    GLCAT.info() << "Attempt to modify texture with immutable storage, recreating texture.\n";
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
 
@@ -12612,6 +12671,16 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_unsigned_byte;
     format = Texture::F_rgba8i;
     break;
+
+  case GL_R16I:
+    type = Texture::T_short;
+    format = Texture::F_r16i;
+    break;
+  case GL_R16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_r16i;
+    break;
+
 #endif
 
 #ifndef OPENGLES_1

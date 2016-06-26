@@ -35,7 +35,7 @@ PUBLISHED:
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, PN_int16 *data);
+  virtual void read_samples(int n, int16_t *data);
 
   bool _is_valid;
 

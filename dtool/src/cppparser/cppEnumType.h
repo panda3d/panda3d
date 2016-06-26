@@ -16,6 +16,7 @@
 
 #include "dtoolbase.h"
 
+#include "cppBisonDefs.h"
 #include "cppExtensionType.h"
 
 #include <vector>
@@ -30,15 +31,16 @@ class CPPScope;
  */
 class CPPEnumType : public CPPExtensionType {
 public:
-  CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
-              const CPPFile &file);
-  CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
-              CPPScope *current_scope, const CPPFile &file);
+  CPPEnumType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
+              CPPScope *scope, const CPPFile &file);
+  CPPEnumType(Type type, CPPIdentifier *ident, CPPType *element_type,
+              CPPScope *current_scope, CPPScope *scope, const CPPFile &file);
 
-  CPPType *get_element_type();
+  bool is_scoped() const;
+  CPPType *get_underlying_type();
 
-  CPPInstance *add_element(const string &name,
-                           CPPExpression *value = (CPPExpression *)NULL);
+  CPPInstance *add_element(const string &name, CPPExpression *value,
+                           CPPPreprocessor *preprocessor, const cppyyltype &pos);
 
   virtual bool is_incomplete() const;
 
@@ -54,6 +56,7 @@ public:
   virtual CPPEnumType *as_enum_type();
 
   CPPScope *_parent_scope;
+  CPPScope *_scope;
   CPPType *_element_type;
 
   typedef vector<CPPInstance *> Elements;

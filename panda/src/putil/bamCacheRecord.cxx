@@ -232,15 +232,20 @@ format_timestamp(time_t timestamp) {
   }
 
   time_t now = time(NULL);
-  struct tm *tm_p = localtime(&timestamp);
+  struct tm atm;
+#ifdef _WIN32
+  localtime_s(&atm, &timestamp);
+#else
+  localtime_r(&timestamp, &atm);
+#endif
 
   if (timestamp > now || (now - timestamp > 86400 * 365)) {
     // A timestamp in the future, or more than a year in the past, gets a year
     // appended.
-    strftime(buffer, buffer_size, "%b %d  %Y", tm_p);
+    strftime(buffer, buffer_size, "%b %d  %Y", &atm);
   } else {
     // Otherwise, within the past year, show the date and time.
-    strftime(buffer, buffer_size, "%b %d %H:%M", tm_p);
+    strftime(buffer, buffer_size, "%b %d %H:%M", &atm);
   }
 
   return buffer;

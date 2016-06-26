@@ -55,9 +55,9 @@ PUBLISHED:
 
   ShaderTerrainMesh();
 
-  INLINE void set_heightfield_filename(const Filename& filename);
-  INLINE const Filename& get_heightfield_filename() const;
-  MAKE_PROPERTY(heightfield_filename, get_heightfield_filename, set_heightfield_filename);
+  INLINE void set_heightfield(Texture* heightfield);
+  INLINE Texture* get_heightfield() const;
+  MAKE_PROPERTY(heightfield, get_heightfield, set_heightfield);
 
   INLINE void set_chunk_size(size_t chunk_size);
   INLINE size_t get_chunk_size() const;
@@ -74,9 +74,6 @@ PUBLISHED:
   INLINE void set_target_triangle_width(PN_stdfloat target_triangle_width);
   INLINE PN_stdfloat get_target_triangle_width() const;
   MAKE_PROPERTY(target_triangle_width, get_target_triangle_width, set_target_triangle_width);
-
-  INLINE Texture* get_heightfield_tex() const;
-  MAKE_PROPERTY(heightfield_tex, get_heightfield_tex);
 
   LPoint3 uv_to_world(const LTexCoord& coord) const;
   INLINE LPoint3 uv_to_world(PN_stdfloat u, PN_stdfloat v) const;
@@ -152,8 +149,8 @@ private:
     ChunkDataEntry* storage_ptr;
   };
 
-  bool do_load_heightfield();
-  void do_convert_heightfield();
+  bool do_check_heightfield();
+  void do_extract_heightfield();
   void do_init_data_texture();
   void do_create_chunks();
   void do_init_chunk(Chunk* chunk);
@@ -164,7 +161,6 @@ private:
   bool do_check_lod_matches(Chunk* chunk, TraversalData* data);
 
   Chunk _base_chunk;
-  Filename _heightfield_source;
   size_t _size;
   size_t _chunk_size;
   bool _generate_patches;

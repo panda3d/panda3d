@@ -22,14 +22,6 @@ URLSpec(const string &url, bool server_name_expected) {
 /**
  *
  */
-INLINE URLSpec::
-URLSpec(const URLSpec &copy) {
-  (*this) = copy;
-}
-
-/**
- *
- */
 INLINE void URLSpec::
 operator = (const string &url) {
   set_url(url);
@@ -40,7 +32,7 @@ operator = (const string &url) {
  */
 INLINE bool URLSpec::
 operator == (const URLSpec &other) const {
-  return _url == other._url;
+  return compare_to(other) == 0;
 }
 
 /**
@@ -48,7 +40,7 @@ operator == (const URLSpec &other) const {
  */
 INLINE bool URLSpec::
 operator != (const URLSpec &other) const {
-  return !operator == (other);
+  return compare_to(other) != 0;
 }
 
 /**
@@ -56,16 +48,7 @@ operator != (const URLSpec &other) const {
  */
 INLINE bool URLSpec::
 operator < (const URLSpec &other) const {
-  return _url < other._url;
-}
-
-/**
- * Returns a number less than zero if this URLSpec sorts before the other one,
- * greater than zero if it sorts after, or zero if they are equivalent.
- */
-INLINE int URLSpec::
-compare_to(const URLSpec &other) const {
-  return strcmp(_url.c_str(), other._url.c_str());
+  return compare_to(other) < 0;
 }
 
 /**
@@ -148,7 +131,8 @@ get_username() const {
 }
 
 /**
- * Returns the server name specified by the URL, if any.
+ * Returns the server name specified by the URL, if any.  In case of an IPv6
+ * address, does not include the enclosing brackets.
  */
 INLINE string URLSpec::
 get_server() const {
@@ -218,11 +202,21 @@ c_str() const {
 }
 
 /**
- *
+ * Returns false if the URLSpec is valid (not empty), or true if it is an
+ * empty string.
  */
 INLINE bool URLSpec::
 empty() const {
   return _url.empty();
+}
+
+/**
+ * Returns true if the URLSpec is valid (not empty), or false if it is an
+ * empty string.
+ */
+INLINE URLSpec::
+operator bool() const {
+  return !_url.empty();
 }
 
 /**
@@ -236,9 +230,17 @@ length() const {
 /**
  *
  */
+INLINE size_t URLSpec::
+size() const {
+  return _url.size();
+}
+
+/**
+ *
+ */
 INLINE char URLSpec::
-operator [] (int n) const {
-  nassertr(n >= 0 && n < (int)_url.length(), '\0');
+operator [] (size_t n) const {
+  nassertr(n < _url.length(), '\0');
   return _url[n];
 }
 

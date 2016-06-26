@@ -87,9 +87,9 @@ open_read(istream *source, bool owns_source) {
   _z_source.opaque = Z_NULL;
   _z_source.msg = (char *)"no error message";
 
-  int result = inflateInit(&_z_source);
+  int result = inflateInit2(&_z_source, 32 + 15);
   if (result < 0) {
-    show_zlib_error("inflateInit", result, _z_source);
+    show_zlib_error("inflateInit2", result, _z_source);
     close_read();
   }
   thread_consider_yield();
@@ -168,6 +168,59 @@ close_write() {
     }
     _dest = (ostream *)NULL;
   }
+}
+
+/**
+ * Implements seeking within the stream.  ZStreamBuf only allows seeking back
+ * to the beginning of the stream.
+ */
+streampos ZStreamBuf::
+seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
+  if (which != ios::in) {
+    // We can only do this with the input stream.
+    return -1;
+  }
+
+  // Determine the current position.
+  size_t n = egptr() - gptr();
+  streampos gpos = _z_source.total_out - n;
+
+  // Implement tellg() and seeks to current position.
+  if ((dir == ios::cur && off == 0) ||
+      (dir == ios::beg && off == gpos)) {
+    return gpos;
+  }
+
+  if (off != 0 || dir != ios::beg) {
+    // We only know how to reposition to the beginning.
+    return -1;
+  }
+
+  gbump(n);
+
+  _source->seekg(0, ios::beg);
+  if (_source->tellg() == (streampos)0) {
+    _z_source.next_in = Z_NULL;
+    _z_source.avail_in = 0;
+    _z_source.next_out = Z_NULL;
+    _z_source.avail_out = 0;
+    int result = inflateReset(&_z_source);
+    if (result < 0) {
+      show_zlib_error("inflateReset", result, _z_source);
+    }
+    return 0;
+  }
+
+  return -1;
+}
+
+/**
+ * Implements seeking within the stream.  ZStreamBuf only allows seeking back
+ * to the beginning of the stream.
+ */
+streampos ZStreamBuf::
+seekpos(streampos pos, ios_openmode which) {
+  return seekoff(pos, ios::beg, which);
 }
 
 /**

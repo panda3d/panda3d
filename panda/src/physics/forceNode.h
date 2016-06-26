@@ -28,14 +28,17 @@ class EXPCL_PANDAPHYSICS ForceNode : public PandaNode {
 PUBLISHED:
   ForceNode(const string &name);
   INLINE void clear();
-  INLINE BaseForce *get_force(int index) const;
-  INLINE int get_num_forces() const;
+  INLINE BaseForce *get_force(size_t index) const;
+  INLINE size_t get_num_forces() const;
   MAKE_SEQ(get_forces, get_num_forces, get_force);
   INLINE void add_force(BaseForce *force);
 
   void add_forces_from(const ForceNode &other);
-  void remove_force(BaseForce *f);
-  void remove_force(int index);
+  void set_force(size_t index, BaseForce *force);
+  void remove_force(BaseForce *force);
+  void remove_force(size_t index);
+
+  MAKE_SEQ_PROPERTY(forces, get_num_forces, get_force, set_force, remove_force);
 
   virtual void output(ostream &out) const;
   virtual void write_forces(ostream &out, unsigned int indent=0) const;

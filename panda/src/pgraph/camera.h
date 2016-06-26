@@ -55,6 +55,7 @@ PUBLISHED:
   INLINE int get_num_display_regions() const;
   INLINE DisplayRegionBase *get_display_region(int n) const;
   MAKE_SEQ(get_display_regions, get_num_display_regions, get_display_region);
+  MAKE_SEQ_PROPERTY(display_regions, get_num_display_regions, get_display_region);
 
   INLINE void set_camera_mask(DrawMask mask);
   INLINE DrawMask get_camera_mask() const;

@@ -83,7 +83,9 @@ private:
   GLsizei _slider_table_size;
   GLint _frame_number_loc;
   GLint _frame_number;
+#ifndef OPENGLES
   pmap<GLint, GLuint64> _glsl_uniform_handles;
+#endif
 
   struct ImageInput {
     CPT(InternalName) _name;

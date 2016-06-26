@@ -226,7 +226,7 @@ BMPreadinfoheader(
          * for the required total.
          */
         if (classv != C_OS2) {
-            for (int i = 0; i < cbFix - 16; i += 4) {
+            for (int i = 0; i < (int)cbFix - 16; i += 4) {
                 GetLong(fp);
             }
         }

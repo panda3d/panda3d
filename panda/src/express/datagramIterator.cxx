@@ -22,7 +22,7 @@ TypeHandle DatagramIterator::_type_handle;
 string DatagramIterator::
 get_string() {
   // First, get the length of the string
-  PN_uint16 s_len = get_uint16();
+  uint16_t s_len = get_uint16();
 
   nassertr(_datagram != (const Datagram *)NULL, "");
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
@@ -41,7 +41,7 @@ get_string() {
 string DatagramIterator::
 get_string32() {
   // First, get the length of the string
-  PN_uint32 s_len = get_uint32();
+  uint32_t s_len = get_uint32();
 
   nassertr(_datagram != (const Datagram *)NULL, "");
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
@@ -100,7 +100,7 @@ get_fixed_string(size_t size) {
 wstring DatagramIterator::
 get_wstring() {
   // First, get the length of the string
-  PN_uint32 s_len = get_uint32();
+  uint32_t s_len = get_uint32();
 
   nassertr(_datagram != (const Datagram *)NULL, wstring());
   nassertr(_current_index + s_len * 2 <= _datagram->get_length(), wstring());

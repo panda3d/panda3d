@@ -58,7 +58,8 @@ class PointerTo : public PointerToBase<T> {
 public:
   typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
-  INLINE PointerTo(To *ptr = (To *)NULL);
+  ALWAYS_INLINE PointerTo() DEFAULT_CTOR;
+  ALWAYS_INLINE PointerTo(To *ptr);
   INLINE PointerTo(const PointerTo<T> &copy);
   INLINE ~PointerTo();
 
@@ -119,7 +120,8 @@ class ConstPointerTo : public PointerToBase<T> {
 public:
   typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
-  INLINE ConstPointerTo(const To *ptr = (const To *)NULL);
+  ALWAYS_INLINE ConstPointerTo() DEFAULT_CTOR;
+  ALWAYS_INLINE ConstPointerTo(const To *ptr);
   INLINE ConstPointerTo(const PointerTo<T> &copy);
   INLINE ConstPointerTo(const ConstPointerTo<T> &copy);
   INLINE ~ConstPointerTo();

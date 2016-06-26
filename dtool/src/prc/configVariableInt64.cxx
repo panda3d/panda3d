@@ -18,6 +18,6 @@
  *
  */
 void ConfigVariableInt64::
-set_default_value(PN_int64 default_value) {
+set_default_value(int64_t default_value) {
   _core->set_default_value(format_string(default_value));
 }

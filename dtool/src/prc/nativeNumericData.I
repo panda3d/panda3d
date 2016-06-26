@@ -54,24 +54,24 @@ get_data() const {
 
 // this is for a intel compile .. it is native format and it is readable off
 // word boundries
-inline void TS_SetVal1(const PN_int8 * src, PN_int8 *dst)
+inline void TS_SetVal1(const int8_t * src, int8_t *dst)
 {
   *dst = *src;
 }
 inline void TS_SetVal2(const char * src, char *dst)
 {
-  *(reinterpret_cast<PN_int16 *>(dst)) = *(reinterpret_cast  <const PN_int16 *>(src));
+  *(reinterpret_cast<int16_t *>(dst)) = *(reinterpret_cast  <const int16_t *>(src));
 }
 
 inline void TS_SetVal4(const char * src, char *dst)
 {
-  *(reinterpret_cast <PN_int32 *>(dst)) = *(reinterpret_cast <const PN_int32 *>(src));
+  *(reinterpret_cast <int32_t *>(dst)) = *(reinterpret_cast <const int32_t *>(src));
 }
 
 
 inline void TS_SetVal8(const char * src, char *dst)
 {
-  *(reinterpret_cast<PN_int64 *>(dst)) = *(reinterpret_cast<const PN_int64 *>(src));
+  *(reinterpret_cast<int64_t *>(dst)) = *(reinterpret_cast<const int64_t *>(src));
 }
 
 template<class type> inline type  TS_GetInteger(type &val,const  char * _src)

@@ -834,7 +834,7 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
       _next_index = 0;
 
       if (!_shutdown) {
-        PN_uint32 timeout = (PN_uint32)(get_net_max_block() * 1000.0);
+        uint32_t timeout = (uint32_t)(get_net_max_block() * 1000.0);
         if (!allow_block) {
           timeout = 0;
         }

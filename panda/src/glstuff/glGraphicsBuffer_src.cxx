@@ -1090,7 +1090,6 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
                                         GL_RENDERBUFFER_EXT, _rbm[slot]);
     }
   } else {
-    Texture *Tex = attach[slot];
     GLuint gl_format = GL_RGBA;
 #ifndef OPENGLES
     switch (slot) {

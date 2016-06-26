@@ -49,6 +49,10 @@ PUBLISHED:
   INLINE int get_key_length() const;
   INLINE int get_iteration_count() const;
 
+  MAKE_PROPERTY(algorithm, get_algorithm);
+  MAKE_PROPERTY(key_length, get_key_length);
+  MAKE_PROPERTY(iteration_count, get_iteration_count);
+
 private:
   EncryptStreamBuf _buf;
 };
@@ -76,9 +80,19 @@ PUBLISHED:
                               const string &password);
   INLINE OEncryptStream &close();
 
+public:
+  INLINE const string &get_algorithm() const;
+  INLINE int get_key_length() const;
+  INLINE int get_iteration_count() const;
+
+PUBLISHED:
   INLINE void set_algorithm(const string &algorithm);
   INLINE void set_key_length(int key_length);
   INLINE void set_iteration_count(int iteration_count);
+
+  MAKE_PROPERTY(algorithm, get_algorithm, set_algorithm);
+  MAKE_PROPERTY(key_length, get_key_length, set_key_length);
+  MAKE_PROPERTY(iteration_count, get_iteration_count, set_iteration_count);
 
 private:
   EncryptStreamBuf _buf;

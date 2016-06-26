@@ -72,8 +72,8 @@ PUBLISHED:
   INLINE void pack_double(double value);
   INLINE void pack_int(int value);
   INLINE void pack_uint(unsigned int value);
-  INLINE void pack_int64(PN_int64 value);
-  INLINE void pack_uint64(PN_uint64 value);
+  INLINE void pack_int64(int64_t value);
+  INLINE void pack_uint64(uint64_t value);
   INLINE void pack_string(const string &value);
   INLINE void pack_literal_value(const string &value);
   void pack_default_value();
@@ -81,8 +81,8 @@ PUBLISHED:
   INLINE double unpack_double();
   INLINE int unpack_int();
   INLINE unsigned int unpack_uint();
-  INLINE PN_int64 unpack_int64();
-  INLINE PN_uint64 unpack_uint64();
+  INLINE int64_t unpack_int64();
+  INLINE uint64_t unpack_uint64();
   INLINE string unpack_string();
   INLINE string unpack_literal_value();
   void unpack_validate();
@@ -94,8 +94,8 @@ public:
   INLINE void unpack_double(double &value);
   INLINE void unpack_int(int &value);
   INLINE void unpack_uint(unsigned int &value);
-  INLINE void unpack_int64(PN_int64 &value);
-  INLINE void unpack_uint64(PN_uint64 &value);
+  INLINE void unpack_int64(int64_t &value);
+  INLINE void unpack_uint64(uint64_t &value);
   INLINE void unpack_string(string &value);
   INLINE void unpack_literal_value(string &value);
 
@@ -141,11 +141,11 @@ PUBLISHED:
   INLINE void raw_pack_int8(int value);
   INLINE void raw_pack_int16(int value);
   INLINE void raw_pack_int32(int value);
-  INLINE void raw_pack_int64(PN_int64 value);
+  INLINE void raw_pack_int64(int64_t value);
   INLINE void raw_pack_uint8(unsigned int value);
   INLINE void raw_pack_uint16(unsigned int value);
   INLINE void raw_pack_uint32(unsigned int value);
-  INLINE void raw_pack_uint64(PN_uint64 value);
+  INLINE void raw_pack_uint64(uint64_t value);
   INLINE void raw_pack_float64(double value);
   INLINE void raw_pack_string(const string &value);
 
@@ -158,11 +158,11 @@ PUBLISHED:
   INLINE int raw_unpack_int8();
   INLINE int raw_unpack_int16();
   INLINE int raw_unpack_int32();
-  INLINE PN_int64 raw_unpack_int64();
+  INLINE int64_t raw_unpack_int64();
   INLINE unsigned int raw_unpack_uint8();
   INLINE unsigned int raw_unpack_uint16();
   INLINE unsigned int raw_unpack_uint32();
-  INLINE PN_uint64 raw_unpack_uint64();
+  INLINE uint64_t raw_unpack_uint64();
   INLINE double raw_unpack_float64();
   INLINE string raw_unpack_string();
 
@@ -170,11 +170,11 @@ public:
   INLINE void raw_unpack_int8(int &value);
   INLINE void raw_unpack_int16(int &value);
   INLINE void raw_unpack_int32(int &value);
-  INLINE void raw_unpack_int64(PN_int64 &value);
+  INLINE void raw_unpack_int64(int64_t &value);
   INLINE void raw_unpack_uint8(unsigned int &value);
   INLINE void raw_unpack_uint16(unsigned int &value);
   INLINE void raw_unpack_uint32(unsigned int &value);
-  INLINE void raw_unpack_uint64(PN_uint64 &value);
+  INLINE void raw_unpack_uint64(uint64_t &value);
   INLINE void raw_unpack_float64(double &value);
   INLINE void raw_unpack_string(string &value);
 

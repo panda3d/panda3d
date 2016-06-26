@@ -229,6 +229,12 @@ operator << (ostream &out, CPPExtensionType::Type type) {
   case CPPExtensionType::T_union:
     return out << "union";
 
+  case CPPExtensionType::T_enum_class:
+    return out << "enum class";
+
+  case CPPExtensionType::T_enum_struct:
+    return out << "enum struct";
+
   default:
     return out << "***invalid extension type***";
   }

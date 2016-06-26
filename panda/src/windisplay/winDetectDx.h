@@ -133,8 +133,8 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   int total_display_modes;
   DisplayMode *display_mode_array;
 
-  PN_uint64 physical_memory;
-  PN_uint64 available_physical_memory;
+  uint64_t physical_memory;
+  uint64_t available_physical_memory;
 
   int vendor_id;
   int device_id;

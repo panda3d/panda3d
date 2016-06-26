@@ -23,10 +23,12 @@ CPPMakeProperty(CPPIdentifier *ident,
                 CPPScope *current_scope, const CPPFile &file) :
   CPPDeclaration(file),
   _ident(ident),
+  _length_function(NULL),
   _has_function(NULL),
   _get_function(getter),
   _set_function(setter),
-  _clear_function(NULL)
+  _clear_function(NULL),
+  _del_function(NULL)
 {
   _ident->_native_scope = current_scope;
 }
@@ -41,10 +43,12 @@ CPPMakeProperty(CPPIdentifier *ident,
                 CPPScope *current_scope, const CPPFile &file) :
   CPPDeclaration(file),
   _ident(ident),
+  _length_function(NULL),
   _has_function(hasser),
   _get_function(getter),
   _set_function(setter),
-  _clear_function(clearer)
+  _clear_function(clearer),
+  _del_function(NULL)
 {
   _ident->_native_scope = current_scope;
 }
@@ -78,13 +82,21 @@ get_fully_scoped_name() const {
  */
 void CPPMakeProperty::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  out << "__make_property";
+  if (_length_function != NULL) {
+    out << "__make_seq_property";
+  } else {
+    out << "__make_property";
+  }
 
   if (_has_function != NULL) {
     out.put('2');
   }
 
   out << "(" << _ident->get_local_name(scope);
+
+  if (_length_function != NULL) {
+    out << ", " << _length_function->_name;
+  }
 
   if (_has_function != NULL) {
     out << ", " << _has_function->_name;
@@ -98,6 +110,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 
   if (_clear_function != NULL) {
     out << ", " << _clear_function->_name;
+  }
+
+  if (_del_function != NULL) {
+    out << ", " << _del_function->_name;
   }
 
   out << ");";

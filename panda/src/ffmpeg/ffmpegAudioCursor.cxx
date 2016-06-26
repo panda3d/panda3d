@@ -153,7 +153,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
 
   _packet = new AVPacket;
   _buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE / 2;
-  _buffer_alloc = new PN_int16[_buffer_size + 64];
+  _buffer_alloc = new int16_t[_buffer_size + 64];
 
   // Allocate enough space for 1024 samples per channel.
   if ((_packet == 0)||(_buffer_alloc == 0)) {
@@ -362,8 +362,8 @@ reload_buffer() {
  */
 void FfmpegAudioCursor::
 seek(double t) {
-  PN_int64 target_ts = (PN_int64)(t / _audio_timebase);
-  if (target_ts < (PN_int64)(_initial_dts)) {
+  int64_t target_ts = (int64_t)(t / _audio_timebase);
+  if (target_ts < (int64_t)(_initial_dts)) {
     // Attempts to seek before the first packet will fail.
     target_ts = _initial_dts;
   }
@@ -404,7 +404,7 @@ seek(double t) {
  * audio will be interleaved.
  */
 void FfmpegAudioCursor::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
   while (desired > 0) {

@@ -37,21 +37,21 @@
  */
 class EXPCL_PANDA_PUTIL UniqueIdAllocator {
 PUBLISHED:
-  UniqueIdAllocator(PN_uint32 min=0, PN_uint32 max=20);
+  UniqueIdAllocator(uint32_t min=0, uint32_t max=20);
   ~UniqueIdAllocator();
 
-  PN_uint32 allocate();
-  void initial_reserve_id(PN_uint32 id);
+  uint32_t allocate();
+  void initial_reserve_id(uint32_t id);
 
-  void free(PN_uint32 index);
+  void free(uint32_t index);
   PN_stdfloat fraction_used() const;
 
   void output(ostream &out) const;
   void write(ostream &out) const;
 
 public:
-  static const PN_uint32 IndexEnd;
-  static const PN_uint32 IndexAllocated;
+  static const uint32_t IndexEnd;
+  static const uint32_t IndexAllocated;
 
 protected:
   // _table stores an array of _size words, corresponding to each allocatable
@@ -63,27 +63,27 @@ protected:
 
   // For an allocated id, the table entry at the corresponding index contains
   // IndexAllocated.
-  PN_uint32 *_table;
+  uint32_t *_table;
 
   // The minimum and maximum as passed to the constructor.
-  PN_uint32 _min;
-  PN_uint32 _max;
+  uint32_t _min;
+  uint32_t _max;
 
   // This is the head of the free chain: as elements are allocated, they are
   // taken from _table[_next_free].  If the free chain is empty, _next_free ==
   // IndexEnd.
-  PN_uint32 _next_free;
+  uint32_t _next_free;
 
   // This is the tail of the free chain: as elements are freed, they are
   // stored in _table[_last_free].  Normally, _table[_last_free] is the end of
   // the free chain, unless the free chain is empty.
-  PN_uint32 _last_free;
+  uint32_t _last_free;
 
   // The total number of elements in _table.
-  PN_uint32 _size;
+  uint32_t _size;
 
   // The number of free elements in _table.
-  PN_uint32 _free;
+  uint32_t _free;
 };
 
 #endif //]

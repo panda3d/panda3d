@@ -81,8 +81,8 @@ DisplayInformation() {
   DisplayMode *display_mode_array;
   int video_memory;
   int texture_memory;
-  PN_uint64 physical_memory;
-  PN_uint64 available_physical_memory;
+  uint64_t physical_memory;
+  uint64_t available_physical_memory;
 
   state = DisplayInformation::DS_unknown;
   get_adapter_display_mode_state = false;
@@ -325,7 +325,7 @@ update_memory_information() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_physical_memory() {
   return _physical_memory;
 }
@@ -333,7 +333,7 @@ get_physical_memory() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_available_physical_memory() {
   return _available_physical_memory;
 }
@@ -341,7 +341,7 @@ get_available_physical_memory() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_page_file_size() {
   return _page_file_size;
 }
@@ -349,7 +349,7 @@ get_page_file_size() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_available_page_file_size() {
   return _available_page_file_size;
 }
@@ -357,7 +357,7 @@ get_available_page_file_size() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_process_virtual_memory() {
   return _process_virtual_memory;
 }
@@ -365,7 +365,7 @@ get_process_virtual_memory() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_available_process_virtual_memory() {
   return _available_process_virtual_memory;
 }
@@ -381,7 +381,7 @@ get_memory_load() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_page_fault_count() {
   return _page_fault_count;
 }
@@ -389,7 +389,7 @@ get_page_fault_count() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_process_memory() {
   return _process_memory;
 }
@@ -397,7 +397,7 @@ get_process_memory() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_peak_process_memory() {
   return _peak_process_memory;
 }
@@ -405,7 +405,7 @@ get_peak_process_memory() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_page_file_usage() {
   return _page_file_usage;
 }
@@ -413,7 +413,7 @@ get_page_file_usage() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_peak_page_file_usage() {
   return _peak_page_file_usage;
 }
@@ -570,7 +570,7 @@ get_cpu_brand_index() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_cpu_frequency() {
   return _cpu_frequency;
 }
@@ -578,9 +578,9 @@ get_cpu_frequency() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_cpu_time() {
-  PN_uint64 cpu_time;
+  uint64_t cpu_time;
 
   cpu_time = 0;
   if (_cpu_time_function) {
@@ -593,7 +593,7 @@ get_cpu_time() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_maximum_cpu_frequency() {
   return _maximum_cpu_frequency;
 }
@@ -601,7 +601,7 @@ get_maximum_cpu_frequency() {
 /**
  *
  */
-PN_uint64 DisplayInformation::
+uint64_t DisplayInformation::
 get_current_cpu_frequency() {
   return _current_cpu_frequency;
 }

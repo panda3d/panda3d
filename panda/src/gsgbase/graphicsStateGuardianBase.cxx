@@ -15,9 +15,7 @@
 #include "lightMutexHolder.h"
 #include <algorithm>
 
-GraphicsStateGuardianBase::GSGs GraphicsStateGuardianBase::_gsgs;
-GraphicsStateGuardianBase *GraphicsStateGuardianBase::_default_gsg;
-LightMutex GraphicsStateGuardianBase::_lock;
+AtomicAdjust::Pointer GraphicsStateGuardianBase::_gsg_list;
 TypeHandle GraphicsStateGuardianBase::_type_handle;
 
 /**
@@ -30,8 +28,13 @@ TypeHandle GraphicsStateGuardianBase::_type_handle;
  */
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::
 get_default_gsg() {
-  LightMutexHolder holder(_lock);
-  return _default_gsg;
+  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  if (gsg_list == NULL) {
+    // Nobody created a GSG list, so we won't have any GSGs either.
+    return NULL;
+  }
+  LightMutexHolder holder(gsg_list->_lock);
+  return gsg_list->_default_gsg;
 }
 
 /**
@@ -40,22 +43,35 @@ get_default_gsg() {
  */
 void GraphicsStateGuardianBase::
 set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
-  LightMutexHolder holder(_lock);
-  if (find(_gsgs.begin(), _gsgs.end(), default_gsg) == _gsgs.end()) {
+  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  if (gsg_list == NULL) {
+    // Nobody ever created a GSG list.  How could we have a GSG?
+    nassertv(false);
+    return;
+  }
+
+  LightMutexHolder holder(gsg_list->_lock);
+  if (find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), default_gsg) == gsg_list->_gsgs.end()) {
     // The specified GSG doesn't exist or it has already destructed.
     nassertv(false);
     return;
   }
 
-  _default_gsg = default_gsg;
+  gsg_list->_default_gsg = default_gsg;
 }
 
 /**
  * Returns the total number of GSG's in the universe.
  */
-int GraphicsStateGuardianBase::
+size_t GraphicsStateGuardianBase::
 get_num_gsgs() {
-  return _gsgs.size();
+  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  if (gsg_list == NULL) {
+    // Nobody created a GSG list, so we won't have any GSGs either.
+    return 0;
+  }
+  LightMutexHolder holder(gsg_list->_lock);
+  return gsg_list->_gsgs.size();
 }
 
 /**
@@ -63,9 +79,13 @@ get_num_gsgs() {
  * and remove themselves from this list as they are created and destroyed.
  */
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::
-get_gsg(int n) {
-  nassertr(n >= 0 && n < (int)_gsgs.size(), NULL);
-  return _gsgs[n];
+get_gsg(size_t n) {
+  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  nassertr(gsg_list != NULL, NULL);
+
+  LightMutexHolder holder(gsg_list->_lock);
+  nassertr(n < gsg_list->_gsgs.size(), NULL);
+  return gsg_list->_gsgs[n];
 }
 
 /**
@@ -74,17 +94,32 @@ get_gsg(int n) {
  */
 void GraphicsStateGuardianBase::
 add_gsg(GraphicsStateGuardianBase *gsg) {
-  LightMutexHolder holder(_lock);
+  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  if (gsg_list == NULL) {
+    gsg_list = new GSGList;
+    gsg_list->_default_gsg = NULL;
 
-  if (find(_gsgs.begin(), _gsgs.end(), gsg) != _gsgs.end()) {
+    GSGList *orig_gsg_list = (GSGList *)
+      AtomicAdjust::compare_and_exchange_ptr(_gsg_list, NULL, gsg_list);
+
+    if (orig_gsg_list != NULL) {
+      // Another thread beat us to it.  No problem, we'll use that.
+      delete gsg_list;
+      gsg_list = orig_gsg_list;
+    }
+  }
+
+  LightMutexHolder holder(gsg_list->_lock);
+
+  if (find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg) != gsg_list->_gsgs.end()) {
     // Already on the list.
     return;
   }
 
-  _gsgs.push_back(gsg);
+  gsg_list->_gsgs.push_back(gsg);
 
-  if (_default_gsg == (GraphicsStateGuardianBase *)NULL) {
-    _default_gsg = gsg;
+  if (gsg_list->_default_gsg == (GraphicsStateGuardianBase *)NULL) {
+    gsg_list->_default_gsg = gsg;
   }
 }
 
@@ -93,21 +128,28 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
  */
 void GraphicsStateGuardianBase::
 remove_gsg(GraphicsStateGuardianBase *gsg) {
-  LightMutexHolder holder(_lock);
+  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  if (gsg_list == NULL) {
+    // No GSGs were added yet, or the program is destructing anyway.
+    return;
+  }
 
-  GSGs::iterator gi = find(_gsgs.begin(), _gsgs.end(), gsg);
-  if (gi == _gsgs.end()) {
+  LightMutexHolder holder(gsg_list->_lock);
+
+  GSGList::GSGs::iterator gi;
+  gi = find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg);
+  if (gi == gsg_list->_gsgs.end()) {
     // Already removed, or never added.
     return;
   }
 
-  _gsgs.erase(gi);
+  gsg_list->_gsgs.erase(gi);
 
-  if (_default_gsg == gsg) {
-    if (!_gsgs.empty()) {
-      _default_gsg = *_gsgs.begin();
+  if (gsg_list->_default_gsg == gsg) {
+    if (!gsg_list->_gsgs.empty()) {
+      gsg_list->_default_gsg = *gsg_list->_gsgs.begin();
     } else {
-      _default_gsg = NULL;
+      gsg_list->_default_gsg = NULL;
     }
   }
 }

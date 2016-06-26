@@ -6,6 +6,9 @@
 
 typedef unsigned long SOCKET;
 
+struct sockaddr;
 struct sockaddr_in;
+struct sockaddr_in6;
+struct sockaddr_storage;
 
 #endif

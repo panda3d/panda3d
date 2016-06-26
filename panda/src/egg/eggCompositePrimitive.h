@@ -38,6 +38,8 @@ PUBLISHED:
   MAKE_SEQ(get_components, get_num_components, get_component);
   INLINE void set_component(int i, const EggAttributes *attrib);
 
+  MAKE_SEQ_PROPERTY(components, get_num_components, get_component, set_component);
+
   INLINE bool triangulate_into(EggGroupNode *container) const;
   PT(EggCompositePrimitive) triangulate_in_place();
 

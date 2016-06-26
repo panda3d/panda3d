@@ -15,7 +15,6 @@
 ;   BUILT         - location of panda install tree.
 ;   SOURCE        - location of the panda source-tree if available, OR location of panda install tree.
 ;   PYVER         - version of Python that Panda was built with (ie, "2.7")
-;   PYEXTRAS      - directory containing python extras, if any.
 ;   REGVIEW       - either 32 or 64, depending on the build architecture.
 ;
 
@@ -371,11 +370,6 @@ SectionGroup "Python support"
 
         SetOutPath "$INSTDIR\python"
         File /r "${BUILT}\python\*"
-
-        !ifdef PYEXTRAS
-        SetOutPath "$INSTDIR\python\lib"
-        File /nonfatal /r "${PYEXTRAS}\*"
-        !endif
 
         SetDetailsPrint both
         DetailPrint "Adding registry keys for Python..."

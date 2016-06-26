@@ -6,10 +6,13 @@
 const int ALL_OK = 0;
 const int BASIC_ERROR = -1;
 
+#define SA_SIZEOF(addr) (((addr)->sa_family == AF_INET6) ? sizeof(sockaddr_in6) : sizeof(sockaddr_in))
+
 #if defined(CPPPARSER)
 // Interrogate doesn't need to parse any of this.
 
 typedef unsigned long SOCKET;
+typedef unsigned short sa_family_t;
 
 /************************************************************************
 * HP SOCKET LIBRARY STUFF
@@ -46,91 +49,77 @@ typedef unsigned long SOCKET;
 /************************************************************************
 * WINSOCK 32 bit STUFF
 ************************************************************************/
-#elif defined(WIN32) || defined(WIN32_VC) || defined(WIN64_VC)
+#elif defined(_WIN32)
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 
+typedef u_short sa_family_t;
 
-inline int DO_SELECT(SOCKET n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,struct timeval *timeout)
-{
-    return select((int) n, readfds, writefds, exceptfds,timeout);
-}
-
-inline int DO_CONNECT( const SOCKET a, const struct sockaddr_in *b)
-{
-    return connect(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
-}
-inline int DO_SOCKET_READ(const SOCKET a, char * buf, const int size)
-{
-    return recv(a, buf, size, 0);
-}
-inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
-{
-    return send(a, buff, len, 0);
-}
-inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
-{
-    return sendto(a, buffer, buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
-}
-inline SOCKET DO_NEWUDP()
-{
-    return socket(AF_INET, SOCK_DGRAM, 0);
-}
-inline SOCKET DO_NEWTCP()
-{
-    return socket(AF_INET, SOCK_STREAM, 0);
-}
-inline int DO_BIND(const SOCKET a, const sockaddr_in *b)
-{
-    return ::bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
-}
-inline int DO_CLOSE(const SOCKET a)
-{
-    return closesocket(a);
-}
-inline SOCKET DO_ACCEPT(SOCKET sck, sockaddr_in * adr)
-{
-    int adrlen = sizeof(sockaddr);
-    return accept(sck, reinterpret_cast<sockaddr *>(adr), &adrlen);
-};
-inline int DO_RECV_FROM(SOCKET sck, char * data, int len, sockaddr_in * addr)
-{
-    int plen = sizeof(sockaddr);
-    return recvfrom(sck, data, len, 0, reinterpret_cast<sockaddr *>(addr), &plen);
-}
-inline int DO_LISTEN(const SOCKET a, const int size)
-{
-    return listen(a, size);
+inline int DO_SELECT(SOCKET n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
+  return select((int)n, readfds, writefds, exceptfds, timeout);
 }
 
-inline int GETERROR()
-{
-    return WSAGetLastError();
+inline int DO_CONNECT(const SOCKET a, const struct sockaddr *b) {
+  return connect(a, b, SA_SIZEOF(b));
+}
+inline int DO_SOCKET_READ(const SOCKET a, char *buf, const int size) {
+  return recv(a, buf, size, 0);
+}
+inline int DO_SOCKET_WRITE(const SOCKET a, const char *buff, const int len) {
+  return send(a, buff, len, 0);
+}
+inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char *buffer, const int buf_len, const sockaddr *addr) {
+  return sendto(a, buffer, buf_len, 0, addr, SA_SIZEOF(addr));
+}
+inline SOCKET DO_NEWUDP(sa_family_t family) {
+  return socket(family, SOCK_DGRAM, 0);
+}
+inline SOCKET DO_NEWTCP(sa_family_t family) {
+  return socket(family, SOCK_STREAM, 0);
+}
+inline int DO_BIND(const SOCKET a, const sockaddr *b) {
+  return ::bind(a, b, SA_SIZEOF(b));
+}
+inline int DO_CLOSE(const SOCKET a) {
+  return closesocket(a);
+}
+inline SOCKET DO_ACCEPT(SOCKET sck, sockaddr *addr) {
+  socklen_t addrlen = sizeof(sockaddr_storage);
+  return accept(sck, addr, &addrlen);
+}
+inline int DO_RECV_FROM(SOCKET sck, char *data, int len, sockaddr *addr) {
+  socklen_t plen = sizeof(sockaddr_storage);
+  return recvfrom(sck, data, len, 0, addr, &plen);
+}
+inline int DO_LISTEN(const SOCKET a, const int size) {
+  return listen(a, size);
 }
 
-inline int SOCKIOCTL(const SOCKET s, const long flags, unsigned long * val)
-{
-    return ioctlsocket(s, flags, val);
+inline int GETERROR() {
+  return WSAGetLastError();
 }
 
-inline int init_network()
-{
-    static struct WSAData mydata;
-    int answer = WSAStartup(0x0101, &mydata);
-    if (answer != 0)
-        return BASIC_ERROR;
-
-    return ALL_OK;
+inline int SOCKIOCTL(const SOCKET s, const long flags, unsigned long *val) {
+  return ioctlsocket(s, flags, val);
 }
 
-inline bool do_shutdown_send(SOCKET s)
-{
-    return (shutdown(s,SD_SEND) == 0);
-};
+inline int init_network() {
+  static struct WSAData mydata;
+  int answer = WSAStartup(0x0101, &mydata);
+  if (answer != 0) {
+    return BASIC_ERROR;
+  }
 
-typedef  int socklen_t  ;
+  return ALL_OK;
+}
+
+inline bool do_shutdown_send(SOCKET s) {
+  return (shutdown(s, SD_SEND) == 0);
+}
+
+typedef int socklen_t;
 const long LOCAL_NONBLOCK = 1;
-const long LOCAL_FL_SET = FIONBIO ;
+const long LOCAL_FL_SET = FIONBIO;
 const int LOCAL_BLOCKING_ERROR = WSAEWOULDBLOCK;
 const int LOCAL_CONNECT_BLOCKING = WSAEWOULDBLOCK;
 const int LOCAL_NOTCONNECTED_ERROR = WSAENOTCONN;
@@ -162,84 +151,61 @@ const SOCKET BAD_SOCKET = (SOCKET)-1;
 typedef int SOCKET;
 const SOCKET BAD_SOCKET = 0xffffffff;
 
-// #define DO_CONNECT(a,b)               connect(a,(sockaddr
-// *)b,sizeof(sockaddr)) #define DO_SOCKET_READ(a,b,c)         recv(a,b,c,0)
-// #define DO_SOCKET_WRITE(a,b,c)        send(a,b,c,0)
-
-inline int DO_CONNECT(const SOCKET a, const sockaddr_in *b)
-{
-    return connect(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
+inline int DO_CONNECT(const SOCKET a, const sockaddr *b) {
+  return connect(a, b, SA_SIZEOF(b));
 }
-inline int DO_SOCKET_READ(const SOCKET a, char * buf, const int size)
-{
-    return recv(a, buf, size, 0);
+inline int DO_SOCKET_READ(const SOCKET a, char *buf, const int size) {
+  return recv(a, buf, size, 0);
 }
-inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
-{
-    return send(a, buff, len, 0);
+inline int DO_SOCKET_WRITE(const SOCKET a, const char *buff, const int len) {
+  return send(a, buff, len, 0);
 }
 
-// #define DO_SOCKET_WRITE_TO(a,b,c,d)   sendto(a,b,c,0,(sockaddr
-// *)d,sizeof(sockaddr)) #define DO_NEWUDP()          socket(AF_INET,
-// SOCK_DGRAM, 0) #define DO_NEWTCP()       socket(AF_INET, SOCK_STREAM, 0)
-// #define DO_BIND(a,b)      ::bind(a,(sockaddr *)b,sizeof(sockaddr)) #define
-// DO_CLOSE(a)       close(a)
-inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
-{
-    return sendto(a, buffer, buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
+inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char *buffer, const int buf_len, const sockaddr *addr) {
+  return sendto(a, buffer, buf_len, 0, addr, SA_SIZEOF(addr));
 }
-inline SOCKET DO_NEWUDP()
-{
-    return socket(AF_INET, SOCK_DGRAM, 0);
+inline SOCKET DO_NEWUDP(sa_family_t family) {
+  return socket(family, SOCK_DGRAM, 0);
 }
-inline SOCKET DO_NEWTCP()
-{
-    return socket(AF_INET, SOCK_STREAM, 0);
+inline SOCKET DO_NEWTCP(sa_family_t family) {
+  return socket(family, SOCK_STREAM, 0);
 }
-inline int DO_BIND(const SOCKET a, const sockaddr_in *b)
-{
-    return ::bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
+inline int DO_BIND(const SOCKET a, const sockaddr *b) {
+  return ::bind(a, b, SA_SIZEOF(b));
 }
-inline int DO_CLOSE(const SOCKET a)
-{
-    return close(a);
+inline int DO_CLOSE(const SOCKET a) {
+  return close(a);
 }
-inline int DO_ACCEPT(SOCKET sck, sockaddr_in * adr)
-{
-    int adrlen = sizeof(sockaddr);
-    return accept(sck, ( sockaddr *)adr, &adrlen);
-};
-
-inline int DO_RECV_FROM(SOCKET sck, char * data, int len, sockaddr_in * addr)
-{
-    int plen = sizeof(sockaddr);
-    return recvfrom(sck, data, len, 0, (sockaddr *)addr, &plen);
-}
-inline int DO_LISTEN(const SOCKET a, const int size)
-{
-    return listen(a, size);
+inline int DO_ACCEPT(SOCKET sck, sockaddr *addr) {
+  socklen_t addrlen = sizeof(sockaddr_storage);
+  return accept(sck, (sockaddr *)addr, &addrlen);
 }
 
-inline int GETERROR()
-{
-    return errno;
+inline int DO_RECV_FROM(SOCKET sck, char *data, int len, sockaddr *addr) {
+  socklen_t plen = sizeof(sockaddr_storage);
+  return recvfrom(sck, data, len, 0, (sockaddr *)addr, &plen);
+}
+inline int DO_LISTEN(const SOCKET a, const int size) {
+  return listen(a, size);
 }
 
-inline int SOCKIOCTL(const SOCKET s, const long flags, void * val)
-{
-    return ioctl(s, flags, val);
+inline int GETERROR() {
+  return errno;
 }
 
-inline int init_network()
-{
-    return ALL_OK;
+inline int SOCKIOCTL(const SOCKET s, const long flags, void *val) {
+  return ioctl(s, flags, val);
+}
+
+inline int init_network() {
+  return ALL_OK;
 }
 #ifndef INADDR_NONE
 const INADDR_NONE = -1;
 #endif
 
 const long LOCAL_NONBLOCK = 1;
-const long LOCAL_FL_SET = FIONBIO ;
+const long LOCAL_FL_SET = FIONBIO;
 const int LOCAL_BLOCKING_ERROR = EAGAIN;
 const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 
@@ -267,94 +233,75 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 #include <arpa/inet.h>
 #include <unistd.h>
 
-typedef struct sockaddr_in AddressType;
-
 typedef int SOCKET;
 const SOCKET BAD_SOCKET = -1;
-inline int DO_SELECT(SOCKET n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,struct timeval *timeout)
-{
-    return select((int) n, readfds, writefds, exceptfds,timeout);
+inline int DO_SELECT(SOCKET n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
+  return select((int)n, readfds, writefds, exceptfds, timeout);
 }
 
-inline int DO_CONNECT(const SOCKET a, const sockaddr_in *b)
-{
-    return connect(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
+inline int DO_CONNECT(const SOCKET a, const sockaddr *b) {
+  return connect(a, b, SA_SIZEOF(b));
 }
-inline int DO_SOCKET_READ(const SOCKET a, char * buf, const int size)
-{
-    return (int)recv(a, buf, (size_t)size, 0);
+inline int DO_SOCKET_READ(const SOCKET a, char *buf, const int size) {
+  return (int)recv(a, buf, (size_t)size, 0);
 }
-inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
-{
-    return (int)send(a, buff, (size_t)len, 0);
+inline int DO_SOCKET_WRITE(const SOCKET a, const char *buff, const int len) {
+  return (int)send(a, buff, (size_t)len, 0);
 }
-inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
-{
-    return (int)sendto(a, buffer, (size_t)buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
+inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char *buffer, const int buf_len, const sockaddr *addr) {
+  return (int)sendto(a, buffer, (size_t)buf_len, 0, addr, SA_SIZEOF(addr));
 }
-inline SOCKET DO_NEWUDP()
-{
-    return socket(AF_INET, SOCK_DGRAM, 0);
+inline SOCKET DO_NEWUDP(sa_family_t family) {
+  return socket(family, SOCK_DGRAM, 0);
 }
-inline SOCKET DO_NEWTCP()
-{
-    return socket(AF_INET, SOCK_STREAM, 0);
+inline SOCKET DO_NEWTCP(sa_family_t family) {
+  return socket(family, SOCK_STREAM, 0);
 }
-inline int DO_BIND(const SOCKET a, const sockaddr_in *b)
-{
-    return ::bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
+inline int DO_BIND(const SOCKET a, const sockaddr *b) {
+  return ::bind(a, b, SA_SIZEOF(b));
 }
-inline int DO_CLOSE(const SOCKET a)
-{
-    return close(a);
+inline int DO_CLOSE(const SOCKET a) {
+  return close(a);
 }
 
-inline int DO_ACCEPT(SOCKET sck, sockaddr_in * adr)
-{
-    socklen_t adrlen = sizeof(sockaddr);
-    return accept(sck, ( sockaddr *)adr, &adrlen);
-};
+inline int DO_ACCEPT(SOCKET sck, sockaddr *addr) {
+  socklen_t addrlen = sizeof(sockaddr_storage);
+  return accept(sck, (sockaddr *)addr, &addrlen);
+}
 
-inline int DO_RECV_FROM(SOCKET sck, char * data, int len, sockaddr_in * addr)
-{
-    socklen_t plen = sizeof(sockaddr);
-    return (int)recvfrom(sck, data, (size_t)len, 0, (sockaddr *)addr, &plen);
+inline int DO_RECV_FROM(SOCKET sck, char *data, int len, sockaddr *addr) {
+  socklen_t plen = sizeof(sockaddr_storage);
+  return (int)recvfrom(sck, data, (size_t)len, 0, (sockaddr *)addr, &plen);
 }
 
 
-inline int init_network()
-{
-    signal(SIGPIPE, SIG_IGN); // hmm do i still need this ...
-    return ALL_OK;
+inline int init_network() {
+  signal(SIGPIPE, SIG_IGN); // hmm do i still need this ...
+  return ALL_OK;
 }
 
-inline int DO_LISTEN(const SOCKET a, const int size)
-{
-    return listen(a, size);
+inline int DO_LISTEN(const SOCKET a, const int size) {
+  return listen(a, size);
 }
 
-inline int GETERROR()
-{
-    return errno;
+inline int GETERROR() {
+  return errno;
 }
 
-inline int SOCKIOCTL(const SOCKET s, const long flags, void * val)
-{
-    return ioctl(s, (unsigned long)flags, val);
+inline int SOCKIOCTL(const SOCKET s, const long flags, void *val) {
+  return ioctl(s, (unsigned long)flags, val);
 }
 
-inline bool do_shutdown_send(SOCKET s)
-{
-    return (shutdown(s,SHUT_WR) == 0);
-};
-
+inline bool do_shutdown_send(SOCKET s) {
+  return (shutdown(s, SHUT_WR) == 0);
+}
 
 #define  BSDBLOCK
 
 
 const long LOCAL_NONBLOCK = 1;
 // With BSDBLOCK defined, we don't need FIONBIO.  Solaris doesn't provide it.
-// const long LOCAL_FL_SET = FIONBIO ;
+// const long LOCAL_FL_SET = FIONBIO;
 const int LOCAL_BLOCKING_ERROR = EAGAIN;
 const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 
@@ -365,7 +312,5 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 No Host Type defined !!
 #error  Fatal
 #endif
-
-
 
 #endif //__SOCKET_PORTABLE_H__

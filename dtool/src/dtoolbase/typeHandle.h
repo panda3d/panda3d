@@ -114,6 +114,8 @@ PUBLISHED:
 
   MAKE_PROPERTY(index, get_index);
   MAKE_PROPERTY(name, get_name);
+  MAKE_SEQ_PROPERTY(parent_classes, get_num_parent_classes, get_parent_class);
+  MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
 
 public:
   INLINE static TypeHandle from_index(int index);

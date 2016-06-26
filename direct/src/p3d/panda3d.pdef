@@ -63,8 +63,10 @@ class panda3d(package):
 
     # Include various standard Python encodings.  The rest is in morepy.
     module('encodings', 'encodings.aliases', 'encodings.undefined',
-           'encodings.utf_8', 'encodings.ascii', 'encodings.string_escape',
-           'encodings.mbcs', 'encodings.latin_1', 'io')
+           'encodings.utf_8', 'encodings.ascii', 'encodings.mbcs',
+           'encodings.latin_1', 'io')
+    if sys.version_info < (3, 0):
+        module('encodings.string_escape')
 
     # Pick up the shader files that appear in direct/src/filter.
     import direct
@@ -241,7 +243,10 @@ class models(package):
     # we assume this is the models directory.
     pathname = getModelPath().findFile('cmss12.egg')
     if pathname:
-        dir(pathname.getDirname(), newDir = '')
+        dir(pathname.getDirname(), newDir = 'models')
+
+    # Some people are used to loading the models without models/ prefix.
+    file('models.prc', extract = True, text = "model-path $MODELS_ROOT/models")
 
 
 class fmod(package):

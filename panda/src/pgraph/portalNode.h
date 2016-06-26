@@ -86,6 +86,17 @@ PUBLISHED:
 
   // void draw () const;
 
+  MAKE_PROPERTY(into_portal_mask, get_into_portal_mask, set_into_portal_mask);
+  MAKE_PROPERTY(from_portal_mask, get_from_portal_mask, set_from_portal_mask);
+  MAKE_PROPERTY(portal_geom, get_portal_geom, set_portal_geom);
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
+  MAKE_PROPERTY(cell_in, get_cell_in, set_cell_in);
+  MAKE_PROPERTY(cell_out, get_cell_out, set_cell_out);
+  MAKE_PROPERTY(clip_plane, is_clip_plane, set_clip_plane);
+  MAKE_PROPERTY(visible, is_visible, set_visible);
+  MAKE_PROPERTY(max_depth, get_max_depth, set_max_depth);
+  MAKE_PROPERTY(open, is_open, set_open);
+
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                        int &internal_vertices,

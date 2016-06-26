@@ -138,4 +138,15 @@ ConfigureFn(config_chan) {
   AnimChannelScalarTable::register_with_read_factory();
   AnimChannelScalarDynamic::register_with_read_factory();
   AnimPreloadTable::register_with_read_factory();
+
+  // For compatibility with old .bam files.
+#ifndef STDFLOAT_DOUBLE
+  TypeRegistry *reg = TypeRegistry::ptr();
+  reg->record_alternate_name(AnimChannelFixed<ACMatrixSwitchType>::get_class_type(),
+                             "AnimChannelFixed<LMatrix4f>");
+  reg->record_alternate_name(MovingPart<ACMatrixSwitchType>::get_class_type(),
+                             "MovingPart<LMatrix4f>");
+  reg->record_alternate_name(MovingPart<ACScalarSwitchType>::get_class_type(),
+                             "MovingPart<float>");
+#endif
 }

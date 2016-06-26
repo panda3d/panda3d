@@ -63,7 +63,7 @@ add_body_dampening(OdeBody& body, int surface) {
 
 
 void OdeWorld::
-init_surface_table(PN_uint8 num_surfaces) {
+init_surface_table(uint8_t num_surfaces) {
   _surface_table = new sSurfaceParams[num_surfaces * num_surfaces];
   // _dampen_table = new sSurfaceParams[num_surfaces * num_surfaces];
   _num_surfaces = num_surfaces;
@@ -92,7 +92,7 @@ set_surface(int pos1, int pos2, sSurfaceParams& entry) {
 
 
 sSurfaceParams& OdeWorld::
-get_surface(PN_uint8 surface1, PN_uint8 surface2) {
+get_surface(uint8_t surface1, uint8_t surface2) {
   int true_pos = 0;
   if(surface1 >= surface2) {
     true_pos = (surface1 * _num_surfaces) + surface2;
@@ -108,7 +108,7 @@ get_surface(PN_uint8 surface1, PN_uint8 surface2) {
 }
 
 void OdeWorld::
-set_surface_entry(PN_uint8 pos1, PN_uint8 pos2,
+set_surface_entry(uint8_t pos1, uint8_t pos2,
                   dReal mu,
                   dReal bounce,
                   dReal bounce_vel,

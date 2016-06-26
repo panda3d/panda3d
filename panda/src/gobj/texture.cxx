@@ -514,6 +514,7 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_r16:
+  case Texture::F_r16i:
   case Texture::F_rg8i:
     bpp = 2;
     break;
@@ -830,8 +831,11 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
         } else if (format.at(s) == 'R') {
           component = 2;
         } else if (format.at(s) == 'A') {
-          nassertv(cdata->_num_components != 3);
-          component = cdata->_num_components - 1;
+          if (cdata->_num_components != 3) {
+            component = cdata->_num_components - 1;
+          } else {
+            // Ignore.
+          }
         } else if (format.at(s) == '0') {
           // Ignore.
         } else if (format.at(s) == '1') {
@@ -859,8 +863,11 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
       } else if (format.at(s) == 'R') {
         component = 2;
       } else if (format.at(s) == 'A') {
-        nassertv(cdata->_num_components != 3);
-        component = cdata->_num_components - 1;
+        if (cdata->_num_components != 3) {
+          component = cdata->_num_components - 1;
+        } else {
+          // Ignore.
+        }
       } else if (format.at(s) == '0') {
         // Ignore.
       } else if (format.at(s) == '1') {
@@ -1028,7 +1035,7 @@ clear_ram_mipmap_image(int n) {
 PTA_uchar Texture::
 modify_simple_ram_image() {
   CDWriter cdata(_cycler, true);
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
   return cdata->_simple_ram_image._image;
 }
 
@@ -1046,7 +1053,7 @@ new_simple_ram_image(int x_size, int y_size) {
   cdata->_simple_y_size = y_size;
   cdata->_simple_ram_image._image = PTA_uchar::empty_array(expected_page_size);
   cdata->_simple_ram_image._page_size = expected_page_size;
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
   cdata->inc_simple_image_modified();
 
   return cdata->_simple_ram_image._image;
@@ -1132,7 +1139,7 @@ generate_simple_ram_image() {
   convert_from_pnmimage(image, expected_page_size, x_size, 0, 0, 0, scaled, 4, 1);
 
   do_set_simple_ram_image(cdata, image, x_size, y_size);
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
 }
 
 /**
@@ -1526,6 +1533,10 @@ write(ostream &out, int indent_level) const {
   case F_r16:
     out << "r16";
     break;
+  case F_r16i:
+    out << "r16i";
+    break;
+
   case F_rg16:
     out << "rg16";
     break;
@@ -1944,6 +1955,8 @@ format_format(Format format) {
     return "rgba32";
   case F_r16:
     return "r16";
+  case F_r16i:
+    return "r16i";  
   case F_rg16:
     return "rg16";
   case F_rgb16:
@@ -2043,6 +2056,8 @@ string_format(const string &str) {
     return F_rgba32;
   } else if (cmp_nocase(str, "r16") == 0 || cmp_nocase(str, "red16") == 0) {
     return F_r16;
+  } else if (cmp_nocase(str, "r16i") == 0) {
+    return F_r16i;
   } else if (cmp_nocase(str, "rg16") == 0 || cmp_nocase(str, "r16g16") == 0) {
     return F_rg16;
   } else if (cmp_nocase(str, "rgb16") == 0 || cmp_nocase(str, "r16g16b16") == 0) {
@@ -5191,7 +5206,7 @@ do_uncompress_ram_image_bc4(const RamImage &compressed_image,
     unsigned const char *src = compressed_image._image.p() + z * compressed_image._page_size;
 
     // Unconvert one 4 x 4 block at a time.
-    PN_uint8 tbl[8];
+    uint8_t tbl[8];
     for (int y = 0; y < y_blocks; ++y) {
       for (int x = 0; x < x_blocks; ++x) {
         unsigned char *blk = dest;
@@ -5258,8 +5273,8 @@ do_uncompress_ram_image_bc5(const RamImage &compressed_image,
     unsigned const char *src = compressed_image._image.p() + z * compressed_image._page_size;
 
     // Unconvert one 4 x 4 block at a time.
-    PN_uint8 red[8];
-    PN_uint8 grn[8];
+    uint8_t red[8];
+    uint8_t grn[8];
     for (int y = 0; y < y_blocks; ++y) {
       for (int x = 0; x < x_blocks; ++x) {
         unsigned char *blk = dest;
@@ -5739,6 +5754,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_alpha:
   case F_luminance:
   case F_r16:
+  case F_r16i:
   case F_sluminance:
   case F_r32i:
   case F_r32:
@@ -6088,18 +6104,23 @@ do_get_uncompressed_ram_image(CData *cdata) {
  * Rather than just returning a pointer to the data, like
  * get_uncompressed_ram_image, this function first processes the data and
  * reorders the components using the specified format string, and places these
- * into a new char array.  The 'format' argument should specify in which order
- * the components of the texture must be.  For example, valid format strings
- * are "RGBA", "GA", "ABRG" or "AAA". A component can also be written as "0"
- * or "1", which means an empty/black or a full/white channel, respectively.
+ * into a new char array.
+ *
+ * The 'format' argument should specify in which order the components of the
+ * texture must be.  For example, valid format strings are "RGBA", "GA",
+ * "ABRG" or "AAA".  A component can also be written as "0" or "1", which
+ * means an empty/black or a full/white channel, respectively.
+ *
  * This function is particularly useful to copy an image in-memory to a
  * different library (for example, PIL or wxWidgets) that require a different
  * component order than Panda's internal format, BGRA. Note, however, that
  * this conversion can still be too slow if you want to do it every frame, and
- * should thus be avoided for that purpose.  The only requirement for the
- * reordering is that an uncompressed image must be available.  If the RAM
- * image is compressed, it will attempt to re-load the texture from disk, if
- * it doesn't find an uncompressed image there, it will return NULL.
+ * should thus be avoided for that purpose.
+ *
+ * The only requirement for the reordering is that an uncompressed image must
+ * be available.  If the RAM image is compressed, it will attempt to re-load
+ * the texture from disk, if it doesn't find an uncompressed image there, it
+ * will return NULL.
  */
 CPTA_uchar Texture::
 get_ram_image_as(const string &requested_format) {
@@ -6125,92 +6146,177 @@ get_ram_image_as(const string &requested_format) {
     return CPTA_uchar(data);
   }
 
+  // Check if we have an alpha channel, and remember which channel we use.
+  int alpha = -1;
+  if (Texture::has_alpha(cdata->_format)) {
+    alpha = cdata->_num_components - 1;
+  }
+
+  // Validate the format beforehand.
+  for (size_t i = 0; i < format.size(); ++i) {
+    if (format[i] != 'B' && format[i] != 'G' && format[i] != 'R' &&
+        format[i] != 'A' && format[i] != '0' && format[i] != '1') {
+      gobj_cat.error() << "Unexpected component character '"
+        << format[i] << "', expected one of RGBA01!\n";
+      return CPTA_uchar(get_class_type());
+    }
+  }
+
   // Create a new empty array that can hold our image.
   PTA_uchar newdata = PTA_uchar::empty_array(imgsize * format.size() * cdata->_component_width, get_class_type());
 
   // These ifs are for optimization of commonly used image types.
-  if (format == "RGBA" && cdata->_num_components == 4 && cdata->_component_width == 1) {
-    imgsize *= 4;
-    for (int p = 0; p < imgsize; p += 4) {
-      newdata[p    ] = data[p + 2];
-      newdata[p + 1] = data[p + 1];
-      newdata[p + 2] = data[p    ];
-      newdata[p + 3] = data[p + 3];
-    }
-    return newdata;
-  }
-  if (format == "RGB" && cdata->_num_components == 3 && cdata->_component_width == 1) {
-    imgsize *= 3;
-    for (int p = 0; p < imgsize; p += 3) {
-      newdata[p    ] = data[p + 2];
-      newdata[p + 1] = data[p + 1];
-      newdata[p + 2] = data[p    ];
-    }
-    return newdata;
-  }
-  if (format == "A" && cdata->_component_width == 1 && cdata->_num_components != 3) {
-    // We can generally rely on alpha to be the last component.
-    int component = cdata->_num_components - 1;
-    for (int p = 0; p < imgsize; ++p) {
-      newdata[p] = data[component];
-    }
-    return newdata;
-  }
   if (cdata->_component_width == 1) {
+    if (format == "RGBA" && cdata->_num_components == 4) {
+      const uint32_t *src = (const uint32_t *)data.p();
+      uint32_t *dst = (uint32_t *)newdata.p();
+
+      for (int p = 0; p < imgsize; ++p) {
+        uint32_t v = *src++;
+        *dst++ = ((v & 0xff00ff00u)) |
+                 ((v & 0x00ff0000u) >> 16) |
+                 ((v & 0x000000ffu) << 16);
+      }
+      return newdata;
+    }
+    if (format == "RGB" && cdata->_num_components == 4) {
+      const uint32_t *src = (const uint32_t *)data.p();
+      uint32_t *dst = (uint32_t *)newdata.p();
+
+      // Convert blocks of 4 pixels at a time, so that we can treat both the
+      // source and destination as 32-bit integers.
+      int blocks = imgsize >> 2;
+      for (int i = 0; i < blocks; ++i) {
+        uint32_t v0 = *src++;
+        uint32_t v1 = *src++;
+        uint32_t v2 = *src++;
+        uint32_t v3 = *src++;
+        *dst++ = ((v0 & 0x00ff0000u) >> 16) |
+                 ((v0 & 0x0000ff00u)) |
+                 ((v0 & 0x000000ffu) << 16) |
+                 ((v1 & 0x00ff0000u) << 8);
+        *dst++ = ((v1 & 0x0000ff00u) >> 8) |
+                 ((v1 & 0x000000ffu) << 8) |
+                 ((v2 & 0x00ff0000u)) |
+                 ((v2 & 0x0000ff00u) << 16);
+        *dst++ = ((v2 & 0x000000ffu)) |
+                 ((v3 & 0x00ff0000u) >> 8) |
+                 ((v3 & 0x0000ff00u) << 8) |
+                 ((v3 & 0x000000ffu) << 24);
+      }
+
+      // If the image size wasn't a multiple of 4, we may have a handful of
+      // pixels left over.  Convert those the slower way.
+      uint8_t *tail = (uint8_t *)dst;
+      for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
+        uint32_t v = *src++;
+        *tail++ = (v & 0x00ff0000u) >> 16;
+        *tail++ = (v & 0x0000ff00u) >> 8;
+        *tail++ = (v & 0x000000ffu);
+      }
+      return newdata;
+    }
+    if (format == "BGR" && cdata->_num_components == 4) {
+      const uint32_t *src = (const uint32_t *)data.p();
+      uint32_t *dst = (uint32_t *)newdata.p();
+
+      // Convert blocks of 4 pixels at a time, so that we can treat both the
+      // source and destination as 32-bit integers.
+      int blocks = imgsize >> 2;
+      for (int i = 0; i < blocks; ++i) {
+        uint32_t v0 = *src++;
+        uint32_t v1 = *src++;
+        uint32_t v2 = *src++;
+        uint32_t v3 = *src++;
+        *dst++ = (v0 & 0x00ffffffu) | ((v1 & 0x000000ffu) << 24);
+        *dst++ = ((v1 & 0x00ffff00u) >> 8) |  ((v2 & 0x0000ffffu) << 16);
+        *dst++ = ((v2 & 0x00ff0000u) >> 16) | ((v3 & 0x00ffffffu) << 8);
+      }
+
+      // If the image size wasn't a multiple of 4, we may have a handful of
+      // pixels left over.  Convert those the slower way.
+      uint8_t *tail = (uint8_t *)dst;
+      for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
+        uint32_t v = *src++;
+        *tail++ = (v & 0x000000ffu);
+        *tail++ = (v & 0x0000ff00u) >> 8;
+        *tail++ = (v & 0x00ff0000u) >> 16;
+      }
+      return newdata;
+    }
+    const uint8_t *src = (const uint8_t *)data.p();
+    uint8_t *dst = (uint8_t *)newdata.p();
+
+    if (format == "RGB" && cdata->_num_components == 3) {
+      for (int i = 0; i < imgsize; ++i) {
+        *dst++ = src[2];
+        *dst++ = src[1];
+        *dst++ = src[0];
+        src += 3;
+      }
+      return newdata;
+    }
+    if (format == "A" && cdata->_num_components != 3) {
+      // We can generally rely on alpha to be the last component.
+      for (int p = 0; p < imgsize; ++p) {
+        dst[p] = src[alpha];
+        src += cdata->_num_components;
+      }
+      return newdata;
+    }
+    // Fallback case for other 8-bit-per-channel formats.
     for (int p = 0; p < imgsize; ++p) {
-      for (uchar s = 0; s < format.size(); ++s) {
-        signed char component = -1;
-        if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
-          component = 0;
-        } else if (format.at(s) == 'G') {
-          component = 1;
-        } else if (format.at(s) == 'R') {
-          component = 2;
-        } else if (format.at(s) == 'A') {
-          nassertr(cdata->_num_components != 3, CPTA_uchar(get_class_type()));
-          component = cdata->_num_components - 1;
-        } else if (format.at(s) == '0') {
-          newdata[p * format.size() + s] = 0x00;
-        } else if (format.at(s) == '1') {
-          newdata[p * format.size() + s] = 0xff;
+      for (size_t i = 0; i < format.size(); ++i) {
+        if (format[i] == 'B' || (cdata->_num_components <= 2 && format[i] != 'A')) {
+          *dst++ = src[0];
+        } else if (format[i] == 'G') {
+          *dst++ = src[1];
+        } else if (format[i] == 'R') {
+          *dst++ = src[2];
+        } else if (format[i] == 'A') {
+          if (alpha >= 0) {
+            *dst++ = src[alpha];
+          } else {
+            *dst++ = 0xff;
+          }
+        } else if (format[i] == '1') {
+          *dst++ = 0xff;
         } else {
-          gobj_cat.error() << "Unexpected component character '"
-            << format.at(s) << "', expected one of RGBA!\n";
-          return CPTA_uchar(get_class_type());
-        }
-        if (component >= 0) {
-          newdata[p * format.size() + s] = data[p * cdata->_num_components + component];
+          *dst++ = 0x00;
         }
       }
+      src += cdata->_num_components;
     }
     return newdata;
   }
+
+  // The slow and general case.
   for (int p = 0; p < imgsize; ++p) {
-    for (uchar s = 0; s < format.size(); ++s) {
-      signed char component = -1;
-      if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
+    for (size_t i = 0; i < format.size(); ++i) {
+      int component = 0;
+      if (format[i] == 'B' || (cdata->_num_components <= 2 && format[i] != 'A')) {
         component = 0;
-      } else if (format.at(s) == 'G') {
+      } else if (format[i] == 'G') {
         component = 1;
-      } else if (format.at(s) == 'R') {
+      } else if (format[i] == 'R') {
         component = 2;
-      } else if (format.at(s) == 'A') {
-        nassertr(cdata->_num_components != 3, CPTA_uchar(get_class_type()));
-        component = cdata->_num_components - 1;
-      } else if (format.at(s) == '0') {
-        memset((void*)(newdata + (p * format.size() + s) * cdata->_component_width),  0, cdata->_component_width);
-      } else if (format.at(s) == '1') {
-        memset((void*)(newdata + (p * format.size() + s) * cdata->_component_width), -1, cdata->_component_width);
+      } else if (format[i] == 'A') {
+        if (alpha >= 0) {
+          component = alpha;
+        } else {
+          memset((void*)(newdata + (p * format.size() + i) * cdata->_component_width), -1, cdata->_component_width);
+          continue;
+        }
+      } else if (format[i] == '1') {
+        memset((void*)(newdata + (p * format.size() + i) * cdata->_component_width), -1, cdata->_component_width);
+        continue;
       } else {
-        gobj_cat.error() << "Unexpected component character '"
-          << format.at(s) << "', expected one of RGBA!\n";
-        return CPTA_uchar(get_class_type());
+        memset((void*)(newdata + (p * format.size() + i) * cdata->_component_width),  0, cdata->_component_width);
+        continue;
       }
-      if (component >= 0) {
-        memcpy((void*)(newdata + (p * format.size() + s) * cdata->_component_width),
-               (void*)(data + (p * cdata->_num_components + component) * cdata->_component_width),
-               cdata->_component_width);
-      }
+      memcpy((void*)(newdata + (p * format.size() + i) * cdata->_component_width),
+             (void*)(data + (p * cdata->_num_components + component) * cdata->_component_width),
+             cdata->_component_width);
     }
   }
   return newdata;
@@ -6229,7 +6335,7 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
   cdata->_simple_y_size = y_size;
   cdata->_simple_ram_image._image = image.cast_non_const();
   cdata->_simple_ram_image._page_size = image.size();
-  cdata->_simple_image_date_generated = (PN_int32)time(NULL);
+  cdata->_simple_image_date_generated = (int32_t)time(NULL);
   cdata->inc_simple_image_modified();
 }
 
@@ -6546,25 +6652,84 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
   if (maxval == 255 && component_width == 1) {
     // Most common case: one byte per pixel, and the source image shows a
-    // maxval of 255.  No scaling is necessary.
-    for (int j = y_size-1; j >= 0; j--) {
-      for (int i = 0; i < x_size; i++) {
-        if (is_grayscale) {
-          store_unscaled_byte(p, pnmimage.get_gray_val(i, j));
-        } else {
-          store_unscaled_byte(p, pnmimage.get_blue_val(i, j));
-          store_unscaled_byte(p, pnmimage.get_green_val(i, j));
-          store_unscaled_byte(p, pnmimage.get_red_val(i, j));
+    // maxval of 255.  No scaling is necessary.  Because this is such a common
+    // case, we break it out per component for best performance.
+    switch (num_components) {
+    case 1:
+      for (int j = y_size-1; j >= 0; j--) {
+        xel *row = pnmimage.row(j);
+        for (int i = 0; i < x_size; i++) {
+          *p++ = (uchar)PPM_GETB(row[i]);
         }
-        if (has_alpha) {
-          if (img_has_alpha) {
-            store_unscaled_byte(p, pnmimage.get_alpha_val(i, j));
-          } else {
-            store_unscaled_byte(p, 255);
+        p += row_skip;
+      }
+      break;
+
+    case 2:
+      if (img_has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)alpha_row[i];
           }
+          p += row_skip;
+        }
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)255;
+          }
+          p += row_skip;
         }
       }
-      p += row_skip;
+      break;
+
+    case 3:
+      for (int j = y_size-1; j >= 0; j--) {
+        xel *row = pnmimage.row(j);
+        for (int i = 0; i < x_size; i++) {
+          *p++ = (uchar)PPM_GETB(row[i]);
+          *p++ = (uchar)PPM_GETG(row[i]);
+          *p++ = (uchar)PPM_GETR(row[i]);
+        }
+        p += row_skip;
+      }
+      break;
+
+    case 4:
+      if (img_has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)PPM_GETG(row[i]);
+            *p++ = (uchar)PPM_GETR(row[i]);
+            *p++ = (uchar)alpha_row[i];
+          }
+          p += row_skip;
+        }
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            *p++ = (uchar)PPM_GETB(row[i]);
+            *p++ = (uchar)PPM_GETG(row[i]);
+            *p++ = (uchar)PPM_GETR(row[i]);
+            *p++ = (uchar)255;
+          }
+          p += row_skip;
+        }
+      }
+      break;
+
+    default:
+      nassertv(num_components >= 1 && num_components <= 4);
+      break;
     }
 
   } else if (maxval == 65535 && component_width == 2) {
@@ -6739,17 +6904,44 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
   const unsigned char *p = &image[idx];
 
   if (component_width == 1) {
-    for (int j = y_size-1; j >= 0; j--) {
-      for (int i = 0; i < x_size; i++) {
-        if (is_grayscale) {
-          pnmimage.set_gray(i, j, get_unsigned_byte(p));
-        } else {
-          pnmimage.set_blue(i, j, get_unsigned_byte(p));
-          pnmimage.set_green(i, j, get_unsigned_byte(p));
-          pnmimage.set_red(i, j, get_unsigned_byte(p));
+    if (is_grayscale) {
+      if (has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+            alpha_row[i] = *p++;
+          }
         }
-        if (has_alpha) {
-          pnmimage.set_alpha(i, j, get_unsigned_byte(p));
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+          }
+        }
+      }
+    } else {
+      if (has_alpha) {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          xelval *alpha_row = pnmimage.alpha_row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+            PPM_PUTG(row[i], *p++);
+            PPM_PUTR(row[i], *p++);
+            alpha_row[i] = *p++;
+          }
+        }
+      } else {
+        for (int j = y_size-1; j >= 0; j--) {
+          xel *row = pnmimage.row(j);
+          for (int i = 0; i < x_size; i++) {
+            PPM_PUTB(row[i], *p++);
+            PPM_PUTG(row[i], *p++);
+            PPM_PUTR(row[i], *p++);
+          }
         }
       }
     }
@@ -6913,9 +7105,9 @@ read_dds_level_abgr8(Texture *tex, CData *cdata, const DDSHeader &header, int n,
     unsigned char *p = image.p() + y * row_bytes;
     in.read((char *)p, row_bytes);
 
-    PN_uint32 *pw = (PN_uint32 *)p;
+    uint32_t *pw = (uint32_t *)p;
     for (int x = 0; x < x_size; ++x) {
-      PN_uint32 w = *pw;
+      uint32_t w = *pw;
 #ifdef WORDS_BIGENDIAN
       // bigendian: convert R, G, B, A to B, G, R, A.
       w = ((w & 0xff00) << 16) | ((w & 0xff000000U) >> 16) | (w & 0xff00ff);
@@ -6969,7 +7161,7 @@ read_dds_level_abgr16(Texture *tex, CData *cdata, const DDSHeader &header, int n
     unsigned char *p = image.p() + y * row_bytes;
     in.read((char *)p, row_bytes);
 
-    PN_uint16 *pw = (PN_uint16 *)p;
+    uint16_t *pw = (uint16_t *)p;
     for (int x = 0; x < x_size; ++x) {
       swap(pw[0], pw[2]);
       pw += 4;
@@ -6996,7 +7188,7 @@ read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header, int n
     unsigned char *p = image.p() + y * row_bytes;
     in.read((char *)p, row_bytes);
 
-    PN_uint32 *pw = (PN_uint32 *)p;
+    uint32_t *pw = (uint32_t *)p;
     for (int x = 0; x < x_size; ++x) {
       swap(pw[0], pw[2]);
       pw += 4;
@@ -7225,8 +7417,8 @@ read_dds_level_bc1(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       for (int ci = 0; ci < num_cols; ++ci) {
         // . . . and (b) within each block, we reverse the 4 individual rows
         // of 4 pixels.
-        PN_uint32 *cells = (PN_uint32 *)p;
-        PN_uint32 w = cells[1];
+        uint32_t *cells = (uint32_t *)p;
+        uint32_t w = cells[1];
         w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
         cells[1] = w;
 
@@ -7240,8 +7432,8 @@ read_dds_level_bc1(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
     in.read((char *)p, row_length);
 
     for (int ci = 0; ci < num_cols; ++ci) {
-      PN_uint32 *cells = (PN_uint32 *)p;
-      PN_uint32 w = cells[1];
+      uint32_t *cells = (uint32_t *)p;
+      uint32_t w = cells[1];
       w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
       cells[1] = w;
 
@@ -7295,11 +7487,11 @@ read_dds_level_bc2(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       for (int ci = 0; ci < num_cols; ++ci) {
         // . . . and (b) within each block, we reverse the 4 individual rows
         // of 4 pixels.
-        PN_uint32 *cells = (PN_uint32 *)p;
+        uint32_t *cells = (uint32_t *)p;
 
         // Alpha.  The block is four 16-bit words of pixel data.
-        PN_uint32 w0 = cells[0];
-        PN_uint32 w1 = cells[1];
+        uint32_t w0 = cells[0];
+        uint32_t w1 = cells[1];
         w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
         w1 = ((w1 & 0xffff) << 16) | ((w1 & 0xffff0000U) >> 16);
         cells[0] = w1;
@@ -7307,7 +7499,7 @@ read_dds_level_bc2(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
 
         // Color.  Only the second 32-bit dword of the color block represents
         // the pixel data.
-        PN_uint32 w = cells[3];
+        uint32_t w = cells[3];
         w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
         cells[3] = w;
 
@@ -7321,13 +7513,13 @@ read_dds_level_bc2(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
     in.read((char *)p, row_length);
 
     for (int ci = 0; ci < num_cols; ++ci) {
-      PN_uint32 *cells = (PN_uint32 *)p;
+      uint32_t *cells = (uint32_t *)p;
 
-      PN_uint32 w0 = cells[0];
+      uint32_t w0 = cells[0];
       w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
       cells[0] = w0;
 
-      PN_uint32 w = cells[3];
+      uint32_t w = cells[3];
       w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
       cells[3] = w;
 
@@ -7381,7 +7573,7 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       for (int ci = 0; ci < num_cols; ++ci) {
         // . . . and (b) within each block, we reverse the 4 individual rows
         // of 4 pixels.
-        PN_uint32 *cells = (PN_uint32 *)p;
+        uint32_t *cells = (uint32_t *)p;
 
         // Alpha.  The block is one 16-bit word of reference values, followed
         // by six words of pixel values, in 12-bit rows.  Tricky to invert.
@@ -7401,7 +7593,7 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
 
         // Color.  Only the second 32-bit dword of the color block represents
         // the pixel data.
-        PN_uint32 w = cells[3];
+        uint32_t w = cells[3];
         w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
         cells[3] = w;
 
@@ -7415,7 +7607,7 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
     in.read((char *)p, row_length);
 
     for (int ci = 0; ci < num_cols; ++ci) {
-      PN_uint32 *cells = (PN_uint32 *)p;
+      uint32_t *cells = (uint32_t *)p;
 
       unsigned char p2 = p[2];
       unsigned char p3 = p[3];
@@ -7425,11 +7617,11 @@ read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, i
       p[3] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
       p[4] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
 
-      PN_uint32 w0 = cells[0];
+      uint32_t w0 = cells[0];
       w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
       cells[0] = w0;
 
-      PN_uint32 w = cells[3];
+      uint32_t w = cells[3];
       w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
       cells[3] = w;
 
@@ -7667,11 +7859,15 @@ compare_images(const PNMImage &a, const PNMImage &b) {
 
   int delta = 0;
   for (int yi = 0; yi < a.get_y_size(); ++yi) {
+    xel *a_row = a.row(yi);
+    xel *b_row = b.row(yi);
+    xelval *a_alpha_row = a.alpha_row(yi);
+    xelval *b_alpha_row = b.alpha_row(yi);
     for (int xi = 0; xi < a.get_x_size(); ++xi) {
-      delta += abs(a.get_red_val(xi, yi) - b.get_red_val(xi, yi));
-      delta += abs(a.get_green_val(xi, yi) - b.get_green_val(xi, yi));
-      delta += abs(a.get_blue_val(xi, yi) - b.get_blue_val(xi, yi));
-      delta += abs(a.get_alpha_val(xi, yi) - b.get_alpha_val(xi, yi));
+      delta += abs(PPM_GETR(a_row[xi]) - PPM_GETR(b_row[xi]));
+      delta += abs(PPM_GETG(a_row[xi]) - PPM_GETG(b_row[xi]));
+      delta += abs(PPM_GETB(a_row[xi]) - PPM_GETB(b_row[xi]));
+      delta += abs(a_alpha_row[xi] - b_alpha_row[xi]);
     }
   }
 
@@ -8567,8 +8763,19 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
   me.add_uint8(cdata->_primary_file_num_channels);
   me.add_uint8(cdata->_alpha_file_channel);
   me.add_bool(has_rawdata);
-  me.add_uint8(cdata->_texture_type);
-  me.add_bool(cdata->_has_read_mipmaps);
+
+  if (manager->get_file_minor_ver() < 25 &&
+      cdata->_texture_type == TT_cube_map) {
+    // Between Panda3D releases 1.7.2 and 1.8.0 (bam versions 6.24 and 6.25),
+    // we added TT_2d_texture_array, shifting the definition for TT_cube_map.
+    me.add_uint8(TT_2d_texture_array);
+  } else {
+    me.add_uint8(cdata->_texture_type);
+  }
+
+  if (manager->get_file_minor_ver() >= 32) {
+    me.add_bool(cdata->_has_read_mipmaps);
+  }
 }
 
 /**
@@ -8577,7 +8784,18 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
  */
 void Texture::
 do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
-  cdata->_default_sampler.write_datagram(me);
+  if (manager->get_file_minor_ver() >= 36) {
+    cdata->_default_sampler.write_datagram(me);
+  } else {
+    const SamplerState &s = cdata->_default_sampler;
+    me.add_uint8(s.get_wrap_u());
+    me.add_uint8(s.get_wrap_v());
+    me.add_uint8(s.get_wrap_w());
+    me.add_uint8(s.get_minfilter());
+    me.add_uint8(s.get_magfilter());
+    me.add_int16(s.get_anisotropic_degree());
+    s.get_border_color().write_datagram(me);
+  }
 
   me.add_uint8(cdata->_compression);
   me.add_uint8(cdata->_quality_level);
@@ -8589,7 +8807,9 @@ do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
     me.add_uint8(cdata->_usage_hint);
   }
 
-  me.add_uint8(cdata->_auto_texture_scale);
+  if (manager->get_file_minor_ver() >= 28) {
+    me.add_uint8(cdata->_auto_texture_scale);
+  }
   me.add_uint32(cdata->_orig_file_x_size);
   me.add_uint32(cdata->_orig_file_y_size);
 
@@ -8615,11 +8835,15 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint32(cdata->_y_size);
   me.add_uint32(cdata->_z_size);
 
-  me.add_uint32(cdata->_pad_x_size);
-  me.add_uint32(cdata->_pad_y_size);
-  me.add_uint32(cdata->_pad_z_size);
+  if (manager->get_file_minor_ver() >= 30) {
+    me.add_uint32(cdata->_pad_x_size);
+    me.add_uint32(cdata->_pad_y_size);
+    me.add_uint32(cdata->_pad_z_size);
+  }
 
-  me.add_uint32(cdata->_num_views);
+  if (manager->get_file_minor_ver() >= 26) {
+    me.add_uint32(cdata->_num_views);
+  }
   me.add_uint8(cdata->_component_type);
   me.add_uint8(cdata->_component_width);
   me.add_uint8(cdata->_ram_image_compression);

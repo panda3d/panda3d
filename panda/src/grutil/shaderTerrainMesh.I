@@ -12,26 +12,28 @@
  */
 
 /**
- * @brief Sets the path to the heightfield
- * @details This sets the path to the terrain heightfield. It should be 16bit
+ * @brief Sets the heightfield texture
+ * @details This sets the heightfield texture. It should be 16bit
  *   single channel, and have a power-of-two resolution greater than 32.
  *   Common sizes are 2048x2048 or 4096x4096.
  *
- * @param filename Path to the heightfield
+ *   You should call generate() after setting the heightfield.
+ *
+ * @param filename Heightfield texture
  */
-INLINE void ShaderTerrainMesh::set_heightfield_filename(const Filename& filename) {
-  _heightfield_source = filename;
+INLINE void ShaderTerrainMesh::set_heightfield(Texture* heightfield) {
+  _heightfield_tex = heightfield;
 }
 
 /**
- * @brief Returns the heightfield path
- * @details This returns the path of the terrain heightfield, previously set with
+ * @brief Returns the heightfield
+ * @details This returns the terrain heightfield, previously set with
  *   set_heightfield()
  *
  * @return Path to the heightfield
  */
-INLINE const Filename& ShaderTerrainMesh::get_heightfield_filename() const {
-  return _heightfield_source;
+INLINE Texture* ShaderTerrainMesh::get_heightfield() const {
+  return _heightfield_tex;
 }
 
 /**
@@ -141,17 +143,6 @@ INLINE void ShaderTerrainMesh::set_update_enabled(bool update_enabled) {
  */
 INLINE bool ShaderTerrainMesh::get_update_enabled() const {
   return _update_enabled;
-}
-
-/**
- * @brief Returns a handle to the heightfield texture
- * @details This returns a handle to the internally used heightfield texture. This
- *   can be used to set the heightfield as a shader input.
- *
- * @return Handle to the heightfield texture
- */
-INLINE Texture* ShaderTerrainMesh::get_heightfield_tex() const {
-  return _heightfield_tex;
 }
 
 /**

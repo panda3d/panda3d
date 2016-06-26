@@ -20,6 +20,7 @@ def inspect(anObject):
     Inspector = importlib.import_module('direct.tkpanels.Inspector')
     return Inspector.inspect(anObject)
 
+import sys
 if sys.version_info >= (3, 0):
     import builtins
 else:

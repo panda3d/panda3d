@@ -126,10 +126,12 @@ public:
     Property(const InterrogateElement &ielement);
 
     const InterrogateElement &_ielement;
+    Function *_length_function;
     Function *_getter;
     Function *_setter;
     Function *_has_function;
     Function *_clear_function;
+    Function *_deleter;
   };
   typedef vector<Property *> Properties;
 

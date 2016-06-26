@@ -14,6 +14,7 @@
 #include "matrixLens.h"
 #include "indent.h"
 #include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle MatrixLens::_type_handle;
 
@@ -83,14 +84,18 @@ register_with_read_factory() {
  */
 void MatrixLens::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  dg.add_uint8(_ml_flags);
-  _user_mat.write_datagram(dg);
+  Lens::write_datagram(manager, dg);
 
-  if (_ml_flags & MF_has_left_eye) {
-    _left_eye_mat.write_datagram(dg);
-  }
-  if (_ml_flags & MF_has_right_eye) {
-    _left_eye_mat.write_datagram(dg);
+  if (manager->get_file_minor_ver() >= 41) {
+    dg.add_uint8(_ml_flags);
+    _user_mat.write_datagram(dg);
+
+    if (_ml_flags & MF_has_left_eye) {
+      _left_eye_mat.write_datagram(dg);
+    }
+    if (_ml_flags & MF_has_right_eye) {
+      _left_eye_mat.write_datagram(dg);
+    }
   }
 }
 
