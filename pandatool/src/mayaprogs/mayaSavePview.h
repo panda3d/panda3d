@@ -26,8 +26,12 @@
 #endif
 
 #ifdef __MACH__
-#undef _BOOL
-#include "maya/OpenMayaMac.h"
+#define OSMac_ 1
+// This defines MAYA_API_VERSION
+#include <maya/MTypes.h>
+#if MAYA_API_VERSION < 201600
+#include <maya/OpenMayaMac.h>
+#endif
 #endif
 
 // Even though we don't include any Panda headers, it's safe to

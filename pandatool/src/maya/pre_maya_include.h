@@ -64,8 +64,12 @@ typedef istream maya_istream;
 #endif  // PHAVE_IOSTREAM
 
 #ifdef __MACH__
-#undef _BOOL
-#include "maya/OpenMayaMac.h"
+#define OSMac_ 1
+// This defines MAYA_API_VERSION
+#include <maya/MTypes.h>
+#if MAYA_API_VERSION < 201600
+#include <maya/OpenMayaMac.h>
+#endif
 #endif
 
 #endif  // MAYA_PRE_5_0
