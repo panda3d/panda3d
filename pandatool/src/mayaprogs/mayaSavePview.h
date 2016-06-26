@@ -26,7 +26,7 @@
 
 #ifdef __MACH__
 #undef _BOOL
-#include "maya/OpenMayaMac.h"
+#define OSMac_ 1
 #endif
 
 // Even though we don't include any Panda headers, it's safe to include this
