@@ -82,7 +82,7 @@ if(HAVE_ODE)
 
   composite_sources(p3ode P3ODE_SOURCES)
   add_library(p3ode ${P3ODE_SOURCES} ${P3ODE_HEADERS})
-  #set_target_properties(p3ode PROPERTIES COMPILE_DEFINITIONS dSINGLE)
+  set_target_properties(p3ode PROPERTIES COMPILE_DEFINITIONS dSINGLE)
   target_link_libraries(p3ode p3pgraph p3physics ${ODE_LIBRARY})
   target_interrogate(p3ode ${P3ODE_IGATE_SOURCES} EXTENSIONS ${P3ODE_IGATEEXT})
 

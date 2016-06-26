@@ -1,10 +1,12 @@
 set(P3PNMIMAGETYPES_HEADERS
   config_pnmimagetypes.h pnmFileTypeBMP.h
+  pnmFileTypeEXR.h
   pnmFileTypeIMG.h
   pnmFileTypePNG.h
   pnmFileTypePNM.h
   pnmFileTypePfm.h
   pnmFileTypeSGI.h pnmFileTypeSoftImage.h
+  pnmFileTypeStbImage.h
   pnmFileTypeTGA.h
   pnmFileTypeTIFF.h
   pnmFileTypeJPG.h
@@ -14,6 +16,7 @@ set(P3PNMIMAGETYPES_SOURCES
   config_pnmimagetypes.cxx
   pnmFileTypeBMPReader.cxx pnmFileTypeBMPWriter.cxx
   pnmFileTypeBMP.cxx
+  pnmFileTypeEXR.cxx
   pnmFileTypeIMG.cxx
   pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
   pnmFileTypePNG.cxx
@@ -22,6 +25,7 @@ set(P3PNMIMAGETYPES_SOURCES
   pnmFileTypeSGI.cxx
   pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx
   pnmFileTypeSoftImage.cxx
+  pnmFileTypeStbImage.cxx
   pnmFileTypeTIFF.cxx
   pnmFileTypeTGA.cxx
 )

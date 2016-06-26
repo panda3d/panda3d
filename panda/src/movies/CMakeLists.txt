@@ -1,5 +1,7 @@
 set(P3MOVIES_HEADERS
     config_movies.h
+    flacAudio.h flacAudio.I
+    flacAudioCursor.h flacAudioCursor.I
     inkblotVideo.h inkblotVideo.I
     inkblotVideoCursor.h inkblotVideoCursor.I
     microphoneAudio.h microphoneAudio.I
@@ -17,6 +19,8 @@ set(P3MOVIES_HEADERS
 
 set(P3MOVIES_SOURCES
     config_movies.cxx
+    flacAudio.cxx
+    flacAudioCursor.cxx
     inkblotVideo.cxx
     inkblotVideoCursor.cxx
     microphoneAudio.cxx
