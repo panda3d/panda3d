@@ -14,6 +14,8 @@
 #include "cppTypedefType.h"
 #include "cppIdentifier.h"
 #include "cppInstanceIdentifier.h"
+#include "cppTemplateScope.h"
+#include "indent.h"
 
 /**
  *
