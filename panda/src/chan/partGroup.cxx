@@ -1,16 +1,15 @@
-// Filename: partGroup.cxx
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file partGroup.cxx
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #include "partGroup.h"
 #include "animGroup.h"
@@ -28,61 +27,48 @@
 
 TypeHandle PartGroup::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::Constructor
-//       Access: Published
-//  Description: Creates the PartGroup, and adds it to the indicated
-//               parent.  The only way to delete it subsequently is to
-//               delete the entire hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the PartGroup, and adds it to the indicated parent.  The only way
+ * to delete it subsequently is to delete the entire hierarchy.
+ */
 PartGroup::
-PartGroup(PartGroup *parent, const string &name) : 
+PartGroup(PartGroup *parent, const string &name) :
   Namable(name),
   _children(get_class_type())
 {
   nassertv(parent != NULL);
-  
+
   parent->_children.push_back(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PartGroup::
 ~PartGroup() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::is_character_joint
-//       Access: Published, Virtual
-//  Description: Returns true if this part is a CharacterJoint, false
-//               otherwise.  This is a tiny optimization over
-//               is_of_type(CharacterType::get_class_type()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this part is a CharacterJoint, false otherwise.  This is a
+ * tiny optimization over is_of_type(CharacterType::get_class_type()).
+ */
 bool PartGroup::
 is_character_joint() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::make_copy
-//       Access: Published, Virtual
-//  Description: Allocates and returns a new copy of the node.
-//               Children are not copied, but see copy_subgraph().
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the node.  Children are not copied, but
+ * see copy_subgraph().
+ */
 PartGroup *PartGroup::
 make_copy() const {
   return new PartGroup(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::copy_subgraph
-//       Access: Published
-//  Description: Allocates and returns a new copy of this node and of
-//               all of its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of this node and of all of its children.
+ */
 PartGroup *PartGroup::
 copy_subgraph() const {
   PartGroup *root = make_copy();
@@ -102,37 +88,30 @@ copy_subgraph() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::get_num_children
-//       Access: Published
-//  Description: Returns the number of child nodes of the group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of child nodes of the group.
+ */
 int PartGroup::
 get_num_children() const {
   return _children.size();
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::get_child
-//       Access: Published
-//  Description: Returns the nth child of the group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth child of the group.
+ */
 PartGroup *PartGroup::
 get_child(int n) const {
   nassertr(n >= 0 && n < (int)_children.size(), NULL);
   return _children[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::get_child_named
-//       Access: Published
-//  Description: Returns the first child found with the indicated
-//               name, or NULL if no such child exists.  This method
-//               searches only the children of this particular
-//               PartGroup; it does not recursively search the entire
-//               graph.  See also find_child().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first child found with the indicated name, or NULL if no such
+ * child exists.  This method searches only the children of this particular
+ * PartGroup; it does not recursively search the entire graph.  See also
+ * find_child().
+ */
 PartGroup *PartGroup::
 get_child_named(const string &name) const {
   Children::const_iterator ci;
@@ -146,14 +125,11 @@ get_child_named(const string &name) const {
   return (PartGroup *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::find_child
-//       Access: Published
-//  Description: Returns the first descendant found with the indicated
-//               name, or NULL if no such descendant exists.  This
-//               method searches the entire graph beginning at this
-//               PartGroup; see also get_child_named().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first descendant found with the indicated name, or NULL if no
+ * such descendant exists.  This method searches the entire graph beginning at
+ * this PartGroup; see also get_child_named().
+ */
 PartGroup *PartGroup::
 find_child(const string &name) const {
   Children::const_iterator ci;
@@ -179,15 +155,12 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::sort_descendants
-//       Access: Published
-//  Description: Sorts the children nodes at each level of the
-//               hierarchy into alphabetical order.  This should be
-//               done after creating the hierarchy, to guarantee that
-//               the correct names will match up together when the
-//               AnimBundle is later bound to a PlayerRoot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the children nodes at each level of the hierarchy into alphabetical
+ * order.  This should be done after creating the hierarchy, to guarantee that
+ * the correct names will match up together when the AnimBundle is later bound
+ * to a PlayerRoot.
+ */
 void PartGroup::
 sort_descendants() {
   stable_sort(_children.begin(), _children.end(), PartGroupAlphabeticalOrder());
@@ -198,108 +171,85 @@ sort_descendants() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::apply_freeze
-//       Access: Published
-//  Description: Freezes this particular joint so that it will always
-//               hold the specified transform.  Returns true if this
-//               is a joint that can be so frozen, false otherwise.
-//
-//               This is normally only called internally by
-//               PartBundle::freeze_joint(), but you may also call it
-//               directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Freezes this particular joint so that it will always hold the specified
+ * transform.  Returns true if this is a joint that can be so frozen, false
+ * otherwise.
+ *
+ * This is normally only called internally by PartBundle::freeze_joint(), but
+ * you may also call it directly.
+ */
 bool PartGroup::
 apply_freeze(const TransformState *transform) {
   return apply_freeze_matrix(transform->get_pos(), transform->get_hpr(), transform->get_scale()) || apply_freeze_scalar(transform->get_pos()[0]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::apply_freeze_matrix
-//       Access: Published, Virtual
-//  Description: Freezes this particular joint so that it will always
-//               hold the specified transform.  Returns true if this
-//               is a joint that can be so frozen, false otherwise.
-//
-//               This is normally only called internally by
-//               PartBundle::freeze_joint(), but you may also call it
-//               directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Freezes this particular joint so that it will always hold the specified
+ * transform.  Returns true if this is a joint that can be so frozen, false
+ * otherwise.
+ *
+ * This is normally only called internally by PartBundle::freeze_joint(), but
+ * you may also call it directly.
+ */
 bool PartGroup::
 apply_freeze_matrix(const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::apply_freeze_scalar
-//       Access: Published, Virtual
-//  Description: Freezes this particular joint so that it will always
-//               hold the specified transform.  Returns true if this
-//               is a joint that can be so frozen, false otherwise.
-//
-//               This is normally only called internally by
-//               PartBundle::freeze_joint(), but you may also call it
-//               directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Freezes this particular joint so that it will always hold the specified
+ * transform.  Returns true if this is a joint that can be so frozen, false
+ * otherwise.
+ *
+ * This is normally only called internally by PartBundle::freeze_joint(), but
+ * you may also call it directly.
+ */
 bool PartGroup::
 apply_freeze_scalar(PN_stdfloat value) {
   return false;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::apply_control
-//       Access: Published, Virtual
-//  Description: Specifies a node to influence this particular joint
-//               so that it will always hold the node's transform.
-//               Returns true if this is a joint that can be so
-//               controlled, false otherwise.
-//
-//               This is normally only called internally by
-//               PartBundle::control_joint(), but you may also call it
-//               directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a node to influence this particular joint so that it will always
+ * hold the node's transform.  Returns true if this is a joint that can be so
+ * controlled, false otherwise.
+ *
+ * This is normally only called internally by PartBundle::control_joint(), but
+ * you may also call it directly.
+ */
 bool PartGroup::
 apply_control(PandaNode *node) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::clear_forced_channel
-//       Access: Published, Virtual
-//  Description: Undoes the effect of a previous call to
-//               apply_freeze() or apply_control().  Returns true if
-//               the joint was modified, false otherwise.
-//
-//               This is normally only called internally by
-//               PartBundle::release_joint(), but you may also call it
-//               directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes the effect of a previous call to apply_freeze() or apply_control().
+ * Returns true if the joint was modified, false otherwise.
+ *
+ * This is normally only called internally by PartBundle::release_joint(), but
+ * you may also call it directly.
+ */
 bool PartGroup::
 clear_forced_channel() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::get_forced_channel
-//       Access: Published, Virtual
-//  Description: Returns the AnimChannelBase that has been forced to
-//               this joint by a previous call to apply_freeze() or
-//               apply_control(), or NULL if no such channel has been
-//               applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the AnimChannelBase that has been forced to this joint by a
+ * previous call to apply_freeze() or apply_control(), or NULL if no such
+ * channel has been applied.
+ */
 AnimChannelBase *PartGroup::
 get_forced_channel() const {
   return NULL;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::write
-//       Access: Published, Virtual
-//  Description: Writes a brief description of the group and all of
-//               its descendants.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the group and all of its descendants.
+ */
 void PartGroup::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -308,12 +258,10 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::write_with_value
-//       Access: Published, Virtual
-//  Description: Writes a brief description of the group, showing its
-//               current value, and that of all of its descendants.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the group, showing its current value, and
+ * that of all of its descendants.
+ */
 void PartGroup::
 write_with_value(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -322,32 +270,24 @@ write_with_value(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::get_value_type
-//       Access: Public, Virtual
-//  Description: Returns the TypeHandle associated with the ValueType
-//               we are concerned with.  This is provided to allow a
-//               bit of run-time checking that joints and channels are
-//               matching properly in type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TypeHandle associated with the ValueType we are concerned with.
+ * This is provided to allow a bit of run-time checking that joints and
+ * channels are matching properly in type.
+ */
 TypeHandle PartGroup::
 get_value_type() const {
   return TypeHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::check_hierarchy
-//       Access: Public
-//  Description: Walks the part hierarchy in tandem with the indicated
-//               anim hierarchy, and returns true if the hierarchies
-//               match, false otherwise.
-//
-//               If hierarchy_match_flags is 0, only an exact match is
-//               accepted; otherwise, it may contain a union of
-//               PartGroup::HierarchyMatchFlags values indicating
-//               conditions that will be tolerated (but warnings will
-//               still be issued).
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the part hierarchy in tandem with the indicated anim hierarchy, and
+ * returns true if the hierarchies match, false otherwise.
+ *
+ * If hierarchy_match_flags is 0, only an exact match is accepted; otherwise,
+ * it may contain a union of PartGroup::HierarchyMatchFlags values indicating
+ * conditions that will be tolerated (but warnings will still be issued).
+ */
 bool PartGroup::
 check_hierarchy(const AnimGroup *anim, const PartGroup *,
                 int hierarchy_match_flags) const {
@@ -363,16 +303,16 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
   }
 
   if (chan_cat.is_info()) {
-    // If we're issuing error messages, check ahead of time if the set
-    // of children agrees.  If it does not, we'll write a one-line
-    // warning, and then list the set of children that differ.
+    // If we're issuing error messages, check ahead of time if the set of
+    // children agrees.  If it does not, we'll write a one-line warning, and
+    // then list the set of children that differ.
 
     bool match = true;
     if (anim->get_num_children() != get_num_children()) {
-      // If the only difference is "morph", ignore it.  We treat
-      // "morph" as a special case, because it's common for the model
-      // and animation files to differ meaninglessly here.  Any
-      // differences here remain unreported.
+      // If the only difference is "morph", ignore it.  We treat "morph" as a
+      // special case, because it's common for the model and animation files
+      // to differ meaninglessly here.  Any differences here remain
+      // unreported.
       if (anim->get_num_children() == get_num_children() + 1 &&
           anim->get_child_named("morph") != NULL &&
           get_child_named("morph") == NULL) {
@@ -424,7 +364,8 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
             << ", not in part.\n";
           j++;
         } else {
-          //      chan_cat.info() << "  part and anim both have " << ac->get_name() << "\n";
+          // chan_cat.info() << "  part and anim both have " << ac->get_name()
+          // << "\n";
           i++;
           j++;
         }
@@ -448,8 +389,8 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
     }
   }
 
-  // Now walk the list of children and check the matching
-  // sub-hierarchies only.
+  // Now walk the list of children and check the matching sub-hierarchies
+  // only.
 
   int i = 0, j = 0;
   while (i < get_num_children() &&
@@ -487,7 +428,7 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
   while (i < get_num_children()) {
     // There's at least one extra part.
     PartGroup *pc = get_child(i);
-    
+
     if (pc->get_name() == "morph") {
       // Model has "morph", not in anim.  Ignore.
     } else {
@@ -516,18 +457,13 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::do_update
-//       Access: Public, Virtual
-//  Description: Recursively update this particular part and all of
-//               its descendents for the current frame.  This is not
-//               really public and is not intended to be called
-//               directly; it is called from the top of the tree by
-//               PartBundle::update().
-//
-//               The return value is true if any part has changed,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively update this particular part and all of its descendents for the
+ * current frame.  This is not really public and is not intended to be called
+ * directly; it is called from the top of the tree by PartBundle::update().
+ *
+ * The return value is true if any part has changed, false otherwise.
+ */
 bool PartGroup::
 do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *,
           bool parent_changed, bool anim_changed, Thread *current_thread) {
@@ -535,7 +471,7 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *,
 
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    if ((*ci)->do_update(root, root_cdata, this, parent_changed, 
+    if ((*ci)->do_update(root, root_cdata, this, parent_changed,
                          anim_changed, current_thread)) {
       any_changed = true;
     }
@@ -544,13 +480,10 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *,
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::do_xform
-//       Access: Public, Virtual
-//  Description: Called by PartBundle::xform(), this indicates the
-//               indicated transform is being applied to the root
-//               joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by PartBundle::xform(), this indicates the indicated transform is
+ * being applied to the root joint.
+ */
 void PartGroup::
 do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
   Children::const_iterator ci;
@@ -560,13 +493,10 @@ do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::determine_effective_channels
-//       Access: Public, Virtual
-//  Description: Should be called whenever the ChannelBlend values
-//               have changed, this recursively updates the
-//               _effective_channel member in each part.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called whenever the ChannelBlend values have changed, this
+ * recursively updates the _effective_channel member in each part.
+ */
 void PartGroup::
 determine_effective_channels(const CycleData *root_cdata) {
   Children::iterator ci;
@@ -576,12 +506,9 @@ determine_effective_channels(const CycleData *root_cdata) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::write_descendants
-//       Access: Protected
-//  Description: Writes a brief description of all of the group's
-//               descendants.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of all of the group's descendants.
+ */
 void PartGroup::
 write_descendants(ostream &out, int indent_level) const {
   Children::const_iterator ci;
@@ -591,12 +518,10 @@ write_descendants(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::write_descendants_with_value
-//       Access: Protected
-//  Description: Writes a brief description of all of the group's
-//               descendants and their values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of all of the group's descendants and their
+ * values.
+ */
 void PartGroup::
 write_descendants_with_value(ostream &out, int indent_level) const {
   Children::const_iterator ci;
@@ -606,14 +531,11 @@ write_descendants_with_value(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::pick_channel_index
-//       Access: Protected, Virtual
-//  Description: Walks the part hierarchy, looking for a suitable
-//               channel index number to use.  Available index numbers
-//               are the elements of the holes set, as well as next to
-//               infinity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the part hierarchy, looking for a suitable channel index number to
+ * use.  Available index numbers are the elements of the holes set, as well as
+ * next to infinity.
+ */
 void PartGroup::
 pick_channel_index(plist<int> &holes, int &next) const {
   Children::const_iterator ci;
@@ -623,14 +545,12 @@ pick_channel_index(plist<int> &holes, int &next) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::bind_hierarchy
-//       Access: Protected, Virtual
-//  Description: Binds the indicated anim hierarchy to the part
-//               hierarchy, at the given channel index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Binds the indicated anim hierarchy to the part hierarchy, at the given
+ * channel index number.
+ */
 void PartGroup::
-bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index, 
+bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
                bool is_included, BitArray &bound_joints,
                const PartSubset &subset) {
   Thread::consider_yield();
@@ -649,9 +569,8 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
     AnimGroup *ac = anim->get_child(j);
 
     if (pc->get_name() < ac->get_name()) {
-      // Here's a part, not in the anim.  Bind it to the special NULL
-      // anim.
-      pc->bind_hierarchy(NULL, channel_index, joint_index, is_included, 
+      // Here's a part, not in the anim.  Bind it to the special NULL anim.
+      pc->bind_hierarchy(NULL, channel_index, joint_index, is_included,
                          bound_joints, subset);
       i++;
 
@@ -661,7 +580,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
 
     } else {
       // Here's a matched part and anim pair.
-      pc->bind_hierarchy(ac, channel_index, joint_index, is_included, 
+      pc->bind_hierarchy(ac, channel_index, joint_index, is_included,
                          bound_joints, subset);
       i++;
       j++;
@@ -671,23 +590,19 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
   // Now pick up any more parts, not in the anim.
   while (i < part_num_children) {
     PartGroup *pc = get_child(i);
-    pc->bind_hierarchy(NULL, channel_index, joint_index, is_included, 
+    pc->bind_hierarchy(NULL, channel_index, joint_index, is_included,
                        bound_joints, subset);
     i++;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::find_bound_joints
-//       Access: Protected, Virtual
-//  Description: Similar to bind_hierarchy, but does not actually
-//               perform any binding.  All it does is compute the
-//               BitArray bount_joints according to the specified
-//               subset.  This is useful in preparation for
-//               asynchronous binding--in this case, we may need to
-//               know bound_joints immediately, without having to wait
-//               for the animation itself to load and bind.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to bind_hierarchy, but does not actually perform any binding.  All
+ * it does is compute the BitArray bount_joints according to the specified
+ * subset.  This is useful in preparation for asynchronous binding--in this
+ * case, we may need to know bound_joints immediately, without having to wait
+ * for the animation itself to load and bind.
+ */
 void PartGroup::
 find_bound_joints(int &joint_index, bool is_included, BitArray &bound_joints,
                   const PartSubset &subset) {
@@ -703,13 +618,11 @@ find_bound_joints(int &joint_index, bool is_included, BitArray &bound_joints,
     pc->find_bound_joints(joint_index, is_included, bound_joints, subset);
   }
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void PartGroup::
 write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(get_name());
@@ -719,14 +632,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of
+ * the data that is needed to re-create this object and stores it in the
+ * appropiate place
+ */
 void PartGroup::
 fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
@@ -746,17 +656,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::complete_pointers
-//       Access: Public
-//  Description: Takes in a vector of pointers to TypedWritable
-//               objects that correspond to all the requests for
-//               pointers that this object made to BamReader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes in a vector of pointers to TypedWritable objects that correspond to
+ * all the requests for pointers that this object made to BamReader.
+ */
 int PartGroup::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
-  
+
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci) = DCAST(PartGroup, p_list[pi++]);
@@ -765,11 +672,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::make_PartGroup
-//       Access: Protected
-//  Description: Factory method to generate a PartGroup object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a PartGroup object
+ */
 TypedWritable* PartGroup::
 make_PartGroup(const FactoryParams &params) {
   PartGroup *me = new PartGroup;
@@ -781,13 +686,10 @@ make_PartGroup(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a PartGroup object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a PartGroup object
+ */
 void PartGroup::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_PartGroup);
 }
-

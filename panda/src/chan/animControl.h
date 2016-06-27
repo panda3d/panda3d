@@ -1,16 +1,15 @@
-// Filename: animControl.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animControl.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef ANIMCONTROL_H
 #define ANIMCONTROL_H
@@ -30,17 +29,15 @@
 class PartBundle;
 class AnimChannelBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimControl
-// Description : Controls the timing of a character animation.  An
-//               AnimControl object is created for each
-//               character/bundle binding and manages the state of the
-//               animation: whether started, stopped, or looping, and
-//               the current frame number and play rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Controls the timing of a character animation.  An AnimControl object is
+ * created for each character/bundle binding and manages the state of the
+ * animation: whether started, stopped, or looping, and the current frame
+ * number and play rate.
+ */
 class EXPCL_PANDA_CHAN AnimControl : public TypedReferenceCount, public AnimInterface, public Namable {
 public:
-  AnimControl(const string &name, PartBundle *part, 
+  AnimControl(const string &name, PartBundle *part,
               double frame_rate, int num_frames);
   void setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
                   const BitArray &bound_joints);
@@ -67,9 +64,8 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 public:
-  // The following functions aren't really part of the public
-  // interface; they're just public so we don't have to declare a
-  // bunch of friends.
+  // The following functions aren't really part of the public interface;
+  // they're just public so we don't have to declare a bunch of friends.
 
   bool channel_has_changed(AnimChannelBase *channel, bool frame_blend_flag) const;
   void mark_channels(bool frame_blend_flag);
@@ -83,22 +79,20 @@ private:
   Mutex _pending_lock;  // protects the above two.
   ConditionVarFull _pending_cvar; // signals when _pending goes true.
 
-  // This is a PT(PartGroup) instead of a PT(PartBundle), just because
-  // we can't include partBundle.h for circular reasons.  But it
-  // actually keeps a pointer to a PartBundle.
+  // This is a PT(PartGroup) instead of a PT(PartBundle), just because we
+  // can't include partBundle.h for circular reasons.  But it actually keeps a
+  // pointer to a PartBundle.
   PT(PartGroup) _part;
   PT(AnimBundle) _anim;
   int _channel_index;
 
-  // This is the frame number as of the last call to mark_channels().
-  // In frame_blend mode, we also record the fractional part of the
-  // frame number.
+  // This is the frame number as of the last call to mark_channels(). In
+  // frame_blend mode, we also record the fractional part of the frame number.
   int _marked_frame;
   double _marked_frac;
 
-  // This is the bitmask of joints and/or sliders from the animation
-  // that we have actually bound into this AnimControl.  See
-  // get_bound_joints().
+  // This is the bitmask of joints andor sliders from the animation that we
+  // have actually bound into this AnimControl.  See get_bound_joints().
   BitArray _bound_joints;
 
   PT(PandaNode) _anim_model;

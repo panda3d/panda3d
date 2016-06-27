@@ -1,16 +1,15 @@
-// Filename: config_downloader.cxx
-// Created by:  mike (19Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_downloader.cxx
+ * @author mike
+ * @date 2000-03-19
+ */
 
 #include "dconfig.h"
 #include "config_downloader.h"
@@ -112,18 +111,22 @@ ConfigVariableInt tcp_header_size
           "length when writing a datagram on a TCP stream.  This may be "
           "0, 2, or 4.  The server and client must agree on this value."));
 
+ConfigVariableBool support_ipv6
+("support-ipv6", true,
+ PRC_DESC("Specifies whether IPv6 support should be enabled.  This should "
+          "be true unless you are experiencing issues with Panda's IPv6 "
+          "support or are using a misconfigured system."));
+
 ConfigureFn(config_downloader) {
   init_libdownloader();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdownloader
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libdownloader() {
   static bool initialized = false;
@@ -139,8 +142,8 @@ init_libdownloader() {
 
   VirtualFileMountHTTP::reload_vfs_mount_url();
 
-  // We need to define this here, rather than above, to guarantee that
-  // it has been initialized by the time we check it.
+  // We need to define this here, rather than above, to guarantee that it has
+  // been initialized by the time we check it.
   ConfigVariableBool early_random_seed
     ("early-random-seed", false,
      PRC_DESC("Configure this true to compute the SSL random seed "

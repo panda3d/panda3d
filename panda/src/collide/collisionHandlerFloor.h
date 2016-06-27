@@ -1,16 +1,15 @@
-// Filename: collisionHandlerFloor.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandlerFloor.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef COLLISIONHANDLERFLOOR_H
 #define COLLISIONHANDLERFLOOR_H
@@ -19,15 +18,12 @@
 
 #include "collisionHandlerPhysical.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerFloor
-// Description : A specialized kind of CollisionHandler that sets the
-//               Z height of the collider to a fixed linear offset
-//               from the highest detected collision point each frame.
-//               It's intended to implement walking around on a floor
-//               of varying height by casting a ray down from the
-//               avatar's head.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialized kind of CollisionHandler that sets the Z height of the
+ * collider to a fixed linear offset from the highest detected collision point
+ * each frame.  It's intended to implement walking around on a floor of
+ * varying height by casting a ray down from the avatar's head.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerFloor : public CollisionHandlerPhysical {
 PUBLISHED:
   CollisionHandlerFloor();
@@ -41,6 +37,11 @@ PUBLISHED:
 
   INLINE void set_max_velocity(PN_stdfloat max_vel);
   INLINE PN_stdfloat get_max_velocity() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(offset, get_offset, set_offset);
+  MAKE_PROPERTY(reach, get_reach, set_reach);
+  MAKE_PROPERTY(max_velocity, get_max_velocity, set_max_velocity);
 
 protected:
   PN_stdfloat set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
@@ -74,6 +75,3 @@ private:
 #include "collisionHandlerFloor.I"
 
 #endif
-
-
-

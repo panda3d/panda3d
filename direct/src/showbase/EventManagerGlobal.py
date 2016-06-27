@@ -2,6 +2,6 @@
 
 __all__ = ['eventMgr']
 
-import EventManager
+from . import EventManager
 
 eventMgr = EventManager.EventManager()

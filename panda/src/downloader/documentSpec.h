@@ -1,16 +1,15 @@
-// Filename: documentSpec.h
-// Created by:  drose (28Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file documentSpec.h
+ * @author drose
+ * @date 2003-01-28
+ */
 
 #ifndef DOCUMENTSPEC_H
 #define DOCUMENTSPEC_H
@@ -20,16 +19,14 @@
 #include "httpEntityTag.h"
 #include "httpDate.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DocumentSpec
-// Description : A descriptor that refers to a particular version of a
-//               document.  This includes the URL of the document and
-//               its identity tag and last-modified dates.
-//
-//               The DocumentSpec may also be used to request a newer
-//               document than a particular one if available, for
-//               instance to refresh a cached document.
-////////////////////////////////////////////////////////////////////
+/**
+ * A descriptor that refers to a particular version of a document.  This
+ * includes the URL of the document and its identity tag and last-modified
+ * dates.
+ *
+ * The DocumentSpec may also be used to request a newer document than a
+ * particular one if available, for instance to refresh a cached document.
+ */
 class EXPCL_PANDAEXPRESS DocumentSpec {
 PUBLISHED:
   INLINE DocumentSpec();
@@ -78,6 +75,14 @@ PUBLISHED:
   bool input(istream &in);
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
+
+PUBLISHED:
+  MAKE_PROPERTY(url, get_url, set_url);
+  MAKE_PROPERTY2(tag, has_tag, get_tag, set_tag, clear_tag);
+  MAKE_PROPERTY2(date, has_date, get_date, set_date, clear_date);
+
+  MAKE_PROPERTY(request_mode, get_request_mode, set_request_mode);
+  MAKE_PROPERTY(cache_control, get_cache_control, set_cache_control);
 
 private:
   URLSpec _url;

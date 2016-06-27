@@ -1,16 +1,15 @@
-// Filename: rocketRegion.h
-// Created by:  rdb (30Nov11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rocketRegion.h
+ * @author rdb
+ * @date 2011-11-30
+ */
 
 #ifndef ROCKETREGION_H
 #define ROCKETREGION_H
@@ -22,11 +21,10 @@
 
 class OrthographicLens;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RocketRegion
-// Description : Represents a region in a window or buffer where
-//               the libRocket UI will be rendered to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a region in a window or buffer where the libRocket UI will be
+ * rendered to.
+ */
 class EXPCL_ROCKET RocketRegion : public DisplayRegion {
 protected:
   RocketRegion(GraphicsOutput *window, const LVecBase4 &dimensions,
@@ -48,14 +46,17 @@ PUBLISHED:
 #endif
 #ifdef HAVE_ROCKET_PYTHON
   EXTENSION(PyObject *get_context() const);
+  MAKE_PROPERTY(context, get_context);
 #endif
 
   INLINE void set_input_handler(RocketInputHandler *handler);
   INLINE RocketInputHandler *get_input_handler() const;
+  MAKE_PROPERTY(input_handler, get_input_handler, set_input_handler);
 
   bool init_debugger();
   void set_debugger_visible(bool visible);
   bool is_debugger_visible() const;
+  MAKE_PROPERTY(debugger_visible, is_debugger_visible, set_debugger_visible);
 
 private:
   RocketRenderInterface _interface;

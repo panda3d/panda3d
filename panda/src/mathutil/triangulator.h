@@ -1,16 +1,15 @@
-// Filename: triangulator.h
-// Created by:  drose (17Jan07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file triangulator.h
+ * @author drose
+ * @date 2007-01-17
+ */
 
 #ifndef TRIANGULATOR_H
 #define TRIANGULATOR_H
@@ -19,21 +18,17 @@
 #include "luse.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Triangulator
-// Description : This class can triangulate a convex or concave
-//               polygon, even one with holes.  It is adapted from an
-//               algorithm published as:
-//
-//               Narkhede A. and Manocha D., Fast polygon
-//               triangulation algorithm based on Seidel's Algorithm,
-//               UNC-CH, 1994.
-//
-//               http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
-//
-//               It works strictly on 2-d points.  See Triangulator3
-//               for 3-d points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can triangulate a convex or concave polygon, even one with
+ * holes.  It is adapted from an algorithm published as:
+ *
+ * Narkhede A. and Manocha D., Fast polygon triangulation algorithm based on
+ * Seidel's Algorithm, UNC-CH, 1994.
+ *
+ * http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
+ *
+ * It works strictly on 2-d points.  See Triangulator3 for 3-d points.
+ */
 class EXPCL_PANDA_MATHUTIL Triangulator {
 PUBLISHED:
   Triangulator();
@@ -45,6 +40,7 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   INLINE const LPoint2d &get_vertex(int n) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
 
   void clear_polygon();
   void add_polygon_vertex(int index);
@@ -80,11 +76,11 @@ protected:
   typedef pvector<Triangle> Result;
   Result _result;
 
-  
+
   typedef struct {
     double x, y;
   } point_t, vector_t;
-  
+
 
   struct segment_t {
     INLINE segment_t();
@@ -114,10 +110,10 @@ protected:
     int usave, uside;           /* I forgot what this means */
     int state;
   } trap_t;
-  
-  
+
+
   /* Node attributes for every node in the query structure */
-  
+
   typedef struct {
     int nodetype;                       /* Y-node or S-node */
     int segnum;
@@ -134,8 +130,8 @@ protected:
     int prev;                   /* describing the monotone */
     int marked;                 /* polygon */
   } monchain_t;
-  
-  
+
+
   typedef struct {
     point_t pt;
     int vnext[4];                       /* next vertices for the 4 chains */
@@ -143,13 +139,13 @@ protected:
     int nextfree;
     int user_i;  // index to user's vertex number
   } vertexchain_t;
-  
-  
+
+
   typedef pvector<node_t> QueryStructure;
   QueryStructure qs;
   typedef pvector<trap_t> TrapezoidStructure;
   TrapezoidStructure tr;
-  
+
   /* Table to hold all the monotone */
   /* polygons . Each monotone polygon */
   /* is a circularly linked list */
@@ -212,4 +208,3 @@ protected:
 #include "triangulator.I"
 
 #endif
-

@@ -1,6 +1,6 @@
 from direct.wxwidgets.WxAppShell import *
-import os, re, shutil
-import ObjectGlobals as OG
+import os
+from . import ObjectGlobals as OG
 
 CLOSE_STDIN = "<CLOSE STDIN>"
 
@@ -21,7 +21,7 @@ class Process:
             self.process.Bind(wx.EVT_END_PROCESS, end_callback)
             return
         raise StartupError
-            
+
     def Poll(self, input=''):
         if (input or self.b) and self.process and self.process._stdin_:
             if self.b or len(input) > 512:
@@ -30,7 +30,7 @@ class Process:
                     #some platforms (like Windows) will send some small number
                     #of bytes per .write() call (sometimes 2 in the case of
                     #Windows).
-                    self.b.extend([input[i:i+512] for i in xrange(0, len(input), 512)])
+                    self.b.extend([input[i:i+512] for i in range(0, len(input), 512)])
                 input = self.b.pop(0)
             self.process._stdin_.write(input)
             if hasattr(self.process._stdin_, "LastWrite"):
@@ -44,12 +44,12 @@ class Process:
             else:
                 x.append('')
         return x
-        
+
     def CloseInp(self):
         if self.process and self.process._stdin_:
             self.process.CloseOutput()
             self.process._stdin_ = None
-    
+
     def Kill(self, ks='SIGKILL'):
         errors = {wx.KILL_BAD_SIGNAL: "KILL_BAD_SIGNAL",
                   wx.KILL_ACCESS_DENIED: "KILL_ACCESS_DENIED",
@@ -65,7 +65,7 @@ class Process:
                 r = 65535
                 self.CloseInp()
                 return 1, None
-            
+
             if r not in (wx.KILL_OK, wx.KILL_NO_PROCESS, 65535):
                 return 0, (self.process.pid, signal, errors.get(r, "UNKNOWN_KILL_ERROR %s"%r))
             else:
@@ -101,7 +101,7 @@ class MayaConverter(wx.Dialog):
             self.convertToMaya()
         else:
             pass
-        
+
         self.timer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.onPoll, self.timer)
         self.timer.Start(100)
@@ -127,17 +127,17 @@ class MayaConverter(wx.Dialog):
     def onEgg2MayaEnded(self, evt):
         self.process.CloseInp()
         for i in self.process.Poll():
-            self.output.AppendText(i) 
+            self.output.AppendText(i)
         self.process = None
 
     def onBam2EggEnded(self, evt):
         self.process.CloseInp()
         for i in self.process.Poll():
-            self.output.AppendText(i) 
+            self.output.AppendText(i)
         eggFileName = self.mayaFile + ".egg"
         command = 'egg2maya -ui ft -uo ft %s -o %s'%(eggFileName, self.mayaFile)
         self.process = Process(self, command, lambda p0=None: self.onEgg2MayaEnded(p0))
-        
+
     def onPoll(self, evt):
         if self.process:
             for i in self.process.Poll():
@@ -146,7 +146,7 @@ class MayaConverter(wx.Dialog):
     def onModelProcessEnded(self, evt):
         self.process.CloseInp()
         for i in self.process.Poll():
-            self.output.AppendText(i)        
+            self.output.AppendText(i)
         self.process = None
         command = 'maya2egg -uo ft -a chan %s -o %s.anim.egg'%(self.mayaFile, self.mayaFile)
         self.process = Process(self, command, lambda p0 = None: self.onProcessEnded(p0))
@@ -164,7 +164,7 @@ class MayaConverter(wx.Dialog):
             if self.obj:
                 objDef = self.obj[OG.OBJ_DEF]
                 objNP = self.obj[OG.OBJ_NP]
-                animName = "%s.anim.egg"%self.mayaFile                
+                animName = "%s.anim.egg"%self.mayaFile
                 if animName not in objDef.anims:
                     objDef.anims.append(animName)
                 name = os.path.basename(animName)
@@ -183,4 +183,4 @@ class MayaConverter(wx.Dialog):
 
         if self.callBack:
             self.callBack(result)
-            
+

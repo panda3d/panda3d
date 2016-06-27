@@ -31,8 +31,7 @@ def findClass(className):
 def rebindClass(filename):
     file = open(filename, 'r')
     lines = file.readlines()
-    for i in xrange(len(lines)):
-        line = lines[i]
+    for line in lines:
         if (line[0:6] == 'class '):
             # Chop off the "class " syntax and strip extra whitespace
             classHeader = line[6:].strip()
@@ -46,12 +45,12 @@ def rebindClass(filename):
                 if colonLoc > 0:
                     className = classHeader[:colonLoc]
                 else:
-                    print 'error: className not found'
+                    print('error: className not found')
                     # Remove that temp file
                     file.close()
                     os.remove(filename)
                     return
-            print 'Rebinding class name: ' + className
+            print('Rebinding class name: ' + className)
             break
 
     # Try to find the original class with this class name
@@ -68,7 +67,7 @@ def rebindClass(filename):
     realClass, realNameSpace = res
 
     # Now execute that class def in this namespace
-    execfile(filename, realNameSpace)
+    exec(compile(open(filename).read(), filename, 'exec'), realNameSpace)
 
     # That execfile should have created a new class obj in that namespace
     tmpClass = realNameSpace[className]
@@ -80,7 +79,7 @@ def rebindClass(filename):
     # not our temp one from the execfile. This will help us preserve
     # class variables and other state on the original class.
     realNameSpace[className] = realClass
-    
+
     # Remove the temp file we made
     file.close()
     os.remove(filename)
@@ -91,7 +90,7 @@ def rebindClass(filename):
 def copyFuncs(fromClass, toClass):
     replaceFuncList = []
     newFuncList = []
-    
+
     # Copy the functions from fromClass into toClass dictionary
     for funcName, newFunc in fromClass.__dict__.items():
         # Filter out for functions
@@ -154,19 +153,19 @@ def replaceMessengerFunc(replaceFuncList):
         messenger
     except:
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:    
+    for oldFunc, funcName, newFunc in replaceFuncList:
         res = messenger.replaceMethod(oldFunc, newFunc)
         if res:
-            print ('replaced %s messenger function(s): %s' % (res, funcName))
+            print('replaced %s messenger function(s): %s' % (res, funcName))
 
 def replaceTaskMgrFunc(replaceFuncList):
     try:
         taskMgr
     except:
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:    
+    for oldFunc, funcName, newFunc in replaceFuncList:
         if taskMgr.replaceMethod(oldFunc, newFunc):
-            print ('replaced taskMgr function: %s' % funcName)
+            print('replaced taskMgr function: %s' % funcName)
 
 def replaceStateFunc(replaceFuncList):
     if not sys.modules.get('base.direct.fsm.State'):
@@ -175,7 +174,7 @@ def replaceStateFunc(replaceFuncList):
     for oldFunc, funcName, newFunc in replaceFuncList:
         res = State.replaceMethod(oldFunc, newFunc)
         if res:
-            print ('replaced %s FSM transition function(s): %s' % (res, funcName))
+            print('replaced %s FSM transition function(s): %s' % (res, funcName))
 
 def replaceCRFunc(replaceFuncList):
     try:
@@ -186,18 +185,18 @@ def replaceCRFunc(replaceFuncList):
     # I throw in the isFake check. I still think the fake cr should be eliminated.
     if hasattr(base.cr,'isFake'):
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:        
+    for oldFunc, funcName, newFunc in replaceFuncList:
         if base.cr.replaceMethod(oldFunc, newFunc):
-            print ('replaced DistributedObject function: %s' % funcName)
+            print('replaced DistributedObject function: %s' % funcName)
 
 def replaceAIRFunc(replaceFuncList):
     try:
         simbase.air
     except:
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:        
+    for oldFunc, funcName, newFunc in replaceFuncList:
         if simbase.air.replaceMethod(oldFunc, newFunc):
-            print ('replaced DistributedObject function: %s' % funcName)
+            print('replaced DistributedObject function: %s' % funcName)
 
 def replaceIvalFunc(replaceFuncList):
     # Make sure we have imported IntervalManager and thus created
@@ -205,7 +204,7 @@ def replaceIvalFunc(replaceFuncList):
     if not sys.modules.get('base.direct.interval.IntervalManager'):
         return
     from direct.interval.FunctionInterval import FunctionInterval
-    for oldFunc, funcName, newFunc in replaceFuncList:    
+    for oldFunc, funcName, newFunc in replaceFuncList:
         res = FunctionInterval.replaceMethod(oldFunc, newFunc)
         if res:
-            print ('replaced %s interval function(s): %s' % (res, funcName))
+            print('replaced %s interval function(s): %s' % (res, funcName))

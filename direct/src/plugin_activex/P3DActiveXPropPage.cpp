@@ -1,18 +1,18 @@
-// P3DActiveXPropPage.cpp : Implementation of the CP3DActiveXPropPage property page class.
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file P3DActiveXPropPage.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
-// Filename: P3DActiveXPropPage.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+// P3DActiveXPropPage.cpp : Implementation of the CP3DActiveXPropPage property
+// page class.
 
 #include "stdafx.h"
 #include "P3DActiveX.h"
@@ -41,8 +41,8 @@ IMPLEMENT_OLECREATE_EX(CP3DActiveXPropPage, "P3DACTIVEX.P3DActiveXPropPage.1",
 
 
 
-// CP3DActiveXPropPage::CP3DActiveXPropPageFactory::UpdateRegistry -
-// Adds or removes system registry entries for CP3DActiveXPropPage
+// CP3DActiveXPropPage::CP3DActiveXPropPageFactory::UpdateRegistry - Adds or
+// removes system registry entries for CP3DActiveXPropPage
 
 BOOL CP3DActiveXPropPage::CP3DActiveXPropPageFactory::UpdateRegistry(BOOL bRegister)
 {
@@ -64,7 +64,8 @@ CP3DActiveXPropPage::CP3DActiveXPropPage() :
 
 
 
-// CP3DActiveXPropPage::DoDataExchange - Moves data between page and properties
+// CP3DActiveXPropPage::DoDataExchange - Moves data between page and
+// properties
 
 void CP3DActiveXPropPage::DoDataExchange(CDataExchange* pDX)
 {

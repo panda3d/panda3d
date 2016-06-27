@@ -1,16 +1,15 @@
-// Filename: androidLogStream.h
-// Created by:  rdb (12Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file androidLogStream.h
+ * @author rdb
+ * @date 2013-01-12
+ */
 
 #ifndef ANDROIDLOGSTREAM_H
 #define ANDROIDLOGSTREAM_H
@@ -23,11 +22,9 @@
 #include <string>
 #include <iostream>
 
-////////////////////////////////////////////////////////////////////
-//       Class : AndroidLogStream
-// Description : This is a type of ostream that writes each line
-//               to the Android log.
-///////////////////////////////////////////////////////////////////
+/**
+ * This is a type of ostream that writes each line to the Android log.
+ */
 class AndroidLogStream : public ostream {
 private:
   class AndroidLogStreamBuf : public streambuf {

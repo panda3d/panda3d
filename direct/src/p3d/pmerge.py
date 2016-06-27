@@ -40,6 +40,7 @@ Options:
 
   -h
      Display this help
+
 """
 
 import sys
@@ -47,16 +48,16 @@ import getopt
 import os
 
 from direct.p3d import PackageMerger
-from panda3d.core import *
+from panda3d.core import Filename
 
 def usage(code, msg = ''):
-    print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
-    print >> sys.stderr, msg
+    sys.stderr.write(usageText % {'prog' : os.path.split(sys.argv[0])[1]})
+    sys.stderr.write(msg + '\n')
     sys.exit(code)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'i:p:h')
-except getopt.error, msg:
+except getopt.error as msg:
     usage(1, msg)
 
 installDir = None
@@ -70,7 +71,7 @@ for opt, arg in opts:
     elif opt == '-h':
         usage(0)
     else:
-        print 'illegal option: ' + arg
+        print('illegal option: ' + arg)
         sys.exit(1)
 
 if not packageNames:
@@ -96,7 +97,7 @@ try:
 except PackageMerger.PackageMergerError:
     # Just print the error message and exit gracefully.
     inst = sys.exc_info()[1]
-    print inst.args[0]
+    print(inst.args[0])
     sys.exit(1)
 
 

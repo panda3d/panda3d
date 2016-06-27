@@ -1,16 +1,15 @@
-// Filename: windows.h
-// Created by:  drose (17Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file windows.h
+ * @author drose
+ * @date 2000-08-17
+ */
 
 // This file, and all the other files in this directory, aren't
 // intended to be compiled--they're just parsed by CPPParser (and
@@ -53,7 +52,8 @@ typedef PVOID HANDLE;
 typedef HANDLE HGLOBAL;
 typedef HANDLE HWAVEIN;
 typedef HANDLE HWND;
-typedef void *DWORD_PTR;
+typedef ULONG_PTR DWORD_PTR;
+typedef DWORD_PTR *PDWORD_PTR;
 typedef UINT_PTR WPARAM;
 typedef LONG_PTR LPARAM;
 typedef wchar_t WCHAR;

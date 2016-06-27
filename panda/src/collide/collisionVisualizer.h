@@ -1,16 +1,15 @@
-// Filename: collisionVisualizer.h
-// Created by:  drose (16Apr03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionVisualizer.h
+ * @author drose
+ * @date 2003-04-16
+ */
 
 #ifndef COLLISIONVISUALIZER_H
 #define COLLISIONVISUALIZER_H
@@ -24,16 +23,14 @@
 
 #ifdef DO_COLLISION_RECORDING
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionVisualizer
-// Description : This class is used to help debug the work the
-//               collisions system is doing.  It shows the polygons
-//               that are detected as collisions, as well as those
-//               that are simply considered for collisions.
-//
-//               It may be parented anywhere in the scene graph where
-//               it will be rendered to achieve this.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to help debug the work the collisions system is doing.
+ * It shows the polygons that are detected as collisions, as well as those
+ * that are simply considered for collisions.
+ *
+ * It may be parented anywhere in the scene graph where it will be rendered to
+ * achieve this.
+ */
 class EXPCL_PANDA_COLLIDE CollisionVisualizer : public PandaNode, public CollisionRecorder {
 PUBLISHED:
   CollisionVisualizer(const string &name);
@@ -46,6 +43,10 @@ PUBLISHED:
   INLINE PN_stdfloat get_normal_scale() const;
 
   void clear();
+
+PUBLISHED:
+  MAKE_PROPERTY(point_scale, get_point_scale, set_point_scale);
+  MAKE_PROPERTY(normal_scale, get_normal_scale, set_normal_scale);
 
 public:
   // from parent class PandaNode.
@@ -117,6 +118,6 @@ private:
 
 #include "collisionVisualizer.I"
 
-#endif  // DO_COLLISION_RECORDING  
+#endif  // DO_COLLISION_RECORDING
 
 #endif

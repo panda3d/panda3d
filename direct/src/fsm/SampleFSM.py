@@ -2,9 +2,8 @@
 
 __all__ = ['ClassicStyle', 'NewStyle', 'ToonEyes']
 
-import FSM
+from . import FSM
 from direct.task import Task
-import string
 
 
 class ClassicStyle(FSM.FSM):
@@ -19,61 +18,61 @@ class ClassicStyle(FSM.FSM):
             }
 
     def enterRed(self):
-        print "enterRed(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("enterRed(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def exitRed(self):
-        print "exitRed(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("exitRed(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def enterYellow(self):
-        print "enterYellow(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("enterYellow(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def exitYellow(self):
-        print "exitYellow(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("exitYellow(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def enterGreen(self):
-        print "enterGreen(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("enterGreen(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def exitGreen(self):
-        print "exitGreen(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("exitGreen(self, '%s', '%s')" % (self.oldState, self.newState))
 
 
 class NewStyle(FSM.FSM):
 
     def enterRed(self):
-        print "enterRed(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("enterRed(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def filterRed(self, request, args):
-        print "filterRed(self, '%s', %s)" % (request, args)
+        print("filterRed(self, '%s', %s)" % (request, args))
         if request == 'advance':
             return 'Green'
         return self.defaultFilter(request, args)
 
     def exitRed(self):
-        print "exitRed(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("exitRed(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def enterYellow(self):
-        print "enterYellow(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("enterYellow(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def filterYellow(self, request, args):
-        print "filterYellow(self, '%s', %s)" % (request, args)
+        print("filterYellow(self, '%s', %s)" % (request, args))
         if request == 'advance':
             return 'Red'
         return self.defaultFilter(request, args)
 
     def exitYellow(self):
-        print "exitYellow(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("exitYellow(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def enterGreen(self):
-        print "enterGreen(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("enterGreen(self, '%s', '%s')" % (self.oldState, self.newState))
 
     def filterGreen(self, request, args):
-        print "filterGreen(self, '%s', %s)" % (request, args)
+        print("filterGreen(self, '%s', %s)" % (request, args))
         if request == 'advance':
             return 'Yellow'
         return self.defaultFilter(request, args)
 
     def exitGreen(self):
-        print "exitGreen(self, '%s', '%s')" % (self.oldState, self.newState)
+        print("exitGreen(self, '%s', '%s')" % (self.oldState, self.newState))
 
 
 class ToonEyes(FSM.FSM):
@@ -88,14 +87,14 @@ class ToonEyes(FSM.FSM):
     def defaultFilter(self, request, args):
         # The default filter accepts any direct state request (these
         # start with a capital letter).
-        if request[0] in string.uppercase:
+        if request[0].isupper():
             return request
 
         # Unexpected command requests are quietly ignored.
         return None
 
     def enterOpen(self):
-        print "swap in eyes open model"
+        print("swap in eyes open model")
 
     def filterOpen(self, request, args):
         if request == 'blink':
@@ -109,7 +108,7 @@ class ToonEyes(FSM.FSM):
         return Task.done
 
     def enterClosed(self):
-        print "swap in eyes closed model"
+        print("swap in eyes closed model")
 
     def filterClosed(self, request, args):
         if request == 'unblink':
@@ -117,7 +116,7 @@ class ToonEyes(FSM.FSM):
         return self.defaultFilter(request, args)
 
     def enterSurprised(self):
-        print "swap in eyes surprised model"
+        print("swap in eyes surprised model")
 
     def enterOff(self):
         taskMgr.remove(self.__unblinkName)
@@ -145,7 +144,7 @@ class ToonEyes(FSM.FSM):
 ## exitRed(self, 'Red', 'Green')
 ## enterGreen(self, 'Red', 'Green')
 ## ('Green',)
-## >>> 
+## >>>
 
 ####
 #### Example of using NewStyle:
@@ -175,7 +174,7 @@ class ToonEyes(FSM.FSM):
 ## exitRed(self, 'Red', 'Green')
 ## enterGreen(self, 'Red', 'Green')
 ## ('Green',)
-## >>> 
+## >>>
 
 ####
 #### Example of using ToonEyes:
@@ -193,4 +192,4 @@ class ToonEyes(FSM.FSM):
 ## swap in eyes surprised model
 ## ('Surprised',)
 ## >>> eyes.request('blink')
-## >>> 
+## >>>

@@ -1,16 +1,15 @@
-// Filename: make_ca_bundle.cxx
-// Created by:  drose (07Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file make_ca_bundle.cxx
+ * @author drose
+ * @date 2009-10-07
+ */
 
 #include "pandabase.h"
 #include "openSSLWrapper.h"
@@ -30,8 +29,8 @@ main(int argc, char *argv[]) {
   // Initialize OpenSSL.
   OpenSSLWrapper::get_global_ptr();
 
-  // We have to be sure and clear the OpenSSL error state before we
-  // call this function, or it will get confused.
+  // We have to be sure and clear the OpenSSL error state before we call this
+  // function, or it will get confused.
   ERR_clear_error();
   STACK_OF(X509_INFO) *inf;
   inf = PEM_X509_INFO_read(fin, NULL, NULL, NULL);
@@ -41,7 +40,7 @@ main(int argc, char *argv[]) {
     cerr << "Couldn't read PEM file in " << source_filename << "\n";
     return 0;
   }
-  
+
   cerr << "PEM_X509_INFO_read() found " << sk_X509_INFO_num(inf)
        << " entries.\n";
 
@@ -69,8 +68,8 @@ main(int argc, char *argv[]) {
 
   fclose(fin);
 
-  // Now write the data to the .c file, in a compilable form, similar
-  // to bin2c.
+  // Now write the data to the .c file, in a compilable form, similar to
+  // bin2c.
   ofstream out;
   Filename target = Filename::text_filename(string(target_filename));
   if (!target.open_write(out)) {
@@ -120,10 +119,10 @@ main(int argc, char *argv[]) {
     ch = in.get();
   }
   out << "\n};\n\n"
-      << static_keyword << length_type << table_name << "_len = " 
+      << static_keyword << length_type << table_name << "_len = "
       << dec << count << ";\n\n";
 
-  cerr << "Wrote " << cert_count << " certificates to " 
+  cerr << "Wrote " << cert_count << " certificates to "
        << target_filename << "\n";
   return 0;
 }

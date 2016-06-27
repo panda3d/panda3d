@@ -1,16 +1,15 @@
-// Filename: physxController.cxx
-// Created by:  enn0x (24Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxController.cxx
+ * @author enn0x
+ * @date 2009-09-24
+ */
 
 #include "event.h"
 #include "eventQueue.h"
@@ -24,11 +23,9 @@
 
 TypeHandle PhysxController::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxController::
 release() {
 
@@ -39,11 +36,9 @@ release() {
   cm->releaseController(*ptr());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::factory
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxController *PhysxController::
 factory(NxControllerType controllerType) {
 
@@ -55,6 +50,8 @@ factory(NxControllerType controllerType) {
   case NX_CONTROLLER_CAPSULE:
     return new PhysxCapsuleController();
 
+  default:
+    break;
   }
 
   physx_cat.error() << "Unknown controller type.\n";
@@ -62,12 +59,9 @@ factory(NxControllerType controllerType) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::get_actor
-//       Access: Published
-//  Description: Retrieves the actor which this controller is
-//               associated with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the actor which this controller is associated with.
+ */
 PhysxActor *PhysxController::
 get_actor() const {
 
@@ -75,13 +69,10 @@ get_actor() const {
   return (PhysxActor *)(ptr()->getActor()->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_pos
-//       Access: Published
-//  Description: Sets the position of the controller is global
-//               space. This can be used for initial placement or
-//               for teleporting the character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the position of the controller is global space.  This can be used for
+ * initial placement or for teleporting the character.
+ */
 void PhysxController::
 set_pos(const LPoint3f &pos) {
 
@@ -89,12 +80,9 @@ set_pos(const LPoint3f &pos) {
   ptr()->setPosition(PhysxManager::point3_to_nxExtVec3(pos));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::get_pos
-//       Access: Published
-//  Description: Retruns the position of the controller is global
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retruns the position of the controller is global space.
+ */
 LPoint3f PhysxController::
 get_pos() const {
 
@@ -102,16 +90,12 @@ get_pos() const {
   return PhysxManager::nxExtVec3_to_point3(ptr()->getPosition());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_sharpness
-//       Access: Published
-//  Description: Sharpness is used to smooth motion with a feedback
-//               filter, having a value between 0 (so smooth it
-//               doesn't move) and 1 (no smoothing = unfiltered
-//               motion). Sharpness can ease the motion curve when
-//               the auto-step feature is used with boxes.
-//               Default value is 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sharpness is used to smooth motion with a feedback filter, having a value
+ * between 0 (so smooth it doesn't move) and 1 (no smoothing = unfiltered
+ * motion). Sharpness can ease the motion curve when the auto-step feature is
+ * used with boxes.  Default value is 1.0.
+ */
 void PhysxController::
 set_sharpness(float sharpness) {
 
@@ -122,13 +106,10 @@ set_sharpness(float sharpness) {
   _sharpness = sharpness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::get_sharpness
-//       Access: Published
-//  Description: Returns the sharpness used to ease the motion curve
-//               when the auto-step feature is used.
-//               Default value is 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the sharpness used to ease the motion curve when the auto-step
+ * feature is used.  Default value is 1.0.
+ */
 float PhysxController::
 get_sharpness() const {
 
@@ -136,12 +117,9 @@ get_sharpness() const {
   return _sharpness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_collision
-//       Access: Published
-//  Description: Enable/Disable collisions for this controller and
-//               actor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enable/Disable collisions for this controller and actor.
+ */
 void PhysxController::
 set_collision(bool enable) {
 
@@ -149,16 +127,12 @@ set_collision(bool enable) {
   ptr()->setCollision(enable);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_min_distance
-//       Access: Published
-//  Description: Sets the the minimum travelled distance to consider
-//               when moving the controller. If travelled distance
-//               is smaller, the character doesn't move. This is
-//               used to stop the recursive motion algorithm when
-//               remaining distance to travel is small. 
-//               The default value is 0.0001.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the the minimum travelled distance to consider when moving the
+ * controller.  If travelled distance is smaller, the character doesn't move.
+ * This is used to stop the recursive motion algorithm when remaining distance
+ * to travel is small.  The default value is 0.0001.
+ */
 void PhysxController::
 set_min_distance(float min_dist) {
 
@@ -168,11 +142,9 @@ set_min_distance(float min_dist) {
   _min_dist = min_dist;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_step_offset
-//       Access: Published
-//  Description: Sets the step height/offset for the controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the step height/offset for the controller.
+ */
 void PhysxController::
 set_step_offset(float offset) {
 
@@ -182,12 +154,9 @@ set_step_offset(float offset) {
   ptr()->setStepOffset(offset);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_global_speed
-//       Access: Published
-//  Description: Sets the linear speed of the controller in global
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the linear speed of the controller in global space.
+ */
 void PhysxController::
 set_global_speed(const LVector3f &speed) {
 
@@ -197,12 +166,9 @@ set_global_speed(const LVector3f &speed) {
   _speed = NxVec3(speed.get_x(), speed.get_y(), speed.get_z());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_local_speed
-//       Access: Published
-//  Description: Sets the linear speed of the controller in local
-//               coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the linear speed of the controller in local coordinates.
+ */
 void PhysxController::
 set_local_speed(const LVector3f &speed) {
 
@@ -217,14 +183,11 @@ set_local_speed(const LVector3f &speed) {
   _speed = (q * _up_quat_inv).rot(s);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_omega
-//       Access: Published
-//  Description: Sets the angular velocity (degrees per second)
-//               of the controller. The angular velocity is used to
-//               compute the new heading when updating the
-//               controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the angular velocity (degrees per second) of the controller.  The
+ * angular velocity is used to compute the new heading when updating the
+ * controller.
+ */
 void PhysxController::
 set_omega(float omega) {
 
@@ -232,14 +195,11 @@ set_omega(float omega) {
   _omega = omega;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::set_h
-//       Access: Published
-//  Description: Sets the heading of the controller is global
-//               space. Note: only heading is supported. Pitch and
-//               roll are constrained by PhysX in order to alyways
-//               keep the character upright.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the heading of the controller is global space.  Note: only heading is
+ * supported.  Pitch and roll are constrained by PhysX in order to alyways
+ * keep the character upright.
+ */
 void PhysxController::
 set_h(float heading) {
 
@@ -250,12 +210,9 @@ set_h(float heading) {
   ptr()->getActor()->moveGlobalOrientationQuat(_up_quat * q);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::get_h
-//       Access: Published
-//  Description: Returns the heading of the controller in global
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the heading of the controller in global space.
+ */
 float PhysxController::
 get_h() const {
 
@@ -263,15 +220,11 @@ get_h() const {
   return _heading;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::report_scene_changed
-//       Access: Published
-//  Description: The character controller uses caching in order to
-//               speed up collision testing, this caching can not
-//               detect when static objects have changed in the
-//               scene. You need to call this method when such
-//               changes have been made.
-////////////////////////////////////////////////////////////////////
+/**
+ * The character controller uses caching in order to speed up collision
+ * testing, this caching can not detect when static objects have changed in
+ * the scene.  You need to call this method when such changes have been made.
+ */
 void PhysxController::
 report_scene_changed() {
 
@@ -279,11 +232,9 @@ report_scene_changed() {
   ptr()->reportSceneChanged();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::update_controller
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxController::
 update_controller(float dt) {
 
@@ -322,11 +273,9 @@ update_controller(float dt) {
   _omega = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::get_jump_height
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 NxReal PhysxController::
 get_jump_height(float dt, NxVec3 &gravity) {
 
@@ -341,12 +290,10 @@ get_jump_height(float dt, NxVec3 &gravity) {
   return (h - G) * dt;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::start_jump
-//       Access: Published
-//  Description: Enters the jump mode. The parameter is the intial
-//               upward velocity of the character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enters the jump mode.  The parameter is the intial upward velocity of the
+ * character.
+ */
 void PhysxController::
 start_jump(float v0) {
 
@@ -361,13 +308,10 @@ start_jump(float v0) {
   _jump_v0 = v0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::stop_jump
-//       Access: Published
-//  Description: Leaves the jump mode. This method is automatically
-//               called if a ground collision is detected. Usually
-//               users need not call this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Leaves the jump mode.  This method is automatically called if a ground
+ * collision is detected.  Usually users need not call this method.
+ */
 void PhysxController::
 stop_jump() {
 
@@ -379,12 +323,11 @@ stop_jump() {
 
   _jumping = false;
 
-  //NxVec3 v = ptr()->getActor()->getLinearVelocity();
-  //double velocity = (_up_axis == NX_Z) ? v.z : v.y;
+  // NxVec3 v = ptr()->getActor()->getLinearVelocity(); double velocity =
+  // (_up_axis == NX_Z) ? v.z : v.y;
 
   Event *event = new Event("physx-controller-down");
   event->add_parameter(EventParameter(this));
-  //event->add_parameter(EventParameter(velocity));
+  // event->add_parameter(EventParameter(velocity));
   EventQueue::get_global_event_queue()->queue_event(event);
 }
-

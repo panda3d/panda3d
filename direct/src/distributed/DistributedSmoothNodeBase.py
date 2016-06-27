@@ -1,15 +1,16 @@
 """DistributedSmoothNodeBase module: contains the DistributedSmoothNodeBase class"""
 
-from ClockDelta import *
+from .ClockDelta import *
 from direct.task import Task
 from direct.showbase.PythonUtil import randFloat, Enum
+from panda3d.direct import CDistributedSmoothNodeBase
 
 class DummyTaskClass:
     def setDelay(self, blah):
         pass
 
 DummyTask = DummyTaskClass()
-    
+
 class DistributedSmoothNodeBase:
     """common base class for DistributedSmoothNode and DistributedSmoothNodeAI
     """
@@ -65,7 +66,7 @@ class DistributedSmoothNodeBase:
     def startPosHprBroadcast(self, period=.2, stagger=0, type=None):
         if self.cnode == None:
             self.initializeCnode()
-        
+
         BT = DistributedSmoothNodeBase.BroadcastTypes
         if type is None:
             type = BT.FULL
@@ -79,7 +80,7 @@ class DistributedSmoothNodeBase:
             }
         # this comment is here so it will show up in a grep for 'def d_broadcastPosHpr'
         self.d_broadcastPosHpr = broadcastFuncs[self.broadcastType]
-        
+
         # Set stagger to non-zero to randomly delay the initial task execution
         # over 'period' seconds, to spread out task processing over time
         # when a large number of SmoothNodes are created simultaneously.

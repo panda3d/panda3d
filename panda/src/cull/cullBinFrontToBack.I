@@ -1,23 +1,19 @@
-// Filename: cullBinFrontToBack.I
-// Created by:  drose (29May02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullBinFrontToBack.I
+ * @author drose
+ * @date 2002-05-29
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE CullBinFrontToBack::
 CullBinFrontToBack(const string &name, GraphicsStateGuardianBase *gsg,
                    const PStatCollector &draw_region_pcollector) :
@@ -25,11 +21,9 @@ CullBinFrontToBack(const string &name, GraphicsStateGuardianBase *gsg,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::ObjectData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE CullBinFrontToBack::ObjectData::
 ObjectData(CullableObject *object, PN_stdfloat dist) :
   _object(object),
@@ -37,14 +31,10 @@ ObjectData(CullableObject *object, PN_stdfloat dist) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::ObjectData::operator <
-//       Access: Public
-//  Description: Specifies the correct sort ordering for these
-//               objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the correct sort ordering for these objects.
+ */
 INLINE bool CullBinFrontToBack::ObjectData::
 operator < (const ObjectData &other) const {
   return _dist < other._dist;
 }
-

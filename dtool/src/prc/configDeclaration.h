@@ -1,16 +1,15 @@
-// Filename: configDeclaration.h
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configDeclaration.h
+ * @author drose
+ * @date 2004-10-15
+ */
 
 #ifndef CONFIGDECLARATION_H
 #define CONFIGDECLARATION_H
@@ -25,14 +24,12 @@
 
 class ConfigVariableCore;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigDeclaration
-// Description : A single declaration of a config variable, typically
-//               defined as one line in a .prc file,
-//               e.g. "show-frame-rate-meter 1".  This is really just
-//               a pairing of a string name (actually, a
-//               ConfigVariableCore pointer) to a string value.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single declaration of a config variable, typically defined as one line in
+ * a .prc file, e.g.  "show-frame-rate-meter 1".  This is really just a
+ * pairing of a string name (actually, a ConfigVariableCore pointer) to a
+ * string value.
+ */
 class EXPCL_DTOOLCONFIG ConfigDeclaration : public ConfigFlags {
 private:
   ConfigDeclaration(ConfigPage *page, ConfigVariableCore *variable,
@@ -45,6 +42,8 @@ public:
 PUBLISHED:
   INLINE ConfigPage *get_page() const;
   INLINE ConfigVariableCore *get_variable() const;
+  MAKE_PROPERTY(page, get_page);
+  MAKE_PROPERTY(variable, get_variable);
 
   INLINE const string &get_string_value() const;
   INLINE void set_string_value(const string &value);
@@ -60,13 +59,13 @@ PUBLISHED:
   INLINE string get_string_word(size_t n) const;
   INLINE bool get_bool_word(size_t n) const;
   INLINE int get_int_word(size_t n) const;
-  INLINE PN_int64 get_int64_word(size_t n) const;
+  INLINE int64_t get_int64_word(size_t n) const;
   INLINE double get_double_word(size_t n) const;
 
   void set_string_word(size_t n, const string &value);
   void set_bool_word(size_t n, bool value);
   void set_int_word(size_t n, int value);
-  void set_int64_word(size_t n, PN_int64 value);
+  void set_int64_word(size_t n, int64_t value);
   void set_double_word(size_t n, double value);
 
   INLINE int get_decl_seq() const;
@@ -107,7 +106,7 @@ private:
     string _str;
     bool _bool;
     int _int;
-    PN_int64 _int_64;
+    int64_t _int_64;
     double _double;
     short _flags;
   };

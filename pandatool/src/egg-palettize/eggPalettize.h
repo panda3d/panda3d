@@ -1,16 +1,15 @@
-// Filename: eggPalettize.h
-// Created by:  drose (28Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPalettize.h
+ * @author drose
+ * @date 2000-11-28
+ */
 
 #ifndef EGGPALETTIZE_H
 #define EGGPALETTIZE_H
@@ -19,12 +18,10 @@
 
 #include "eggMultiFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPalettize
-// Description : This is the program wrapper for egg-palettize, but it
-//               mainly serves to read in all the command-line
-//               parameters and then invoke the Palettizer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the program wrapper for egg-palettize, but it mainly serves to read
+ * in all the command-line parameters and then invoke the Palettizer.
+ */
 class EggPalettize : public EggMultiFilter {
 public:
   EggPalettize();
@@ -35,8 +32,8 @@ public:
 
   void run();
 
-  // The following parameter values specifically relate to textures
-  // and palettes.  These values are copied to the Palettizer.
+  // The following parameter values specifically relate to textures and
+  // palettes.  These values are copied to the Palettizer.
   bool _got_txa_filename;
   Filename _txa_filename;
   bool _got_txa_script;
@@ -56,8 +53,8 @@ public:
   bool _got_default_groupdir;
 
 private:
-  // The following values control behavior specific to this session.
-  // They're not saved for future sessions.
+  // The following values control behavior specific to this session.  They're
+  // not saved for future sessions.
   bool _report_pi;
   bool _report_statistics;
   bool _all_textures;

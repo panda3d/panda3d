@@ -1,16 +1,15 @@
-// Filename: intersectionBoundingVolume.h
-// Created by:  drose (08Feb12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file intersectionBoundingVolume.h
+ * @author drose
+ * @date 2012-02-08
+ */
 
 #ifndef INTERSECTIONBOUNDINGVOLUME_H
 #define INTERSECTIONBOUNDINGVOLUME_H
@@ -20,15 +19,13 @@
 #include "geometricBoundingVolume.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IntersectionBoundingVolume
-// Description : This special bounding volume is the intersection of all of
-//               its constituent bounding volumes.
-//
-//               A point is defined to be within an
-//               IntersectionBoundingVolume if it is within all of its
-//               component bounding volumes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special bounding volume is the intersection of all of its constituent
+ * bounding volumes.
+ *
+ * A point is defined to be within an IntersectionBoundingVolume if it is
+ * within all of its component bounding volumes.
+ */
 class EXPCL_PANDA_MATHUTIL IntersectionBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL IntersectionBoundingVolume();
@@ -50,6 +47,7 @@ PUBLISHED:
   INLINE_MATHUTIL int get_num_components() const;
   INLINE_MATHUTIL const GeometricBoundingVolume *get_component(int n) const;
   MAKE_SEQ(get_components, get_num_components, get_component);
+  MAKE_SEQ_PROPERTY(components, get_num_components, get_component);
 
   void clear_components();
   void add_component(const GeometricBoundingVolume *component);
@@ -101,4 +99,3 @@ private:
 #include "intersectionBoundingVolume.I"
 
 #endif
-

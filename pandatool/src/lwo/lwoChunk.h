@@ -1,16 +1,15 @@
-// Filename: lwoChunk.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoChunk.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOCHUNK_H
 #define LWOCHUNK_H
@@ -19,13 +18,11 @@
 
 #include "iffChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoChunk
-// Description : A specialization of IffChunk for Lightwave Object
-//               files.  Each kind of chunk that is specific to a
-//               Lightwave file should inherit directly or indirectly
-//               from LwoChunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization of IffChunk for Lightwave Object files.  Each kind of
+ * chunk that is specific to a Lightwave file should inherit directly or
+ * indirectly from LwoChunk.
+ */
 class LwoChunk : public IffChunk {
 public:
   // No particular interface here.
@@ -49,5 +46,3 @@ private:
 };
 
 #endif
-
-

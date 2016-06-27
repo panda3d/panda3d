@@ -1,16 +1,15 @@
-// Filename: ropeNode.cxx
-// Created by:  drose (04Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ropeNode.cxx
+ * @author drose
+ * @date 2002-12-04
+ */
 
 #include "ropeNode.h"
 #include "cullTraverser.h"
@@ -35,47 +34,38 @@ TypeHandle RopeNode::_type_handle;
 
 PStatCollector RopeNode::_rope_node_pcollector("*:RopeNode");
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CycleData *RopeNode::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void RopeNode::CData::
 write_datagram(BamWriter *writer, Datagram &dg) const {
-  // For now, we write a NULL pointer.  Eventually we will write out
-  // the NurbsCurveEvaluator pointer.
+  // For now, we write a NULL pointer.  Eventually we will write out the
+  // NurbsCurveEvaluator pointer.
   writer->write_pointer(dg, (TypedWritable *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new RopeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new RopeNode.
+ */
 void RopeNode::CData::
 fillin(DatagramIterator &scan, BamReader *reader) {
   // For now, we skip over the NULL pointer that we wrote out.
   reader->skip_pointer(scan);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 RopeNode::
 RopeNode(const string &name) :
   PandaNode(name)
@@ -83,11 +73,9 @@ RopeNode(const string &name) :
   set_cull_callback();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 RopeNode::
 RopeNode(const RopeNode &copy) :
   PandaNode(copy),
@@ -95,57 +83,44 @@ RopeNode(const RopeNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *RopeNode::
 make_copy() const {
   return new RopeNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::safe_to_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of Node by calling the xform()
-//               method, false otherwise.  For instance, it's usually
-//               a bad idea to attempt to xform a RopeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to transform this particular kind of
+ * Node by calling the xform() method, false otherwise.  For instance, it's
+ * usually a bad idea to attempt to xform a RopeNode.
+ */
 bool RopeNode::
 safe_to_transform() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool RopeNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Statistics
@@ -187,26 +162,20 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool RopeNode::
 is_renderable() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void RopeNode::
 output(ostream &out) const {
   PandaNode::output(out);
@@ -218,25 +187,20 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void RopeNode::
 write(ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   indent(out, indent_level) << *get_curve() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::reset_bound
-//       Access: Published
-//  Description: Recomputes the bounding volume.  This is normally
-//               called automatically, but it must occasionally be
-//               called explicitly when the curve has changed
-//               properties outside of this node's knowledge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the bounding volume.  This is normally called automatically, but
+ * it must occasionally be called explicitly when the curve has changed
+ * properties outside of this node's knowledge.
+ */
 void RopeNode::
 reset_bound(const NodePath &rel_to) {
   Thread *current_thread = Thread::get_current_thread();
@@ -245,14 +209,11 @@ reset_bound(const NodePath &rel_to) {
   mark_internal_bounds_stale(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Called when needed to recompute the node's
-//               _internal_bound object.  Nodes that contain anything
-//               of substance should redefine this to do the right
-//               thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when needed to recompute the node's _internal_bound object.  Nodes
+ * that contain anything of substance should redefine this to do the right
+ * thing.
+ */
 void RopeNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -266,13 +227,10 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = 0;  // TODO--estimate this better.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::get_format
-//       Access: Private
-//  Description: Returns the appropriate GeomVertexFormat for
-//               rendering, according to the user-specified
-//               requirements.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the appropriate GeomVertexFormat for rendering, according to the
+ * user-specified requirements.
+ */
 CPT(GeomVertexFormat) RopeNode::
 get_format(bool support_normals) const {
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat
@@ -298,17 +256,15 @@ get_format(bool support_normals) const {
   return GeomVertexFormat::register_format(array_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::do_recompute_bounds
-//       Access: Private
-//  Description: Does the actual internal recompute.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the actual internal recompute.
+ */
 PT(BoundingVolume) RopeNode::
 do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
                     Thread *current_thread) const {
-  // TODO: fix the bounds so that it properly reflects the indicated
-  // pipeline stage.  At the moment, we cheat and get some of the
-  // properties from the current pipeline stage, the lazy way.
+  // TODO: fix the bounds so that it properly reflects the indicated pipeline
+  // stage.  At the moment, we cheat and get some of the properties from the
+  // current pipeline stage, the lazy way.
 
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
@@ -334,34 +290,30 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   return bound;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::render_thread
-//       Access: Private
-//  Description: Draws the rope in RM_thread mode.  This uses a
-//               GeomLinestrip to draw the rope in the simplest
-//               possible method, generally resulting in a
-//               one-pixel-wide curve.
-//
-//               In this mode, the thickness parameter represents a
-//               thickness in pixels, and is passed to the linestrip.
-//               However, you should be aware the DirectX does not
-//               support line thickness.  This mode does not support
-//               per-vertex thickness.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the rope in RM_thread mode.  This uses a GeomLinestrip to draw the
+ * rope in the simplest possible method, generally resulting in a one-pixel-
+ * wide curve.
+ *
+ * In this mode, the thickness parameter represents a thickness in pixels, and
+ * is passed to the linestrip.  However, you should be aware the DirectX does
+ * not support line thickness.  This mode does not support per-vertex
+ * thickness.
+ */
 void RopeNode::
 render_thread(CullTraverser *trav, CullTraverserData &data,
               NurbsCurveResult *result) const {
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
 
-  // Now we have stored one or more sequences of vertices down the
-  // thread.  These map directly to primitive vertices.
+  // Now we have stored one or more sequences of vertices down the thread.
+  // These map directly to primitive vertices.
   PT(GeomVertexData) vdata = new GeomVertexData
     ("rope", get_format(false), Geom::UH_stream);
   compute_thread_vertices(vdata, curve_segments, num_curve_verts);
 
-  // We use GeomLines instead of GeomLinestrips, since that can more
-  // easily be rendered directly.
+  // We use GeomLines instead of GeomLinestrips, since that can more easily be
+  // rendered directly.
   PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
   lines->reserve_num_vertices((num_curve_verts - 1) * 2);
 
@@ -386,33 +338,29 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   trav->get_cull_handler()->record_object(object, trav);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::render_tape
-//       Access: Private
-//  Description: Draws the rope in RM_tape mode.  This draws a
-//               series of triangle strips oriented to be
-//               perpendicular to the tube_up vector.
-//
-//               In this mode, thickness is in spatial units, and
-//               determines the width of the triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the rope in RM_tape mode.  This draws a series of triangle strips
+ * oriented to be perpendicular to the tube_up vector.
+ *
+ * In this mode, thickness is in spatial units, and determines the width of
+ * the triangle strips.
+ */
 void RopeNode::
 render_tape(CullTraverser *trav, CullTraverserData &data,
             NurbsCurveResult *result) const {
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
 
-  // Now we have stored one or more sequences of vertices down the
-  // center strips.  Go back through and calculate the vertices on
-  // either side.
+  // Now we have stored one or more sequences of vertices down the center
+  // strips.  Go back through and calculate the vertices on either side.
   PT(GeomVertexData) vdata = new GeomVertexData
     ("rope", get_format(false), Geom::UH_stream);
 
   compute_billboard_vertices(vdata, -get_tube_up(),
                              curve_segments, num_curve_verts, result);
 
-  // Since this will be a nonindexed primitive, no need to pre-reserve
-  // the number of vertices.
+  // Since this will be a nonindexed primitive, no need to pre-reserve the
+  // number of vertices.
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
@@ -436,16 +384,13 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   trav->get_cull_handler()->record_object(object, trav);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::render_billboard
-//       Access: Private
-//  Description: Draws the rope in RM_billboard mode.  This draws a
-//               series of triangle strips oriented to be
-//               perpendicular to the camera plane.
-//
-//               In this mode, thickness is in spatial units, and
-//               determines the width of the triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the rope in RM_billboard mode.  This draws a series of triangle
+ * strips oriented to be perpendicular to the camera plane.
+ *
+ * In this mode, thickness is in spatial units, and determines the width of
+ * the triangle strips.
+ */
 void RopeNode::
 render_billboard(CullTraverser *trav, CullTraverserData &data,
                  NurbsCurveResult *result) const {
@@ -459,17 +404,16 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
 
-  // Now we have stored one or more sequences of vertices down the
-  // center strips.  Go back through and calculate the vertices on
-  // either side.
+  // Now we have stored one or more sequences of vertices down the center
+  // strips.  Go back through and calculate the vertices on either side.
   PT(GeomVertexData) vdata = new GeomVertexData
     ("rope", get_format(false), Geom::UH_stream);
 
   compute_billboard_vertices(vdata, camera_vec,
                              curve_segments, num_curve_verts, result);
 
-  // Since this will be a nonindexed primitive, no need to pre-reserve
-  // the number of vertices.
+  // Since this will be a nonindexed primitive, no need to pre-reserve the
+  // number of vertices.
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
@@ -493,23 +437,21 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   trav->get_cull_handler()->record_object(object, trav);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::render_tube
-//       Access: Private
-//  Description: Draws the rope in RM_tube mode.  This draws a hollow
-//               tube centered around the string.
-//
-//               In this mode, thickness is in spatial units, and
-//               determines the diameter of the tube.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the rope in RM_tube mode.  This draws a hollow tube centered around
+ * the string.
+ *
+ * In this mode, thickness is in spatial units, and determines the diameter of
+ * the tube.
+ */
 void RopeNode::
 render_tube(CullTraverser *trav, CullTraverserData &data,
             NurbsCurveResult *result) const {
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
 
-  // Now, we build up a table of vertices, in a series of rings
-  // around the circumference of the tube.
+  // Now, we build up a table of vertices, in a series of rings around the
+  // circumference of the tube.
 
   int num_slices = get_num_slices();
   int num_verts_per_slice;
@@ -520,10 +462,9 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
   compute_tube_vertices(vdata, num_verts_per_slice,
                         curve_segments, num_curve_verts, result);
 
-  // Finally, go through and build up the index array, to tie all the
-  // triangle strips together.  This is difficult to pre-calculate the
-  // number of vertices we'll use, so we'll just let it dynamically
-  // allocate.
+  // Finally, go through and build up the index array, to tie all the triangle
+  // strips together.  This is difficult to pre-calculate the number of
+  // vertices we'll use, so we'll just let it dynamically allocate.
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   int vi = 0;
   CurveSegments::const_iterator si;
@@ -557,22 +498,17 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
   trav->get_cull_handler()->record_object(object, trav);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::get_connected_segments
-//       Access: Private
-//  Description: Evaluates the string of vertices along the curve, and
-//               also breaks them up into connected segments.
-//
-//               Since the NurbsCurveEvaluator describes the curve as
-//               a sequence of possibly-connected piecewise continuous
-//               segments, this means joining together some adjacent
-//               segments from the NurbsCurveEvaluator into a single
-//               CurveSegment, if they happen to be connected (as most
-//               will be).
-//
-//               The return value is the total number of points across
-//               all segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evaluates the string of vertices along the curve, and also breaks them up
+ * into connected segments.
+ *
+ * Since the NurbsCurveEvaluator describes the curve as a sequence of
+ * possibly-connected piecewise continuous segments, this means joining
+ * together some adjacent segments from the NurbsCurveEvaluator into a single
+ * CurveSegment, if they happen to be connected (as most will be).
+ *
+ * The return value is the total number of points across all segments.
+ */
 int RopeNode::
 get_connected_segments(RopeNode::CurveSegments &curve_segments,
                        const NurbsCurveResult *result) const {
@@ -592,9 +528,9 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
 
     if (curve_segment == (CurveSegment *)NULL ||
         !point.almost_equal(last_point)) {
-      // If the first point of this segment is different from the last
-      // point of the previous segment, end the previous segment and
-      // begin a new one.
+      // If the first point of this segment is different from the last point
+      // of the previous segment, end the previous segment and begin a new
+      // one.
       curve_segments.push_back(CurveSegment());
       curve_segment = &curve_segments.back();
 
@@ -644,13 +580,10 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
   return num_curve_verts;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::compute_thread_vertices
-//       Access: Private
-//  Description: Calculates the vertices for a RM_thread render.  This
-//               just copies the vertices more-or-less directly into
-//               the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the vertices for a RM_thread render.  This just copies the
+ * vertices more-or-less directly into the array.
+ */
 void RopeNode::
 compute_thread_vertices(GeomVertexData *vdata,
                         const RopeNode::CurveSegments &curve_segments,
@@ -692,13 +625,10 @@ compute_thread_vertices(GeomVertexData *vdata,
   nassertv(vdata->get_num_rows() == num_curve_verts);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::compute_billboard_vertices
-//       Access: Private
-//  Description: Calculates the vertices for a RM_billboard render.  This
-//               puts a pair of vertices on either side of each
-//               computed point in curve_segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the vertices for a RM_billboard render.  This puts a pair of
+ * vertices on either side of each computed point in curve_segments.
+ */
 void RopeNode::
 compute_billboard_vertices(GeomVertexData *vdata,
                            const LVector3 &camera_vec,
@@ -761,13 +691,10 @@ compute_billboard_vertices(GeomVertexData *vdata,
   nassertv(vdata->get_num_rows() == expected_num_verts);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::compute_tube_vertices
-//       Access: Private
-//  Description: Calculates the vertices for a RM_tube render.  This
-//               puts a ring of vertices around each computed point in
-//               curve_segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the vertices for a RM_tube render.  This puts a ring of vertices
+ * around each computed point in curve_segments.
+ */
 void RopeNode::
 compute_tube_vertices(GeomVertexData *vdata,
                       int &num_verts_per_slice,
@@ -787,9 +714,9 @@ compute_tube_vertices(GeomVertexData *vdata,
   bool use_vertex_color = get_use_vertex_color();
   bool use_vertex_thickness = get_use_vertex_thickness();
 
-  // If we are generating UV's, we will need to duplicate the vertices
-  // along the seam so that the UV's go through the whole range of
-  // 0..1 instead of reflecting in the last polygon before the seam.
+  // If we are generating UV's, we will need to duplicate the vertices along
+  // the seam so that the UV's go through the whole range of 0..1 instead of
+  // reflecting in the last polygon before the seam.
   if (uv_mode != UV_none) {
     ++num_verts_per_slice;
   }
@@ -813,6 +740,19 @@ compute_tube_vertices(GeomVertexData *vdata,
       compute_tangent(tangent, segment, j, result);
 
       LVector3 norm = cross(tangent, up);
+
+      // In case the tangent is linear dependent on the up vector, we might
+      // get invalid results, so check that
+      if (IS_NEARLY_ZERO(norm.length_squared())) {
+
+        if (IS_NEARLY_ZERO(tangent.get_y()) && IS_NEARLY_ZERO(tangent.get_z())) {
+          // Vector is linear dependent on (1, 0, 0), use (0, 1, 0) as base
+          norm = cross(tangent, LVector3(0, 1, 0));
+        } else {
+          norm = cross(tangent, LVector3(1, 0, 0));
+        }
+      }
+
       norm.normalize();
       up = cross(norm, tangent);
 
@@ -853,18 +793,15 @@ compute_tube_vertices(GeomVertexData *vdata,
   nassertv(vdata->get_num_rows() == expected_num_verts);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::compute_tangent
-//       Access: Private, Static
-//  Description: Computes the tangent to the curve at the indicated
-//               point in the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the tangent to the curve at the indicated point in the segment.
+ */
 void RopeNode::
 compute_tangent(LVector3 &tangent, const RopeNode::CurveSegment &segment,
                 size_t j, NurbsCurveResult *result) {
-  // First, try to evaluate the tangent at the curve.  This gives
-  // better results at the ends at the endpoints where the tangent
-  // does not go to zero.
+  // First, try to evaluate the tangent at the curve.  This gives better
+  // results at the ends at the endpoints where the tangent does not go to
+  // zero.
 
   /*
     Actually, on second thought this looks terrible.
@@ -876,8 +813,8 @@ compute_tangent(LVector3 &tangent, const RopeNode::CurveSegment &segment,
   }
   */
 
-  // If that failed (or produced a zero tangent), then derive the
-  // tangent from the neighboring points instead.
+  // If that failed (or produced a zero tangent), then derive the tangent from
+  // the neighboring points instead.
   if (j == 0) {
     tangent = segment[j + 1]._p - segment[j]._p;
   } else if (j == segment.size() - 1) {
@@ -885,14 +822,19 @@ compute_tangent(LVector3 &tangent, const RopeNode::CurveSegment &segment,
   } else {
     tangent = segment[j + 1]._p - segment[j - 1]._p;
   }
+
+  // Avoid empty tangents, these lead to crashes.  Instead, use an arbitrary
+  // tangent.
+  if (IS_NEARLY_ZERO(tangent.length_squared())) {
+    tangent.set(0, 0, 1);
+  }
+
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::compute_uv_t
-//       Access: Private, Static
-//  Description: Computes the texture coordinate along the curve for
-//               the indicated point in the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the texture coordinate along the curve for the indicated point in
+ * the segment.
+ */
 PN_stdfloat RopeNode::
 compute_uv_t(PN_stdfloat &dist, const RopeNode::UVMode &uv_mode,
              PN_stdfloat uv_scale, const RopeNode::CurveSegment &segment,
@@ -922,37 +864,29 @@ compute_uv_t(PN_stdfloat &dist, const RopeNode::UVMode &uv_mode,
   return 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               RopeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type RopeNode.
+ */
 void RopeNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void RopeNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type RopeNode is encountered
-//               in the Bam file.  It should create the RopeNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type RopeNode is encountered in the Bam file.  It should create the
+ * RopeNode and extract its information from the file.
+ */
 TypedWritable *RopeNode::
 make_from_bam(const FactoryParams &params) {
   RopeNode *node = new RopeNode("");
@@ -965,13 +899,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new RopeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new RopeNode.
+ */
 void RopeNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);

@@ -1,16 +1,15 @@
-// Filename: nodeReferenceCount.h
-// Created by:  drose (01May06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodeReferenceCount.h
+ * @author drose
+ * @date 2006-05-01
+ */
 
 #ifndef NODEREFERENCECOUNT_H
 #define NODEREFERENCECOUNT_H
@@ -19,25 +18,18 @@
 
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodeReferenceCount
-// Description : This class specializes ReferenceCount to add an
-//               additional counter, called node_ref_count, for the
-//               purposes of counting the number of times the object
-//               is referenced by a "node", whatever that may mean in
-//               context.
-//
-//               The new methods node_ref() and node_unref()
-//               automatically increment and decrement the primary
-//               reference count as well.  There also exists a
-//               NodePointerTo<> class to maintain the node_ref
-//               counters automatically.
-//
-//               See also CachedTypedWritableReferenceCount, which is
-//               similar in principle, as well as
-//               NodeCachedReferenceCount, which combines both of
-//               these.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class specializes ReferenceCount to add an additional counter, called
+ * node_ref_count, for the purposes of counting the number of times the object
+ * is referenced by a "node", whatever that may mean in context.
+ *
+ * The new methods node_ref() and node_unref() automatically increment and
+ * decrement the primary reference count as well.  There also exists a
+ * NodePointerTo<> class to maintain the node_ref counters automatically.
+ *
+ * See also CachedTypedWritableReferenceCount, which is similar in principle,
+ * as well as NodeCachedReferenceCount, which combines both of these.
+ */
 class EXPCL_PANDAEXPRESS NodeReferenceCount : public ReferenceCount {
 protected:
   INLINE NodeReferenceCount();
@@ -55,7 +47,7 @@ protected:
   INLINE void node_unref_only() const;
 
   bool do_test_ref_count_integrity() const;
-  
+
 private:
   AtomicAdjust::Integer _node_ref_count;
 
@@ -77,11 +69,10 @@ private:
 template<class RefCountType>
 INLINE void node_unref_delete(RefCountType *ptr);
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodeRefCountObj
-// Description : This works like RefCountObj, but it inherits from
-//               NodeReferenceCount instead of ReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * This works like RefCountObj, but it inherits from NodeReferenceCount
+ * instead of ReferenceCount.
+ */
 template<class Base>
 class NodeRefCountObj : public NodeReferenceCount, public Base {
 public:
@@ -100,5 +91,4 @@ private:
 
 #include "nodeReferenceCount.I"
 
-#endif  
-
+#endif

@@ -1,16 +1,15 @@
-// Filename: camera.h
-// Created by:  drose (26Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file camera.h
+ * @author drose
+ * @date 2002-02-26
+ */
 
 #ifndef CAMERA_H
 #define CAMERA_H
@@ -28,12 +27,10 @@
 #include "auxSceneData.h"
 #include "displayRegionBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Camera
-// Description : A node that can be positioned around in the scene
-//               graph to represent a point of view for rendering a
-//               scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that can be positioned around in the scene graph to represent a
+ * point of view for rendering a scene.
+ */
 class EXPCL_PANDA_PGRAPH Camera : public LensNode {
 PUBLISHED:
   explicit Camera(const string &name, Lens *lens = new PerspectiveLens());
@@ -49,37 +46,48 @@ public:
 PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
+  MAKE_PROPERTY(active, is_active, set_active);
 
   INLINE void set_scene(const NodePath &scene);
   INLINE const NodePath &get_scene() const;
+  MAKE_PROPERTY(scene, get_scene, set_scene);
 
   INLINE int get_num_display_regions() const;
   INLINE DisplayRegionBase *get_display_region(int n) const;
   MAKE_SEQ(get_display_regions, get_num_display_regions, get_display_region);
+  MAKE_SEQ_PROPERTY(display_regions, get_num_display_regions, get_display_region);
 
   INLINE void set_camera_mask(DrawMask mask);
   INLINE DrawMask get_camera_mask() const;
+  MAKE_PROPERTY(camera_mask, get_camera_mask, set_camera_mask);
 
   INLINE void set_cull_center(const NodePath &cull_center);
   INLINE const NodePath &get_cull_center() const;
+  MAKE_PROPERTY(cull_center, get_cull_center, set_cull_center);
 
   INLINE void set_cull_bounds(BoundingVolume *cull_bounds);
   INLINE BoundingVolume *get_cull_bounds() const;
+  MAKE_PROPERTY(cull_bounds, get_cull_bounds, set_cull_bounds);
 
   INLINE void set_lod_center(const NodePath &lod_center);
   INLINE const NodePath &get_lod_center() const;
+  MAKE_PROPERTY(lod_center, get_lod_center, set_lod_center);
 
   INLINE void set_initial_state(const RenderState *state);
   INLINE CPT(RenderState) get_initial_state() const;
+  MAKE_PROPERTY(initial_state, get_initial_state, set_initial_state);
 
   INLINE void set_tag_state_key(const string &tag_state_key);
   INLINE const string &get_tag_state_key() const;
+  MAKE_PROPERTY(tag_state_key, get_tag_state_key, set_tag_state_key);
 
   INLINE void set_lod_scale(PN_stdfloat value);
   INLINE PN_stdfloat get_lod_scale() const;
+  MAKE_PROPERTY(lod_scale, get_lod_scale, set_lod_scale);
 
   void set_tag_state(const string &tag_state, const RenderState *state);
   void clear_tag_state(const string &tag_state);
+  void clear_tag_states();
   bool has_tag_state(const string &tag_state) const;
   CPT(RenderState) get_tag_state(const string &tag_state) const;
 
@@ -117,6 +125,8 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist,
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

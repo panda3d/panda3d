@@ -1,16 +1,15 @@
-// Filename: movieTypeRegistry.h
-// Created by:  rdb (24Aug13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieTypeRegistry.h
+ * @author rdb
+ * @date 2013-08-24
+ */
 
 #ifndef MOVIETYPEREGISTRY_H
 #define MOVIETYPEREGISTRY_H
@@ -21,11 +20,10 @@
 #include "filename.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieTypeRegistry
-// Description : This class records the different types of MovieAudio
-//               and MovieVideo that are available for loading.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class records the different types of MovieAudio and MovieVideo that
+ * are available for loading.
+ */
 class EXPCL_PANDA_MOVIES MovieTypeRegistry {
 public:
   typedef PT(MovieAudio) (*MakeAudioFunc)(const Filename&);
@@ -41,7 +39,7 @@ public:
   void load_movie_library(const string &name);
 
   INLINE static MovieTypeRegistry *get_global_ptr();
-  
+
 private:
   static MovieTypeRegistry *_global_ptr;
 

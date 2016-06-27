@@ -1,16 +1,15 @@
-// Filename: typeManager.h
-// Created by:  drose (14Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeManager.h
+ * @author drose
+ * @date 2000-08-14
+ */
 
 #ifndef TYPEMANAGER_H
 #define TYPEMANAGER_H
@@ -32,13 +31,11 @@ class CPPIdentifier;
 class CPPNameComponent;
 class CPPManifest;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeManager
-// Description : This is just a collection of static methods that
-//               perform useful operations on CPPTypes for
-//               interrogate.  The class is really just a namespace
-//               that groups these functions together.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is just a collection of static methods that perform useful operations
+ * on CPPTypes for interrogate.  The class is really just a namespace that
+ * groups these functions together.
+ */
 class TypeManager {
 public:
 
@@ -84,6 +81,8 @@ public:
   static bool is_const_ref_to_basic_string_wchar(CPPType *type);
   static bool is_const_ptr_to_basic_string_wchar(CPPType *type);
   static bool is_wstring(CPPType *type);
+  static bool is_vector_unsigned_char(CPPType *type);
+  static bool is_const_vector_unsigned_char(CPPType *type);
   static bool is_pair(CPPType *type);
   static bool is_bool(CPPType *type);
   static bool is_integer(CPPType *type);
@@ -153,4 +152,3 @@ public:
 };
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: pipeOcclusionCullTraverser.h
-// Created by:  drose (29May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pipeOcclusionCullTraverser.h
+ * @author drose
+ * @date 2007-05-29
+ */
 
 #ifndef PIPEOCCLUSIONCULLTRAVERSER_H
 #define PIPEOCCLUSIONCULLTRAVERSER_H
@@ -26,24 +25,19 @@ class GraphicsEngine;
 class GraphicsPipe;
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PipeOcclusionCullTraverser
-// Description : This specialization of CullTraverser uses the
-//               graphics pipe itself to perform occlusion culling.
-//               As such, it's likely to be inefficient (since it
-//               interferes with the pipe's normal mode of rendering),
-//               and is mainly useful to test other, CPU-based
-//               occlusion algorithms.
-//
-//               This cannot be used in a multithreaded pipeline
-//               environment where cull and draw are operating
-//               simultaneously.
-//
-//               It can't be defined in the cull subdirectory, because
-//               it needs access to GraphicsPipe and DisplayRegion and
-//               other classes in display.  So we put it in grutil
-//               instead, for lack of any better ideas.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization of CullTraverser uses the graphics pipe itself to
+ * perform occlusion culling.  As such, it's likely to be inefficient (since
+ * it interferes with the pipe's normal mode of rendering), and is mainly
+ * useful to test other, CPU-based occlusion algorithms.
+ *
+ * This cannot be used in a multithreaded pipeline environment where cull and
+ * draw are operating simultaneously.
+ *
+ * It can't be defined in the cull subdirectory, because it needs access to
+ * GraphicsPipe and DisplayRegion and other classes in display.  So we put it
+ * in grutil instead, for lack of any better ideas.
+ */
 class EXPCL_PANDA_GRUTIL PipeOcclusionCullTraverser : public CullTraverser,
                                                public CullHandler {
 PUBLISHED:
@@ -103,8 +97,8 @@ private:
   CullHandler *_internal_cull_handler;
   CullHandler *_true_cull_handler;
 
-  // This is the query that has already been performed on the current
-  // node or a parent.
+  // This is the query that has already been performed on the current node or
+  // a parent.
   PT(OcclusionQueryContext) _current_query;
 
   // This is the query that has been performed for any children.
@@ -156,6 +150,3 @@ private:
 #include "pipeOcclusionCullTraverser.I"
 
 #endif
-
-
-

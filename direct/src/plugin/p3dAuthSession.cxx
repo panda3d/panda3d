@@ -1,16 +1,15 @@
-// Filename: P3DAuthSession.cxx
-// Created by:  drose (17Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dAuthSession.cxx
+ * @author drose
+ * @date 2009-09-17
+ */
 
 #include "p3dAuthSession.h"
 #include "p3dInstance.h"
@@ -31,11 +30,9 @@
 #include <unistd.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DAuthSession::
 P3DAuthSession(P3DInstance *inst) :
   _inst(inst)
@@ -62,12 +59,12 @@ P3DAuthSession(P3DInstance *inst) :
   }
 
   if (inst->_mf_reader.get_num_signatures() > 0) {
-    const P3DMultifileReader::CertChain &cert_chain = 
+    const P3DMultifileReader::CertChain &cert_chain =
       inst->_mf_reader.get_signature(0);
 
     if (cert_chain.size() > 0) {
-      // Save the cert_dir, this is where the p3dcert program will
-      // need to write the cert when it is approved.
+      // Save the cert_dir, this is where the p3dcert program will need to
+      // write the cert when it is approved.
       P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
       _cert_dir = inst_mgr->get_cert_dir(cert_chain[0]._cert);
     }
@@ -84,11 +81,9 @@ P3DAuthSession(P3DInstance *inst) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DAuthSession::
 ~P3DAuthSession() {
   shutdown(false);
@@ -98,16 +93,14 @@ P3DAuthSession::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::shutdown
-//       Access: Public
-//  Description: Terminates the session by killing the subprocess.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates the session by killing the subprocess.
+ */
 void P3DAuthSession::
 shutdown(bool send_message) {
   if (!send_message) {
-    // If we're not to send the instance the shutdown message as a
-    // result of this, then clear the _inst pointer now.
+    // If we're not to send the instance the shutdown message as a result of
+    // this, then clear the _inst pointer now.
     _inst = NULL;
   }
 
@@ -120,9 +113,9 @@ shutdown(bool send_message) {
 #else  // _WIN32
     kill(_p3dcert_pid, SIGKILL);
 
-    // Wait a few milliseconds for the process to exit, and then get
-    // its return status to clean up the zombie status.  If we don't
-    // wait long enough, don't sweat it.
+    // Wait a few milliseconds for the process to exit, and then get its
+    // return status to clean up the zombie status.  If we don't wait long
+    // enough, don't sweat it.
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 100000;
@@ -130,25 +123,22 @@ shutdown(bool send_message) {
     int status;
     waitpid(_p3dcert_pid, &status, WNOHANG);
 #endif  // _WIN32
-    
+
     _p3dcert_running = false;
   }
   _p3dcert_started = false;
 
-  // Now that the process has stopped, the thread should stop itself
-  // quickly too.
+  // Now that the process has stopped, the thread should stop itself quickly
+  // too.
   join_wait_thread();
 
   // We're no longer bound to any particular instance.
   _inst = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::start_p3dcert
-//       Access: Private
-//  Description: Starts the p3dcert program running in a child
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the p3dcert program running in a child process.
+ */
 void P3DAuthSession::
 start_p3dcert() {
   if (_p3dcert_started) {
@@ -264,28 +254,23 @@ start_p3dcert() {
 
   _p3dcert_started = true;
   _p3dcert_running = true;
-  
+
   spawn_wait_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::spawn_wait_thread
-//       Access: Private
-//  Description: Starts the wait thread.  This thread is responsible
-//               for waiting for the process to finish, and notifying
-//               the instance when it does.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the wait thread.  This thread is responsible for waiting for the
+ * process to finish, and notifying the instance when it does.
+ */
 void P3DAuthSession::
 spawn_wait_thread() {
   SPAWN_THREAD(_wait_thread, wt_thread_run, this);
   _started_wait_thread = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::join_wait_thread
-//       Access: Private
-//  Description: Waits for the wait thread to stop.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for the wait thread to stop.
+ */
 void P3DAuthSession::
 join_wait_thread() {
   if (!_started_wait_thread) {
@@ -296,14 +281,10 @@ join_wait_thread() {
   _started_wait_thread = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::write_env
-//       Access: Private
-//  Description: Writes _env, which is formatted as a string
-//               containing zero-byte-terminated environment
-//               defintions, to the nout stream, one definition per
-//               line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes _env, which is formatted as a string containing zero-byte-terminated
+ * environment defintions, to the nout stream, one definition per line.
+ */
 void P3DAuthSession::
 write_env() const {
   size_t p = 0;
@@ -317,11 +298,9 @@ write_env() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::wt_thread_run
-//       Access: Private
-//  Description: The main function for the wait thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main function for the wait thread.
+ */
 void P3DAuthSession::
 wt_thread_run() {
   // All we do here is wait for the process to terminate.
@@ -343,13 +322,13 @@ wt_thread_run() {
   }
   _p3dcert_pid = -1;
   _p3dcert_running = false;
-      
+
   nout << "p3dcert process has successfully stopped.\n";
   if (WIFEXITED(status)) {
     nout << "  exited normally, status = "
          << WEXITSTATUS(status) << "\n";
   } else if (WIFSIGNALED(status)) {
-    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+    nout << "  signalled by " << WTERMSIG(status) << ", core = "
          << WCOREDUMP(status) << "\n";
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
@@ -366,16 +345,13 @@ wt_thread_run() {
 }
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::win_create_process
-//       Access: Private
-//  Description: Creates a sub-process to run _p3dcert_exe, with
-//               the appropriate command-line arguments, and the
-//               environment string defined in _env.
-//
-//               Returns the handle to the created process on success,
-//               or INVALID_HANDLE_VALUE on falure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a sub-process to run _p3dcert_exe, with the appropriate command-
+ * line arguments, and the environment string defined in _env.
+ *
+ * Returns the handle to the created process on success, or
+ * INVALID_HANDLE_VALUE on falure.
+ */
 HANDLE P3DAuthSession::
 win_create_process() {
   // Make sure we see an error dialog if there is a missing DLL.
@@ -383,7 +359,7 @@ win_create_process() {
 
   STARTUPINFO startup_info;
   ZeroMemory(&startup_info, sizeof(startup_info));
-  startup_info.cb = sizeof(startup_info); 
+  startup_info.cb = sizeof(startup_info);
 
   // Make sure the initial window is *shown* for this graphical app.
   startup_info.wShowWindow = SW_SHOW;
@@ -391,29 +367,29 @@ win_create_process() {
 
   const char *start_dir_cstr = _start_dir.c_str();
 
-  // Construct the command-line string, containing the quoted
-  // command-line arguments.
+  // Construct the command-line string, containing the quoted command-line
+  // arguments.
   ostringstream stream;
-  stream << "\"" << _p3dcert_exe << "\" \"" 
+  stream << "\"" << _p3dcert_exe << "\" \""
          << _cert_filename->get_filename() << "\" \"" << _cert_dir << "\"";
 
-  // I'm not sure why CreateProcess wants a non-const char pointer for
-  // its command-line string, but I'm not taking chances.  It gets a
-  // non-const char array that it can modify.
+  // I'm not sure why CreateProcess wants a non-const char pointer for its
+  // command-line string, but I'm not taking chances.  It gets a non-const
+  // char array that it can modify.
   string command_line_str = stream.str();
   char *command_line = new char[command_line_str.size() + 1];
   memcpy(command_line, command_line_str.c_str(), command_line_str.size() + 1);
 
   nout << "Command line: " << command_line_str << "\n";
 
-  // Something about p3dCert_wx tends to become crashy when we call it
-  // from CreateProcessW().  Something about the way wx parses the
-  // command-line parameters?  Well, whatever, we don't really need
-  // the Unicode form anyway.
-  PROCESS_INFORMATION process_info; 
+  // Something about p3dCert_wx tends to become crashy when we call it from
+  // CreateProcessW().  Something about the way wx parses the command-line
+  // parameters?  Well, whatever, we don't really need the Unicode form
+  // anyway.
+  PROCESS_INFORMATION process_info;
   BOOL result = CreateProcess
     (_p3dcert_exe.c_str(), command_line, NULL, NULL, TRUE,
-     0, (void *)_env.c_str(), 
+     0, (void *)_env.c_str(),
      start_dir_cstr, &startup_info, &process_info);
   bool started_program = (result != 0);
 
@@ -431,16 +407,12 @@ win_create_process() {
 
 
 #ifndef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::posix_create_process
-//       Access: Private
-//  Description: Creates a sub-process to run _p3dcert_exe, with
-//               the appropriate command-line arguments, and the
-//               environment string defined in _env.
-//
-//               Returns the pid of the created process on success, or
-//               -1 on falure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a sub-process to run _p3dcert_exe, with the appropriate command-
+ * line arguments, and the environment string defined in _env.
+ *
+ * Returns the pid of the created process on success, or -1 on falure.
+ */
 int P3DAuthSession::
 posix_create_process() {
   // Fork and exec.
@@ -455,8 +427,8 @@ posix_create_process() {
 
     if (chdir(_start_dir.c_str()) < 0) {
       nout << "Could not chdir to " << _start_dir << "\n";
-      // This is a warning, not an error.  We don't actually care
-      // that much about the starting directory.
+      // This is a warning, not an error.  We don't actually care that much
+      // about the starting directory.
     }
 
     // build up an array of char strings for the environment.

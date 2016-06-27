@@ -1,28 +1,25 @@
-// Filename: animationConvert.h
-// Created by:  drose (21Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animationConvert.h
+ * @author drose
+ * @date 2003-01-21
+ */
 
 #ifndef ANIMATIONCONVERT_H
 #define ANIMATIONCONVERT_H
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//        Enum : AnimationConvert
-// Description : This enumerated type lists the methods by which
-//               animation from an animation package might be
-//               represented in egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * This enumerated type lists the methods by which animation from an animation
+ * package might be represented in egg format.
+ */
 enum AnimationConvert {
   AC_invalid,  // Never use this.
   AC_none,     // No animation: static geometry only.

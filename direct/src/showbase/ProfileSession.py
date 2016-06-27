@@ -1,11 +1,18 @@
+from __future__ import print_function
 from panda3d.core import TrueClock
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import (
     StdoutCapture, _installProfileCustomFuncs,_removeProfileCustomFuncs,
     _getProfileResultFileInfo, _setProfileResultsFileInfo)
-import __builtin__
 import profile
 import pstats
+import sys
+
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
+
 
 class PercentStats(pstats.Stats):
     # prints more useful output when sampled durations are shorter than a millisecond
@@ -22,27 +29,27 @@ class PercentStats(pstats.Stats):
 
     def print_stats(self, *amount):
         for filename in self.files:
-            print filename
-        if self.files: print
+            print(filename)
+        if self.files: print()
         indent = ' ' * 8
         for func in self.top_level:
-            print indent, func_get_function_name(func)
+            print(indent, func_get_function_name(func))
 
-        print indent, self.total_calls, "function calls",
+        print(indent, self.total_calls, "function calls", end=' ')
         if self.total_calls != self.prim_calls:
-            print "(%d primitive calls)" % self.prim_calls,
+            print("(%d primitive calls)" % self.prim_calls, end=' ')
         # DCR
         #print "in %.3f CPU seconds" % self.total_tt
-        print "in %s CPU milliseconds" % (self.total_tt * 1000.)
+        print("in %s CPU milliseconds" % (self.total_tt * 1000.))
         if self._totalTime != self.total_tt:
-            print indent, 'percentages are of %s CPU milliseconds' % (self._totalTime * 1000)
-        print
+            print(indent, 'percentages are of %s CPU milliseconds' % (self._totalTime * 1000))
+        print()
         width, list = self.get_print_list(amount)
         if list:
             self.print_title()
             for func in list:
                 self.print_line(func)
-            print
+            print()
             # DCR
             #print
         return self
@@ -64,31 +71,31 @@ class PercentStats(pstats.Stats):
         f8 = self.f8
         if nc != cc:
             c = c + '/' + str(cc)
-        print c.rjust(9),
-        print f8(tt),
+        print(c.rjust(9), end=' ')
+        print(f8(tt), end=' ')
         if nc == 0:
-            print ' '*8,
+            print(' '*8, end=' ')
         else:
-            print f8(tt/nc),
-        print f8(ct),
+            print(f8(tt/nc), end=' ')
+        print(f8(ct), end=' ')
         if cc == 0:
-            print ' '*8,
+            print(' '*8, end=' ')
         else:
-            print f8(ct/cc),
+            print(f8(ct/cc), end=' ')
         # DCR
         #print func_std_string(func)
-        print PercentStats.func_std_string(func)
+        print(PercentStats.func_std_string(func))
 
 class ProfileSession:
     # class that encapsulates a profile of a single callable using Python's standard
     # 'profile' module
     #
     # defers formatting of profile results until they are requested
-    # 
+    #
     # implementation sidesteps memory leak in Python profile module,
     # and redirects file output to RAM file for efficiency
     TrueClock = TrueClock.getGlobalPtr()
-    
+
     notify = directNotify.newCategory("ProfileSession")
 
     def __init__(self, name, func=None, logAfterProfile=False):
@@ -155,7 +162,7 @@ class ProfileSession:
             self._reset()
 
         # if we're already profiling, just run the func and don't profile
-        if 'globalProfileSessionFunc' in __builtin__.__dict__:
+        if 'globalProfileSessionFunc' in builtins.__dict__:
             self.notify.warning('could not profile %s' % self._func)
             result = self._func()
             if self._duration is None:
@@ -163,8 +170,8 @@ class ProfileSession:
         else:
             # put the function in the global namespace so that profile can find it
             assert hasattr(self._func, '__call__')
-            __builtin__.globalProfileSessionFunc = self._func
-            __builtin__.globalProfileSessionResult = [None]
+            builtins.globalProfileSessionFunc = self._func
+            builtins.globalProfileSessionResult = [None]
 
             # set up the RAM file
             self._filenames.append(self._getNextFilename())
@@ -197,7 +204,7 @@ class ProfileSession:
             # calculate the duration (this is dependent on the internal Python profile data format.
             # see profile.py and pstats.py, this was copied from pstats.Stats.strip_dirs)
             maxTime = 0.
-            for cc, nc, tt, ct, callers in profData[1].itervalues():
+            for cc, nc, tt, ct, callers in profData[1].values():
                 if ct > maxTime:
                     maxTime = ct
             self._duration = maxTime
@@ -206,11 +213,11 @@ class ProfileSession:
 
             # clean up the globals
             result = globalProfileSessionResult[0]
-            del __builtin__.__dict__['globalProfileSessionFunc']
-            del __builtin__.__dict__['globalProfileSessionResult']
+            del builtins.__dict__['globalProfileSessionFunc']
+            del builtins.__dict__['globalProfileSessionResult']
 
             self._successfulProfiles += 1
-            
+
             if self._logAfterProfile:
                 self.notify.info(self.getResults())
 
@@ -254,7 +261,7 @@ class ProfileSession:
         self._logAfterProfile = logAfterProfile
     def getLogAfterProfile(self):
         return self._logAfterProfile
-    
+
     def setLines(self, lines):
         self._lines = lines
     def getLines(self):
@@ -300,7 +307,7 @@ class ProfileSession:
                 self._restoreRamFile(filename)
                 self._stats.add(filename)
                 self._discardRamFile(filename)
-        
+
         if statsChanged:
             self._stats.strip_dirs()
             # throw out any cached result strings
@@ -324,7 +331,7 @@ class ProfileSession:
                 callInfo = self._callInfo
             if totalTime is Default:
                 totalTime = self._totalTime
-            
+
             self._compileStats()
 
             if totalTime is None:
@@ -366,4 +373,4 @@ class ProfileSession:
                 self._resultCache[k] = output
 
         return output
-    
+

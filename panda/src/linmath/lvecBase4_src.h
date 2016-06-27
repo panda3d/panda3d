@@ -1,16 +1,15 @@
-// Filename: lvecBase4_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvecBase4_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
 class FLOATNAME(LVecBase2);
 class FLOATNAME(LVecBase3);
@@ -18,11 +17,9 @@ class FLOATNAME(LPoint3);
 class FLOATNAME(LVector3);
 class FLOATNAME(UnalignedLVecBase4);
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVecBase4
-// Description : This is the base class for all three-component
-//               vectors and points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all three-component vectors and points.
+ */
 class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;
@@ -39,18 +36,19 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(LVecBase4)();
-  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (const FLOATNAME(UnalignedLVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LVecBase4)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
+  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LPoint3) &point);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVector3) &vector);
   ALLOC_DELETED_CHAIN(FLOATNAME(LVecBase4));
+
+#ifdef CPPPARSER
+  FLOATNAME(LVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy) = default;
+  FLOATNAME(LVecBase4) &operator = (FLOATTYPE fill_value) = default;
+#endif
 
   INLINE_LINMATH static const FLOATNAME(LVecBase4) &zero();
   INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_x();
@@ -58,34 +56,43 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_z();
   INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_w();
 
-  INLINE_LINMATH ~FLOATNAME(LVecBase4)();
-
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
   EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  INLINE_LINMATH static int size();
+  CONSTEXPR static int size();
 
   INLINE_LINMATH bool is_nan() const;
 
   INLINE_LINMATH FLOATTYPE get_cell(int i) const;
+  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
+
   INLINE_LINMATH FLOATTYPE get_x() const;
   INLINE_LINMATH FLOATTYPE get_y() const;
   INLINE_LINMATH FLOATTYPE get_z() const;
   INLINE_LINMATH FLOATTYPE get_w() const;
 
-  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
+  INLINE_LINMATH FLOATNAME(LVecBase3) get_xyz() const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) get_xy() const;
+
   INLINE_LINMATH void set_x(FLOATTYPE value);
   INLINE_LINMATH void set_y(FLOATTYPE value);
   INLINE_LINMATH void set_z(FLOATTYPE value);
   INLINE_LINMATH void set_w(FLOATTYPE value);
 
-  // These next functions add to an existing value.
-  // i.e. foo.set_x(foo.get_x() + value)
-  // These are useful to reduce overhead in scripting
-  // languages:
+PUBLISHED:
+  MAKE_PROPERTY(x, get_x, set_x);
+  MAKE_PROPERTY(y, get_y, set_y);
+  MAKE_PROPERTY(z, get_z, set_z);
+
+  MAKE_PROPERTY(xyz, get_xyz);
+  MAKE_PROPERTY(xy, get_xy);
+
+  // These next functions add to an existing value.  i.e.
+  // foo.set_x(foo.get_x() + value) These are useful to reduce overhead in
+  // scripting languages:
   INLINE_LINMATH void add_to_cell(int i, FLOATTYPE value);
   INLINE_LINMATH void add_x(FLOATTYPE value);
   INLINE_LINMATH void add_y(FLOATTYPE value);
@@ -93,7 +100,7 @@ PUBLISHED:
   INLINE_LINMATH void add_w(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
+  CONSTEXPR static int get_num_components();
   INLINE_LINMATH void extract_data(float*){};
 
 public:
@@ -113,6 +120,7 @@ PUBLISHED:
 #ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATTYPE length() const;
   INLINE_LINMATH bool normalize();
+  INLINE_LINMATH FLOATNAME(LVecBase4) normalized() const;
   INLINE_LINMATH FLOATNAME(LVecBase4) project(const FLOATNAME(LVecBase4) &onto) const;
 #endif
 
@@ -173,10 +181,10 @@ PUBLISHED:
 public:
   // The underlying implementation is via the Eigen library, if available.
 
-  // Unlike LVecBase2 and LVecBase3, we fully align LVecBase4 to
-  // 16-byte boundaries, to take advantage of SSE2 optimizations when
-  // available.  Sometimes this alignment requirement is inconvenient,
-  // so we also provide UnalignedLVecBase4, below.
+  // Unlike LVecBase2 and LVecBase3, we fully align LVecBase4 to 16-byte
+  // boundaries, to take advantage of SSE2 optimizations when available.
+  // Sometimes this alignment requirement is inconvenient, so we also provide
+  // UnalignedLVecBase4, below.
   typedef LINMATH_MATRIX(FLOATTYPE, 1, 4) EVector4;
   EVector4 _v;
 
@@ -199,18 +207,15 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : UnalignedLVecBase4
-// Description : This is an "unaligned" LVecBase4.  It has no
-//               functionality other than to store numbers, and it
-//               will pack them in as tightly as possible, avoiding
-//               any SSE2 alignment requirements shared by the primary
-//               LVecBase4 class.
-//
-//               Use it only when you need to pack numbers tightly
-//               without respect to alignment, and then copy it to a
-//               proper LVecBase4 to get actual use from it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an "unaligned" LVecBase4.  It has no functionality other than to
+ * store numbers, and it will pack them in as tightly as possible, avoiding
+ * any SSE2 alignment requirements shared by the primary LVecBase4 class.
+ *
+ * Use it only when you need to pack numbers tightly without respect to
+ * alignment, and then copy it to a proper LVecBase4 to get actual use from
+ * it.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLVecBase4) {
 PUBLISHED:
   enum {
@@ -223,21 +228,18 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)();
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4) &operator = (const FLOATNAME(UnalignedLVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
   INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  INLINE_LINMATH static int size();
+  CONSTEXPR static int size();
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
+  CONSTEXPR static int get_num_components();
 
 public:
   typedef FLOATTYPE numeric_type;

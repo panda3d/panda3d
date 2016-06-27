@@ -1,16 +1,15 @@
-// Filename: bulletHeightfieldShape.h
-// Created by:  enn0x (05Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletHeightfieldShape.h
+ * @author enn0x
+ * @date 2010-02-05
+ */
 
 #ifndef __BULLET_HEIGHTFIELD_SHAPE_H__
 #define __BULLET_HEIGHTFIELD_SHAPE_H__
@@ -22,15 +21,17 @@
 #include "bulletShape.h"
 
 #include "pnmImage.h"
+#include "texture.h"
+#include "texturePeeker.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletHeightfieldShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
 
 PUBLISHED:
   BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
+  BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up=Z_up);
   INLINE BulletHeightfieldShape(const BulletHeightfieldShape &copy);
   INLINE void operator = (const BulletHeightfieldShape &copy);
   INLINE ~BulletHeightfieldShape();
@@ -46,14 +47,13 @@ private:
   float *_data;
   btHeightfieldTerrainShape *_shape;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletHeightfieldShape", 
+    register_type(_type_handle, "BulletHeightfieldShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

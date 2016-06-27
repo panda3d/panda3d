@@ -1,16 +1,16 @@
-// Filename: downloadDb.h
-// Created by:  shochet (06Sep00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file downloadDb.h
+ * @author shochet
+ * @date 2000-09-06
+ */
+
 #ifndef DOWNLOADDB_H
 #define DOWNLOADDB_H
 
@@ -33,9 +33,7 @@ typedef PN_stdfloat Phase;
 class Ramfile;
 
 /*
-//////////////////////////////////////////////////
-//  Database Format
-//////////////////////////////////////////////////
+// Database Format
 magic_number
 number_of_multifiles
 header_length multifile_name phase version size status num_files
@@ -53,23 +51,19 @@ MultifileRecord is a Vector<FileRecord>
 */
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DownloadDb
-// Description : A listing of files within multifiles for management
-//               of client-side synchronization with a server-provided
-//               set of files.
-//
-//               This class manages one copy of the database for the
-//               client, representing the files on the client system,
-//               and another copy for the server, representing the
-//               files the server has available.
-////////////////////////////////////////////////////////////////////
+/**
+ * A listing of files within multifiles for management of client-side
+ * synchronization with a server-provided set of files.
+ *
+ * This class manages one copy of the database for the client, representing
+ * the files on the client system, and another copy for the server,
+ * representing the files the server has available.
+ */
 class EXPCL_PANDAEXPRESS DownloadDb {
 PUBLISHED:
-  // Status of a multifile is stored in this enum
-  // Note these values are in increasing order of "doneness"
-  // So if you are decompressed, you are complete
-  // If you are extracted, you are decompressed and complete
+  // Status of a multifile is stored in this enum Note these values are in
+  // increasing order of "doneness" So if you are decompressed, you are
+  // complete If you are extracted, you are decompressed and complete
   enum Status {
     Status_incomplete = 0,
     Status_complete = 1,
@@ -162,7 +156,7 @@ public:
     int _size;
     int _status;
     HashVal _hash;
-    PN_int32 _num_files;
+    int32_t _num_files;
     FileRecords _file_records;
   };
 
@@ -188,7 +182,7 @@ public:
     bool write_header(ostream &write_stream);
     bool write_bogus_header(StreamWriter &sw);
   private:
-    PN_int32 _header_length;
+    int32_t _header_length;
   };
 
 PUBLISHED:
@@ -197,14 +191,14 @@ PUBLISHED:
   bool write_db(Filename &file, Db db, bool want_server_info);
 
 public:
-  // The download db stores two databases, one that represents the
-  // client's state and one that represents the server state.
+  // The download db stores two databases, one that represents the client's
+  // state and one that represents the server state.
   Db _client_db;
   Db _server_db;
 
   // Magic number for knowing this is a download Db
-  static PN_uint32 _magic_number;
-  static PN_uint32 _bogus_magic_number;
+  static uint32_t _magic_number;
+  static uint32_t _bogus_magic_number;
   typedef pvector<HashVal> VectorHash;
   typedef pmap<Filename, VectorHash> VersionMap;
 

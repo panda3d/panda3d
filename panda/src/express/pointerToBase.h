@@ -1,16 +1,15 @@
-// Filename: pointerToBase.h
-// Created by:  drose (27Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointerToBase.h
+ * @author drose
+ * @date 2004-09-27
+ */
 
 #ifndef POINTERTOBASE_H
 #define POINTERTOBASE_H
@@ -22,18 +21,17 @@
 #include "memoryUsage.h"
 #include "config_express.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointerToBase
-// Description : This is the base class for PointerTo and
-//               ConstPointerTo.  Don't try to use it directly; use
-//               either derived class instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for PointerTo and ConstPointerTo.  Don't try to use
+ * it directly; use either derived class instead.
+ */
 template <class T>
 class PointerToBase : public PointerToVoid {
 public:
   typedef T To;
 
 protected:
+  ALWAYS_INLINE PointerToBase() DEFAULT_CTOR;
   INLINE PointerToBase(To *ptr);
   INLINE PointerToBase(const PointerToBase<T> &copy);
   INLINE ~PointerToBase();
@@ -50,9 +48,8 @@ protected:
   void update_type(To *ptr);
 #endif  // DO_MEMORY_USAGE
 
-  // No assignment or retrieval functions are declared in
-  // PointerToBase, because we will have to specialize on const
-  // vs. non-const later.
+  // No assignment or retrieval functions are declared in PointerToBase,
+  // because we will have to specialize on const vs.  non-const later.
 
 PUBLISHED:
   ALWAYS_INLINE void clear();

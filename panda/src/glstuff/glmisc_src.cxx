@@ -1,16 +1,15 @@
-// Filename: glmisc_src.cxx
-// Created by:  drose (09Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glmisc_src.cxx
+ * @author drose
+ * @date 2004-02-09
+ */
 
 #include "pandaSystem.h"
 
@@ -47,6 +46,12 @@ ConfigVariableBool gl_support_rescale_normal
             "extension if the GL claims to support it, or false not to use "
             "it even if it appears to be available.  (This appears to be "
             "buggy on some drivers.)"));
+
+ConfigVariableBool gl_support_texture_lod
+  ("gl-support-texture-lod", true,
+   PRC_DESC("Configure this true to enable the use of minmax LOD settings "
+            "and texture LOD bias settings.  Set this to false if you "
+            "suspect a driver bug."));
 
 ConfigVariableBool gl_ignore_filters
   ("gl-ignore-filters", false,
@@ -270,6 +275,10 @@ ConfigVariableBool gl_vertex_array_objects
             "and vertex-buffers are both set.  This should usually be "
             "true unless you suspect a bug in the implementation. "));
 
+ConfigVariableBool gl_fixed_vertex_attrib_locations
+  ("gl-fixed-vertex-attrib-locations", false,
+   PRC_DESC("Experimental feature."));
+
 ConfigVariableBool gl_support_primitive_restart_index
   ("gl-support-primitive-restart-index", true,
    PRC_DESC("Setting this causes Panda to make use of primitive "
@@ -328,7 +337,7 @@ void CLP(init_classes)() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system(GLSYSTEM_NAME);
 
-  // We can't add any tags defining the available OpenGL capabilities,
-  // since we won't know those until we create a graphics context (and
-  // the answer may be different for different contexts).
+  // We can't add any tags defining the available OpenGL capabilities, since
+  // we won't know those until we create a graphics context (and the answer
+  // may be different for different contexts).
 }

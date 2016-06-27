@@ -1,16 +1,15 @@
-// Filename: config_linmath.cxx
-// Created by:  drose (23Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_linmath.cxx
+ * @author drose
+ * @date 2000-02-23
+ */
 
 #include "config_linmath.h"
 #include "luse.h"
@@ -31,27 +30,18 @@ ConfigVariableBool paranoid_hpr_quat
           "decompose operations against the quaternion-matrix and matrix-hpr "
           "operations.  This only has effect if NDEBUG is not defined."));
 
-ConfigVariableBool temp_hpr_fix
-("temp-hpr-fix", true,
- PRC_DESC("Set this true to compute hpr's correctly.  Historically, Panda has "
-          "applied these in the wrong order, and roll was backwards relative "
-          "to the other two.  Set this false if you need compatibility with "
-          "Panda's old hpr calculations."));
-
 ConfigVariableBool no_singular_invert
 ("no-singular-invert", false,
  PRC_DESC("Set this true to make singular-invert warning messages generate an "
           "assertion failure instead of just a warning (which can then be "
           "trapped with assert-abort)."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_liblinmath
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_liblinmath() {
   static bool initialized = false;

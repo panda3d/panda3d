@@ -1,16 +1,15 @@
-// Filename: tinyGraphicsBuffer.cxx
-// Created by:  drose (08Aug08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyGraphicsBuffer.cxx
+ * @author drose
+ * @date 2008-08-08
+ */
 
 #include "pandabase.h"
 
@@ -21,13 +20,11 @@
 
 TypeHandle TinyGraphicsBuffer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyGraphicsBuffer::
-TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                    const string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
@@ -39,24 +36,19 @@ TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   _frame_buffer = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyGraphicsBuffer::
 ~TinyGraphicsBuffer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool TinyGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
@@ -69,18 +61,16 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   tinygsg->_current_frame_buffer = _frame_buffer;
   tinygsg->reset_if_new();
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void TinyGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -99,12 +89,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the buffer
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the buffer thread.
+ */
 void TinyGraphicsBuffer::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -117,16 +104,13 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the buffer right now.  Called from the buffer
-//               thread.  Returns true if the buffer is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the buffer right now.  Called from the buffer thread.  Returns true
+ * if the buffer is successfully opened, or false if there was a problem.
+ */
 bool TinyGraphicsBuffer::
 open_buffer() {
-  // GSG Creation/Initialization
+  // GSG CreationInitialization
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
@@ -135,7 +119,7 @@ open_buffer() {
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);
   }
-  
+
   create_frame_buffer();
   if (_frame_buffer == NULL) {
     tinydisplay_cat.error()
@@ -144,7 +128,7 @@ open_buffer() {
   }
 
   tinygsg->_current_frame_buffer = _frame_buffer;
-  
+
   tinygsg->reset_if_new();
   if (!tinygsg->is_valid()) {
     close_buffer();
@@ -155,12 +139,9 @@ open_buffer() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::create_frame_buffer
-//       Access: Private
-//  Description: Creates a suitable frame buffer for the current
-//               window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable frame buffer for the current window size.
+ */
 void TinyGraphicsBuffer::
 create_frame_buffer() {
   if (_frame_buffer != NULL) {
@@ -170,4 +151,3 @@ create_frame_buffer() {
 
   _frame_buffer = ZB_open(get_fb_x_size(), get_fb_y_size(), ZB_MODE_RGBA, 0, 0, 0, 0);
 }
-

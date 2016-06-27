@@ -3,7 +3,7 @@
 __all__ = ['DirectLabel']
 
 from panda3d.core import *
-from DirectFrame import *
+from .DirectFrame import *
 
 class DirectLabel(DirectFrame):
     """
@@ -34,7 +34,7 @@ class DirectLabel(DirectFrame):
 
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
-        
+
         # Call option initialization functions
         self.initialiseoptions(DirectLabel)
 

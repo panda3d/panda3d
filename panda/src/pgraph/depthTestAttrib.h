@@ -1,16 +1,15 @@
-// Filename: depthTestAttrib.h
-// Created by:  drose (04Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file depthTestAttrib.h
+ * @author drose
+ * @date 2002-03-04
+ */
 
 #ifndef DEPTHTESTATTRIB_H
 #define DEPTHTESTATTRIB_H
@@ -21,10 +20,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DepthTestAttrib
-// Description : Enables or disables writing to the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables writing to the depth buffer.
+ */
 class EXPCL_PANDA_PGRAPH DepthTestAttrib : public RenderAttrib {
 private:
   INLINE DepthTestAttrib(PandaCompareFunc mode = M_less);
@@ -34,6 +32,9 @@ PUBLISHED:
   static CPT(RenderAttrib) make_default();
 
   INLINE PandaCompareFunc get_mode() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(mode, get_mode);
 
 public:
   virtual void output(ostream &out) const;
@@ -60,7 +61,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -84,4 +85,3 @@ private:
 #include "depthTestAttrib.I"
 
 #endif
-

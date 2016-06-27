@@ -1,16 +1,15 @@
-// Filename: pgFrameStyle.cxx
-// Created by:  drose (03Jul01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgFrameStyle.cxx
+ * @author drose
+ * @date 2001-07-03
+ */
 
 #include "pgFrameStyle.h"
 #include "geomNode.h"
@@ -26,10 +25,9 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
-// Specifies the UV range of textures applied to the frame.  Maybe
-// we'll have a reason to make this a parameter of the frame style one
-// day, but for now it's hardcoded to fit the entire texture over the
-// rectangular frame.
+// Specifies the UV range of textures applied to the frame.  Maybe we'll have
+// a reason to make this a parameter of the frame style one day, but for now
+// it's hardcoded to fit the entire texture over the rectangular frame.
 static const LVecBase4 uv_range = LVecBase4(0.0f, 1.0f, 0.0f, 1.0f);
 
 ostream &
@@ -60,14 +58,11 @@ operator << (ostream &out, PGFrameStyle::Type type) {
   return out << "**unknown(" << (int)type << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::get_internal_frame
-//       Access: Published
-//  Description: Computes the size of the internal frame, given the
-//               indicated external frame, appropriate for this kind
-//               of frame style.  This simply subtracts the border
-//               width for those frame styles that include a border.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the size of the internal frame, given the indicated external
+ * frame, appropriate for this kind of frame style.  This simply subtracts the
+ * border width for those frame styles that include a border.
+ */
 LVecBase4 PGFrameStyle::
 get_internal_frame(const LVecBase4 &frame) const {
   LPoint2 center((frame[0] + frame[1]) / 2.0f,
@@ -93,11 +88,9 @@ get_internal_frame(const LVecBase4 &frame) const {
                     scaled_frame[3] - _width[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PGFrameStyle::
 output(ostream &out) const {
   out << _type << " color = " << _color << " width = " << _width;
@@ -109,14 +102,11 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::xform
-//       Access: Public
-//  Description: Applies the indicated transform to the FrameStyle.
-//               The return value is true if the frame style is
-//               transformed, or false if it was not affected by the
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transform to the FrameStyle.  The return value is
+ * true if the frame style is transformed, or false if it was not affected by
+ * the transform.
+ */
 bool PGFrameStyle::
 xform(const LMatrix4 &mat) {
   // All we can do is scale the X and Y bevel sizes.
@@ -125,7 +115,7 @@ xform(const LMatrix4 &mat) {
   LVector3 x, z;
   mat.get_row3(x, 0);
   PN_stdfloat x_scale = x.length();
-  
+
   mat.get_row3(z, 2);
   PN_stdfloat z_scale = z.length();
 
@@ -149,16 +139,13 @@ xform(const LMatrix4 &mat) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::generate_into
-//       Access: Public
-//  Description: Generates geometry representing a frame of the
-//               indicated size, and parents it to the indicated node,
-//               with the indicated scene graph sort order.
-//
-//               The return value is the generated NodePath, if any,
-//               or an empty NodePath if nothing is generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates geometry representing a frame of the indicated size, and parents
+ * it to the indicated node, with the indicated scene graph sort order.
+ *
+ * The return value is the generated NodePath, if any, or an empty NodePath if
+ * nothing is generated.
+ */
 NodePath PGFrameStyle::
 generate_into(const NodePath &parent, const LVecBase4 &frame,
               int sort) {
@@ -213,12 +200,9 @@ generate_into(const NodePath &parent, const LVecBase4 &frame,
   return parent.attach_new_node(new_node, sort);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::generate_flat_geom
-//       Access: Private
-//  Description: Generates the GeomNode appropriate to a T_flat
-//               frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the GeomNode appropriate to a T_flat frame.
+ */
 PT(PandaNode) PGFrameStyle::
 generate_flat_geom(const LVecBase4 &frame) {
   PT(GeomNode) gnode = new GeomNode("flat");
@@ -234,10 +218,10 @@ generate_flat_geom(const LVecBase4 &frame) {
   } else {
     format = GeomVertexFormat::get_v3();
   }
-  
+
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);
-  
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   vertex.add_data3(LPoint3::rfu(left, 0.0f, top));
   vertex.add_data3(LPoint3::rfu(left, 0.0f, bottom));
@@ -250,18 +234,18 @@ generate_flat_geom(const LVecBase4 &frame) {
     right = uv_range[1];
     bottom = uv_range[2];
     top = uv_range[3];
-    
+
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
     texcoord.add_data2(left, top);
     texcoord.add_data2(left, bottom);
     texcoord.add_data2(right, top);
     texcoord.add_data2(right, bottom);
   }
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   strip->add_next_vertices(4);
   strip->close_primitive();
-  
+
   CPT(RenderState) state = RenderState::make(ColorAttrib::make_flat(_color), -1);
   if (has_texture()) {
     state = state->set_attrib(TextureAttrib::make(get_texture()));
@@ -269,74 +253,36 @@ generate_flat_geom(const LVecBase4 &frame) {
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   gnode->add_geom(geom, state);
-  
+
   return gnode.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::generate_bevel_geom
-//       Access: Private
-//  Description: Generates the GeomNode appropriate to a T_bevel_in
-//               or T_bevel_out frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the GeomNode appropriate to a T_bevel_in or T_bevel_out frame.
+ */
 PT(PandaNode) PGFrameStyle::
 generate_bevel_geom(const LVecBase4 &frame, bool in) {
-  //
-  // Colors:
-  //
-  // 
-  //  * * * * * * * * * * * * * * * * * * * * * * *
-  //  * *                                       * *
-  //  *   *               ctop                *   *
-  //  *     *                               *     *
-  //  *       * * * * * * * * * * * * * * *       *
-  //  *       *                           *       *
-  //  *       *                           *       *
-  //  * cleft *          _color           * cright*
-  //  *       *                           *       *
-  //  *       *                           *       *
-  //  *       * * * * * * * * * * * * * * *       *
-  //  *     *                               *     *
-  //  *   *              cbottom              *   *
-  //  * *                                       * *
-  //  * * * * * * * * * * * * * * * * * * * * * * *
-  //
-  //
-  // Vertices:
-  //
-  //  tristrip 1:
-  //  4 * * * * * * * * * * * * * * * * * * * * * 6
-  //  * *                                       *
-  //  *   *                                   *
-  //  *     *                               *
-  //  *       5 * * * * * * * * * * * * * 7
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       3 * * * * * * * * * * * * * 1
-  //  *     *                               *
-  //  *   *                                   *
-  //  * *                                       *
-  //  2 * * * * * * * * * * * * * * * * * * * * * 0
-  // 
-  //  tristrip 2:
-  //                                              1
-  //                                            * *
-  //                                          *   *
-  //                                        *     *
-  //          5 * * * * * * * * * * * * * 3       *
-  //          *                           *       *
-  //          *                           *       *
-  //          *                           *       *
-  //          *                           *       *
-  //          *                           *       *
-  //          4 * * * * * * * * * * * * * 2       *
-  //                                        *     *
-  //                                          *   *
-  //                                            * *
-  //                                              0
+/*
+ * Colors: * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * *   *               ctop                *   * *     *
+ * *     * *       * * * * * * * * * * * * * * *       * *       *
+ * *       * *       *                           *       * * cleft *
+ * _color           * cright* *       *                           *       * *
+ * *                           *       * *       * * * * * * * * * * * * * * *
+ * * *     *                               *     * *   *              cbottom
+ * *   * * *                                       * * * * * * * * * * * * * *
+ * * * * * * * * * * * * Vertices: tristrip 1: 4 * * * * * * * * * * * * * * *
+ * * * * * * * 6 * *                                       * *   *
+ * * *     *                               * *       5 * * * * * * * * * * * *
+ * * 7 *       * *       * *       * *       * *       * *       3 * * * * * *
+ * * * * * * * * 1 *     *                               * *   *
+ * * * *                                       * 2 * * * * * * * * * * * * * *
+ * * * * * * * * 0 tristrip 2: 1 * * *   * *     * 5 * * * * * * * * * * * * *
+ * 3       * *                           *       * *
+ * *       * *                           *       * *
+ * *       * *                           *       * 4 * * * * * * * * * * * * *
+ * 2       * *     * *   * * * 0
+ */
 
   PT(GeomNode) gnode = new GeomNode("bevel");
 
@@ -395,10 +341,10 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);
-  
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Tristrip 1.
   vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
@@ -417,10 +363,10 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
   color.add_data4(cleft);
   color.add_data4(ctop);
   color.add_data4(ctop);
-  
+
   strip->add_next_vertices(8);
   strip->close_primitive();
-  
+
   // Tristrip 2.
   vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
   vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
@@ -434,7 +380,7 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
   color.add_data4(cright);
   color.add_data4(_color);
   color.add_data4(_color);
-  
+
   strip->add_next_vertices(6);
   strip->close_primitive();
   strip->set_shade_model(Geom::SM_flat_last_vertex);
@@ -448,7 +394,7 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
 
     PN_stdfloat cx = (left + right) * 0.5;
     PN_stdfloat cy = (top + bottom) * 0.5;
-    
+
     PN_stdfloat inner_left = min(left + _uv_width[0], cx);
     PN_stdfloat inner_right = max(right - _uv_width[0], cx);
     PN_stdfloat inner_bottom = min(bottom + _uv_width[1], cy);
@@ -473,7 +419,7 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
   }
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  
+
   CPT(RenderState) state;
   state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat),
                             ColorAttrib::make_vertex());
@@ -481,115 +427,48 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
     state = state->set_attrib(TextureAttrib::make(get_texture()));
   }
   gnode->add_geom(geom, state);
-  
+
   return gnode.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::generate_groove_geom
-//       Access: Private
-//  Description: Generates the GeomNode appropriate to a T_groove or
-//               T_ridge frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the GeomNode appropriate to a T_groove or T_ridge frame.
+ */
 PT(PandaNode) PGFrameStyle::
 generate_groove_geom(const LVecBase4 &frame, bool in) {
-  //
-  // Colors:
-  //
-  // 
-  //  * * * * * * * * * * * * * * * * * * * * * * * * * * *
-  //  * *                                               * *
-  //  *   *                   ctop                    *   *
-  //  *     *                                       *     *
-  //  *       * * * * * * * * * * * * * * * * * * *       *
-  //  *       * *                               * *       *
-  //  *       *   *          cbottom          *   *       *
-  //  *       *     *                       *     *       *
-  //  *       *       * * * * * * * * * * *       *       *
-  //  *       *       *                   *       *       *
-  //  *       *       *                   *       *       *
-  //  * cleft * cright*      _color       * cleft * cright*
-  //  *       *       *                   *       *       *
-  //  *       *       *                   *       *       *
-  //  *       *       * * * * * * * * * * *       *       *
-  //  *       *     *                       *     *       *
-  //  *       *   *           ctop            *   *       *
-  //  *       * *                               * *       *
-  //  *       * * * * * * * * * * * * * * * * * * *       *
-  //  *     *                                       *     *
-  //  *   *                  cbottom                  *   *
-  //  * *                                               * *
-  //  * * * * * * * * * * * * * * * * * * * * * * * * * * *
-  //
-  //
-  // Vertices:
-  //
-  //  tristrip 1:
-  //  4 * * * * * * * * * * * * * * * * * * * * * * * * * 6
-  //  * *                                               *
-  //  *   *                                           *
-  //  *     *                                       *
-  //  *       5 * * * * * * * * * * * * * * * * * 7
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       *
-  //  *       3 * * * * * * * * * * * * * * * * * 1
-  //  *     *                                       *
-  //  *   *                                           *
-  //  * *                                               *
-  //  2 * * * * * * * * * * * * * * * * * * * * * * * * * 0
-  //
-  //  tristrip 2:
-  //          4 * * * * * * * * * * * * * * * * * 6
-  //          * *                               *
-  //          *   *                           *
-  //          *     *                       *
-  //          *       5 * * * * * * * * * 7
-  //          *       *
-  //          *       *
-  //          *       *
-  //          *       *
-  //          *       *
-  //          *       3 * * * * * * * * * 1
-  //          *     *                       *
-  //          *   *                           *
-  //          * *                               *
-  //          2 * * * * * * * * * * * * * * * * * 0
-  // 
-  //  tristrip 3:
-  //                                                      1
-  //                                                    * *
-  //                                                  *   *
-  //                                                *     *
-  //                                              3       *
-  //                                            * *       *
-  //                                          *   *       *
-  //                                        *     *       *
-  //                  7 * * * * * * * * * 5       *       *
-  //                  *                   *       *       *
-  //                  *                   *       *       *
-  //                  *                   *       *       *
-  //                  *                   *       *       *
-  //                  *                   *       *       *
-  //                  6 * * * * * * * * * 4       *       *
-  //                                        *     *       *
-  //                                          *   *       *
-  //                                            * *       *
-  //                                              2       *
-  //                                                *     *
-  //                                                  *   *
-  //                                                    * *
-  //                                                      0
+/*
+ * Colors: * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * *   *                   ctop                    *   * *     *
+ * *     * *       * * * * * * * * * * * * * * * * * * *       * *       * *
+ * * *       * *       *   *          cbottom          *   *       * *       *
+ * *                       *     *       * *       *       * * * * * * * * * *
+ * *       *       * *       *       *                   *       *       * *
+ * *       *                   *       *       * * cleft * cright*      _color
+ * * cleft * cright* *       *       *                   *       *       * *
+ * *       *                   *       *       * *       *       * * * * * * *
+ * * * * *       *       * *       *     *                       *     *
+ * * *       *   *           ctop            *   *       * *       * *
+ * * *       * *       * * * * * * * * * * * * * * * * * * *       * *     *
+ * *     * *   *                  cbottom                  *   * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * Vertices:
+ * tristrip 1: 4 * * * * * * * * * * * * * * * * * * * * * * * * * 6 * *
+ * * *   *                                           * *     *
+ * * *       5 * * * * * * * * * * * * * * * * * 7 *       * *       * *
+ * * *       * *       * *       * *       * *       * *       * *       * *
+ * * *       * *       * *       3 * * * * * * * * * * * * * * * * * 1 *     *
+ * * *   *                                           * * *
+ * * 2 * * * * * * * * * * * * * * * * * * * * * * * * * 0 tristrip 2: 4 * * *
+ * * * * * * * * * * * * * * * 6 * *                               * *   *
+ * * *     *                       * *       5 * * * * * * * * * 7 *       * *
+ * * *       * *       * *       * *       3 * * * * * * * * * 1 *     *
+ * * *   *                           * * *                               * 2 *
+ * * * * * * * * * * * * * * * * * 0 tristrip 3: 1 * * *   * *     * 3       *
+ * * *       * *   *       * *     *       * 7 * * * * * * * * * 5       *
+ * * *                   *       *       * *                   *       *
+ * * *                   *       *       * *                   *       *
+ * * *                   *       *       * 6 * * * * * * * * * 4       *
+ * * *     *       * *   *       * * *       * 2       * *     * *   * * * 0
+ */
 
   PT(GeomNode) gnode = new GeomNode("groove");
 
@@ -652,10 +531,10 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
   }
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);
-  
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Tristrip 1.
   vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
@@ -674,10 +553,10 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
   color.add_data4(cleft);
   color.add_data4(ctop);
   color.add_data4(ctop);
-  
+
   strip->add_next_vertices(8);
   strip->close_primitive();
-  
+
   // Tristrip 2.
   vertex.add_data3(LPoint3::rfu(mid_right, 0.0f, mid_bottom));
   vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_bottom));
@@ -695,10 +574,10 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
   color.add_data4(cright);
   color.add_data4(cbottom);
   color.add_data4(cbottom);
-  
+
   strip->add_next_vertices(8);
   strip->close_primitive();
-  
+
   // Tristrip 3.
   vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
   vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
@@ -716,10 +595,10 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
   color.add_data4(cleft);
   color.add_data4(_color);
   color.add_data4(_color);
-  
+
   strip->add_next_vertices(8);
   strip->close_primitive();
-  
+
   strip->set_shade_model(Geom::SM_flat_last_vertex);
 
   if (has_texture()) {
@@ -773,7 +652,7 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
 
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  
+
   CPT(RenderState) state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat),
                                              ColorAttrib::make_vertex());
   if (has_texture()) {
@@ -784,40 +663,25 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
   return gnode.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::generate_texture_border_geom
-//       Access: Private
-//  Description: Generates the GeomNode appropriate to a
-//               T_texture_border frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the GeomNode appropriate to a T_texture_border frame.
+ */
 PT(PandaNode) PGFrameStyle::
 generate_texture_border_geom(const LVecBase4 &frame) {
-  //
-  // Vertices:
-  //
-  //  tristrip 1:
-  //  0 * * * 2 * * * * * * * * * * * * * 4 * * * 6
-  //  *     * *                     * * * *     * *
-  //  *   *   *         * * * * * *       *   *   *
-  //  * *     * * * * *                   * *     *
-  //  1 * * * 3 * * * * * * * * * * * * * 5 * * * 7
-  //
-  //  tristrip 2:
-  //  1 * * * 3 * * * * * * * * * * * * * 5 * * * 7
-  //  *       *                         * *       *
-  //  *     * *                     * *   *     * *
-  //  *   *   *               * * *       *   *   *
-  //  *   *   *         * * *             *   *   *
-  //  * *     *     * *                   * *     *
-  //  *       * * *                       *       *
-  //  8 * * *10 * * * * * * * * * * * * *12 * * *14
-  // 
-  //  tristrip 3:
-  //  8 * * *10 * * * * * * * * * * * * *12 * * *14
-  //  *     * *                     * * * *     * *
-  //  *   *   *         * * * * * *       *   *   *
-  //  * *     * * * * *                   * *     *
-  //  9 * * *11 * * * * * * * * * * * * *13 * * *15
+/*
+ * Vertices: tristrip 1: 0 * * * 2 * * * * * * * * * * * * * 4 * * * 6 *     *
+ * *                     * * * *     * * *   *   *         * * * * * *       *
+ * *   * * *     * * * * *                   * *     * 1 * * * 3 * * * * * * *
+ * * * * * * * 5 * * * 7 tristrip 2: 1 * * * 3 * * * * * * * * * * * * * 5 * *
+ * * 7 *       *                         * *       * *     * *
+ * * *   *     * * *   *   *               * * *       *   *   * *   *   *
+ * * * *             *   *   * * *     *     * *                   * *     * *
+ * * * *                       *       * 8 * * *10 * * * * * * * * * * * * *12
+ * * * *14 tristrip 3: 8 * * *10 * * * * * * * * * * * * *12 * * *14 *     * *
+ * * * * *     * * *   *   *         * * * * * *       *   *   * * *     * * *
+ * * *                   * *     * 9 * * *11 * * * * * * * * * * * * *13 * *
+ * *15
+ */
 
   PT(GeomNode) gnode = new GeomNode("flat");
 
@@ -840,12 +704,12 @@ generate_texture_border_geom(const LVecBase4 &frame) {
   } else {
     format = GeomVertexFormat::get_v3();
   }
-  
+
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);
-  
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   // verts 0,1,2,3
   vertex.add_data3(LPoint3::rfu(left, 0.0f, top));
   vertex.add_data3(LPoint3::rfu(left, 0.0f, inner_top));
@@ -876,14 +740,14 @@ generate_texture_border_geom(const LVecBase4 &frame) {
 
     PN_stdfloat cx = (left + right) * 0.5;
     PN_stdfloat cy = (top + bottom) * 0.5;
-    
+
     PN_stdfloat inner_left = min(left + _uv_width[0], cx);
     PN_stdfloat inner_right = max(right - _uv_width[0], cx);
     PN_stdfloat inner_bottom = min(bottom + _uv_width[1], cy);
     PN_stdfloat inner_top = max(top - _uv_width[1], cy);
 
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  
+
     // verts 0,1,2,3
     texcoord.add_data2(left, top);
     texcoord.add_data2(left, inner_top);
@@ -905,13 +769,13 @@ generate_texture_border_geom(const LVecBase4 &frame) {
     texcoord.add_data2(right, inner_bottom);
     texcoord.add_data2(right, bottom);
   }
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
-  
+
   // tristrip #1
   strip->add_consecutive_vertices(0, 8);
   strip->close_primitive();
-  
+
   // tristrip #2
   strip->add_vertex(1);
   strip->add_vertex(8);
@@ -922,11 +786,11 @@ generate_texture_border_geom(const LVecBase4 &frame) {
   strip->add_vertex(7);
   strip->add_vertex(14);
   strip->close_primitive();
-  
+
   // tristrip #3
   strip->add_consecutive_vertices(8, 8);
   strip->close_primitive();
-  
+
   CPT(RenderState) state = RenderState::make(ColorAttrib::make_flat(_color), -1);
   if (has_texture()) {
     state = state->set_attrib(TextureAttrib::make(get_texture()));
@@ -935,6 +799,6 @@ generate_texture_border_geom(const LVecBase4 &frame) {
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   gnode->add_geom(geom, state);
-  
+
   return gnode.p();
 }

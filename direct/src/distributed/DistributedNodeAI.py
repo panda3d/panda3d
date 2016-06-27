@@ -1,7 +1,7 @@
-from pandac.PandaModules import NodePath
-import DistributedObjectAI
-import GridParent
-import types
+from panda3d.core import NodePath
+from . import DistributedObjectAI
+from . import GridParent
+
 
 class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     def __init__(self, air, name=None):
@@ -47,7 +47,7 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     ### setParent ###
 
     def b_setParent(self, parentToken):
-        if type(parentToken) == types.StringType:
+        if type(parentToken) == str:
             self.setParentStr(parentToken)
         else:
             self.setParent(parentToken)

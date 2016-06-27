@@ -1,16 +1,15 @@
-// Filename: config_dxml.cxx
-// Created by: drose (08Aug09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_dxml.cxx
+ * @author drose
+ * @date 2009-08-08
+ */
 
 #include "config_dxml.h"
 #include "dconfig.h"
@@ -95,7 +94,15 @@ BEGIN_PUBLISH
 void
 print_xml_to_file(const Filename &filename, TiXmlNode *xnode) {
   string os_name = filename.to_os_specific();
+#ifdef _WIN32
+  FILE *file;
+  if (fopen_s(&file, os_name.c_str(), "w") != 0) {
+#else
   FILE *file = fopen(os_name.c_str(), "w");
+  if (file == NULL) {
+#endif
+    dxml_cat.error() << "Failed to open " << filename << " for writing\n";
+  }
   xnode->Print(file, 0);
   fclose(file);
 }

@@ -11,14 +11,12 @@ from panda3d.core import *
 import sys
 import os
 import glob
-import string
-import types
-import getpass
 import struct
 import subprocess
 import copy
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
+from direct.p3d.HostInfo import HostInfo
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
@@ -26,7 +24,7 @@ from direct.directnotify.DirectNotifyGlobal import *
 
 vfs = VirtualFileSystem.getGlobalPtr()
 
-class PackagerError(StandardError):
+class PackagerError(Exception):
     pass
 
 class OutsideOfPackageError(PackagerError):
@@ -63,7 +61,7 @@ class Packager:
                 self.newName = str(self.filename)
 
             ext = Filename(self.newName).getExtension()
-            if ext == 'pz':
+            if ext == 'pz' or ext == 'gz':
                 # Strip off a .pz extension; we can compress files
                 # within the Multifile without it.
                 filename = Filename(self.newName)
@@ -378,7 +376,8 @@ class Packager:
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
-            
+            self.freezer.storePythonSource = self.packager.storePythonSource
+
             # Map of extensions to files to number (ignored by dir)
             self.ignoredDirFiles = {}
 
@@ -389,14 +388,14 @@ class Packager:
 
             if not self.p3dApplication and not self.packager.allowPackages:
                 message = 'Cannot generate packages without an installDir; use -i'
-                raise PackagerError, message
+                raise PackagerError(message)
 
             if self.ignoredDirFiles:
                 exts = sorted(self.ignoredDirFiles.keys())
                 total = sum([x for x in self.ignoredDirFiles.values()])
                 self.notify.warning("excluded %s files not marked for inclusion: %s" \
                                     % (total, ", ".join(["'" + ext + "'" for ext in exts])))
-                
+
             if not self.host:
                 self.host = self.packager.host
 
@@ -428,11 +427,11 @@ class Packager:
 
                 if self.version != PandaSystem.getPackageVersionString():
                     message = 'mismatched Panda3D version: requested %s, but Panda3D is built as %s' % (self.version, PandaSystem.getPackageVersionString())
-                    raise PackagerError, message
+                    raise PackagerError(message)
 
                 if self.host != PandaSystem.getPackageHostUrl():
                     message = 'mismatched Panda3D host: requested %s, but Panda3D is built as %s' % (self.host, PandaSystem.getPackageHostUrl())
-                    raise PackagerError, message
+                    raise PackagerError(message)
 
             if self.p3dApplication:
                 # Default compression level for an app.
@@ -553,7 +552,7 @@ class Packager:
             # Add the main module, if any.
             if not self.mainModule and self.p3dApplication:
                 message = 'No main_module specified for application %s' % (self.packageName)
-                raise PackagerError, message
+                raise PackagerError(message)
             if self.mainModule:
                 moduleName, newName = self.mainModule
                 if newName not in self.freezer.modules:
@@ -573,7 +572,7 @@ class Packager:
 
             # But first, make sure that all required modules are present.
             missing = []
-            moduleDict = dict(self.freezer.getModuleDefs()).keys()
+            moduleDict = dict(self.freezer.getModuleDefs())
             for module in self.requiredModules:
                 if module not in moduleDict:
                     missing.append(module)
@@ -789,7 +788,7 @@ class Packager:
 
             if not self.packager.allowPackages:
                 message = 'Cannot generate packages without an installDir; use -i'
-                raise PackagerError, message
+                raise PackagerError(message)
 
             installPath = Filename(self.packager.installDir, packageDir)
             # Remove any files already in the installPath.
@@ -810,7 +809,7 @@ class Packager:
                 return
 
             if len(files) != 1:
-                raise PackagerError, 'Multiple files in "solo" package %s' % (self.packageName)
+                raise PackagerError('Multiple files in "solo" package %s' % (self.packageName))
 
             Filename(installPath, '').makeDir()
 
@@ -1075,7 +1074,7 @@ class Packager:
             fpath.append(Filename("/Library/Frameworks"))
             fpath.append(Filename("/System/Library/Frameworks"))
             fpath.append(Filename("/Developer/Library/Frameworks"))
-            fpath.append(Filename("/Users/%s" % getpass.getuser(), "Library/Frameworks"))
+            fpath.append(Filename(os.path.expanduser("~"), "Library/Frameworks"))
             if "HOME" in os.environ:
                 fpath.append(Filename(os.environ["HOME"], "Library/Frameworks"))
             ffilename = Filename(library.split('.framework/', 1)[0].split('/')[-1] + '.framework')
@@ -1227,7 +1226,7 @@ class Packager:
 
             filenames = []
             for line in lines:
-                if line[0] not in string.whitespace:
+                if not line[0].isspace():
                     continue
                 line = line.strip()
                 s = line.find(' (compatibility')
@@ -1534,7 +1533,7 @@ class Packager:
             compressedPath = Filename(self.packager.installDir, newCompressedFilename)
             if not compressFile(self.packageFullpath, compressedPath, 6):
                 message = 'Unable to write %s' % (compressedPath)
-                raise PackagerError, message
+                raise PackagerError(message)
 
         def readDescFile(self):
             """ Reads the existing package.xml file before rewriting
@@ -1658,9 +1657,9 @@ class Packager:
                 xconfig = TiXmlElement('config')
 
                 for variable, value in self.configs.items():
-                    if isinstance(value, types.UnicodeType):
+                    if sys.version_info < (3, 0) and isinstance(value, unicode):
                         xconfig.SetAttribute(variable, value.encode('utf-8'))
-                    elif isinstance(value, types.BooleanType):
+                    elif isinstance(value, bool):
                         # True or False must be encoded as 1 or 0.
                         xconfig.SetAttribute(variable, str(int(value)))
                     else:
@@ -1837,7 +1836,7 @@ class Packager:
                 if parentName not in self.freezer.modules:
                     message = 'Cannot add Python file %s; not in package' % (file.newName)
                     if file.required or file.explicit:
-                        raise StandardError, message
+                        raise Exception(message)
                     else:
                         self.notify.warning(message)
                     return
@@ -1851,7 +1850,7 @@ class Packager:
             # Precompile egg files to bam's.
             np = self.packager.loader.loadModel(file.filename)
             if not np:
-                raise StandardError, 'Could not read egg file %s' % (file.filename)
+                raise Exception('Could not read egg file %s' % (file.filename))
 
             bamName = Filename(file.newName)
             bamName.setExtension('bam')
@@ -1861,14 +1860,14 @@ class Packager:
             # Load the bam file so we can massage its textures.
             bamFile = BamFile()
             if not bamFile.openRead(file.filename):
-                raise StandardError, 'Could not read bam file %s' % (file.filename)
+                raise Exception('Could not read bam file %s' % (file.filename))
 
             if not bamFile.resolve():
-                raise StandardError, 'Could not resolve bam file %s' % (file.filename)
+                raise Exception('Could not resolve bam file %s' % (file.filename))
 
             node = bamFile.readNode()
             if not node:
-                raise StandardError, 'Not a model file: %s' % (file.filename)
+                raise Exception('Not a model file: %s' % (file.filename))
 
             self.addNode(node, file.filename, file.newName)
 
@@ -2189,7 +2188,7 @@ class Packager:
 
             if package not in self.requires:
                 self.requires.append(package)
-                for lowerName in package.targetFilenames.keys():
+                for lowerName in package.targetFilenames:
                     ext = Filename(lowerName).getExtension()
                     if ext not in self.packager.nonuniqueExtensions:
                         self.skipFilenames[lowerName] = True
@@ -2219,7 +2218,7 @@ class Packager:
         # ignoring any request to specify a particular download host,
         # e.g. for testing and development.
         self.ignoreSetHost = False
-        
+
         # Set this to true to verbosely log files ignored by dir().
         self.verbosePrint = False
 
@@ -2232,6 +2231,11 @@ class Packager:
         self.hosts = {}
         self.host = PandaSystem.getPackageHostUrl()
         self.addHost(self.host)
+
+        # This will be used when we're not compiling in the packaged
+        # environment.
+        self.__hostInfos = {}
+        self.http = HTTPClient.getGlobalPtr()
 
         # The maximum amount of time a client should cache the
         # contents.xml before re-querying the server, in seconds.
@@ -2317,6 +2321,10 @@ class Packager:
         # Set this flag true to automatically add allow_python_dev to
         # any applications.
         self.allowPythonDev = False
+
+        # Set this flag to store the original Python source files,
+        # without compiling them to .pyc or .pyo.
+        self.storePythonSource = False
 
         # Fill this with a list of (certificate, chain, pkey,
         # password) tuples to automatically sign each p3d file
@@ -2417,7 +2425,7 @@ class Packager:
 
         # Binary files that are considered uncompressible, and are
         # copied without compression.
-        self.uncompressibleExtensions = [ 'mp3', 'ogg', 'wav', 'rml', 'rcss', 'otf' ]
+        self.uncompressibleExtensions = [ 'mp3', 'ogg', 'ogv', 'wav', 'rml', 'rcss', 'otf' ]
         # wav files are compressible, but p3openal_audio won't load
         # them compressed.
         # rml, rcss and otf files must be added here because
@@ -2429,12 +2437,12 @@ class Packager:
 
         # Files for which warnings should be suppressed when they are
         # not handled by dir()
-        self.suppressWarningForExtensions = ['', 'pyc', 'pyo', 
-                                             'p3d', 'pdef', 
+        self.suppressWarningForExtensions = ['', 'pyc', 'pyo',
+                                             'p3d', 'pdef',
                                              'c', 'C', 'cxx', 'cpp', 'h', 'H',
                                              'hpp', 'pp', 'I', 'pem', 'p12', 'crt',
                                              'o', 'obj', 'a', 'lib', 'bc', 'll']
-         
+
         # System files that should never be packaged.  For
         # case-insensitive filesystems (like Windows and OSX), put the
         # lowercase filename here.  Case-sensitive filesystems should
@@ -2476,6 +2484,7 @@ class Packager:
             GlobPattern('libthr.so*'),
             GlobPattern('ld-linux.so*'),
             GlobPattern('ld-linux-*.so*'),
+            GlobPattern('librt.so*'),
             ]
 
         # A Loader for loading models.
@@ -2693,7 +2702,7 @@ class Packager:
             self.allowPackages = False
 
         if not PandaSystem.getPackageVersionString() or not PandaSystem.getPackageHostUrl():
-            raise PackagerError, 'This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.\nIf you are running this script for development purposes, you may also\nset the Config variable panda-package-host-url to the URL you expect\nto download these contents from (for instance, a file:// URL).'
+            raise PackagerError('This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.\nIf you are running this script for development purposes, you may also\nset the Config variable panda-package-host-url to the URL you expect\nto download these contents from (for instance, a file:// URL).')
 
         self.readContentsFile()
 
@@ -2716,7 +2725,7 @@ class Packager:
                 packageNames.append(package.packageName)
 
         if packageNames:
-            from PatchMaker import PatchMaker
+            from .PatchMaker import PatchMaker
             pm = PatchMaker(self.installDir)
             pm.buildPatches(packageNames = packageNames)
 
@@ -2749,7 +2758,7 @@ class Packager:
         # By convention, the existence of a method of this class named
         # do_foo(self) is sufficient to define a pdef method call
         # foo().
-        for methodName in self.__class__.__dict__.keys():
+        for methodName in list(self.__class__.__dict__.keys()):
             if methodName.startswith('do_'):
                 name = methodName[3:]
                 c = func_closure(name)
@@ -2794,7 +2803,7 @@ class Packager:
                             self.notify.info("No files added to %s" % (name))
                         for (lineno, stype, sname, args, kw) in statements:
                             if stype == 'class':
-                                raise PackagerError, 'Nested classes not allowed'
+                                raise PackagerError('Nested classes not allowed')
                             self.__evalFunc(sname, args, kw)
                         package = self.endPackage()
                         if package is not None:
@@ -2802,7 +2811,7 @@ class Packager:
                         elif packageNames is not None:
                             # If the name is explicitly specified, this means
                             # we should abort if the package faild to construct.
-                            raise PackagerError, 'Failed to construct %s' % name
+                            raise PackagerError('Failed to construct %s' % name)
                 else:
                     self.__evalFunc(name, args, kw)
         except PackagerError:
@@ -2828,7 +2837,7 @@ class Packager:
             func(*args, **kw)
         except OutsideOfPackageError:
             message = '%s encountered outside of package definition' % (name)
-            raise OutsideOfPackageError, message
+            raise OutsideOfPackageError(message)
 
     def __expandTabs(self, line, tabWidth = 8):
         """ Expands tab characters in the line to 8 spaces. """
@@ -2873,10 +2882,10 @@ class Packager:
             value = value.strip()
             if parameter not in argList:
                 message = 'Unknown parameter %s' % (parameter)
-                raise PackagerError, message
+                raise PackagerError(message)
             if parameter in args:
                 message = 'Duplicate parameter %s' % (parameter)
-                raise PackagerError, message
+                raise PackagerError(message)
 
             args[parameter] = value
 
@@ -2890,7 +2899,7 @@ class Packager:
         to file() etc., and close the package with endPackage(). """
 
         if self.currentPackage:
-            raise PackagerError, 'unclosed endPackage %s' % (self.currentPackage.packageName)
+            raise PackagerError('unclosed endPackage %s' % (self.currentPackage.packageName))
 
         package = self.Package(packageName, self)
         self.currentPackage = package
@@ -2900,7 +2909,7 @@ class Packager:
 
         if not package.p3dApplication and not self.allowPackages:
             message = 'Cannot generate packages without an installDir; use -i'
-            raise PackagerError, message
+            raise PackagerError(message)
 
 
     def endPackage(self):
@@ -2909,7 +2918,7 @@ class Packager:
         or None if the package failed to close (e.g. missing files). """
 
         if not self.currentPackage:
-            raise PackagerError, 'unmatched endPackage'
+            raise PackagerError('unmatched endPackage')
 
         package = self.currentPackage
         package.signParams += self.signParams[:]
@@ -3028,17 +3037,10 @@ class Packager:
 
     def __findPackageOnHost(self, packageName, platform, version, hostUrl, requires = None):
         appRunner = AppRunnerGlobal.appRunner
-        if not appRunner:
-            # We don't download import files from a host unless we're
-            # running in a packaged environment ourselves.  It would
-            # be possible to do this, but a fair bit of work for not
-            # much gain--this is meant to be run in a packaged
-            # environment.
-            return None
 
         # Make sure we have a fresh version of the contents file.
-        host = appRunner.getHost(hostUrl)
-        if not host.downloadContentsFile(appRunner.http):
+        host = self.__getHostInfo(hostUrl)
+        if not host.downloadContentsFile(self.http):
             return None
 
         packageInfos = []
@@ -3063,22 +3065,47 @@ class Packager:
 
             # Now we've retrieved a PackageInfo.  Get the import desc file
             # from it.
-            filename = Filename(host.hostDir, 'imports/' + packageInfo.importDescFile.basename)
-            if not appRunner.freshenFile(host, packageInfo.importDescFile, filename):
+            if host.hostDir:
+                filename = Filename(host.hostDir, 'imports/' + packageInfo.importDescFile.basename)
+            else:
+                # We're not running in the packaged environment, so download
+                # to a temporary file instead of the host directory.
+                filename = Filename.temporary('', 'import_' + packageInfo.importDescFile.basename, '.xml')
+
+            if not host.freshenFile(self.http, packageInfo.importDescFile, filename):
                 self.notify.error("Couldn't download import file.")
                 continue
 
             # Now that we have the import desc file, use it to load one of
             # our Package objects.
             package = self.Package('', self)
-            if not package.readImportDescFile(filename):
-                continue
+            success = package.readImportDescFile(filename)
 
-            if self.__packageIsValid(package, requires, platform):
+            if not host.hostDir:
+                # Don't forget to delete the temporary file we created.
+                filename.unlink()
+
+            if success and self.__packageIsValid(package, requires, platform):
                 return package
 
         # Couldn't find a suitable package.
         return None
+
+    def __getHostInfo(self, hostUrl = None):
+        """ This shadows appRunner.getHost(), for the purpose of running
+        outside the packaged environment. """
+
+        if not hostUrl:
+            hostUrl = PandaSystem.getPackageHostUrl()
+
+        if AppRunnerGlobal.appRunner:
+            return AppRunnerGlobal.appRunner.getHost(hostUrl)
+
+        host = self.__hostInfos.get(hostUrl, None)
+        if not host:
+            host = HostInfo(hostUrl)
+            self.__hostInfos[hostUrl] = host
+        return host
 
     def __sortImportPackages(self, packages):
         """ Given a list of Packages read from *.import.xml filenames,
@@ -3119,14 +3146,14 @@ class Packager:
         while p < len(version):
             # Scan to the first digit.
             w = ''
-            while p < len(version) and version[p] not in string.digits:
+            while p < len(version) and not version[p].isdigit():
                 w += version[p]
                 p += 1
             words.append(w)
 
             # Scan to the end of the string of digits.
             w = ''
-            while p < len(version) and version[p] in string.digits:
+            while p < len(version) and version[p].isdigit():
                 w += version[p]
                 p += 1
             if w:
@@ -3205,7 +3232,7 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        for keyword, value in kw.items():
+        for keyword, value in list(kw.items()):
             self.currentPackage.configs[keyword] = value
 
     def do_require(self, *args, **kw):
@@ -3282,7 +3309,7 @@ class Packager:
             raise OutsideOfPackageError
 
         if (newName or filename) and len(moduleNames) != 1:
-            raise PackagerError, 'Cannot specify newName with multiple modules'
+            raise PackagerError('Cannot specify newName with multiple modules')
 
         if required:
             self.currentPackage.requiredModules += moduleNames
@@ -3441,7 +3468,7 @@ class Packager:
             package.mainModule = None
         if not package.mainModule and compileToExe:
             message = "No main_module specified for exe %s" % (filename)
-            raise PackagerError, message
+            raise PackagerError(message)
 
         if package.mainModule:
             moduleName, newName = package.mainModule
@@ -3613,12 +3640,12 @@ class Packager:
         if newName:
             if len(files) != 1:
                 message = 'Cannot install multiple files on target filename %s' % (newName)
-                raise PackagerError, message
+                raise PackagerError(message)
 
         if text:
             if len(files) != 1:
                 message = 'Cannot install text to multiple files'
-                raise PackagerError, message
+                raise PackagerError(message)
             if not newName:
                 newName = str(filenames[0])
 
@@ -3649,17 +3676,17 @@ class Packager:
         self.currentPackage.excludeFile(filename)
 
 
-    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None, 
-                         imageExtensions = None, textExtensions = None, 
+    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None,
+                         imageExtensions = None, textExtensions = None,
                          uncompressibleExtensions = None, unprocessedExtensions = None,
                          suppressWarningForExtensions = None):
         """ Ensure that dir() will include files with the given extensions.
         The extensions should not have '.' prefixes.
-        
+
         All except 'suppressWarningForExtensions' allow the given kinds of files
         to be packaged with their respective semantics (read the source).
-        
-        'suppressWarningForExtensions' lists extensions *expected* to be ignored, 
+
+        'suppressWarningForExtensions' lists extensions *expected* to be ignored,
         so no warnings will be emitted for them.
         """
         if executableExtensions:
@@ -3716,8 +3743,7 @@ class Packager:
         self.__recurseDir(dirname, newDir, unprocessed = unprocessed)
 
     def __recurseDir(self, filename, newName, unprocessed = None, packageTree = None):
-        dirList = vfs.scanDirectory(filename)
-        if dirList:
+        if filename.isDirectory():
             # It's a directory name.  Recurse.
             prefix = newName
             if prefix and prefix[-1] != '/':
@@ -3725,6 +3751,7 @@ class Packager:
 
             # First check if this is a Python package tree.  If so, add it
             # implicitly as a module.
+            dirList = vfs.scanDirectory(filename)
             for subfile in dirList:
                 filename = subfile.getFilename()
                 if filename.getBasename() == '__init__.py':
@@ -3736,6 +3763,9 @@ class Packager:
                 self.__recurseDir(filename, prefix + filename.getBasename(),
                                   unprocessed = unprocessed)
             return
+        elif not filename.exists():
+            # It doesn't exist.  Perhaps it's a virtual file.  Ignore it.
+            return
 
         # It's a file name.  Add it.
         ext = filename.getExtension()
@@ -3743,7 +3773,7 @@ class Packager:
             self.currentPackage.addFile(filename, newName = newName,
                                         explicit = False, unprocessed = unprocessed)
         else:
-            if ext == 'pz':
+            if ext == 'pz' or ext == 'gz':
                 # Strip off an implicit .pz extension.
                 newFilename = Filename(filename)
                 newFilename.setExtension('')
@@ -3760,9 +3790,9 @@ class Packager:
             elif not ext in self.suppressWarningForExtensions:
                 newCount = self.currentPackage.ignoredDirFiles.get(ext, 0) + 1
                 self.currentPackage.ignoredDirFiles[ext] = newCount
-                
+
                 if self.verbosePrint:
-                    self.notify.warning("ignoring file %s" % filename) 
+                    self.notify.warning("ignoring file %s" % filename)
 
     def readContentsFile(self):
         """ Reads the contents.xml file at the beginning of
@@ -3886,17 +3916,10 @@ class metaclass_def(type):
 
         return type.__new__(self, name, bases, dict)
 
-class class_p3d:
-    __metaclass__ = metaclass_def
-    pass
-
-class class_package:
-    __metaclass__ = metaclass_def
-    pass
-
-class class_solo:
-    __metaclass__ = metaclass_def
-    pass
+# Define these dynamically to stay compatible with Python 2 and 3.
+class_p3d = metaclass_def(str('class_p3d'), (), {})
+class_package = metaclass_def(str('class_package'), (), {})
+class_solo = metaclass_def(str('class_solo'), (), {})
 
 class func_closure:
 

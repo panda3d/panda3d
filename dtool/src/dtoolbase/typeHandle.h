@@ -1,16 +1,15 @@
-// Filename: typeHandle.h
-// Created by:  drose (23Oct98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeHandle.h
+ * @author drose
+ * @date 1998-10-23
+ */
 
 #ifndef TYPEHANDLE_H
 #define TYPEHANDLE_H
@@ -19,69 +18,42 @@
 
 #include <set>
 
-// The following illustrates the convention for declaring a type that
-// uses TypeHandle.  In this example, ThisThingie inherits from
-// TypedObject, which automatically supplies some type-differentiation
-// functions at the cost of one virtual function, get_type(); however,
-// this inheritance is optional, and may be omitted to avoid the
-// virtual function pointer overhead.  (If you do use TypedObject, be
-// sure to consider whether your destructor should also be virtual.)
+// The following illustrates the convention for declaring a type that uses
+// TypeHandle.  In this example, ThisThingie inherits from TypedObject, which
+// automatically supplies some type-differentiation functions at the cost of
+// one virtual function, get_type(); however, this inheritance is optional,
+// and may be omitted to avoid the virtual function pointer overhead.  (If you
+// do use TypedObject, be sure to consider whether your destructor should also
+// be virtual.)
 
-//
-// class ThatThingie : public SimpleTypedObject {
-// public:
-//   static TypeHandle get_class_type() {
-//     return _type_handle;
-//   }
-//   static void init_type() {
-//     register_type(_type_handle, "ThatThingie");
-//   }
-//
-// private:
-//   static TypeHandle _type_handle;
-// };
-//
-// class ThisThingie : public ThatThingie, publid TypedObject {
-// public:
-//   static TypeHandle get_class_type() {
-//     return _type_handle;
-//   }
-//   static void init_type() {
-//     ThatThingie::init_type();
-//     TypedObject::init_type();
-//     register_type(_type_handle, "ThisThingie",
-//                  ThatThingie::get_class_type(),
-//                  TypedObject::get_class_type());
-//   }
-//   virtual TypeHandle get_type() const {
-//     return get_class_type();
-//   }
-//
-// private:
-//   static TypeHandle _type_handle;
-// };
-//
+/*
+ * class ThatThingie : public SimpleTypedObject { public: static TypeHandle
+ * get_class_type() { return _type_handle; } static void init_type() {
+ * register_type(_type_handle, "ThatThingie"); } private: static TypeHandle
+ * _type_handle; }; class ThisThingie : public ThatThingie, publid TypedObject
+ * { public: static TypeHandle get_class_type() { return _type_handle; }
+ * static void init_type() { ThatThingie::init_type();
+ * TypedObject::init_type(); register_type(_type_handle, "ThisThingie",
+ * ThatThingie::get_class_type(), TypedObject::get_class_type()); } virtual
+ * TypeHandle get_type() const { return get_class_type(); } private: static
+ * TypeHandle _type_handle; };
+ */
 
 class TypedObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeHandle
-// Description : TypeHandle is the identifier used to differentiate
-//               C++ class types.  Any C++ classes that inherit from
-//               some base class, and must be differentiated at run
-//               time, should store a static TypeHandle object that
-//               can be queried through a static member function
-//               named get_class_type().  Most of the time, it is also
-//               desirable to inherit from TypedObject, which provides
-//               some virtual functions to return the TypeHandle for a
-//               particular instance.
-//
-//               At its essence, a TypeHandle is simply a unique
-//               identifier that is assigned by the TypeRegistry.  The
-//               TypeRegistry stores a tree of TypeHandles, so that
-//               ancestry of a particular type may be queried, and the
-//               type name may be retrieved for run-time display.
-////////////////////////////////////////////////////////////////////
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
 class EXPCL_DTOOL TypeHandle FINAL {
 PUBLISHED:
   enum MemoryClass {
@@ -94,10 +66,10 @@ PUBLISHED:
               // enum value.
   };
 
-  // The default constructor must do nothing, because we can't
-  // guarantee ordering of static initializers.  If the constructor
-  // tried to initialize its value, it  might happen after the value
-  // had already been set previously by another static initializer!
+  // The default constructor must do nothing, because we can't guarantee
+  // ordering of static initializers.  If the constructor tried to initialize
+  // its value, it  might happen after the value had already been set
+  // previously by another static initializer!
 
   EXTENSION(static TypeHandle make(PyTypeObject *classobj));
 
@@ -140,6 +112,11 @@ PUBLISHED:
   INLINE static TypeHandle none();
   INLINE operator bool () const;
 
+  MAKE_PROPERTY(index, get_index);
+  MAKE_PROPERTY(name, get_name);
+  MAKE_SEQ_PROPERTY(parent_classes, get_num_parent_classes, get_parent_class);
+  MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
+
 public:
   INLINE static TypeHandle from_index(int index);
 
@@ -151,8 +128,8 @@ private:
 };
 
 
-// It's handy to be able to output a TypeHandle directly, and see the
-// type name.
+// It's handy to be able to output a TypeHandle directly, and see the type
+// name.
 INLINE ostream &operator << (ostream &out, TypeHandle type) {
   type.output(out);
   return out;
@@ -160,9 +137,9 @@ INLINE ostream &operator << (ostream &out, TypeHandle type) {
 
 EXPCL_DTOOL ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
 
-// We must include typeRegistry at this point so we can call it from
-// our inline functions.  This is a circular include that is
-// strategically placed to do no harm.
+// We must include typeRegistry at this point so we can call it from our
+// inline functions.  This is a circular include that is strategically placed
+// to do no harm.
 /* okcircular */
 #include "typeRegistry.h"
 

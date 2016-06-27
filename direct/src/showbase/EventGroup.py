@@ -20,7 +20,7 @@ class EventGroup(DirectObject.DirectObject):
         generated and is available as EventGroup.getDoneEvent().
 
         Examples:
-        
+
         # waits for gotRed and gotBlue, then sends out 'gotColors'
         EventGroup('getRedAndBlue', ('gotRed', 'gotBlue'), doneEvent='gotColors')
 
@@ -100,7 +100,7 @@ class EventGroup(DirectObject.DirectObject):
         self._completed = True
         messenger.send(self._doneEvent)
         self.destroy()
-        
+
     def __repr__(self):
         return '%s(\'%s\', %s, doneEvent=\'%s\') # completed=%s' % (
             self.__class__.__name__,

@@ -1,56 +1,45 @@
-//: collisionPlane.I
-// Created by:  drose (25Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionFloorMesh.I
+ * @author zpavlov
+ * @date 2007-06-28
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::Default Constructor
-//       Access: Protected
-//  Description: This is only for the convenience of CollisionPolygon.
-//               Normally, you should not attempt to create an
-//               uninitialized CollisionPlane.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is only for the convenience of CollisionPolygon.  Normally, you should
+ * not attempt to create an uninitialized CollisionPlane.
+ */
 INLINE CollisionFloorMesh::
 CollisionFloorMesh() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE CollisionFloorMesh::
 CollisionFloorMesh(const CollisionFloorMesh &copy) :
   CollisionSolid(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::flush_level
-//       Access: Public, Static
-//  Description: Flushes the PStatCollectors used during traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flushes the PStatCollectors used during traversal.
+ */
 INLINE void CollisionFloorMesh::
 flush_level() {
   _volume_pcollector.flush_level();
   _test_pcollector.flush_level();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::add_vertex
-//       Access: Published
-//  Description: store away a vertex to index against
-////////////////////////////////////////////////////////////////////
+/**
+ * store away a vertex to index against
+ */
 INLINE void CollisionFloorMesh::
 add_vertex(const LPoint3 &vert) {
   _vertices.push_back(vert);

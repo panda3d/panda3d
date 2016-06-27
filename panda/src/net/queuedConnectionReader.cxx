@@ -1,16 +1,15 @@
-// Filename: queuedConnectionReader.cxx
-// Created by:  drose (08Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file queuedConnectionReader.cxx
+ * @author drose
+ * @date 2000-02-08
+ */
 
 #include "queuedConnectionReader.h"
 #include "config_net.h"
@@ -19,11 +18,9 @@
 
 template class QueuedReturn<NetDatagram>;
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 QueuedConnectionReader::
 QueuedConnectionReader(ConnectionManager *manager, int num_threads) :
   ConnectionReader(manager, num_threads)
@@ -35,61 +32,48 @@ QueuedConnectionReader(ConnectionManager *manager, int num_threads) :
 #endif  // SIMULATE_NETWORK_DELAY
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 QueuedConnectionReader::
 ~QueuedConnectionReader() {
-  // We call shutdown() here to guarantee that all threads are gone
-  // before the QueuedReturn destructs.
+  // We call shutdown() here to guarantee that all threads are gone before the
+  // QueuedReturn destructs.
   shutdown();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::data_available
-//       Access: Published
-//  Description: Returns true if a datagram is available on the queue;
-//               call get_data() to extract the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a datagram is available on the queue; call get_data() to
+ * extract the datagram.
+ */
 bool QueuedConnectionReader::
 data_available() {
   poll();
 #ifdef SIMULATE_NETWORK_DELAY
-  get_delayed();  
+  get_delayed();
 #endif  // SIMULATE_NETWORK_DELAY
   return thing_available();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::get_data
-//       Access: Published
-//  Description: If a previous call to data_available() returned
-//               true, this function will return the datagram that has
-//               become available.
-//
-//               The return value is true if a datagram was
-//               successfully returned, or false if there was, in
-//               fact, no datagram available.  (This may happen if
-//               there are multiple threads accessing the
-//               QueuedConnectionReader).
-////////////////////////////////////////////////////////////////////
+/**
+ * If a previous call to data_available() returned true, this function will
+ * return the datagram that has become available.
+ *
+ * The return value is true if a datagram was successfully returned, or false
+ * if there was, in fact, no datagram available.  (This may happen if there
+ * are multiple threads accessing the QueuedConnectionReader).
+ */
 bool QueuedConnectionReader::
 get_data(NetDatagram &result) {
   return get_thing(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::get_data
-//       Access: Published
-//  Description: This flavor of QueuedConnectionReader::get_data(),
-//               works like the other, except that it only fills a
-//               Datagram object, not a NetDatagram object.  This
-//               means that the Datagram cannot be queried for its
-//               source Connection and/or NetAddress, but it is useful
-//               in all other respects.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of QueuedConnectionReader::get_data(), works like the other,
+ * except that it only fills a Datagram object, not a NetDatagram object.
+ * This means that the Datagram cannot be queried for its source Connection
+ * and/or NetAddress, but it is useful in all other respects.
+ */
 bool QueuedConnectionReader::
 get_data(Datagram &result) {
   NetDatagram nd;
@@ -100,14 +84,11 @@ get_data(Datagram &result) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::receive_datagram
-//       Access: Protected, Virtual
-//  Description: An internal function called by ConnectionReader()
-//               when a new datagram has become available.  The
-//               QueuedConnectionReader simply queues it up for later
-//               retrieval by get_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by ConnectionReader() when a new datagram has
+ * become available.  The QueuedConnectionReader simply queues it up for later
+ * retrieval by get_data().
+ */
 void QueuedConnectionReader::
 receive_datagram(const NetDatagram &datagram) {
   /*
@@ -131,16 +112,13 @@ receive_datagram(const NetDatagram &datagram) {
 
 
 #ifdef SIMULATE_NETWORK_DELAY
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::start_delay
-//       Access: Published
-//  Description: Enables a simulated network latency.  All packets
-//               received from this point on will be held for a random
-//               interval of least min_delay seconds, and no more than
-//               max_delay seconds, before being visible to the
-//               data_available()/get_data() interface.  It is as if
-//               packets suddenly took much longer to arrive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables a simulated network latency.  All packets received from this point
+ * on will be held for a random interval of least min_delay seconds, and no
+ * more than max_delay seconds, before being visible to the
+ * data_available()/get_data() interface.  It is as if packets suddenly took
+ * much longer to arrive.
+ */
 void QueuedConnectionReader::
 start_delay(double min_delay, double max_delay) {
   LightMutexHolder holder(_dd_mutex);
@@ -149,13 +127,11 @@ start_delay(double min_delay, double max_delay) {
   _delay_active = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::stop_delay
-//       Access: Published
-//  Description: Disables the simulated network latency started by a
-//               previous call to start_delay().  Packets will once
-//               again be visible as soon as they are received.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables the simulated network latency started by a previous call to
+ * start_delay().  Packets will once again be visible as soon as they are
+ * received.
+ */
 void QueuedConnectionReader::
 stop_delay() {
   LightMutexHolder holder(_dd_mutex);
@@ -172,13 +148,10 @@ stop_delay() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::get_delayed
-//       Access: Private
-//  Description: Checks the delayed queue for any now available
-//               datagrams, and adds them to the normal queue if they
-//               are available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the delayed queue for any now available datagrams, and adds them to
+ * the normal queue if they are available.
+ */
 void QueuedConnectionReader::
 get_delayed() {
   if (_delay_active) {
@@ -199,12 +172,9 @@ get_delayed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QueuedConnectionReader::delay_datagram
-//       Access: Private
-//  Description: Adds the datagram to the delay queue for a random
-//               time interval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the datagram to the delay queue for a random time interval.
+ */
 void QueuedConnectionReader::
 delay_datagram(const NetDatagram &datagram) {
   if (!_delay_active) {
@@ -214,8 +184,7 @@ delay_datagram(const NetDatagram &datagram) {
     }
   } else {
     LightMutexHolder holder(_dd_mutex);
-    // Check the delay_active flag again, now that we have grabbed the
-    // mutex.
+    // Check the delay_active flag again, now that we have grabbed the mutex.
     if (!_delay_active) {
       if (!enqueue_thing(datagram)) {
         net_cat.error()
@@ -225,7 +194,7 @@ delay_datagram(const NetDatagram &datagram) {
     } else {
       double now = TrueClock::get_global_ptr()->get_short_time();
       double reveal_time = now + _min_delay;
-      
+
       if (_delay_variance > 0.0) {
         reveal_time += _delay_variance * ((double)rand() / (double)RAND_MAX);
       }

@@ -32,7 +32,7 @@ CodeTable = {
     'mccolor' : '0xffff - zb->blend_ ## i',
     'calpha' : 'zb->blend_a',
     'mcalpha' : '0xffff - zb->blend_a',
-}    
+}
 
 
 bitnames = 'rgba'
@@ -75,7 +75,7 @@ for op_a in Operands:
                     print >> code, "#define STORE_PIXEL_%s(fr, r) (fr)" % (b)
             print >> code, '#include "store_pixel.h"'
             print >> code, ''
-            
+
 
 # Now, generate the table of function pointers.
 arraySize = '[%s][%s][16]' % (len(Operands), len(Operands))

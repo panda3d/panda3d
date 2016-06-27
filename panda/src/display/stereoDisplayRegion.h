@@ -1,16 +1,15 @@
-// Filename: stereoDisplayRegion.h
-// Created by:  drose (19Feb09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stereoDisplayRegion.h
+ * @author drose
+ * @date 2009-02-19
+ */
 
 #ifndef STEREODISPLAYREGION_H
 #define STEREODISPLAYREGION_H
@@ -19,21 +18,17 @@
 
 #include "displayRegion.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StereoDisplayRegion
-// Description : This is a special DisplayRegion wrapper that actually
-//               includes a pair of DisplayRegions internally: the
-//               left and right eyes.  The DisplayRegion represented
-//               here does not have a physical association with the
-//               window, but it pretends it does.  Instead, it
-//               maintains a pointer to the left and right
-//               DisplayRegions separately.
-//
-//               Operations on the StereoDisplayRegion object affect
-//               both left and right eyes together.  To access the
-//               left or right eyes independently, use get_left_eye()
-//               and get_right_eye().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special DisplayRegion wrapper that actually includes a pair of
+ * DisplayRegions internally: the left and right eyes.  The DisplayRegion
+ * represented here does not have a physical association with the window, but
+ * it pretends it does.  Instead, it maintains a pointer to the left and right
+ * DisplayRegions separately.
+ *
+ * Operations on the StereoDisplayRegion object affect both left and right
+ * eyes together.  To access the left or right eyes independently, use
+ * get_left_eye() and get_right_eye().
+ */
 class EXPCL_PANDA_DISPLAY StereoDisplayRegion : public DisplayRegion {
 protected:
   StereoDisplayRegion(GraphicsOutput *window,
@@ -68,6 +63,8 @@ PUBLISHED:
 
   INLINE DisplayRegion *get_left_eye();
   INLINE DisplayRegion *get_right_eye();
+  MAKE_PROPERTY(left_eye, get_left_eye);
+  MAKE_PROPERTY(right_eye, get_right_eye);
 
 private:
   PT(DisplayRegion) _left_eye;

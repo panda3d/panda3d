@@ -1,4 +1,6 @@
 #include "config_movies.cxx"
+#include "flacAudio.cxx"
+#include "flacAudioCursor.cxx"
 #include "inkblotVideo.cxx"
 #include "inkblotVideoCursor.cxx"
 #include "microphoneAudio.cxx"

@@ -1,16 +1,15 @@
-// Filename: eggMesherStrip.cxx
-// Created by:  drose (13Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMesherStrip.cxx
+ * @author drose
+ * @date 2005-03-13
+ */
 
 #include "eggMesherStrip.h"
 #include "eggMesherEdge.h"
@@ -21,11 +20,9 @@
 #include "dcast.h"
 #include "config_egg.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMesherStrip::
 EggMesherStrip(PrimType prim_type, MesherOrigin origin) {
   _origin = origin;
@@ -38,13 +35,11 @@ EggMesherStrip(PrimType prim_type, MesherOrigin origin) {
   _flat_shaded = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMesherStrip::
-EggMesherStrip(const EggPrimitive *prim, int index, 
+EggMesherStrip(const EggPrimitive *prim, int index,
                const EggVertexPool *vertex_pool,
                bool flat_shaded) {
   _index = index;
@@ -55,8 +50,8 @@ EggMesherStrip(const EggPrimitive *prim, int index,
 
   _type = PT_poly; //prim.get_type();
 
-  // We care only about the prim's attributes in the _prims array.
-  // The vertices get re-added later by EggMesher::add_prim().
+  // We care only about the prim's attributes in the _prims array.  The
+  // vertices get re-added later by EggMesher::add_prim().
   _prims.push_back(prim);
 
   if (_type == PT_poly) {
@@ -80,9 +75,8 @@ EggMesherStrip(const EggPrimitive *prim, int index,
   _planar = false;
 
   if (prim->is_of_type(EggPolygon::get_class_type())) {
-    // Although for the most part we ignore the actual value of the
-    // vertices, we will ask the polygon for its plane equation
-    // (i.e. its normal).
+    // Although for the most part we ignore the actual value of the vertices,
+    // we will ask the polygon for its plane equation (i.e.  its normal).
     LNormald normal;
     if (DCAST(EggPolygon, prim)->calculate_normal(normal)) {
       _plane_normal = normal;
@@ -94,12 +88,10 @@ EggMesherStrip(const EggPrimitive *prim, int index,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::make_prim
-//       Access: Public
-//  Description: Creates an EggPrimitive corresponding to the strip
-//               represented by this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an EggPrimitive corresponding to the strip represented by this
+ * node.
+ */
 PT(EggPrimitive) EggMesherStrip::
 make_prim(const EggVertexPool *vertex_pool) {
   PT(EggPrimitive) prim;
@@ -121,7 +113,7 @@ make_prim(const EggVertexPool *vertex_pool) {
   }
 
   if (dest_type != PT_tristrip && dest_type != PT_trifan) {
-    // The easy case: a simple primitive, i.e. a polygon.
+    // The easy case: a simple primitive, i.e.  a polygon.
     prim = new EggPolygon;
     prim->copy_attributes(*_prims.front());
 
@@ -140,9 +132,8 @@ make_prim(const EggVertexPool *vertex_pool) {
     }
     prim->copy_attributes(*_prims.front());
 
-    // Now store all the vertices.  Each individual triangle's
-    // attributes, if any, get applied to the third vertex of each
-    // triangle.
+    // Now store all the vertices.  Each individual triangle's attributes, if
+    // any, get applied to the third vertex of each triangle.
     Verts::iterator vi;
     Prims::iterator pi;
     pi = _prims.begin();
@@ -152,20 +143,20 @@ make_prim(const EggVertexPool *vertex_pool) {
          ++vi) {
       PT(EggVertex) vertex = vertex_pool->get_vertex(*vi);
       prim->add_vertex(vertex);
-      
+
       ++count;
       if (count >= 3) {
-        // Beginning with the third vertex, we increment pi.  Thus, the
-        // first two vertices stand alone, then each vertex beginning
-        // with the third completes a triangle.
+        // Beginning with the third vertex, we increment pi.  Thus, the first
+        // two vertices stand alone, then each vertex beginning with the third
+        // completes a triangle.
         const EggAttributes *attrib = (*pi);
         ++pi;
         DCAST(EggCompositePrimitive, prim)->set_component(count - 3, attrib);
       }
     }
 
-    // If either of these fail, there weren't num_prims + 2 vertices in
-    // the tristrip!
+    // If either of these fail, there weren't num_prims + 2 vertices in the
+    // tristrip!
     nassertr(vi == _verts.end(), prim);
     nassertr(pi == _prims.end(), prim);
   }
@@ -173,27 +164,24 @@ make_prim(const EggVertexPool *vertex_pool) {
   return prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::measure_sheet
-//       Access: Public
-//  Description: Determines the extents of the quadsheet that can be
-//               derived by starting with this strip, and searching in
-//               the direction indicated by the given edge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the extents of the quadsheet that can be derived by starting
+ * with this strip, and searching in the direction indicated by the given
+ * edge.
+ */
 void EggMesherStrip::
-measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims, 
-              int &num_rows, int first_row_id, int this_row_id, 
+measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims,
+              int &num_rows, int first_row_id, int this_row_id,
               int this_row_distance) {
   if (new_row) {
-    // If we would create a new row by stepping here, we won't stay if
-    // there was any other row already defined here.
+    // If we would create a new row by stepping here, we won't stay if there
+    // was any other row already defined here.
     if (_row_id >= first_row_id) {
       return;
     }
   } else {
-    // On the other hand, if this is a continuation of the current
-    // row, we'll stay if the other row had to travel farther to get
-    // here.
+    // On the other hand, if this is a continuation of the current row, we'll
+    // stay if the other row had to travel farther to get here.
     if (_row_id >= first_row_id && _row_distance <= this_row_distance) {
       return;
     }
@@ -211,37 +199,36 @@ measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims,
   EggMesherEdge::Strips::iterator si;
 
   if (_type == PT_quad) {
-    // If this is a quad, it has four neighbors: two in the direction
-    // we are testing, and two in an orthagonal direction.
+    // If this is a quad, it has four neighbors: two in the direction we are
+    // testing, and two in an orthagonal direction.
 
     int vi_a = edge->_vi_a;
     int vi_b = edge->_vi_b;
 
-    // We use these vertices to differentiate the edges that run in
-    // our primary direction from those in the secondary direction.
-    // For each edge, we count the number of vertices that the edge
-    // shares with our starting edge.  There are then three cases:
+    // We use these vertices to differentiate the edges that run in our
+    // primary direction from those in the secondary direction.  For each
+    // edge, we count the number of vertices that the edge shares with our
+    // starting edge.  There are then three cases:
 
-    // (a) The edge shares two vertices.  It is the direction we came
-    // from; forget it.
+    // (a) The edge shares two vertices.  It is the direction we came from;
+    // forget it.
 
-    // (b) The edge shares one vertex.  It is at right angles to our
-    // starting edge.  This is the primary direction if new_row is
-    // true, and the secondary direction if new_row is false.
+    // (b) The edge shares one vertex.  It is at right angles to our starting
+    // edge.  This is the primary direction if new_row is true, and the
+    // secondary direction if new_row is false.
 
-    // (c) The edge shares no vertices.  It is directly opposite our
-    // starting edge.  This is the primary direction if new_row is
-    // false, and the secondary direction if new_row is true.
+    // (c) The edge shares no vertices.  It is directly opposite our starting
+    // edge.  This is the primary direction if new_row is false, and the
+    // secondary direction if new_row is true.
 
 
-    // Here's a silly little for loop that executes the following code
-    // twice: once with secondary == 0, and once with secondary == 1.
-    // This is because we want to find all the primary edges first,
-    // and then all the secondary edges.
+    // Here's a silly little for loop that executes the following code twice:
+    // once with secondary == 0, and once with secondary == 1. This is because
+    // we want to find all the primary edges first, and then all the secondary
+    // edges.
 
     for (int secondary = 0; secondary <= 1; secondary++) {
-      // How many common vertices are we looking for this pass (see
-      // above)?
+      // How many common vertices are we looking for this pass (see above)?
 
       int want_count;
       if (secondary) {
@@ -256,9 +243,9 @@ measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims,
           ((*ei)->_vi_b == vi_a || (*ei)->_vi_b == vi_b);
 
         if (common_verts == want_count) {
-          // Here's the edge.  Look at all its connections.  Hopefully,
-          // there will only be one besides ourselves, but there may be
-          // more.  Pick the best.
+          // Here's the edge.  Look at all its connections.  Hopefully, there
+          // will only be one besides ourselves, but there may be more.  Pick
+          // the best.
 
           EggMesherEdge::Strips &strips = (*ei)->_strips;
           EggMesherStrip *mate = NULL;
@@ -279,15 +266,15 @@ measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims,
     }
 
   } else {
-    // Otherwise, this is not a quad.  It's certainly not a triangle,
-    // because we've built all the single triangles already.
+    // Otherwise, this is not a quad.  It's certainly not a triangle, because
+    // we've built all the single triangles already.
     nassertv(_type != PT_tri);
 
     // Therefore, it must be a tristrip or quadstrip.
     nassertv(_type == PT_tristrip || _type == PT_quadstrip);
 
-    // Since it's a strip, it only has two neighbors: the one we came
-    // from, and the other one.  Find the other one.
+    // Since it's a strip, it only has two neighbors: the one we came from,
+    // and the other one.  Find the other one.
 
     for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
       if (!(*ei)->matches(*edge)) {
@@ -312,23 +299,21 @@ measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::cut_sheet
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggMesherStrip::
 cut_sheet(int first_row_id, int do_mate, const EggVertexPool *vertex_pool) {
   Edges::iterator ei;
   EggMesherEdge::Strips::iterator si;
 
-  // First, start the process going on any neighbors that belong to a
-  // later row.  (We must do these first, because we'll change our
-  // neighbor list when we start to mate.)
+  // First, start the process going on any neighbors that belong to a later
+  // row.  (We must do these first, because we'll change our neighbor list
+  // when we start to mate.)
 
-  // We need to build a temporary list of neighbors first, because
-  // calling cut_sheet() recursively will start things mating, and
-  // could damage our edge list.
+  // We need to build a temporary list of neighbors first, because calling
+  // cut_sheet() recursively will start things mating, and could damage our
+  // edge list.
 
   typedef plist<EggMesherStrip *> StripPtrs;
   StripPtrs strip_ptrs;
@@ -343,9 +328,9 @@ cut_sheet(int first_row_id, int do_mate, const EggVertexPool *vertex_pool) {
     }
   }
 
-  // Now walk the temporary list and do some damage.  We pass do_mate
-  // = true to each of these neighbors, because as far as we know,
-  // they're the first nodes of a particular row.
+  // Now walk the temporary list and do some damage.  We pass do_mate = true
+  // to each of these neighbors, because as far as we know, they're the first
+  // nodes of a particular row.
   StripPtrs::iterator spi;
   for (spi = strip_ptrs.begin(); spi != strip_ptrs.end(); ++spi) {
     if ((*spi)->_status == MS_alive) {
@@ -370,19 +355,19 @@ cut_sheet(int first_row_id, int do_mate, const EggVertexPool *vertex_pool) {
             not_any = false;
             EggMesherStrip *mate = *si;
 
-            // We also recurse on these guys so they can spread the
-            // word to their own neighbors.  This time we don't need
-            // to build a temporary list, because we'll be restarting
-            // from the beginning of our edge list after we do this.
-            // We also pass do_mate = false to these guys because
-            // we're the ones doing the mating here.
+            // We also recurse on these guys so they can spread the word to
+            // their own neighbors.  This time we don't need to build a
+            // temporary list, because we'll be restarting from the beginning
+            // of our edge list after we do this.  We also pass do_mate =
+            // false to these guys because we're the ones doing the mating
+            // here.
             mate->cut_sheet(first_row_id, false, vertex_pool);
 
             if (_status == MS_alive && mate->_status == MS_alive) {
-              // Now mate.  This will either succeed or fail.  It ought
-              // to succeed, but if it doesn't, no harm done; it will
-              // simply remove the common edge and return.  We'll go
-              // around again and not encounter this neighbor next time.
+              // Now mate.  This will either succeed or fail.  It ought to
+              // succeed, but if it doesn't, no harm done; it will simply
+              // remove the common edge and return.  We'll go around again and
+              // not encounter this neighbor next time.
               mate_pieces(*ei, *this, *mate, vertex_pool);
             }
           }
@@ -404,18 +389,14 @@ cut_sheet(int first_row_id, int do_mate, const EggVertexPool *vertex_pool) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::mate
-//       Access: Public
-//  Description: Finds a neighboring strip and joins up with it to
-//               make a larger strip.  Returns true if mating was
-//               successful or at least possible, false if the strip
-//               has no neighbors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds a neighboring strip and joins up with it to make a larger strip.
+ * Returns true if mating was successful or at least possible, false if the
+ * strip has no neighbors.
+ */
 bool EggMesherStrip::
 mate(const EggVertexPool *vertex_pool) {
-  // We must walk through the list of our neighbors and choose our
-  // best mate.
+  // We must walk through the list of our neighbors and choose our best mate.
   nassertr(_status == MS_alive, false);
 
   EggMesherStrip *mate;
@@ -433,18 +414,15 @@ mate(const EggVertexPool *vertex_pool) {
 
   mate_pieces(common_edge, *this, *mate, vertex_pool);
 
-  // Whether the mate failed or not, the strip still (probably) has
-  // other neighbors to consider.  Return true regardless.
+  // Whether the mate failed or not, the strip still (probably) has other
+  // neighbors to consider.  Return true regardless.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::find_ideal_mate
-//       Access: Public
-//  Description: Searches our neighbors for the most suitable mate.
-//               Returns true if one is found, false if we have no
-//               neighbors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches our neighbors for the most suitable mate.  Returns true if one is
+ * found, false if we have no neighbors.
+ */
 bool EggMesherStrip::
 find_ideal_mate(EggMesherStrip *&mate, EggMesherEdge *&common_edge,
                 const EggVertexPool *vertex_pool) {
@@ -473,22 +451,20 @@ find_ideal_mate(EggMesherStrip *&mate, EggMesherEdge *&common_edge,
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::mate_pieces
-//       Access: Public, Static
-//  Description: Connects two pieces of arbitrary type, if possible.
-//               Returns true if successful, false if failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Connects two pieces of arbitrary type, if possible.  Returns true if
+ * successful, false if failure.
+ */
 bool EggMesherStrip::
-mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front, 
+mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
             EggMesherStrip &back, const EggVertexPool *vertex_pool) {
   nassertr(front._status == MS_alive, false);
   nassertr(back._status == MS_alive, false);
   nassertr(&front != &back, false);
 
   bool success = true;
-  // remove_sides tracks whether we want to remove all but the leading
-  // edges of the newly joined piece if we succeed.
+  // remove_sides tracks whether we want to remove all but the leading edges
+  // of the newly joined piece if we succeed.
   bool remove_sides = true;
 
   bool is_coplanar = front.is_coplanar_with(back, egg_coplanar_threshold);
@@ -499,17 +475,16 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
         front._prims.front() == back._prims.front() &&
         convex_quad(common_edge, front, back, vertex_pool)) {
 
-      // If we're joining two equivalent coplanar triangles, call it a
-      // quad.
+      // If we're joining two equivalent coplanar triangles, call it a quad.
       front._type = PT_quad;
 
-      // We add one additional vertex for the new triangle, the one
-      // vertex we didn't already share.
+      // We add one additional vertex for the new triangle, the one vertex we
+      // didn't already share.
       int new_vert = back.find_uncommon_vertex(common_edge);
 
-      // Now we just need to find the right place to insert it.  It
-      // belongs in the middle of the common edge, i.e. after the first
-      // vertex that is on the common edge and before the second vertex.
+      // Now we just need to find the right place to insert it.  It belongs in
+      // the middle of the common edge, i.e.  after the first vertex that is
+      // on the common edge and before the second vertex.
       Verts::iterator a = front._verts.begin();
       Verts::iterator b = a;
       ++b;
@@ -531,8 +506,8 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
       front._prims.splice(front._prims.end(), back._prims);
       back._verts.clear();
 
-      // We leave all four surrounding edges for now, since the quad
-      // might still be joined up in any direction.
+      // We leave all four surrounding edges for now, since the quad might
+      // still be joined up in any direction.
       remove_sides = false;
 
     } else {
@@ -549,36 +524,34 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
 
   } else if ((front._type == PT_quad || front._type == PT_quadstrip) &&
              (back._type == PT_quad || back._type == PT_quadstrip)) {
-    // Joining two quads, two quadstrips, or a quad and a quadstrip.
-    // This makes another quadstrip.
+    // Joining two quads, two quadstrips, or a quad and a quadstrip.  This
+    // makes another quadstrip.
 
     // We expect this to succeed every time with quadstrips.
     success = mate_strips(common_edge, front, back, PT_quadstrip);
 
     if (!success) {
-      // Although it might fail in rare circumstances (specifically,
-      // if the two strips we attempted to join were backfacing to
-      // each other).  If so, remove the adjoining edge so these two
-      // don't get tried again.
+      // Although it might fail in rare circumstances (specifically, if the
+      // two strips we attempted to join were backfacing to each other).  If
+      // so, remove the adjoining edge so these two don't get tried again.
       common_edge->remove(&front);
       common_edge->remove(&back);
     }
 
   } else {
 
-    // Otherwise.  This might be two tristrips, a quad and a tristrip,
-    // a triangle and a quad, a triangle and a tristrip, a triangle
-    // and a quadstrip, or a tristrip and a quadstrip.  In any case,
-    // we'll end up with a tristrip.
+    // Otherwise.  This might be two tristrips, a quad and a tristrip, a
+    // triangle and a quad, a triangle and a tristrip, a triangle and a
+    // quadstrip, or a tristrip and a quadstrip.  In any case, we'll end up
+    // with a tristrip.
 
     // This might fail if the tristrips don't match polarity.
     success = mate_strips(common_edge, front, back, PT_tristrip);
 
     if (!success) {
-      // If it does fail, we'll try reversing the connection.  This
-      // makes sense if we are joining a tri or tristrip to a quad or
-      // quadstrip, which might fail in one direction but succeed in
-      // the other.
+      // If it does fail, we'll try reversing the connection.  This makes
+      // sense if we are joining a tri or tristrip to a quad or quadstrip,
+      // which might fail in one direction but succeed in the other.
       success = mate_strips(common_edge, back, front, PT_tristrip);
 
       if (success) {
@@ -597,8 +570,8 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
   if (success) {
     front.combine_edges(back, remove_sides);
     if (!remove_sides) {
-      // If we didn't want to remove the side edges, at least remove
-      // the join edge, which is now internal.
+      // If we didn't want to remove the side edges, at least remove the join
+      // edge, which is now internal.
       common_edge->remove(&front);
     }
 
@@ -608,8 +581,7 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
     // Strip back is no more.
     back._status = MS_dead;
 
-    // The result is planar if and only if we joined two coplanar
-    // pieces.
+    // The result is planar if and only if we joined two coplanar pieces.
     front._planar = is_coplanar;
     front._origin = MO_mate;
   }
@@ -617,29 +589,25 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::mate_strips
-//       Access: Public, Static
-//  Description: Stitches two strips together, producing in "front" a
-//               new strip of the indicated type (quadstrip or
-//               tristrip).  The front strip stores the result, and
-//               the back strip is emptied on success.
-//
-//               Returns true if successful, false if failure
-//               (generally because of incorrect polarity of
-//               tristrips), in which case nothing has changed (or at
-//               least, not much).
-////////////////////////////////////////////////////////////////////
+/**
+ * Stitches two strips together, producing in "front" a new strip of the
+ * indicated type (quadstrip or tristrip).  The front strip stores the result,
+ * and the back strip is emptied on success.
+ *
+ * Returns true if successful, false if failure (generally because of
+ * incorrect polarity of tristrips), in which case nothing has changed (or at
+ * least, not much).
+ */
 bool EggMesherStrip::
-mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front, 
+mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front,
             EggMesherStrip &back, EggMesherStrip::PrimType type) {
-  // We don't allow making odd-length strips at all.  Odd-length
-  // strips can't be rotated if they're flat-shaded, and they can't be
-  // joined end-to-end using degenerate triangles.  So forget 'em.
+  // We don't allow making odd-length strips at all.  Odd-length strips can't
+  // be rotated if they're flat-shaded, and they can't be joined end-to-end
+  // using degenerate triangles.  So forget 'em.
 
-  // This might not be the right place to impose this rule, because it
-  // tends to end up with lots of independent triangles in certain
-  // kinds of meshes, but it's the easiest place to impose it.
+  // This might not be the right place to impose this rule, because it tends
+  // to end up with lots of independent triangles in certain kinds of meshes,
+  // but it's the easiest place to impose it.
   if ((front._type != PT_tri && back._type == PT_tri) ||
       (front._type == PT_tri && back._type != PT_tri) ||
       (front._type == PT_tristrip && back._type == PT_tristrip &&
@@ -647,8 +615,8 @@ mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front,
     return false;
   }
 
-  // If we start with a quad or tri, rotate the vertices around so we
-  // start with the common edge.
+  // If we start with a quad or tri, rotate the vertices around so we start
+  // with the common edge.
   if (front._type == PT_tri || front._type == PT_quad) {
     front.rotate_to_back(common_edge);
   }
@@ -663,9 +631,9 @@ mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front,
   bool invert_back = false;
 
   if (reverse_front && front.is_odd()) {
-    // If we're going to reverse the front strip, we have to be
-    // careful.  This will also reverse the facing direction if it has
-    // an odd number of prims.
+    // If we're going to reverse the front strip, we have to be careful.  This
+    // will also reverse the facing direction if it has an odd number of
+    // prims.
     if (!front.can_invert()) {
       return false;
     }
@@ -697,10 +665,9 @@ mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front,
   bool will_reverse = front.would_reverse_tail(type);
   bool is_headtotail = (front.get_tail_edge() == back.get_head_edge());
   if (will_reverse == is_headtotail) {
-    // Oops, we tried to join two backfacing strips.  This really
-    // shouldn't happen, but it occasionally does for some mysterious
-    // reason.  Maybe one day I'll understand why.  In the meantime,
-    // just recover and carry on.
+    // Oops, we tried to join two backfacing strips.  This really shouldn't
+    // happen, but it occasionally does for some mysterious reason.  Maybe one
+    // day I'll understand why.  In the meantime, just recover and carry on.
     if (reverse_back) {
       reverse(back._verts.begin(), back._verts.end());
       reverse(back._prims.begin(), back._prims.end());
@@ -744,11 +711,11 @@ mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front,
   }
   */
 
-  // If this assertion fails, we were misinformed about our ability to
-  // join these two strips.  Either the must_invert() call returned the
-  // incorrect value, or our edge-detection logic failed and we
-  // attempted to join two oppositely-facing strips.
-  //nassertr(front.get_tail_edge() == back.get_head_edge(), false);
+  // If this assertion fails, we were misinformed about our ability to join
+  // these two strips.  Either the must_invert() call returned the incorrect
+  // value, or our edge-detection logic failed and we attempted to join two
+  // oppositely-facing strips.  nassertr(front.get_tail_edge() ==
+  // back.get_head_edge(), false);
 
   front._verts.pop_back();
   front._verts.pop_back();
@@ -758,13 +725,10 @@ mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::must_invert
-//       Access: Public, Static
-//  Description: Returns false if the strips can be mated as they
-//               currently are.  Returns true if the back strip must
-//               be inverted first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns false if the strips can be mated as they currently are.  Returns
+ * true if the back strip must be inverted first.
+ */
 bool EggMesherStrip::
 must_invert(const EggMesherStrip &front, const EggMesherStrip &back,
             bool will_reverse_back, EggMesherStrip::PrimType type) {
@@ -772,8 +736,8 @@ must_invert(const EggMesherStrip &front, const EggMesherStrip &back,
 
   if ((front._type == PT_quad || front._type == PT_quadstrip) &&
       type == PT_tristrip) {
-    // If we'll be converting from quads to tris, the tail edge of the
-    // front strip will always be even.
+    // If we'll be converting from quads to tris, the tail edge of the front
+    // strip will always be even.
 
   } else if (front.is_odd()) {
     // Otherwise, we have to flip if the tail edge is odd.
@@ -781,12 +745,12 @@ must_invert(const EggMesherStrip &front, const EggMesherStrip &back,
   }
 
   if (will_reverse_back) {
-    // With the back strip, we don't care about what will happen to
-    // its tail edge when we convert it, but we do care what happens
-    // to its front edge if we reverse it.
+    // With the back strip, we don't care about what will happen to its tail
+    // edge when we convert it, but we do care what happens to its front edge
+    // if we reverse it.
     if (back.is_odd()) {
-      // Specifically, the front edge will be reversed when the strip
-      // is reversed only if the strip is odd.
+      // Specifically, the front edge will be reversed when the strip is
+      // reversed only if the strip is odd.
       invert = !invert;
     }
   }
@@ -794,19 +758,16 @@ must_invert(const EggMesherStrip &front, const EggMesherStrip &back,
   return invert;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::convex_quad
-//       Access: Public, Static
-//  Description: Returns true if the quad that would be formed by
-//               connecting coplanar tris front and back along
-//               common_edge is convex, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the quad that would be formed by connecting coplanar tris
+ * front and back along common_edge is convex, false otherwise.
+ */
 bool EggMesherStrip::
-convex_quad(EggMesherEdge *common_edge, EggMesherStrip &front, 
+convex_quad(EggMesherEdge *common_edge, EggMesherStrip &front,
             EggMesherStrip &back, const EggVertexPool *vertex_pool) {
-  // Find the edge from the apex of one triangle to the apex of the
-  // other.  This is the "other" diagonal of the quad-to-be, other
-  // than the common_edge.
+  // Find the edge from the apex of one triangle to the apex of the other.
+  // This is the "other" diagonal of the quad-to-be, other than the
+  // common_edge.
   int vi_a = front.find_uncommon_vertex(common_edge);
   int vi_b = back.find_uncommon_vertex(common_edge);
   nassertr(vi_a >= 0 && vi_b >= 0, false);
@@ -818,9 +779,8 @@ convex_quad(EggMesherEdge *common_edge, EggMesherStrip &front,
   c3 = vertex_pool->get_vertex(common_edge->_vi_a)->get_pos3();
   d3 = vertex_pool->get_vertex(common_edge->_vi_b)->get_pos3();
 
-  // Project both edges into the 2-d axis plane most nearly
-  // perpendicular to the normal.  We're assuming both tris have the
-  // same normal.
+  // Project both edges into the 2-d axis plane most nearly perpendicular to
+  // the normal.  We're assuming both tris have the same normal.
 
   nassertr(front._planar, false);
 
@@ -852,20 +812,17 @@ convex_quad(EggMesherEdge *common_edge, EggMesherStrip &front,
   c2.set(c3[xi], c3[yi]);
   d2.set(d3[xi], d3[yi]);
 
-  // Now (c2-d2) is the common edge, and (a2-b2) is the new edge.  The
-  // quad is convex iff (c2-d2) intersects (a2-b2).  We actually only
-  // need to test whether (c2-d2) intersects the infinite line passing
-  // through (a2-b2).
+  // Now (c2-d2) is the common edge, and (a2-b2) is the new edge.  The quad is
+  // convex iff (c2-d2) intersects (a2-b2).  We actually only need to test
+  // whether (c2-d2) intersects the infinite line passing through (a2-b2).
 
-  // The equation for the infinite line containing (a2-b2):
-  // Ax + By + C = 0
+  // The equation for the infinite line containing (a2-b2): Ax + By + C = 0
   double A = (b2[1] - a2[1]);
   double B = (a2[0] - b2[0]);
   double C = -(A*b2[0] + B*b2[1]);
 
-  // The parametric equations for the line segment (c2-d2):
-  // x = c2[0] + (d2[0]-c2[0])t
-  // y = c2[1] + (d2[1]-c2[1])t
+  // The parametric equations for the line segment (c2-d2): x = c2[0] +
+  // (d2[0]-c2[0])t y = c2[1] + (d2[1]-c2[1])t
 
   // Solved for t:
   double t = - ((A*c2[0] + B*c2[1]) + C) / (A*(d2[0]-c2[0]) + B*(d2[1]-c2[1]));
@@ -874,11 +831,9 @@ convex_quad(EggMesherEdge *common_edge, EggMesherStrip &front,
   return (0.0 <= t && t <= 1.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::count_neighbors
-//       Access: Public
-//  Description: Returns the number of neighbors the strip shares.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of neighbors the strip shares.
+ */
 int EggMesherStrip::
 count_neighbors() const {
   int count = 0;
@@ -890,11 +845,9 @@ count_neighbors() const {
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::output_neighbors
-//       Access: Public
-//  Description: Writes all the neighbor indexes to the ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes all the neighbor indexes to the ostream.
+ */
 void EggMesherStrip::
 output_neighbors(ostream &out) const {
   Edges::const_iterator ei;
@@ -909,12 +862,9 @@ output_neighbors(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::find_uncommon_vertex
-//       Access: Public
-//  Description: Returns the first vertex found that is not shared by
-//               the given edge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first vertex found that is not shared by the given edge.
+ */
 int EggMesherStrip::
 find_uncommon_vertex(const EggMesherEdge *edge) const {
   int vi_a = edge->_vi_a;
@@ -934,13 +884,10 @@ find_uncommon_vertex(const EggMesherEdge *edge) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::find_opposite_edge
-//       Access: Public
-//  Description: Returns the first edge found that does not contain
-//               the given vertex.  In a tri, this will be the edge
-//               opposite the given vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first edge found that does not contain the given vertex.  In a
+ * tri, this will be the edge opposite the given vertex.
+ */
 const EggMesherEdge *EggMesherStrip::
 find_opposite_edge(int vi) const {
   Edges::const_iterator ei;
@@ -954,13 +901,10 @@ find_opposite_edge(int vi) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::find_opposite_edge
-//       Access: Public
-//  Description: Returns the first edge found that shares no vertices
-//               with the given edge.  In a quad, this will be the
-//               edge opposite the given edge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first edge found that shares no vertices with the given edge.
+ * In a quad, this will be the edge opposite the given edge.
+ */
 const EggMesherEdge *EggMesherStrip::
 find_opposite_edge(const EggMesherEdge *edge) const {
   int vi_a = edge->_vi_a;
@@ -977,13 +921,10 @@ find_opposite_edge(const EggMesherEdge *edge) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::find_adjacent_edge
-//       Access: Public
-//  Description: Returns the first edge found that shares exactly one
-//               vertex with the given edge.  In a quad, this will be
-//               one of two edges adjacent to the given edge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first edge found that shares exactly one vertex with the given
+ * edge.  In a quad, this will be one of two edges adjacent to the given edge.
+ */
 const EggMesherEdge *EggMesherStrip::
 find_adjacent_edge(const EggMesherEdge *edge) const {
   int vi_a = edge->_vi_a;
@@ -1000,12 +941,10 @@ find_adjacent_edge(const EggMesherEdge *edge) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::rotate_to_front
-//       Access: Public
-//  Description: Rotates a triangle or quad so that the given edge is
-//               first in the vertex list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rotates a triangle or quad so that the given edge is first in the vertex
+ * list.
+ */
 void EggMesherStrip::
 rotate_to_front(const EggMesherEdge *edge) {
   int vi_a = edge->_vi_a;
@@ -1042,12 +981,10 @@ rotate_to_front(const EggMesherEdge *edge) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::rotate_to_back
-//       Access: Public
-//  Description: Rotates a triangle or quad so that the given edge is
-//               last in the vertex list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rotates a triangle or quad so that the given edge is last in the vertex
+ * list.
+ */
 void EggMesherStrip::
 rotate_to_back(const EggMesherEdge *edge) {
   int vi_a = edge->_vi_a;
@@ -1085,25 +1022,19 @@ rotate_to_back(const EggMesherEdge *edge) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::can_invert
-//       Access: Public
-//  Description: Returns true if the strip can be inverted (reverse
-//               its facing direction).  Generally, this is true for
-//               quadstrips and false for tristrips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the strip can be inverted (reverse its facing direction).
+ * Generally, this is true for quadstrips and false for tristrips.
+ */
 bool EggMesherStrip::
 can_invert() const {
   return (_type == PT_quadstrip || _type == PT_quad);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::invert
-//       Access: Public
-//  Description: Reverses the facing of a quadstrip by reversing pairs
-//               of vertices.  Returns true if successful, false if
-//               failure (for instance, on a tristrip).
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the facing of a quadstrip by reversing pairs of vertices.  Returns
+ * true if successful, false if failure (for instance, on a tristrip).
+ */
 bool EggMesherStrip::
 invert() {
   if (!can_invert()) {
@@ -1128,31 +1059,26 @@ invert() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::is_odd
-//       Access: Public
-//  Description: Returns true if the tristrip or quadstrip contains an
-//               odd number of pieces.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the tristrip or quadstrip contains an odd number of pieces.
+ */
 bool EggMesherStrip::
 is_odd() const {
   if (_type == PT_quadstrip || _type == PT_quad) {
-    // If a quadstrip has a multiple of four vertices, it has an
-    // odd number of quads.
+    // If a quadstrip has a multiple of four vertices, it has an odd number of
+    // quads.
     return (_verts.size() % 4 == 0);
   } else {
-    // If a tristrip has an odd number of vertices, it has an odd
-    // number of tris.
+    // If a tristrip has an odd number of vertices, it has an odd number of
+    // tris.
     return (_verts.size() % 2 == 1);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::would_reverse_tail
-//       Access: Public
-//  Description: Returns true if convert_to_type() would reverse the
-//               tail edge of the given strip, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if convert_to_type() would reverse the tail edge of the given
+ * strip, false otherwise.
+ */
 bool EggMesherStrip::
 would_reverse_tail(EggMesherStrip::PrimType want_type) const {
   bool reverse = false;
@@ -1168,8 +1094,8 @@ would_reverse_tail(EggMesherStrip::PrimType want_type) const {
 
     case PT_quad:
     case PT_quadstrip:
-      // When we convert a quadstrip to a tristrip, we reverse the
-      // tail edge if we have a multiple of four verts.
+      // When we convert a quadstrip to a tristrip, we reverse the tail edge
+      // if we have a multiple of four verts.
       reverse = (_verts.size() % 4 == 0);
       break;
 
@@ -1200,13 +1126,10 @@ would_reverse_tail(EggMesherStrip::PrimType want_type) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::convert_to_type
-//       Access: Public
-//  Description: Converts the EggMesherStrip from whatever form it
-//               is--triangle, quad, or quadstrip--into a tristrip or
-//               quadstrip.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the EggMesherStrip from whatever form it is--triangle, quad, or
+ * quadstrip--into a tristrip or quadstrip.
+ */
 void EggMesherStrip::
 convert_to_type(EggMesherStrip::PrimType want_type) {
   Verts::iterator vi, vi2;
@@ -1223,8 +1146,8 @@ convert_to_type(EggMesherStrip::PrimType want_type) {
 
     case PT_quad:
     case PT_quadstrip:
-      // To convert from quad/quadstrip to tristrip, we reverse every
-      // other pair of vertices.
+      // To convert from quadquadstrip to tristrip, we reverse every other
+      // pair of vertices.
 
       vi = _verts.begin();
       even = 0;
@@ -1271,13 +1194,11 @@ convert_to_type(EggMesherStrip::PrimType want_type) {
   _type = want_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::combine_edges
-//       Access: Public
-//  Description: Removes the edges from the given strip and appends
-//               them to our own.  If remove_sides is true, then
-//               removes all the edges except the head and the tail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the edges from the given strip and appends them to our own.  If
+ * remove_sides is true, then removes all the edges except the head and the
+ * tail.
+ */
 void EggMesherStrip::
 combine_edges(EggMesherStrip &other, int remove_sides) {
   Edges::iterator ei;
@@ -1288,14 +1209,13 @@ combine_edges(EggMesherStrip &other, int remove_sides) {
   _edges.splice(_edges.end(), other._edges);
 
   if (remove_sides) {
-    // Identify the head and tail edges so we can remove everything
-    // else.
+    // Identify the head and tail edges so we can remove everything else.
     EggMesherEdge head = get_head_edge();
     EggMesherEdge tail = get_tail_edge();
 
     if (!is_odd()) {
-      // If the strip is odd, its true tail edge is the inverse of its
-      // actual edge.
+      // If the strip is odd, its true tail edge is the inverse of its actual
+      // edge.
       tail = EggMesherEdge(tail._vi_b, tail._vi_a);
     }
 
@@ -1309,9 +1229,8 @@ combine_edges(EggMesherStrip &other, int remove_sides) {
 
       // Is this edge to be saved or is it fodder?
       if (!(**ei == head) && !(**ei == tail)) {
-        // Fodder!  But we can't remove it right away, because this
-        // will upset the current list; instead, we'll splice it to
-        // junk_edges.
+        // Fodder!  But we can't remove it right away, because this will upset
+        // the current list; instead, we'll splice it to junk_edges.
         junk_edges.splice(junk_edges.end(), _edges, ei);
       }
       ei = next_ei;
@@ -1325,17 +1244,14 @@ combine_edges(EggMesherStrip &other, int remove_sides) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::remove_all_edges
-//       Access: Public
-//  Description: Removes all active edges from the strip.  This
-//               effectively renders it ineligible to mate with
-//               anything else.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all active edges from the strip.  This effectively renders it
+ * ineligible to mate with anything else.
+ */
 void EggMesherStrip::
 remove_all_edges() {
-  // First, move all the edges to a safe place so we can traverse the
-  // list without it changing on us.
+  // First, move all the edges to a safe place so we can traverse the list
+  // without it changing on us.
   Edges junk_edges;
   junk_edges.splice(junk_edges.end(), _edges);
 
@@ -1346,23 +1262,20 @@ remove_all_edges() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::pick_mate
-//       Access: Public
-//  Description: Defines an ordering to select neighbors to mate with.
-//               This compares strip a with strip b and returns true
-//               if strip a is the preferable choice, false if strip
-//               b.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines an ordering to select neighbors to mate with.  This compares strip
+ * a with strip b and returns true if strip a is the preferable choice, false
+ * if strip b.
+ */
 bool EggMesherStrip::
 pick_mate(const EggMesherStrip &a_strip, const EggMesherStrip &b_strip,
           const EggMesherEdge &a_edge, const EggMesherEdge &b_edge,
           const EggVertexPool *vertex_pool) const {
-  // First, try to avoid polluting quads, quadstrips, and tristrips
-  // with arbitrary triangles.  When we mate a tri or tristrip to a
-  // quadstrip, we end up with a tristrip that may be less versatile
-  // than the original quadstrip.  Better to avoid this if we can.
-  // Try to choose a mate that more closely matches our own type.
+  // First, try to avoid polluting quads, quadstrips, and tristrips with
+  // arbitrary triangles.  When we mate a tri or tristrip to a quadstrip, we
+  // end up with a tristrip that may be less versatile than the original
+  // quadstrip.  Better to avoid this if we can.  Try to choose a mate that
+  // more closely matches our own type.
   int a_cat = a_strip.type_category();
   int b_cat = b_strip.type_category();
   if (a_cat != b_cat) {
@@ -1370,16 +1283,15 @@ pick_mate(const EggMesherStrip &a_strip, const EggMesherStrip &b_strip,
     return abs(a_cat - me_cat) < abs(b_cat - me_cat);
   }
 
-  // Now, if we're connecting two tris, try to connect them up so they
-  // make good quads.
+  // Now, if we're connecting two tris, try to connect them up so they make
+  // good quads.
   if (_type == PT_tri && a_strip._type == PT_tri &&
       b_strip._type == PT_tri) {
 
-    // This will depend on both coplanarity and edge length.  We can't
-    // use just one or the other, because some tris are nearly
-    // isosceles, and some have more than one coplanar neighbor.
-    // Hopefully the combination of both factors will zero us in on
-    // the correct neighbor first.
+    // This will depend on both coplanarity and edge length.  We can't use
+    // just one or the other, because some tris are nearly isosceles, and some
+    // have more than one coplanar neighbor.  Hopefully the combination of
+    // both factors will zero us in on the correct neighbor first.
 
     double a_coplanar = coplanarity(a_strip);
     double b_coplanar = coplanarity(b_strip);
@@ -1403,17 +1315,14 @@ pick_mate(const EggMesherStrip &a_strip, const EggMesherStrip &b_strip,
   return a_strip.count_neighbors() < b_strip.count_neighbors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::pick_sheet_mate
-//       Access: Public
-//  Description: Defines an ordering to select neighbors to follow
-//               when measuring out a quadsheet.  This is only called
-//               when three or more prims share a single edge, which
-//               should be rarely--generally only when coplanar polys
-//               are going on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines an ordering to select neighbors to follow when measuring out a
+ * quadsheet.  This is only called when three or more prims share a single
+ * edge, which should be rarely--generally only when coplanar polys are going
+ * on.
+ */
 bool EggMesherStrip::
-pick_sheet_mate(const EggMesherStrip &a_strip, 
+pick_sheet_mate(const EggMesherStrip &a_strip,
                 const EggMesherStrip &b_strip) const {
   // First, try to get the poly which is closest to our own normal.
   if (_planar && a_strip._planar && b_strip._planar) {
@@ -1437,11 +1346,9 @@ pick_sheet_mate(const EggMesherStrip &a_strip,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::output
-//       Access: Public
-//  Description: Formats the vertex for output in some sensible way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the vertex for output in some sensible way.
+ */
 void EggMesherStrip::
 output(ostream &out) const {
   switch (_status) {
@@ -1508,4 +1415,3 @@ output(ostream &out) const {
 
   out << ".";
 }
-

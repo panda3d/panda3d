@@ -1,16 +1,15 @@
-// Filename: collisionHandlerPhysical.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandlerPhysical.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef COLLISIONHANDLERPHYSICAL_H
 #define COLLISIONHANDLERPHYSICAL_H
@@ -24,13 +23,11 @@
 #include "pointerTo.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerPhysical
-// Description : The abstract base class for a number of
-//               CollisionHandlers that have some physical effect on
-//               their moving bodies: they need to update the nodes'
-//               positions based on the effects of the collision.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for a number of CollisionHandlers that have some
+ * physical effect on their moving bodies: they need to update the nodes'
+ * positions based on the effects of the collision.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerPhysical : public CollisionHandlerEvent {
 public:
   CollisionHandlerPhysical();
@@ -54,6 +51,9 @@ PUBLISHED:
   INLINE bool has_center() const;
   INLINE bool has_contact() const;
 
+PUBLISHED:
+  MAKE_PROPERTY2(center, has_center, get_center, set_center, clear_center);
+
 protected:
   bool _has_contact; // Are we in contact with anything?
 
@@ -64,7 +64,7 @@ protected:
     INLINE void set_target(const NodePath &target,
                            DriveInterface *drive_interface = NULL);
     INLINE void updated_transform();
-    
+
     NodePath _target;
     PT(DriveInterface) _drive_interface;
   };
@@ -104,6 +104,3 @@ private:
 #include "collisionHandlerPhysical.I"
 
 #endif
-
-
-

@@ -1,16 +1,15 @@
-// Filename: shaderContext.h
-// Created by: jyelon (01Sep05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderContext.h
+ * @author jyelon
+ * @date 2005-09-01
+ */
 
 #ifndef SHADERCONTEXT_H
 #define SHADERCONTEXT_H
@@ -20,17 +19,14 @@
 #include "savedContext.h"
 #include "shader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderContext
-// Description : The ShaderContext is meant to contain the compiled
-//               version of a shader string.  ShaderContext is an
-//               abstract base class, there will be a subclass of it
-//               for each shader language and graphics API.
-//               Since the languages are so different and the
-//               graphics APIs have so little in common, the base
-//               class contains almost nothing.  All the implementation
-//               details are in the subclasses.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ShaderContext is meant to contain the compiled version of a shader
+ * string.  ShaderContext is an abstract base class, there will be a subclass
+ * of it for each shader language and graphics API. Since the languages are so
+ * different and the graphics APIs have so little in common, the base class
+ * contains almost nothing.  All the implementation details are in the
+ * subclasses.
+ */
 
 class EXPCL_PANDA_GOBJ ShaderContext: public SavedContext {
 public:
@@ -52,6 +48,7 @@ public:
 
 PUBLISHED:
   INLINE Shader *get_shader() const;
+  MAKE_PROPERTY(shader, get_shader);
 
 public:
   Shader *_shader;

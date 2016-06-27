@@ -1,18 +1,15 @@
-
-////////////////////////////////////////////////////////////////////////
-// Filename    : pathFind.h
-// Created by  : Deepak, John, Navin
-// Date        :  12 Oct 09
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pathFind.h
+ * @author Deepak, John, Navin
+ * @date 2009-10-12
+ */
 
 #ifndef _PATHFIND_H
 #define _PATHFIND_H
@@ -24,15 +21,12 @@
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Class : PathFind
-//  Description : This class contains all the members and functions that are required to form an interface between
-//                the AIBehaviors class and the PathFinder class. An object (pointer) of this class is provided in the
-//                AIBehaviors class. It is only via this object that the user can activate pathfinding.
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This class contains all the members and functions that are required to form
+ * an interface between the AIBehaviors class and the PathFinder class.  An
+ * object (pointer) of this class is provided in the AIBehaviors class.  It is
+ * only via this object that the user can activate pathfinding.
+ */
 class EXPCL_PANDAAI PathFind {
 public:
   AICharacter *_ai_char;
@@ -69,4 +63,3 @@ public:
 };
 
 #endif
-

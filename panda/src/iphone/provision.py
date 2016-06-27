@@ -32,7 +32,7 @@ command = 'env CODESIGN_ALLOCATE="/Developer/Platforms/iPhoneOS.platform/Develop
     'identity' : identity,
     'app' : app,
     'xcent' : xcent,
-    }    
+    }
 
 print command
 result = os.system(command)

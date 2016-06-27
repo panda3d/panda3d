@@ -3,11 +3,9 @@
 """
 from direct.interval.IntervalGlobal import *
 from direct.actor.Actor import *
-from panda3d.core import VBase3,VBase4
-import ObjectGlobals as OG
-import AnimGlobals as AG
+from . import ObjectGlobals as OG
 
-import os,wx, time
+import os, wx
 from wx.lib.embeddedimage import PyEmbeddedImage
 
 #----------------------------------------------------------------------
@@ -59,7 +57,7 @@ PreKeyFrame = PyEmbeddedImage(
     "Rr3+o9+fuDwjeKw1DYIAAbKZzMft7WKxaBiGZVnD4XDWHcbdfZnQiBuFwvr6eqfTqVQqAhBe"
     "/Blo1Hd3b8T3fSZ6Vyrlcrler7eUTIbzhlBEmLU/92jP816srqbTaREJh8UHv2hEGI9xMJBs"
     "9pG8c+thUhFIJmV5GXz/2SJE/E5E/lKMQhdR/wT9BR51CSZZ1VE7AAAAAElFTkSuQmCC")
-    
+
 #----------------------------------------------------------------------
 PrePlay = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAIAAAD9b0jDAAAAA3NCSVQICAjb4U/gAAACV0lE"
@@ -91,7 +89,7 @@ Play = PyEmbeddedImage(
     "0fkoIjNPp9OlpaU4jj9FUbValVJOCgMWoUQkpXRdt7exkSTJysrKrzSdV75XoQyAiHXf39vb"
     "a7fbiPgmLhs484kmoru7O8dxsu576zs/P6kxplwuA0Dx+r4NzdyFuWz8Pz8TvwFpng4ClVur"
     "2QAAAABJRU5ErkJggg==")
- 
+
 #----------------------------------------------------------------------
 NextKeyFrame = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAIAAAD9b0jDAAAAA3NCSVQICAjb4U/gAAACNUlE"
@@ -121,7 +119,7 @@ NextFrame = PyEmbeddedImage(
     "/9h9dTHTtHI5Qkjm/FzXdf+Egs1vQyljlFLDMK6vrm4IyWQymqpyzmlggUIIznmQC/ffKITQ"
     "crn8en+PFcUul89SKV3XaUhQIYQmk4nruslkMpFIvDrffagfffP5PHZyokcijLGw3NtxMcaM"
     "sYOsgcHXVFEU6VB/XhJPgxH3t/WuX9P/FPoTFHYunoRw1IsAAAAASUVORK5CYII=")
-    
+
 #----------------------------------------------------------------------
 LastFrame = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAIAAAD9b0jDAAAAA3NCSVQICAjb4U/gAAAClElE"
@@ -138,7 +136,7 @@ LastFrame = PyEmbeddedImage(
     "TKVS07ncEKhSKmaaJdedK5cztg0AIQgAtNaolG3b5XI5Pz09OjoqhIhGk1IWCgXHcYQQ9wmF"
     "zwkhpN1udzqddDodhjbg75/r67GxsUQ8LqUcyPNhQfRGEUIIIQO43okYQ8QncQ88/WdPf/RP"
     "1ku8pF+hz1V/AVdHWFTfbzsRAAAAAElFTkSuQmCC")
-    
+
 #----------------------------------------------------------------------
 Key = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAIAAAD9b0jDAAAAA3NCSVQICAjb4U/gAAACl0lE"
@@ -155,7 +153,7 @@ Key = PyEmbeddedImage(
     "xhhj7LouIURKyTm/fzIQQhDC15OTmqa9W1o6Ojr6tr1dLBaNeLzVaj0AfaR0Xa9UKm+np09O"
     "TgYGBj6ureVyOcbY7dw6g0opw+Fw8+amcn6eTqdN02SMBTV1CFVCCIVCoVar1fZHOr+nAAC1"
     "JA8E6wb6Pz1Dn15/AQsQSZkYzgBNAAAAAElFTkSuQmCC")
-    
+
 #----------------------------------------------------------------------
 Stop = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAIAAAD9b0jDAAAAA3NCSVQICAjb4U/gAAAAvklE"
@@ -187,33 +185,33 @@ DeleteKey = PyEmbeddedImage(
     "tCkhkE7T+/f58ePS6y1ABADbFmVlqX37vAMDddXVXr+f5U5oIShCAED7+53mZlFejjgvQMw6"
     "Mubu3GnX1cneXjfX8ptAVVUdHhaVlc7u3f+JsxnXsuy9e2VJiTIxAWvmHuTXFCG0vCwNAzYE"
     "39QwRum01PW1Yubfpl9HBAAh8ogboABfR8ylkvfif/lD+Rcv7QbV/D7nwgAAAABJRU5ErkJg"
-    "gg==")    
-    
+    "gg==")
+
 class TimeSlider(wx.Window):
     """
     This is the Time Slider Panel.
     """
     def __init__(self, parent, slidersize, sliderStartFrame, sliderEndFrame, curFrame):
         wx.Window.__init__(self, parent, size = slidersize, style = wx.SUNKEN_BORDER)
-    
+
         self._mainDialog = wx.GetTopLevelParent(self)
         self._mouseIn = False
         self.points = []
         self.numbers = []
-        
+
         self.curFrame = curFrame
         self.sliderStartFrame = sliderStartFrame
         self.sliderEndFrame = sliderEndFrame
         self.frameNum = self.sliderEndFrame-self.sliderStartFrame+1
-        
+
         self.InitBuffer()
-        
+
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
-        
+
     def InitBuffer(self):
         self.w,self.h = self.GetClientSize()
         self.buffer = wx.EmptyBitmap(self.w, self.h)
@@ -222,185 +220,185 @@ class TimeSlider(wx.Window):
         self.DrawNumber(dc)
         self.DrawFrame(dc)
         self.DrawKeys(dc)
-        
+
     def SetTimeSliderData(self, sliderStartFrame = 1, sliderEndFrame = 24, curFrame = 0):
         self.curFrame = curFrame
         self.sliderStartFrame = sliderStartFrame
         self.sliderEndFrame = sliderEndFrame
         self.frameNum = self.sliderEndFrame-self.sliderStartFrame+1
-        
+
         self.points = []
         self.numbers = []
-        
+
         self.InitBuffer()
         self.Refresh()
-        
+
     def OnPaint(self, evt):
         dc = wx.BufferedPaintDC(self, self.buffer)
-    
+
     def DrawTimeSlider(self,dc):
-        
+
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
-        
+
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        
+
         self.unitWidth = self.w/float(self.frameNum)
-        
+
         if self.frameNum <= 20:
-            
+
             self.points.append(((float(0),self.h),(float(0),self.h-15)))
-            
+
             for i in range(1,self.frameNum):
                 temp = self.points[i-1][0][0]+self.unitWidth
                 self.points.append(((temp,self.h),(temp,self.h-15)))
-                
+
             for i in range(self.frameNum):
                 self.numbers.append(self.sliderStartFrame+i)
-            
+
             for i in range(self.frameNum):
                 dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
                 dc.DrawText(st, self.points[i][0][0]+2, 0.5)
-                
+
         elif self.frameNum <= 70:
-        
+
             self.points.append(((self.unitWidth,self.h),(self.unitWidth,self.h-15)))
-        
+
             for i in range(1,int((self.frameNum+1)/2)):
                 temp = self.points[i-1][0][0]+2*self.unitWidth
                 self.points.append(((temp,self.h),(temp,self.h-15)))
-        
+
             for i in range(1,self.frameNum/2+1):
                 self.numbers.append(self.sliderStartFrame-1+i*2)
-        
+
             for i in range(int((self.frameNum+1)/2)):
                 dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
-                
-            for i in range(self.frameNum/2):   
+
+            for i in range(self.frameNum/2):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
                 dc.DrawText(st, self.points[i][0][0]+2, 0.5)
-                
+
         elif self.frameNum <= 150:
-            
+
             self.points.append(((self.unitWidth*4.0,self.h),(self.unitWidth*4.0,self.h-15)))
-            
+
             for i in range(1,int(self.frameNum/5)):
                 temp = self.points[i-1][0][0]+5*self.unitWidth
                 self.points.append(((temp,self.h),(temp,self.h-15)))
-        
+
             for i in range(1,self.frameNum/5+1):
                 self.numbers.append(self.sliderStartFrame-1+i*5)
-        
+
             for i in range(int(self.frameNum/5)):
                 dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
-                
-            for i in range(self.frameNum/5):   
+
+            for i in range(self.frameNum/5):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
                 dc.DrawText(st, self.points[i][0][0]+2, 0.5)
-                
+
         elif self.frameNum <= 250:
-            
+
             self.points.append(((self.unitWidth*9.0,self.h),(self.unitWidth*9.0,self.h-15)))
-            
+
             for i in range(1,int(self.frameNum/10)):
                 temp = self.points[i-1][0][0]+10*self.unitWidth
                 self.points.append(((temp,self.h),(temp,self.h-15)))
-        
+
             for i in range(1,self.frameNum/10+1):
                 self.numbers.append(self.sliderStartFrame+i*10)
-        
+
             for i in range(int(self.frameNum/10)):
                 dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
-                
-            for i in range(self.frameNum/10):   
+
+            for i in range(self.frameNum/10):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
                 dc.DrawText(st, self.points[i][0][0]+2, 0.5)
-                
+
         elif self.frameNum <= 1000:
-            
+
             self.points.append(((self.unitWidth*49.0,self.h),(self.unitWidth*49.0,self.h-15)))
-            
+
             for i in range(1,int(self.frameNum/50)):
                 temp = self.points[i-1][0][0]+50*self.unitWidth
                 self.points.append(((temp,self.h),(temp,self.h-15)))
-        
+
             for i in range(1,self.frameNum/50+1):
                 self.numbers.append(self.sliderStartFrame-1+i*50)
-        
+
             for i in range(int(self.frameNum/50)):
                 dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
-                
-            for i in range(self.frameNum/50):   
+
+            for i in range(self.frameNum/50):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
                 dc.DrawText(st, self.points[i][0][0]+2, 0.5)
-                
+
         elif self.frameNum <= 2000:
-            
+
             self.points.append(((self.unitWidth*99.0,self.h),(self.unitWidth*99.0,self.h-15)))
-            
+
             for i in range(1,int(self.frameNum/100)):
                 temp = self.points[i-1][0][0]+100*self.unitWidth
                 self.points.append(((temp,self.h),(temp,self.h-15)))
-        
+
             for i in range(1,self.frameNum/100+1):
                 self.numbers.append(self.sliderStartFrame-1+i*100)
-        
+
             for i in range(int(self.frameNum/100)):
                 dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
-                
-            for i in range(self.frameNum/100):   
+
+            for i in range(self.frameNum/100):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
                 dc.DrawText(st, self.points[i][0][0]+2, 0.5)
-                
+
         elif self.frameNum <= 10000:
-            
+
             self.points.append(((self.unitWidth*999.0,self.h),(self.unitWidth*999.0,self.h-15)))
-            
+
             for i in range(1,int(self.frameNum/1000)):
                 temp = self.points[i-1][0][0]+1000*self.unitWidth
                 self.points.append(((temp,self.h),(temp,self.h-15)))
-        
+
             for i in range(1,self.frameNum/1000+1):
                 self.numbers.append(self.sliderStartFrame-1+i*1000)
-        
+
             for i in range(int(self.frameNum/1000)):
                 dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
-                
-            for i in range(self.frameNum/1000):   
+
+            for i in range(self.frameNum/1000):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
                 dc.DrawText(st, self.points[i][0][0]+2, 0.5)
-        
+
         else:
             pass
-        
-            
+
+
     def DrawNumber(self, dc):
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
-        
+
         i = self.curFrame-self.sliderStartFrame
         st = str(self.curFrame)
         tw,th = dc.GetTextExtent(st)
         dc.DrawText(st, float(self.unitWidth)*float(i)+2, self.h-th-0.5)
-            
+
     def DrawFrame(self, dc):
         i = self.curFrame-self.sliderStartFrame
         pos = float(self.unitWidth)*float(i)
-        self.curRect = wx.Rect(pos, float(0), self.unitWidth, self.h) 
-        
+        self.curRect = wx.Rect(pos, float(0), self.unitWidth, self.h)
+
         oldPen, oldBrush, oldMode = dc.GetPen(), dc.GetBrush(), dc.GetLogicalFunction()
-                
+
         gray = wx.Colour(200, 200, 200)
         grayPen = wx.Pen(gray)
         grayBrush = wx.Brush(gray)
@@ -408,41 +406,41 @@ class TimeSlider(wx.Window):
         dc.SetBrush(grayBrush)
         dc.SetLogicalFunction(wx.XOR)
         dc.DrawRectangleRect(self.curRect)
-                
+
         dc.SetPen(oldPen)
         dc.SetBrush(oldBrush)
         dc.SetLogicalFunction(oldMode)
-        
+
     def DrawKeys(self, dc):
         if len(self._mainDialog.keys) != 0:
             for key in self._mainDialog.keys:
                 keyFrame = key
                 i = keyFrame-self.sliderStartFrame
                 pos = float(self.unitWidth)*float(i)
-            
+
                 oldPen, oldBrush, oldMode = dc.GetPen(), dc.GetBrush(), dc.GetLogicalFunction()
-            
+
                 dc.SetPen(wx.Pen("red"))
                 dc.SetBrush(wx.Brush("red"))
                 dc.SetLogicalFunction(wx.AND)
                 dc.DrawLine(pos, float(0), pos, self.h)
-                
+
                 dc.SetPen(oldPen)
                 dc.SetBrush(oldBrush)
                 dc.SetLogicalFunction(oldMode)
         else:
             pass
-        
+
     def OnSize(self,evt):
         self.InitBuffer()
-    
+
     def OnLeftDown(self,evt):
         point = (evt.GetX(), evt.GetY())
-        
+
         if point[1]>= float(0) and point[1]<= (float(self.h)-2.0):
             if point[0]>= float(0) and point[0]<= float(self.w):
                 self._mouseIn = True
-                
+
         if self._mouseIn:
             self.CaptureMouse()
             self.curFrame = int(float(point[0])/self.unitWidth)+self.sliderStartFrame
@@ -450,12 +448,12 @@ class TimeSlider(wx.Window):
             self._mainDialog.curFrameSpin.SetValue(self.curFrame)
             self._mainDialog.OnAnimation(self.curFrame)
             self.SetTimeSliderData(self.sliderStartFrame, self.sliderEndFrame, self.curFrame)
-        
+
     def OnLeftUp(self,evt):
         if self.GetCapture():
             self.ReleaseMouse()
             self._mouseIn = False
-    
+
     def OnMotion(self,evt):
         self._mouseIn = False
         if evt.Dragging() and evt.LeftIsDown():
@@ -463,42 +461,42 @@ class TimeSlider(wx.Window):
             if point[1]>= float(0) and point[1]<= (float(self.h)-2.0):
                 if point[0]>= float(0) and point[0]<= float(self.w):
                     self._mouseIn = True
-            
+
             if self._mouseIn:
                 self.curFrame = int(float(point[0])/self.unitWidth)+self.sliderStartFrame
                 self._mainDialog.curFrame = self.curFrame
                 self._mainDialog.curFrameSpin.SetValue(self.curFrame)
                 self._mainDialog.OnAnimation(self.curFrame)
                 self.SetTimeSliderData(self.sliderStartFrame, self.sliderEndFrame, self.curFrame)
-            
+
         evt.Skip()
-        self._mouseIn = False 
-    
+        self._mouseIn = False
+
 class TimeRange(wx.Window):
     """
     This is the Time Range Panel.
     """
     def __init__(self, parent, rangesize, startFrame, endFrame, sliderStartFrame, sliderEndFrame):
         wx.Window.__init__(self, parent, size = rangesize, style = wx.SUNKEN_BORDER)
-    
+
         self._mainDialog = wx.GetTopLevelParent(self)
-        
+
         self._mouseIn = False
-        
+
         self.startFrame = startFrame
         self.endFrame = endFrame
         self.sliderStartFrame = sliderStartFrame
         self.sliderEndFrame = sliderEndFrame
         self.frameNum = self.endFrame-self.startFrame+1
-        
+
         self.InitBuffer()
-        
+
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
-    
+
     def InitBuffer(self):
         self.w,self.h = self.GetClientSize()
         self.buffer = wx.EmptyBitmap(self.w, self.h)
@@ -511,17 +509,17 @@ class TimeRange(wx.Window):
         self.sliderStartFrame = sliderStartFrame
         self.sliderEndFrame = sliderEndFrame
         self.frameNum = self.endFrame-self.startFrame+1
-        
+
         self.InitBuffer()
         self.Refresh()
-        
+
     def OnPaint(self, evt):
         dc = wx.BufferedPaintDC(self, self.buffer)
-    
+
     def DrawTimeRange(self,dc):
         dc.SetBackground(wx.Brush(wx.Colour(150, 150, 150)))
         dc.Clear()
-        
+
         dc.SetPen(wx.Pen(self.GetBackgroundColour()))
         dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
 
@@ -533,27 +531,27 @@ class TimeRange(wx.Window):
         self.curRect = wx.Rect(self.rangePosX, self.rangePosY, self.rangeWidth, self.rangeHeight)
 
         dc.DrawRoundedRectangleRect(self.curRect, radius = 2)
-        
+
     def OnSize(self,evt):
         self.InitBuffer()
-    
+
     def OnLeftDown(self,evt):
         point = (evt.GetX(), evt.GetY())
         self.pos = 0
-        
+
         if point[1]>= self.rangePosY and point[1]<= self.rangePosY+self.rangeHeight:
             if point[0]>= self.rangePosX and point[0]<= self.rangePosX+self.rangeWidth:
                 self._mouseIn = True
-                
+
         if self._mouseIn:
             self.CaptureMouse()
             self.pos = point
-        
+
     def OnLeftUp(self,evt):
         if self.GetCapture():
             self.ReleaseMouse()
             self._mouseIn = False
-    
+
     def OnMotion(self,evt):
         self._mouseIn = False
         if evt.Dragging() and evt.LeftIsDown():
@@ -561,7 +559,7 @@ class TimeRange(wx.Window):
             if newPos[1]>= self.rangePosY and newPos[1]<= self.rangePosY+self.rangeHeight:
                 if newPos[0]>= self.rangePosX and newPos[0]<= self.rangePosX+self.rangeWidth:
                     self._mouseIn = True
-            
+
             if self._mouseIn:
                 if newPos[0] == self.pos[0]:
                     evt.Skip()
@@ -575,7 +573,7 @@ class TimeRange(wx.Window):
                             self.MainPanelUpdate()
                             self.pos = newPos
                             evt.Skip()
-                            self._mouseIn = False 
+                            self._mouseIn = False
                 if newPos[0] < self.pos[0]:
                     if float(self.pos[0]-newPos[0]) >= self.unitWidth:
                         if self.sliderStartFrame > self.startFrame:
@@ -585,18 +583,18 @@ class TimeRange(wx.Window):
                             self.MainPanelUpdate()
                             self.pos = newPos
                             evt.Skip()
-                            self._mouseIn = False 
+                            self._mouseIn = False
         evt.Skip()
-        self._mouseIn = False 
-        
+        self._mouseIn = False
+
     def MainPanelUpdate(self):
         self._mainDialog.sliderStartFrame = self.sliderStartFrame
         self._mainDialog.sliderEndFrame = self.sliderEndFrame
         self._mainDialog.timeSliderStartSpin.SetValue(self.sliderStartFrame)
         self._mainDialog.timeSliderEndSpin.SetValue(self.sliderEndFrame)
         self._mainDialog.timeSlider.SetTimeSliderData(self._mainDialog.sliderStartFrame, self._mainDialog.sliderEndFrame, self._mainDialog.curFrame)
-        
-    
+
+
 class AnimControlUI(wx.Dialog):
     """
     This is the Animation Control main class implementation.
@@ -604,32 +602,32 @@ class AnimControlUI(wx.Dialog):
     def __init__(self, parent, editor):
         wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title="Animation Controller",
                            pos=wx.DefaultPosition, size=(920, 110))
-        
+
         self.editor = editor
         self._initOver = False
-        
+
         self.parallel = []
         if self.editor.animMgr.keyFramesInfo != []:
             self.editor.animMgr.generateKeyFrames()
         self.keys = self.editor.animMgr.keyFrames
         self.editor.objectMgr.findActors(render)
         self.editor.objectMgr.findNodes(render)
-        
+
         self.prePlay = False
         self.play = False
         self.stop = True
-        
+
         self.curFrame = 1
         self.startFrame = 1
         self.sliderStartFrame = 1
         self.endFrame = 24
         self.sliderEndFrame = 24
-                           
+
         self.mainPanel1 = wx.Panel(self, -1)
-        
+
         self.timeSlider = TimeSlider(self.mainPanel1, wx.Size(560, 35), self.sliderStartFrame, self.sliderEndFrame, self.curFrame)
         self.curFrameSpin = wx.SpinCtrl(self.mainPanel1, -1, "",size = (70,25),min=self.startFrame, max=self.endFrame)
-        
+
         bmpFirstFrame = FirstFrame.GetBitmap()
         bmpPreFrame = PreFrame.GetBitmap()
         bmpPreKeyFrame = PreKeyFrame.GetBitmap()
@@ -641,7 +639,7 @@ class AnimControlUI(wx.Dialog):
         bmpKey = Key.GetBitmap()
         self.bmpStop = Stop.GetBitmap()
         bmpDeleteKey = DeleteKey.GetBitmap()
-        
+
         self.buttonFirstFrame = wx.BitmapButton(self.mainPanel1, -1, bmpFirstFrame, size = (30,30),style = wx.BU_AUTODRAW)
         self.buttonPreFrame = wx.BitmapButton(self.mainPanel1, -1, bmpPreFrame, size = (30,30),style = wx.BU_AUTODRAW)
         self.buttonPreKeyFrame = wx.BitmapButton(self.mainPanel1, -1, bmpPreKeyFrame, size = (30,30),style = wx.BU_AUTODRAW)
@@ -650,21 +648,21 @@ class AnimControlUI(wx.Dialog):
         self.buttonNextKeyFrame = wx.BitmapButton(self.mainPanel1, -1, bmpNextKeyFrame, size = (30,30),style = wx.BU_AUTODRAW)
         self.buttonNextFrame = wx.BitmapButton(self.mainPanel1, -1, bmpNextFrame, size = (30,30),style = wx.BU_AUTODRAW)
         self.buttonLastFrame = wx.BitmapButton(self.mainPanel1, -1, bmpLastFrame, size = (30,30),style = wx.BU_AUTODRAW)
-        
+
         self.mainPanel2 = wx.Panel(self, -1)
-        
+
         self.timeStartSpin = wx.SpinCtrl(self.mainPanel2, -1, "",size = (70,25),min=0, max=self.sliderEndFrame)
         self.timeSliderStartSpin = wx.SpinCtrl(self.mainPanel2, -1, "",size = (70,25),min=self.startFrame, max=self.sliderEndFrame)
         self.timeRange = TimeRange(self.mainPanel2, wx.Size(450, 25), self.startFrame, self.endFrame, self.sliderStartFrame, self.sliderEndFrame)
         self.timeSliderEndSpin = wx.SpinCtrl(self.mainPanel2, -1, "",size = (70,25),min=self.sliderStartFrame, max=self.endFrame)
         self.timeEndSpin = wx.SpinCtrl(self.mainPanel2, -1, "",size = (70,25),min=self.sliderStartFrame, max=10000)
         self.buttonDeleteKey = wx.BitmapButton(self.mainPanel2, -1, bmpDeleteKey, size = (30,30),style = wx.BU_AUTODRAW)
-        
+
         self.SetProperties()
         self.DoLayout()
-        
+
         self.Bind(wx.EVT_SPINCTRL, self.OnCurrentTime, self.curFrameSpin)
-        
+
         self.Bind(wx.EVT_BUTTON, self.OnFirstFrame, self.buttonFirstFrame)
         self.Bind(wx.EVT_BUTTON, self.OnPreFrame, self.buttonPreFrame)
         self.Bind(wx.EVT_BUTTON, self.OnPreKeyFrame, self.buttonPreKeyFrame)
@@ -673,40 +671,40 @@ class AnimControlUI(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnNextKeyFrame, self.buttonNextKeyFrame)
         self.Bind(wx.EVT_BUTTON, self.OnNextFrame, self.buttonNextFrame)
         self.Bind(wx.EVT_BUTTON, self.OnLastFrame, self.buttonLastFrame)
-        
+
         self.Bind(wx.EVT_SPINCTRL, self.OnTimeStartSpin, self.timeStartSpin)
         self.Bind(wx.EVT_SPINCTRL, self.OnTimeSliderStartSpin, self.timeSliderStartSpin)
         self.Bind(wx.EVT_SPINCTRL, self.OnTimeSliderEndSpin, self.timeSliderEndSpin)
         self.Bind(wx.EVT_SPINCTRL, self.OnTimeEndSpin, self.timeEndSpin)
-        
+
         self.Bind(wx.EVT_BUTTON, self.OnDeleteKey, self.buttonDeleteKey)
-        
+
         self.Bind(wx.EVT_CLOSE, self.OnExit)
-    
+
         self.OnPropKey()
         self.OnAnimation(self.curFrame)
-        
+
         self.timeUnit = float(1)/float(24)*float(1000)
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
 
         self._initOver = True
-        
+
     def SetProperties(self):
         self.curFrameSpin.SetValue(self.curFrame)
         self.timeStartSpin.SetValue(self.startFrame)
         self.timeSliderStartSpin.SetValue(self.sliderStartFrame)
         self.timeSliderEndSpin.SetValue(self.sliderEndFrame)
         self.timeEndSpin.SetValue(self.endFrame)
-    
+
     def DoLayout(self):
         dialogSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer1 = wx.FlexGridSizer(1, 10, 0, 0)
         mainSizer2 = wx.FlexGridSizer(1, 6, 0, 0)
-        
+
         mainSizer1.Add(self.timeSlider, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
         mainSizer1.Add(self.curFrameSpin, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 3)
-        
+
         mainSizer1.Add(self.buttonFirstFrame, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 3)
         mainSizer1.Add(self.buttonPreFrame, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 3)
         mainSizer1.Add(self.buttonPreKeyFrame, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 3)
@@ -715,46 +713,46 @@ class AnimControlUI(wx.Dialog):
         mainSizer1.Add(self.buttonNextKeyFrame, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 3)
         mainSizer1.Add(self.buttonNextFrame, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 3)
         mainSizer1.Add(self.buttonLastFrame, 0, wx.ALIGN_CENTER_VERTICAL)
-        
+
         mainSizer2.Add(self.timeStartSpin, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
         mainSizer2.Add(self.timeSliderStartSpin, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
         mainSizer2.Add(self.timeRange, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
         mainSizer2.Add(self.timeSliderEndSpin, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
         mainSizer2.Add(self.timeEndSpin, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
         mainSizer2.Add(self.buttonDeleteKey, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 3)
-        
+
         self.mainPanel1.SetSizerAndFit(mainSizer1)
         self.mainPanel2.SetSizerAndFit(mainSizer2)
-        
+
         dialogSizer.Add(self.mainPanel1, 1, wx.ALIGN_CENTER_VERTICAL|wx.TOP, 5)
         dialogSizer.Add(self.mainPanel2, 1, wx.ALIGN_CENTER_VERTICAL|wx.TOP, 7)
-        
+
         self.SetSizer(dialogSizer)
         self.Layout()
 
         self.dialogSizer = dialogSizer
-        
+
     def OnCurrentTime(self, evt):
         self.curFrame = evt.GetInt()
         self.timeSlider.SetTimeSliderData(self.sliderStartFrame, self.sliderEndFrame, self.curFrame)
         self.OnAnimation(self.curFrame)
-    
+
     def OnControl(self):
         self.curFrameSpin.SetValue(self.curFrame)
         self.timeSlider.SetTimeSliderData(self.sliderStartFrame, self.sliderEndFrame, self.curFrame)
         self.OnAnimation(self.curFrame)
-        
+
     def OnFirstFrame(self,evt):
         self.curFrame = self.sliderStartFrame
         self.OnControl()
-    
+
     def OnPreFrame(self,evt):
         if self.curFrame-1 >= self.startFrame:
             self.curFrame -= 1
             self.OnControl()
         else:
             evt.Skip()
-    
+
     def sortKey(self):
         for i in range(0, len(self.keys)-1):
             for j in range(i+1, len(self.keys)):
@@ -762,7 +760,7 @@ class AnimControlUI(wx.Dialog):
                     temp = self.keys[i]
                     self.keys[i] = self.keys[j]
                     self.keys[j] = temp
-        
+
     def OnPreKeyFrame(self,evt):
         self.sortKey()
         if self.curFrame <= self.keys[0] or self.curFrame > self.keys[len(self.keys)-1]:
@@ -772,8 +770,8 @@ class AnimControlUI(wx.Dialog):
                 if self.curFrame <= self.keys[i] and self.curFrame > self.keys[i-1]:
                     self.curFrame = self.keys[i-1]
                     break
-        self.OnControl()            
-            
+        self.OnControl()
+
     def OnTimer(self,evt):
         if self.prePlay == True and self.stop == False and self.play == False:
             if self.curFrame-1>=self.sliderStartFrame:
@@ -782,7 +780,7 @@ class AnimControlUI(wx.Dialog):
             elif self.curFrame == self.sliderStartFrame:
                 self.curFrame = self.sliderEndFrame
                 self.OnControl()
-                
+
         if self.play == True and self.stop == False and self.prePlay == False:
             if self.curFrame+1<=self.sliderEndFrame:
                 self.curFrame += 1
@@ -790,7 +788,7 @@ class AnimControlUI(wx.Dialog):
             elif self.curFrame == self.sliderEndFrame:
                 self.curFrame = self.sliderStartFrame
                 self.OnControl()
-            
+
     def OnPrePlay(self,evt):
         if self.prePlay == False and self.stop == True and self.play == False:
             self.buttonPrePlay = wx.BitmapButton(self.mainPanel1, -1, self.bmpStop, size = (30,30),style = wx.BU_AUTODRAW)
@@ -799,7 +797,7 @@ class AnimControlUI(wx.Dialog):
             self.stop = False
             self.timer.Start(self.timeUnit)
             evt.Skip()
-            
+
         elif self.prePlay == True and self.stop == False and self.play == False:
                 self.buttonPrePlay = wx.BitmapButton(self.mainPanel1, -1, self.bmpPrePlay, size = (30,30),style = wx.BU_AUTODRAW)
                 self.DoLayout()
@@ -809,7 +807,7 @@ class AnimControlUI(wx.Dialog):
                 evt.Skip()
         else:
             evt.Skip()
-    
+
     def OnPlay(self,evt):
         if self.play == False and self.stop == True and self.prePlay == False:
             self.buttonPlay = wx.BitmapButton(self.mainPanel1, -1, self.bmpStop, size = (30,30),style = wx.BU_AUTODRAW)
@@ -818,7 +816,7 @@ class AnimControlUI(wx.Dialog):
             self.stop = False
             self.timer.Start(self.timeUnit)
             evt.Skip()
-            
+
         elif self.play == True and self.stop == False and self.prePlay == False:
                 self.buttonPlay = wx.BitmapButton(self.mainPanel1, -1, self.bmpPlay, size = (30,30),style = wx.BU_AUTODRAW)
                 self.DoLayout()
@@ -828,7 +826,7 @@ class AnimControlUI(wx.Dialog):
                 evt.Skip()
         else:
             evt.Skip()
-    
+
     def OnNextKeyFrame(self,evt):
         self.sortKey()
         if self.curFrame < self.keys[0] or self.curFrame >= self.keys[len(self.keys)-1]:
@@ -838,19 +836,19 @@ class AnimControlUI(wx.Dialog):
                 if self.curFrame >= self.keys[i] and self.curFrame < self.keys[i+1]:
                     self.curFrame = self.keys[i+1]
                     break
-        self.OnControl()  
-    
+        self.OnControl()
+
     def OnNextFrame(self,evt):
         if self.curFrame+1 <= self.endFrame:
             self.curFrame += 1
             self.OnControl()
         else:
             evt.Skip()
-    
+
     def OnLastFrame(self,evt):
         self.curFrame = self.sliderEndFrame
         self.OnControl()
-    
+
     def OnTime(self):
         preFrame = self.curFrame
         self.curFrameSpin.SetRange(self.startFrame,self.endFrame)
@@ -858,7 +856,7 @@ class AnimControlUI(wx.Dialog):
         self.timeSlider.SetTimeSliderData(self.sliderStartFrame, self.sliderEndFrame, self.curFrame)
         self.timeRange.SetTimeRangeData(self.startFrame, self.endFrame, self.sliderStartFrame, self.sliderEndFrame)
         self.parallel = self.editor.animMgr.createParallel(self.startFrame,self.endFrame)
-        
+
     def OnTimeStartSpin(self,evt):
         self.startFrame = evt.GetInt()
         self.timeSliderStartSpin.SetRange(self.startFrame, self.sliderEndFrame)
@@ -868,17 +866,17 @@ class AnimControlUI(wx.Dialog):
             self.OnTime()
         else:
             self.OnTime()
-    
+
     def OnTimeSliderStartSpin(self,evt):
         self.sliderStartFrame = evt.GetInt()
         self.timeEndSpin.SetRange(self.sliderStartFrame, 10000)
         self.OnTime()
-    
+
     def OnTimeSliderEndSpin(self,evt):
         self.sliderEndFrame = evt.GetInt()
         self.timeStartSpin.SetRange(0, self.sliderEndFrame)
         self.OnTime()
-    
+
     def OnTimeEndSpin(self,evt):
         self.endFrame = evt.GetInt()
         self.timeSliderEndSpin.SetRange(self.sliderStartFrame, self.endFrame)
@@ -888,37 +886,37 @@ class AnimControlUI(wx.Dialog):
             self.OnTime()
         else:
             self.OnTime()
-    
+
     def OnDeleteKey(self,evt):
         for i in range(0,len(self.keys)):
             if self.curFrame == self.keys[i]:
                 del self.keys[i]
                 break
-       
-        for j in self.editor.animMgr.keyFramesInfo.keys():
+
+        for j in list(self.editor.animMgr.keyFramesInfo.keys()):
             for k in range(0,len(self.editor.animMgr.keyFramesInfo[j])):
-                if self.curFrame == self.editor.animMgr.keyFramesInfo[j][k][0]: 
+                if self.curFrame == self.editor.animMgr.keyFramesInfo[j][k][0]:
                     del self.editor.animMgr.keyFramesInfo[j][k]
                     break
-        
-        for l in self.editor.animMgr.keyFramesInfo.keys():
+
+        for l in list(self.editor.animMgr.keyFramesInfo.keys()):
             if len(self.editor.animMgr.keyFramesInfo[l]) == 0:
                 del self.editor.animMgr.keyFramesInfo[l]
-        
+
         self.OnPropKey()
         self.OnAnimation(self.curFrame)
-        
+
     def OnPropKey(self):
         self.parallel = self.editor.animMgr.createParallel(self.startFrame, self.endFrame)
         self.timeSlider.SetTimeSliderData(self.sliderStartFrame, self.sliderEndFrame, self.curFrame)
-       
-    
+
+
     def OnAnimation(self, curFrame):
         time = float(curFrame-1)/float(24)
         self.parallel.setT(time)
         if self.editor.GRAPH_EDITOR == True:
-            self.editor.ui.graphEditorUI.curFrameChange() 
-                  
+            self.editor.ui.graphEditorUI.curFrameChange()
+
     def OnExit(self,evt):
         for actor in self.editor.objectMgr.Actor:
             actorAnim = os.path.basename(actor[OG.OBJ_ANIM])
@@ -929,8 +927,8 @@ class AnimControlUI(wx.Dialog):
         self.editor.mode = self.editor.BASE_MODE
 
 
-        
 
 
 
-  
+
+

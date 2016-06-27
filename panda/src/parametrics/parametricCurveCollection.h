@@ -1,16 +1,15 @@
-// Filename: parametricCurveCollection.h
-// Created by:  drose (04Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file parametricCurveCollection.h
+ * @author drose
+ * @date 2001-03-04
+ */
 
 #ifndef NODEPATHCOLLECTION_H
 #define NODEPATHCOLLECTION_H
@@ -28,16 +27,13 @@
 
 class ParametricCurveDrawer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParametricCurveCollection
-// Description : This is a set of zero or more ParametricCurves, which
-//               may or may not be related.  If they are related, the
-//               set should contain no more than one XYZ curve, no
-//               more than one HPR curve, and zero or more Timewarp
-//               curves, which can then be evaluated as a unit to
-//               return a single transformation matrix for a given
-//               unit of time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a set of zero or more ParametricCurves, which may or may not be
+ * related.  If they are related, the set should contain no more than one XYZ
+ * curve, no more than one HPR curve, and zero or more Timewarp curves, which
+ * can then be evaluated as a unit to return a single transformation matrix
+ * for a given unit of time.
+ */
 class EXPCL_PANDA_PARAMETRICS ParametricCurveCollection : public ReferenceCount {
 PUBLISHED:
   ParametricCurveCollection();
@@ -48,6 +44,7 @@ PUBLISHED:
   int add_curves(PandaNode *node);
   bool remove_curve(ParametricCurve *curve);
   void remove_curve(int index);
+  void set_curve(int index, ParametricCurve *curve);
   bool has_curve(ParametricCurve *curve) const;
   void clear();
   void clear_timewarps();
@@ -64,6 +61,13 @@ PUBLISHED:
   MAKE_SEQ(get_timewarp_curves, get_num_timewarps, get_timewarp_curve);
 
   INLINE PN_stdfloat get_max_t() const;
+
+  MAKE_SEQ_PROPERTY(curves, get_num_curves, get_curve, set_curve, remove_curve);
+  MAKE_PROPERTY(xyz_curve, get_xyz_curve);
+  MAKE_PROPERTY(hpr_curve, get_hpr_curve);
+  MAKE_PROPERTY(default_curve, get_default_curve);
+  MAKE_SEQ_PROPERTY(timewarp_curves, get_num_timewarps, get_timewarp_curve);
+  MAKE_PROPERTY(max_t, get_max_t);
 
   void make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit);
   void face_forward(PN_stdfloat segments_per_unit);
@@ -119,5 +123,3 @@ operator << (ostream &out, const ParametricCurveCollection &col) {
 #include "parametricCurveCollection.I"
 
 #endif
-
-

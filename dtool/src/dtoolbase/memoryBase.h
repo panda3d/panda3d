@@ -1,16 +1,15 @@
-// Filename: memoryBase.h
-// Created by:  drose (16Nov06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memoryBase.h
+ * @author drose
+ * @date 2006-11-16
+ */
 
 #ifndef MEMORYBASE_H
 #define MEMORYBASE_H
@@ -18,11 +17,11 @@
 #include "dtoolbase.h"
 #include "memoryHook.h"
 
-// Place this macro within a class definition to define appropriate
-// operator new and delete methods that hook into the MemoryInfo class
-// to provide memory tracking.  Of course, it is better simply to
-// inherit from MemoryBase; this macro is provided to resolve problems
-// with multiple inheritance or some such.
+// Place this macro within a class definition to define appropriate operator
+// new and delete methods that hook into the MemoryInfo class to provide
+// memory tracking.  Of course, it is better simply to inherit from
+// MemoryBase; this macro is provided to resolve problems with multiple
+// inheritance or some such.
 
 #ifndef USE_MEMORY_NOWRAPPERS
 
@@ -58,23 +57,18 @@
 
 #endif  // USE_MEMORY_NOWRAPPERS
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryBase
-// Description : This class is intended to be the base class of all
-//               objects in Panda that might be allocated and deleted
-//               via the new and delete operators.  It redefines these
-//               operators to provide some memory tracking support.
-//
-//               We used to try to override the global operator new
-//               and delete methods, but that seems to cause problems
-//               when including header files for C++-based system
-//               libraries (such as are found on OSX).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is intended to be the base class of all objects in Panda that
+ * might be allocated and deleted via the new and delete operators.  It
+ * redefines these operators to provide some memory tracking support.
+ *
+ * We used to try to override the global operator new and delete methods, but
+ * that seems to cause problems when including header files for C++-based
+ * system libraries (such as are found on OSX).
+ */
 class EXPCL_DTOOL MemoryBase {
 public:
   ALLOC_MEMORY_BASE;
 };
 
 #endif
-
-

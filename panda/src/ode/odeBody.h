@@ -1,16 +1,15 @@
-// Filename: odeBody.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeBody.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODEBODY_H
 #define ODEBODY_H
@@ -22,18 +21,14 @@
 #include "ode_includes.h"
 #include "odeWorld.h"
 #include "odeMass.h"
-#ifdef HAVE_PYTHON
-#include "Python.h"
-#endif
 
 class OdeJoint;
 class OdeGeom;
 class OdeCollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeBody
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeBody : public TypedObject {
   friend class OdeJoint;
   friend class OdeGeom;
@@ -57,7 +52,7 @@ PUBLISHED:
   INLINE void set_auto_disable_defaults();
   INLINE void set_data(void *data);
 #ifdef HAVE_PYTHON
-  INLINE void set_data(PyObject *data);
+  void set_data(PyObject *data);
 #endif
 
   INLINE void set_position(dReal x, dReal y, dReal z);
@@ -77,7 +72,7 @@ PUBLISHED:
   INLINE dReal get_auto_disable_time() const;
   INLINE int   get_auto_disable_flag() const;
 #ifdef HAVE_PYTHON
-  INLINE PyObject* get_data() const;
+  PyObject* get_data() const;
 #else
   INLINE void* get_data() const;
 #endif
@@ -97,21 +92,21 @@ PUBLISHED:
   INLINE void add_rel_force(const LVecBase3f &f);
   INLINE void add_rel_torque(dReal fx, dReal fy, dReal fz);
   INLINE void add_rel_torque(const LVecBase3f &f);
-  INLINE void add_force_at_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_force_at_pos(dReal fx, dReal fy, dReal fz,
                                dReal px, dReal py, dReal pz);
-  INLINE void add_force_at_pos(const LVecBase3f &f, 
+  INLINE void add_force_at_pos(const LVecBase3f &f,
                                const LVecBase3f &pos);
-  INLINE void add_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_force_at_rel_pos(dReal fx, dReal fy, dReal fz,
                                    dReal px, dReal py, dReal pz);
-  INLINE void add_force_at_rel_pos(const LVecBase3f &f, 
+  INLINE void add_force_at_rel_pos(const LVecBase3f &f,
                                    const LVecBase3f &pos);
-  INLINE void add_rel_force_at_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_rel_force_at_pos(dReal fx, dReal fy, dReal fz,
                                    dReal px, dReal py, dReal pz);
-  INLINE void add_rel_force_at_pos(const LVecBase3f &f, 
+  INLINE void add_rel_force_at_pos(const LVecBase3f &f,
                                    const LVecBase3f &pos);
-  INLINE void add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz,
                                        dReal px, dReal py, dReal pz);
-  INLINE void add_rel_force_at_rel_pos(const LVecBase3f &f, 
+  INLINE void add_rel_force_at_rel_pos(const LVecBase3f &f,
                                        const LVecBase3f &pos);
   INLINE void set_force(dReal x, dReal y, dReal z);
   INLINE void set_force(const LVecBase3f &f);

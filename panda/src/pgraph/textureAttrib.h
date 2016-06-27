@@ -1,16 +1,15 @@
-// Filename: textureAttrib.h
-// Created by:  drose (21Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureAttrib.h
+ * @author drose
+ * @date 2002-02-21
+ */
 
 #ifndef TEXTUREATTRIB_H
 #define TEXTUREATTRIB_H
@@ -25,20 +24,18 @@
 #include "vector_int.h"
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureAttrib
-// Description : Indicates the set of TextureStages and their
-//               associated Textures that should be applied to (or
-//               removed from) a node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the set of TextureStages and their associated Textures that
+ * should be applied to (or removed from) a node.
+ */
 class EXPCL_PANDA_PGRAPH TextureAttrib : public RenderAttrib {
 protected:
   INLINE TextureAttrib();
   INLINE TextureAttrib(const TextureAttrib &copy);
 
 PUBLISHED:
-  // These methods are used to create a simple, single-textured layer.
-  // For multitexture, use the multitexture interfaces, further below.
+  // These methods are used to create a simple, single-textured layer.  For
+  // multitexture, use the multitexture interfaces, further below.
   static CPT(RenderAttrib) make(Texture *tex);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
@@ -46,10 +43,10 @@ PUBLISHED:
   INLINE bool is_off() const;
   INLINE Texture *get_texture() const;
 
-  // The following methods define the new multitexture mode for
-  // TextureAttrib.  Each TextureAttrib can add or remove individual
-  // texture stages from the complete set of textures that are to be
-  // applied; this is similar to the mechanism of LightAttrib.
+  // The following methods define the new multitexture mode for TextureAttrib.
+  // Each TextureAttrib can add or remove individual texture stages from the
+  // complete set of textures that are to be applied; this is similar to the
+  // mechanism of LightAttrib.
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_all_off();
 

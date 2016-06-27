@@ -166,7 +166,7 @@ class ClusterMsgHandler:
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_NAMED_MOVEMENT_DONE)
         return datagram
-            
+
 
     def makeNamedObjectMovementDatagram(self, xyz, hpr, scale, color, hidden, name):
         datagram = PyDatagram()
@@ -186,9 +186,9 @@ class ClusterMsgHandler:
         datagram.addFloat32(color[0])
         datagram.addFloat32(color[1])
         datagram.addFloat32(color[2])
-        datagram.addFloat32(color[3])        
+        datagram.addFloat32(color[3])
         datagram.addBool(hidden)
-        return datagram    
+        return datagram
 
     def parseCamMovementDatagram(self, dgi):
         x=dgi.getFloat32()
@@ -215,7 +215,7 @@ class ClusterMsgHandler:
         red = dgi.getFloat32()
         g = dgi.getFloat32()
         b = dgi.getFloat32()
-        a = dgi.getFloat32()        
+        a = dgi.getFloat32()
         hidden = dgi.getBool()
         return (name,x, y, z, h, p, r, sx, sy, sz, red, g, b, a, hidden)
 

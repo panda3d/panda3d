@@ -1,16 +1,15 @@
-// Filename: pfmFile.h
-// Created by:  drose (23Dec10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pfmFile.h
+ * @author drose
+ * @date 2010-12-23
+ */
 
 #ifndef PFMFILE_H
 #define PFMFILE_H
@@ -25,12 +24,10 @@ class PNMImage;
 class PNMReader;
 class PNMWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PfmFile
-// Description : Defines a pfm file, a 2-d table of floating-point
-//               numbers, either 3-component or 1-component, or with a
-//               special extension, 2- or 4-component.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a pfm file, a 2-d table of floating-point numbers, either
+ * 3-component or 1-component, or with a special extension, 2- or 4-component.
+ */
 class EXPCL_PANDA_PNMIMAGE PfmFile : public PNMImageHeader {
 PUBLISHED:
   PfmFile();
@@ -50,11 +47,14 @@ PUBLISHED:
   BLOCKING bool load(const PNMImage &pnmimage);
   BLOCKING bool store(PNMImage &pnmimage) const;
   BLOCKING bool store_mask(PNMImage &pnmimage) const;
+  BLOCKING bool store_mask(PNMImage &pnmimage, const LVecBase4f &min_point, const LVecBase4f &max_point) const;
 
   INLINE bool is_valid() const;
+  MAKE_PROPERTY(valid, is_valid);
 
   INLINE PN_float32 get_scale() const;
   INLINE void set_scale(PN_float32 scale);
+  MAKE_PROPERTY(scale, get_scale, set_scale);
 
   INLINE bool has_point(int x, int y) const;
   INLINE PN_float32 get_channel(int x, int y, int c) const;
@@ -157,6 +157,9 @@ PUBLISHED:
                         float pixel_scale = 1.0);
 
   void operator *= (float multiplier);
+
+  void indirect_1d_lookup(const PfmFile &index_image, int channel,
+                          const PfmFile &pixel_values);
 
   INLINE void gamma_correct(float from_gamma, float to_gamma);
   INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);

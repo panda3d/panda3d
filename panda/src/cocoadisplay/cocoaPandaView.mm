@@ -1,16 +1,15 @@
-// Filename: cocoaPandaView.mm
-// Created by:  rdb (17May12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cocoaPandaView.mm
+ * @author rdb
+ * @date 2012-05-17
+ */
 
 #include "config_cocoadisplay.h"
 #import "cocoaPandaView.h"
@@ -45,8 +44,10 @@
 - (void) drawRect:(NSRect)dirtyRect {
   // Do nothing.  We draw from another thread.
 
-  cocoadisplay_cat.spam()
-    << "drawRect was called.\n";
+  if (cocoadisplay_cat.is_spam()) {
+    cocoadisplay_cat.spam()
+      << "drawRect was called.\n";
+  }
 }
 
 - (void) finalize {
@@ -55,8 +56,8 @@
 }
 
 - (BOOL) isFlipped {
-  // Apple uses a coordinate system where the lower-left corner
-  // represents (0, 0).  In Panda, this is the upper-left corner.
+  // Apple uses a coordinate system where the lower-left corner represents (0,
+  // 0).  In Panda, this is the upper-left corner.
   return YES;
 }
 
@@ -68,11 +69,11 @@
 - (BOOL) acceptsFirstResponder {
   return YES;
 }
- 
+
 - (BOOL) becomeFirstResponder {
   return YES;
 }
- 
+
 - (BOOL) resignFirstResponder {
   return YES;
 }
@@ -85,7 +86,7 @@
 
 - (void) setFrame: (NSRect) frame {
   [super setFrame: frame];
-  //_graphicsWindow->handle_resize_event();
+  // _graphicsWindow->handle_resize_event();
 }
 
 - (void) keyDown: (NSEvent *) event {
@@ -116,7 +117,9 @@
   NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
   BOOL inside = [self mouse:loc inRect:[self bounds]];
 
-  if (_graphicsWindow->get_properties().get_mouse_mode() == WindowProperties::M_relative) {
+  // the correlation between mouse deltas and location are "debounced"
+  // apparently, so send deltas for both relative and confined modes
+  if (_graphicsWindow->get_properties().get_mouse_mode() != WindowProperties::M_absolute) {
     _graphicsWindow->handle_mouse_moved_event(inside, [event deltaX], [event deltaY], false);
   } else {
     _graphicsWindow->handle_mouse_moved_event(inside, loc.x, loc.y, true);

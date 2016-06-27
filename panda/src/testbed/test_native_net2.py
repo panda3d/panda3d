@@ -43,7 +43,7 @@ while 1==1:
     for x in range(200000):
         if  not MyConection.SendMessage(dg1):
             print "Error Sending Message"
-        
+
     MyConection.Flush();
     time.sleep(1)
     print "loop"

@@ -1,16 +1,15 @@
-// Filename: clockObject.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clockObject.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef CLOCKOBJECT_H
 #define CLOCKOBJECT_H
@@ -37,32 +36,25 @@ PUBLISHED:
   ulong tv[2];
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClockObject
-// Description : A ClockObject keeps track of elapsed real time and
-//               discrete time.  In normal mode, get_frame_time()
-//               returns the time as of the last time tick() was
-//               called.  This is the "discrete" time, and is usually
-//               used to get the time as of, for instance, the
-//               beginning of the current frame.
-//
-//               In other modes, as set by set_mode() or the
-//               clock-mode config variable, get_frame_time() may
-//               return other values to simulate different timing
-//               effects, for instance to perform non-real-time
-//               animation.  See set_mode().
-//
-//               In all modes, get_real_time() always returns the
-//               elapsed real time in seconds since the ClockObject
-//               was constructed, or since it was last reset.
-//
-//               You can create your own ClockObject whenever you want
-//               to have your own local timer.  There is also a
-//               default, global ClockObject intended to represent
-//               global time for the application; this is normally set
-//               up to tick every frame so that its get_frame_time()
-//               will return the time for the current frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ClockObject keeps track of elapsed real time and discrete time.  In
+ * normal mode, get_frame_time() returns the time as of the last time tick()
+ * was called.  This is the "discrete" time, and is usually used to get the
+ * time as of, for instance, the beginning of the current frame.
+ *
+ * In other modes, as set by set_mode() or the clock-mode config variable,
+ * get_frame_time() may return other values to simulate different timing
+ * effects, for instance to perform non-real-time animation.  See set_mode().
+ *
+ * In all modes, get_real_time() always returns the elapsed real time in
+ * seconds since the ClockObject was constructed, or since it was last reset.
+ *
+ * You can create your own ClockObject whenever you want to have your own
+ * local timer.  There is also a default, global ClockObject intended to
+ * represent global time for the application; this is normally set up to tick
+ * every frame so that its get_frame_time() will return the time for the
+ * current frame.
+ */
 class EXPCL_PANDA_PUTIL ClockObject : public ReferenceCount {
 PUBLISHED:
   enum Mode {
@@ -82,6 +74,7 @@ PUBLISHED:
 
   void set_mode(Mode mode);
   INLINE Mode get_mode() const;
+  MAKE_PROPERTY(mode, get_mode, set_mode);
 
   INLINE double get_frame_time(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE double get_real_time() const;
@@ -95,21 +88,35 @@ PUBLISHED:
   INLINE int get_frame_count(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE double get_net_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
+  MAKE_PROPERTY(frame_time, get_frame_time, set_frame_time);
+  MAKE_PROPERTY(real_time, get_real_time, set_real_time);
+  MAKE_PROPERTY(long_time, get_long_time);
+  MAKE_PROPERTY(frame_count, get_frame_count, set_frame_count);
+
   INLINE double get_dt(Thread *current_thread = Thread::get_current_thread()) const;
   void set_dt(double dt);
   void set_frame_rate(double frame_rate);
+  MAKE_PROPERTY(dt, get_dt, set_dt);
 
   INLINE double get_max_dt() const;
   INLINE void set_max_dt(double max_dt);
+  MAKE_PROPERTY(max_dt, get_max_dt, set_max_dt);
 
   INLINE double get_degrade_factor() const;
   INLINE void set_degrade_factor(double degrade_factor);
+  MAKE_PROPERTY(degrade_factor, get_degrade_factor, set_degrade_factor);
 
   INLINE void set_average_frame_rate_interval(double time);
   INLINE double get_average_frame_rate_interval() const;
+  MAKE_PROPERTY(average_frame_rate_interval,
+            get_average_frame_rate_interval,
+            set_average_frame_rate_interval);
+
   double get_average_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
   double get_max_frame_duration(Thread *current_thread = Thread::get_current_thread()) const;
   double calc_frame_rate_deviation(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(average_frame_rate, get_average_frame_rate);
+  MAKE_PROPERTY(max_frame_duration, get_max_frame_duration);
 
   void tick(Thread *current_thread = Thread::get_current_thread());
   void sync_frame_time(Thread *current_thread = Thread::get_current_thread());
@@ -138,8 +145,7 @@ private:
   double _degrade_factor;
   int _error_count;
 
-  // For tracking the average frame rate over a certain interval of
-  // time.
+  // For tracking the average frame rate over a certain interval of time.
   double _average_frame_rate_interval;
   typedef pdeque<double> Ticks;
   Ticks _ticks;
@@ -190,4 +196,3 @@ operator >> (istream &in, ClockObject::Mode &mode);
 #include "clockObject.I"
 
 #endif
-

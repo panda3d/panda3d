@@ -1,17 +1,15 @@
-// Filename: uniqueIdAllocator.cxx
-// Created by:  schuyler 2003-03-13
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-// 
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file uniqueIdAllocator.cxx
+ * @author schuyler
+ * @date 2003-03-13
+ */
 
 #include "pandabase.h"
 #include "pnotify.h"
@@ -22,8 +20,8 @@
 NotifyCategoryDecl(uniqueIdAllocator, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 NotifyCategoryDef(uniqueIdAllocator, "");
 
-const PN_uint32 UniqueIdAllocator::IndexEnd = (PN_uint32)-1;
-const PN_uint32 UniqueIdAllocator::IndexAllocated = (PN_uint32)-2;
+const uint32_t UniqueIdAllocator::IndexEnd = (uint32_t)-1;
+const uint32_t UniqueIdAllocator::IndexAllocated = (uint32_t)-2;
 
 #ifndef NDEBUG //[
   // Non-release build:
@@ -48,13 +46,11 @@ const PN_uint32 UniqueIdAllocator::IndexAllocated = (PN_uint32)-2;
   audio_cat->error() << msg << endl
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::Constructor
-//       Access: Published
-//  Description: Create a free id pool in the range [min:max].
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a free id pool in the range [min:max].
+ */
 UniqueIdAllocator::
-UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
+UniqueIdAllocator(uint32_t min, uint32_t max)
   : _min(min), _max(max) {
   uniqueIdAllocator_debug("UniqueIdAllocator("<<min<<", "<<max<<")");
 
@@ -62,10 +58,10 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
   _size = _max-_min+1; // +1 because min and max are inclusive.
   nassertv(_size != 0); // size must be > 0.
 
-  _table = (PN_uint32 *)PANDA_MALLOC_ARRAY(_size * sizeof(PN_uint32));
+  _table = (uint32_t *)PANDA_MALLOC_ARRAY(_size * sizeof(uint32_t));
   nassertv(_table); // This should be redundant if new throws an exception.
 
-  for (PN_uint32 i = 0; i < _size; ++i) {
+  for (uint32_t i = 0; i < _size; ++i) {
     _table[i] = i + 1;
   }
   _table[_size - 1] = IndexEnd;
@@ -74,11 +70,9 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
   _free = _size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 UniqueIdAllocator::
 ~UniqueIdAllocator() {
   uniqueIdAllocator_debug("~UniqueIdAllocator()");
@@ -86,21 +80,18 @@ UniqueIdAllocator::
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::allocate
-//       Access: Published
-//  Description: Returns an id between _min and _max (that were passed
-//               to the constructor).
-//               IndexEnd is returned if no ids are available.
-////////////////////////////////////////////////////////////////////
-PN_uint32 UniqueIdAllocator::
+/**
+ * Returns an id between _min and _max (that were passed to the constructor).
+ * IndexEnd is returned if no ids are available.
+ */
+uint32_t UniqueIdAllocator::
 allocate() {
   if (_next_free == IndexEnd) {
     // ...all ids allocated.
     uniqueIdAllocator_warning("allocate Error: no more free ids.");
     return IndexEnd;
   }
-  PN_uint32 index = _next_free;
+  uint32_t index = _next_free;
   nassertr(_table[index] != IndexAllocated, IndexEnd);
 
   _next_free = _table[_next_free];
@@ -108,31 +99,26 @@ allocate() {
 
   --_free;
 
-  PN_uint32 id = index + _min;
+  uint32_t id = index + _min;
   uniqueIdAllocator_debug("allocate() returning " << id);
   return id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::initial_reserve_id
-//       Access: Published
-//  Description: This may be called to mark a particular id as having
-//               already been allocated (for instance, by a prior
-//               pass).  The specified id is removed from the
-//               available pool.
-//
-//               Because of the limitations of this algorithm, this is
-//               most efficient when it is called before the first
-//               call to allocate(), and when all the calls to
-//               initial_reserve_id() are made in descending order by
-//               id.  However, this is a performance warning only; if
-//               performance is not an issue, any id may be reserved
-//               at any time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be called to mark a particular id as having already been allocated
+ * (for instance, by a prior pass).  The specified id is removed from the
+ * available pool.
+ *
+ * Because of the limitations of this algorithm, this is most efficient when
+ * it is called before the first call to allocate(), and when all the calls to
+ * initial_reserve_id() are made in descending order by id.  However, this is
+ * a performance warning only; if performance is not an issue, any id may be
+ * reserved at any time.
+ */
 void UniqueIdAllocator::
-initial_reserve_id(PN_uint32 id) {
+initial_reserve_id(uint32_t id) {
   nassertv(id >= _min && id <= _max); // Attempt to reserve out-of-range id.
-  PN_uint32 index = id - _min; // Convert to _table index.
+  uint32_t index = id - _min; // Convert to _table index.
 
   nassertv(_table[index] != IndexAllocated);
 
@@ -145,20 +131,19 @@ initial_reserve_id(PN_uint32 id) {
     _next_free = _table[index];
 
   } else {
-    // Since we don't store back pointers in the free chain, we have
-    // to search for the element in the free chain that points to this
-    // index.
+    // Since we don't store back pointers in the free chain, we have to search
+    // for the element in the free chain that points to this index.
 
-    // However, there is an easy optimal case: because we expect that
-    // this call will be made before any calls to allocate(),
-    // hopefully is it still true that the _table is still set up such
-    // that _table[i] = i+1 (and if the numbers are reserved in
-    // descending order, this will be true at least for all i <=
-    // index).  Thus, the free link to slot [index] is expected to be
-    // the slot right before it, or if not, it usually won't be far
-    // before it.
+/*
+ * However, there is an easy optimal case: because we expect that this call
+ * will be made before any calls to allocate(), hopefully is it still true
+ * that the _table is still set up such that _table[i] = i+1 (and if the
+ * numbers are reserved in descending order, this will be true at least for
+ * all i <= index).  Thus, the free link to slot [index] is expected to be the
+ * slot right before it, or if not, it usually won't be far before it.
+ */
 
-    PN_uint32 prev_index = index;
+    uint32_t prev_index = index;
     while (prev_index > 0 && _table[prev_index - 1] != index) {
       --prev_index;
     }
@@ -187,18 +172,16 @@ initial_reserve_id(PN_uint32 id) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::free
-//       Access: Published
-//  Description: Free an allocated index (index must be between _min
-//               and _max that were passed to the constructor).
-////////////////////////////////////////////////////////////////////
+/**
+ * Free an allocated index (index must be between _min and _max that were
+ * passed to the constructor).
+ */
 void UniqueIdAllocator::
-free(PN_uint32 id) {
+free(uint32_t id) {
   uniqueIdAllocator_debug("free("<<id<<")");
 
   nassertv(id >= _min && id <= _max); // Attempt to free out-of-range id.
-  PN_uint32 index = id - _min; // Convert to _table index.
+  uint32_t index = id - _min; // Convert to _table index.
   nassertv(_table[index] == IndexAllocated); // Attempt to free non-allocated id.
   if (_next_free != IndexEnd) {
     nassertv(_table[_last_free] == IndexEnd);
@@ -216,38 +199,32 @@ free(PN_uint32 id) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::fraction_used
-//       Access: Published
-//  Description: return the decimal fraction of the pool that is used.
-//               The range is 0 to 1.0 (e.g. 75% would be 0.75).
-////////////////////////////////////////////////////////////////////
+/**
+ * return the decimal fraction of the pool that is used.  The range is 0 to
+ * 1.0 (e.g.  75% would be 0.75).
+ */
 PN_stdfloat UniqueIdAllocator::
 fraction_used() const {
   return PN_stdfloat(_size-_free)/_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::output
-//       Access: Published
-//  Description: ...intended for debugging only.
-////////////////////////////////////////////////////////////////////
+/**
+ * ...intended for debugging only.
+ */
 void UniqueIdAllocator::
 output(ostream &out) const {
   out << "UniqueIdAllocator(" << _min << ", " << _max << "), "
       << _free << " id's remaining of " << _size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueIdAllocator::write
-//       Access: Published
-//  Description: ...intended for debugging only.
-////////////////////////////////////////////////////////////////////
+/**
+ * ...intended for debugging only.
+ */
 void UniqueIdAllocator::
 write(ostream &out) const {
   out << "_min: " << _min << "; _max: " << _max
-      << ";\n_next_free: " << PN_int32(_next_free)
-      << "; _last_free: " << PN_int32(_last_free)
+      << ";\n_next_free: " << int32_t(_next_free)
+      << "; _last_free: " << int32_t(_last_free)
       << "; _size: " << _size
       << "; _free: " << _free
       << "; used: " << _size - _free
@@ -255,17 +232,16 @@ write(ostream &out) const {
       << ";\n";
 
   out << "Table:";
-  for (PN_uint32 i = 0; i < _size; ++i) {
-    out << " " << PN_int32(_table[i]);
+  for (uint32_t i = 0; i < _size; ++i) {
+    out << " " << int32_t(_table[i]);
   }
   out << "\n";
 
   out << "Free chain:";
-  PN_uint32 index = _next_free;
+  uint32_t index = _next_free;
   while (index != IndexEnd) {
     out << " " << index + _min;
     index = _table[index];
   }
   out << "\n";
 }
-

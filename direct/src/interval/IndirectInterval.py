@@ -5,8 +5,8 @@ __all__ = ['IndirectInterval']
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-import Interval
-import LerpBlendHelpers
+from . import Interval
+from . import LerpBlendHelpers
 
 class IndirectInterval(Interval.Interval):
     """
@@ -34,7 +34,7 @@ class IndirectInterval(Interval.Interval):
 
         self.startAtStart = (startT == 0)
         self.endAtEnd = (endT == None or endT == interval.getDuration())
-        
+
         if endT == None:
             endT = interval.getDuration()
 

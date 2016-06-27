@@ -1,16 +1,15 @@
-// Filename: nurbsSurfaceEvaluator.h
-// Created by:  drose (10Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsSurfaceEvaluator.h
+ * @author drose
+ * @date 2003-10-10
+ */
 
 #ifndef NURBSSURFACEEVALUATOR_H
 #define NURBSSURFACEEVALUATOR_H
@@ -27,14 +26,11 @@
 #include "referenceCount.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsSurfaceEvaluator
-// Description : This class is an abstraction for evaluating NURBS
-//               surfaces.  It accepts an array of vertices, each of
-//               which may be in a different coordinate space (as
-//               defined by a NodePath), as well as an optional knot
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is an abstraction for evaluating NURBS surfaces.  It accepts an
+ * array of vertices, each of which may be in a different coordinate space (as
+ * defined by a NodePath), as well as an optional knot vector.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsSurfaceEvaluator : public ReferenceCount {
 PUBLISHED:
   NurbsSurfaceEvaluator();
@@ -61,7 +57,7 @@ PUBLISHED:
 
   INLINE void set_extended_vertex(int ui, int vi, int d, PN_stdfloat value);
   INLINE PN_stdfloat get_extended_vertex(int ui, int vi, int d) const;
-  void set_extended_vertices(int ui, int vi, int d, 
+  void set_extended_vertices(int ui, int vi, int d,
                              const PN_stdfloat values[], int num_values);
 
   INLINE int get_num_u_knots() const;
@@ -82,6 +78,11 @@ PUBLISHED:
   PT(NurbsSurfaceResult) evaluate(const NodePath &rel_to = NodePath()) const;
 
   void output(ostream &out) const;
+
+  MAKE_PROPERTY(u_order, get_u_order, set_u_order);
+  MAKE_PROPERTY(v_order, get_v_order, set_v_order);
+  MAKE_SEQ_PROPERTY(u_knots, get_num_u_knots, get_u_knot, set_u_knot);
+  MAKE_SEQ_PROPERTY(v_knots, get_num_v_knots, get_v_knot, set_v_knot);
 
 public:
   typedef epvector<LVecBase4> Vert4Array;
@@ -123,4 +124,3 @@ INLINE ostream &operator << (ostream &out, const NurbsSurfaceEvaluator &n);
 #include "nurbsSurfaceEvaluator.I"
 
 #endif
-

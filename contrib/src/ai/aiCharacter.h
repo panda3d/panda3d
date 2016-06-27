@@ -1,17 +1,15 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : aiCharacter.h
-// Created by  : Deepak, John, Navin
-// Date        :  8 Sep 09
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file aiCharacter.h
+ * @author Deepak, John, Navin
+ * @date 2009-09-08
+ */
 
 #pragma warning (disable:4996)
 #pragma warning (disable:4005)
@@ -23,15 +21,12 @@
 
 #include "aiBehaviors.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Class : AICharacter
-//  Description : This class is used for creating the ai characters. It assigns both physics and ai
-//                attributes to the character. It also has an update function which updates the physics and ai
-//                of the character. This update function is called by the AIWorld update.
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This class is used for creating the AI characters.  It assigns both physics
+ * and AI attributes to the character.  It also has an update function which
+ * updates the physics and AI of the character.  This update function is
+ * called by the AIWorld update.
+ */
 class AIBehaviors;
 class AIWorld;
 

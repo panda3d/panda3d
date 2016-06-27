@@ -2,11 +2,11 @@ __all__ = ['register', 'sharedPackages',
            'reloadSharedPackage', 'reloadSharedPackages']
 
 from panda3d.core import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
+from direct.stdpy.file import open
 import sys
 import marshal
 import imp
 import types
-import __builtin__
 
 # The sharedPackages dictionary lists all of the "shared packages",
 # special Python packages that automatically span multiple directories
@@ -174,10 +174,7 @@ class VFSLoader:
         filename = Filename(self.filename)
         filename.setExtension('py')
         filename.setText()
-        vfile = vfs.getFile(filename)
-        if not vfile:
-            raise IOError("Could not find '%s'" % (filename))
-        return vfile.readFile(True)
+        return open(self.filename, self.desc[1]).read()
 
     def _import_extension_module(self, fullname):
         """ Loads the binary shared object as a Python module, and
@@ -305,7 +302,7 @@ class VFSLoader:
 
         if source and source[-1] != '\n':
             source = source + '\n'
-        code = __builtin__.compile(source, filename.toOsSpecific(), 'exec')
+        code = compile(source, filename.toOsSpecific(), 'exec')
 
         # try to cache the compiled code
         pycFilename = Filename(filename)
@@ -449,7 +446,7 @@ class VFSSharedLoader:
                 mod = loader.load_module(fullname, loadingShared = True)
             except ImportError:
                 etype, evalue, etraceback = sys.exc_info()
-                print "%s on %s: %s" % (etype.__name__, fullname, evalue)
+                print("%s on %s: %s" % (etype.__name__, fullname, evalue))
                 if not message:
                     message = '%s: %s' % (fullname, evalue)
                 continue
@@ -509,7 +506,7 @@ def reloadSharedPackage(mod):
 
     # Also force any child packages to become shared packages, if
     # they aren't already.
-    for basename, child in mod.__dict__.items():
+    for basename, child in list(mod.__dict__.items()):
         if isinstance(child, types.ModuleType):
             childname = child.__name__
             if childname == fullname + '.' + basename and \

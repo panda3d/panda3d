@@ -100,11 +100,11 @@ class TaskProfiler:
         if taskMgr.getProfileTasks():
             self._setEnabled(False)
         self._enableFC.destroy()
-        for tracker in self._namePrefix2tracker.itervalues():
+        for tracker in self._namePrefix2tracker.values():
             tracker.destroy()
         del self._namePrefix2tracker
         del self._task
-        
+
     @staticmethod
     def GetDefaultSpikeThreshold():
         return config.GetFloat('profile-task-spike-threshold', 5.)
@@ -119,7 +119,7 @@ class TaskProfiler:
     def logProfiles(self, name=None):
         if name:
             name = name.lower()
-        for namePrefix, tracker in self._namePrefix2tracker.iteritems():
+        for namePrefix, tracker in self._namePrefix2tracker.items():
             if (name and (name not in namePrefix.lower())):
                 continue
             tracker.log()
@@ -128,7 +128,7 @@ class TaskProfiler:
         if name:
             name = name.lower()
         # flush stored task profiles
-        for namePrefix, tracker in self._namePrefix2tracker.iteritems():
+        for namePrefix, tracker in self._namePrefix2tracker.items():
             if (name and (name not in namePrefix.lower())):
                 continue
             tracker.flush()
@@ -142,7 +142,7 @@ class TaskProfiler:
             taskMgr.remove(self._taskName)
             del self._taskName
             self.notify.info('task profiler stopped')
-        
+
     def _doProfileTasks(self, task=None):
         # gather data from the previous frame
         # set up for the next frame

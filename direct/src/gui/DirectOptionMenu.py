@@ -2,13 +2,11 @@
 
 __all__ = ['DirectOptionMenu']
 
-import types
-
 from panda3d.core import *
-import DirectGuiGlobals as DGG
-from DirectButton import *
-from DirectLabel import *
-from DirectFrame import *
+from . import DirectGuiGlobals as DGG
+from .DirectButton import *
+from .DirectLabel import *
+from .DirectFrame import *
 
 class DirectOptionMenu(DirectButton):
     """
@@ -238,7 +236,7 @@ class DirectOptionMenu(DirectButton):
         """ Clear frame color, clear highlightedIndex """
         item['frameColor'] = frameColor
         item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
-        item['text_scale'] = (1,1)        
+        item['text_scale'] = (1,1)
         self.highlightedIndex = None
 
     def selectHighlightedIndex(self, event = None):
@@ -252,7 +250,7 @@ class DirectOptionMenu(DirectButton):
 
     def index(self, index):
         intIndex = None
-        if isinstance(index, types.IntType):
+        if isinstance(index, int):
             intIndex = index
         elif index in self['items']:
             i = 0
@@ -272,7 +270,7 @@ class DirectOptionMenu(DirectButton):
             self['text'] = item
             if fCommand and self['command']:
                 # Pass any extra args to command
-                apply(self['command'], [item] + self['extraArgs'])
+                self['command'](*[item] + self['extraArgs'])
 
     def get(self):
         """ Get currently selected item """

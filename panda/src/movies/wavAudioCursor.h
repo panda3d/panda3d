@@ -1,16 +1,15 @@
-// Filename: wavAudioCursor.h
-// Created by: rdb (23Aug13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wavAudioCursor.h
+ * @author rdb
+ * @date 2013-08-23
+ */
 
 #ifndef WAVAUDIOCURSOR_H
 #define WAVAUDIOCURSOR_H
@@ -21,11 +20,10 @@
 
 class WavAudio;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WavAudioCursor
-// Description : Used for reading PCM .wav files.  Supported formats
-//               are linear PCM, IEEE float, A-law and mu-law.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used for reading PCM .wav files.  Supported formats are linear PCM, IEEE
+ * float, A-law and mu-law.
+ */
 class EXPCL_PANDA_MOVIES WavAudioCursor : public MovieAudioCursor {
 PUBLISHED:
   WavAudioCursor(WavAudio *src, istream *stream);
@@ -33,7 +31,7 @@ PUBLISHED:
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, PN_int16 *data);
+  virtual void read_samples(int n, int16_t *data);
 
   bool _is_valid;
 

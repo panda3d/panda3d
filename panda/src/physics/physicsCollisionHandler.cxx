@@ -1,16 +1,15 @@
-// Filename: physicsCollisionHandler.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicsCollisionHandler.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "physicsCollisionHandler.h"
 #include "collisionNode.h"
@@ -23,11 +22,9 @@
 
 TypeHandle PhysicsCollisionHandler::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsCollisionHandler::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysicsCollisionHandler::
 PhysicsCollisionHandler() {
   _almost_stationary_speed = 0.1f;
@@ -36,21 +33,16 @@ PhysicsCollisionHandler() {
   set_horizontal(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsCollisionHandler::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysicsCollisionHandler::
 ~PhysicsCollisionHandler() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsCollisionHandler::apply_friction
-//       Access: 
-//  Description: The vel parameter will be modified in place to
-//               account for friction.
-////////////////////////////////////////////////////////////////////
+/**
+ * The vel parameter will be modified in place to account for friction.
+ */
 void PhysicsCollisionHandler::
 apply_friction(ColliderDef &def, LVector3& vel, const LVector3& force,
     PN_stdfloat angle) {
@@ -82,11 +74,9 @@ apply_friction(ColliderDef &def, LVector3& vel, const LVector3& force,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsCollisionHandler::apply_net_shove
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysicsCollisionHandler::
 apply_net_shove(ColliderDef &def, const LVector3& net_shove,
     const LVector3 &force) {
@@ -109,17 +99,16 @@ apply_net_shove(ColliderDef &def, const LVector3& net_shove,
   physics_debug("  force          "<<force<<" len "<<force.length());
   LVector3 old_vel=vel;
 
-  // Copy the force vector while translating it 
-  // into the physics object coordinate system:
+  // Copy the force vector while translating it into the physics object
+  // coordinate system:
   LVector3 adjustment=force;
   physics_debug(
       "  adjustment set "<<adjustment<<" len "<<adjustment.length());
 
-  //NodePath np(def._node);
-  //CPT(TransformState) trans = np.get_net_transform();
-  //adjustment=adjustment*trans->get_mat();
-  //physics_debug(
-  //    "  adjustment trn "<<adjustment<<" len "<<adjustment.length());
+  // NodePath np(def._node); CPT(TransformState) trans =
+  // np.get_net_transform(); adjustment=adjustment*trans->get_mat();
+  // physics_debug( "  adjustment trn "<<adjustment<<" len
+  // "<<adjustment.length());
 
   adjustment=adjustment*actor->get_physics_object()->get_lcs();
   physics_debug(
@@ -145,12 +134,12 @@ apply_net_shove(ColliderDef &def, const LVector3& net_shove,
     adjustment*=adjustmentLength;
     physics_debug(
         "  adjustment mul "<<adjustment<<" len "<<adjustment.length());
-    
+
     // This adjustment to our velocity will not reflect us off the surface,
     // but will deflect us parallel (or tangent) to the surface:
     vel+=adjustment;
     physics_debug("  vel+adj "<<vel<<" len "<<vel.length());
-    
+
     apply_friction(def, vel, force, angle);
     #endif
   } else if (adjustmentLength==0.0f) {
@@ -175,8 +164,8 @@ apply_net_shove(ColliderDef &def, const LVector3& net_shove,
         "  vel got smaller  "<<vel.length()<<" < "<<old_vel.length());
   }
   if (vel.length() > 10.0f) {
-    // This is a check to see if the velocity is higher than I expect it
-    // to go.  The check value is arbitrary.
+    // This is a check to see if the velocity is higher than I expect it to
+    // go.  The check value is arbitrary.
     physics_debug("  vel.length() > 10.0f  "<<vel.length());
   }
   #endif //]
@@ -188,22 +177,17 @@ apply_net_shove(ColliderDef &def, const LVector3& net_shove,
   actor->get_physics_object()->set_velocity(vel);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsCollisionHandler::apply_linear_force
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysicsCollisionHandler::
 apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsCollisionHandler::validate_target
-//       Access: Protected, Virtual
-//  Description: Called internally to validate the target passed to
-//               add_collider().  Returns true if acceptable, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to validate the target passed to add_collider().  Returns
+ * true if acceptable, false otherwise.
+ */
 bool PhysicsCollisionHandler::
 validate_target(const NodePath &target) {
   if (!CollisionHandlerPhysical::validate_target(target)) {

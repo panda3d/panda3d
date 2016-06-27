@@ -1,16 +1,15 @@
-// Filename: streamWriter.h
-// Created by:  drose (04Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file streamWriter.h
+ * @author drose
+ * @date 2002-08-04
+ */
 
 #ifndef STREAMWRITER_H
 #define STREAMWRITER_H
@@ -21,15 +20,12 @@
 #include "littleEndian.h"
 #include "bigEndian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StreamWriter
-// Description : A StreamWriter object is used to write sequential
-//               binary data directly to an ostream.  Its interface is
-//               very similar to Datagram by design; it's primarily
-//               intended as a convenience to eliminate the overhead
-//               of writing bytes to a Datagram and then writing the
-//               Datagram to a stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A StreamWriter object is used to write sequential binary data directly to
+ * an ostream.  Its interface is very similar to Datagram by design; it's
+ * primarily intended as a convenience to eliminate the overhead of writing
+ * bytes to a Datagram and then writing the Datagram to a stream.
+ */
 class EXPCL_DTOOLCONFIG StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);
@@ -40,28 +36,29 @@ PUBLISHED:
   INLINE ~StreamWriter();
 
   INLINE ostream *get_ostream() const;
+  MAKE_PROPERTY(ostream, get_ostream);
 
   BLOCKING INLINE void add_bool(bool value);
-  BLOCKING INLINE void add_int8(PN_int8 value);
-  BLOCKING INLINE void add_uint8(PN_uint8 value);
+  BLOCKING INLINE void add_int8(int8_t value);
+  BLOCKING INLINE void add_uint8(uint8_t value);
 
   // The default numeric packing is little-endian.
-  BLOCKING INLINE void add_int16(PN_int16 value);
-  BLOCKING INLINE void add_int32(PN_int32 value);
-  BLOCKING INLINE void add_int64(PN_int64 value);
-  BLOCKING INLINE void add_uint16(PN_uint16 value);
-  BLOCKING INLINE void add_uint32(PN_uint32 value);
-  BLOCKING INLINE void add_uint64(PN_uint64 value);
+  BLOCKING INLINE void add_int16(int16_t value);
+  BLOCKING INLINE void add_int32(int32_t value);
+  BLOCKING INLINE void add_int64(int64_t value);
+  BLOCKING INLINE void add_uint16(uint16_t value);
+  BLOCKING INLINE void add_uint32(uint32_t value);
+  BLOCKING INLINE void add_uint64(uint64_t value);
   BLOCKING INLINE void add_float32(float value);
   BLOCKING INLINE void add_float64(PN_float64 value);
 
   // These functions pack numbers big-endian, in case that's desired.
-  BLOCKING INLINE void add_be_int16(PN_int16 value);
-  BLOCKING INLINE void add_be_int32(PN_int32 value);
-  BLOCKING INLINE void add_be_int64(PN_int64 value);
-  BLOCKING INLINE void add_be_uint16(PN_uint16 value);
-  BLOCKING INLINE void add_be_uint32(PN_uint32 value);
-  BLOCKING INLINE void add_be_uint64(PN_uint64 value);
+  BLOCKING INLINE void add_be_int16(int16_t value);
+  BLOCKING INLINE void add_be_int32(int32_t value);
+  BLOCKING INLINE void add_be_int64(int64_t value);
+  BLOCKING INLINE void add_be_uint16(uint16_t value);
+  BLOCKING INLINE void add_be_uint32(uint32_t value);
+  BLOCKING INLINE void add_be_uint64(uint64_t value);
   BLOCKING INLINE void add_be_float32(float value);
   BLOCKING INLINE void add_be_float64(PN_float64 value);
 

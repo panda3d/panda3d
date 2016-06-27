@@ -1,16 +1,15 @@
-// Filename: palettePage.h
-// Created by:  drose (01Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file palettePage.h
+ * @author drose
+ * @date 2000-12-01
+ */
 
 #ifndef PALETTEPAGE_H
 #define PALETTEPAGE_H
@@ -26,14 +25,11 @@ class PaletteGroup;
 class PaletteImage;
 class TexturePlacement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PalettePage
-// Description : This is a particular collection of textures, within a
-//               PaletteGroup, that all share the same
-//               TextureProperties.  The textures on the same page may
-//               therefore all be placed on the same set of
-//               PaletteImages together.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular collection of textures, within a PaletteGroup, that
+ * all share the same TextureProperties.  The textures on the same page may
+ * therefore all be placed on the same set of PaletteImages together.
+ */
 class PalettePage : public TypedWritable, public Namable {
 private:
   PalettePage();
@@ -77,8 +73,8 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
-  // This value is only filled in while reading from the bam file;
-  // don't use it otherwise.
+  // This value is only filled in while reading from the bam file; don't use
+  // it otherwise.
   int _num_images;
 
 public:
@@ -101,4 +97,3 @@ private:
 };
 
 #endif
-

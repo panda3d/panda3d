@@ -1,16 +1,15 @@
-// Filename: vorbisAudio.cxx
-// Created by: rdb (23Aug13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vorbisAudio.cxx
+ * @author rdb
+ * @date 2013-08-23
+ */
 
 #include "vorbisAudio.h"
 #include "vorbisAudioCursor.h"
@@ -21,11 +20,9 @@
 
 TypeHandle VorbisAudio::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::Constructor
-//       Access: Protected
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 VorbisAudio::
 VorbisAudio(const Filename &name) :
   MovieAudio(name)
@@ -33,20 +30,16 @@ VorbisAudio(const Filename &name) :
   _filename = name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 VorbisAudio::
 ~VorbisAudio() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::open
-//       Access: Published, Virtual
-//  Description: Open this audio, returning a MovieAudioCursor
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this audio, returning a MovieAudioCursor
+ */
 PT(MovieAudioCursor) VorbisAudio::
 open() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -64,11 +57,9 @@ open() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::make
-//       Access: Published, Static
-//  Description: Obtains a MovieAudio that references a file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a MovieAudio that references a file.
+ */
 PT(MovieAudio) VorbisAudio::
 make(const Filename &name) {
   return DCAST(MovieAudio, new VorbisAudio(name));

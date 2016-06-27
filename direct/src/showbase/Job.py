@@ -17,7 +17,7 @@ class Job(DirectObject):
     # with priority of 100.
     Priorities = ScratchPad(Min=1, Low=100, Normal=1000, High=10000)
     _SerialGen = SerialNumGen()
-    
+
     def __init__(self, name):
         self._name = name
         self._generator = None
@@ -44,7 +44,7 @@ class Job(DirectObject):
         #
         # when done, yield Job.Done
         #
-        raise "don't call down"
+        raise NotImplementedError("don't call down")
 
     def getPriority(self):
         return self._priority
@@ -112,14 +112,14 @@ if __debug__: # __dev__ not yet available at this point
             while True:
                 while self._accum < 100:
                     self._accum += 1
-                    print 'counter = %s, accum = %s' % (self._counter, self._accum)
+                    print('counter = %s, accum = %s' % (self._counter, self._accum))
                     yield None
 
                 self._accum = 0
                 self._counter += 1
 
                 if self._counter >= 100:
-                    print 'Job.Done'
+                    print('Job.Done')
                     self.printingEnd()
                     yield Job.Done
                 else:

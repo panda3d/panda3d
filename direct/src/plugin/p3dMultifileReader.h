@@ -1,16 +1,15 @@
-// Filename: p3dMultifileReader.h
-// Created by:  drose (15Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dMultifileReader.h
+ * @author drose
+ * @date 2009-06-15
+ */
 
 #ifndef P3DMULTIFILEREADER_H
 #define P3DMULTIFILEREADER_H
@@ -19,14 +18,12 @@
 #include "p3dInstanceManager.h"  // for openssl
 #include "p3dPackage.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DMultifileReader
-// Description : A way-simple implementation of Panda's multifile
-//               reader.  See panda/src/express/multifile.cxx for a
-//               full description of the binary format.  This
-//               implementation doesn't support per-subfile
-//               compression or encryption.
-////////////////////////////////////////////////////////////////////
+/**
+ * A way-simple implementation of Panda's multifile reader.  See
+ * panda/src/express/multifile.cxx for a full description of the binary
+ * format.  This implementation doesn't support per-subfile compression or
+ * encryption.
+ */
 class P3DMultifileReader {
 public:
   P3DMultifileReader();
@@ -34,7 +31,7 @@ public:
   inline bool is_open() const;
   void close();
 
-  bool extract_all(const string &to_dir, P3DPackage *package, 
+  bool extract_all(const string &to_dir, P3DPackage *package,
                    P3DPackage::InstallStepThreaded *step);
 
   bool extract_one(ostream &out, const string &filename);

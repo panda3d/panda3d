@@ -2,8 +2,8 @@
 Defines ObjectPalette tree UI
 """
 import wx
-import cPickle as pickle
-from PaletteTreeCtrl import *
+from .PaletteTreeCtrl import *
+
 
 class ObjectPaletteUI(wx.Panel):
     def __init__(self, parent, editor):

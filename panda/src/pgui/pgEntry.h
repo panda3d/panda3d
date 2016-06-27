@@ -1,16 +1,15 @@
-// Filename: pgEntry.h
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgEntry.h
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #ifndef PGENTRY_H
 #define PGENTRY_H
@@ -25,20 +24,16 @@
 #include "clockObject.h"
 #include "textAssembler.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGEntry
-// Description : This is a particular kind of PGItem that handles
-//               simple one-line or short multi-line text entries, of
-//               the sort where the user can type any string.
-//
-//               A PGEntry does all of its internal manipulation on a
-//               wide string, so it can store the full Unicode
-//               character set.  The interface can support either the
-//               wide string getters and setters, or the normal 8-bit
-//               string getters and setters, which use whatever
-//               encoding method is specified by the associated
-//               TextNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of PGItem that handles simple one-line or short
+ * multi-line text entries, of the sort where the user can type any string.
+ *
+ * A PGEntry does all of its internal manipulation on a wide string, so it can
+ * store the full Unicode character set.  The interface can support either the
+ * wide string getters and setters, or the normal 8-bit string getters and
+ * setters, which use whatever encoding method is specified by the associated
+ * TextNode.
+ */
 class EXPCL_PANDA_PGUI PGEntry : public PGItem {
 PUBLISHED:
   PGEntry(const string &name);
@@ -48,7 +43,7 @@ protected:
   PGEntry(const PGEntry &copy);
 
 public:
-  virtual PandaNode *make_copy() const; 
+  virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4 &mat);
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
@@ -84,7 +79,7 @@ PUBLISHED:
 
   INLINE void set_cursor_position(int position);
   INLINE int get_cursor_position() const;
-  
+
   INLINE PN_stdfloat get_cursor_X() const;
   INLINE PN_stdfloat get_cursor_Y() const;
 
@@ -135,7 +130,7 @@ PUBLISHED:
   INLINE string get_type_event() const;
   INLINE string get_erase_event() const;
   INLINE string get_cursormove_event() const;
-  
+
 
   INLINE bool set_wtext(const wstring &wtext);
   INLINE wstring get_plain_wtext() const;
@@ -177,16 +172,16 @@ private:
   // This is the subgraph that renders both the text and the cursor.
   NodePath _text_render_root;
 
-  // This is the node for rendering the actual text that is parented
-  // to the above node when the text is generated.
+  // This is the node for rendering the actual text that is parented to the
+  // above node when the text is generated.
   NodePath _current_text;
   TextNode *_last_text_def;
   bool _text_geom_stale;
   bool _text_geom_flattened;
 
   // This is the node that represents the cursor geometry.  It is also
-  // attached to the above node, and is transformed around and/or
-  // hidden according to the cursor's position and blink state.
+  // attached to the above node, and is transformed around andor hidden
+  // according to the cursor's position and blink state.
   NodePath _cursor_scale;
   NodePath _cursor_def;
 

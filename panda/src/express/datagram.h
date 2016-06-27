@@ -1,16 +1,15 @@
-// Filename: datagram.h
-// Created by:  drose (06Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagram.h
+ * @author drose
+ * @date 2000-06-06
+ */
 
 #ifndef DATAGRAM_H
 #define DATAGRAM_H
@@ -23,23 +22,19 @@
 #include "bigEndian.h"
 #include "pta_uchar.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Datagram
-// Description : An ordered list of data elements, formatted in memory
-//               for transmission over a socket or writing to a data
-//               file.
-//
-//               Data elements should be added one at a time, in
-//               order, to the Datagram.  The nature and contents of
-//               the data elements are totally up to the user.  When a
-//               Datagram has been transmitted and received, its data
-//               elements may be extracted using a DatagramIterator;
-//               it is up to the caller to know the correct type of
-//               each data element in order.
-//
-//               A Datagram is itself headerless; it is simply a
-//               collection of data elements.
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordered list of data elements, formatted in memory for transmission over
+ * a socket or writing to a data file.
+ *
+ * Data elements should be added one at a time, in order, to the Datagram.
+ * The nature and contents of the data elements are totally up to the user.
+ * When a Datagram has been transmitted and received, its data elements may be
+ * extracted using a DatagramIterator; it is up to the caller to know the
+ * correct type of each data element in order.
+ *
+ * A Datagram is itself headerless; it is simply a collection of data
+ * elements.
+ */
 class EXPCL_PANDAEXPRESS Datagram : public TypedObject {
 PUBLISHED:
   INLINE Datagram();
@@ -59,27 +54,27 @@ PUBLISHED:
   void dump_hex(ostream &out, unsigned int indent=0) const;
 
   INLINE void add_bool(bool value);
-  INLINE void add_int8(PN_int8 value);
-  INLINE void add_uint8(PN_uint8 value);
+  INLINE void add_int8(int8_t value);
+  INLINE void add_uint8(uint8_t value);
 
   // The default numeric packing is little-endian.
-  INLINE void add_int16(PN_int16 value);
-  INLINE void add_int32(PN_int32 value);
-  INLINE void add_int64(PN_int64 value);
-  INLINE void add_uint16(PN_uint16 value);
-  INLINE void add_uint32(PN_uint32 value);
-  INLINE void add_uint64(PN_uint64 value);
+  INLINE void add_int16(int16_t value);
+  INLINE void add_int32(int32_t value);
+  INLINE void add_int64(int64_t value);
+  INLINE void add_uint16(uint16_t value);
+  INLINE void add_uint32(uint32_t value);
+  INLINE void add_uint64(uint64_t value);
   INLINE void add_float32(PN_float32 value);
   INLINE void add_float64(PN_float64 value);
   INLINE void add_stdfloat(PN_stdfloat value);
 
   // These functions pack numbers big-endian, in case that's desired.
-  INLINE void add_be_int16(PN_int16 value);
-  INLINE void add_be_int32(PN_int32 value);
-  INLINE void add_be_int64(PN_int64 value);
-  INLINE void add_be_uint16(PN_uint16 value);
-  INLINE void add_be_uint32(PN_uint32 value);
-  INLINE void add_be_uint64(PN_uint64 value);
+  INLINE void add_be_int16(int16_t value);
+  INLINE void add_be_int32(int32_t value);
+  INLINE void add_be_int64(int64_t value);
+  INLINE void add_be_uint16(uint16_t value);
+  INLINE void add_be_uint32(uint32_t value);
+  INLINE void add_be_uint64(uint64_t value);
   INLINE void add_be_float32(PN_float32 value);
   INLINE void add_be_float64(PN_float64 value);
 
@@ -138,10 +133,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-// These generic functions are primarily for writing a value to a
-// datagram from within a template in which the actual type of the
-// value is not known.  If you do know the type, it's preferable to
-// use the explicit add_*() method from above instead.
+// These generic functions are primarily for writing a value to a datagram
+// from within a template in which the actual type of the value is not known.
+// If you do know the type, it's preferable to use the explicit add_*() method
+// from above instead.
 
 INLINE void
 generic_write_datagram(Datagram &dest, bool value);

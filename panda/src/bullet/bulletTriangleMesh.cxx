@@ -1,16 +1,15 @@
-// Filename: bulletTriangleMesh.cxx
-// Created by:  enn0x (09Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletTriangleMesh.cxx
+ * @author enn0x
+ * @date 2010-02-09
+ */
 
 #include "bulletTriangleMesh.h"
 
@@ -20,33 +19,27 @@
 
 TypeHandle BulletTriangleMesh::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletTriangleMesh::
 BulletTriangleMesh() {
 
   _mesh = new btTriangleMesh();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::get_num_triangles
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BulletTriangleMesh::
 get_num_triangles() const {
 
   return _mesh->getNumTriangles();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::preallocate
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletTriangleMesh::
 preallocate(int num_verts, int num_indices) {
 
@@ -54,11 +47,9 @@ preallocate(int num_verts, int num_indices) {
   _mesh->preallocateIndices(num_indices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::add_triangle
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletTriangleMesh::
 add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
 
@@ -73,33 +64,27 @@ add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remov
     remove_duplicate_vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::set_welding_distance
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletTriangleMesh::
 set_welding_distance(PN_stdfloat distance) {
 
   _mesh->m_weldingThreshold = distance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::get_welding_distance
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat BulletTriangleMesh::
 get_welding_distance() const {
 
   return _mesh->m_weldingThreshold;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::add_geom
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletTriangleMesh::
 add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState *ts) {
 
@@ -149,13 +134,13 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
       _mesh->addTriangle(v0, v1, v2, remove_duplicate_vertices);
     }
   }
+
+  delete [] vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::add_array
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletTriangleMesh::
 add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_duplicate_vertices) {
 
@@ -180,24 +165,22 @@ add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_dupli
 
     _mesh->addTriangle(v0, v1, v2, remove_duplicate_vertices);
   }
+
+  delete [] vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletTriangleMesh::
 output(ostream &out) const {
 
   out << get_type() << ", " << _mesh->getNumTriangles();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletTriangleMesh::
 write(ostream &out, int indent_level) const {
 
@@ -213,23 +196,18 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               BulletTriangleMesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type BulletTriangleMesh.
+ */
 void BulletTriangleMesh::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void BulletTriangleMesh::
 write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(get_welding_distance());
@@ -279,14 +257,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type BulletShape is encountered
-//               in the Bam file.  It should create the BulletShape
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BulletShape is encountered in the Bam file.  It should create the
+ * BulletShape and extract its information from the file.
+ */
 TypedWritable *BulletTriangleMesh::
 make_from_bam(const FactoryParams &params) {
   BulletTriangleMesh *param = new BulletTriangleMesh;
@@ -299,13 +274,10 @@ make_from_bam(const FactoryParams &params) {
   return param;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMesh::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BulletTriangleMesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletTriangleMesh.
+ */
 void BulletTriangleMesh::
 fillin(DatagramIterator &scan, BamReader *manager) {
   set_welding_distance(scan.get_stdfloat());
@@ -331,7 +303,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _mesh->addIndex(scan.get_int32());
   }
 
-  // Since we manually added the vertices individually, we have to
-  // update the triangle count appropriately.
+  // Since we manually added the vertices individually, we have to update the
+  // triangle count appropriately.
   _mesh->getIndexedMeshArray()[0].m_numTriangles = num_triangles;
 }

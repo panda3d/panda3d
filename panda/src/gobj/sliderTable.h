@@ -1,16 +1,15 @@
-// Filename: sliderTable.h
-// Created by:  drose (28Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sliderTable.h
+ * @author drose
+ * @date 2005-03-28
+ */
 
 #ifndef SLIDERTABLE_H
 #define SLIDERTABLE_H
@@ -26,19 +25,15 @@
 #include "pipelineCycler.h"
 #include "sparseArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SliderTable
-// Description : Stores the total set of VertexSliders that the
-//               vertices in a particular GeomVertexData object might
-//               depend on.
-//
-//               This is similar to a TransformTable, but it stores
-//               VertexSliders instead of VertexTransforms, and it
-//               stores them by name instead of by index number.
-//               Also, it is only used when animating vertices on the
-//               CPU, since GPU's don't support morphs at this point
-//               in time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the total set of VertexSliders that the vertices in a particular
+ * GeomVertexData object might depend on.
+ *
+ * This is similar to a TransformTable, but it stores VertexSliders instead of
+ * VertexTransforms, and it stores them by name instead of by index number.
+ * Also, it is only used when animating vertices on the CPU, since GPU's don't
+ * support morphs at this point in time.
+ */
 class EXPCL_PANDA_GOBJ SliderTable : public TypedWritableReferenceCount {
 PUBLISHED:
   SliderTable();
@@ -57,7 +52,8 @@ PUBLISHED:
   INLINE const SparseArray &find_sliders(const InternalName *name) const;
   INLINE bool has_slider(const InternalName *name) const;
   INLINE bool is_empty() const;
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(modified, get_modified);
 
   void set_slider(size_t n, const VertexSlider *slider);
   void set_slider_rows(size_t n, const SparseArray &rows);

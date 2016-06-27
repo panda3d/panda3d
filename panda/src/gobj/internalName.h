@@ -1,16 +1,15 @@
-// Filename: internalName.h
-// Created by:  drose (15Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file internalName.h
+ * @author drose
+ * @date 2004-07-15
+ */
 
 #ifndef INTERNALNAME_H
 #define INTERNALNAME_H
@@ -25,21 +24,17 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InternalName
-// Description : Encodes a string name in a hash table, mapping it to
-//               a pointer.  This is used to tokenify names so they
-//               may be used efficiently in low-level Panda
-//               structures, for instance to differentiate the
-//               multiple sets of texture coordinates that might be
-//               stored on a Geom.
-//
-//               InternalNames are hierarchical, with the '.' used by
-//               convention as a separator character.  You can
-//               construct a single InternalName as a composition of
-//               one or more other names, or by giving it a source
-//               string directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes a string name in a hash table, mapping it to a pointer.  This is
+ * used to tokenify names so they may be used efficiently in low-level Panda
+ * structures, for instance to differentiate the multiple sets of texture
+ * coordinates that might be stored on a Geom.
+ *
+ * InternalNames are hierarchical, with the '.' used by convention as a
+ * separator character.  You can construct a single InternalName as a
+ * composition of one or more other names, or by giving it a source string
+ * directly.
+ */
 class EXPCL_PANDA_GOBJ InternalName FINAL : public TypedWritableReferenceCount {
 private:
   InternalName(InternalName *parent, const string &basename);
@@ -61,6 +56,10 @@ PUBLISHED:
   string get_name() const;
   string join(const string &sep) const;
   INLINE const string &get_basename() const;
+
+  MAKE_PROPERTY(parent, get_parent);
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY(basename, get_basename);
 
   int find_ancestor(const string &basename) const;
   const InternalName *get_ancestor(int n) const;
@@ -95,8 +94,8 @@ PUBLISHED:
   INLINE static PT(InternalName) get_view();
 
 #ifdef HAVE_PYTHON
-  // These versions are exposed to Python, which have additional logic
-  // to map from Python interned strings.
+  // These versions are exposed to Python, which have additional logic to map
+  // from Python interned strings.
 #if PY_MAJOR_VERSION >= 3
   EXTENSION(static PT(InternalName) make(PyUnicodeObject *str));
 #else
@@ -106,8 +105,8 @@ PUBLISHED:
 
 public:
 #ifdef HAVE_PYTHON
-  // It's OK for us to define it here since these are just pointers of
-  // which the reference is maintained indefinitely.
+  // It's OK for us to define it here since these are just pointers of which
+  // the reference is maintained indefinitely.
   typedef phash_map<PyObject *, InternalName *, pointer_hash> PyInternTable;
   static PyInternTable _py_intern_table;
 #endif
@@ -164,8 +163,8 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "InternalName",
                   TypedWritableReferenceCount::get_class_type());
-    // The _texcoord_type_handle is defined only to support older bam
-    // files, generated before we renamed the type to InternalName.
+    // The _texcoord_type_handle is defined only to support older bam files,
+    // generated before we renamed the type to InternalName.
     register_type(_texcoord_type_handle, "TexCoordName",
                   TypedWritableReferenceCount::get_class_type());
   }
@@ -181,15 +180,12 @@ private:
 
 INLINE ostream &operator << (ostream &out, const InternalName &tcn);
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPT_InternalName
-// Description : This is a const pointer to an InternalName, and
-//               should be used in lieu of a CPT(InternalName) in
-//               function arguments.  The extra feature that it
-//               offers is that it has a constructor to automatically
-//               convert from a string, so that strings are coerced
-//               by the compiler when passed to such a function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a const pointer to an InternalName, and should be used in lieu of a
+ * CPT(InternalName) in function arguments.  The extra feature that it offers
+ * is that it has a constructor to automatically convert from a string, so
+ * that strings are coerced by the compiler when passed to such a function.
+ */
 #ifdef CPPPARSER
 // The construct below confuses interrogate, so we give it a typedef.
 typedef ConstPointerTo<InternalName> CPT_InternalName;

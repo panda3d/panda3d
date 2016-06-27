@@ -1,16 +1,15 @@
-// Filename: orthographicLens.h
-// Created by:  mike (18Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file orthographicLens.h
+ * @author mike
+ * @date 1999-02-18
+ */
 
 #ifndef ORTHOGRAPHICLENS_H
 #define ORTHOGRAPHICLENS_H
@@ -20,17 +19,14 @@
 #include "lens.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : OrthographicLens
-// Description : An orthographic lens.  Although this kind of lens is
-//               linear, like a PerspectiveLens, it doesn't respect
-//               field-of-view or focal length parameters, and
-//               adjusting these will have no effect.  Instead, its
-//               field of view is controlled by adjusting the
-//               film_size; the orthographic lens represents a planar
-//               projection onto its imaginary film of the specified
-//               size, hanging in space.
-////////////////////////////////////////////////////////////////////
+/**
+ * An orthographic lens.  Although this kind of lens is linear, like a
+ * PerspectiveLens, it doesn't respect field-of-view or focal length
+ * parameters, and adjusting these will have no effect.  Instead, its field of
+ * view is controlled by adjusting the film_size; the orthographic lens
+ * represents a planar projection onto its imaginary film of the specified
+ * size, hanging in space.
+ */
 class EXPCL_PANDA_GOBJ OrthographicLens : public Lens {
 PUBLISHED:
   INLINE OrthographicLens();

@@ -1,16 +1,15 @@
-// Filename: lwoSurface.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoSurface.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOSURFACE_H
 #define LWOSURFACE_H
@@ -19,12 +18,10 @@
 
 #include "lwoGroupChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurface
-// Description : Describes the shading attributes of a surface.  This
-//               is similar to the concept usually called a "material"
-//               or "shader" in other file formats.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes the shading attributes of a surface.  This is similar to the
+ * concept usually called a "material" or "shader" in other file formats.
+ */
 class LwoSurface : public LwoGroupChunk {
 public:
   string _name;
@@ -55,7 +52,3 @@ private:
 };
 
 #endif
-
-
-
-

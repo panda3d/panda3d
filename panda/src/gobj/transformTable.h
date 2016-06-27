@@ -1,16 +1,15 @@
-// Filename: transformTable.h
-// Created by:  drose (23Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transformTable.h
+ * @author drose
+ * @date 2005-03-23
+ */
 
 #ifndef TRANSFORMTABLE_H
 #define TRANSFORMTABLE_H
@@ -28,17 +27,14 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TransformTable
-// Description : Stores the total set of VertexTransforms that the
-//               vertices in a particular GeomVertexData object might
-//               depend on.
-//
-//               This structure is used for a GeomVertexData set up to
-//               compute its dynamic vertices on the graphics card.
-//               See TransformBlendTable for one set up to compute
-//               its dynamic vertices on the CPU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the total set of VertexTransforms that the vertices in a particular
+ * GeomVertexData object might depend on.
+ *
+ * This structure is used for a GeomVertexData set up to compute its dynamic
+ * vertices on the graphics card.  See TransformBlendTable for one set up to
+ * compute its dynamic vertices on the CPU.
+ */
 class EXPCL_PANDA_GOBJ TransformTable : public TypedWritableReferenceCount {
 PUBLISHED:
   TransformTable();
@@ -52,13 +48,17 @@ PUBLISHED:
   INLINE size_t get_num_transforms() const;
   INLINE const VertexTransform *get_transform(size_t n) const;
   MAKE_SEQ(get_transforms, get_num_transforms, get_transform);
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
   void set_transform(size_t n, const VertexTransform *transform);
   void remove_transform(size_t n);
   size_t add_transform(const VertexTransform *transform);
 
   void write(ostream &out) const;
+
+  MAKE_PROPERTY(registered, is_registered);
+  MAKE_PROPERTY(modified, get_modified);
+  MAKE_SEQ_PROPERTY(transforms, get_num_transforms, get_transform, set_transform, remove_transform);
 
 private:
   void do_register();

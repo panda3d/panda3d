@@ -1,8 +1,8 @@
 
 from direct.showbase.InputStateGlobal import inputState
 from direct.task.Task import Task
-from pandac.PandaModules import *
-import GravityWalker
+from panda3d.core import *
+from . import GravityWalker
 
 BattleStrafe = 0
 
@@ -36,12 +36,12 @@ class BattleWalker(GravityWalker.GravityWalker):
         slideLeft = inputState.isSet("slideLeft")
         slideRight = inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
-        
+
         # Check for Auto-Run
         if base.localAvatar.getAutoRun():
             forward = 1
             reverse = 0
-        
+
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
@@ -58,7 +58,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             self.speed*=base.debugRunningMultiplier
             self.slideSpeed*=base.debugRunningMultiplier
             self.rotationSpeed*=1.25
-            
+
         if self.needToDeltaPos:
             self.setPriorParentVector()
             self.needToDeltaPos = 0
@@ -166,7 +166,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             # Should fSlide be renamed slideButton?
             self.slideSpeed=.15*(turnLeft and -self.avatarControlForwardSpeed or
                                  turnRight and self.avatarControlForwardSpeed)
-            print 'slideSpeed: ', self.slideSpeed
+            print('slideSpeed: %s' % self.slideSpeed)
             self.rotationSpeed=0
             self.speed=0
 
@@ -233,7 +233,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             if self.moving:
                 distance = dt * self.speed
                 slideDistance = dt * self.slideSpeed
-                print 'slideDistance: ', slideDistance
+                print('slideDistance: %s' % slideDistance)
                 rotation = dt * self.rotationSpeed
 
                 # Take a step in the direction of our previous heading.

@@ -1,16 +1,15 @@
-// Filename: glCgShaderContext_src.h
-// Created by: jyelon (01Sep05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glCgShaderContext_src.h
+ * @author jyelon
+ * @date 2005-09-01
+ */
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 
@@ -23,10 +22,9 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLShaderContext
-// Description : xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 class EXPCL_GL CLP(CgShaderContext) : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
@@ -77,14 +75,12 @@ private:
 
   pvector<CGparameter> _cg_parameter_map;
 
-  CPT(RenderState) _state_rs;
+  WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _projection_transform;
   GLint _frame_number;
 
   CLP(GraphicsStateGuardian) *_glgsg;
-
-  bool _has_divisor;
 
   void release_resources();
 
@@ -109,4 +105,3 @@ private:
 #include "glCgShaderContext_src.I"
 
 #endif  // OPENGLES_1
-

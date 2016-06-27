@@ -14,10 +14,8 @@ although it does send messeges that allow a listener to play sounds or
 animations based on walker events.
 """
 
-from direct.showbase.ShowBaseGlobal import *
-
 from direct.directnotify import DirectNotifyGlobal
-import NonPhysicsWalker
+from . import NonPhysicsWalker
 
 class GhostWalker(NonPhysicsWalker.NonPhysicsWalker):
 

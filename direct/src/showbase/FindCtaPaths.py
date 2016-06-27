@@ -32,7 +32,7 @@ def deCygwinify(path):
                 path = os.path.normpath(pandaRoot + path)
 
     return path
-    
+
 def getPaths():
     """
     Add to sys.path the appropriate director(ies) to search for the
@@ -50,8 +50,8 @@ def getPaths():
         # parent directory of each one on sys.path.  In many cases,
         # these will all be siblings, so we filter out duplicate
         # parent directories.
-        
-        print 'Appending to sys.path based on $CTPROJS:'
+
+        print('Appending to sys.path based on $CTPROJS:')
 
         # First, get the list of packages, then reverse the list to
         # put it in ctattach order.  (The reversal may not matter too
@@ -64,20 +64,20 @@ def getPaths():
 
         # Now walk through the packages and figure out the parent of
         # each referenced directory.
-        
+
         parents = []
         for package in packages:
             tree = os.getenv(package)
             if not tree:
-                print "  CTPROJS contains %s, but $%s is not defined." % (package, package)
+                print("  CTPROJS contains %s, but $%s is not defined." % (package, package))
                 sys.exit(1)
 
             tree = deCygwinify(tree)
 
             parent, base = os.path.split(tree)
             if base != package.lower():
-                print "  Warning: $%s refers to a directory named %s (instead of %s)" % (package, base, package.lower())
-            
+                print("  Warning: $%s refers to a directory named %s (instead of %s)" % (package, base, package.lower()))
+
             if parent not in parents:
                 parents.append(parent)
 
@@ -94,9 +94,9 @@ def getPaths():
 
         # Now the result goes onto sys.path.
         for parent in parents:
-            print "  %s" % (parent)
+            print("  %s" % (parent))
             if parent not in sys.path:
                 sys.path.append(parent)
-    
+
 
 getPaths()

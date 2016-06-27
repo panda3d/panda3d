@@ -1,4 +1,6 @@
 from direct.distributed.CachedDOData import CachedDOData
+from panda3d.core import ConfigVariableInt
+
 
 # This has to be imported for __builtin__.config
 from direct.showbase import ShowBase
@@ -11,7 +13,7 @@ class CRDataCache:
     def __init__(self):
         self._doId2name2data = {}
         # maximum # of objects we will cache data for
-        self._size = config.GetInt('crdatacache-size', 10)
+        self._size = ConfigVariableInt('crdatacache-size', 10).getValue()
         assert self._size > 0
         # used to preserve the cache size
         self._junkIndex = 0
@@ -26,7 +28,7 @@ class CRDataCache:
             # cache is full, throw out a random doId's data
             if self._junkIndex >= len(self._doId2name2data):
                 self._junkIndex = 0
-            junkDoId = self._doId2name2data.keys()[self._junkIndex]
+            junkDoId = list(self._doId2name2data.keys())[self._junkIndex]
             self._junkIndex += 1
             for name in self._doId2name2data[junkDoId]:
                 self._doId2name2data[junkDoId][name].flush()
@@ -99,7 +101,7 @@ if __debug__:
     assert 'testCachedData2' in data
     assert data['testCachedData'].foo == 34
     assert data['testCachedData2'].bar == 45
-    for cd in data.itervalues():
+    for cd in data.values():
         cd.flush()
     del data
     dc._checkMemLeaks()
@@ -115,4 +117,4 @@ if __debug__:
     dc._stopMemLeakCheck()
     dc.destroy()
     del dc
-    
+

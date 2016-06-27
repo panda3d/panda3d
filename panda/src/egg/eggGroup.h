@@ -1,16 +1,15 @@
-// Filename: eggGroup.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroup.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGGROUP_H
 #define EGGGROUP_H
@@ -28,11 +27,10 @@
 #include "collideMask.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroup
-// Description : The main glue of the egg hierarchy, this corresponds
-//               to the <Group>, <Instance>, and <Joint> type nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main glue of the egg hierarchy, this corresponds to the <Group>,
+ * <Instance>, and <Joint> type nodes.
+ */
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
@@ -63,8 +61,8 @@ PUBLISHED:
     BT_point_world_relative  = 0x00000080,
   };
   enum CollisionSolidType {
-    // The bits here must correspond to those in Flags, below, and
-    // they must fit within F_cs_type.
+    // The bits here must correspond to those in Flags, below, and they must
+    // fit within F_cs_type.
     CST_none                 = 0x00000000,
     CST_plane                = 0x00010000,
     CST_polygon              = 0x00020000,
@@ -76,8 +74,8 @@ PUBLISHED:
     CST_floor_mesh           = 0x00080000,
   };
   enum CollideFlags {
-    // The bits here must correspond to those in Flags, below, and
-    // they must fit within F_collide_flags.
+    // The bits here must correspond to those in Flags, below, and they must
+    // fit within F_collide_flags.
     CF_none                  = 0x00000000,
     CF_descend               = 0x00100000,
     CF_event                 = 0x00200000,
@@ -286,6 +284,45 @@ PUBLISHED:
 
   INLINE bool has_scrolling_uvs();
 
+  MAKE_PROPERTY(group_type, get_group_type, set_group_type);
+  MAKE_PROPERTY(billboard_type, get_billboard_type, set_billboard_type);
+  MAKE_PROPERTY2(billboard_center, has_billboard_center, get_billboard_center,
+                                   set_billboard_center, clear_billboard_center);
+  MAKE_PROPERTY(cs_type, get_cs_type, set_cs_type);
+  MAKE_PROPERTY(collide_flags, get_collide_flags, set_collide_flags);
+  MAKE_PROPERTY(collision_name, get_collision_name, set_collision_name);
+  MAKE_PROPERTY(dcs_type, get_dcs_type, set_dcs_type);
+  MAKE_PROPERTY(dart_type, get_dart_type, set_dart_type);
+  MAKE_PROPERTY(switch_flag, get_switch_flag, set_switch_flag);
+  MAKE_PROPERTY(switch_fps, get_switch_fps, set_switch_fps);
+  MAKE_SEQ_PROPERTY(object_types, get_num_object_types, get_object_type);
+  MAKE_PROPERTY(model_flag, get_model_flag, set_model_flag);
+  MAKE_PROPERTY(texlist_flag, get_texlist_flag, set_texlist_flag);
+  MAKE_PROPERTY(nofog_flag, get_nofog_flag, set_nofog_flag);
+  MAKE_PROPERTY(decal_flag, get_decal_flag, set_decal_flag);
+  MAKE_PROPERTY(direct_flag, get_direct_flag, set_direct_flag);
+  MAKE_PROPERTY(portal_flag, get_portal_flag, set_portal_flag);
+  MAKE_PROPERTY(occluder_flag, get_occluder_flag, set_occluder_flag);
+  MAKE_PROPERTY2(indexed_flag, has_indexed_flag, get_indexed_flag,
+                               set_indexed_flag, clear_indexed_flag);
+  MAKE_PROPERTY2(collide_mask, has_collide_mask, get_collide_mask,
+                               set_collide_mask, clear_collide_mask);
+  MAKE_PROPERTY2(from_collide_mask, has_from_collide_mask, get_from_collide_mask,
+                                    set_from_collide_mask, clear_from_collide_mask);
+  MAKE_PROPERTY2(into_collide_mask, has_into_collide_mask, get_into_collide_mask,
+                                    set_into_collide_mask, clear_into_collide_mask);
+  MAKE_PROPERTY(blend_mode, get_blend_mode, set_blend_mode);
+  MAKE_PROPERTY(blend_operand_a, get_blend_operand_a, set_blend_operand_a);
+  MAKE_PROPERTY(blend_operand_b, get_blend_operand_b, set_blend_operand_b);
+  MAKE_PROPERTY2(blend_color, has_blend_color, get_blend_color,
+                              set_blend_color, clear_blend_color);
+  MAKE_PROPERTY2(lod, has_lod, get_lod, set_lod, clear_lod);
+  MAKE_PROPERTY(default_pose, get_default_pose, set_default_pose);
+  MAKE_PROPERTY(scroll_u, get_scroll_u, set_scroll_u);
+  MAKE_PROPERTY(scroll_v, get_scroll_v, set_scroll_v);
+  MAKE_PROPERTY(scroll_w, get_scroll_w, set_scroll_w);
+  MAKE_PROPERTY(scroll_r, get_scroll_r, set_scroll_r);
+
 public:
   INLINE TagData::const_iterator tag_begin() const;
   INLINE TagData::const_iterator tag_end() const;
@@ -390,9 +427,9 @@ private:
   double _w_speed;
   double _r_speed;
 
-  // This is the <DefaultPose> entry for a <Joint>.  It is not the
-  // <Transform> entry (that is stored via inheritance, in the
-  // EggTransform class we inherit from).
+  // This is the <DefaultPose> entry for a <Joint>.  It is not the <Transform>
+  // entry (that is stored via inheritance, in the EggTransform class we
+  // inherit from).
   EggTransform _default_pose;
 
   VertexRef _vref;
@@ -435,4 +472,3 @@ ostream &operator << (ostream &out, EggGroup::BlendOperand t);
 #include "eggGroup.I"
 
 #endif
-

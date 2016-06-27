@@ -1,16 +1,15 @@
-// Filename: mouseButton.h
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mouseButton.h
+ * @author drose
+ * @date 2000-03-01
+ */
 
 #ifndef MOUSEBUTTON_H
 #define MOUSEBUTTON_H
@@ -19,12 +18,10 @@
 
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseButton
-// Description : This class is just used as a convenient namespace for
-//               grouping all of these handy functions that return
-//               buttons which map to standard mouse buttons.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is just used as a convenient namespace for grouping all of these
+ * handy functions that return buttons which map to standard mouse buttons.
+ */
 class EXPCL_PANDA_PUTIL MouseButton {
 PUBLISHED:
   static ButtonHandle button(int button_number);

@@ -1,16 +1,15 @@
-// Filename: geom.h
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geom.h
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #ifndef GEOM_H
 #define GEOM_H
@@ -44,17 +43,14 @@
 class GeomContext;
 class PreparedGraphicsObjects;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Geom
-// Description : A container for geometry primitives.  This class
-//               associates one or more GeomPrimitive objects with a
-//               table of vertices defined by a GeomVertexData object.
-//               All of the primitives stored in a particular Geom are
-//               drawn from the same set of vertices (each primitive
-//               uses a subset of all of the vertices in the table),
-//               and all of them must be rendered at the same time, in
-//               the same graphics state.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for geometry primitives.  This class associates one or more
+ * GeomPrimitive objects with a table of vertices defined by a GeomVertexData
+ * object.  All of the primitives stored in a particular Geom are drawn from
+ * the same set of vertices (each primitive uses a subset of all of the
+ * vertices in the table), and all of them must be rendered at the same time,
+ * in the same graphics state.
+ */
 class EXPCL_PANDA_GOBJ Geom : public CopyOnWriteObject, public GeomEnums {
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
@@ -75,9 +71,13 @@ PUBLISHED:
   INLINE PrimitiveType get_primitive_type() const;
   INLINE ShadeModel get_shade_model() const;
   INLINE int get_geom_rendering() const;
+  MAKE_PROPERTY(primitive_type, get_primitive_type);
+  MAKE_PROPERTY(shade_model, get_shade_model);
+  MAKE_PROPERTY(geom_rendering, get_geom_rendering);
 
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
+  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
 
   INLINE CPT(GeomVertexData) get_vertex_data(Thread *current_thread = Thread::get_current_thread()) const;
   PT(GeomVertexData) modify_vertex_data();
@@ -95,6 +95,7 @@ PUBLISHED:
   void add_primitive(const GeomPrimitive *primitive);
   void remove_primitive(int i);
   void clear_primitives();
+  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive);
 
   INLINE PT(Geom) decompose() const;
   INLINE PT(Geom) doubleside() const;
@@ -118,6 +119,8 @@ PUBLISHED:
 
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(num_bytes, get_num_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   bool request_resident() const;
 
@@ -132,6 +135,7 @@ PUBLISHED:
   INLINE BoundingVolume::BoundsType get_bounds_type() const;
   INLINE void set_bounds(const BoundingVolume *volume);
   INLINE void clear_bounds();
+  MAKE_PROPERTY(bounds_type, get_bounds_type, set_bounds_type);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -200,15 +204,14 @@ private:
   typedef pvector<COWPT(GeomPrimitive) > Primitives;
 
   // We have to use reference-counting pointers here instead of having
-  // explicit cleanup in the GeomVertexFormat destructor, because the
-  // cache needs to be stored in the CycleData, which makes accurate
-  // cleanup more difficult.  We use the GeomCacheManager class to
-  // avoid cache bloat.
+  // explicit cleanup in the GeomVertexFormat destructor, because the cache
+  // needs to be stored in the CycleData, which makes accurate cleanup more
+  // difficult.  We use the GeomCacheManager class to avoid cache bloat.
 
-  // Note: the above comment is no longer true.  The cache is not
-  // stored in the CycleData, which just causes problems; instead, we
-  // cycle each individual CacheEntry as needed.  Need to investigate
-  // if we could simplify the cache system now.
+  // Note: the above comment is no longer true.  The cache is not stored in
+  // the CycleData, which just causes problems; instead, we cycle each
+  // individual CacheEntry as needed.  Need to investigate if we could
+  // simplify the cache system now.
 
   // The pipelined data with each CacheEntry.
   class EXPCL_PANDA_GOBJ CDataCache : public CycleData {
@@ -243,11 +246,10 @@ private:
   typedef CycleDataWriter<CDataCache> CDCacheWriter;
 
 public:
-  // The CacheKey class separates out just the part of CacheEntry that
-  // is used to key the cache entry within the map.  We have this as a
-  // separate class so we can easily look up a new entry in the map,
-  // without having to execute the relatively expensive CacheEntry
-  // constructor.
+  // The CacheKey class separates out just the part of CacheEntry that is used
+  // to key the cache entry within the map.  We have this as a separate class
+  // so we can easily look up a new entry in the map, without having to
+  // execute the relatively expensive CacheEntry constructor.
   class CacheKey {
   public:
     INLINE CacheKey(const GeomVertexData *source_data,
@@ -348,8 +350,8 @@ private:
   Cache _cache;
   LightMutex _cache_lock;
 
-  // This works just like the Texture contexts: each Geom keeps a
-  // record of all the PGO objects that hold the Geom, and vice-versa.
+  // This works just like the Texture contexts: each Geom keeps a record of
+  // all the PGO objects that hold the Geom, and vice-versa.
   typedef pmap<PreparedGraphicsObjects *, GeomContext *> Contexts;
   Contexts _contexts;
 
@@ -393,15 +395,13 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomPipelineReader
-// Description : Encapsulates the data from a Geom,
-//               pre-fetched for one stage of the pipeline.
-//
-//               Does not hold a reference to the Geom.  The caller
-//               must ensure that the Geom persists for at least the
-//               lifetime of the GeomPipelineReader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a Geom, pre-fetched for one stage of the
+ * pipeline.
+ *
+ * Does not hold a reference to the Geom.  The caller must ensure that the
+ * Geom persists for at least the lifetime of the GeomPipelineReader.
+ */
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);

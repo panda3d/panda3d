@@ -1,16 +1,15 @@
-// Filename: graphicsPipe.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsPipe.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef GRAPHICSPIPE_H
 #define GRAPHICSPIPE_H
@@ -33,28 +32,23 @@ class Texture;
 class WindowHandle;
 class DisplayInformation;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsPipe
-// Description : An object to create GraphicsOutputs that share a
-//               particular 3-D API.  Normally, there will only be one
-//               GraphicsPipe in an application, although it is
-//               possible to have multiple of these at once if there
-//               are multiple different API's available in the same
-//               machine.
-//
-//               Often, the GraphicsPipe corresponds to a physical
-//               output device, hence the term "pipe", but this is not
-//               necessarily the case.
-//
-//               The GraphicsPipe is used by the GraphicsEngine object
-//               to create and destroy windows; it keeps ownership of
-//               the windows it creates.
-//
-//               M. Asad added new/interim functionality where GraphicsPipe
-//               now contains a device interface to directx/opengl which
-//               will be used to handle multiple windows from same device.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * An object to create GraphicsOutputs that share a particular 3-D API.
+ * Normally, there will only be one GraphicsPipe in an application, although
+ * it is possible to have multiple of these at once if there are multiple
+ * different API's available in the same machine.
+ *
+ * Often, the GraphicsPipe corresponds to a physical output device, hence the
+ * term "pipe", but this is not necessarily the case.
+ *
+ * The GraphicsPipe is used by the GraphicsEngine object to create and destroy
+ * windows; it keeps ownership of the windows it creates.
+ *
+ * M. Asad added new/interim functionality where GraphicsPipe now contains a
+ * device interface to directx/opengl which will be used to handle multiple
+ * windows from same device.
+ *
+ */
 class EXPCL_PANDA_DISPLAY GraphicsPipe : public TypedReferenceCount {
 protected:
   GraphicsPipe();
@@ -98,11 +92,16 @@ PUBLISHED:
 
   INLINE int get_display_width() const;
   INLINE int get_display_height() const;
+  MAKE_PROPERTY(display_width, get_display_width);
+  MAKE_PROPERTY(display_height, get_display_height);
 
   DisplayInformation *get_display_information();
+  MAKE_PROPERTY(display_information, get_display_information);
+
   virtual void lookup_cpu_data();
 
   virtual string get_interface_name() const=0;
+  MAKE_PROPERTY(interface_name, get_interface_name);
 
 public:
   enum PreferredWindowThread {

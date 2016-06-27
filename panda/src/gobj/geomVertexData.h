@@ -1,16 +1,15 @@
-// Filename: geomVertexData.h
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexData.h
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #ifndef GEOMVERTEXDATA_H
 #define GEOMVERTEXDATA_H
@@ -44,35 +43,28 @@ class FactoryParams;
 class GeomVertexColumn;
 class GeomVertexRewriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexData
-// Description : This defines the actual numeric vertex data stored in
-//               a Geom, in the structure defined by a particular
-//               GeomVertexFormat object.
-//
-//               The data consists of one or more arrays, each of
-//               which in turn consists of a series of rows, one per
-//               vertex.  All arrays should have the same number of
-//               rows; each vertex is defined by the column data from
-//               a particular row across all arrays.
-//
-//               Often, there will be only one array per Geom, and the
-//               various columns defined in the GeomVertexFormat will
-//               be interleaved within that array.  However, it is
-//               also possible to have multiple different arrays, with
-//               a certain subset of the total columns defined in each
-//               array.
-//
-//               However the data is distributed, the effect is of a
-//               single table of vertices, where each vertex is
-//               represented by one row of the table.
-//
-//               In general, application code should not attempt to
-//               directly manipulate the vertex data through this
-//               structure; instead, use the GeomVertexReader,
-//               GeomVertexWriter, and GeomVertexRewriter objects to
-//               read and write vertex data at a high level.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the actual numeric vertex data stored in a Geom, in the
+ * structure defined by a particular GeomVertexFormat object.
+ *
+ * The data consists of one or more arrays, each of which in turn consists of
+ * a series of rows, one per vertex.  All arrays should have the same number
+ * of rows; each vertex is defined by the column data from a particular row
+ * across all arrays.
+ *
+ * Often, there will be only one array per Geom, and the various columns
+ * defined in the GeomVertexFormat will be interleaved within that array.
+ * However, it is also possible to have multiple different arrays, with a
+ * certain subset of the total columns defined in each array.
+ *
+ * However the data is distributed, the effect is of a single table of
+ * vertices, where each vertex is represented by one row of the table.
+ *
+ * In general, application code should not attempt to directly manipulate the
+ * vertex data through this structure; instead, use the GeomVertexReader,
+ * GeomVertexWriter, and GeomVertexRewriter objects to read and write vertex
+ * data at a high level.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexData : public CopyOnWriteObject, public GeomEnums {
 private:
   GeomVertexData();
@@ -94,13 +86,16 @@ PUBLISHED:
 
   INLINE const string &get_name() const;
   void set_name(const string &name);
+  MAKE_PROPERTY(name, get_name, set_name);
 
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
+  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
 
   INLINE const GeomVertexFormat *get_format() const;
   void set_format(const GeomVertexFormat *format);
   void unclean_set_format(const GeomVertexFormat *format);
+  MAKE_PROPERTY(format, get_format, set_format);
 
   INLINE bool has_column(const InternalName *name) const;
 
@@ -115,10 +110,12 @@ PUBLISHED:
   MAKE_SEQ(get_arrays, get_num_arrays, get_array);
   INLINE PT(GeomVertexArrayData) modify_array(int i);
   INLINE void set_array(int i, const GeomVertexArrayData *array);
+  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array);
 
   INLINE const TransformTable *get_transform_table() const;
   void set_transform_table(const TransformTable *table);
   INLINE void clear_transform_table();
+  MAKE_PROPERTY(transform_table, get_transform_table, set_transform_table);
 
   INLINE CPT(TransformBlendTable) get_transform_blend_table() const;
   PT(TransformBlendTable) modify_transform_blend_table();
@@ -128,9 +125,12 @@ PUBLISHED:
   INLINE const SliderTable *get_slider_table() const;
   void set_slider_table(const SliderTable *table);
   INLINE void clear_slider_table();
+  MAKE_PROPERTY(slider_table, get_slider_table, set_slider_table);
 
   INLINE int get_num_bytes() const;
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(num_bytes, get_num_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   bool request_resident() const;
 
@@ -156,6 +156,7 @@ PUBLISHED:
   void clear_animated_vertices();
   void transform_vertices(const LMatrix4 &mat);
   void transform_vertices(const LMatrix4 &mat, int begin_row, int end_row);
+  void transform_vertices(const LMatrix4 &mat, const SparseArray &rows);
 
   PT(GeomVertexData)
     replace_column(InternalName *name, int num_components,
@@ -169,17 +170,17 @@ PUBLISHED:
   void clear_cache_stage();
 
 public:
-  static INLINE PN_uint32 pack_abcd(unsigned int a, unsigned int b,
+  static INLINE uint32_t pack_abcd(unsigned int a, unsigned int b,
                                     unsigned int c, unsigned int d);
-  static INLINE unsigned int unpack_abcd_a(PN_uint32 data);
-  static INLINE unsigned int unpack_abcd_b(PN_uint32 data);
-  static INLINE unsigned int unpack_abcd_c(PN_uint32 data);
-  static INLINE unsigned int unpack_abcd_d(PN_uint32 data);
+  static INLINE unsigned int unpack_abcd_a(uint32_t data);
+  static INLINE unsigned int unpack_abcd_b(uint32_t data);
+  static INLINE unsigned int unpack_abcd_c(uint32_t data);
+  static INLINE unsigned int unpack_abcd_d(uint32_t data);
 
-  static INLINE PN_uint32 pack_ufloat(float a, float b, float c);
-  static INLINE float unpack_ufloat_a(PN_uint32 data);
-  static INLINE float unpack_ufloat_b(PN_uint32 data);
-  static INLINE float unpack_ufloat_c(PN_uint32 data);
+  static INLINE uint32_t pack_ufloat(float a, float b, float c);
+  static INLINE float unpack_ufloat_a(uint32_t data);
+  static INLINE float unpack_ufloat_b(uint32_t data);
+  static INLINE float unpack_ufloat_c(uint32_t data);
 
 private:
   static void do_set_color(GeomVertexData *vdata, const LColor &color);
@@ -235,11 +236,10 @@ private:
   typedef CycleDataWriter<CDataCache> CDCacheWriter;
 
 public:
-  // The CacheKey class separates out just the part of CacheEntry that
-  // is used to key the cache entry within the map.  We have this as a
-  // separate class so we can easily look up a new entry in the map,
-  // without having to execute the relatively expensive CacheEntry
-  // constructor.
+  // The CacheKey class separates out just the part of CacheEntry that is used
+  // to key the cache entry within the map.  We have this as a separate class
+  // so we can easily look up a new entry in the map, without having to
+  // execute the relatively expensive CacheEntry constructor.
   class EXPCL_PANDA_GOBJ CacheKey {
   public:
     INLINE CacheKey(const GeomVertexFormat *modifier);
@@ -396,12 +396,10 @@ private:
   friend class GeomVertexDataPipelineWriter;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexDataPipelineBase
-// Description : The common code from
-//               GeomVertexDataPipelineReader and
-//               GeomVertexDataPipelineWriter.
-////////////////////////////////////////////////////////////////////
+/**
+ * The common code from GeomVertexDataPipelineReader and
+ * GeomVertexDataPipelineWriter.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineBase : public GeomEnums {
 protected:
   INLINE GeomVertexDataPipelineBase(GeomVertexData *object,
@@ -432,11 +430,10 @@ protected:
   GeomVertexData::CData *_cdata;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexDataPipelineReader
-// Description : Encapsulates the data from a GeomVertexData,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
+ * the pipeline.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
 public:
   INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, Thread *current_thread);
@@ -501,11 +498,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexDataPipelineWriter
-// Description : Encapsulates the data from a GeomVertexData,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
+ * the pipeline.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
 public:
   INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,

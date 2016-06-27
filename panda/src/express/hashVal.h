@@ -1,16 +1,15 @@
-// Filename: hashVal.h
-// Created by:  drose (14Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file hashVal.h
+ * @author drose
+ * @date 2000-11-14
+ */
 
 #ifndef HASHVAL_H
 #define HASHVAL_H
@@ -24,11 +23,10 @@
 #include "streamWriter.h"
 #include "streamReader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HashVal
-// Description : Stores a 128-bit value that represents the hashed
-//               contents (typically MD5) of a file or buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a 128-bit value that represents the hashed contents (typically MD5)
+ * of a file or buffer.
+ */
 class EXPCL_PANDAEXPRESS HashVal {
 PUBLISHED:
   INLINE HashVal();
@@ -70,16 +68,17 @@ PUBLISHED:
   bool hash_stream(istream &stream);
   INLINE void hash_ramfile(const Ramfile &ramfile);
   INLINE void hash_string(const string &data);
+  INLINE void hash_bytes(const pvector<unsigned char> &data);
   void hash_buffer(const char *buffer, int length);
 #endif  // HAVE_OPENSSL
 
 private:
-  static void encode_hex(PN_uint32 val, char *buffer);
-  static void decode_hex(const char *buffer, PN_uint32 &val);
+  static void encode_hex(uint32_t val, char *buffer);
+  static void decode_hex(const char *buffer, uint32_t &val);
   INLINE static char tohex(unsigned int nibble);
   INLINE static unsigned int fromhex(char digit);
 
-  PN_uint32 _hv[4];
+  uint32_t _hv[4];
 };
 
 INLINE ostream &operator << (ostream &out, const HashVal &hv);

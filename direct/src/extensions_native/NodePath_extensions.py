@@ -407,7 +407,10 @@ del iPosHprScale
 #####################################################################
 def place(self):
         base.startDirect(fWantTk = 1)
-        from direct.tkpanels import Placer
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        Placer = importlib.import_module('direct.tkpanels.Placer')
         return Placer.place(self)
 
 Dtool_funcToMethod(place, NodePath)
@@ -415,7 +418,10 @@ del place
 #####################################################################
 def explore(self):
         base.startDirect(fWantTk = 1)
-        from direct.tkwidgets import SceneGraphExplorer
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        SceneGraphExplorer = importlib.import_module('direct.tkwidgets.SceneGraphExplorer')
         return SceneGraphExplorer.explore(self)
 
 Dtool_funcToMethod(explore, NodePath)
@@ -423,7 +429,10 @@ del explore
 #####################################################################
 def rgbPanel(self, cb = None):
         base.startTk()
-        from direct.tkwidgets import Slider
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        Slider = importlib.import_module('direct.tkwidgets.Slider')
         return Slider.rgbPanel(self, cb)
 
 Dtool_funcToMethod(rgbPanel, NodePath)
@@ -681,7 +690,7 @@ def subdivideCollisions(self, numSolidsInLeaves):
                 # this CollisionNode doesn't need to be split
                 continue
             solids = []
-            for i in xrange(numSolids):
+            for i in range(numSolids):
                 solids.append(node.getSolid(i))
             # recursively subdivide the solids into a spatial binary tree
             solidTree = self.r_subdivideCollisions(solids, numSolidsInLeaves)
@@ -734,7 +743,7 @@ def r_subdivideCollisions(self, solids, numSolidsInLeaves):
                 midY += maxExtent
         if extentZ < (maxExtent * .75) or extentZ > (maxExtent * 1.25):
                 midZ += maxExtent
-        for i in xrange(len(solids)):
+        for i in range(len(solids)):
                 origin = origins[i]
                 x = origin.getX(); y = origin.getY(); z = origin.getZ()
                 if x < midX:

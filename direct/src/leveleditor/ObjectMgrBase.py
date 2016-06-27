@@ -2,14 +2,13 @@
 Defines ObjectMgrBase
 """
 
-import os, time, wx, types, copy
+import os, time, copy
 
 from direct.task import Task
 from direct.actor.Actor import Actor
 from pandac.PandaModules import *
-from ActionMgr import *
-import ObjectGlobals as OG
-from ObjectPaletteBase import ObjectGen
+from .ActionMgr import *
+from . import ObjectGlobals as OG
 
 # python wrapper around a panda.NodePath object
 class PythonNodePath(NodePath):
@@ -18,7 +17,7 @@ class PythonNodePath(NodePath):
 
 class ObjectMgrBase:
     """ ObjectMgr will create, manage, update objects in the scene """
-    
+
     def __init__(self, editor):
         self.editor = editor
 
@@ -30,9 +29,9 @@ class ObjectMgrBase:
 
         self.lastUid = ''
         self.lastUidMode = 0
-        self.currNodePath = None   
+        self.currNodePath = None
         self.currLiveNP = None
-        
+
         self.Actor = []
         self.findActors(render)
         self.Nodes = []
@@ -41,16 +40,16 @@ class ObjectMgrBase:
     def reset(self):
         base.direct.deselectAllCB()
 
-        for id in self.objects.keys():
+        for id in list(self.objects.keys()):
             try:
                 self.objects[id][OG.OBJ_NP].removeNode()
             except:
                 pass
             del self.objects[id]
 
-        for np in self.npIndex.keys():
+        for np in list(self.npIndex.keys()):
             del self.npIndex[np]
-               
+
         self.objects = {}
         self.npIndex = {}
         self.saveData = []
@@ -80,7 +79,7 @@ class ObjectMgrBase:
         """ function to add new curve to the scene from file"""
         curve = []
         curveControl = []
-        
+
         #transfer the curve information from simple positions into control nodes
         for item in curveInfo:
             controler = render.attachNewNode("controler")
@@ -92,38 +91,38 @@ class ObjectMgrBase:
             controler.setScale(0.2)
             controler.reparentTo(render)
             controler.setTag('OBJRoot','1')
-            controler.setTag('Controller','1') 
+            controler.setTag('Controller','1')
             curve.append((None, item[1]))
             curveControl.append((item[0], controler))
-        
+
         self.editor.curveEditor.degree = degree
         self.editor.curveEditor.ropeUpdate (curve)
         #add new curve to the scene
         curveObjNP = self.addNewCurve(curveControl, degree, uid, parent, fSelectObject, nodePath = self.editor.curveEditor.currentRope)
         curveObj = self.findObjectByNodePath(curveObjNP)
         self.editor.objectMgr.updateObjectPropValue(curveObj, 'Degree', degree, fSelectObject=False, fUndo=False)
-        
+
         for item in curveControl:
             item[1].reparentTo(curveObjNP)
             item[1].hide()
-        
+
         curveControl = []
         curve = []
         self.editor.curveEditor.currentRope = None
-        
+
         return curveObjNP
 
     def addNewCurve(self, curveInfo, degree, uid=None, parent=None, fSelectObject=True, nodePath=None):
         """ function to add new curve to the scene"""
         if parent is None:
             parent = self.editor.NPParent
-        
+
         if uid is None:
             uid = self.genUniqueId()
 
         if self.editor:
             objDef = self.editor.objectPalette.findItem('__Curve__')
-        
+
         if nodePath is None:
             # we need to create curve
             # and then create newobj with newly created curve
@@ -141,10 +140,10 @@ class ObjectMgrBase:
 
         properties['Degree'] = degree
         properties['curveInfo'] = curveInfo
-            
+
         # insert obj data to main repository
         self.objects[uid] = [uid, newobj, objDef, None, None, properties, (1,1,1,1)]
-        self.npIndex[NodePath(newobj)] = uid        
+        self.npIndex[NodePath(newobj)] = uid
 
         if self.editor:
             if fSelectObject:
@@ -179,19 +178,19 @@ class ObjectMgrBase:
                     funcName = objDef.createFunction[OG.FUNC_NAME]
                     funcArgs = copy.deepcopy(objDef.createFunction[OG.FUNC_ARGS])
 
-                    for pair in funcArgs.items():
+                    for pair in list(funcArgs.items()):
                         if pair[1] == OG.ARG_NAME:
                             funcArgs[pair[0]] = nameStr
                         elif pair[1] == OG.ARG_PARENT:
                             funcArgs[pair[0]] = parent
 
-                    if type(funcName) == types.StringType:
+                    if type(funcName) == str:
                         if funcName.startswith('.'):
                             # when it's using default objectHandler
                             if self.editor:
                                 func = Functor(getattr(self.editor, "objectHandler%s"%funcName))
                             else: # when loaded outside of LE
-                                func = Functor(getattr(base, "objectHandler%s"%funcName))                        
+                                func = Functor(getattr(base, "objectHandler%s"%funcName))
                         else:
                             # when it's not using default objectHandler, whole name of the handling obj
                             # should be included in function name
@@ -209,7 +208,7 @@ class ObjectMgrBase:
                         newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
                     if hasattr(objDef, 'animDict') and objDef.animDict != {}:
                         objDef.anims = objDef.animDict.get(model)
-                        
+
                 elif objDef.model is not None:
                     # since this obj is simple model let's load the model
                     if model is None:
@@ -223,7 +222,7 @@ class ObjectMgrBase:
                         newobj = PythonNodePath(newobjModel)
                     else:
                         newobj = None
-                        
+
                 else:
                     newobj = hidden.attachNewNode(objDef.name)
             else:
@@ -245,7 +244,7 @@ class ObjectMgrBase:
                     if i == 0:
                         anim = animFile
                         newobj.loop(animName)
-  
+
             if newobj is None:
                 return None
 
@@ -271,7 +270,7 @@ class ObjectMgrBase:
     def removeObjectById(self, uid):
         obj = self.findObjectById(uid)
         nodePath = obj[OG.OBJ_NP]
-        
+
         for i in range(0,len(self.Actor)):
             if self.Actor[i] == obj:
                 del self.Actor[i]
@@ -281,7 +280,7 @@ class ObjectMgrBase:
                 del self.Nodes[i]
                 break
         self.editor.animMgr.removeAnimInfo(obj[OG.OBJ_UID])
-        
+
         del self.objects[uid]
         del self.npIndex[nodePath]
 
@@ -291,7 +290,7 @@ class ObjectMgrBase:
                 self.removeObjectByNodePath(child)
         nodePath.remove()
 
-        self.editor.fNeedToSave = True        
+        self.editor.fNeedToSave = True
 
     def removeObjectByNodePath(self, nodePath):
         uid = self.npIndex.get(nodePath)
@@ -305,7 +304,7 @@ class ObjectMgrBase:
                     del self.Nodes[i]
                     break
             self.editor.animMgr.removeAnimInfo(uid)
-            
+
             del self.objects[uid]
             del self.npIndex[nodePath]
 
@@ -372,9 +371,9 @@ class ObjectMgrBase:
         objProp = obj[OG.OBJ_PROP]
         self.editor.ui.objectPropertyUI.updateProps(obj, objDef.movable)
         self.editor.fNeedToSave = True
-        
+
     def onEnterObjectPropUI(self, event):
-        taskMgr.remove('_le_updateObjectUITask')        
+        taskMgr.remove('_le_updateObjectUITask')
         self.editor.ui.bindKeyEvents(False)
 
     def onLeaveObjectPropUI(self, event):
@@ -389,7 +388,7 @@ class ObjectMgrBase:
         t = Task.Task(self.updateObjectUITask)
         t.np = self.currNodePath
         taskMgr.add(t, '_le_updateObjectUITask')
-        
+
     def updateObjectUITask(self, state):
         self.editor.ui.objectPropertyUI.propX.setValue(state.np.getX())
         self.editor.ui.objectPropertyUI.propY.setValue(state.np.getY())
@@ -414,18 +413,18 @@ class ObjectMgrBase:
             r = r + 360.0
 
         while r > 360:
-            r = r - 360.0 
-            
+            r = r - 360.0
+
         self.editor.ui.objectPropertyUI.propH.setValue(h)
         self.editor.ui.objectPropertyUI.propP.setValue(p)
-        self.editor.ui.objectPropertyUI.propR.setValue(r)        
+        self.editor.ui.objectPropertyUI.propR.setValue(r)
 
         self.editor.ui.objectPropertyUI.propSX.setValue(state.np.getSx())
         self.editor.ui.objectPropertyUI.propSY.setValue(state.np.getSy())
         self.editor.ui.objectPropertyUI.propSZ.setValue(state.np.getSz())
-        
+
         return Task.cont
-        
+
     def updateObjectTransform(self, event):
         if self.currNodePath is None:
             return
@@ -454,15 +453,15 @@ class ObjectMgrBase:
             r = r + 360.0
 
         while r > 360:
-            r = r - 360.0 
-            
+            r = r - 360.0
+
         np.setH(h)
         np.setP(p)
         np.setR(r)
 
         np.setSx(float(self.editor.ui.objectPropertyUI.propSX.getValue()))
         np.setSy(float(self.editor.ui.objectPropertyUI.propSY.getValue()))
-        np.setSz(float(self.editor.ui.objectPropertyUI.propSZ.getValue()))        
+        np.setSz(float(self.editor.ui.objectPropertyUI.propSZ.getValue()))
 
         obj = self.findObjectByNodePath(self.currNodePath)
         action = ActionTransformObj(self.editor, obj[OG.OBJ_UID], Mat4(np.getMat()))
@@ -470,13 +469,13 @@ class ObjectMgrBase:
         np.remove()
         action()
         self.editor.fNeedToSave = True
-        
+
     def setObjectTransform(self, uid, xformMat):
         obj = self.findObjectById(uid)
         if obj:
             obj[OG.OBJ_NP].setMat(xformMat)
         self.editor.fNeedToSave = True
-        
+
     def updateObjectColor(self, r, g, b, a, np=None):
         if np is None:
             np = self.currNodePath
@@ -492,7 +491,7 @@ class ObjectMgrBase:
                 child.setTransparency(1)
                 child.setColorScale(r, g, b, a)
         self.editor.fNeedToSave = True
-        
+
     def updateObjectModel(self, model, obj, fSelectObject=True):
         """ replace object's model """
         if obj[OG.OBJ_MODEL] != model:
@@ -502,7 +501,7 @@ class ObjectMgrBase:
             objDef = obj[OG.OBJ_DEF]
             objRGBA = obj[OG.OBJ_RGBA]
             uid = obj[OG.OBJ_UID]
-            
+
             # load new model
             if objDef.actor:
                 try:
@@ -512,7 +511,7 @@ class ObjectMgrBase:
             else:
                 newobjModel = loader.loadModel(model, okMissing=True)
                 if newobjModel is None:
-                    print "Can't load model %s"%model
+                    print("Can't load model %s"%model)
                     return
                 self.flatten(newobjModel, model, objDef, uid)
                 newobj = PythonNodePath(newobjModel)
@@ -520,7 +519,7 @@ class ObjectMgrBase:
 
             # reparent children
             objNP.findAllMatches("=OBJRoot").reparentTo(newobj)
-            
+
             # reparent to parent
             newobj.reparentTo(objNP.getParent())
 
@@ -551,7 +550,7 @@ class ObjectMgrBase:
                 self.updateObjectAnim(animList[0], obj, fSelectObject=fSelectObject)
             else:
                 if fSelectObject:
-                    base.direct.select(newobj, fUndo=0)        
+                    base.direct.select(newobj, fUndo=0)
 
     def updateObjectAnim(self, anim, obj, fSelectObject=True):
         """ replace object's anim """
@@ -585,19 +584,19 @@ class ObjectMgrBase:
         """
         When an obj's property is updated in UI,
         this will update it's value in data structure.
-        And call update function if defined.        
+        And call update function if defined.
         """
-        
+
         objDef = obj[OG.OBJ_DEF]
         objProp = obj[OG.OBJ_PROP]
-        
+
         propDef = objDef.properties[propName]
         if propDef is None:
             return
 
         propType = propDef[OG.PROP_TYPE]
         propDataType = propDef[OG.PROP_DATATYPE]
-        
+
         if propType == OG.PROP_UI_SLIDE:
             if len(propDef) <= OG.PROP_RANGE:
                 return
@@ -646,11 +645,11 @@ class ObjectMgrBase:
     def updateObjectPropValue(self, obj, propName, val, fSelectObject=False, fUndo=True):
         """
         Update object property value and
-        call update function if defined.         
+        call update function if defined.
         """
         objDef = obj[OG.OBJ_DEF]
         objProp = obj[OG.OBJ_PROP]
-        
+
         propDef = objDef.properties[propName]
         propDataType = propDef[OG.PROP_DATATYPE]
 
@@ -683,14 +682,14 @@ class ObjectMgrBase:
                         kwargs[key] = funcArgs[key]
                         undoKwargs[key] = funcArgs[key]
 
-                if type(funcName) == types.StringType:
+                if type(funcName) == str:
                     if funcName.startswith('.'):
                         if self.editor:
                             func = Functor(getattr(self.editor, "objectHandler%s"%funcName), **kwargs)
                             undoFunc = Functor(getattr(self.editor, "objectHandler%s"%funcName), **undoKwargs)
                         else: # when loaded outside of LE
                             func = Functor(getattr(base, "objectHandler%s"%funcName), **kwargs)
-                            undoFunc = Functor(getattr(base, ".objectHandler%s"%funcName), **undoKwargs)                    
+                            undoFunc = Functor(getattr(base, ".objectHandler%s"%funcName), **undoKwargs)
                     else:
                         func = Functor(eval(funcName), **kwargs)
                         undoFunc = Functor(eval(funcName), **undoKwargs)
@@ -701,7 +700,7 @@ class ObjectMgrBase:
                 # finally call update function
                 #func(**kwargs)
         else:
-            oldVal = objProp[propName]            
+            oldVal = objProp[propName]
             func = None
             undoFunc = None
         action = ActionUpdateObjectProp(self.editor, fSelectObject, obj, propName, val, oldVal, func, undoFunc)
@@ -730,7 +729,7 @@ class ObjectMgrBase:
         And call update function if defined.
         """
         obj = self.findObjectByNodePath(nodePath)
-        
+
         if obj:
             for propName in propValues:
                 self.updateObjectPropValue(obj, propName, propValues[propName])
@@ -751,7 +750,7 @@ class ObjectMgrBase:
                     objAnim = obj[OG.OBJ_ANIM]
                     objProp = obj[OG.OBJ_PROP]
                     objRGBA = obj[OG.OBJ_RGBA]
-                        
+
                     if parentId:
                         parentStr = "objects['%s']"%parentId
                     else:
@@ -779,22 +778,22 @@ class ObjectMgrBase:
                         newobjCurveInfo = []
                         for item in objCurveInfo:
                             newobjCurveInfo.append((item[0], item[1].getPos()))
-                            
-                        self.saveData.append("\nobjects['%s'] = objectMgr.addNewCurveFromFile(%s, %s, '%s', %s, False, None)"%(uid, newobjCurveInfo, self.objDegree, uid, parentStr))    
+
+                        self.saveData.append("\nobjects['%s'] = objectMgr.addNewCurveFromFile(%s, %s, '%s', %s, False, None)"%(uid, newobjCurveInfo, self.objDegree, uid, parentStr))
                     else:
                         self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s, False, None, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr, nameStr))
-                    
+
                     self.saveData.append("if objects['%s']:"%uid)
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
                     self.saveData.append("    objects['%s'].setScale(%s)"%(uid, np.getScale()))
                     self.saveData.append("    objectMgr.updateObjectColor(%f, %f, %f, %f, objects['%s'])"%(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], uid))
-                    
+
                     if objDef.name == '__Curve__':
                         pass
                     else:
                         self.saveData.append("    objectMgr.updateObjectProperties(objects['%s'], %s)"%(uid,objProp))
-                    
+
                 self.traverse(child, uid)
 
     def getSaveData(self):
@@ -862,7 +861,7 @@ class ObjectMgrBase:
             newChildObjNP = self.duplicateObject(childNP, parent)
             if newChildObjNP is not None:
                 self.duplicateChild(childNP, newChildObjNP)
-    
+
     def duplicateSelected(self):
         selectedNPs = base.direct.selected.getSelectedAsList()
         duplicatedNPs = []
@@ -907,7 +906,7 @@ class ObjectMgrBase:
     def flatten(self, newobjModel, model, objDef, uid):
         # override this to flatten models
         pass
-        
+
     def findActors(self, parent):
         for child in parent.getChildren():
             if child.hasTag('OBJRoot') and not child.hasTag('Controller'):
@@ -916,10 +915,10 @@ class ObjectMgrBase:
                 if obj:
                     if isinstance(obj[OG.OBJ_NP],Actor):
                         self.Actor.append(obj)
-                    
+
                 self.findActors(child)
 
-        
+
     def findNodes(self, parent):
         for child in parent.getChildren():
             if child.hasTag('OBJRoot') and not child.hasTag('Controller'):
@@ -927,7 +926,7 @@ class ObjectMgrBase:
 
                 if obj:
                     self.Nodes.append(obj)
-                    
+
                 self.findActors(child)
-            
-                    
+
+

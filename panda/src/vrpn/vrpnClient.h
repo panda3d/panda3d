@@ -1,16 +1,15 @@
-// Filename: vrpnClient.h
-// Created by:  jason (04Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrpnClient.h
+ * @author jason
+ * @date 2000-08-04
+ */
 
 #ifndef VRPNCLIENT_H
 #define VRPNCLIENT_H
@@ -29,12 +28,10 @@ class VrpnAnalogDevice;
 class VrpnDial;
 class VrpnDialDevice;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnClient
-// Description : A specific ClientBase that connects to a VRPN server
-//               and records information on the connected VRPN
-//               devices.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific ClientBase that connects to a VRPN server and records
+ * information on the connected VRPN devices.
+ */
 class EXPCL_VRPN VrpnClient : public ClientBase {
 PUBLISHED:
   VrpnClient(const string &server_name);
@@ -117,5 +114,3 @@ private:
 #include "vrpnClient.I"
 
 #endif
-
-

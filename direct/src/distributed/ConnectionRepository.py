@@ -1,29 +1,25 @@
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.task import Task
-from direct.task.TaskManagerGlobal import * # taskMgr
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DoInterestManager import DoInterestManager
 from direct.distributed.DoCollectionManager import DoCollectionManager
 from direct.showbase import GarbageReport
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
+from .PyDatagramIterator import PyDatagramIterator
 
 import types
-import imp
 import gc
 
 __all__ = ["ConnectionRepository", "GCTrigger"]
 
-vfs = VirtualFileSystem.getGlobalPtr()
-
-class ConnectionRepository( 
+class ConnectionRepository(
         DoInterestManager, DoCollectionManager, CConnectionRepository):
     """
     This is a base class for things that know how to establish a
     connection (and exchange datagrams) with a gameserver.  This
     includes ClientRepository and AIRepository.
     """
-    notify = DirectNotifyGlobal.directNotify.newCategory("ConnectionRepository")
+    notify = directNotify.newCategory("ConnectionRepository")
     taskPriority = -30
     taskChain = None
 
@@ -42,7 +38,7 @@ class ConnectionRepository(
         if threadedNet is None:
             # Default value.
             threadedNet = config.GetBool('threaded-net', False)
-            
+
         # let the C connection repository know whether we're supporting
         # 'owner' views of distributed objects (i.e. 'receives ownrecv',
         # 'I own this object and have a separate view of it regardless of
@@ -63,7 +59,7 @@ class ConnectionRepository(
         # events in the main thread, instead of within the network
         # thread (if there is one).
         self.accept(self._getLostConnectionEvent(), self.lostConnection)
-        
+
         self.config = config
 
         if self.config.GetBool('verbose-repository'):
@@ -106,7 +102,7 @@ class ConnectionRepository(
             self.notify.info("Using connect method 'net'")
         elif self.connectMethod == self.CM_NATIVE:
             self.notify.info("Using connect method 'native'")
-        
+
         self.connectHttp = None
         self.http = None
 
@@ -137,7 +133,7 @@ class ConnectionRepository(
             # periodically increase gc threshold if there is no garbage
             taskMgr.doMethodLater(self.config.GetFloat('garbage-threshold-adjust-delay', 5 * 60.),
                                   self._adjustGcThreshold, self.GarbageThresholdTaskName)
-            
+
         self._gcDefaultThreshold = gc.get_threshold()
 
     def _getLostConnectionEvent(self):
@@ -251,7 +247,7 @@ class ConnectionRepository(
         self.dclassesByNumber = {}
         self.hashVal = 0
 
-        if isinstance(dcFileNames, types.StringTypes):
+        if isinstance(dcFileNames, str):
             # If we were given a single string, make it a list.
             dcFileNames = [dcFileNames]
 
@@ -421,7 +417,7 @@ class ConnectionRepository(
                 if hasattr(module, symbolName):
                     dcImports[symbolName] = getattr(module, symbolName)
                 else:
-                    raise StandardError, 'Symbol %s not defined in module %s.' % (symbolName, moduleName)
+                    raise Exception('Symbol %s not defined in module %s.' % (symbolName, moduleName))
         else:
             # "import moduleName"
 
@@ -517,7 +513,7 @@ class ConnectionRepository(
             if failureCallback:
                 failureCallback(0, '', *failureArgs)
         else:
-            print "uh oh, we aren't using one of the tri-state CM variables"
+            print("uh oh, we aren't using one of the tri-state CM variables")
             failureCallback(0, '', *failureArgs)
 
     def disconnect(self):

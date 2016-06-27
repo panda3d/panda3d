@@ -5,7 +5,7 @@ __all__ = ['SoundInterval']
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-import Interval
+from . import Interval
 import random
 
 class SoundInterval(Interval.Interval):
@@ -61,13 +61,13 @@ class SoundInterval(Interval.Interval):
             duration = max(self.soundDuration - self.startTime, 0)
             #if (duration == 0):
             #    self.notify.warning('zero length duration!')
-            
+
             # MPG - hack for Miles bug
             #duration += 1.5
-            
+
             # DCR - hack for Miles bug - adding 1.5 seconds caused
             # problems for MG_neg_buzzer.wav
-            
+
             # DCR - what this is all about: Miles is under-reporting the
             # length of MP3 files, and they're getting cut off too early.
             # This is a temporary hack. We could:
@@ -79,7 +79,7 @@ class SoundInterval(Interval.Interval):
             # MilesAudioManager.  This is no longer necessary up here,
             # where it pollutes SoundInterval for everyone.
             #duration += min(duration * 2.4, 1.5)
-            
+
         # Generate unique name if necessary
         if (name == None):
             name = id
@@ -108,7 +108,7 @@ class SoundInterval(Interval.Interval):
         ## if self._reverse:
         ##     # Don't attempt to play the sound backwards.
         ##     return
-        
+
         if self.state == CInterval.SPaused:
             # Restarting from a pause.
             t1 = t + self.startTime
@@ -120,7 +120,7 @@ class SoundInterval(Interval.Interval):
            self.node and not self.node.isEmpty():
             base.sfxPlayer.setFinalVolume(self.sound, self.node, self.volume,
                                           self.listenerNode, self.cutOff)
-        
+
         self.state = CInterval.SStarted
         self.currT = t
 

@@ -1,16 +1,15 @@
-// Filename: lineParticleRenderer.cxx
-// Created by:  darren (06Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lineParticleRenderer.cxx
+ * @author darren
+ * @date 2000-10-06
+ */
 
 #include "lineParticleRenderer.h"
 #include "boundingSphere.h"
@@ -22,11 +21,9 @@
 
 PStatCollector LineParticleRenderer::_render_collector("App:Particles:Line:Render");
 
-////////////////////////////////////////////////////////////////////
-//    Function : LineParticleRenderer
-//      Access : Public
-// Description : Default Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor
+ */
 
 LineParticleRenderer::
 LineParticleRenderer() :
@@ -38,11 +35,9 @@ LineParticleRenderer() :
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : LineParticleRenderer
-//      Access : Public
-// Description : Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor
+ */
 
 LineParticleRenderer::
 LineParticleRenderer(const LColor& head,
@@ -54,11 +49,9 @@ LineParticleRenderer(const LColor& head,
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : LineParticleRenderer
-//      Access : Public
-// Description : Copy Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy Constructor
+ */
 
 LineParticleRenderer::
 LineParticleRenderer(const LineParticleRenderer& copy) :
@@ -69,53 +62,42 @@ LineParticleRenderer(const LineParticleRenderer& copy) :
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : ~LineParticleRenderer
-//      Access : Public
-// Description : Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 
 LineParticleRenderer::
 ~LineParticleRenderer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : make copy
-//      Access : Public
-// Description : child virtual for spawning systems
-////////////////////////////////////////////////////////////////////
+/**
+ * child virtual for spawning systems
+ */
 
 BaseParticleRenderer *LineParticleRenderer::
 make_copy() {
   return new LineParticleRenderer(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : birth_particle
-//      Access : Private, virtual
-// Description : child birth
-////////////////////////////////////////////////////////////////////
+/**
+ * child birth
+ */
 
 void LineParticleRenderer::
 birth_particle(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : kill_particle
-//      Access : Private, virtual
-// Description : child kill
-////////////////////////////////////////////////////////////////////
+/**
+ * child kill
+ */
 
 void LineParticleRenderer::
 kill_particle(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : resize_pool
-//      Access : private
-// Description : resizes the render pool.  Reference counting
-//               makes this easy.
-////////////////////////////////////////////////////////////////////
+/**
+ * resizes the render pool.  Reference counting makes this easy.
+ */
 
 void LineParticleRenderer::
 resize_pool(int new_size) {
@@ -124,11 +106,9 @@ resize_pool(int new_size) {
   init_geoms();
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : init_geoms
-//      Access : private
-// Description : initializes the geomnodes
-////////////////////////////////////////////////////////////////////
+/**
+ * initializes the geomnodes
+ */
 
 void LineParticleRenderer::
 init_geoms() {
@@ -145,11 +125,9 @@ init_geoms() {
   render_node->add_geom(_line_primitive, _render_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : render
-//      Access : private
-// Description : populates the GeomLine
-////////////////////////////////////////////////////////////////////
+/**
+ * populates the GeomLine
+ */
 
 void LineParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
@@ -227,7 +205,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     // one line from current position to last position
 
     vertex.add_data3(position);
-    LPoint3 last_position = position + 
+    LPoint3 last_position = position +
       (cur_particle->get_last_position() - position) * _line_scale_factor;
     vertex.add_data3(last_position);
     color.add_data4(head_color);
@@ -250,12 +228,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   get_render_node()->mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LineParticleRenderer::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -263,12 +238,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LineParticleRenderer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "LineParticleRenderer:\n";

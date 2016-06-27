@@ -1,16 +1,15 @@
-// Filename: test_delete.cxx
-// Created by:  drose (18Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_delete.cxx
+ * @author drose
+ * @date 2006-04-18
+ */
 
 #include "pandabase.h"
 #include "thread.h"
@@ -84,7 +83,7 @@ public:
   MyThread(const string &name) : Thread(name, name)
   {
   }
-    
+
   virtual void
   thread_main() {
     OUTPUT(nout << *this << " beginning.\n");
@@ -108,7 +107,7 @@ public:
         }
         int num_del = (int)random_f(max_doobers_per_chunk);
         num_del = min(num_del, (int)doobers.size());
-        
+
         for (int j = 0; j < num_del; ++j) {
           assert(!doobers.empty());
           delete doobers.back();

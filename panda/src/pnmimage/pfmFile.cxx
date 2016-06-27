@@ -1,16 +1,15 @@
-// Filename: pfmFile.cxx
-// Created by:  drose (23Dec10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pfmFile.cxx
+ * @author drose
+ * @date 2010-12-23
+ */
 
 #include "config_pnmimage.h"
 #include "pfmFile.h"
@@ -25,11 +24,9 @@
 #include "string_utils.h"
 #include "look_at.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PfmFile::
 PfmFile() {
   _has_no_data_value = false;
@@ -39,11 +36,9 @@ PfmFile() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PfmFile::
 PfmFile(const PfmFile &copy) :
   PNMImageHeader(copy),
@@ -56,11 +51,9 @@ PfmFile(const PfmFile &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::Copy Assignment
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 operator = (const PfmFile &copy) {
   PNMImageHeader::operator = (copy);
@@ -72,11 +65,9 @@ operator = (const PfmFile &copy) {
   _has_point = copy._has_point;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::clear
-//       Access: Published
-//  Description: Eliminates all data in the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Eliminates all data in the file.
+ */
 void PfmFile::
 clear() {
   _x_size = 0;
@@ -87,14 +78,11 @@ clear() {
   clear_no_data_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::clear
-//       Access: Published
-//  Description: Resets to an empty table with a specific size.  The
-//               case of num_channels == 0 is allowed only in the case
-//               that x_size and y_size are also == 0; and this makes
-//               an empty (and invalid) PfmFile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets to an empty table with a specific size.  The case of num_channels ==
+ * 0 is allowed only in the case that x_size and y_size are also == 0; and
+ * this makes an empty (and invalid) PfmFile.
+ */
 void PfmFile::
 clear(int x_size, int y_size, int num_channels) {
   nassertv(x_size >= 0 && y_size >= 0);
@@ -108,24 +96,21 @@ clear(int x_size, int y_size, int num_channels) {
   _table.clear();
   int size = _x_size * _y_size * _num_channels;
 
-  // We allocate a little bit bigger to allow safe overflow: you can
-  // call get_point3() or get_point4() on the last point of a 1- or
-  // 3-channel image.
+  // We allocate a little bit bigger to allow safe overflow: you can call
+  // get_point3() or get_point4() on the last point of a 1- or 3-channel
+  // image.
   _table.insert(_table.end(), size + 4, (PN_float32)0.0);
 
   clear_no_data_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::read
-//       Access: Published
-//  Description: Reads the PFM data from the indicated file, returning
-//               true on success, false on failure.
-//
-//               This can also handle reading a standard image file
-//               supported by PNMImage; it will be quietly converted
-//               to a floating-point type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the PFM data from the indicated file, returning true on success,
+ * false on failure.
+ *
+ * This can also handle reading a standard image file supported by PNMImage;
+ * it will be quietly converted to a floating-point type.
+ */
 bool PfmFile::
 read(const Filename &fullpath) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -151,16 +136,13 @@ read(const Filename &fullpath) {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::read
-//       Access: Published
-//  Description: Reads the PFM data from the indicated stream,
-//               returning true on success, false on failure.
-//
-//               This can also handle reading a standard image file
-//               supported by PNMImage; it will be quietly converted
-//               to a floating-point type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the PFM data from the indicated stream, returning true on success,
+ * false on failure.
+ *
+ * This can also handle reading a standard image file supported by PNMImage;
+ * it will be quietly converted to a floating-point type.
+ */
 bool PfmFile::
 read(istream &in, const Filename &fullpath) {
   PNMReader *reader = make_reader(&in, false, fullpath);
@@ -171,14 +153,11 @@ read(istream &in, const Filename &fullpath) {
   return read(reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::read
-//       Access: Published
-//  Description: Reads the PFM data using the indicated PNMReader.
-//
-//               The PNMReader is always deleted upon completion,
-//               whether successful or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the PFM data using the indicated PNMReader.
+ *
+ * The PNMReader is always deleted upon completion, whether successful or not.
+ */
 bool PfmFile::
 read(PNMReader *reader) {
   clear();
@@ -207,17 +186,14 @@ read(PNMReader *reader) {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::write
-//       Access: Published
-//  Description: Writes the PFM data to the indicated file, returning
-//               true on success, false on failure.
-//
-//               If the type implied by the filename extension
-//               supports floating-point, the data will be written
-//               directly; otherwise, the floating-point data will be
-//               quietly converted to the appropriate integer type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the PFM data to the indicated file, returning true on success, false
+ * on failure.
+ *
+ * If the type implied by the filename extension supports floating-point, the
+ * data will be written directly; otherwise, the floating-point data will be
+ * quietly converted to the appropriate integer type.
+ */
 bool PfmFile::
 write(const Filename &fullpath) {
   if (!is_valid()) {
@@ -242,12 +218,10 @@ write(const Filename &fullpath) {
   return write(out, fullpath);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::write
-//       Access: Published
-//  Description: Writes the PFM data to the indicated stream,
-//               returning true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the PFM data to the indicated stream, returning true on success,
+ * false on failure.
+ */
 bool PfmFile::
 write(ostream &out, const Filename &fullpath) {
   if (!is_valid()) {
@@ -262,14 +236,11 @@ write(ostream &out, const Filename &fullpath) {
   return write(writer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::write
-//       Access: Published
-//  Description: Writes the PFM data using the indicated PNMWriter.
-//
-//               The PNMWriter is always deleted upon completion,
-//               whether successful or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the PFM data using the indicated PNMWriter.
+ *
+ * The PNMWriter is always deleted upon completion, whether successful or not.
+ */
 bool PfmFile::
 write(PNMWriter *writer) {
   if (writer == NULL) {
@@ -284,8 +255,8 @@ write(PNMWriter *writer) {
   writer->copy_header_from(*this);
 
   if (!writer->supports_floating_point()) {
-    // Hmm, it's an integer file type.  Convert it from the
-    // floating-point data we have.
+    // Hmm, it's an integer file type.  Convert it from the floating-point
+    // data we have.
     PNMImage pnmimage;
     if (!store(pnmimage)) {
       delete writer;
@@ -302,12 +273,10 @@ write(PNMWriter *writer) {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::load
-//       Access: Published
-//  Description: Fills the PfmFile with the data from the indicated
-//               PNMImage, converted to floating-point values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the PfmFile with the data from the indicated PNMImage, converted to
+ * floating-point values.
+ */
 bool PfmFile::
 load(const PNMImage &pnmimage) {
   if (!pnmimage.is_valid()) {
@@ -377,12 +346,9 @@ load(const PNMImage &pnmimage) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::store
-//       Access: Published
-//  Description: Copies the data to the indicated PNMImage, converting
-//               to RGB values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the data to the indicated PNMImage, converting to RGB values.
+ */
 bool PfmFile::
 store(PNMImage &pnmimage) const {
   if (!is_valid()) {
@@ -443,14 +409,11 @@ store(PNMImage &pnmimage) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::store_mask
-//       Access: Published
-//  Description: Stores 1 or 0 values into the indicated PNMImage,
-//               according to has_point() for each pixel.  Each valid
-//               point gets a 1 value; each nonexistent point gets a 0
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores 1 or 0 values into the indicated PNMImage, according to has_point()
+ * for each pixel.  Each valid point gets a 1 value; each nonexistent point
+ * gets a 0 value.
+ */
 bool PfmFile::
 store_mask(PNMImage &pnmimage) const {
   if (!is_valid()) {
@@ -467,11 +430,47 @@ store_mask(PNMImage &pnmimage) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill
-//       Access: Published
-//  Description: Fills the table with all of the same value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores 1 or 0 values into the indicated PNMImage, according to has_point()
+ * for each pixel.  Each valid point gets a 1 value; each nonexistent point
+ * gets a 0 value.
+ *
+ * This flavor of store_mask also checks whether the valid points are within
+ * the specified min/max range.  Any valid points without the condition
+ * min_point[c] <= value[c] <= max_point[c], for any c, are stored with a 0 in
+ * the mask.
+ */
+bool PfmFile::
+store_mask(PNMImage &pnmimage, const LVecBase4f &min_point, const LVecBase4f &max_point) const {
+  if (!is_valid()) {
+    pnmimage.clear();
+    return false;
+  }
+
+  pnmimage.clear(get_x_size(), get_y_size(), 1, 255);
+  for (int yi = 0; yi < get_y_size(); ++yi) {
+    for (int xi = 0; xi < get_x_size(); ++xi) {
+      if (!has_point(xi, yi)) {
+        pnmimage.set_gray(xi, yi, 0);
+      } else {
+        const float *value = &_table[(yi * _x_size + xi) * _num_channels];
+        bool in_range = true;
+        for (int ci = 0; ci < _num_channels; ++ci) {
+          if (value[ci] < min_point[ci] || value[ci] > max_point[ci]) {
+            in_range = false;
+            break;
+          }
+        }
+        pnmimage.set_gray(xi, yi, (float)in_range);
+      }
+    }
+  }
+  return true;
+}
+
+/**
+ * Fills the table with all of the same value.
+ */
 void PfmFile::
 fill(const LPoint4f &value) {
   switch (_num_channels) {
@@ -517,11 +516,9 @@ fill(const LPoint4f &value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill_nan
-//       Access: Published
-//  Description: Fills the table with all NaN.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the table with all NaN.
+ */
 void PfmFile::
 fill_nan() {
   PN_float32 nan = make_nan((PN_float32)0.0);
@@ -529,23 +526,18 @@ fill_nan() {
   fill(nan4);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill_no_data_value
-//       Access: Published
-//  Description: Fills the table with the current no_data value, so
-//               that the table is empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the table with the current no_data value, so that the table is empty.
+ */
 void PfmFile::
 fill_no_data_value() {
   fill(_no_data_value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill_channel
-//       Access: Published
-//  Description: Fills the indicated channel with all of the same
-//               value, leaving the other channels unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated channel with all of the same value, leaving the other
+ * channels unchanged.
+ */
 void PfmFile::
 fill_channel(int channel, PN_float32 value) {
   nassertv(channel >= 0 && channel < _num_channels);
@@ -557,25 +549,19 @@ fill_channel(int channel, PN_float32 value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill_channel_nan
-//       Access: Published
-//  Description: Fills the indicated channel with NaN, leaving the
-//               other channels unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated channel with NaN, leaving the other channels unchanged.
+ */
 void PfmFile::
 fill_channel_nan(int channel) {
   PN_float32 nan = make_nan((PN_float32)0.0);
   fill_channel(channel, nan);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill_channel_masked
-//       Access: Published
-//  Description: Fills the indicated channel with all of the same
-//               value, but only where the table already has a data
-//               point.  Leaves empty points unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated channel with all of the same value, but only where the
+ * table already has a data point.  Leaves empty points unchanged.
+ */
 void PfmFile::
 fill_channel_masked(int channel, PN_float32 value) {
   nassertv(channel >= 0 && channel < _num_channels);
@@ -593,29 +579,22 @@ fill_channel_masked(int channel, PN_float32 value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill_channel_masked_nan
-//       Access: Published
-//  Description: Fills the indicated channel with NaN, but only where
-//               the table already has a data point.  Leaves empty
-//               points unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated channel with NaN, but only where the table already has
+ * a data point.  Leaves empty points unchanged.
+ */
 void PfmFile::
 fill_channel_masked_nan(int channel) {
   PN_float32 nan = make_nan((PN_float32)0.0);
   fill_channel_masked(channel, nan);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::calc_average_point
-//       Access: Published
-//  Description: Computes the unweighted average point of all points
-//               within the box centered at (x, y) with the indicated
-//               Manhattan-distance radius.  Missing points are
-//               assigned the value of their nearest neighbor.
-//               Returns true if successful, or false if the point
-//               value cannot be determined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the unweighted average point of all points within the box centered
+ * at (x, y) with the indicated Manhattan-distance radius.  Missing points are
+ * assigned the value of their nearest neighbor.  Returns true if successful,
+ * or false if the point value cannot be determined.
+ */
 bool PfmFile::
 calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radius) const {
   result = LPoint3f::zero();
@@ -625,10 +604,10 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
   int max_x = int(floor(x + radius));
   int max_y = int(floor(y + radius));
 
-  // We first construct a mini-grid of x_size by y_size integer values
-  // to index into the main table.  This indirection allows us to fill
-  // in the holes in the mini-grid with the nearest known values
-  // before we compute the average.
+  // We first construct a mini-grid of x_size by y_size integer values to
+  // index into the main table.  This indirection allows us to fill in the
+  // holes in the mini-grid with the nearest known values before we compute
+  // the average.
   int x_size = max_x - min_x + 1;
   int y_size = max_y - min_y + 1;
   int size = x_size * y_size;
@@ -639,8 +618,7 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
   pvector<MiniGridCell> mini_grid;
   mini_grid.insert(mini_grid.end(), size, MiniGridCell());
 
-  // Now collect the known data points and apply them to the
-  // mini-grid.
+  // Now collect the known data points and apply them to the mini-grid.
   min_x = max(min_x, 0);
   min_y = max(min_y, 0);
   max_x = min(max_x, _x_size - 1);
@@ -683,8 +661,7 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
     }
   }
 
-  // Now the mini-grid is completely filled, so we can compute the
-  // average.
+  // Now the mini-grid is completely filled, so we can compute the average.
   for (int gi = 0; gi < size; ++gi) {
     int sxi = mini_grid[gi]._sxi;
     int syi = mini_grid[gi]._syi;
@@ -696,14 +673,11 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::calc_bilinear_point
-//       Access: Published
-//  Description: Computes the weighted average of the four nearest
-//               points to the floating-point index (x, y).  Returns
-//               true if the point has any contributors, false if the
-//               point is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the weighted average of the four nearest points to the floating-
+ * point index (x, y).  Returns true if the point has any contributors, false
+ * if the point is unknown.
+ */
 bool PfmFile::
 calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const {
   result = LPoint3f::zero();
@@ -746,15 +720,12 @@ calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::calc_min_max
-//       Access: Published
-//  Description: Calculates the minimum and maximum x, y, and z depth
-//               component values, representing the bounding box of
-//               depth values, and places them in the indicated
-//               vectors.  Returns true if successful, false if the
-//               mesh contains no points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the minimum and maximum x, y, and z depth component values,
+ * representing the bounding box of depth values, and places them in the
+ * indicated vectors.  Returns true if successful, false if the mesh contains
+ * no points.
+ */
 bool PfmFile::
 calc_min_max(LVecBase3f &min_depth, LVecBase3f &max_depth) const {
   bool any_points = false;
@@ -787,15 +758,12 @@ calc_min_max(LVecBase3f &min_depth, LVecBase3f &max_depth) const {
   return any_points;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::calc_autocrop
-//       Access: Published
-//  Description: Computes the minimum range of x and y across the PFM
-//               file that include all points.  If there are no points
-//               with no_data_value in the grid--that is, all points
-//               are included--then this will return (0, get_x_size(),
-//               0, get_y_size()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the minimum range of x and y across the PFM file that include all
+ * points.  If there are no points with no_data_value in the grid--that is,
+ * all points are included--then this will return (0, get_x_size(), 0,
+ * get_y_size()).
+ */
 bool PfmFile::
 calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const {
   y_begin = 0;
@@ -830,13 +798,10 @@ calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::is_row_empty
-//       Access: Published
-//  Description: Returns true if all of the points on row y, in the range
-//               [x_begin, x_end), are the no_data value, or false if
-//               any one of these points has a value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the points on row y, in the range [x_begin, x_end),
+ * are the no_data value, or false if any one of these points has a value.
+ */
 bool PfmFile::
 is_row_empty(int y, int x_begin, int x_end) const {
   nassertr(y >= 0 && y < _y_size &&
@@ -854,13 +819,10 @@ is_row_empty(int y, int x_begin, int x_end) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::is_column_empty
-//       Access: Published
-//  Description: Returns true if all of the points on column x, from
-//               [y_begin, y_end), are the no_data value, or false if
-//               any one of these points has a value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the points on column x, from [y_begin, y_end), are
+ * the no_data value, or false if any one of these points has a value.
+ */
 bool PfmFile::
 is_column_empty(int x, int y_begin, int y_end) const {
   nassertr(x >= 0 && x < _x_size &&
@@ -878,17 +840,13 @@ is_column_empty(int x, int y_begin, int y_end) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_no_data_nan
-//       Access: Published
-//  Description: Sets the no_data_nan flag.  When num_channels is
-//               nonzero, then a NaN value in any of the first
-//               num_channels channels indicates no data for that
-//               point.  If num_channels is zero, then all points are
-//               valid.
-//
-//               This is a special case of set_no_data_value().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the no_data_nan flag.  When num_channels is nonzero, then a NaN value
+ * in any of the first num_channels channels indicates no data for that point.
+ * If num_channels is zero, then all points are valid.
+ *
+ * This is a special case of set_no_data_value().
+ */
 void PfmFile::
 set_no_data_nan(int num_channels) {
   if (num_channels > 0) {
@@ -921,12 +879,10 @@ set_no_data_nan(int num_channels) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_no_data_value
-//       Access: Published
-//  Description: Sets the special value that means "no data" when it
-//               appears in the pfm file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the special value that means "no data" when it appears in the pfm
+ * file.
+ */
 void PfmFile::
 set_no_data_value(const LPoint4f &no_data_value) {
   nassertv(is_valid());
@@ -952,13 +908,10 @@ set_no_data_value(const LPoint4f &no_data_value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_no_data_threshold
-//       Access: Published
-//  Description: Sets the special threshold value.  Points that are
-//               below this value in all components are considered "no
-//               value".
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the special threshold value.  Points that are below this value in all
+ * components are considered "no value".
+ */
 void PfmFile::
 set_no_data_threshold(const LPoint4f &no_data_value) {
   nassertv(is_valid());
@@ -984,14 +937,11 @@ set_no_data_threshold(const LPoint4f &no_data_value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::resize
-//       Access: Published
-//  Description: Applies a simple filter to resample the pfm file
-//               in-place to the indicated size.  Don't confuse this
-//               with applying a scale to all of the points via
-//               xform().
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a simple filter to resample the pfm file in-place to the indicated
+ * size.  Don't confuse this with applying a scale to all of the points via
+ * xform().
+ */
 void PfmFile::
 resize(int new_x_size, int new_y_size) {
   if (_x_size == 0 || _y_size == 0 || new_x_size == 0 || new_y_size == 0) {
@@ -1014,8 +964,8 @@ resize(int new_x_size, int new_y_size) {
     result.quick_filter_from(*this);
 
   } else {
-    // Otherwise, we should use box_filter() or gaussian_filter, which
-    // are more general.
+    // Otherwise, we should use box_filter() or gaussian_filter, which are
+    // more general.
     if (pfm_resize_gaussian) {
       result.gaussian_filter_from(pfm_resize_radius, *this);
     } else {
@@ -1028,15 +978,12 @@ resize(int new_x_size, int new_y_size) {
   _y_size = new_y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::quick_filter_from
-//       Access: Public
-//  Description: Resizes from the given image, with a fixed radius of
-//               0.5. This is a very specialized and simple algorithm
-//               that doesn't handle dropping below the Nyquist rate
-//               very well, but is quite a bit faster than the more
-//               general box_filter(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes from the given image, with a fixed radius of 0.5. This is a very
+ * specialized and simple algorithm that doesn't handle dropping below the
+ * Nyquist rate very well, but is quite a bit faster than the more general
+ * box_filter(), above.
+ */
 void PfmFile::
 quick_filter_from(const PfmFile &from) {
   if (_x_size == 0 || _y_size == 0) {
@@ -1074,8 +1021,8 @@ quick_filter_from(const PfmFile &from) {
           from_x1 = (to_x + 1.0) * x_scale;
           from_x1 = min(from_x1, (PN_float32)orig_x_size);
 
-          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
-          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1) but not
+          // including (from_x1, from_y1) maps to the pixel (to_x, to_y).
           PN_float32 result;
           from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result);
@@ -1099,8 +1046,8 @@ quick_filter_from(const PfmFile &from) {
           from_x1 = (to_x + 1.0) * x_scale;
           from_x1 = min(from_x1, (PN_float32)orig_x_size);
 
-          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
-          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1) but not
+          // including (from_x1, from_y1) maps to the pixel (to_x, to_y).
           LPoint2f result;
           from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result[0]);
@@ -1125,8 +1072,8 @@ quick_filter_from(const PfmFile &from) {
           from_x1 = (to_x + 1.0) * x_scale;
           from_x1 = min(from_x1, (PN_float32)orig_x_size);
 
-          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
-          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1) but not
+          // including (from_x1, from_y1) maps to the pixel (to_x, to_y).
           LPoint3f result;
           from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result[0]);
@@ -1152,8 +1099,8 @@ quick_filter_from(const PfmFile &from) {
           from_x1 = (to_x + 1.0) * x_scale;
           from_x1 = min(from_x1, (PN_float32)orig_x_size);
 
-          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
-          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1) but not
+          // including (from_x1, from_y1) maps to the pixel (to_x, to_y).
           LPoint4f result;
           from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result[0]);
@@ -1181,11 +1128,9 @@ quick_filter_from(const PfmFile &from) {
   _table.swap(new_data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::reverse_rows
-//       Access: Published
-//  Description: Performs an in-place reversal of the row (y) data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs an in-place reversal of the row (y) data.
+ */
 void PfmFile::
 reverse_rows() {
   nassertv(is_valid());
@@ -1207,17 +1152,13 @@ reverse_rows() {
   _table.swap(reversed);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::flip
-//       Access: Published
-//  Description: Reverses, transposes, and/or rotates the table
-//               in-place according to the specified parameters.  If
-//               flip_x is true, the x axis is reversed; if flip_y is
-//               true, the y axis is reversed.  Then, if transpose is
-//               true, the x and y axes are exchanged.  These
-//               parameters can be used to select any combination of
-//               90-degree or 180-degree rotations and flips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses, transposes, and/or rotates the table in-place according to the
+ * specified parameters.  If flip_x is true, the x axis is reversed; if flip_y
+ * is true, the y axis is reversed.  Then, if transpose is true, the x and y
+ * axes are exchanged.  These parameters can be used to select any combination
+ * of 90-degree or 180-degree rotations and flips.
+ */
 void PfmFile::
 flip(bool flip_x, bool flip_y, bool transpose) {
   nassertv(is_valid());
@@ -1263,49 +1204,92 @@ flip(bool flip_x, bool flip_y, bool transpose) {
   _table.swap(flipped);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::xform
-//       Access: Published
-//  Description: Applies the indicated transform matrix to all points
-//               in-place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transform matrix to all points in-place.
+ */
 void PfmFile::
 xform(const LMatrix4f &transform) {
   nassertv(is_valid());
 
-  for (int yi = 0; yi < _y_size; ++yi) {
-    for (int xi = 0; xi < _x_size; ++xi) {
-      if (!has_point(xi, yi)) {
-        continue;
+  int num_channels = get_num_channels();
+  switch (num_channels) {
+  case 1:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          PN_float32 pi = get_point1(xi, yi);
+          LPoint3f po = transform.xform_point(LPoint3f(pi, 0.0, 0.0));
+          set_point1(xi, yi, po[0]);
+        }
       }
-      LPoint3f &p = modify_point(xi, yi);
-      transform.xform_point_general_in_place(p);
     }
+    break;
+
+  case 2:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          LPoint2f pi = get_point2(xi, yi);
+          LPoint3f po = transform.xform_point(LPoint3f(pi[0], pi[1], 0.0));
+          set_point2(xi, yi, LPoint2f(po[0], po[1]));
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          LPoint3f &p = modify_point3(xi, yi);
+          transform.xform_point_general_in_place(p);
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          LPoint4f &p = modify_point4(xi, yi);
+          transform.xform_in_place(p);
+        }
+      }
+    }
+    break;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::forward_distort
-//       Access: Published
-//  Description: Applies the distortion indicated in the supplied dist
-//               map to the current map.  The dist map is understood
-//               to be a mapping of points in the range 0..1 in the
-//               first two dimensions.
-//
-//               The operation can be expressed symbolically as:
-//
-//               this(u, v) = this(dist(u, v))
-//
-//               If scale_factor is not 1, it should be a value > 1,
-//               and it specifies the factor to upscale the working
-//               table while processing, to reduce artifacts from
-//               integer truncation.
-//
-//               By convention, the y axis is inverted in the
-//               distortion map relative to the coordinates here.  A y
-//               value of 0 in the distortion map corresponds with a v
-//               value of 1 in this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the distortion indicated in the supplied dist map to the current
+ * map.  The dist map is understood to be a mapping of points in the range
+ * 0..1 in the first two dimensions.
+ *
+ * The operation can be expressed symbolically as:
+ *
+ * this(u, v) = this(dist(u, v))
+ *
+ * If scale_factor is not 1, it should be a value > 1, and it specifies the
+ * factor to upscale the working table while processing, to reduce artifacts
+ * from integer truncation.
+ *
+ * By convention, the y axis is inverted in the distortion map relative to the
+ * coordinates here.  A y value of 0 in the distortion map corresponds with a
+ * v value of 1 in this file.
+ */
 void PfmFile::
 forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
   int working_x_size = (int)cceil(_x_size * scale_factor);
@@ -1362,28 +1346,23 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
   _table.swap(result._table);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::reverse_distort
-//       Access: Published
-//  Description: Applies the distortion indicated in the supplied dist
-//               map to the current map.  The dist map is understood
-//               to be a mapping of points in the range 0..1 in the
-//               first two dimensions.
-//
-//               The operation can be expressed symbolically as:
-//
-//               this(u, v) = dist(this(u, v))
-//
-//               If scale_factor is not 1, it should be a value > 1,
-//               and it specifies the factor to upscale the working
-//               table while processing, to reduce artifacts from
-//               integer truncation.
-//
-//               By convention, the y axis in inverted in the
-//               distortion map relative to the coordinates here.  A y
-//               value of 0 in the distortion map corresponds with a v
-//               value of 1 in this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the distortion indicated in the supplied dist map to the current
+ * map.  The dist map is understood to be a mapping of points in the range
+ * 0..1 in the first two dimensions.
+ *
+ * The operation can be expressed symbolically as:
+ *
+ * this(u, v) = dist(this(u, v))
+ *
+ * If scale_factor is not 1, it should be a value > 1, and it specifies the
+ * factor to upscale the working table while processing, to reduce artifacts
+ * from integer truncation.
+ *
+ * By convention, the y axis in inverted in the distortion map relative to the
+ * coordinates here.  A y value of 0 in the distortion map corresponds with a
+ * v value of 1 in this file.
+ */
 void PfmFile::
 reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
   int working_x_size = (int)cceil(_x_size * scale_factor);
@@ -1439,14 +1418,11 @@ reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
   _table.swap(result._table);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::apply_1d_lut
-//       Access: Published
-//  Description: Assumes that lut is an X by 1, 1-component PfmFile
-//               whose X axis maps points to target points.  For each
-//               point in this pfm file, computes: p(u, v)[channel] =
-//               lut(p(u, v)[channel] * x_scale, 0)[0]
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes that lut is an X by 1, 1-component PfmFile whose X axis maps points
+ * to target points.  For each point in this pfm file, computes: p(u,
+ * v)[channel] = lut(p(u, v)[channel] * x_scale, 0)[0]
+ */
 void PfmFile::
 apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale) {
   for (int yi = 0; yi < _y_size; ++yi) {
@@ -1465,14 +1441,11 @@ apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::merge
-//       Access: Published
-//  Description: Wherever there is missing data in this PfmFile (that
-//               is, wherever has_point() returns false), copy data
-//               from the other PfmFile, which must be exactly the
-//               same dimensions as this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Wherever there is missing data in this PfmFile (that is, wherever
+ * has_point() returns false), copy data from the other PfmFile, which must be
+ * exactly the same dimensions as this one.
+ */
 void PfmFile::
 merge(const PfmFile &other) {
   nassertv(is_valid() && other.is_valid());
@@ -1492,17 +1465,13 @@ merge(const PfmFile &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::apply_mask
-//       Access: Published
-//  Description: Wherever there is missing data in the other PfmFile,
-//               set this the corresponding point in this PfmFile to
-//               missing as well, so that this PfmFile has only points
-//               where both files have points.
-//
-//               The point is set to "missing" by setting it the
-//               no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Wherever there is missing data in the other PfmFile, set this the
+ * corresponding point in this PfmFile to missing as well, so that this
+ * PfmFile has only points where both files have points.
+ *
+ * The point is set to "missing" by setting it the no_data_value.
+ */
 void PfmFile::
 apply_mask(const PfmFile &other) {
   nassertv(is_valid() && other.is_valid());
@@ -1522,13 +1491,10 @@ apply_mask(const PfmFile &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::copy_channel
-//       Access: Published
-//  Description: Copies just the specified channel values from the
-//               indicated PfmFile (which could be same as this
-//               PfmFile) into the specified channel of this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies just the specified channel values from the indicated PfmFile (which
+ * could be same as this PfmFile) into the specified channel of this one.
+ */
 void PfmFile::
 copy_channel(int to_channel, const PfmFile &other, int from_channel) {
   nassertv(is_valid() && other.is_valid());
@@ -1543,13 +1509,10 @@ copy_channel(int to_channel, const PfmFile &other, int from_channel) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::copy_channel_masked
-//       Access: Published
-//  Description: Copies just the specified channel values from the
-//               indicated PfmFile, but only where the other file has
-//               a data point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies just the specified channel values from the indicated PfmFile, but
+ * only where the other file has a data point.
+ */
 void PfmFile::
 copy_channel_masked(int to_channel, const PfmFile &other, int from_channel) {
   nassertv(is_valid() && other.is_valid());
@@ -1566,13 +1529,10 @@ copy_channel_masked(int to_channel, const PfmFile &other, int from_channel) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::apply_crop
-//       Access: Published
-//  Description: Reduces the PFM file to the cells in the rectangle
-//               bounded by (x_begin, x_end, y_begin, y_end), where
-//               the _end cells are not included.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reduces the PFM file to the cells in the rectangle bounded by (x_begin,
+ * x_end, y_begin, y_end), where the _end cells are not included.
+ */
 void PfmFile::
 apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   nassertv(x_begin >= 0 && x_begin <= x_end && x_end <= _x_size);
@@ -1583,9 +1543,9 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   Table new_table;
   int new_size = new_x_size * new_y_size * _num_channels;
 
-  // We allocate a little bit bigger to allow safe overflow: you can
-  // call get_point3() or get_point4() on the last point of a 1- or
-  // 3-channel image.
+  // We allocate a little bit bigger to allow safe overflow: you can call
+  // get_point3() or get_point4() on the last point of a 1- or 3-channel
+  // image.
   new_table.insert(new_table.end(), new_size + 4, (PN_float32)0.0);
 
   for (int yi = 0; yi < new_y_size; ++yi) {
@@ -1600,13 +1560,10 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   _y_size = new_y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::clear_to_texcoords
-//       Access: Published
-//  Description: Replaces this PfmFile with a new PfmFile of size
-//               x_size x y_size x 3, containing the x y 0 values in
-//               the range 0 .. 1 according to the x y index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces this PfmFile with a new PfmFile of size x_size x y_size x 3,
+ * containing the x y 0 values in the range 0 .. 1 according to the x y index.
+ */
 void PfmFile::
 clear_to_texcoords(int x_size, int y_size) {
   clear(x_size, y_size, 3);
@@ -1629,15 +1586,12 @@ clear_to_texcoords(int x_size, int y_size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::pull_spot
-//       Access: Published
-//  Description: Applies delta * t to the point values within radius
-//               (xr, yr) distance of (xc, yc).  The t value is scaled
-//               from 1.0 at the center to 0.0 at radius (xr, yr), and
-//               this scale follows the specified exponent.  Returns
-//               the number of points affected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies delta * t to the point values within radius (xr, yr) distance of
+ * (xc, yc).  The t value is scaled from 1.0 at the center to 0.0 at radius
+ * (xr, yr), and this scale follows the specified exponent.  Returns the
+ * number of points affected.
+ */
 int PfmFile::
 pull_spot(const LPoint4f &delta, float xc, float yc,
           float xr, float yr, float exponent) {
@@ -1668,16 +1622,12 @@ pull_spot(const LPoint4f &delta, float xc, float yc,
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::calc_tight_bounds
-//       Access: Published
-//  Description: Calculates the minimum and maximum vertices of all
-//               points within the table.  Assumes the table contains
-//               3-D points.
-//
-//               The return value is true if any points in the table,
-//               or false if none are.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the minimum and maximum vertices of all points within the table.
+ * Assumes the table contains 3-D points.
+ *
+ * The return value is true if any points in the table, or false if none are.
+ */
 bool PfmFile::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const {
   min_point.set(0.0f, 0.0f, 0.0f);
@@ -1709,25 +1659,20 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const {
   return found_any;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::compute_planar_bounds
-//       Access: Published
-//  Description: Computes the minmax bounding volume of the points in
-//               3-D space, assuming the points represent a
-//               mostly-planar surface.
-//
-//               This algorithm works by sampling the (square)
-//               sample_radius pixels at the four point_dist corners
-//               around the center (cx - pd, cx + pd) and so on, to
-//               approximate the plane of the surface.  Then all of
-//               the points are projected into that plane and the
-//               bounding volume of the entire mesh within that plane
-//               is determined.  If points_only is true, the bounding
-//               volume of only those four points is determined.
-//
-//               center, point_dist and sample_radius are in UV space,
-//               i.e. in the range 0..1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the minmax bounding volume of the points in 3-D space, assuming
+ * the points represent a mostly-planar surface.
+ *
+ * This algorithm works by sampling the (square) sample_radius pixels at the
+ * four point_dist corners around the center (cx - pd, cx + pd) and so on, to
+ * approximate the plane of the surface.  Then all of the points are projected
+ * into that plane and the bounding volume of the entire mesh within that
+ * plane is determined.  If points_only is true, the bounding volume of only
+ * those four points is determined.
+ *
+ * center, point_dist and sample_radius are in UV space, i.e.  in the range
+ * 0..1.
+ */
 PT(BoundingHexahedron) PfmFile::
 compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const {
   LPoint3f p0, p1, p2, p3;
@@ -1759,8 +1704,8 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
   LVector3f up = (p1 - p0) + (p2 - p3);
   LPoint3f pcenter = ((p0 + p1 + p2 + p3) * 0.25);
 
-  // Compute the transform necessary to rotate all of the points into
-  // the Y = 0 plane.
+  // Compute the transform necessary to rotate all of the points into the Y =
+  // 0 plane.
   LMatrix4f rotate;
   look_at(rotate, normal, up);
 
@@ -1831,8 +1776,8 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
 
   PT(BoundingHexahedron) bounds;
 
-  // We create a BoundingHexahedron with the points in a particular
-  // well-defined order, based on the current coordinate system.
+  // We create a BoundingHexahedron with the points in a particular well-
+  // defined order, based on the current coordinate system.
   CoordinateSystem cs = get_default_coordinate_system();
   switch (cs) {
   case CS_yup_right:
@@ -1871,23 +1816,18 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
     nassertr(false, NULL);
   }
 
-  // Rotate the bounding volume back into the original space of the
-  // screen.
+  // Rotate the bounding volume back into the original space of the screen.
   bounds->xform(LCAST(PN_stdfloat, rotate));
 
   return bounds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::compute_sample_point
-//       Access: Published
-//  Description: Computes the average of all the point within
-//               sample_radius (manhattan distance) and the indicated
-//               point.
-//
-//               The point coordinates are given in UV space, in the
-//               range 0..1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the average of all the point within sample_radius (manhattan
+ * distance) and the indicated point.
+ *
+ * The point coordinates are given in UV space, in the range 0..1.
+ */
 void PfmFile::
 compute_sample_point(LPoint3f &result,
                      PN_float32 x, PN_float32 y, PN_float32 sample_radius) const {
@@ -1930,17 +1870,13 @@ compute_sample_point(LPoint3f &result,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::copy_sub_image
-//       Access: Published
-//  Description: Copies a rectangular area of another image into a
-//               rectangular area of this image.  Both images must
-//               already have been initialized.  The upper-left corner
-//               of the region in both images is specified, and the
-//               size of the area; if the size is omitted, it defaults
-//               to the entire other image, or the largest piece that
-//               will fit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a rectangular area of another image into a rectangular area of this
+ * image.  Both images must already have been initialized.  The upper-left
+ * corner of the region in both images is specified, and the size of the area;
+ * if the size is omitted, it defaults to the entire other image, or the
+ * largest piece that will fit.
+ */
 void PfmFile::
 copy_sub_image(const PfmFile &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size) {
@@ -2000,13 +1936,10 @@ copy_sub_image(const PfmFile &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::add_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), except the copy pixels
-//               are added to the pixels of the destination, after
-//               scaling by the specified pixel_scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), except the copy pixels are added to the
+ * pixels of the destination, after scaling by the specified pixel_scale.
+ */
 void PfmFile::
 add_sub_image(const PfmFile &copy, int xto, int yto,
               int xfrom, int yfrom, int x_size, int y_size,
@@ -2067,13 +2000,10 @@ add_sub_image(const PfmFile &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::mult_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), except the copy pixels
-//               are multiplied to the pixels of the destination, after
-//               scaling by the specified pixel_scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), except the copy pixels are multiplied to the
+ * pixels of the destination, after scaling by the specified pixel_scale.
+ */
 void PfmFile::
 mult_sub_image(const PfmFile &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size,
@@ -2134,14 +2064,11 @@ mult_sub_image(const PfmFile &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::divide_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), except the copy pixels
-//               are divided into the pixels of the destination, after
-//               scaling by the specified pixel_scale.
-//               dest(x, y) = dest(x, y) / (copy(x, y) * pixel_scale).
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), except the copy pixels are divided into the
+ * pixels of the destination, after scaling by the specified pixel_scale.
+ * dest(x, y) = dest(x, y) / (copy(x, y) * pixel_scale).
+ */
 void PfmFile::
 divide_sub_image(const PfmFile &copy, int xto, int yto,
                  int xfrom, int yfrom, int x_size, int y_size,
@@ -2218,12 +2145,10 @@ divide_sub_image(const PfmFile &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::operator *=
-//       Access: Published
-//  Description: Multiplies every point value in the image by
-//               a constant floating-point multiplier value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Multiplies every point value in the image by a constant floating-point
+ * multiplier value.
+ */
 void PfmFile::
 operator *= (float multiplier) {
   nassertv(is_valid());
@@ -2284,13 +2209,68 @@ operator *= (float multiplier) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::apply_exponent
-//       Access: Published
-//  Description: Adjusts each channel of the image by raising the
-//               corresponding component value to the indicated
-//               exponent, such that L' = L ^ exponent.
-////////////////////////////////////////////////////////////////////
+/**
+ * index_image is a WxH 1-channel image, while pixel_values is an Nx1
+ * image with any number of channels.  Typically pixel_values will be
+ * a 256x1 image.
+ *
+ * Fills the PfmFile with a new image the same width and height as
+ * index_image, with the same number of channels as pixel_values.
+ *
+ * Each pixel of the new image is computed with the formula:
+ *
+ * new_image(x, y) = pixel_values(index_image(x, y)[channel], 0)
+ *
+ * At present, no interpolation is performed; the nearest value in
+ * pixel_values is discovered.  This may change in the future.
+ */
+void PfmFile::
+indirect_1d_lookup(const PfmFile &index_image, int channel,
+                   const PfmFile &pixel_values) {
+  clear(index_image.get_x_size(), index_image.get_y_size(),
+        pixel_values.get_num_channels());
+
+  for (int yi = 0; yi < get_y_size(); ++yi) {
+    switch (get_num_channels()) {
+    case 1:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point1(xi, yi, pixel_values.get_point1(v, 0));
+      }
+      break;
+
+    case 2:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point2(xi, yi, pixel_values.get_point2(v, 0));
+      }
+      break;
+
+    case 3:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point3(xi, yi, pixel_values.get_point3(v, 0));
+      }
+      break;
+
+    case 4:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point4(xi, yi, pixel_values.get_point4(v, 0));
+      }
+      break;
+    }
+  }
+}
+
+/**
+ * Adjusts each channel of the image by raising the corresponding component
+ * value to the indicated exponent, such that L' = L ^ exponent.
+ */
 void PfmFile::
 apply_exponent(float c0_exponent, float c1_exponent, float c2_exponent,
                float c3_exponent) {
@@ -2347,26 +2327,20 @@ apply_exponent(float c0_exponent, float c1_exponent, float c2_exponent,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 output(ostream &out) const {
   out << "floating-point image: " << _x_size << " by " << _y_size << " pixels, "
       << _num_channels << " channels.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_region
-//       Access: Private
-//  Description: Averages all the points in the rectangle from x0
-//               .. y0 to x1 .. y1 into result.  The region may be
-//               defined by floating-point boundaries; the result will
-//               be weighted by the degree of coverage of each
-//               included point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Averages all the points in the rectangle from x0 .. y0 to x1 .. y1 into
+ * result.  The region may be defined by floating-point boundaries; the result
+ * will be weighted by the degree of coverage of each included point.
+ */
 void PfmFile::
 box_filter_region(PN_float32 &result,
                   PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
@@ -2403,15 +2377,11 @@ box_filter_region(PN_float32 &result,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_region
-//       Access: Private
-//  Description: Averages all the points in the rectangle from x0
-//               .. y0 to x1 .. y1 into result.  The region may be
-//               defined by floating-point boundaries; the result will
-//               be weighted by the degree of coverage of each
-//               included point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Averages all the points in the rectangle from x0 .. y0 to x1 .. y1 into
+ * result.  The region may be defined by floating-point boundaries; the result
+ * will be weighted by the degree of coverage of each included point.
+ */
 void PfmFile::
 box_filter_region(LPoint2f &result,
                   PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
@@ -2448,15 +2418,11 @@ box_filter_region(LPoint2f &result,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_region
-//       Access: Private
-//  Description: Averages all the points in the rectangle from x0
-//               .. y0 to x1 .. y1 into result.  The region may be
-//               defined by floating-point boundaries; the result will
-//               be weighted by the degree of coverage of each
-//               included point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Averages all the points in the rectangle from x0 .. y0 to x1 .. y1 into
+ * result.  The region may be defined by floating-point boundaries; the result
+ * will be weighted by the degree of coverage of each included point.
+ */
 void PfmFile::
 box_filter_region(LPoint3f &result,
                   PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
@@ -2493,15 +2459,11 @@ box_filter_region(LPoint3f &result,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_region
-//       Access: Private
-//  Description: Averages all the points in the rectangle from x0
-//               .. y0 to x1 .. y1 into result.  The region may be
-//               defined by floating-point boundaries; the result will
-//               be weighted by the degree of coverage of each
-//               included point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Averages all the points in the rectangle from x0 .. y0 to x1 .. y1 into
+ * result.  The region may be defined by floating-point boundaries; the result
+ * will be weighted by the degree of coverage of each included point.
+ */
 void PfmFile::
 box_filter_region(LPoint4f &result,
                   PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
@@ -2538,11 +2500,9 @@ box_filter_region(LPoint4f &result,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_line
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_line(PN_float32 &result, PN_float32 &coverage,
                 PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
@@ -2567,11 +2527,9 @@ box_filter_line(PN_float32 &result, PN_float32 &coverage,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_line
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_line(LPoint2f &result, PN_float32 &coverage,
                 PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
@@ -2596,11 +2554,9 @@ box_filter_line(LPoint2f &result, PN_float32 &coverage,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_line
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_line(LPoint3f &result, PN_float32 &coverage,
                 PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
@@ -2625,11 +2581,9 @@ box_filter_line(LPoint3f &result, PN_float32 &coverage,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_line
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_line(LPoint4f &result, PN_float32 &coverage,
                 PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
@@ -2654,11 +2608,9 @@ box_filter_line(LPoint4f &result, PN_float32 &coverage,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_point
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_point(PN_float32 &result, PN_float32 &coverage,
                  int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
@@ -2672,11 +2624,9 @@ box_filter_point(PN_float32 &result, PN_float32 &coverage,
   coverage += contrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_point
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_point(LPoint2f &result, PN_float32 &coverage,
                  int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
@@ -2690,11 +2640,9 @@ box_filter_point(LPoint2f &result, PN_float32 &coverage,
   coverage += contrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_point
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_point(LPoint3f &result, PN_float32 &coverage,
                  int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
@@ -2708,11 +2656,9 @@ box_filter_point(LPoint3f &result, PN_float32 &coverage,
   coverage += contrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_point
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PfmFile::
 box_filter_point(LPoint4f &result, PN_float32 &coverage,
                  int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
@@ -2726,13 +2672,10 @@ box_filter_point(LPoint4f &result, PN_float32 &coverage,
   coverage += contrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::fill_mini_grid
-//       Access: Private
-//  Description: A support function for calc_average_point(), this
-//               recursively fills in the holes in the mini_grid data
-//               with the index to the nearest value.
-////////////////////////////////////////////////////////////////////
+/**
+ * A support function for calc_average_point(), this recursively fills in the
+ * holes in the mini_grid data with the index to the nearest value.
+ */
 void PfmFile::
 fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size,
                int xi, int yi, int dist, int sxi, int syi) const {
@@ -2754,12 +2697,9 @@ fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_noop
-//       Access: Private, Static
-//  Description: The implementation of has_point() for
-//               files without a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for files without a no_data_value.
+ */
 bool PfmFile::
 has_point_noop(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2769,12 +2709,10 @@ has_point_noop(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_1
-//       Access: Private, Static
-//  Description: The implementation of has_point() for 1-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for 1-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_1(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2784,12 +2722,10 @@ has_point_1(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_2
-//       Access: Private, Static
-//  Description: The implementation of has_point() for 2-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for 2-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_2(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2799,12 +2735,10 @@ has_point_2(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_3
-//       Access: Private, Static
-//  Description: The implementation of has_point() for 3-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for 3-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_3(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2814,12 +2748,10 @@ has_point_3(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_4
-//       Access: Private, Static
-//  Description: The implementation of has_point() for 4-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for 4-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_4(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2829,12 +2761,10 @@ has_point_4(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_threshold_1
-//       Access: Private, Static
-//  Description: The implementation of has_point_threshold() for 1-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point_threshold() for 1-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_threshold_1(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2845,12 +2775,10 @@ has_point_threshold_1(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_threshold_2
-//       Access: Private, Static
-//  Description: The implementation of has_point_threshold() for 2-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point_threshold() for 2-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_threshold_2(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2862,12 +2790,10 @@ has_point_threshold_2(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_threshold_3
-//       Access: Private, Static
-//  Description: The implementation of has_point_threshold() for 3-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point_threshold() for 3-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_threshold_3(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2880,12 +2806,10 @@ has_point_threshold_3(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_threshold_4
-//       Access: Private, Static
-//  Description: The implementation of has_point_threshold() for 4-component
-//               files with a no_data_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point_threshold() for 4-component files with a
+ * no_data_value.
+ */
 bool PfmFile::
 has_point_threshold_4(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2899,13 +2823,11 @@ has_point_threshold_4(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_chan4
-//       Access: Private, Static
-//  Description: The implementation of has_point() for 4-component
-//               files with set_no_data_chan4() in effect.  This means
-//               that the data is valid iff the fourth channel >= 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for 4-component files with
+ * set_no_data_chan4() in effect.  This means that the data is valid iff the
+ * fourth channel >= 0.
+ */
 bool PfmFile::
 has_point_chan4(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2915,13 +2837,10 @@ has_point_chan4(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_nan_1
-//       Access: Private, Static
-//  Description: The implementation of has_point() for
-//               files with set_no_data_nan() in effect.  This means
-//               that the data is valid iff no components involve NaN.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for files with set_no_data_nan() in
+ * effect.  This means that the data is valid iff no components involve NaN.
+ */
 bool PfmFile::
 has_point_nan_1(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2931,13 +2850,10 @@ has_point_nan_1(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_nan_2
-//       Access: Private, Static
-//  Description: The implementation of has_point() for
-//               files with set_no_data_nan() in effect.  This means
-//               that the data is valid iff no components involve NaN.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for files with set_no_data_nan() in
+ * effect.  This means that the data is valid iff no components involve NaN.
+ */
 bool PfmFile::
 has_point_nan_2(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2947,13 +2863,10 @@ has_point_nan_2(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_nan_3
-//       Access: Private, Static
-//  Description: The implementation of has_point() for
-//               files with set_no_data_nan() in effect.  This means
-//               that the data is valid iff no components involve NaN.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for files with set_no_data_nan() in
+ * effect.  This means that the data is valid iff no components involve NaN.
+ */
 bool PfmFile::
 has_point_nan_3(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&
@@ -2963,13 +2876,10 @@ has_point_nan_3(const PfmFile *self, int x, int y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::has_point_nan_4
-//       Access: Private, Static
-//  Description: The implementation of has_point() for
-//               files with set_no_data_nan() in effect.  This means
-//               that the data is valid iff no components involve NaN.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of has_point() for files with set_no_data_nan() in
+ * effect.  This means that the data is valid iff no components involve NaN.
+ */
 bool PfmFile::
 has_point_nan_4(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) &&

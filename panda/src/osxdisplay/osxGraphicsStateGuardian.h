@@ -1,13 +1,13 @@
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsStateGuardian.h
+ */
 
 #ifndef OSXGRAPHICSSTATEGUARDIAN_H
 #define OSXGRAPHICSSTATEGUARDIAN_H
@@ -25,11 +25,10 @@
 
 class osxGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian to
-//               add some wgl-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLGraphicsStateGuardian to add some wgl-specific
+ * information.
+ */
 class osxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -57,9 +56,8 @@ public:
 private:
   void describe_pixel_format(FrameBufferProperties &fb_props);
 
-  // We have to save a pointer to the GSG we intend to share texture
-  // context with, since we don't create our own context in the
-  // constructor.
+  // We have to save a pointer to the GSG we intend to share texture context
+  // with, since we don't create our own context in the constructor.
   PT(osxGraphicsStateGuardian) _share_with;
   AGLPixelFormat _aglPixFmt;
   AGLContext _aglcontext;

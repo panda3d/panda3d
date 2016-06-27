@@ -1,21 +1,20 @@
-// Filename: interrogate_module.cxx
-// Created by:  drose (08Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogate_module.cxx
+ * @author drose
+ * @date 2000-08-08
+ */
 
-// This program generates a module-level file for interrogate.  This
-// is a higher level than library, and groups several libraries
-// together.  Presently, the only thing that goes into the module file
-// is a python table, but who knows what the future holds.
+// This program generates a module-level file for interrogate.  This is a
+// higher level than library, and groups several libraries together.
+// Presently, the only thing that goes into the module file is a python table,
+// but who knows what the future holds.
 
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
@@ -24,8 +23,9 @@
 #include "pnotify.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
-#include "pset.h"
 #include "vector_string.h"
+
+#include <algorithm>
 
 Filename output_code_filename;
 string module_name;
@@ -79,14 +79,13 @@ upcase_string(const string &str) {
 int write_python_table_native(ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
-      << "#undef _POSIX_C_SOURCE\n"
       << "#include \"py_panda.h\"\n\n";
 
   int count = 0;
 
-  pset<std::string> libraries;
+  vector_string libraries;
 
-//  out << "extern \"C\" {\n";
+// out << "extern \"C\" {\n";
 
   // Walk through all of the Python functions.
   int num_functions = interrogate_number_of_functions();
@@ -94,33 +93,61 @@ int write_python_table_native(ostream &out) {
   for (fi = 0; fi < num_functions; fi++) {
     FunctionIndex function_index = interrogate_get_function(fi);
 
-    // Consider only those that belong in the module we asked for.
-    //if (interrogate_function_has_module_name(function_index) &&
-    //  module_name == interrogate_function_module_name(function_index)) {
-      // if it has a library name add it to set of libraries
+    // Consider only those that belong in the module we asked for.  if
+    // (interrogate_function_has_module_name(function_index) && module_name ==
+    // interrogate_function_module_name(function_index)) { if it has a library
+    // name add it to set of libraries
       if (interrogate_function_has_library_name(function_index)) {
-        libraries.insert(interrogate_function_library_name(function_index));
+        string library_name = interrogate_function_library_name(function_index);
+        if (std::find(libraries.begin(), libraries.end(), library_name) == libraries.end()) {
+          libraries.push_back(library_name);
+        }
       }
-    //}
+    // }
   }
 
   for (int ti = 0; ti < interrogate_number_of_types(); ti++) {
     TypeIndex thetype  = interrogate_get_type(ti);
     if (interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
       if (interrogate_type_has_library_name(thetype)) {
-        libraries.insert(interrogate_type_library_name(thetype));
+        string library_name = interrogate_type_library_name(thetype);
+        if (std::find(libraries.begin(), libraries.end(), library_name) == libraries.end()) {
+          libraries.push_back(library_name);
+        }
       }
     }
   }
 
-  pset<std::string >::iterator ii;
-  for(ii = libraries.begin(); ii != libraries.end(); ii++) {
+  vector_string::const_iterator ii;
+  for (ii = libraries.begin(); ii != libraries.end(); ++ii) {
     printf("Referencing Library %s\n", (*ii).c_str());
     out << "extern LibraryDef " << *ii << "_moddef;\n";
     out << "extern void Dtool_" << *ii << "_RegisterTypes();\n";
     out << "extern void Dtool_" << *ii << "_ResolveExternals();\n";
     out << "extern void Dtool_" << *ii << "_BuildInstants(PyObject *module);\n";
   }
+
+  out.put('\n');
+
+  out << "#if PY_MAJOR_VERSION >= 3 || !defined(NDEBUG)\n"
+      << "#ifdef _WIN32\n"
+      << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << library_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) PyObject *PyInit_" << library_name << "();\n"
+      << "#else\n"
+      << "extern \"C\" PyObject *PyInit_" << library_name << "();\n"
+      << "#endif\n"
+      << "#endif\n";
+
+  out << "#if PY_MAJOR_VERSION < 3 || !defined(NDEBUG)\n"
+      << "#ifdef _WIN32\n"
+      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) void init" << library_name << "();\n"
+      << "#else\n"
+      << "extern \"C\" void init" << library_name << "();\n"
+      << "#endif\n"
+      << "#endif\n";
 
   out << "\n"
       << "#if PY_MAJOR_VERSION >= 3\n"
@@ -132,14 +159,6 @@ int write_python_table_native(ostream &out) {
       << "  NULL,\n"
       << "  NULL, NULL, NULL, NULL\n"
       << "};\n"
-      << "\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) PyObject *PyInit_" << library_name << "();\n"
-      << "#else\n"
-      << "extern \"C\" PyObject *PyInit_" << library_name << "();\n"
-      << "#endif\n"
       << "\n"
       << "PyObject *PyInit_" << library_name << "() {\n";
 
@@ -178,15 +197,16 @@ int write_python_table_native(ostream &out) {
       << "  return module;\n"
       << "}\n"
       << "\n"
-      << "#else  // Python 2 case\n"
-      << "\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) void init" << library_name << "();\n"
-      << "#else\n"
-      << "extern \"C\" void init" << library_name << "();\n"
+
+      << "#ifndef NDEBUG\n"
+      << "void init" << library_name << "() {\n"
+      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
+      << "compiled for Python \" PY_VERSION \", which is incompatible "
+      << "with Python 2\");\n"
+      << "}\n"
       << "#endif\n"
+
+      << "#else  // Python 2 case\n"
       << "\n"
       << "void init" << library_name << "() {\n";
 
@@ -222,6 +242,15 @@ int write_python_table_native(ostream &out) {
 
   out << "  }\n"
       << "}\n"
+      << "\n"
+      << "#ifndef NDEBUG\n"
+      << "PyObject *PyInit_" << library_name << "() {\n"
+      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
+      << "compiled for Python \" PY_VERSION \", which is incompatible "
+      << "with Python 3\");\n"
+      << "  return (PyObject *)NULL;\n"
+      << "}\n"
+      << "#endif\n"
       << "#endif\n"
       << "\n";
 
@@ -237,8 +266,8 @@ int write_python_table(ostream &out) {
 
   int count = 0;
 
-  // First, we have to declare extern C prototypes for each of the
-  // function names.
+  // First, we have to declare extern C prototypes for each of the function
+  // names.
 
   out << "extern \"C\" {\n";
 
@@ -417,8 +446,8 @@ int main(int argc, char *argv[]) {
 
 
     if (param.length() > 3 && param.substr(param.length() - 3) == ".in") {
-      // If the filename ends in ".in", it's an interrogate database
-      // file, not a shared library--read it directly.
+      // If the filename ends in ".in", it's an interrogate database file, not
+      // a shared library--read it directly.
       interrogate_request_database(param.c_str());
 
     } else {

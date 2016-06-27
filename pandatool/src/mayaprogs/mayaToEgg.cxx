@@ -1,43 +1,42 @@
-// Filename: mayaToEgg.cxx
-// Created by:  drose (15Feb00)
-//
-// Additional Maintenance by the PandaSE team
-// Carnegie Mellon Entertainment Technology Center
-// Spring '10
-// Team Members:
-// Deepak Chandraskeran - producer / programmer
-// Andrew Gartner - programmer/technical artist
-// Federico Perazzi - programmer
-// Shuying Feng - programmer
-// Wei-Feng Huang - programmer
-// (Egger additions by Andrew Gartner and Wei-Feng Huang)
-// The egger can now support vertex color in a variety
-// of combinations with flat color and file color textures
-// (see set_vertex_color).  Also, there are two new 
-// command line options "legacy-shaders" and "texture-copy".
-// The first treats any Maya material/shader as if it were 
-// a legacy shader. Passing it through the legacy codepath.
-// This feature was originally intended to fix a bug where
-// flat-color was being ignored in the modern (Phong) codepath
-// However, with the new vertex and flat color functions it
-// may not be necessary.  Still, until the newer color functions
-// have been tried and tested more, the feature has been left in
-// to anticipate any problems that may arise. The texture copy
-// feature was added to provide a way to resolve build path issues
-// and can support both relative and absolute paths. The feature
-// will copy any file maps/textures to the specified directory
-// and update the egg file accordingly.
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaToEgg.cxx
+ * @author drose
+ * @date 2000-02-15
+ *
+ * Additional Maintenance by the PandaSE team
+ * Carnegie Mellon Entertainment Technology Center
+ * Spring '10
+ * Team Members:
+ * Deepak Chandraskeran - producer / programmer
+ * Andrew Gartner - programmer/technical artist
+ * Federico Perazzi - programmer
+ * Shuying Feng - programmer
+ * Wei-Feng Huang - programmer
+ * (Egger additions by Andrew Gartner and Wei-Feng Huang)
+ * The egger can now support vertex color in a variety
+ * of combinations with flat color and file color textures
+ * (see set_vertex_color).  Also, there are two new
+ * command line options "legacy-shaders" and "texture-copy".
+ * The first treats any Maya material/shader as if it were
+ * a legacy shader. Passing it through the legacy codepath.
+ * This feature was originally intended to fix a bug where
+ * flat-color was being ignored in the modern (Phong) codepath
+ * However, with the new vertex and flat color functions it
+ * may not be necessary.  Still, until the newer color functions
+ * have been tried and tested more, the feature has been left in
+ * to anticipate any problems that may arise. The texture copy
+ * feature was added to provide a way to resolve build path issues
+ * and can support both relative and absolute paths. The feature
+ * will copy any file maps/textures to the specified directory
+ * and update the egg file accordingly.
+ */
 
 #include "mayaToEgg.h"
 #include "mayaToEggConverter.h"
@@ -48,11 +47,9 @@
   #include "pystub.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaToEgg::
 MayaToEgg() :
   SomethingToEgg("Maya", ".mb")
@@ -194,10 +191,10 @@ MayaToEgg() :
      "and treat all shaders as if they were Lamberts (legacy).",
      &MayaToEgg::dispatch_none, &_legacy_shader);
 
-  // Unfortunately, the Maya API doesn't allow us to differentiate
-  // between relative and absolute pathnames--everything comes out as
-  // an absolute pathname, even if it is stored in the Maya file as a
-  // relative path.  So we can't support -noabs.
+  // Unfortunately, the Maya API doesn't allow us to differentiate between
+  // relative and absolute pathnames--everything comes out as an absolute
+  // pathname, even if it is stored in the Maya file as a relative path.  So
+  // we can't support -noabs.
   remove_option("noabs");
 
   _verbose = 0;
@@ -206,11 +203,9 @@ MayaToEgg() :
   _got_tbnauto = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void MayaToEgg::
 run() {
   // Set the verbose level by using Notify.
@@ -230,9 +225,8 @@ run() {
     _path_replace->_copy_into_directory = _legacy_copytex_dir;
   }
 
-  // Let's convert the output file to a full path before we initialize
-  // Maya, since Maya now has a nasty habit of changing the current
-  // directory.
+  // Let's convert the output file to a full path before we initialize Maya,
+  // since Maya now has a nasty habit of changing the current directory.
   if (_got_output_filename) {
     _output_filename.make_absolute();
     _path_replace->_path_directory.make_absolute();
@@ -240,8 +234,8 @@ run() {
 
   nout << "Initializing Maya.\n";
   MayaToEggConverter converter(_program_name);
-  //reverting directories is really not needed for maya2egg.  It's
-  //more needed for mayaeggloader and such
+  // reverting directories is really not needed for maya2egg.  It's more
+  // needed for mayaeggloader and such
   if (!converter.open_api(false)) {
     nout << "Unable to initialize Maya.\n";
     exit(1);
@@ -311,10 +305,10 @@ run() {
     exit(1);
   }
 
-  // Use the standard Maya units, if the user didn't specify
-  // otherwise.  This always returns centimeters, which is the way all
-  // Maya files are stored internally (and is the units returned by
-  // all of the API functions called here).
+  // Use the standard Maya units, if the user didn't specify otherwise.  This
+  // always returns centimeters, which is the way all Maya files are stored
+  // internally (and is the units returned by all of the API functions called
+  // here).
   if (_input_units == DU_invalid) {
     _input_units = converter.get_input_units();
   }
@@ -323,12 +317,10 @@ run() {
   nout << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::dispatch_transform_type
-//       Access: Protected, Static
-//  Description: Dispatches a parameter that expects a
-//               MayaToEggConverter::TransformType option.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatches a parameter that expects a MayaToEggConverter::TransformType
+ * option.
+ */
 bool MayaToEgg::
 dispatch_transform_type(const string &opt, const string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
@@ -344,7 +336,8 @@ dispatch_transform_type(const string &opt, const string &arg, void *var) {
 }
 
 int main(int argc, char *argv[]) {
-  // We don't want pystub on linux, since it gives problems with Maya's python.
+  // We don't want pystub on linux, since it gives problems with Maya's
+  // python.
 #ifdef _WIN32
   // A call to pystub() to force libpystub.so to be linked in.
   pystub();
@@ -355,4 +348,3 @@ int main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-

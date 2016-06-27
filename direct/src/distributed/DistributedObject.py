@@ -1,6 +1,7 @@
 """DistributedObject module: contains the DistributedObject class"""
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
 from direct.showbase.PythonUtil import StackTrace
@@ -80,14 +81,11 @@ class DistributedObject(DistributedObjectBase):
                 and conditionally show generated, disabled, neverDisable,
                 or cachable"
             """
-            spaces=' '*(indent+2)
+            spaces = ' ' * (indent + 2)
             try:
-                print "%s%s:"%(
-                    ' '*indent, self.__class__.__name__)
-                print "%sfrom DistributedObject doId:%s, parent:%s, zone:%s"%(
-                    spaces,
-                    self.doId, self.parentId, self.zoneId),
-                flags=[]
+                print("%s%s:" % (' ' * indent, self.__class__.__name__))
+
+                flags = []
                 if self.activeState == ESGenerated:
                     flags.append("generated")
                 if self.activeState < ESGenerating:
@@ -96,10 +94,15 @@ class DistributedObject(DistributedObjectBase):
                     flags.append("neverDisable")
                 if self.cacheable:
                     flags.append("cacheable")
+
+                flagStr = ""
                 if len(flags):
-                    print "(%s)"%(" ".join(flags),),
-                print
-            except Exception, e: print "%serror printing status"%(spaces,), e
+                    flagStr = " (%s)" % (" ".join(flags))
+
+                print("%sfrom DistributedObject doId:%s, parent:%s, zone:%s%s" % (
+                    spaces, self.doId, self.parentId, self.zoneId, flagStr))
+            except Exception as e:
+                print("%serror printing status %s" % (spaces, e))
 
     def getAutoInterests(self):
         # returns the sub-zones under this object that are automatically
@@ -123,7 +126,7 @@ class DistributedObject(DistributedObjectBase):
                         p = DCPacker()
                         p.setUnpackData(field.getDefaultValue())
                         len = p.rawUnpackUint16()/4
-                        for i in xrange(len):
+                        for i in range(len):
                             zone = int(p.rawUnpackUint32())
                             autoInterests.add(zone)
                     autoInterests.update(autoInterests)
@@ -247,7 +250,7 @@ class DistributedObject(DistributedObjectBase):
             # we are going to crash, output the destroyDo stacktrace
             self.notify.warning('self.cr is none in _deactivateDO %d' % self.doId)
             if hasattr(self, 'destroyDoStackTrace'):
-                print self.destroyDoStackTrace
+                print(self.destroyDoStackTrace)
         self.__callbacks = {}
         self.cr.closeAutoInterests(self)
         self.setLocation(0,0)
@@ -260,7 +263,7 @@ class DistributedObject(DistributedObjectBase):
         # check for leftover cached data that was not retrieved or flushed by this object
         # this will catch typos in the data name in calls to get/setCachedData
         if hasattr(self, '_cachedData'):
-            for name, cachedData in self._cachedData.iteritems():
+            for name, cachedData in self._cachedData.items():
                 self.notify.warning('flushing unretrieved cached data: %s' % name)
                 cachedData.flush()
             del self._cachedData
@@ -326,12 +329,12 @@ class DistributedObject(DistributedObjectBase):
 
 
     #This message was moved out of announce generate
-    #to avoid ordering issues.  
+    #to avoid ordering issues.
     def postGenerateMessage(self):
         if self.activeState != ESGenerated:
             self.activeState = ESGenerated
             messenger.send(self.uniqueName("generate"), [self])
-            
+
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
@@ -341,7 +344,7 @@ class DistributedObject(DistributedObjectBase):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
     def updateRequiredOtherFields(self, dclass, di):
         # First, update the required fields
         dclass.receiveUpdateBroadcastRequired(self, di)
@@ -350,7 +353,7 @@ class DistributedObject(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def sendUpdate(self, fieldName, args = [], sendToId = None):
@@ -398,7 +401,7 @@ class DistributedObject(DistributedObjectBase):
     def getCurrentContexts(self):
         # Returns a list of the currently outstanding contexts created
         # by getCallbackContext().
-        return self.__callbacks.keys()
+        return list(self.__callbacks.keys())
 
     def getCallback(self, context):
         # Returns the callback that was passed in to the previous

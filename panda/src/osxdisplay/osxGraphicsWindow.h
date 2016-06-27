@@ -1,13 +1,13 @@
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsWindow.h
+ */
 
 #ifndef OSXGRAPHICSWINDOW_H
 #define OSXGRAPHICSWINDOW_H
@@ -25,14 +25,12 @@
 #define HACK_SCREEN_HASH_CONTEXT true
 OSStatus report_agl_error(const string &comment);
 
-////////////////////////////////////////////////////////////////////
-//       Class : osxGraphicsWindow
-// Description : An interface to the osx/ system for managing GL
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the osx/ system for managing GL windows under X.
+ */
 class osxGraphicsWindow : public GraphicsWindow {
 public:
-  osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -48,10 +46,10 @@ public:
   virtual void begin_flip();
   virtual void end_flip();
   virtual void process_events();
-  
+
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
-  
+
   virtual void mouse_mode_absolute();
   virtual void mouse_mode_relative();
 
@@ -68,12 +66,11 @@ protected:
 private:
   bool os_open_window(WindowProperties &properties);
 
-  //
-  // a singleton .. for the events to find the right pipe to push the event into
-  //
+  // a singleton .. for the events to find the right pipe to push the event
+  // into
 
 public: // do not call direct ..
-  OSStatus handle_key_input(EventHandlerCallRef myHandler, EventRef event, 
+  OSStatus handle_key_input(EventHandlerCallRef myHandler, EventRef event,
                             Boolean keyDown);
   OSStatus handle_text_input(EventHandlerCallRef myHandler, EventRef event);
   OSStatus handle_window_mouse_events(EventHandlerCallRef myHandler, EventRef event);
@@ -107,10 +104,10 @@ private:
 
   CGImageRef _pending_icon;
   CGImageRef _current_icon;
-  
+
   int _ID;
-  static osxGraphicsWindow *full_screen_window; 
-  
+  static osxGraphicsWindow *full_screen_window;
+
 #ifdef HACK_SCREEN_HASH_CONTEXT
   AGLContext _holder_aglcontext;
 #endif
@@ -146,4 +143,3 @@ private:
 #include "osxGraphicsWindow.I"
 
 #endif
-

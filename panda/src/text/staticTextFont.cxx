@@ -1,16 +1,15 @@
-// Filename: staticTextFont.cxx
-// Created by:  drose (03May01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file staticTextFont.cxx
+ * @author drose
+ * @date 2001-05-03
+ */
 
 #include "staticTextFont.h"
 #include "config_text.h"
@@ -28,18 +27,14 @@
 
 TypeHandle StaticTextFont::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::Constructor
-//       Access: Published
-//  Description: The constructor expects the root node to a model
-//               generated via egg-mkfont, which consists of a set of
-//               models, one per each character in the font.
-//
-//               If a CoordinateSystem value is specified, it informs
-//               the font of the coordinate system in which this model
-//               was generated.  "up" in this coordinate system will
-//               be the direction of the top of the letters.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor expects the root node to a model generated via egg-mkfont,
+ * which consists of a set of models, one per each character in the font.
+ *
+ * If a CoordinateSystem value is specified, it informs the font of the
+ * coordinate system in which this model was generated.  "up" in this
+ * coordinate system will be the direction of the top of the letters.
+ */
 StaticTextFont::
 StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
   nassertv(font_def != (PandaNode *)NULL);
@@ -53,9 +48,9 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
 
   NodePath np(font_def);
   if (_cs != CS_zup_right) {
-    // We have to convert the entire font to CS_zup_right before we
-    // can use it, because the text subsystem assumes the glyphs are
-    // stored in CS_zup_right.
+    // We have to convert the entire font to CS_zup_right before we can use
+    // it, because the text subsystem assumes the glyphs are stored in
+    // CS_zup_right.
     NodePath temp_root("root");
     NodePath temp_child = temp_root.attach_new_node("child");
     np = np.copy_to(temp_child);
@@ -68,19 +63,18 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
     _cs = CS_zup_right;
   }
 
-  // If there is no explicit quality level or filter settings on the
-  // textures in the static font, set the appropriate defaults for
-  // text.
+  // If there is no explicit quality level or filter settings on the textures
+  // in the static font, set the appropriate defaults for text.
   TextureCollection tc = np.find_all_textures();
   int num_textures = tc.get_num_textures();
   for (int i = 0; i < num_textures; ++i) {
     Texture *tex = tc.get_texture(i);
-    
-    // Don't compress font textures.  Though there's a relatively high
-    // bang-for-the-buck in compressing them, there's an increased
-    // risk that broken graphics drivers will fail to render the text
-    // properly, causing troubles for a user who then won't be able to
-    // navigate the options menus to disable texture compression.
+
+    // Don't compress font textures.  Though there's a relatively high bang-
+    // for-the-buck in compressing them, there's an increased risk that broken
+    // graphics drivers will fail to render the text properly, causing
+    // troubles for a user who then won't be able to navigate the options
+    // menus to disable texture compression.
     tex->set_compression(Texture::CM_off);
 
     if (tex->get_quality_level() == Texture::QL_default) {
@@ -96,7 +90,7 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
 
   find_characters(_font, RenderState::make_empty());
   _is_valid = !_glyphs.empty();
-  
+
   // Check for an explicit space width.
   int character = 32;
   Glyphs::iterator gi = _glyphs.find(character);
@@ -108,31 +102,26 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
   set_name(font_def->get_name());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::make_copy
-//       Access: Published
-//  Description: Returns a new copy of the same font.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new copy of the same font.
+ */
 PT(TextFont) StaticTextFont::
 make_copy() const {
   return new StaticTextFont(_font);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void StaticTextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "StaticTextFont " << get_name() << "; "
     << _glyphs.size() << " characters available in font:\n";
   Glyphs::const_iterator gi;
-  
+
   // Figure out which symbols we have.  We collect lowercase letters,
-  // uppercase letters, and digits together for the user's
-  // convenience.
+  // uppercase letters, and digits together for the user's convenience.
   static const int num_letters = 26;
   static const int num_digits = 10;
   bool lowercase[num_letters];
@@ -153,11 +142,11 @@ write(ostream &out, int indent_level) const {
       if (islower(ch)) {
         count_lowercase++;
         lowercase[ch - 'a'] = true;
-        
+
       } else if (isupper(ch)) {
         count_uppercase++;
         uppercase[ch - 'A'] = true;
-        
+
       } else if (isdigit(ch)) {
         count_digits++;
         digits[ch - '0'] = true;
@@ -222,17 +211,13 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::get_glyph
-//       Access: Public, Virtual
-//  Description: Gets the glyph associated with the given character
-//               code, as well as an optional scaling parameter that
-//               should be applied to the glyph's geometry and advance
-//               parameters.  Returns true if the glyph exists, false
-//               if it does not.  Even if the return value is false,
-//               the value for glyph might be filled in with a
-//               printable glyph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the glyph associated with the given character code, as well as an
+ * optional scaling parameter that should be applied to the glyph's geometry
+ * and advance parameters.  Returns true if the glyph exists, false if it does
+ * not.  Even if the return value is false, the value for glyph might be
+ * filled in with a printable glyph.
+ */
 bool StaticTextFont::
 get_glyph(int character, CPT(TextGlyph) &glyph) {
   Glyphs::const_iterator gi = _glyphs.find(character);
@@ -246,15 +231,11 @@ get_glyph(int character, CPT(TextGlyph) &glyph) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::find_character_gsets
-//       Access: Private
-//  Description: Given that 'root' is a PandaNode containing at least
-//               a polygon and a point which define the character's
-//               appearance and kern position, respectively,
-//               recursively walk the hierarchy and root and locate
-//               those two Geoms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given that 'root' is a PandaNode containing at least a polygon and a point
+ * which define the character's appearance and kern position, respectively,
+ * recursively walk the hierarchy and root and locate those two Geoms.
+ */
 void StaticTextFont::
 find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
                      const RenderState *&state, const RenderState *net_state) {
@@ -275,8 +256,7 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
         }
       }
       if (!found_points) {
-        // If it doesn't have any points, it must be the regular
-        // letter.
+        // If it doesn't have any points, it must be the regular letter.
         ch = geom;
         state = next_net_state->compose(geode->get_geom_state(i));
       }
@@ -292,14 +272,11 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::find_characters
-//       Access: Private
-//  Description: Walk the hierarchy beginning at the indicated root
-//               and locate any nodes whose names are just integers.
-//               These are taken to be characters, and their
-//               definitions and kern informations are retrieved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walk the hierarchy beginning at the indicated root and locate any nodes
+ * whose names are just integers.  These are taken to be characters, and their
+ * definitions and kern informations are retrieved.
+ */
 void StaticTextFont::
 find_characters(PandaNode *root, const RenderState *net_state) {
   CPT(RenderState) next_net_state = net_state->compose(root->get_state());
@@ -308,9 +285,8 @@ find_characters(PandaNode *root, const RenderState *net_state) {
   bool all_digits = !name.empty();
   const char *p = name.c_str();
   while (all_digits && *p != '\0') {
-    // VC++ complains if we treat an int as a bool, so we have to do
-    // this != 0 comparison on the int isdigit() function to shut it
-    // up.
+    // VC++ complains if we treat an int as a bool, so we have to do this != 0
+    // comparison on the int isdigit() function to shut it up.
     all_digits = (isdigit(*p) != 0);
     p++;
   }
@@ -323,8 +299,8 @@ find_characters(PandaNode *root, const RenderState *net_state) {
     find_character_gsets(root, ch, dot, state, next_net_state);
     PN_stdfloat width = 0.0;
     if (dot != (Geom *)NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // origin of the next character.
+      // Get the first vertex from the "dot" geoset.  This will be the origin
+      // of the next character.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
       width = reader.get_data1f();
     }
@@ -332,18 +308,20 @@ find_characters(PandaNode *root, const RenderState *net_state) {
     _glyphs[character] = new TextGlyph(character, ch, state, width);
 
   } else if (name == "ds") {
-    // The group "ds" is a special node that indicates the font's
-    // design size, or line height.
+    // The group "ds" is a special node that indicates the font's design size,
+    // or line height.
 
     CPT(Geom) ch;
     CPT(Geom) dot;
     const RenderState *state = NULL;
     find_character_gsets(root, ch, dot, state, next_net_state);
     if (dot != (Geom *)NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // design size indicator.
+      // Get the first vertex from the "dot" geoset.  This will be the design
+      // size indicator.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
-      _line_height = reader.get_data3()[2];
+      LVecBase3 data = reader.get_data3();
+      _line_height = data[2];
+      _total_poly_margin = data[0];
       _space_advance = 0.25f * _line_height;
     }
 

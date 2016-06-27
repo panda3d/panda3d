@@ -1,16 +1,15 @@
-// Filename: x11GraphicsWindow.cxx
-// Created by:  rdb (07Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file x11GraphicsWindow.cxx
+ * @author rdb
+ * @date 2009-07-07
+ */
 
 #include "x11GraphicsWindow.h"
 #include "config_x11display.h"
@@ -71,11 +70,9 @@ TypeHandle x11GraphicsWindow::_type_handle;
 
 #define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 x11GraphicsWindow::
 x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -112,11 +109,9 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
   pmap<Filename, X11_Cursor>::iterator it;
@@ -126,16 +121,14 @@ x11GraphicsWindow::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if
+ * possible.
+ *
+ * Returns true if successful, false on failure.  This may fail if the mouse
+ * is not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool x11GraphicsWindow::
 move_pointer(int device, int x, int y) {
   // Note: this is not thread-safe; it should be called only from App.
@@ -144,8 +137,8 @@ move_pointer(int device, int x, int y) {
     // Move the system mouse pointer.
     if (!_properties.get_foreground() ||
         !_input_devices[0].get_pointer().get_in_window()) {
-      // If the window doesn't have input focus, or the mouse isn't
-      // currently within the window, forget it.
+      // If the window doesn't have input focus, or the mouse isn't currently
+      // within the window, forget it.
       return false;
     }
 
@@ -167,15 +160,12 @@ move_pointer(int device, int x, int y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool x11GraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -185,14 +175,14 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
   if (_awaiting_configure) {
-    // Don't attempt to draw while we have just reconfigured the
-    // window and we haven't got the notification back yet.
+    // Don't attempt to draw while we have just reconfigured the window and we
+    // haven't got the notification back yet.
     return false;
   }
 
-  // Reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
+  // Reset the GSG state if this is the first time it has been used.  (We
+  // can't just call reset() when we construct the GSG, because reset()
+  // requires having a current context.)
   _gsg->reset_if_new();
 
   if (mode == FM_render) {
@@ -204,13 +194,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void x11GraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -229,16 +217,13 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties()
+ *
+ * This function is called only within the window thread.
+ */
 void x11GraphicsWindow::
 process_events() {
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
@@ -267,28 +252,27 @@ process_events() {
     }
 
     if (got_keyrelease_event) {
-      // If a keyrelease event is immediately followed by a matching
-      // keypress event, that's just key repeat and we should treat
-      // the two events accordingly.  It would be nice if X provided a
-      // way to differentiate between keyrepeat and explicit
-      // keypresses more generally.
+      // If a keyrelease event is immediately followed by a matching keypress
+      // event, that's just key repeat and we should treat the two events
+      // accordingly.  It would be nice if X provided a way to differentiate
+      // between keyrepeat and explicit keypresses more generally.
       got_keyrelease_event = false;
 
       if (event.type == KeyPress &&
           event.xkey.keycode == keyrelease_event.keycode &&
           (event.xkey.time - keyrelease_event.time <= 1)) {
-        // In particular, we only generate down messages for the
-        // repeated keys, not down-and-up messages.
+        // In particular, we only generate down messages for the repeated
+        // keys, not down-and-up messages.
         handle_keystroke(event.xkey);
 
-        // We thought about not generating the keypress event, but we
-        // need that repeat for backspace.  Rethink later.
+        // We thought about not generating the keypress event, but we need
+        // that repeat for backspace.  Rethink later.
         handle_keypress(event.xkey);
         continue;
 
       } else {
-        // This keyrelease event is not immediately followed by a
-        // matching keypress event, so it's a genuine release.
+        // This keyrelease event is not immediately followed by a matching
+        // keypress event, so it's a genuine release.
         handle_keyrelease(keyrelease_event);
       }
     }
@@ -300,9 +284,8 @@ process_events() {
       break;
 
     case ConfigureNotify:
-      // When resizing or moving the window, multiple ConfigureNotify
-      // events may be sent in rapid succession.  We only respond to
-      // the last one.
+      // When resizing or moving the window, multiple ConfigureNotify events
+      // may be sent in rapid succession.  We only respond to the last one.
       configure_event = event.xconfigure;
       got_configure_event = true;
       break;
@@ -339,9 +322,9 @@ process_events() {
       break;
 
     case KeyRelease:
-      // The KeyRelease can't be processed immediately, because we
-      // have to check first if it's immediately followed by a
-      // matching KeyPress event.
+      // The KeyRelease can't be processed immediately, because we have to
+      // check first if it's immediately followed by a matching KeyPress
+      // event.
       keyrelease_event = event.xkey;
       got_keyrelease_event = true;
       break;
@@ -385,17 +368,17 @@ process_events() {
 
     case ClientMessage:
       if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
-        // This is a message from the window manager indicating that
-        // the user has requested to close the window.
+        // This is a message from the window manager indicating that the user
+        // has requested to close the window.
         string close_request_event = get_close_request_event();
         if (!close_request_event.empty()) {
-          // In this case, the app has indicated a desire to intercept
-          // the request and process it directly.
+          // In this case, the app has indicated a desire to intercept the
+          // request and process it directly.
           throw_event(close_request_event);
 
         } else {
-          // In this case, the default case, the app does not intend
-          // to service the request, so we do by closing the window.
+          // In this case, the default case, the app does not intend to
+          // service the request, so we do by closing the window.
 
           // TODO: don't release the gsg in the window thread.
           close_window();
@@ -406,9 +389,8 @@ process_events() {
       break;
 
     case DestroyNotify:
-      // Apparently, we never get a DestroyNotify on a toplevel
-      // window.  Instead, we rely on hints from the window manager
-      // (see above).
+      // Apparently, we never get a DestroyNotify on a toplevel window.
+      // Instead, we rely on hints from the window manager (see above).
       x11display_cat.info()
         << "DestroyNotify\n";
       break;
@@ -423,22 +405,20 @@ process_events() {
     // Now handle the last configure event we found.
     _awaiting_configure = false;
 
-    // Is this the inner corner or the outer corner?  The Xlib docs
-    // say it should be the outer corner, but it appears to be the
-    // inner corner on my own implementation, which is inconsistent
-    // with XConfigureWindow.  (Panda really wants to work with the
-    // inner corner, anyway, but that means we need to fix
-    // XConfigureWindow too.)
+    // Is this the inner corner or the outer corner?  The Xlib docs say it
+    // should be the outer corner, but it appears to be the inner corner on my
+    // own implementation, which is inconsistent with XConfigureWindow.
+    // (Panda really wants to work with the inner corner, anyway, but that
+    // means we need to fix XConfigureWindow too.)
     properties.set_origin(configure_event.x, configure_event.y);
     properties.set_size(configure_event.width, configure_event.height);
 
     if (_properties.get_fixed_size()) {
-      // If the window properties indicate a fixed size only, undo
-      // any attempt by the user to change them.  In X, there
-      // doesn't appear to be a way to universally disallow this
-      // directly (although we do set the min_size and max_size to
-      // the same value, which seems to work for most window
-      // managers.)
+      // If the window properties indicate a fixed size only, undo any attempt
+      // by the user to change them.  In X, there doesn't appear to be a way
+      // to universally disallow this directly (although we do set the
+      // min_size and max_size to the same value, which seems to work for most
+      // window managers.)
       if (configure_event.width != _fixed_size.get_x() ||
           configure_event.height != _fixed_size.get_y()) {
         XWindowChanges changes;
@@ -456,29 +436,24 @@ process_events() {
   }
 
   if (got_keyrelease_event) {
-    // This keyrelease event is not immediately followed by a
-    // matching keypress event, so it's a genuine release.
+    // This keyrelease event is not immediately followed by a matching
+    // keypress event, so it's a genuine release.
     handle_keyrelease(keyrelease_event);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The return value is true if the properties are set, false if they are
+ * ignored.  This is mainly useful for derived classes to implement extensions
+ * to this function.
+ */
 void x11GraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (_pipe == (GraphicsPipe *)NULL) {
@@ -490,8 +465,8 @@ set_properties_now(WindowProperties &properties) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
 
-  // We're either going into or out of fullscreen, or are in fullscreen
-  // and are changing the resolution.
+  // We're either going into or out of fullscreen, or are in fullscreen and
+  // are changing the resolution.
   bool is_fullscreen = _properties.has_fullscreen() && _properties.get_fullscreen();
   bool want_fullscreen = properties.has_fullscreen() ? properties.get_fullscreen() : is_fullscreen;
 
@@ -534,15 +509,15 @@ set_properties_now(WindowProperties &properties) {
         }
 #endif
       } else {
-        // If we don't have Xrandr support, we fake the fullscreen
-        // support by setting the window size to the desktop size.
+        // If we don't have Xrandr support, we fake the fullscreen support by
+        // setting the window size to the desktop size.
         properties.set_size(x11_pipe->get_display_width(),
                             x11_pipe->get_display_height());
       }
     } else {
 #ifdef HAVE_XRANDR
-      // Change the resolution back to what it was.
-      // Don't remove the SizeID typecast!
+      // Change the resolution back to what it was.  Don't remove the SizeID
+      // typecast!
       if (_have_xrandr && _orig_size_id != (SizeID) -1) {
         XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
         XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
@@ -586,14 +561,14 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
-  // The window is already open; we are limited to what we can change
-  // on the fly.
+  // The window is already open; we are limited to what we can change on the
+  // fly.
 
   // We'll pass some property requests on as a window manager hint.
   set_wm_properties(properties, true);
 
-  // The window title may be changed by issuing another hint request.
-  // Assume this will be honored.
+  // The window title may be changed by issuing another hint request.  Assume
+  // this will be honored.
   if (properties.has_title()) {
     _properties.set_title(properties.get_title());
     properties.clear_title();
@@ -605,10 +580,10 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_fullscreen();
   }
 
-  // The size and position of an already-open window are changed via
-  // explicit X calls.  These may still get intercepted by the window
-  // manager.  Rather than changing _properties immediately, we'll
-  // wait for the ConfigureNotify message to come back.
+  // The size and position of an already-open window are changed via explicit
+  // X calls.  These may still get intercepted by the window manager.  Rather
+  // than changing _properties immediately, we'll wait for the ConfigureNotify
+  // message to come back.
   XWindowChanges changes;
   int value_mask = 0;
 
@@ -645,10 +620,9 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (properties.has_z_order()) {
-    // We'll send the classic stacking request through the standard
-    // interface, for users of primitive window managers; but we'll
-    // also send it as a window manager hint, for users of modern
-    // window managers.
+    // We'll send the classic stacking request through the standard interface,
+    // for users of primitive window managers; but we'll also send it as a
+    // window manager hint, for users of modern window managers.
     _properties.set_z_order(properties.get_z_order());
     switch (properties.get_z_order()) {
     case WindowProperties::Z_bottom:
@@ -668,8 +642,8 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_z_order();
   }
 
-  // We hide the cursor by setting it to an invisible pixmap.
-  // We can also load a custom cursor from a file.
+  // We hide the cursor by setting it to an invisible pixmap.  We can also
+  // load a custom cursor from a file.
   if (properties.has_cursor_hidden() || properties.has_cursor_filename()) {
     if (properties.has_cursor_hidden()) {
       _properties.set_cursor_hidden(properties.get_cursor_hidden());
@@ -745,8 +719,8 @@ set_properties_now(WindowProperties &properties) {
             properties.clear_mouse_mode();
             _dga_mouse_enabled = true;
 
-            // Get the real mouse position, so we can add/subtract
-            // our relative coordinates later.
+            // Get the real mouse position, so we can addsubtract our relative
+            // coordinates later.
             XEvent event;
             XQueryPointer(_display, _xwindow, &event.xbutton.root,
               &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
@@ -789,8 +763,8 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (value_mask != 0) {
-    // We must call this after changing the WM properties, otherwise
-    // we may get misleading ConfigureNotify events in the wrong order.
+    // We must call this after changing the WM properties, otherwise we may
+    // get misleading ConfigureNotify events in the wrong order.
     XReconfigureWMWindow(_display, _xwindow, _screen, value_mask, &changes);
 
     // Don't draw anything until this is done reconfiguring.
@@ -798,32 +772,25 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::mouse_mode_absolute
-//       Access: Private, Virtual
-//  Description: Overridden from GraphicsWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overridden from GraphicsWindow.
+ */
 void x11GraphicsWindow::
 mouse_mode_absolute() {
   // unused: remove in 1.10!
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::mouse_mode_relative
-//       Access: Private, Virtual
-//  Description: Overridden from GraphicsWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overridden from GraphicsWindow.
+ */
 void x11GraphicsWindow::
 mouse_mode_relative() {
   // unused: remove in 1.10!
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void x11GraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -845,8 +812,8 @@ close_window() {
   }
 
 #ifdef HAVE_XRANDR
-  // Change the resolution back to what it was.
-  // Don't remove the SizeID typecast!
+  // Change the resolution back to what it was.  Don't remove the SizeID
+  // typecast!
   if (_have_xrandr && _orig_size_id != (SizeID) -1) {
     X11_Window root;
     if (_pipe != NULL) {
@@ -854,9 +821,8 @@ close_window() {
       DCAST_INTO_V(x11_pipe, _pipe);
       root = x11_pipe->get_root();
     } else {
-      // Oops. Looks like the pipe was destroyed
-      // before the window gets closed. Oh well,
-      // let's get the root window by ourselves.
+      // Oops.  Looks like the pipe was destroyed before the window gets
+      // closed.  Oh well, let's get the root window by ourselves.
       root = RootWindow(_display, _screen);
     }
     XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, root);
@@ -868,13 +834,10 @@ close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool x11GraphicsWindow::
 open_window() {
   if (_visual_info == NULL) {
@@ -982,10 +945,10 @@ open_window() {
 
   set_wm_properties(_properties, false);
 
-  // We don't specify any fancy properties of the XIC.  It would be
-  // nicer if we could support fancy IM's that want preedit callbacks,
-  // etc., but that can wait until we have an X server that actually
-  // supports these to test it on.
+  // We don't specify any fancy properties of the XIC.  It would be nicer if
+  // we could support fancy IM's that want preedit callbacks, etc., but that
+  // can wait until we have an X server that actually supports these to test
+  // it on.
   XIM im = x11_pipe->get_im();
   _ic = NULL;
   if (im) {
@@ -1030,19 +993,16 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::set_wm_properties
-//       Access: Private
-//  Description: Asks the window manager to set the appropriate
-//               properties.  In X, these properties cannot be
-//               specified directly by the application; they must be
-//               requested via the window manager, which may or may
-//               not choose to honor the request.
-//
-//               If already_mapped is true, the window has already
-//               been mapped (manifested) on the display.  This means
-//               we may need to use a different action in some cases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the window manager to set the appropriate properties.  In X, these
+ * properties cannot be specified directly by the application; they must be
+ * requested via the window manager, which may or may not choose to honor the
+ * request.
+ *
+ * If already_mapped is true, the window has already been mapped (manifested)
+ * on the display.  This means we may need to use a different action in some
+ * cases.
+ */
 void x11GraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   x11GraphicsPipe *x11_pipe;
@@ -1058,8 +1018,8 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     }
   }
 
-  // The size hints request a window of a particular size and/or a
-  // particular placement onscreen.
+  // The size hints request a window of a particular size andor a particular
+  // placement onscreen.
   XSizeHints *size_hints_p = NULL;
   if (properties.has_origin() || properties.has_size()) {
     size_hints_p = XAllocSizeHints();
@@ -1091,8 +1051,8 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     }
   }
 
-  // The window manager hints include requests to the window manager
-  // other than those specific to window geometry.
+  // The window manager hints include requests to the window manager other
+  // than those specific to window geometry.
   XWMHints *wm_hints_p = NULL;
   wm_hints_p = XAllocWMHints();
   if (wm_hints_p != (XWMHints *)NULL) {
@@ -1104,15 +1064,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     wm_hints_p->flags = StateHint;
   }
 
-  // Two competing window manager interfaces have evolved.  One of
-  // them allows to set certain properties as a "type"; the other one
-  // as a "state".  We'll try to honor both.
+  // Two competing window manager interfaces have evolved.  One of them allows
+  // to set certain properties as a "type"; the other one as a "state".  We'll
+  // try to honor both.
   static const int max_type_data = 32;
-  PN_int32 type_data[max_type_data];
+  int32_t type_data[max_type_data];
   int next_type_data = 0;
 
   static const int max_state_data = 32;
-  PN_int32 state_data[max_state_data];
+  int32_t state_data[max_state_data];
   int next_state_data = 0;
 
   static const int max_set_data = 32;
@@ -1128,14 +1088,14 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {
-      // For a "fullscreen" request, we pass this through, hoping the
-      // window manager will support EWMH.
+      // For a "fullscreen" request, we pass this through, hoping the window
+      // manager will support EWMH.
       type_data[next_type_data++] = x11_pipe->_net_wm_window_type_fullscreen;
 
       // We also request it as a state.
       state_data[next_state_data++] = x11_pipe->_net_wm_state_fullscreen;
-      // Don't ask me why this has to be 1/0 and not _net_wm_state_add.
-      // It doesn't seem to work otherwise.
+      // Don't ask me why this has to be 10 and not _net_wm_state_add.  It
+      // doesn't seem to work otherwise.
       set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_fullscreen, 1);
 
     } else {
@@ -1143,15 +1103,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     }
   }
 
-  // If we asked for a window without a border, there's no excellent
-  // way to arrange that.  For users whose window managers follow the
-  // EWMH specification, we can ask for a "splash" screen, which is
-  // usually undecorated.  It's not exactly right, but the spec
-  // doesn't give us an exactly-right option.
+  // If we asked for a window without a border, there's no excellent way to
+  // arrange that.  For users whose window managers follow the EWMH
+  // specification, we can ask for a "splash" screen, which is usually
+  // undecorated.  It's not exactly right, but the spec doesn't give us an
+  // exactly-right option.
 
-  // For other users, we'll totally punt and just set the window's
-  // Class to "Undecorated", and let the user configure his/her window
-  // manager not to put a border around windows of this class.
+  // For other users, we'll totally punt and just set the window's Class to
+  // "Undecorated", and let the user configure hisher window manager not to
+  // put a border around windows of this class.
   XClassHint *class_hints_p = NULL;
   if (!x_wm_class.empty()) {
     // Unless the user wanted to use his own WM_CLASS, of course.
@@ -1202,7 +1162,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   nassertv(next_set_data < max_set_data);
 
   // Add the process ID as a convenience for other applications.
-  PN_int32 pid = getpid();
+  int32_t pid = getpid();
   XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_pid,
                   XA_CARDINAL, 32, PropModeReplace,
                   (unsigned char *)&pid, 1);
@@ -1217,9 +1177,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   (unsigned char *)state_data, next_state_data);
 
   if (already_mapped) {
-    // We have to request state changes differently when the window
-    // has been mapped.  To do this, we need to send a client message
-    // to the root window for each change.
+    // We have to request state changes differently when the window has been
+    // mapped.  To do this, we need to send a client message to the root
+    // window for each change.
 
     x11GraphicsPipe *x11_pipe;
     DCAST_INTO_V(x11_pipe, _pipe);
@@ -1255,10 +1215,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     XFree(class_hints_p);
   }
 
-  // Also, indicate to the window manager that we'd like to get a
-  // chance to close our windows cleanly, rather than being rudely
-  // disconnected from the X server if the user requests a window
-  // close.
+  // Also, indicate to the window manager that we'd like to get a chance to
+  // close our windows cleanly, rather than being rudely disconnected from the
+  // X server if the user requests a window close.
   Atom protocols[] = {
     _wm_delete_window,
   };
@@ -1267,12 +1226,10 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   sizeof(protocols) / sizeof(Atom));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::setup_colormap
-//       Access: Private, Virtual
-//  Description: Allocates a colormap appropriate to the visual and
-//               stores in in the _colormap method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a colormap appropriate to the visual and stores in in the
+ * _colormap method.
+ */
 void x11GraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   x11GraphicsPipe *x11_pipe;
@@ -1283,11 +1240,9 @@ setup_colormap(XVisualInfo *visual) {
                               visual->visual, AllocNone);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::open_raw_mice
-//       Access: Private
-//  Description: Adds raw mice to the _input_devices list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds raw mice to the _input_devices list.
+ */
 void x11GraphicsWindow::
 open_raw_mice() {
 #ifdef PHAVE_LINUX_INPUT_H
@@ -1364,11 +1319,9 @@ open_raw_mice() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::poll_raw_mice
-//       Access: Private
-//  Description: Reads events from the raw mouse device files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads events from the raw mouse device files.
+ */
 void x11GraphicsWindow::
 poll_raw_mice() {
 #ifdef PHAVE_LINUX_INPUT_H
@@ -1427,12 +1380,9 @@ poll_raw_mice() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::handle_keystroke
-//       Access: Private
-//  Description: Generates a keystroke corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keystroke corresponding to the indicated X KeyPress event.
+ */
 void x11GraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
   if (!_dga_mouse_enabled) {
@@ -1451,8 +1401,7 @@ handle_keystroke(XKeyEvent &event) {
         << "Overflowed input buffer.\n";
     }
 
-    // Now each of the returned wide characters represents a
-    // keystroke.
+    // Now each of the returned wide characters represents a keystroke.
     for (int i = 0; i < len; i++) {
       _input_devices[0].keystroke(buffer[i]);
     }
@@ -1466,12 +1415,9 @@ handle_keystroke(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::handle_keypress
-//       Access: Private
-//  Description: Generates a keypress corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keypress corresponding to the indicated X KeyPress event.
+ */
 void x11GraphicsWindow::
 handle_keypress(XKeyEvent &event) {
   if (!_dga_mouse_enabled) {
@@ -1502,12 +1448,9 @@ handle_keypress(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::handle_keyrelease
-//       Access: Private
-//  Description: Generates a keyrelease corresponding to the indicated
-//               X KeyRelease event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keyrelease corresponding to the indicated X KeyRelease event.
+ */
 void x11GraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
   if (!_dga_mouse_enabled) {
@@ -1538,20 +1481,18 @@ handle_keyrelease(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               keyboard button indicated by the given key event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the keyboard button
+ * indicated by the given key event.
+ */
 ButtonHandle x11GraphicsWindow::
 get_button(XKeyEvent &key_event, bool allow_shift) {
   KeySym key = XLookupKeysym(&key_event, 0);
 
   if ((key_event.state & Mod2Mask) != 0) {
-    // Mod2Mask corresponds to NumLock being in effect.  In this case,
-    // we want to get the alternate keysym associated with any keypad
-    // keys.  Weird system.
+    // Mod2Mask corresponds to NumLock being in effect.  In this case, we want
+    // to get the alternate keysym associated with any keypad keys.  Weird
+    // system.
     KeySym k2;
     ButtonHandle button;
     switch (key) {
@@ -1594,8 +1535,8 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
       if (button != ButtonHandle::none()) {
         return button;
       }
-      // If that didn't produce a button we know, just fall through
-      // and handle the normal, un-numlocked key.
+      // If that didn't produce a button we know, just fall through and handle
+      // the normal, un-numlocked key.
       break;
 
     default:
@@ -1613,9 +1554,9 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
       }
     }
 
-    // If caps lock is down, shift lowercase letters to uppercase.  We
-    // can do this in just the ASCII set, because we handle
-    // international keyboards elsewhere (via an input context).
+    // If caps lock is down, shift lowercase letters to uppercase.  We can do
+    // this in just the ASCII set, because we handle international keyboards
+    // elsewhere (via an input context).
     if ((key_event.state & (ShiftMask | LockMask)) != 0) {
       if (key >= XK_a and key <= XK_z) {
         key += (XK_A - XK_a);
@@ -1626,12 +1567,10 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
   return map_button(key);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::map_button
-//       Access: Private
-//  Description: Maps from a single X keysym to Panda's ButtonHandle.
-//               Called by get_button(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from a single X keysym to Panda's ButtonHandle.  Called by
+ * get_button(), above.
+ */
 ButtonHandle x11GraphicsWindow::
 map_button(KeySym key) const {
   switch (key) {
@@ -1955,11 +1894,9 @@ map_button(KeySym key) const {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::map_raw_button
-//       Access: Private
-//  Description: Maps from a single X keycode to Panda's ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from a single X keycode to Panda's ButtonHandle.
+ */
 ButtonHandle x11GraphicsWindow::
 map_raw_button(KeyCode key) const {
   switch (key) {
@@ -2076,12 +2013,10 @@ map_raw_button(KeyCode key) const {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_mouse_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               mouse button indicated by the given button event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the mouse button indicated
+ * by the given button event.
+ */
 ButtonHandle x11GraphicsWindow::
 get_mouse_button(XButtonEvent &button_event) {
   int index = button_event.button;
@@ -2098,16 +2033,14 @@ get_mouse_button(XButtonEvent &button_event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_keyboard_map
-//       Access: Private, Virtual
-//  Description: Returns a ButtonMap containing the association
-//               between raw buttons and virtual buttons.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a ButtonMap containing the association between raw buttons and
+ * virtual buttons.
+ */
 ButtonMap *x11GraphicsWindow::
 get_keyboard_map() const {
-  // NB.  This could be improved by using the Xkb API.
-  //XkbDescPtr desc = XkbGetMap(_display, XkbAllMapComponentsMask, XkbUseCoreKbd);
+  // NB.  This could be improved by using the Xkb API. XkbDescPtr desc =
+  // XkbGetMap(_display, XkbAllMapComponentsMask, XkbUseCoreKbd);
   ButtonMap *map = new ButtonMap;
 
   for (int k = 9; k <= 135; ++k) {
@@ -2128,14 +2061,10 @@ get_keyboard_map() const {
   return map;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::check_event
-//       Access: Private, Static
-//  Description: This function is used as a predicate to
-//               XCheckIfEvent() to determine if the indicated queued
-//               X event is relevant and should be returned to this
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used as a predicate to XCheckIfEvent() to determine if the
+ * indicated queued X event is relevant and should be returned to this window.
+ */
 Bool x11GraphicsWindow::
 check_event(X11_Display *display, XEvent *event, char *arg) {
   const x11GraphicsWindow *self = (x11GraphicsWindow *)arg;
@@ -2144,13 +2073,10 @@ check_event(X11_Display *display, XEvent *event, char *arg) {
   return (event->xany.window == self->_xwindow);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_cursor
-//       Access: Private
-//  Description: Loads and returns a Cursor corresponding to the
-//               indicated filename.  If the file cannot be loaded,
-//               returns None.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads and returns a Cursor corresponding to the indicated filename.  If the
+ * file cannot be loaded, returns None.
+ */
 X11_Cursor x11GraphicsWindow::
 get_cursor(const Filename &filename) {
 #ifndef HAVE_XCURSOR
@@ -2235,13 +2161,10 @@ get_cursor(const Filename &filename) {
 }
 
 #ifdef HAVE_XCURSOR
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::load_ico
-//       Access: Private
-//  Description: Reads a Windows .ico or .cur file from the
-//               indicated stream and returns it as an X11 Cursor.
-//               If the file cannot be loaded, returns None.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a Windows .ico or .cur file from the indicated stream and returns it
+ * as an X11 Cursor.  If the file cannot be loaded, returns None.
+ */
 X11_Cursor x11GraphicsWindow::
 read_ico(istream &ico) {
  // Local structs, this is just POD, make input easier
@@ -2422,4 +2345,3 @@ cleanup:
   return ret;
 }
 #endif  // HAVE_XCURSOR
-

@@ -1,16 +1,15 @@
-// Filename: encryptStreamBuf.cxx
-// Created by:  drose (01Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file encryptStreamBuf.cxx
+ * @author drose
+ * @date 2004-09-01
+ */
 
 #include "encryptStreamBuf.h"
 #include "config_prc.h"
@@ -28,15 +27,12 @@
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
-// The iteration count is scaled by this factor for writing to the
-// stream.
+// The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EncryptStreamBuf::
 EncryptStreamBuf() {
   _source = (istream *)NULL;
@@ -96,22 +92,18 @@ EncryptStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EncryptStreamBuf::
 ~EncryptStreamBuf() {
   close_read();
   close_write();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::open_read
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EncryptStreamBuf::
 open_read(istream *source, bool owns_source, const string &password) {
   OpenSSL_add_all_algorithms();
@@ -169,8 +161,8 @@ open_read(istream *source, bool owns_source, const string &password) {
   unsigned char *key = (unsigned char *)alloca(key_length);
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
-                           (unsigned char *)iv.data(), iv.length(), 
-                           count * iteration_count_factor + 1, 
+                           (unsigned char *)iv.data(), iv.length(),
+                           count * iteration_count_factor + 1,
                            key_length, key);
   nassertv(result > 0);
 
@@ -185,11 +177,9 @@ open_read(istream *source, bool owns_source, const string &password) {
   thread_consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::close_read
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EncryptStreamBuf::
 close_read() {
   if (_read_valid) {
@@ -211,11 +201,9 @@ close_read() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::open_write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EncryptStreamBuf::
 open_write(ostream *dest, bool owns_dest, const string &password) {
   OpenSSL_add_all_algorithms();
@@ -225,7 +213,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   _owns_dest = owns_dest;
   _write_valid = false;
 
-  const EVP_CIPHER *cipher = 
+  const EVP_CIPHER *cipher =
     EVP_get_cipherbyname(_algorithm.c_str());
 
   if (cipher == NULL) {
@@ -235,14 +223,14 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   };
 
   int nid = EVP_CIPHER_nid(cipher);
-    
+
   int iv_length = EVP_CIPHER_iv_length(cipher);
   _write_block_size = EVP_CIPHER_block_size(cipher);
 
   unsigned char *iv = (unsigned char *)alloca(iv_length);
 
-  // Generate a random IV.  It doesn't need to be cryptographically
-  // secure, just unique.
+  // Generate a random IV.  It doesn't need to be cryptographically secure,
+  // just unique.
   RAND_pseudo_bytes(iv, iv_length);
 
   int result;
@@ -288,38 +276,36 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
 
   // Now write the header information to the stream.
   StreamWriter sw(_dest, false);
-  nassertv((PN_uint16)nid == nid);
-  sw.add_uint16((PN_uint16)nid);
-  nassertv((PN_uint16)key_length == key_length);
-  sw.add_uint16((PN_uint16)key_length);
-  nassertv((PN_uint16)count == count);
-  sw.add_uint16((PN_uint16)count);
+  nassertv((uint16_t)nid == nid);
+  sw.add_uint16((uint16_t)nid);
+  nassertv((uint16_t)key_length == key_length);
+  sw.add_uint16((uint16_t)key_length);
+  nassertv((uint16_t)count == count);
+  sw.add_uint16((uint16_t)count);
   sw.append_data(iv, iv_length);
 
   _write_valid = true;
   thread_consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::close_write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EncryptStreamBuf::
 close_write() {
   if (_dest != (ostream *)NULL) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n);
     pbump(-(int)n);
-    
+
     if (_write_valid) {
       unsigned char *write_buffer = (unsigned char *)alloca(_write_block_size);
       int bytes_written = 0;
       EVP_EncryptFinal(&_write_ctx, write_buffer, &bytes_written);
       thread_consider_yield();
-      
+
       _dest->write((const char *)write_buffer, bytes_written);
-      
+
       _write_valid = false;
     }
 
@@ -331,12 +317,10 @@ close_write() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::overflow
-//       Access: Protected, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int EncryptStreamBuf::
 overflow(int ch) {
   size_t n = pptr() - pbase();
@@ -354,12 +338,10 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::sync
-//       Access: Protected, Virtual
-//  Description: Called by the system iostream implementation to
-//               implement a flush operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system iostream implementation to implement a flush
+ * operation.
+ */
 int EncryptStreamBuf::
 sync() {
   if (_source != (istream *)NULL) {
@@ -372,17 +354,15 @@ sync() {
     write_chars(pbase(), n);
     pbump(-(int)n);
   }
-  
+
   _dest->flush();
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int EncryptStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -412,11 +392,9 @@ underflow() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::read_chars
-//       Access: Private
-//  Description: Gets some characters from the source stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets some characters from the source stream.
+ */
 size_t EncryptStreamBuf::
 read_chars(char *start, size_t length) {
   if (length == 0) {
@@ -437,13 +415,13 @@ read_chars(char *start, size_t length) {
   unsigned char *read_buffer = (unsigned char *)alloca(max_read_buffer);
 
   int bytes_read = 0;
-    
+
   do {
-    // Get more bytes from the stream.    
+    // Get more bytes from the stream.
     if (!_read_valid) {
       return 0;
     }
-    
+
     _source->read((char *)source_buffer, length);
     size_t source_length = _source->gcount();
 
@@ -478,35 +456,32 @@ read_chars(char *start, size_t length) {
     return bytes_read;
 
   } else {
-    // We have to save some of the returned bytes in the overflow
-    // buffer.
+    // We have to save some of the returned bytes in the overflow buffer.
     _in_read_overflow_buffer = bytes_read - length;
     nassertr(_in_read_overflow_buffer <= _read_block_size, 0);
 
-    memcpy(_read_overflow_buffer, read_buffer + length, 
+    memcpy(_read_overflow_buffer, read_buffer + length,
            _in_read_overflow_buffer);
     memcpy(start, read_buffer, length);
     return length;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EncryptStreamBuf::write_chars
-//       Access: Private
-//  Description: Sends some characters to the dest stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends some characters to the dest stream.
+ */
 void EncryptStreamBuf::
 write_chars(const char *start, size_t length) {
   if (_write_valid && length != 0) {
     size_t max_write_buffer = length + _write_block_size;
     unsigned char *write_buffer = (unsigned char *)alloca(max_write_buffer);
-    
+
     int bytes_written = 0;
-    int result = 
+    int result =
       EVP_EncryptUpdate(&_write_ctx, write_buffer, &bytes_written,
                         (unsigned char *)start, length);
     if (result <= 0) {
-      prc_cat.error() 
+      prc_cat.error()
         << "Error encrypting stream.\n";
     }
     thread_consider_yield();

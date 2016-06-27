@@ -1,28 +1,24 @@
-// Filename: perlinNoise.cxx
-// Created by:  drose (05Oct05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file perlinNoise.cxx
+ * @author drose
+ * @date 2005-10-05
+ */
 
 #include "perlinNoise.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise::Constructor
-//       Access: Protected
-//  Description: Randomizes the tables to make a unique noise
-//               function.
-//
-//               If seed is nonzero, it is used to define the tables;
-//               if it is zero a random seed is generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Randomizes the tables to make a unique noise function.
+ *
+ * If seed is nonzero, it is used to define the tables; if it is zero a random
+ * seed is generated.
+ */
 PerlinNoise::
 PerlinNoise(int table_size, unsigned long seed) :
   _table_size(table_size),
@@ -40,8 +36,7 @@ PerlinNoise(int table_size, unsigned long seed) :
   }
 #endif  // NDEBUG
 
-  // The _index table is just a randomly shuffled index
-  // table.
+  // The _index table is just a randomly shuffled index table.
   _index.reserve(_table_size * 2);
   int i;
   for (i = 0; i < _table_size; ++i) {
@@ -55,19 +50,16 @@ PerlinNoise(int table_size, unsigned long seed) :
     _index[j] = t;
   }
 
-  // We double up _index so we don't need to perform modulo
-  // arithmetic.
+  // We double up _index so we don't need to perform modulo arithmetic.
   for (i = 0; i < _table_size; ++i) {
     _index.push_back(_index[i]);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise::Copy Constructor
-//       Access: Protected
-//  Description: Makes an exact copy of the existing PerlinNoise
-//               object, including its random seed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes an exact copy of the existing PerlinNoise object, including its
+ * random seed.
+ */
 PerlinNoise::
 PerlinNoise(const PerlinNoise &copy) :
   _table_size(copy._table_size),
@@ -77,12 +69,10 @@ PerlinNoise(const PerlinNoise &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise::Copy Assignment Operator
-//       Access: Protected
-//  Description: Makes an exact copy of the existing PerlinNoise
-//               object, including its random seed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes an exact copy of the existing PerlinNoise object, including its
+ * random seed.
+ */
 void PerlinNoise::
 operator = (const PerlinNoise &copy) {
   _table_size = copy._table_size;

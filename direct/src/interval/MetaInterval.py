@@ -5,10 +5,9 @@ __all__ = ['MetaInterval', 'Sequence', 'Parallel', 'ParallelEndTogether', 'Track
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-from IntervalManager import ivalMgr
-import Interval
+from .IntervalManager import ivalMgr
+from . import Interval
 from direct.task.Task import TaskManager
-import types
 #if __debug__:
 #    import direct.showbase.PythonUtil as PythonUtil
 
@@ -32,7 +31,7 @@ class MetaInterval(CMetaInterval):
         #        "create interval", 1, 10)
 
         name = None
-        #if len(ivals) == 2 and isinstance(ivals[1], types.StringType):
+        #if len(ivals) == 2 and isinstance(ivals[1], str):
         #    # If the second parameter is a string, it's the name.
         #    name = ivals[1]
         #    ivals = ivals[0]
@@ -50,7 +49,7 @@ class MetaInterval(CMetaInterval):
         # (for instance, the connection to the server being lost) when
         # we have to exit right away; these keywords indicate
         # intervals that might not be cleaned up by their owners.
-        
+
         autoPause = 0
         autoFinish = 0
         if 'autoPause' in kw:
@@ -69,7 +68,7 @@ class MetaInterval(CMetaInterval):
             del kw['duration']
 
         if kw:
-            self.notify.error("Unexpected keyword parameters: %s" % (kw.keys()))
+            self.notify.error("Unexpected keyword parameters: %s" % (list(kw.keys())))
 
         # We must allow the old style: Track([ival0, ival1, ...]) as
         # well as the new style: Track(ival0, ival1, ...)
@@ -80,13 +79,13 @@ class MetaInterval(CMetaInterval):
         # bug, since it will go away when we eventually remove support
         # for the old interface.
         #if len(ivals) == 1 and \
-        #   (isinstance(ivals[0], types.TupleType) or \
-        #    isinstance(ivals[0], types.ListType)):
+        #   (isinstance(ivals[0], tuple) or \
+        #    isinstance(ivals[0], list)):
         #    self.ivals = ivals[0]
         #else:
 
         self.ivals = ivals
-            
+
         self.__ivalsDirty = 1
 
         if name == None:
@@ -118,10 +117,10 @@ class MetaInterval(CMetaInterval):
 
     # Functions to make the MetaInterval object act just like a Python
     # list of intervals:
-    
+
     def append(self, ival):
         # Appends a single interval to the list so far.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.append(ival)
         self.__ivalsDirty = 1
@@ -141,7 +140,7 @@ class MetaInterval(CMetaInterval):
 
     def insert(self, index, ival):
         # Inserts the given interval into the middle of the list.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.insert(index, ival)
         self.__ivalsDirty = 1
@@ -150,7 +149,7 @@ class MetaInterval(CMetaInterval):
     def pop(self, index = None):
         # Returns element index (or the last element) and removes it
         # from the list.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.__ivalsDirty = 1
         if index == None:
@@ -160,21 +159,21 @@ class MetaInterval(CMetaInterval):
 
     def remove(self, ival):
         # Removes the indicated interval from the list.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.remove(ival)
         self.__ivalsDirty = 1
 
     def reverse(self):
         # Reverses the order of the intervals.
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals.reverse()
         self.__ivalsDirty = 1
 
     def sort(self, cmpfunc = None):
         # Sorts the intervals. (?)
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.__ivalsDirty = 1
         if cmpfunc == None:
@@ -189,38 +188,38 @@ class MetaInterval(CMetaInterval):
         return self.ivals[index]
 
     def __setitem__(self, index, value):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals[index] = value
         self.__ivalsDirty = 1
         assert self.validateComponent(value)
 
     def __delitem__(self, index):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         del self.ivals[index]
         self.__ivalsDirty = 1
 
     def __getslice__(self, i, j):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         return self.__class__(self.ivals[i: j])
 
     def __setslice__(self, i, j, s):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.ivals[i: j] = s
         self.__ivalsDirty = 1
         assert self.validateComponents(s)
 
     def __delslice__(self, i, j):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         del self.ivals[i: j]
         self.__ivalsDirty = 1
 
     def __iadd__(self, other):
-        if isinstance(self.ivals, types.TupleType):
+        if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         if isinstance(other, MetaInterval):
             assert self.__class__ == other.__class__
@@ -238,7 +237,7 @@ class MetaInterval(CMetaInterval):
         return copy
 
     # Functions to define sequence, parallel, and track behaviors:
-    
+
     def addSequence(self, list, name, relTime, relTo, duration):
         # Adds the given list of intervals to the MetaInterval to be
         # played one after the other.
@@ -263,13 +262,13 @@ class MetaInterval(CMetaInterval):
         maxDuration = 0
         for ival in list:
             maxDuration = max(maxDuration, ival.getDuration())
-        
+
         self.pushLevel(name, relTime, relTo)
         for ival in list:
             self.addInterval(ival, maxDuration - ival.getDuration(), TRACK_START)
         self.popLevel(duration)
 
-    def addTrack(self, list, name, relTime, relTo, duration):
+    def addTrack(self, trackList, name, relTime, relTo, duration):
         # Adds a "track list".  This is a list of tuples of the form:
         #
         #   (<delay>, <Interval>,
@@ -282,19 +281,19 @@ class MetaInterval(CMetaInterval):
         # (TRACK_START).  If the relative code is omitted, the default
         # is TRACK_START.
         self.pushLevel(name, relTime, relTo)
-        for tuple in list:
-            if isinstance(tuple, types.TupleType) or \
-               isinstance(tuple, types.ListType):
-                relTime = tuple[0]
-                ival = tuple[1]
-                if len(tuple) >= 3:
-                    relTo = tuple[2]
+        for tupleObj in trackList:
+            if isinstance(tupleObj, tuple) or \
+               isinstance(tupleObj, list):
+                relTime = tupleObj[0]
+                ival = tupleObj[1]
+                if len(tupleObj) >= 3:
+                    relTo = tupleObj[2]
                 else:
                     relTo = TRACK_START
                 self.addInterval(ival, relTime, relTo)
 
             else:
-                self.notify.error("Not a tuple in Track: %s" % (tuple,))
+                self.notify.error("Not a tuple in Track: %s" % (tupleObj,))
         self.popLevel(duration)
 
     def addInterval(self, ival, relTime, relTo):
@@ -379,7 +378,7 @@ class MetaInterval(CMetaInterval):
         self.__updateIvals()
         self.setupResumeUntil(endT)
         self.__manager.addInterval(self)
-        
+
     def finish(self):
         self.__updateIvals()
         state = self.getState()
@@ -435,7 +434,7 @@ class MetaInterval(CMetaInterval):
             self.clearIntervals()
             self.applyIvals(self, 0, TRACK_START)
             self.__ivalsDirty = 0
-        
+
     def clearIntervals(self):
         # This overrides the function defined at the C++ level to
         # reset the inPython flag.  Clearing out the intervals list
@@ -443,7 +442,7 @@ class MetaInterval(CMetaInterval):
         # Python interval gets added.
         CMetaInterval.clearIntervals(self)
         self.inPython = 0
-        
+
     def applyIvals(self, meta, relTime, relTo):
         # Add the intervals listed in this object to the given
         # MetaInterval object at the C++ level.  This will make the
@@ -466,7 +465,7 @@ class MetaInterval(CMetaInterval):
         already started, this changes its speed on-the-fly.  Note that
         since playRate is a parameter to start() and loop(), the next
         call to start() or loop() will reset this parameter. """
-        
+
         if self.isPlaying():
             self.pause()
             CMetaInterval.setPlayRate(self, playRate)
@@ -490,17 +489,17 @@ class MetaInterval(CMetaInterval):
                 t = self.getEventT()
                 eventType = self.getEventType()
                 self.popEvent()
-            
+
                 ival = self.pythonIvals[index]
                 ival.privDoEvent(t, eventType)
                 ival.privPostEvent()
                 ival = None
         except:
             if ival != None:
-                print "Exception occurred while processing %s of %s:" % (ival.getName(), self.getName())
+                print("Exception occurred while processing %s of %s:" % (ival.getName(), self.getName()))
             else:
-                print "Exception occurred while processing %s:" % (self.getName())
-            print self
+                print("Exception occurred while processing %s:" % (self.getName()))
+            print(self)
             raise
 
     def privDoEvent(self, t, event):
@@ -539,8 +538,8 @@ class MetaInterval(CMetaInterval):
 
         self.__updateIvals()
         return CMetaInterval.getIntervalStartTime(self, *args, **kw)
-        
-        
+
+
     def getDuration(self):
         # This function overrides from the parent level to force it to
         # update the interval list first, if necessary.
@@ -548,14 +547,14 @@ class MetaInterval(CMetaInterval):
         self.__updateIvals()
         return CMetaInterval.getDuration(self)
 
-    def __repr__(self, *args, **kw): 
+    def __repr__(self, *args, **kw):
         # This function overrides from the parent level to force it to
         # update the interval list first, if necessary.
 
         self.__updateIvals()
         return CMetaInterval.__repr__(self, *args, **kw)
 
-    def __str__(self, *args, **kw): 
+    def __str__(self, *args, **kw):
         # This function overrides from the parent level to force it to
         # update the interval list first, if necessary.
 
@@ -563,7 +562,7 @@ class MetaInterval(CMetaInterval):
         return CMetaInterval.__str__(self, *args, **kw)
 
 
-    def timeline(self, out = None): 
+    def timeline(self, out = None):
         # This function overrides from the parent level to force it to
         # update the interval list first, if necessary.
 
@@ -594,27 +593,27 @@ class Track(MetaInterval):
         meta.addTrack(self.ivals, self.getName(),
                       relTime, relTo, self.phonyDuration)
 
-    def validateComponent(self, tuple):
+    def validateComponent(self, tupleObj):
         # This is called only in debug mode to verify that the
         # indicated component added to the MetaInterval is appropriate
         # to this type of MetaInterval.  In most cases except Track,
         # this is the same as asking that the component is itself an
         # Interval.
 
-        if not (isinstance(tuple, types.TupleType) or \
-                isinstance(tuple, types.ListType)):
+        if not (isinstance(tupleObj, tuple) or \
+                isinstance(tupleObj, list)):
             # It's not a tuple.
             return 0
-        
-        relTime = tuple[0]
-        ival = tuple[1]
-        if len(tuple) >= 3:
-            relTo = tuple[2]
+
+        relTime = tupleObj[0]
+        ival = tupleObj[1]
+        if len(tupleObj) >= 3:
+            relTo = tupleObj[2]
         else:
             relTo = TRACK_START
 
-        if not (isinstance(relTime, types.FloatType) or \
-                isinstance(relTime, types.IntType)):
+        if not (isinstance(relTime, float) or \
+                isinstance(relTime, int)):
             # First parameter is not a number.
             return 0
         if not MetaInterval.validateComponent(self, ival):

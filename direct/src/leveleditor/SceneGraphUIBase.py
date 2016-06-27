@@ -2,22 +2,21 @@
 Defines Scene Graph tree UI Base
 """
 import wx
-import cPickle as pickle
 from pandac.PandaModules import *
-from ActionMgr import *
+from .ActionMgr import *
 
-import ObjectGlobals as OG
+from . import ObjectGlobals as OG
 
 class SceneGraphUIDropTarget(wx.TextDropTarget):
     def __init__(self, editor):
-        print "in SceneGraphUIDropTarget::init..."
+        print("in SceneGraphUIDropTarget::init...")
         wx.TextDropTarget.__init__(self)
         self.editor = editor
 
     def OnDropText(self, x, y, text):
-        print "in SceneGraphUIDropTarget::OnDropText..."
+        print("in SceneGraphUIDropTarget::OnDropText...")
         self.editor.ui.sceneGraphUI.changeHierarchy(text, x, y)
-        
+
 class SceneGraphUIBase(wx.Panel):
     def __init__(self, parent, editor):
         wx.Panel.__init__(self, parent)
@@ -49,7 +48,7 @@ class SceneGraphUIBase(wx.Panel):
         self.menu = wx.Menu()
         self.populateMenu()
         self.Bind(wx.EVT_CONTEXT_MENU, self.onShowPopup)
-        
+
     def reset(self):
         #import pdb;set_trace()
         itemList = list()
@@ -135,7 +134,7 @@ class SceneGraphUIBase(wx.Panel):
         namestr = "%s_%s_%s"%(obj[OG.OBJ_DEF].name, name, obj[OG.OBJ_UID])
         newItem = self.tree.AppendItem(parent, namestr)
         self.tree.SetItemPyData(newItem, obj[OG.OBJ_UID])
-        
+
         # adding children of PandaObj
         if self.shouldShowPandaObjChildren:
            self.addPandaObjectChildren(newItem)
@@ -159,7 +158,7 @@ class SceneGraphUIBase(wx.Panel):
                  child = self.traverse(item, itemId)
                  if child is not None:
                     return child
-                    
+
               # continue iteration to the next child
               item, cookie = self.tree.GetNextChild(parent, cookie)
         return None
@@ -273,7 +272,7 @@ class SceneGraphUIBase(wx.Panel):
                 return
 
             obj[OG.OBJ_NP].setName(newName)
-            namestr = "%s_%s_%s"%(obj[OG.OBJ_DEF].name, newName, obj[OG.OBJ_UID])            
+            namestr = "%s_%s_%s"%(obj[OG.OBJ_DEF].name, newName, obj[OG.OBJ_UID])
             self.tree.SetItemText(item, namestr)
 
     def deSelect(self, itemId):
@@ -299,7 +298,7 @@ class SceneGraphUIBase(wx.Panel):
 
         if item != self.tree.GetRootItem(): # prevent dragging root item
             text = self.tree.GetItemText(item)
-            print "Starting SceneGraphUI drag'n'drop with %s..." % repr(text)
+            print("Starting SceneGraphUI drag'n'drop with %s..." % repr(text))
 
             tdo = wx.TextDataObject(text)
             tds = wx.DropSource(self.tree)

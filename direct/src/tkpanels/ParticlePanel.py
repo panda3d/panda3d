@@ -5,17 +5,22 @@ __all__ = ['ParticlePanel']
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-from tkFileDialog import *
-from tkSimpleDialog import askstring
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
+from direct.tkpanels import Placer
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
-from Tkinter import *
-import Pmw, os,Placer
+import Pmw, os, sys
+
+if sys.version_info >= (3, 0):
+    from tkinter.filedialog import *
+    from tkinter.simpledialog import askstring
+else:
+    from tkFileDialog import *
+    from tkSimpleDialog import askstring
 
 from panda3d.core import *
 from panda3d.physics import *
@@ -44,7 +49,7 @@ class ParticlePanel(AppShell):
         else:
             # Make sure particles are enabled
             base.enableParticles()
-        
+
             # Or create a new one if none given
             particles = Particles.Particles()
             particles.setBirthRate(0.02)
@@ -66,7 +71,7 @@ class ParticlePanel(AppShell):
         self.initialiseoptions(ParticlePanel)
 
         # Update panel values to reflect particle effect's state
-        self.selectEffectNamed(self.effectsDict.keys()[0])
+        self.selectEffectNamed(next(iter(self.effectsDict)))
         # Make sure labels/menus reflect current state
         self.updateMenusAndLabels()
         # Make sure there is a page for each forceGroup objects
@@ -558,7 +563,7 @@ class ParticlePanel(AppShell):
         rendererGeomBlendPage = rendererGeomNotebook.add('Blend')
         rendererGeomScalePage = rendererGeomNotebook.add('Scale')
         rendererGeomInterpolationPage = rendererGeomNotebook.add('Interpolate')
-        
+
         ############################################################################
         # Blend tab
         p = Frame(rendererGeomBlendPage)
@@ -593,7 +598,7 @@ class ParticlePanel(AppShell):
         # Scale tab
         p = Frame(rendererGeomScalePage)
         p.pack(fill = X)
-        
+
         self.createCheckbutton(
             p, 'Geom Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
@@ -609,10 +614,10 @@ class ParticlePanel(AppShell):
             ("On: z scale is interpolated over particle's life; " +
              "Off: stays as start_Z_Scale"),
             self.toggleRendererGeomZScale, 0, side = LEFT)
-        
+
         p = Frame(rendererGeomScalePage)
         p.pack(fill = X)
-        
+
         self.createFloater(p, 'Geom Renderer',
                            'Initial X Scale',
                            'Initial X scaling factor',
@@ -771,7 +776,7 @@ class ParticlePanel(AppShell):
 ##################################################################################
         p = Frame(rendererSpriteScalePage)
         p.pack(fill = X)
-        
+
         self.createCheckbutton(
             p, 'Sprite Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
@@ -975,7 +980,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['resolution'] = resolution
         kw['numDigits'] = numDigits
-        widget = apply(Floater.Floater, (parent,), kw)
+        widget = Floater.Floater(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -987,7 +992,7 @@ class ParticlePanel(AppShell):
                         command = None, **kw):
         kw['text'] = text
         kw['style'] = 'mini'
-        widget = apply(Dial.AngleDial, (parent,), kw)
+        widget = Dial.AngleDial(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1002,7 +1007,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['max'] = max
         kw['resolution'] = resolution
-        widget = apply(Slider.Slider, (parent,), kw)
+        widget = Slider.Slider(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1014,7 +1019,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.Vector2Entry, (parent,), kw)
+        widget = VectorWidgets.Vector2Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1026,7 +1031,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.Vector3Entry, (parent,), kw)
+        widget = VectorWidgets.Vector3Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1038,7 +1043,7 @@ class ParticlePanel(AppShell):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.ColorEntry, (parent,), kw)
+        widget = VectorWidgets.ColorEntry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1110,8 +1115,7 @@ class ParticlePanel(AppShell):
         self.effectsLabelMenu.delete(5, 'end')
         self.effectsLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
-        keys = self.effectsDict.keys()
-        keys.sort()
+        keys = sorted(self.effectsDict.keys())
         for name in keys:
             effect = self.effectsDict[name]
             self.effectsLabelMenu.add_command(
@@ -1193,7 +1197,7 @@ class ParticlePanel(AppShell):
             self.mainNotebook.selectpage('System')
             self.updateInfo('System')
         else:
-            print 'ParticlePanel: No effect named ' + name
+            print('ParticlePanel: No effect named ' + name)
 
     def toggleEffect(self, effect, var):
         if var.get():
@@ -1249,8 +1253,8 @@ class ParticlePanel(AppShell):
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'ParticlePanel Warning: Invalid default DNA directory!'
-            print 'Using current directory'
+            print('ParticlePanel Warning: Invalid default DNA directory!')
+            print('Using current directory')
             path = '.'
         particleFilename = askopenfilename(
             defaultextension = '.ptf',
@@ -1277,8 +1281,8 @@ class ParticlePanel(AppShell):
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'ParticlePanel Warning: Invalid default DNA directory!'
-            print 'Using current directory'
+            print('ParticlePanel Warning: Invalid default DNA directory!')
+            print('Using current directory')
             path = '.'
         particleFilename = asksaveasfilename(
             defaultextension = '.ptf',
@@ -1637,7 +1641,7 @@ class ParticlePanel(AppShell):
         self.getVariable('Renderer', 'Alpha Mode').set(aMode)
         userAlpha = renderer.getUserAlpha()
         self.getWidget('Renderer', 'User Alpha').set(userAlpha)
-        
+
         if isinstance(renderer, LineParticleRenderer):
             headColor = renderer.getHeadColor() * 255.0
             self.getWidget('Line Renderer', 'Head Color').set(
@@ -1647,7 +1651,7 @@ class ParticlePanel(AppShell):
                 [tailColor[0], tailColor[1], tailColor[2], tailColor[3]])
             self.getWidget('Line Renderer', 'Line Scale Factor').set(
                 renderer.getLineScaleFactor())
-            
+
         elif isinstance(renderer, GeomParticleRenderer):
             self.getVariable('Geom Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
@@ -1712,7 +1716,7 @@ class ParticlePanel(AppShell):
             elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
                 bMethod = "PP_BLEND_CUBIC"
             self.getVariable('Point Renderer', 'Blend Method').set(bMethod)
-            
+
         elif isinstance(renderer, SparkleParticleRenderer):
             centerColor = renderer.getCenterColor() * 255.0
             self.getWidget('Sparkle Renderer', 'Center Color').set(
@@ -1730,7 +1734,7 @@ class ParticlePanel(AppShell):
             if (lifeScale == SparkleParticleRenderer.SPSCALE):
                 lScale = "SP_SCALE"
             self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
-            
+
         elif isinstance(renderer, SpriteParticleRenderer):
             self.getWidget('Sprite Renderer','Frame Rate').set(renderer.getAnimateFramesRate(), 0)
             self.getVariable('Sprite Renderer','Enable Animation').set(
@@ -1972,9 +1976,9 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
     def setRendererColorBlendAttrib(self, rendererName, blendMethodStr, incomingOperandStr, fbufferOperandStr):
-        self.particles.getRenderer().setColorBlendMode(eval('ColorBlendAttrib.'+blendMethodStr),
-                                                       eval('ColorBlendAttrib.'+incomingOperandStr),
-                                                       eval('ColorBlendAttrib.'+fbufferOperandStr))
+        self.particles.getRenderer().setColorBlendMode(getattr(ColorBlendAttrib, blendMethodStr),
+                                                       getattr(ColorBlendAttrib, incomingOperandStr),
+                                                       getattr(ColorBlendAttrib, fbufferOperandStr))
 
         if(blendMethodStr in ['MAdd','MSubtract','MInvSubtract']):
             self.getWidget(rendererName,'Incoming Op.').pack(fill = X)
@@ -2013,22 +2017,22 @@ class ParticlePanel(AppShell):
     def toggleRendererGeomZScale(self):
         self.particles.renderer.setZScaleFlag(
             self.getVariable('Geom Renderer', 'Z Scale').get())
-        
+
     def setRendererGeomInitialXScale(self, xScale):
         self.particles.renderer.setInitialXScale(xScale)
     def setRendererGeomFinalXScale(self, xScale):
         self.particles.renderer.setFinalXScale(xScale)
-        
+
     def setRendererGeomInitialYScale(self, yScale):
         self.particles.renderer.setInitialYScale(yScale)
     def setRendererGeomFinalYScale(self, yScale):
         self.particles.renderer.setFinalYScale(yScale)
-        
+
     def setRendererGeomInitialZScale(self, zScale):
         self.particles.renderer.setInitialZScale(zScale)
     def setRendererGeomFinalZScale(self, zScale):
         self.particles.renderer.setFinalZScale(zScale)
-    
+
     def setRendererGeomColorBlendMethod(self, blendMethod):
         blendMethodStr = blendMethod
         incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
@@ -2075,7 +2079,7 @@ class ParticlePanel(AppShell):
             seg = cim.getSegment(cim.addLinear())
         else:
             seg = cim.getSegment(id)
-            
+
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Linear'
@@ -2095,7 +2099,7 @@ class ParticlePanel(AppShell):
             seg = cim.getSegment(cim.addStepwave())
         else:
             seg = cim.getSegment(id)
-            
+
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Stepwave'
@@ -2115,7 +2119,7 @@ class ParticlePanel(AppShell):
             seg = cim.getSegment(cim.addSinusoid())
         else:
             seg = cim.getSegment(id)
-            
+
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Sinusoid'
@@ -2143,7 +2147,7 @@ class ParticlePanel(AppShell):
             self.addLinearInterpolationSegment(id)
         elif isinstance(fun,ColorInterpolationFunctionConstant):
             self.addConstantInterpolationSegment(id)
-        
+
     def createInterpolationSegmentFrame(self, parent, segName, seg):
         frame = Frame(parent, relief = RAISED, borderwidth = 2)
         lFrame = Frame(frame, relief = FLAT)
@@ -2789,4 +2793,4 @@ if __name__ == '__main__':
     base.pp=pp
     #ve = VectorEntry(Toplevel(), relief = GROOVE)
     #ve.pack()
-    run()
+    base.run()

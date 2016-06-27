@@ -1,16 +1,13 @@
-// Filename: pnm-image-filter.cxx
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnm-image-filter.cxx
+ */
 
 // The functions in this module support spatial filtering of an image by
 // convolution with an (almost) arbitrary kernel.  There are a broad class of
@@ -28,9 +25,9 @@
 // decreases the complexity of the convolution operation: it is faster to
 // convolve twice with a one-dimensional kernel than once with a two-
 // dimensional kernel.  In the interim, a temporary matrix of type StoreType
-// (a numeric type, described below) is built which contains the results
-// from the first convolution.  The entire process is then repeated for
-// each channel in the image.
+// (a numeric type, described below) is built which contains the results from
+// the first convolution.  The entire process is then repeated for each
+// channel in the image.
 
 #include "pandabase.h"
 #include <math.h>
@@ -42,8 +39,8 @@
 
 // WorkType is an abstraction that allows the filtering process to be
 // recompiled to use either floating-point or integer arithmetic.  On SGI
-// machines, there doesn't seem to be much of a performance difference--
-// if anything, the integer arithmetic is slower--though certainly other
+// machines, there doesn't seem to be much of a performance difference-- if
+// anything, the integer arithmetic is slower--though certainly other
 // architectures may differ.
 
 // A StoreType is a numeric type that is used to store the intermediate values
@@ -53,18 +50,19 @@
 // multiplied by it as a weighted filter (source_max * filter_max must fit
 // comfortably within a WorkType, with room to spare).
 
-// Floating-point arithmetic is slightly faster and slightly more precise,
-// but the main reason to use it is that it is conceptually easy to understand.
+// Floating-point arithmetic is slightly faster and slightly more precise, but
+// the main reason to use it is that it is conceptually easy to understand.
 // All values are scaled in the range 0..1, as they should be.
 
 // The biggest reason to use integer arithmetic is space.  A table of
 // StoreTypes must be allocated to match the size of the image.  On an SGI,
 // sizeof(float) is 4, while sizeof(short) is 2 and sizeof(char) is, of
-// course, 1.  Since the source precision is probably 8 bits anyway (there
-// are usually 8 bits per channel), it doesn't cost any precision at all to
-// use shorts, and not very much to use chars.
+// course, 1.  Since the source precision is probably 8 bits anyway (there are
+// usually 8 bits per channel), it doesn't cost any precision at all to use
+// shorts, and not very much to use chars.
 
-// To use double-precision floating point, 8 bytes: (strictly for the neurotic)
+// To use double-precision floating point, 8 bytes: (strictly for the
+// neurotic)
 /*
 typedef double WorkType;
 typedef double StoreType;
@@ -96,9 +94,9 @@ static const WorkType filter_max = 255;
 
 // filter_row() filters a single row by convolving with a one-dimensional
 // kernel filter.  The kernel is defined by an array of weights in filter[],
-// where the ith element of filter corresponds to abs(d * scale), if scale>1.0,
-// and abs(d), if scale<=1.0, where d is the offset from the center and varies
-// from -filter_width to filter_width.
+// where the ith element of filter corresponds to abs(d * scale), if
+// scale>1.0, and abs(d), if scale<=1.0, where d is the offset from the center
+// and varies from -filter_width to filter_width.
 
 // Note that filter_width is not necessarily the length of the array; it is
 // the radius of interest of the filter function.  The array may need to be
@@ -111,9 +109,9 @@ filter_row(StoreType dest[], int dest_len,
            const WorkType filter[],
            float filter_width) {
   // If we are expanding the row (scale > 1.0), we need to look at a
-  // fractional granularity.  Hence, we scale our filter index by
-  // scale.  If we are compressing (scale < 1.0), we don't need to
-  // fiddle with the filter index, so we leave it at one.
+  // fractional granularity.  Hence, we scale our filter index by scale.  If
+  // we are compressing (scale < 1.0), we don't need to fiddle with the filter
+  // index, so we leave it at one.
 
   float iscale;
   if (scale < 1.0f) {
@@ -133,8 +131,8 @@ filter_row(StoreType dest[], int dest_len,
     int left = max((int)cfloor(center - filter_width), 0);
     int right = min((int)cceil(center + filter_width), source_len - 1);
 
-    // right_center is the point just to the right of the center.  This
-    // allows us to flip the sign of the offset when we cross the center point.
+    // right_center is the point just to the right of the center.  This allows
+    // us to flip the sign of the offset when we cross the center point.
     int right_center = (int)cceil(center);
 
     WorkType net_weight = 0;
@@ -166,8 +164,8 @@ filter_row(StoreType dest[], int dest_len,
   Thread::consider_yield();
 }
 
-// As above, but we also accept an array of weight values per
-// element, to support scaling a sparse array (as in a PfmFile).
+// As above, but we also accept an array of weight values per element, to
+// support scaling a sparse array (as in a PfmFile).
 static void
 filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
                   const StoreType source[], const StoreType source_weight[], int source_len,
@@ -175,9 +173,9 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
                   const WorkType filter[],
                   float filter_width) {
   // If we are expanding the row (scale > 1.0), we need to look at a
-  // fractional granularity.  Hence, we scale our filter index by
-  // scale.  If we are compressing (scale < 1.0), we don't need to
-  // fiddle with the filter index, so we leave it at one.
+  // fractional granularity.  Hence, we scale our filter index by scale.  If
+  // we are compressing (scale < 1.0), we don't need to fiddle with the filter
+  // index, so we leave it at one.
 
   float iscale;
   if (scale < 1.0) {
@@ -197,8 +195,8 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
     int left = max((int)cfloor(center - filter_width), 0);
     int right = min((int)cceil(center + filter_width), source_len - 1);
 
-    // right_center is the point just to the right of the center.  This
-    // allows us to flip the sign of the offset when we cross the center point.
+    // right_center is the point just to the right of the center.  This allows
+    // us to flip the sign of the offset when we cross the center point.
     int right_center = (int)cceil(center);
 
     WorkType net_weight = 0;
@@ -234,9 +232,9 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
 
 // The various filter functions are called before each axis scaling to build
 // an kernel array suitable for the given scaling factor.  Given a scaling
-// ratio of the axis (dest_len / source_len), and a width parameter supplied
-// by the user, they must build an array of filter values (described above)
-// and also set the radius of interest of the filter function.
+// ratio of the axis (dest_len  source_len), and a width parameter supplied by
+// the user, they must build an array of filter values (described above) and
+// also set the radius of interest of the filter function.
 
 // The values of the elements of filter must completely cover the range
 // 0..filter_max; the array must have enough elements to include all indices
@@ -250,15 +248,15 @@ box_filter_impl(float scale, float width,
                 WorkType *&filter, float &filter_width) {
   float fscale;
   if (scale < 1.0) {
-    // If we are compressing the image, we want to expand the range of
-    // the filter function to prevent dropping below the Nyquist rate.
-    // Hence, we divide by scale.
+    // If we are compressing the image, we want to expand the range of the
+    // filter function to prevent dropping below the Nyquist rate.  Hence, we
+    // divide by scale.
     fscale = 1.0 / scale;
 
   } else {
-    // If we are expanding the image, we want to increase the granularity
-    // of the filter function since we will need to access fractional cel
-    // values.  Hence, we multiply by scale.
+    // If we are expanding the image, we want to increase the granularity of
+    // the filter function since we will need to access fractional cel values.
+    // Hence, we multiply by scale.
     fscale = scale;
   }
   filter_width = width;
@@ -276,15 +274,15 @@ gaussian_filter_impl(float scale, float width,
                      WorkType *&filter, float &filter_width) {
   float fscale;
   if (scale < 1.0) {
-    // If we are compressing the image, we want to expand the range of
-    // the filter function to prevent dropping below the Nyquist rate.
-    // Hence, we divide by scale (to make fscale larger).
+    // If we are compressing the image, we want to expand the range of the
+    // filter function to prevent dropping below the Nyquist rate.  Hence, we
+    // divide by scale (to make fscale larger).
     fscale = 1.0 / scale;
   } else {
 
-    // If we are expanding the image, we want to increase the granularity
-    // of the filter function since we will need to access fractional cel
-    // values.  Hence, we multiply by scale (to make fscale larger).
+    // If we are expanding the image, we want to increase the granularity of
+    // the filter function since we will need to access fractional cel values.
+    // Hence, we multiply by scale (to make fscale larger).
     fscale = scale;
   }
 
@@ -292,11 +290,11 @@ gaussian_filter_impl(float scale, float width,
   filter_width = 3.0 * sigma;
   int actual_width = (int)cceil((filter_width + 1) * fscale);
 
-  // G(x, y) = (1/(2 pi sigma^2)) * exp( - (x^2 + y^2) / (2 sigma^2))
+  // G(x, y) = (1(2 pi sigma^2)) * exp( - (x^2 + y^2)  (2 sigma^2))
 
-  // (We can throw away the initial factor, since these weights will all
-  // be normalized; and we're only computing a 1-dimensional function,
-  // so we can ignore the y^2.)
+  // (We can throw away the initial factor, since these weights will all be
+  // normalized; and we're only computing a 1-dimensional function, so we can
+  // ignore the y^2.)
 
   filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
   float div = 2 * sigma * sigma;
@@ -304,33 +302,33 @@ gaussian_filter_impl(float scale, float width,
   for (int i = 0; i < actual_width; i++) {
     float x = i / fscale;
     filter[i] = (WorkType)(filter_max * exp(-x*x / div));
-    // The highest value of the exp function in this range is always 1.0,
-    // at index value 0.  Thus, we scale the whole range by filter_max,
-    // to produce a filter in the range [0..filter_max].
+    // The highest value of the exp function in this range is always 1.0, at
+    // index value 0.  Thus, we scale the whole range by filter_max, to
+    // produce a filter in the range [0..filter_max].
   }
 }
 
 
 // We have a function, defined in pnm-image-filter-core.cxx, that will scale
-// an image in both X and Y directions for a particular channel, by setting
-// up the temporary matrix appropriately and calling the above functions.
+// an image in both X and Y directions for a particular channel, by setting up
+// the temporary matrix appropriately and calling the above functions.
 
 // What we really need is a series of such functions, one for each channel,
 // and also one to scale by X first, and one to scale by Y first.  This sounds
 // a lot like a C++ template: we want to compile the same function several
 // times to work on slightly different sorts of things each time.  However,
 // the things we want to vary are the particular member functions of PNMImage
-// that we call (e.g. Red(), Green(), etc.), and we can't declare a template
+// that we call (e.g.  Red(), Green(), etc.), and we can't declare a template
 // of member functions, only of types.
 
-// It's doable using templates.  It would involve the declaration of
-// lots of silly little functor objects.  This is much more compact
-// and no more difficult to read.
+// It's doable using templates.  It would involve the declaration of lots of
+// silly little functor objects.  This is much more compact and no more
+// difficult to read.
 
 // The function in pnm-image-filter-core.cxx uses macros to access the member
-// functions of PNMImage.  Hence, we only need to redefine those macros
-// with each instance of the function to cause each instance to operate on
-// the correct member.
+// functions of PNMImage.  Hence, we only need to redefine those macros with
+// each instance of the function to cause each instance to operate on the
+// correct member.
 
 
 // These instances scale by X first, then by Y.
@@ -479,19 +477,19 @@ gaussian_filter_impl(float scale, float width,
 #undef FUNCTION_NAME
 
 
-// filter_image pulls everything together, and filters one image into
-// another.  Both images can be the same with no ill effects.
+// filter_image pulls everything together, and filters one image into another.
+// Both images can be the same with no ill effects.
 static void
 filter_image(PNMImage &dest, const PNMImage &source,
              float width, FilterFunction *make_filter) {
 
-  // We want to scale by the smallest destination axis first, for a
-  // slight performance gain.
+  // We want to scale by the smallest destination axis first, for a slight
+  // performance gain.
 
-  // In the PNMImage case (unlike the PfmFile case), the channel
-  // parameter is not used.  We *could* use it to avoid the
-  // replication of quite so many functions, but we replicate them
-  // anyway, for another tiny performance gain.
+  // In the PNMImage case (unlike the PfmFile case), the channel parameter is
+  // not used.  We *could* use it to avoid the replication of quite so many
+  // functions, but we replicate them anyway, for another tiny performance
+  // gain.
 
   if (dest.get_x_size() <= dest.get_y_size()) {
     if (dest.is_grayscale() || source.is_grayscale()) {
@@ -521,38 +519,31 @@ filter_image(PNMImage &dest, const PNMImage &source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::box_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the
+ * indicated filter.  The image to be copied is squashed and stretched to
+ * match the dimensions of the current image, applying the appropriate filter
+ * to perform the stretching.
+ */
 void PNMImage::
 box_filter_from(float width, const PNMImage &copy) {
   filter_image(*this, copy, width, &box_filter_impl);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::gaussian_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the
+ * indicated filter.  The image to be copied is squashed and stretched to
+ * match the dimensions of the current image, applying the appropriate filter
+ * to perform the stretching.
+ */
 void PNMImage::
 gaussian_filter_from(float width, const PNMImage &copy) {
   filter_image(*this, copy, width, &gaussian_filter_impl);
 }
 
-// Now we do it again, this time for PfmFile.  In this case we also
-// need to support the sparse variants, since PfmFiles can be
-// incomplete.  However, we don't need to have a different function
-// for each channel.
+// Now we do it again, this time for PfmFile.  In this case we also need to
+// support the sparse variants, since PfmFiles can be incomplete.  However, we
+// don't need to have a different function for each channel.
 
 #define FUNCTION_NAME filter_pfm_xy
 #define IMAGETYPE PfmFile
@@ -616,8 +607,8 @@ gaussian_filter_from(float width, const PNMImage &copy) {
 #undef FUNCTION_NAME
 
 
-// filter_image pulls everything together, and filters one image into
-// another.  Both images can be the same with no ill effects.
+// filter_image pulls everything together, and filters one image into another.
+// Both images can be the same with no ill effects.
 static void
 filter_image(PfmFile &dest, const PfmFile &source,
              float width, FilterFunction *make_filter) {
@@ -629,7 +620,7 @@ filter_image(PfmFile &dest, const PfmFile &source,
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_sparse_xy(dest, source, width, make_filter, ci);
       }
-      
+
     } else {
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_sparse_yx(dest, source, width, make_filter, ci);
@@ -641,7 +632,7 @@ filter_image(PfmFile &dest, const PfmFile &source,
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_xy(dest, source, width, make_filter, ci);
       }
-      
+
     } else {
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_yx(dest, source, width, make_filter, ci);
@@ -650,37 +641,29 @@ filter_image(PfmFile &dest, const PfmFile &source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the
+ * indicated filter.  The image to be copied is squashed and stretched to
+ * match the dimensions of the current image, applying the appropriate filter
+ * to perform the stretching.
+ */
 void PfmFile::
 box_filter_from(float width, const PfmFile &copy) {
   filter_image(*this, copy, width, &box_filter_impl);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::gaussian_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the
+ * indicated filter.  The image to be copied is squashed and stretched to
+ * match the dimensions of the current image, applying the appropriate filter
+ * to perform the stretching.
+ */
 void PfmFile::
 gaussian_filter_from(float width, const PfmFile &copy) {
   filter_image(*this, copy, width, &gaussian_filter_impl);
 }
 
-//
 // The following functions are support for quick_box_filter().
-//
 
 static INLINE void
 box_filter_xel(const PNMImage &img,
@@ -751,23 +734,19 @@ box_filter_region(const PNMImage &image,
     }
   }
 
-  //cerr << pixel_count << "\n";
+  // cerr << pixel_count << "\n";
   color /= pixel_count;
   return color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::quick_filter_from
-//       Access: Public
-//  Description: Resizes from the given image, with a fixed radius of
-//               0.5. This is a very specialized and simple algorithm
-//               that doesn't handle dropping below the Nyquist rate
-//               very well, but is quite a bit faster than the more
-//               general box_filter(), above.  If borders are
-//               specified, they will further restrict the size of the
-//               resulting image. There's no point in using
-//               quick_box_filter() on a single image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes from the given image, with a fixed radius of 0.5. This is a very
+ * specialized and simple algorithm that doesn't handle dropping below the
+ * Nyquist rate very well, but is quite a bit faster than the more general
+ * box_filter(), above.  If borders are specified, they will further restrict
+ * the size of the resulting image.  There's no point in using
+ * quick_box_filter() on a single image.
+ */
 void PNMImage::
 quick_filter_from(const PNMImage &from, int xborder, int yborder) {
   int from_xs = from.get_x_size();
@@ -799,8 +778,8 @@ quick_filter_from(const PNMImage &from, int xborder, int yborder) {
          to_x++) {
       from_x1 = (to_x+1) * x_scale;
 
-      // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
-      // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+      // Now the box from (from_x0, from_y0) - (from_x1, from_y1) but not
+      // including (from_x1, from_y1) maps to the pixel (to_x, to_y).
       color = box_filter_region(from,
                                 from_x0, from_y0, from_x1, from_y1);
 

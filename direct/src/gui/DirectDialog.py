@@ -3,9 +3,9 @@
 __all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
 
 from panda3d.core import *
-import DirectGuiGlobals as DGG
-from DirectFrame import *
-from DirectButton import *
+from . import DirectGuiGlobals as DGG
+from .DirectFrame import *
+from .DirectButton import *
 import types
 
 def findDialog(uniqueName):
@@ -94,8 +94,8 @@ class DirectDialog(DirectFrame):
             ('text',              '',            None),
             ('text_align',        TextNode.ALeft,   None),
             ('text_scale',        0.06,          None),
-            ('image',             None,          None),
-            ('relief',            DGG.RAISED,     None),
+            ('image',             DGG.getDefaultDialogGeom(), None),
+            ('relief',            DGG.getDefaultDialogRelief(), None),
             ('borderWidth',       (0.01, 0.01),  None),
             ('buttonTextList',    [],            DGG.INITOPT),
             ('buttonGeomList',    [],            DGG.INITOPT),
@@ -115,7 +115,7 @@ class DirectDialog(DirectFrame):
             ('fadeScreen',        0,             None),
             ('command',           None,          None),
             ('extraArgs',         [],            None),
-            ('sortOrder',    NO_FADE_SORT_INDEX, None),
+            ('sortOrder',    DGG.NO_FADE_SORT_INDEX, None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs, dynamicGroups = ("button",))
@@ -186,8 +186,8 @@ class DirectDialog(DirectFrame):
         bindList = zip(self.buttonList, self['buttonHotKeyList'],
                        self['buttonValueList'])
         for button, hotKey, value in bindList:
-            if ((type(hotKey) == types.ListType) or
-                (type(hotKey) == types.TupleType)):
+            if ((type(hotKey) == list) or
+                (type(hotKey) == tuple)):
                 for key in hotKey:
                     button.bind('press-' + key + '-', self.buttonCommand,
                                 extraArgs = [value])
@@ -274,12 +274,12 @@ class DirectDialog(DirectFrame):
             scale = self['button_scale']
             # Can either be a Vec3 or a tuple of 3 values
             if (isinstance(scale, Vec3) or
-                (type(scale) == types.ListType) or
-                (type(scale) == types.TupleType)):
+                (type(scale) == list) or
+                (type(scale) == tuple)):
                 sx = scale[0]
                 sz = scale[2]
-            elif ((type(scale) == types.IntType) or
-                  (type(scale) == types.FloatType)):
+            elif ((type(scale) == int) or
+                  (type(scale) == float)):
                 sx = sz = scale
             else:
                 sx = sz = 1
@@ -316,7 +316,8 @@ class DirectDialog(DirectFrame):
         # reduce bottom by pad, button height and 2*button pad
         b = min(b - self['midPad'] - bpad[1] - bHeight - bpad[1], b) - pad[1]
         t = t + self['topPad'] + pad[1]
-        self['frameSize'] = (l, r, b, t)
+        if self['frameSize'] is None:
+            self['frameSize'] = (l, r, b, t)
         self['image_scale'] = (r - l, 1, t - b)
         # Center frame about text and buttons
         self['image_pos'] = ((l+r)*0.5, 0.0, (b+t)*0.5)

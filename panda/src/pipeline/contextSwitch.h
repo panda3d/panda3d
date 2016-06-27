@@ -1,8 +1,4 @@
-/* Filename: contextSwitch.h
- * Created by:  drose (21Jun07)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file contextSwitch.h
+ * @author drose
+ * @date 2007-06-21
+ */
 
 #ifndef CONTEXTSWITCH_H
 #define CONTEXTSWITCH_H
@@ -34,7 +33,7 @@ struct ThreadContext;
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 typedef void ContextFunction(struct ThreadContext *from_context, void *);
 typedef void ThreadFunction(void *);
@@ -49,7 +48,7 @@ extern const int is_os_threads;
    that when switch_to_thread_context() is called, it will begin
    executing thread_func(data), which should not return.  This
    function will return normally. */
-void init_thread_context(struct ThreadContext *context, 
+void init_thread_context(struct ThreadContext *context,
                          unsigned char *stack, size_t stack_size,
                          ThreadFunction *thread_func, void *data);
 
@@ -77,9 +76,8 @@ void free_thread_context(struct ThreadContext *context);
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif  /* THREAD_SIMPLE_IMPL */
 
 #endif  /* CONTEXTSWITCH_H */
-

@@ -1,35 +1,30 @@
-// Filename: eggXfmSAnim.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggXfmSAnim.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef EGGXFMSANIM_H
 #define EGGXFMSANIM_H
 
-
 #include "pandabase.h"
 #include "eggGroupNode.h"
-#include "config_linmath.h"  // for temp_hpr_fix
 
 class EggXfmAnimData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggXfmSAnim
-// Description : This corresponds to an <Xfm$Anim_S$> entry, which is
-//               a collection of up to nine <S$Anim> entries that
-//               specify the nine components of a transformation.
-//               It's implemented as a group that can contain
-//               any number of EggSAnimData children.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to an <Xfm$Anim_S$> entry, which is a collection of up to
+ * nine <S$Anim> entries that specify the nine components of a transformation.
+ * It's implemented as a group that can contain any number of EggSAnimData
+ * children.
+ */
 class EXPCL_PANDAEGG EggXfmSAnim : public EggGroupNode {
 PUBLISHED:
   INLINE EggXfmSAnim(const string &name = "",
@@ -92,9 +87,8 @@ private:
   string _order;
   CoordinateSystem _coordsys;
 
-  static const string _standard_order_legacy;
-  static const string _standard_order_hpr_fix;
-  
+  static const string _standard_order;
+
 public:
 
   static TypeHandle get_class_type() {
@@ -117,5 +111,3 @@ private:
 #include "eggXfmSAnim.I"
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: physxKitchen.cxx
-// Created by:  enn0x (12Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxKitchen.cxx
+ * @author enn0x
+ * @date 2009-10-12
+ */
 
 #include "physxKitchen.h"
 #include "physxConvexMesh.h"
@@ -25,24 +24,18 @@
 #include "physxSoftBodyMesh.h"
 #include "physxSoftBodyMeshDesc.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::set_cooking_params
-//       Access: Published
-//  Description: Sets two parameters which affect mesh cooking:
-//
-//               Skin width for convex meshes:
-//               Specifies the amount to inflate the convex mesh by
-//               when the new convex hull generator is used.
-//               Inflating the mesh allows the user to hide
-//               interpenetration errors by increasing the size of
-//               the collision mesh with respect to the size of the
-//               rendered geometry.
-//               Default value: 0.025f 
-//
-//               Hint to choose speed or less memory for collision
-//               structures.
-//               Default value: false
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets two parameters which affect mesh cooking:
+ *
+ * Skin width for convex meshes: Specifies the amount to inflate the convex
+ * mesh by when the new convex hull generator is used.  Inflating the mesh
+ * allows the user to hide interpenetration errors by increasing the size of
+ * the collision mesh with respect to the size of the rendered geometry.
+ * Default value: 0.025f
+ *
+ * Hint to choose speed or less memory for collision structures.  Default
+ * value: false
+ */
 void PhysxKitchen::
 set_cooking_params(float skinWidth, bool hintCollisionSpeed) {
 
@@ -55,11 +48,9 @@ set_cooking_params(float skinWidth, bool hintCollisionSpeed) {
   _cooking->NxSetCookingParams(params);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_convex_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool PhysxKitchen::
 cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc, const Filename &filename) {
 
@@ -71,11 +62,9 @@ cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc, const Filename &filename) 
   return _cooking->NxCookConvexMesh(meshDesc.get_desc(), fs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_triangle_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool PhysxKitchen::
 cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filename) {
 
@@ -87,11 +76,9 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filena
   return _cooking->NxCookTriangleMesh(meshDesc.get_desc(), fs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_cloth_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool PhysxKitchen::
 cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
 
@@ -103,11 +90,9 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
   return _cooking->NxCookClothMesh(meshDesc.get_desc(), fs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_soft_body_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool PhysxKitchen::
 cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc, const Filename &filename) {
 
@@ -119,11 +104,9 @@ cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc, const Filename &filen
   return _cooking->NxCookSoftBodyMesh(meshDesc.get_desc(), fs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_texcoords
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool PhysxKitchen::
 cook_texcoords(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
 
@@ -131,7 +114,7 @@ cook_texcoords(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
   nassertr_always(filename.touch(), false);
   nassertr_always(meshDesc.is_valid(), false);
 
-  const plist<LPoint2f> texcoords = meshDesc.get_texcoords();  
+  const plist<LPoint2f> texcoords = meshDesc.get_texcoords();
 
   // Write texcoords to binary file
   PhysxFileStream fs = PhysxFileStream(filename.c_str(), false);
@@ -162,15 +145,13 @@ cook_texcoords(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_convex_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxConvexMesh *PhysxKitchen::
 cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer buffer;
   bool status = _cooking->NxCookConvexMesh(meshDesc.get_desc(), buffer);
@@ -190,15 +171,13 @@ cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
   return mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_triangle_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxTriangleMesh *PhysxKitchen::
 cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer buffer;
   bool status = _cooking->NxCookTriangleMesh(meshDesc.get_desc(), buffer);
@@ -218,15 +197,13 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
   return mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_cloth_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxClothMesh *PhysxKitchen::
 cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer wbuffer;
   bool status = _cooking->NxCookClothMesh(meshDesc.get_desc(), wbuffer);
@@ -247,15 +224,13 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
   return mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::cook_soft_body_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxSoftBodyMesh *PhysxKitchen::
 cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer wbuffer;
   bool status = _cooking->NxCookSoftBodyMesh(meshDesc.get_desc(), wbuffer);
@@ -275,4 +250,3 @@ cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc) {
 
   return mesh;
 }
-

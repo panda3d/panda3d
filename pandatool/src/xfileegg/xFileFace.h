@@ -1,16 +1,15 @@
-// Filename: xFileFace.h
-// Created by:  drose (19Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileFace.h
+ * @author drose
+ * @date 2001-06-19
+ */
 
 #ifndef XFILEFACE_H
 #define XFILEFACE_H
@@ -21,10 +20,9 @@
 class XFileMesh;
 class EggPolygon;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileFace
-// Description : This represents a single face of an XFileMesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single face of an XFileMesh.
+ */
 class XFileFace {
 public:
   XFileFace();
@@ -42,4 +40,3 @@ public:
 };
 
 #endif
-

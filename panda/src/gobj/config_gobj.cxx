@@ -1,16 +1,15 @@
-// Filename: config_gobj.cxx
-// Created by:  drose (01Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_gobj.cxx
+ * @author drose
+ * @date 1999-10-01
+ */
 
 #include "animateVerticesRequest.h"
 #include "bufferContext.h"
@@ -112,13 +111,6 @@ ConfigVariableBool keep_texture_ram
           "explicitly released from the GSG, without having to reread the "
           "texture image from disk; but it will consume memory somewhat "
           "wastefully."));
-
-ConfigVariableBool compressed_textures
-("compressed-textures", false,
- PRC_DESC("Set this to true to compress textures as they are loaded into "
-          "texture memory, if the driver supports this.  Specifically, this "
-          "changes the meaning of set_compression(Texture::CM_default) to "
-          "Texture::CM_on."));
 
 ConfigVariableBool driver_compress_textures
 ("driver-compress-textures", false,
@@ -362,23 +354,6 @@ ConfigVariableDouble simple_image_threshold
           "simple images.  Generally the value should be considerably "
           "less than 1."));
 
-ConfigVariableEnum<ShaderUtilization> shader_utilization
-("shader-utilization", SUT_none,
- PRC_DESC("At times, panda may generate shaders.  This variable controls what "
-          "kinds of shaders can be generated.  If you set it to SUT_none, "
-          "shader generation will be be disabled.  If you set it to SUT_basic, "
-          "then DX9 shaders may be generated, if you set it to SUT_advanced, "
-          "then DX10 shaders may be generated."));
-
-ConfigVariableBool shader_auto_utilization
-("shader-auto-utilization", false,
- PRC_DESC("If this is true, then panda will wait until you open a window, "
-          "and then ask the window if it supports basic or advanced shaders. "
-          "If so, then the config variable shader-utilization will "
-          "automatically be adusted.  The pitfall of doing this is that if "
-          "you then open a second window that doesn't support the same "
-          "capabilities, it will have no choice but to print an error message."));
-
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,
  PRC_DESC("Specifies the maximum number of entries in the cache "
@@ -621,8 +596,8 @@ ConfigureFn(config_gobj) {
   VertexTransform::init_type();
   VideoTexture::init_type();
 
-  //Registration of writeable object's creation
-  //functions with BamReader's factory
+  // Registration of writeable object's creation functions with BamReader's
+  // factory
   Geom::register_with_read_factory();
   GeomLines::register_with_read_factory();
   GeomLinestrips::register_with_read_factory();
@@ -650,51 +625,4 @@ ConfigureFn(config_gobj) {
   TransformTable::register_with_read_factory();
   UserVertexSlider::register_with_read_factory();
   UserVertexTransform::register_with_read_factory();
-}
-
-ostream &
-operator << (ostream &out, ShaderUtilization sgc) {
-  switch (sgc) {
-  case SUT_none:
-    return out << "none";
-
-  case SUT_basic:
-    return out << "basic";
-
-  case SUT_advanced:
-    return out << "advanced";
-
-  case SUT_unspecified:
-    return out << "unspecified";
-  }
-
-  return out << "**invalid ShaderUtilization (" << (int)sgc << ")**";
-}
-
-istream &
-operator >> (istream &in, ShaderUtilization &sgc) {
-  string word;
-  in >> word;
-
-  if (cmp_nocase(word, "none") == 0 ||
-      cmp_nocase(word, "0") == 0 ||
-      cmp_nocase(word, "#f") == 0 ||
-      (!word.empty() && tolower(word[0]) == 'f')) {
-    sgc = SUT_none;
-
-  } else if (cmp_nocase(word, "basic") == 0 ||
-             cmp_nocase(word, "1") == 0 ||
-             cmp_nocase(word, "#t") == 0 ||
-             (!word.empty() && tolower(word[0]) == 't')) {
-    sgc = SUT_basic;
-
-  } else if (cmp_nocase(word, "advanced") == 0) {
-    sgc = SUT_advanced;
-
-  } else {
-    gobj_cat->error() << "Invalid ShaderUtilization value: " << word << "\n";
-    sgc = SUT_none;
-  }
-
-  return in;
 }

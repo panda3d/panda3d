@@ -1,16 +1,15 @@
-// Filename: bitArray.h
-// Created by:  drose (20Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bitArray.h
+ * @author drose
+ * @date 2006-01-20
+ */
 
 #ifndef BITARRAY_H
 #define BITARRAY_H
@@ -31,14 +30,12 @@ class BamReader;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BitArray
-// Description : A dynamic array with an unlimited number of bits.
-//
-//               This is similar to a BitMask, except it appears to
-//               contain an infinite number of bits.  You can use it
-//               very much as you would use a BitMask.
-////////////////////////////////////////////////////////////////////
+/**
+ * A dynamic array with an unlimited number of bits.
+ *
+ * This is similar to a BitMask, except it appears to contain an infinite
+ * number of bits.  You can use it very much as you would use a BitMask.
+ */
 class EXPCL_PANDA_PUTIL BitArray {
 public:
   typedef BitMaskNative MaskType;

@@ -1,16 +1,15 @@
-// Filename: graphicsEngine.h
-// Created by:  drose (24Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsEngine.h
+ * @author drose
+ * @date 2002-02-24
+ */
 
 #ifndef GRAPHICSENGINE_H
 #define GRAPHICSENGINE_H
@@ -40,39 +39,40 @@ class GraphicsPipe;
 class FrameBufferProperties;
 class Texture;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsEngine
-// Description : This class is the main interface to controlling the
-//               render process.  There is typically only one
-//               GraphicsEngine in an application, and it synchronizes
-//               rendering to all all of the active windows; although
-//               it is possible to have multiple GraphicsEngine
-//               objects if multiple synchronicity groups are
-//               required.
-//
-//               The GraphicsEngine is responsible for managing the
-//               various cull and draw threads.  The application
-//               simply calls engine->render_frame() and considers it
-//               done.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is the main interface to controlling the render process.  There
+ * is typically only one GraphicsEngine in an application, and it synchronizes
+ * rendering to all all of the active windows; although it is possible to have
+ * multiple GraphicsEngine objects if multiple synchronicity groups are
+ * required.
+ *
+ * The GraphicsEngine is responsible for managing the various cull and draw
+ * threads.  The application simply calls engine->render_frame() and considers
+ * it done.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
-  ~GraphicsEngine();
+  BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
   GraphicsThreadingModel get_threading_model() const;
+  MAKE_PROPERTY(threading_model, get_threading_model, set_threading_model);
 
   INLINE const ReMutex &get_render_lock() const;
+  MAKE_PROPERTY(render_lock, get_render_lock);
 
   INLINE void set_auto_flip(bool auto_flip);
   INLINE bool get_auto_flip() const;
+  MAKE_PROPERTY(auto_flip, get_auto_flip, set_auto_flip);
 
   INLINE void set_portal_cull(bool value);
   INLINE bool get_portal_cull() const;
+  MAKE_PROPERTY(portal_cull, get_portal_cull, set_portal_cull);
 
   INLINE void set_default_loader(Loader *loader);
   INLINE Loader *get_default_loader() const;
+  MAKE_PROPERTY(default_loader, get_default_loader, set_default_loader);
 
   GraphicsOutput *make_output(GraphicsPipe *pipe,
                               const string &name, int sort,
@@ -94,13 +94,14 @@ PUBLISHED:
 
   bool add_window(GraphicsOutput *window, int sort);
   bool remove_window(GraphicsOutput *window);
-  void remove_all_windows();
+  BLOCKING void remove_all_windows();
   void reset_all_windows(bool swapchain);
 
   bool is_empty() const;
   int get_num_windows() const;
   GraphicsOutput *get_window(int n) const;
   MAKE_SEQ(get_windows, get_num_windows, get_window);
+  MAKE_SEQ_PROPERTY(windows, get_num_windows, get_window);
 
   BLOCKING void render_frame();
   BLOCKING void open_windows();
@@ -183,83 +184,80 @@ private:
 
   static const RenderState *get_invert_polygon_state();
 
-  // The WindowRenderer class records the stages of the pipeline that
-  // each thread (including the main thread, a.k.a. "app") should
-  // process, and the list of windows for each stage.
+  // The WindowRenderer class records the stages of the pipeline that each
+  // thread (including the main thread, a.k.a.  "app") should process, and the
+  // list of windows for each stage.
 
-  // There is one WindowRenderer instance for app, and another
-  // instance for each thread (the thread-specific WindowRenderers are
-  // actually instances of RenderThread, below, which inherits from
-  // WindowRenderer).
+  // There is one WindowRenderer instance for app, and another instance for
+  // each thread (the thread-specific WindowRenderers are actually instances
+  // of RenderThread, below, which inherits from WindowRenderer).
 
   // The idea is that each window is associated with one or more
-  // WindowRenderer objects, according to the threads in which its
-  // rendering tasks (window, cull, and draw) are divided into.
+  // WindowRenderer objects, according to the threads in which its rendering
+  // tasks (window, cull, and draw) are divided into.
 
-  // The "window" task is responsible for doing any updates to the
-  // window itself, such as size and placement, and is wholly
-  // responsible for any API calls to the windowing system itself,
-  // unrelated to OpenGL-type calls.  This is normally done in app
-  // (the design of X-Windows is such that all X calls must be issued
-  // in the same thread).
+  // The "window" task is responsible for doing any updates to the window
+  // itself, such as size and placement, and is wholly responsible for any API
+  // calls to the windowing system itself, unrelated to OpenGL-type calls.
+  // This is normally done in app (the design of X-Windows is such that all X
+  // calls must be issued in the same thread).
 
-  // The "cull" task is responsible for crawling through the scene
-  // graph and discovering all of the Geoms that are within the
-  // viewing frustum.  It assembles all such Geoms, along with their
-  // computed net state and transform, in a linked list of
-  // CullableObjects, which it stores for the "draw" task, next.
+  // The "cull" task is responsible for crawling through the scene graph and
+  // discovering all of the Geoms that are within the viewing frustum.  It
+  // assembles all such Geoms, along with their computed net state and
+  // transform, in a linked list of CullableObjects, which it stores for the
+  // "draw" task, next.
 
   // The "draw" task is responsible for walking through the list of
-  // CullableObjects recorded by the cull task, and issuing the
-  // appropriate graphics commands to draw them.
+  // CullableObjects recorded by the cull task, and issuing the appropriate
+  // graphics commands to draw them.
 
-  // There is an additional task, not often used, called "cdraw".
-  // This task, if activated, will crawl through the scene graph and
-  // issue graphics commands immediately, as each Geom is discovered.
-  // It is only rarely used because it cannot perform sorting beyond
-  // basic scene graph order, making it less useful than a separate
-  // cull and draw task.
+  // There is an additional task, not often used, called "cdraw". This task,
+  // if activated, will crawl through the scene graph and issue graphics
+  // commands immediately, as each Geom is discovered.  It is only rarely used
+  // because it cannot perform sorting beyond basic scene graph order, making
+  // it less useful than a separate cull and draw task.
 
-  // It is possible for all three of the normal tasks: window, cull,
-  // and draw, to be handled by the same thread.  This is the normal,
-  // single-threaded model: all tasks are handled by the app thread.
-  // In this case, the window will be added to _app's _window, _cull,
-  // and _draw lists.
+  // It is possible for all three of the normal tasks: window, cull, and draw,
+  // to be handled by the same thread.  This is the normal, single-threaded
+  // model: all tasks are handled by the app thread.  In this case, the window
+  // will be added to _app's _window, _cull, and _draw lists.
 
-  // On the other hand, a window's tasks may also be distributed among
-  // as many as three threads.  For instance, if the window is listed
-  // on _app's _window list, but on thread A's _cull list, and thread
-  // B's _draw list, then the window task will be handled in the app
-  // thread, while the cull task will be handled by thread A, and the
-  // draw task will be handled (in parallel) by thread B.  (In order
-  // for this to work, it will be necessary that thread A and B are
-  // configured to view different stages of the graphics pipeline.
-  // This is a more advanced topic than there is room to discuss in
-  // this comment.)
+/*
+ * On the other hand, a window's tasks may also be distributed among as many
+ * as three threads.  For instance, if the window is listed on _app's _window
+ * list, but on thread A's _cull list, and thread B's _draw list, then the
+ * window task will be handled in the app thread, while the cull task will be
+ * handled by thread A, and the draw task will be handled (in parallel) by
+ * thread B.  (In order for this to work, it will be necessary that thread A
+ * and B are configured to view different stages of the graphics pipeline.
+ * This is a more advanced topic than there is room to discuss in this
+ * comment.)
+ */
 
-  // Manipulation of the various window lists in each WindowRenderer
-  // object is always performed in the app thread.  The auxiliary
-  // threads are slaves to the app thread, and they can only perform
-  // one of a handful of specified tasks, none of which includes
-  // adding or removing windows from its lists.  The full set of tasks
-  // that a WindowRenderer may perform is enumerated in ThreadState,
-  // above; see RenderThread::thread_main().
+  // Manipulation of the various window lists in each WindowRenderer object is
+  // always performed in the app thread.  The auxiliary threads are slaves to
+  // the app thread, and they can only perform one of a handful of specified
+  // tasks, none of which includes adding or removing windows from its lists.
+  // The full set of tasks that a WindowRenderer may perform is enumerated in
+  // ThreadState, above; see RenderThread::thread_main().
 
-  // There is a pair of condition variables for each thread, _cv_start
-  // and _cv_done, that is used to synchronize requests made by app to
-  // a particular thread.  The usual procedure to request a thread to
-  // perform a particular task is the following: the app thread waits
-  // on the thread's _cv_done variable, stores the value corresponding
-  // to the desired task in the thread's _thread_state value, then
-  // signals the thread's _cv_start variable.  The thread, in turn,
-  // will perform its requested task, set its _thread_state to
-  // TS_wait, and signal _cv_done.  See examples in the code,
-  // e.g. open_windows(), for more details on this process.
+/*
+ * There is a pair of condition variables for each thread, _cv_start and
+ * _cv_done, that is used to synchronize requests made by app to a particular
+ * thread.  The usual procedure to request a thread to perform a particular
+ * task is the following: the app thread waits on the thread's _cv_done
+ * variable, stores the value corresponding to the desired task in the
+ * thread's _thread_state value, then signals the thread's _cv_start variable.
+ * The thread, in turn, will perform its requested task, set its _thread_state
+ * to TS_wait, and signal _cv_done.  See examples in the code, e.g.
+ * open_windows(), for more details on this process.
+ */
 
-  // It is of course not necessary to signal any threads in order to
-  // perform tasks listed in the _app WindowRenderer.  For this object
-  // only, we simply call the appropriate methods on _app when we want
-  // the tasks to be performed.
+  // It is of course not necessary to signal any threads in order to perform
+  // tasks listed in the _app WindowRenderer.  For this object only, we simply
+  // call the appropriate methods on _app when we want the tasks to be
+  // performed.
 
   class WindowRenderer {
   public:
@@ -408,4 +406,3 @@ private:
 #include "graphicsEngine.I"
 
 #endif
-

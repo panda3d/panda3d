@@ -1,16 +1,15 @@
-// Filename: colladaInput.h
-// Created by:  rdb (23May11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colladaInput.h
+ * @author rdb
+ * @date 2011-05-23
+ */
 
 #ifndef COLLADAINPUT_H
 #define COLLADAINPUT_H
@@ -38,10 +37,9 @@ class domInput_local_offset;
 class domP;
 class domSource;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColladaInput
-// Description : Class that deals with COLLADA data sources.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that deals with COLLADA data sources.
+ */
 class ColladaInput : public ReferenceCount {
 public:
   static ColladaInput *from_dom(domInput_local_offset &input);

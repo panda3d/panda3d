@@ -1,22 +1,21 @@
-// Filename: particleSystem.h
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file particleSystem.h
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #ifndef NDEBUG
-//#define PSDEBUG
+// #define PSDEBUG
 #endif
 
-//#define PSSANITYCHECK
+// #define PSSANITYCHECK
 
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
@@ -35,19 +34,18 @@
 
 class ParticleSystemManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParticleSystem
-// Description : Contains and manages a particle system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Contains and manages a particle system.
+ */
 class EXPCL_PANDAPHYSICS ParticleSystem : public Physical {
 PUBLISHED:
-  // constructor/destructor
+  // constructordestructor
 
   ParticleSystem(int pool_size = 0);
   ParticleSystem(const ParticleSystem& copy);
   ~ParticleSystem();
 
-  // access/queries
+  // accessqueries
   INLINE void set_pool_size(int size);
   INLINE void set_birth_rate(PN_stdfloat new_br);
   INLINE void set_soft_birth_rate(PN_stdfloat new_br);
@@ -68,7 +66,7 @@ PUBLISHED:
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
   INLINE void set_floor_z(PN_stdfloat z);
-  
+
   INLINE void clear_floor_z();
 
   INLINE int get_pool_size() const;
@@ -142,8 +140,8 @@ private:
 
   bool _template_system_flag;
 
-  // _render_parent is the ALREADY ALLOC'D node under which this
-  // system will render its particles.
+  // _render_parent is the ALREADY ALLOC'D node under which this system will
+  // render its particles.
 
   NodePath _render_parent;
   NodePath _render_node_path;
@@ -188,4 +186,3 @@ private:
 #include "particleSystem.I"
 
 #endif // PARTICLESYSTEM_H
-

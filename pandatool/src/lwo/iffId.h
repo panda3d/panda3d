@@ -1,16 +1,15 @@
-// Filename: iffId.h
-// Created by:  drose (23Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iffId.h
+ * @author drose
+ * @date 2001-04-23
+ */
 
 #ifndef IFFID_H
 #define IFFID_H
@@ -19,13 +18,11 @@
 
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IffId
-// Description : A four-byte chunk ID appearing in an "IFF" file.
-//               This is used to identify the meaning of each chunk,
-//               and can be treated either as a concrete object or as
-//               a string, something like a TypeHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * A four-byte chunk ID appearing in an "IFF" file.  This is used to identify
+ * the meaning of each chunk, and can be treated either as a concrete object
+ * or as a string, something like a TypeHandle.
+ */
 class IffId {
 public:
   INLINE IffId();
@@ -43,7 +40,7 @@ public:
 
 private:
   union {
-    PN_uint32 _n;
+    uint32_t _n;
     char _c[4];
   } _id;
 };

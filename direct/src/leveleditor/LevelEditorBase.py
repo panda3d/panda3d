@@ -9,13 +9,13 @@ from direct.showbase.DirectObject import *
 from direct.directtools.DirectUtil import *
 from direct.gui.DirectGui import *
 
-from CurveEditor import *
-from FileMgr import *
-from ActionMgr import *
-from MayaConverter import *
+from .CurveEditor import *
+from .FileMgr import *
+from .ActionMgr import *
+from .MayaConverter import *
 
 class LevelEditorBase(DirectObject):
-    """ Base Class for Panda3D LevelEditor """ 
+    """ Base Class for Panda3D LevelEditor """
     def __init__(self):
         #loadPrcFileData('startup', 'window-type none')
         self.currentFile = None
@@ -39,10 +39,10 @@ class LevelEditorBase(DirectObject):
         self.EDIT_CURVE_MODE = BitMask32.bit(3)
         self.ANIM_MODE = BitMask32.bit(4)
         self.GRAPH_EDITOR = False
-        
+
         self.mode = self.BASE_MODE
         self.preMode = None
-        
+
     def initialize(self):
         """ You should call this in your __init__ method of inherited LevelEditor class """
         # specifiy what obj can be 'selected' as objects
@@ -81,7 +81,7 @@ class LevelEditorBase(DirectObject):
             if len(event) == 3:
                 self.accept(event[0], event[1], event[2])
             else:
-                self.accept(event[0], event[1])        
+                self.accept(event[0], event[1])
 
         # editor state text display such as edit mode
         self.statusReadout = OnscreenText(
@@ -97,7 +97,7 @@ class LevelEditorBase(DirectObject):
 
         self.loadSettings()
         self.reset()
-        
+
     def setTitleWithFilename(self, filename=""):
         title = self.ui.appname
         if filename != "":
@@ -135,7 +135,7 @@ class LevelEditorBase(DirectObject):
             self.curveEditor.createCurve()
 
 
-    def handleMouse1Up(self):        
+    def handleMouse1Up(self):
         self.fMoveCamera = False
 
 
@@ -151,7 +151,7 @@ class LevelEditorBase(DirectObject):
         if base.direct.fAlt or modifiers == 4:
             self.fMoveCamera = True
             return
-        
+
         self.ui.onRightDown()
 
     def handleMouse3Up(self):
@@ -192,7 +192,7 @@ class LevelEditorBase(DirectObject):
             if obj:
                 action = ActionTransformObj(self, obj[OG.OBJ_UID], Mat4(np.getMat()))
                 self.actionMgr.push(action)
-                action()                
+                action()
 
     def select(self, nodePath, fMultiSelect=0, fSelectTag=1, fResetAncestry=1, fLEPane=0, fUndo=1):
         if fUndo:
@@ -222,11 +222,11 @@ class LevelEditorBase(DirectObject):
                  self.ui.sceneGraphUI.deSelect(obj[OG.OBJ_UID])
         self.objectMgr.selectObject(nodePath, fLEPane)
         self.ui.buildContextMenu(nodePath)
-       
+
         if self.mode == self.EDIT_CURVE_MODE:
             taskMgr.add(self.curveEditor.editCurve, "modify")
-            self.curveEditor.accept("DIRECT-enter", self.curveEditor.onBaseMode) 
- 
+            self.curveEditor.accept("DIRECT-enter", self.curveEditor.onBaseMode)
+
     def deselectAll(self, np=None):
         if len(base.direct.selected.getSelectedAsList()) ==0:
             return
@@ -262,13 +262,13 @@ class LevelEditorBase(DirectObject):
         self.resetOrthoCam(self.ui.leftView)
         self.fNeedToSave = False
         self.setTitleWithFilename()
-        
+
     def resetOrthoCam(self, view):
         base.direct.drList[base.camList.index(NodePath(view.camNode))].orthoFactor = 0.1
         x = view.ClientSize.GetWidth() * 0.1
         y = view.ClientSize.GetHeight() * 0.1
         view.camLens.setFilmSize(x, y)
-        
+
     def save(self):
         self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         if self.currentFile:
@@ -291,7 +291,7 @@ class LevelEditorBase(DirectObject):
     def saveSettings(self):
         if self.settingsFile is None:
             return
-        
+
         try:
             f = open(self.settingsFile, 'w')
             f.write('gridSize\n%f\n'%self.ui.perspView.grid.gridSize)
@@ -299,12 +299,12 @@ class LevelEditorBase(DirectObject):
             f.write('hotKey\n%s\n'%base.direct.hotKeyMap)
             f.close()
         except:
-            pass        
+            pass
 
     def loadSettings(self):
         if self.settingsFile is None:
             return
-        
+
         self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         try:
             f = open(self.settingsFile, 'r')
@@ -335,7 +335,7 @@ class LevelEditorBase(DirectObject):
 
                     for key in overriddenKeys:
                         del base.direct.hotKeyMap[key]
-                            
+
                     base.direct.hotKeyMap.update(customHotKeyMap)
 
             self.ui.updateGrids(gridSize, gridSpacing)
@@ -352,7 +352,7 @@ class LevelEditorBase(DirectObject):
                               wx.YES_NO | wx.ICON_QUESTION)
             if reply == wx.YES:
                 mayaConverter = MayaConverter(self.ui, self, modelname, callBack, None, True)
-            else:        
+            else:
                 mayaConverter = MayaConverter(self.ui, self, modelname, callBack, None, False)
         mayaConverter.Show()
 
@@ -403,7 +403,7 @@ class LevelEditorBase(DirectObject):
         else:
             self.statusReadout.textNode.setCardColor(1,1,1,1)
             self.statusReadout.textNode.setCardAsMargin(0.1, 0.1, 0.1, 0.1)
-            
+
     def updateStatusReadoutTimeouts(self,task=None):
         removalList = []
         for currLine in self.statusLines:

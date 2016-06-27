@@ -1,16 +1,15 @@
-// Filename: ObjToEggConverter.h
-// Created by:  drose (07Dec10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file objToEggConverter.h
+ * @author drose
+ * @date 2010-12-07
+ */
 
 #ifndef OBJTOEGGCONVERTER_H
 #define OBJTOEGGCONVERTER_H
@@ -28,10 +27,9 @@
 #include "pvector.h"
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ObjToEggConverter
-// Description : Convert an Obj file to egg data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convert an Obj file to egg data.
+ */
 class ObjToEggConverter : public SomethingToEggConverter {
 public:
   ObjToEggConverter();
@@ -109,9 +107,8 @@ protected:
     INLINE bool operator == (const VertexEntry &other) const;
     INLINE bool matches_except_normal(const VertexEntry &other) const;
 
-    // The 1-based vertex, texcoord, and normal index numbers
-    // appearing in the obj file for this vertex.  0 if the index
-    // number is not given.
+    // The 1-based vertex, texcoord, and normal index numbers appearing in the
+    // obj file for this vertex.  0 if the index number is not given.
     int _vi, _vti, _vni;
 
     // The 1-based index number to the synthesized normal, if needed.

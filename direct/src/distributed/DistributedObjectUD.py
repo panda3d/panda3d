@@ -54,24 +54,26 @@ class DistributedObjectUD(DistributedObjectBase):
         def status(self, indent=0):
             """
             print out doId(parentId, zoneId) className
-                and conditionally show generated, disabled, neverDisable,
-                or cachable
+                and conditionally show generated or deleted
             """
             spaces = ' ' * (indent + 2)
             try:
-                print "%s%s:" % (' ' * indent, self.__class__.__name__)
-                print ("%sfrom "
-                       "DistributedObject doId:%s, parent:%s, zone:%s" %
-                       (spaces, self.doId, self.parentId, self.zoneId)),
+                print("%s%s:" % (' ' * indent, self.__class__.__name__))
+
                 flags = []
                 if self.__generated:
                     flags.append("generated")
                 if self.air == None:
                     flags.append("deleted")
+
+                flagStr = ""
                 if len(flags):
-                    print "(%s)" % (" ".join(flags),),
-                print
-            except Exception, e: print "%serror printing status" % (spaces,), e
+                    flagStr = " (%s)" % (" ".join(flags))
+
+                print("%sfrom DistributedObject doId:%s, parent:%s, zone:%s%s" % (
+                    spaces, self.doId, self.parentId, self.zoneId, flagStr))
+            except Exception as e:
+                print("%serror printing status %s" % (spaces, e))
 
     def getDeleteEvent(self):
         # this is sent just before we get deleted
@@ -213,7 +215,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def updateAllRequiredOtherFields(self, dclass, di):
@@ -222,7 +224,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def sendSetZone(self, zoneId):
@@ -233,7 +235,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # arguments are newZoneId, oldZoneId
         # includes the quiet zone.
         return 'DOChangeZone-%s' % self.doId
-    
+
     def getLogicalZoneChangeEvent(self):
         # this event is generated whenever this object changes to a
         # non-quiet-zone zone.
@@ -276,7 +278,7 @@ class DistributedObjectUD(DistributedObjectBase):
         return channel >> 32
 
     def GetAvatarIDFromChannelCode(self, channel):
-        return channel & 0xffffffffL
+        return channel & 0xffffffff
 
     def sendUpdateToAvatarId(self, avId, fieldName, args):
         assert self.notify.debugStateCall(self)
@@ -324,7 +326,7 @@ class DistributedObjectUD(DistributedObjectBase):
         self.generate()
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
     def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
         assert self.notify.debugStateCall(self)
         # have we already allocated a doId?

@@ -1,17 +1,15 @@
-// Filename: animChannelMatrixXfmTable.cxx
-// Created by:  drose (20Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animChannelMatrixXfmTable.cxx
+ * @author drose
+ * @date 1999-02-20
+ */
 
 #include "animChannelMatrixXfmTable.h"
 #include "animBundle.h"
@@ -28,11 +26,9 @@
 
 TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::Constructor
-//       Access: Protected
-//  Description: Used only for bam loader.
-/////////////////////////////////////////////////////////////
+/**
+ * Used only for bam loader.
+ */
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable() {
   for (int i = 0; i < num_matrix_components; i++) {
@@ -40,16 +36,13 @@ AnimChannelMatrixXfmTable() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::Copy Constructor
-//       Access: Protected
-//  Description: Creates a new AnimChannelMatrixXfmTable, just like
-//               this one, without copying any children.  The new copy
-//               is added to the indicated parent.  Intended to be
-//               called by make_copy() only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new AnimChannelMatrixXfmTable, just like this one, without
+ * copying any children.  The new copy is added to the indicated parent.
+ * Intended to be called by make_copy() only.
+ */
 AnimChannelMatrixXfmTable::
-AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy) : 
+AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy) :
   AnimChannelMatrix(parent, copy)
 {
   for (int i = 0; i < num_matrix_components; i++) {
@@ -57,40 +50,33 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &co
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
-  : AnimChannelMatrix(parent, name) 
+  : AnimChannelMatrix(parent, name)
 {
   for (int i = 0; i < num_matrix_components; i++) {
     _tables[i] = CPTA_stdfloat(get_class_type());
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::Destructor
-//       Access: Public, Virtual
-//  Description: 
-/////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimChannelMatrixXfmTable::
 ~AnimChannelMatrixXfmTable() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::has_changed
-//       Access: Public, Virtual
-//  Description: Returns true if the value has changed since the last
-//               call to has_changed().  last_frame is the frame
-//               number of the last call; this_frame is the current
-//               frame number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the value has changed since the last call to has_changed().
+ * last_frame is the frame number of the last call; this_frame is the current
+ * frame number.
+ */
 bool AnimChannelMatrixXfmTable::
-has_changed(int last_frame, double last_frac, 
+has_changed(int last_frame, double last_frac,
             int this_frame, double this_frac) {
   if (last_frame != this_frame) {
     for (int i = 0; i < num_matrix_components; i++) {
@@ -104,8 +90,8 @@ has_changed(int last_frame, double last_frac,
   }
 
   if (last_frac != this_frac) {
-    // If we have some fractional changes, also check the next
-    // subsequent frame (since we'll be blending with that).
+    // If we have some fractional changes, also check the next subsequent
+    // frame (since we'll be blending with that).
     for (int i = 0; i < num_matrix_components; i++) {
       if (_tables[i].size() > 1) {
         if (_tables[i][last_frame % _tables[i].size()] !=
@@ -119,11 +105,9 @@ has_changed(int last_frame, double last_frac,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_value
-//       Access: Public, Virtual
-//  Description: Gets the value of the channel at the indicated frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the value of the channel at the indicated frame.
+ */
 void AnimChannelMatrixXfmTable::
 get_value(int frame, LMatrix4 &mat) {
   PN_stdfloat components[num_matrix_components];
@@ -139,12 +123,10 @@ get_value(int frame, LMatrix4 &mat) {
   compose_matrix(mat, components);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_value_no_scale_shear
-//       Access: Public, Virtual
-//  Description: Gets the value of the channel at the indicated frame,
-//               without any scale or shear information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the value of the channel at the indicated frame, without any scale or
+ * shear information.
+ */
 void AnimChannelMatrixXfmTable::
 get_value_no_scale_shear(int frame, LMatrix4 &mat) {
   PN_stdfloat components[num_matrix_components];
@@ -166,11 +148,9 @@ get_value_no_scale_shear(int frame, LMatrix4 &mat) {
   compose_matrix(mat, components);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_scale
-//       Access: Public, Virtual
-//  Description: Gets the scale value at the indicated frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the scale value at the indicated frame.
+ */
 void AnimChannelMatrixXfmTable::
 get_scale(int frame, LVecBase3 &scale) {
   for (int i = 0; i < 3; i++) {
@@ -182,13 +162,10 @@ get_scale(int frame, LVecBase3 &scale) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_hpr
-//       Access: Public, Virtual
-//  Description: Returns the h, p, and r components associated
-//               with the current frame.  As above, this only makes
-//               sense for a matrix-type channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the h, p, and r components associated with the current frame.  As
+ * above, this only makes sense for a matrix-type channel.
+ */
 void AnimChannelMatrixXfmTable::
 get_hpr(int frame, LVecBase3 &hpr) {
   for (int i = 0; i < 3; i++) {
@@ -200,13 +177,11 @@ get_hpr(int frame, LVecBase3 &hpr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_quat
-//       Access: Public, Virtual
-//  Description: Returns the rotation component associated with the
-//               current frame, expressed as a quaternion.  As above,
-//               this only makes sense for a matrix-type channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the rotation component associated with the current frame, expressed
+ * as a quaternion.  As above, this only makes sense for a matrix-type
+ * channel.
+ */
 void AnimChannelMatrixXfmTable::
 get_quat(int frame, LQuaternion &quat) {
   LVecBase3 hpr;
@@ -221,13 +196,10 @@ get_quat(int frame, LQuaternion &quat) {
   quat.set_hpr(hpr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_pos
-//       Access: Public, Virtual
-//  Description: Returns the x, y, and z translation components
-//               associated with the current frame.  As above, this
-//               only makes sense for a matrix-type channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the x, y, and z translation components associated with the current
+ * frame.  As above, this only makes sense for a matrix-type channel.
+ */
 void AnimChannelMatrixXfmTable::
 get_pos(int frame, LVecBase3 &pos) {
   for (int i = 0; i < 3; i++) {
@@ -239,13 +211,10 @@ get_pos(int frame, LVecBase3 &pos) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_shear
-//       Access: Public, Virtual
-//  Description: Returns the a, b, and c shear components associated
-//               with the current frame.  As above, this only makes
-//               sense for a matrix-type channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the a, b, and c shear components associated with the current frame.
+ * As above, this only makes sense for a matrix-type channel.
+ */
 void AnimChannelMatrixXfmTable::
 get_shear(int frame, LVecBase3 &shear) {
   for (int i = 0; i < 3; i++) {
@@ -257,22 +226,19 @@ get_shear(int frame, LVecBase3 &shear) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::set_table
-//       Access: Public
-//  Description: Assigns the indicated table.  table_id is one of 'i',
-//               'j', 'k', for scale, 'a', 'b', 'c' for shear, 'h',
-//               'p', 'r', for rotation, and 'x', 'y', 'z', for
-//               translation.  The new table must have either zero,
-//               one, or get_num_frames() frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the indicated table.  table_id is one of 'i', 'j', 'k', for scale,
+ * 'a', 'b', 'c' for shear, 'h', 'p', 'r', for rotation, and 'x', 'y', 'z',
+ * for translation.  The new table must have either zero, one, or
+ * get_num_frames() frames.
+ */
 void AnimChannelMatrixXfmTable::
 set_table(char table_id, const CPTA_stdfloat &table) {
   int num_frames = _root->get_num_frames();
 
   if (table.size() > 1 && (int)table.size() < num_frames) {
-    // The new table has an invalid number of frames--it doesn't match
-    // the bundle's requirement.
+    // The new table has an invalid number of frames--it doesn't match the
+    // bundle's requirement.
     nassertv(false);
     return;
   }
@@ -286,12 +252,10 @@ set_table(char table_id, const CPTA_stdfloat &table) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::clear_all_tables
-//       Access: Published
-//  Description: Removes all the tables from the channel, and resets
-//               it to its initial state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the tables from the channel, and resets it to its initial
+ * state.
+ */
 void AnimChannelMatrixXfmTable::
 clear_all_tables() {
   for (int i = 0; i < num_matrix_components; i++) {
@@ -299,12 +263,9 @@ clear_all_tables() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::write
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the table and all of
-//               its descendants.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the table and all of its descendants.
+ */
 void AnimChannelMatrixXfmTable::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -332,27 +293,21 @@ write(ostream &out, int indent_level) const {
   out << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::make_copy
-//       Access: Protected, Virtual
-//  Description: Returns a copy of this object, and attaches it to the
-//               indicated parent (which may be NULL only if this is
-//               an AnimBundle).  Intended to be called by
-//               copy_subtree() only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a copy of this object, and attaches it to the indicated parent
+ * (which may be NULL only if this is an AnimBundle).  Intended to be called
+ * by copy_subtree() only.
+ */
 AnimGroup *AnimChannelMatrixXfmTable::
 make_copy(AnimGroup *parent) const {
   return new AnimChannelMatrixXfmTable(parent, *this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_table_index
-//       Access: Protected, Static
-//  Description: Returns the table index number, a value between 0 and
-//               num_matrix_components, that corresponds to the
-//               indicated table id.  Returns -1 if the table id is
-//               invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the table index number, a value between 0 and
+ * num_matrix_components, that corresponds to the indicated table id.  Returns
+ * -1 if the table id is invalid.
+ */
 int AnimChannelMatrixXfmTable::
 get_table_index(char table_id) {
   for (int i = 0; i < num_matrix_components; i++) {
@@ -364,24 +319,30 @@ get_table_index(char table_id) {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void AnimChannelMatrixXfmTable::
 write_datagram(BamWriter *manager, Datagram &me) {
   AnimChannelMatrix::write_datagram(manager, me);
 
-  if (compress_channels && !FFTCompressor::is_compression_available()) {
-    chan_cat.error()
-      << "Compression is not available; writing uncompressed channels.\n";
-    compress_channels = false;
+  if (compress_channels) {
+    chan_cat.warning()
+      << "FFT compression of animations is deprecated.  For compatibility "
+         "with future versions of Panda3D, set compress-channels to false.\n";
+
+    if (!FFTCompressor::is_compression_available()) {
+      chan_cat.error()
+        << "Compression is not available; writing uncompressed channels.\n";
+      compress_channels = false;
+    }
   }
 
   me.add_bool(compress_channels);
-  me.add_bool(temp_hpr_fix);
+
+  // We now always use the new HPR conventions.
+  me.add_bool(true);
 
   if (!compress_channels) {
     // Write out everything uncompressed, as a stream of floats.
@@ -405,8 +366,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
       compressor.write_reals(me, _tables[i], _tables[i].size());
     }
 
-    // Now, write out the joint angles.  For these we need to build up
-    // a HPR array.
+    // Now, write out the joint angles.  For these we need to build up a HPR
+    // array.
     pvector<LVecBase3> hprs;
     int hprs_length = max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
     hprs.reserve(hprs_length);
@@ -429,20 +390,19 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of
+ * the data that is needed to re-create this object and stores it in the
+ * appropiate place
+ */
 void AnimChannelMatrixXfmTable::
 fillin(DatagramIterator &scan, BamReader *manager) {
   AnimChannelMatrix::fillin(scan, manager);
 
   bool wrote_compressed = scan.get_bool();
 
+  // If this is false, the file still uses the old HPR conventions, and we'll
+  // have to convert the HPR values to the new convention.
   bool new_hpr = scan.get_bool();
 
   if (!wrote_compressed) {
@@ -457,7 +417,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       _tables[i] = ind_table;
     }
 
-    if ((!new_hpr && temp_hpr_fix) || (new_hpr && !temp_hpr_fix)) {
+    if (!new_hpr) {
       // Convert between the old HPR form and the new HPR form.
       size_t num_hprs = max(max(_tables[6].size(), _tables[7].size()),
                             _tables[8].size());
@@ -482,12 +442,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         PN_stdfloat p = (hi < _tables[7].size() ? _tables[7][hi] : default_hpr[1]);
         PN_stdfloat r = (hi < _tables[8].size() ? _tables[8][hi] : default_hpr[2]);
 
-        LVecBase3 hpr;
-        if (temp_hpr_fix) {
-          hpr = old_to_new_hpr(LVecBase3(h, p, r));
-        } else {
-          hpr = new_to_old_hpr(LVecBase3(h, p, r));
-        }
+        LVecBase3 hpr = old_to_new_hpr(LVecBase3(h, p, r));
         h_table[hi] = hpr[0];
         p_table[hi] = hpr[1];
         r_table[hi] = hpr[2];
@@ -525,16 +480,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     PTA_stdfloat r_table = PTA_stdfloat::empty_array(hprs.size(), get_class_type());
 
     for (i = 0; i < (int)hprs.size(); i++) {
-      if (!new_hpr && temp_hpr_fix) {
+      if (!new_hpr) {
         // Convert the old HPR form to the new HPR form.
         LVecBase3 hpr = old_to_new_hpr(hprs[i]);
-        h_table[i] = hpr[0];
-        p_table[i] = hpr[1];
-        r_table[i] = hpr[2];
-
-      } else if (new_hpr && !temp_hpr_fix) {
-        // Convert the new HPR form to the old HPR form.
-        LVecBase3 hpr = new_to_old_hpr(hprs[i]);
         h_table[i] = hpr[0];
         p_table[i] = hpr[1];
         r_table[i] = hpr[2];
@@ -559,12 +507,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::make_AnimChannelMatrixXfmTable
-//       Access: Protected
-//  Description: Factory method to generate an
-//               AnimChannelMatrixXfmTable object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate an AnimChannelMatrixXfmTable object.
+ */
 TypedWritable *AnimChannelMatrixXfmTable::
 make_AnimChannelMatrixXfmTable(const FactoryParams &params) {
   AnimChannelMatrixXfmTable *me = new AnimChannelMatrixXfmTable;
@@ -576,15 +521,10 @@ make_AnimChannelMatrixXfmTable(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate an
-//               AnimChannelMatrixXfmTable object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate an AnimChannelMatrixXfmTable object.
+ */
 void AnimChannelMatrixXfmTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelMatrixXfmTable);
 }
-
-

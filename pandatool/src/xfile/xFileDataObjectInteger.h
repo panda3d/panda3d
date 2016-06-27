@@ -1,16 +1,15 @@
-// Filename: xFileDataObjectInteger.h
-// Created by:  drose (07Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataObjectInteger.h
+ * @author drose
+ * @date 2004-10-07
+ */
 
 #ifndef XFILEDATAOBJECTINTEGER_H
 #define XFILEDATAOBJECTINTEGER_H
@@ -18,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectInteger
-// Description : An integer-valued data element.  This matches one
-//               integer data member of a template, or a single
-//               element of an integer array.
-////////////////////////////////////////////////////////////////////
+/**
+ * An integer-valued data element.  This matches one integer data member of a
+ * template, or a single element of an integer array.
+ */
 class XFileDataObjectInteger : public XFileDataObject {
 public:
   XFileDataObjectInteger(const XFileDataDef *data_def, int value);
@@ -41,7 +38,7 @@ protected:
 
 private:
   int _value;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

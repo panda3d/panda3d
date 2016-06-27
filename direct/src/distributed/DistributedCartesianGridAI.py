@@ -1,9 +1,10 @@
 
-from pandac.PandaModules import *
-
+from panda3d.core import *
+from panda3d.direct import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task import Task
-from DistributedNodeAI import DistributedNodeAI
-from CartesianGridBase import CartesianGridBase
+from .DistributedNodeAI import DistributedNodeAI
+from .CartesianGridBase import CartesianGridBase
 
 class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGridAI")
@@ -34,7 +35,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
 
     def getCellWidth(self):
         return self.cellWidth
-    
+
     def getParentingRules(self):
         self.notify.debug("calling getter")
         rule = ("%i%s%i%s%i" % (self.startingZone, self.RuleSeparator,
@@ -127,7 +128,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
 
         if not self.isValidZone(zoneId):
             self.notify.warning(
-                "%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %(self.doId, av.doId, zoneId, pos))                     
+                "%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %(self.doId, av.doId, zoneId, pos))
             return
 
         # Set the location on the server.

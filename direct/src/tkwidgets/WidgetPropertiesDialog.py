@@ -3,8 +3,7 @@
 __all__ = ['WidgetPropertiesDialog']
 
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-import types, string, Pmw
+import Pmw, sys
 
 """
 TODO:
@@ -28,12 +27,16 @@ class WidgetPropertiesDialog(Toplevel):
         self.propertyDict = propertyDict
         self.propertyList = propertyList
         if self.propertyList is None:
-            self.propertyList = self.propertyDict.keys()
+            self.propertyList = list(self.propertyDict.keys())
             self.propertyList.sort()
         # Use default parent if none specified
         if not parent:
-            import Tkinter
-            parent = Tkinter._default_root
+            if sys.version_info >= (3, 0):
+                import tkinter
+                parent = tkinter._default_root
+            else:
+                import Tkinter
+                parent = Tkinter._default_root
         # Create toplevel window
         Toplevel.__init__(self, parent)
         self.transient(parent)
@@ -172,8 +175,8 @@ class WidgetPropertiesDialog(Toplevel):
         box.pack()
 
     def realOrNone(self, val):
-        val = string.lower(val)
-        if string.find('none', val) != -1:
+        val = val.lower()
+        if 'none'.find(val) != -1:
             if val == 'none':
                 return Pmw.OK
             else:
@@ -181,8 +184,8 @@ class WidgetPropertiesDialog(Toplevel):
         return Pmw.realvalidator(val)
 
     def intOrNone(self, val):
-        val = string.lower(val)
-        if string.find('none', val) != -1:
+        val = val.lower()
+        if 'none'.find(val) != -1:
             if val == 'none':
                 return Pmw.OK
             else:
@@ -204,22 +207,22 @@ class WidgetPropertiesDialog(Toplevel):
         self.destroy()
 
     def validateChanges(self):
-        for property in self.modifiedDict.keys():
+        for property in self.modifiedDict:
             tuple = self.modifiedDict[property]
             widget = tuple[0]
             entry = tuple[1]
             type = tuple[2]
             fNone = tuple[3]
             value = entry.get()
-            lValue = string.lower(value)
-            if (string.find('none', lValue) != -1):
+            lValue = value.lower()
+            if 'none'.find(lValue) != -1:
                 if fNone and (lValue == 'none'):
                     widget[property] = None
             else:
                 if type == 'real':
-                    value = string.atof(value)
+                    value = float(value)
                 elif type == 'integer':
-                    value = string.atoi(value)
+                    value = int(value)
                 widget[property] = value
 
     def apply(self):

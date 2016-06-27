@@ -1,16 +1,15 @@
-// Filename: displayRegion.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegion.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef DISPLAYREGION_H
 #define DISPLAYREGION_H
@@ -47,17 +46,14 @@ class Camera;
 class PNMImage;
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegion
-// Description : A rectangular subregion within a window for rendering
-//               into.  Typically, there is one DisplayRegion that
-//               covers the whole window, but you may also create
-//               smaller DisplayRegions for having different regions
-//               within the window that represent different scenes.
-//               You may also stack up DisplayRegions like panes of
-//               glass, usually for layering 2-d interfaces on top of
-//               a 3-d scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * A rectangular subregion within a window for rendering into.  Typically,
+ * there is one DisplayRegion that covers the whole window, but you may also
+ * create smaller DisplayRegions for having different regions within the
+ * window that represent different scenes.  You may also stack up
+ * DisplayRegions like panes of glass, usually for layering 2-d interfaces on
+ * top of a 3-d scene.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegion : public DisplayRegionBase, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
@@ -86,54 +82,75 @@ PUBLISHED:
   INLINE void set_dimensions(int i, PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
   INLINE void set_dimensions(const LVecBase4 &dimensions);
   virtual void set_dimensions(int i, const LVecBase4 &dimensions);
+  MAKE_PROPERTY(dimensions, get_dimensions, set_dimensions);
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
   virtual bool is_stereo() const;
+  MAKE_PROPERTY(window, get_window);
+  MAKE_PROPERTY(pipe, get_pipe);
+  MAKE_PROPERTY(stereo, is_stereo);
 
   virtual void set_camera(const NodePath &camera);
   INLINE NodePath get_camera(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(camera, get_camera, set_camera);
 
   virtual void set_active(bool active);
   INLINE bool is_active() const;
+  MAKE_PROPERTY(active, is_active, set_active);
 
   virtual void set_sort(int sort);
   INLINE int get_sort() const;
+  MAKE_PROPERTY(sort, get_sort, set_sort);
 
   virtual void set_stereo_channel(Lens::StereoChannel stereo_channel);
   INLINE Lens::StereoChannel get_stereo_channel() const;
+  MAKE_PROPERTY(stereo_channel, get_stereo_channel, set_stereo_channel);
+
   virtual void set_tex_view_offset(int tex_view_offset);
   INLINE int get_tex_view_offset() const;
+  MAKE_PROPERTY(tex_view_offset, get_tex_view_offset, set_tex_view_offset);
 
   virtual void set_incomplete_render(bool incomplete_render);
   INLINE bool get_incomplete_render() const;
+  MAKE_PROPERTY(incomplete_render, get_incomplete_render, set_incomplete_render);
 
   virtual void set_texture_reload_priority(int texture_reload_priority);
   INLINE int get_texture_reload_priority() const;
+  MAKE_PROPERTY(texture_reload_priority, get_texture_reload_priority,
+                                         set_texture_reload_priority);
 
   void set_lens_index(int index);
   INLINE int get_lens_index() const;
+  MAKE_PROPERTY(lens_index, get_lens_index, set_lens_index);
 
   virtual void set_cull_traverser(CullTraverser *trav);
   CullTraverser *get_cull_traverser();
+  MAKE_PROPERTY(cull_traverser, get_cull_traverser, set_cull_traverser);
 
   INLINE void set_cube_map_index(int cube_map_index);
   virtual void set_target_tex_page(int page);
   INLINE int get_target_tex_page() const;
+  MAKE_PROPERTY(target_tex_page, get_target_tex_page, set_target_tex_page);
 
   INLINE void set_scissor_enabled(bool scissor_enabled);
   INLINE bool get_scissor_enabled() const;
+  MAKE_PROPERTY(scissor_enabled, get_scissor_enabled, set_scissor_enabled);
 
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
+  MAKE_PROPERTY(cull_callback, get_cull_callback, set_cull_callback);
 
   INLINE void set_draw_callback(CallbackObject *object);
   INLINE void clear_draw_callback();
   INLINE CallbackObject *get_draw_callback() const;
+  MAKE_PROPERTY(draw_callback, get_draw_callback, set_draw_callback);
 
   INLINE int get_pixel_width(int i = 0) const;
   INLINE int get_pixel_height(int i = 0) const;
+  INLINE LVecBase2i get_pixel_size(int i = 0) const;
+  MAKE_PROPERTY(pixel_size, get_pixel_size);
 
   virtual void output(ostream &out) const;
 
@@ -190,8 +207,8 @@ protected:
                        GraphicsStateGuardian *gsg, Thread *current_thread);
 
 protected:
-  // The associated window is a permanent property of the
-  // DisplayRegion.  It doesn't need to be cycled.
+  // The associated window is a permanent property of the DisplayRegion.  It
+  // doesn't need to be cycled.
   GraphicsOutput *_window;
 
   bool _incomplete_render;
@@ -201,10 +218,9 @@ protected:
   PT(CullTraverser) _trav;
 
 private:
-  // This is the data that is associated with the DisplayRegion that
-  // needs to be cycled every frame, but represents the parameters as
-  // specified by the user, and which probably will not change that
-  // often.
+  // This is the data that is associated with the DisplayRegion that needs to
+  // be cycled every frame, but represents the parameters as specified by the
+  // user, and which probably will not change that often.
   class EXPCL_PANDA_DISPLAY CData : public CycleData {
   public:
     CData();
@@ -239,12 +255,11 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
-  // This is a special cycler created to hold the results from the
-  // cull traversal, for (a) the draw traversal, and (b) the next
-  // frame's cull traversal.  It needs to be cycled, but it gets its
-  // own cycler because it will certainly change every frame, so we
-  // don't need to lump all the heavy data above in with this
-  // lightweight cycler.
+  // This is a special cycler created to hold the results from the cull
+  // traversal, for (a) the draw traversal, and (b) the next frame's cull
+  // traversal.  It needs to be cycled, but it gets its own cycler because it
+  // will certainly change every frame, so we don't need to lump all the heavy
+  // data above in with this lightweight cycler.
   class EXPCL_PANDA_DISPLAY CDataCull : public CycleData {
   public:
     CDataCull();
@@ -288,11 +303,10 @@ private:
   friend class DisplayRegionPipelineReader;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionPipelineReader
-// Description : Encapsulates the data from a DisplayRegion,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a DisplayRegion, pre-fetched for one stage of
+ * the pipeline.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);

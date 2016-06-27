@@ -12,6 +12,7 @@ from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import messenger
 import types
 import random
+import importlib
 
 try:
     import signal
@@ -41,21 +42,21 @@ def print_exc_plus():
         f = f.f_back
     stack.reverse()
     traceback.print_exc()
-    print "Locals by frame, innermost last"
+    print("Locals by frame, innermost last")
     for frame in stack:
-        print
-        print "Frame %s in %s at line %s" % (frame.f_code.co_name,
+        print("")
+        print("Frame %s in %s at line %s" % (frame.f_code.co_name,
                                              frame.f_code.co_filename,
-                                             frame.f_lineno)
-        for key, value in frame.f_locals.items():
-            print "\t%20s = " % key,
+                                             frame.f_lineno))
+        for key, value in list(frame.f_locals.items()):
             #We have to be careful not to cause a new error in our error
             #printer! Calling str() on an unknown object could cause an
             #error we don't want.
             try:
-                print value
+                valueStr = str(value)
             except:
-                print "<ERROR WHILE PRINTING VALUE>"
+                valueStr = "<ERROR WHILE PRINTING VALUE>"
+            print("\t%20s = %s" % (key, valueStr))
 
 # For historical purposes, we remap the C++-defined enumeration to
 # these Python names, and define them both at the module level, here,
@@ -149,8 +150,10 @@ class TaskManager:
         self.mgr.setClock(clockObject)
         self.globalClock = clockObject
 
+    clock = property(lambda self: self.mgr.getClock(), setClock)
+
     def invokeDefaultHandler(self, signalNumber, stackFrame):
-        print '*** allowing mid-frame keyboard interrupt.'
+        print('*** allowing mid-frame keyboard interrupt.')
         # Restore default interrupt handler
         if signal:
             signal.signal(signal.SIGINT, signal.default_int_handler)
@@ -161,9 +164,9 @@ class TaskManager:
         self.fKeyboardInterrupt = 1
         self.interruptCount += 1
         if self.interruptCount == 1:
-            print '* interrupt by keyboard'
+            print('* interrupt by keyboard')
         elif self.interruptCount == 2:
-            print '** waiting for end of frame before interrupting...'
+            print('** waiting for end of frame before interrupting...')
             # The user must really want to interrupt this process
             # Next time around invoke the default handler
             signal.signal(signal.SIGINT, self.invokeDefaultHandler)
@@ -311,6 +314,8 @@ class TaskManager:
         self.mgr.add(task)
         return task
 
+    do_method_later = doMethodLater
+
     def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
             taskChain = None, owner = None):
@@ -392,7 +397,6 @@ class TaskManager:
                 'Task %s does not accept arguments.' % (repr(task)))
 
         if name is not None:
-            assert isinstance(name, types.StringTypes), 'Name must be a string type'
             task.setName(name)
         assert task.hasName()
 
@@ -426,16 +430,14 @@ class TaskManager:
         all tasks with the indicated name are removed.  Returns the
         number of tasks removed. """
 
-        if isinstance(taskOrName, types.StringTypes):
-            tasks = self.mgr.findTasks(taskOrName)
-            return self.mgr.remove(tasks)
-        elif isinstance(taskOrName, AsyncTask):
+        if isinstance(taskOrName, AsyncTask):
             return self.mgr.remove(taskOrName)
-        elif isinstance(taskOrName, types.ListType):
+        elif isinstance(taskOrName, list):
             for task in taskOrName:
                 self.remove(task)
         else:
-            self.notify.error('remove takes a string or a Task')
+            tasks = self.mgr.findTasks(taskOrName)
+            return self.mgr.remove(tasks)
 
     def removeTasksMatching(self, taskPattern):
         """Removes all tasks whose names match the pattern, which can
@@ -479,6 +481,9 @@ class TaskManager:
         """Starts the task manager running.  Does not return until an
         exception is encountered (including KeyboardInterrupt). """
 
+        if PandaSystem.getPlatform() == 'emscripten':
+            return
+
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         t = self.globalClock.getFrameTime()
@@ -512,7 +517,7 @@ class TaskManager:
                 except SystemExit:
                     self.stop()
                     raise
-                except IOError, ioError:
+                except IOError as ioError:
                     code, message = self._unpackIOError(ioError)
                     # Since upgrading to Python 2.4.1, pausing the execution
                     # often gives this IOError during the sleep function:
@@ -524,7 +529,7 @@ class TaskManager:
                         self.stop()
                     else:
                         raise
-                except Exception, e:
+                except Exception as e:
                     if self.extendedExceptions:
                         self.stop()
                         print_exc_plus()
@@ -563,13 +568,13 @@ class TaskManager:
 
         method = task.getFunction()
         if (type(method) == types.MethodType):
-            function = method.im_func
+            function = method.__func__
         else:
             function = method
         if (function == oldMethod):
             newMethod = types.MethodType(newFunction,
-                                         method.im_self,
-                                         method.im_class)
+                                         method.__self__,
+                                         method.__self__.__class__)
             task.setFunction(newMethod)
             # Found a match
             return 1
@@ -582,7 +587,9 @@ class TaskManager:
         return numFound
 
     def popupControls(self):
-        from direct.tkpanels import TaskManagerPanel
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        TaskManagerPanel = importlib.import_module('direct.tkpanels.TaskManagerPanel')
         return TaskManagerPanel.TaskManagerPanel(self)
 
     def getProfileSession(self, name=None):
@@ -592,8 +599,8 @@ class TaskManager:
 
         # Defer this import until we need it: some Python
         # distributions don't provide the profile and pstats modules.
-        from direct.showbase.ProfileSession import ProfileSession
-        return ProfileSession(name)
+        PS = importlib.import_module('direct.showbase.ProfileSession')
+        return PS.ProfileSession(name)
 
     def profileFrames(self, num=None, session=None, callback=None):
         if num is None:
@@ -605,7 +612,7 @@ class TaskManager:
         self._frameProfileQueue.push((num, session, callback))
 
     def _doProfiledFrames(self, numFrames):
-        for i in xrange(numFrames):
+        for i in range(numFrames):
             result = self.step()
         return result
 
@@ -619,8 +626,8 @@ class TaskManager:
         self._profileFrames.set(profileFrames)
         if (not self._frameProfiler) and profileFrames:
             # import here due to import dependencies
-            from direct.task.FrameProfiler import FrameProfiler
-            self._frameProfiler = FrameProfiler()
+            FP = importlib.import_module('direct.task.FrameProfiler')
+            self._frameProfiler = FP.FrameProfiler()
 
     def getProfileTasks(self):
         return self._profileTasks.get()
@@ -632,8 +639,8 @@ class TaskManager:
         self._profileTasks.set(profileTasks)
         if (not self._taskProfiler) and profileTasks:
             # import here due to import dependencies
-            from direct.task.TaskProfiler import TaskProfiler
-            self._taskProfiler = TaskProfiler()
+            TP = importlib.import_module('direct.task.TaskProfiler')
+            self._taskProfiler = TP.TaskProfiler()
 
     def logTaskProfiles(self, name=None):
         if self._taskProfiler:
@@ -679,9 +686,9 @@ class TaskManager:
 
         # Defer this import until we need it: some Python
         # distributions don't provide the profile and pstats modules.
-        from direct.showbase.ProfileSession import ProfileSession
-        profileSession = ProfileSession('profiled-task-%s' % task.getName(),
-                                        Functor(profileInfo.taskFunc, *profileInfo.taskArgs))
+        PS = importlib.import_module('direct.showbase.ProfileSession')
+        profileSession = PS.ProfileSession('profiled-task-%s' % task.getName(),
+                                           Functor(profileInfo.taskFunc, *profileInfo.taskArgs))
         ret = profileSession.run()
 
         # set these values *after* profiling in case we're profiling the TaskProfiler
@@ -700,12 +707,12 @@ class TaskManager:
     def _getRandomTask(self):
         # Figure out when the next frame is likely to expire, so we
         # won't grab any tasks that are sleeping for a long time.
-        now = globalClock.getFrameTime()
-        avgFrameRate = globalClock.getAverageFrameRate()
+        now = self.globalClock.getFrameTime()
+        avgFrameRate = self.globalClock.getAverageFrameRate()
         if avgFrameRate < .00001:
             avgFrameDur = 0.
         else:
-            avgFrameDur = (1. / globalClock.getAverageFrameRate())
+            avgFrameDur = (1. / self.globalClock.getAverageFrameRate())
         next = now + avgFrameDur
 
         # Now grab a task at random, until we find one that we like.
@@ -1251,22 +1258,22 @@ if __debug__:
                 return task.done
         obj = TestClass()
         startRefCount = sys.getrefcount(obj)
-        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
-        print '** addTask'
+        print('sys.getrefcount(obj): %s' % sys.getrefcount(obj))
+        print('** addTask')
         t = obj.addTask(obj.doTask, 'test')
-        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
-        print 'task.getRefCount(): %s' % t.getRefCount()
-        print '** removeTask'
+        print('sys.getrefcount(obj): %s' % sys.getrefcount(obj))
+        print('task.getRefCount(): %s' % t.getRefCount())
+        print('** removeTask')
         obj.removeTask('test')
-        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
-        print 'task.getRefCount(): %s' % t.getRefCount()
-        print '** step'
+        print('sys.getrefcount(obj): %s' % sys.getrefcount(obj))
+        print('task.getRefCount(): %s' % t.getRefCount())
+        print('** step')
         taskMgr.step()
         taskMgr.step()
         taskMgr.step()
-        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
-        print 'task.getRefCount(): %s' % t.getRefCount()
-        print '** task release'
+        print('sys.getrefcount(obj): %s' % sys.getrefcount(obj))
+        print('task.getRefCount(): %s' % t.getRefCount())
+        print('** task release')
         t = None
-        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
+        print('sys.getrefcount(obj): %s' % sys.getrefcount(obj))
         assert sys.getrefcount(obj) == startRefCount

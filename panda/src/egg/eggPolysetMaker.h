@@ -1,16 +1,15 @@
-// Filename: eggPolysetMaker.h
-// Created by:  drose (19Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPolysetMaker.h
+ * @author drose
+ * @date 2001-06-19
+ */
 
 #ifndef EGGPOLYSETMAKER_H
 #define EGGPOLYSETMAKER_H
@@ -21,22 +20,18 @@
 
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPolysetMaker
-// Description : A specialization on EggBinMaker for making polysets
-//               that share the same basic rendering characteristic.
-//               This really just defines the example functions
-//               described in the leading comment to EggBinMaker.
-//
-//               It makes some common assumptions about how polysets
-//               should be grouped; if these are not sufficient, you
-//               can always rederive your own further specialization
-//               of this class.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization on EggBinMaker for making polysets that share the same
+ * basic rendering characteristic.  This really just defines the example
+ * functions described in the leading comment to EggBinMaker.
+ *
+ * It makes some common assumptions about how polysets should be grouped; if
+ * these are not sufficient, you can always rederive your own further
+ * specialization of this class.
+ */
 class EXPCL_PANDAEGG EggPolysetMaker : public EggBinMaker {
 PUBLISHED:
-  // The BinNumber serves to identify why a particular EggBin was
-  // created.
+  // The BinNumber serves to identify why a particular EggBin was created.
   enum BinNumber {
     BN_none = 0,
     BN_polyset,

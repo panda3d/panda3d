@@ -1,67 +1,56 @@
-// Filename: physicalNode.cxx
-// Created by:  charles (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicalNode.cxx
+ * @author charles
+ * @date 2000-08-01
+ */
 
 #include "physicalNode.h"
 
 // static stuff.
 TypeHandle PhysicalNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function : PhysicalNode
-//       Access : public
-//  Description : default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 PhysicalNode::
 PhysicalNode(const string &name) :
-  PandaNode(name) 
+  PandaNode(name)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : PhysicalNode
-//       Access : protected
-//  Description : copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 PhysicalNode::
 PhysicalNode(const PhysicalNode &copy) :
   PandaNode(copy), _physicals(copy._physicals) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : ~PhysicalNode
-//       Access : protected, virtual
-//  Description : destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 PhysicalNode::
 ~PhysicalNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : make_copy
-//       Access : public, virtual
-//  Description : dynamic child copy
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic child copy
+ */
 PandaNode *PhysicalNode::
 make_copy() const {
   return new PhysicalNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : add_physicals_from
-//       Access : public
-//  Description : append operation
-////////////////////////////////////////////////////////////////////
+/**
+ * append operation
+ */
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
   pvector< PT(Physical) >::iterator last = _physicals.end() - 1;
@@ -74,11 +63,21 @@ add_physicals_from(const PhysicalNode &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : remove_physical
-//       Access : public
-//  Description : remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * replace operation
+ */
+void PhysicalNode::
+set_physical(size_t index, Physical *physical) {
+  nassertv(index <= _physicals.size());
+
+  _physicals[index]->_physical_node = (PhysicalNode *) NULL;
+  _physicals[index] = physical;
+  physical->_physical_node = this;
+}
+
+/**
+ * remove operation
+ */
 void PhysicalNode::
 remove_physical(Physical *physical) {
   pvector< PT(Physical) >::iterator found;
@@ -89,14 +88,12 @@ remove_physical(Physical *physical) {
   _physicals.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : remove_physical
-//       Access : public
-//  Description : remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * remove operation
+ */
 void PhysicalNode::
-remove_physical(int index) {
-  nassertv(index >= 0 && index <= (int)_physicals.size());
+remove_physical(size_t index) {
+  nassertv(index <= _physicals.size());
 
   pvector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;
@@ -105,16 +102,13 @@ remove_physical(int index) {
   _physicals.erase(remove);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicalNode::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"PhysicalNode:\n";
-  //PandaNode::write(out, indent+2);
+  // PandaNode::write(out, indent+2);
   #endif //] NDEBUG
 }

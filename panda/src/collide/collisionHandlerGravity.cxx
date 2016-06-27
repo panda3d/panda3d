@@ -1,16 +1,15 @@
-// Filename: CollisionHandlerGravity.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandlerGravity.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "collisionHandlerGravity.h"
 #include "collisionNode.h"
@@ -21,11 +20,9 @@
 
 TypeHandle CollisionHandlerGravity::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CollisionHandlerGravity::
 CollisionHandlerGravity() {
   _offset = 0.0f;
@@ -39,26 +36,16 @@ CollisionHandlerGravity() {
   _legacy_mode = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CollisionHandlerGravity::
 ~CollisionHandlerGravity() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::set_highest_collision
-//       Access: Protected
-//  Description: 
-//               
-//               
-//
-//               
-//               
-//               
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 #define OLD_COLLISION_HANDLER_GRAVITY 0
 #if OLD_COLLISION_HANDLER_GRAVITY
 PN_stdfloat CollisionHandlerGravity::
@@ -67,7 +54,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   bool got_max = false;
   PN_stdfloat max_height = 0.0f;
   CollisionEntry *highest = NULL;
-  
+
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
@@ -89,7 +76,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
       }
     }
   }
-  //#*#_has_contact = got_max;
+  // #*#_has_contact = got_max;
 
   #if 0
     cout<<"\ncolliding with:\n";
@@ -102,23 +89,22 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   #endif
 
   if (_legacy_mode) {
-    // We only collide with things we are impacting with.
-    // Remove the collisions:
+    // We only collide with things we are impacting with.  Remove the
+    // collisions:
     _current_colliding.clear();
     // Add only the one that we're impacting with:
     add_entry(highest);
   }
-  
+
   return max_height;
 }
 #else
 PN_stdfloat CollisionHandlerGravity::
 set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
-  // Get the maximum height for all collisions with this node.
-  // This is really the distance to-the-ground, so it will
-  // be negative when the avatar is above the ground.
-  // Larger values (less negative) are higher elevation (assuming
-  // the avatar is right-side-up (or the ray is plumb)).
+  // Get the maximum height for all collisions with this node.  This is really
+  // the distance to-the-ground, so it will be negative when the avatar is
+  // above the ground.  Larger values (less negative) are higher elevation
+  // (assuming the avatar is right-side-up (or the ray is plumb)).
   bool got_max = false;
   bool got_min = false;
   PN_stdfloat max_height = 0.0f;
@@ -158,14 +144,13 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   }
   if (!got_max && got_min) {
     // We've fallen through the world, but we're also under some walkable
-    // geometry.
-    // Move us up to the lowest surface:
+    // geometry.  Move us up to the lowest surface:
     got_max = true;
     max_height = min_height;
     highest = lowest;
     valid_entries.push_back(lowest);
   }
-  //#*#_has_contact = got_max;
+  // #*#_has_contact = got_max;
 
   #if 0
     cout<<"\ncolliding with:\n";
@@ -176,9 +161,9 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     highest->write(cout, 2);
     cout<<endl;
   #endif
-  
-  // We only collide with things we are impacting with.
-  // Remove the collisions:
+
+  // We only collide with things we are impacting with.  Remove the
+  // collisions:
   _current_colliding.clear();
   if (_legacy_mode) {
     // Add only the one that we're impacting with:
@@ -191,39 +176,39 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     }
   }
 
-  
-  // Set the contact normal so that other code can make use of the
-  // surface slope:
+
+  // Set the contact normal so that other code can make use of the surface
+  // slope:
   if (highest->get_into()->is_of_type(CollisionPlane::get_class_type())) {
-    // This is asking: what is the normal of the plane that the avatar
-    // is colliding with relative to the avatar.  A positive y valye means
-    // the avatar is facing downhill and a negative y value means the
-    // avatar is facing uphill.
-    //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * from_node_path.get_mat(highest->get_into_node_path());
-    //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal();
-    // This is asking: what is the normal of the avatar that the avatar
-    // is colliding with relative to the plane.
+/*
+ * This is asking: what is the normal of the plane that the avatar is
+ * colliding with relative to the avatar.  A positive y valye means the avatar
+ * is facing downhill and a negative y value means the avatar is facing
+ * uphill.  _contact_normal = DCAST(CollisionPlane,
+ * highest->get_into())->get_normal() *
+ * from_node_path.get_mat(highest->get_into_node_path()); _contact_normal =
+ * DCAST(CollisionPlane, highest->get_into())->get_normal(); This is asking:
+ * what is the normal of the avatar that the avatar is colliding with relative
+ * to the plane.
+ */
     CPT(TransformState) transform = highest->get_into_node_path().get_transform(from_node_path);
     _contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * transform->get_mat();
   } else {
     _contact_normal = highest->get_surface_normal(from_node_path);
   }
-  
+
   return max_height;
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::handle_entries
-//       Access: Protected, Virtual
-//  Description: Called by the parent class after all collisions have
-//               been detected, this manages the various collisions
-//               and moves around the nodes as necessary.
-//
-//               The return value is normally true, but it may be
-//               false to indicate the CollisionTraverser should
-//               disable this handler from being called in the future.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the parent class after all collisions have been detected, this
+ * manages the various collisions and moves around the nodes as necessary.
+ *
+ * The return value is normally true, but it may be false to indicate the
+ * CollisionTraverser should disable this handler from being called in the
+ * future.
+ */
 bool CollisionHandlerGravity::
 handle_entries() {
   bool okflag = true;
@@ -236,9 +221,8 @@ handle_entries() {
     Colliders::iterator ci;
     ci = _colliders.find(from_node_path);
     if (ci == _colliders.end()) {
-      // Hmm, someone added a CollisionNode to a traverser and gave
-      // it this CollisionHandler pointer--but they didn't tell us
-      // about the node.
+      // Hmm, someone added a CollisionNode to a traverser and gave it this
+      // CollisionHandler pointer--but they didn't tell us about the node.
       collide_cat.error()
         << get_type() << " doesn't know about "
         << from_node_path << ", disabling.\n";
@@ -260,23 +244,23 @@ handle_entries() {
         }
 
         if (_current_velocity > 0.0f || adjust) {
-          // ...we have a vertical thrust,
-          // ...or the node is above the floor, so it is airborne.
+          // ...we have a vertical thrust, ...or the node is above the floor,
+          // so it is airborne.
           PN_stdfloat dt = ClockObject::get_global_clock()->get_dt();
-          // Fyi, the sign of _gravity is reversed. I think it makes the get_*() set_*()
-          // more intuitive to do it this way.
+          // Fyi, the sign of _gravity is reversed.  I think it makes the
+          // get_*() set_*() more intuitive to do it this way.
           PN_stdfloat gravity_adjust = _current_velocity * dt + 0.5 * -_gravity * dt * dt;
           if (adjust > 0.0f) {
-            // ...the node is under the floor, so it has landed.
-            // Keep the adjust to bring us up to the ground and
-            // then add the gravity_adjust to get us airborne:
+            // ...the node is under the floor, so it has landed.  Keep the
+            // adjust to bring us up to the ground and then add the
+            // gravity_adjust to get us airborne:
             adjust += max((PN_stdfloat)0.0, gravity_adjust);
           } else {
             // ...the node is above the floor, so it is airborne.
             adjust = max(adjust, gravity_adjust);
           }
           _current_velocity -= _gravity * dt;
-          // Record the airborne height in case someone else needs it: 
+          // Record the airborne height in case someone else needs it:
           _airborne_height = -(max_height + _offset) + adjust;
           assert(_airborne_height >= -0.001f);
         }
@@ -312,11 +296,9 @@ handle_entries() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::apply_linear_force
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CollisionHandlerGravity::
 apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }

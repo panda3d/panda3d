@@ -1,16 +1,15 @@
-// Filename: cycleDataLockedStageReader.h
-// Created by:  drose (30Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cycleDataLockedStageReader.h
+ * @author drose
+ * @date 2006-04-30
+ */
 
 #ifndef CYCLEDATALOCKEDSTAGEREADER_H
 #define CYCLEDATALOCKEDSTAGEREADER_H
@@ -20,23 +19,21 @@
 #include "cycleData.h"
 #include "pipelineCycler.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleDataLockedStageReader
-// Description : This class is similar to CycleDataLockedReader,
-//               except it allows reading from a particular stage of
-//               the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is similar to CycleDataLockedReader, except it allows reading
+ * from a particular stage of the pipeline.
+ */
 template<class CycleDataType>
 class CycleDataLockedStageReader {
 public:
-  // By hiding this template from interrogate, we improve compile-time
-  // speed and memory utilization.
+  // By hiding this template from interrogate, we improve compile-time speed
+  // and memory utilization.
 #ifndef CPPPARSER
-  INLINE CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler, 
+  INLINE CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler,
                                     int stage, Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy);
   INLINE void operator = (const CycleDataLockedStageReader<CycleDataType> &copy);
-  
+
   INLINE ~CycleDataLockedStageReader();
 
   INLINE const CycleDataType *operator -> () const;

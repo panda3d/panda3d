@@ -1,16 +1,15 @@
-// Filename: config_downloader.h
-// Created by:  mike (19Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_downloader.h
+ * @author mike
+ * @date 2000-03-19
+ */
 
 #ifndef CONFIG_DOWNLOADER_H
 #define CONFIG_DOWNLOADER_H
@@ -46,6 +45,7 @@ extern ConfigVariableDouble http_idle_timeout;
 extern ConfigVariableInt http_max_connect_count;
 
 extern EXPCL_PANDAEXPRESS ConfigVariableInt tcp_header_size;
+extern EXPCL_PANDAEXPRESS ConfigVariableBool support_ipv6;
 
 extern EXPCL_PANDAEXPRESS void init_libdownloader();
 

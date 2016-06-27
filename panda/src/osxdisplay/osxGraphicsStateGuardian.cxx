@@ -1,13 +1,13 @@
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsStateGuardian.cxx
+ */
 
 #include "osxGraphicsStateGuardian.h"
 #include "osxGraphicsBuffer.h"
@@ -21,22 +21,18 @@
 #include <OpenGL/gl.h>
 #import <mach-o/dyld.h>
 
-// This is generated data for the standard texture we use for drawing
-// the resize box in the window corner.
+// This is generated data for the standard texture we use for drawing the
+// resize box in the window corner.
 #include "resize_box.rgb.c"
 
 TypeHandle osxGraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name.
+ * It is the responsibility of the caller to ensure that the required
+ * extension is defined in the OpenGL runtime prior to calling this; it is an
+ * error to call this for a function that is not defined.
+ */
 void *osxGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   string fullname = "_" + string(name);
@@ -49,11 +45,9 @@ do_get_extension_func(const char *name) {
   return symbol ? NSAddressOfSymbol(symbol) : NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 osxGraphicsStateGuardian::
 osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                          osxGraphicsStateGuardian *share_with) :
@@ -66,11 +60,9 @@ osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   get_gamma_table();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 osxGraphicsStateGuardian::
 ~osxGraphicsStateGuardian() {
   if (_aglcontext != (AGLContext)NULL) {
@@ -81,12 +73,9 @@ osxGraphicsStateGuardian::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
 void osxGraphicsStateGuardian::reset()
 {
 /*
@@ -107,16 +96,12 @@ void osxGraphicsStateGuardian::reset()
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::draw_resize_box
-//       Access: Public, Virtual
-//  Description: Draws an OSX-style resize icon in the bottom right
-//               corner of the current display region.  This is
-//               normally done automatically at the end of each frame
-//               when the window is indicated as resizable, since the
-//               3-D graphics overlay the normal, OS-drawn resize icon
-//               and the user won't be able see it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws an OSX-style resize icon in the bottom right corner of the current
+ * display region.  This is normally done automatically at the end of each
+ * frame when the window is indicated as resizable, since the 3-D graphics
+ * overlay the normal, OS-drawn resize icon and the user won't be able see it.
+ */
 void osxGraphicsStateGuardian::
 draw_resize_box() {
   // This state is created, once, and never freed.
@@ -126,8 +111,8 @@ draw_resize_box() {
                               DepthWriteAttrib::make(DepthWriteAttrib::M_off),
                               DepthTestAttrib::make(DepthTestAttrib::M_none));
 
-    // Get the default texture to apply to the resize box; it's
-    // compiled into the code.
+    // Get the default texture to apply to the resize box; it's compiled into
+    // the code.
     string resize_box_string((const char *)resize_box, resize_box_len);
     istringstream resize_box_strm(resize_box_string);
     PNMImage resize_box_pnm;
@@ -148,14 +133,13 @@ draw_resize_box() {
   // Set the state to our specific, known state for drawing the icon.
   set_state_and_transform(state, TransformState::make_identity());
 
-  // Now determine the inner corner of the quad, choosing a 15x15
-  // pixel square in the lower-right corner, computed from the
-  // viewport size.
+  // Now determine the inner corner of the quad, choosing a 15x15 pixel square
+  // in the lower-right corner, computed from the viewport size.
   PN_stdfloat inner_x = 1.0f - (15.0f * 2.0f / _viewport_width);
   PN_stdfloat inner_y = (15.0f * 2.0f / _viewport_height) - 1.0f;
 
-  // Draw the quad.  We just use the slow, simple immediate mode calls
-  // here.  It's just one quad, after all.
+  // Draw the quad.  We just use the slow, simple immediate mode calls here.
+  // It's just one quad, after all.
   glBegin(GL_QUADS);
 
   glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -174,11 +158,9 @@ draw_resize_box() {
   glEnd();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::build_gl
-//       Access: Public, Virtual
-//  Description: This function will build up a context for a gsg..
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will build up a context for a gsg..
+ */
 OSStatus osxGraphicsStateGuardian::
 build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
   if (_aglcontext) {
@@ -239,8 +221,8 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
     attrib.push_back(AGL_NO_RECOVERY);
   }
 
-  // Allow the system to choose the largest buffers requested that
-  // meets all our selections.
+  // Allow the system to choose the largest buffers requested that meets all
+  // our selections.
   attrib.push_back(AGL_MAXIMUM_POLICY);
 
   // Terminate the list.
@@ -294,12 +276,10 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::describe_pixel_format
-//       Access: Private
-//  Description: Fills in the fb_props member with the appropriate
-//               values according to the chosen pixel format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the fb_props member with the appropriate values according to the
+ * chosen pixel format.
+ */
 void osxGraphicsStateGuardian::
 describe_pixel_format(FrameBufferProperties &fb_props) {
   fb_props.clear();
@@ -361,8 +341,8 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
     fb_props.set_stereo(value);
   }
 
-  // Until we query the renderer, we don't know whether it's hardware
-  // or software based, so set both flags to indicate we don't know.
+  // Until we query the renderer, we don't know whether it's hardware or
+  // software based, so set both flags to indicate we don't know.
   fb_props.set_force_hardware(true);
   fb_props.set_force_software(true);
 
@@ -388,23 +368,18 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::get_gamma_table
-//       Access: Public, Static
-//  Description: Static function for getting the orig gamma tables
-////////////////////////////////////////////////////////////////////
+/**
+ * Static function for getting the orig gamma tables
+ */
 bool osxGraphicsStateGuardian::
 get_gamma_table() {
   CGDisplayRestoreColorSyncSettings();
   _cgErr = CGGetDisplayTransferByTable( 0, 256, _gOriginalRedTable, _gOriginalGreenTable, _gOriginalBlueTable, &_sampleCount);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::static_set_gamma
-//       Access: Public, Static
-//  Description: Static function for setting gamma which is needed
-//               for atexit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Static function for setting gamma which is needed for atexit.
+ */
 bool osxGraphicsStateGuardian::
 static_set_gamma(bool restore, PN_stdfloat gamma) {
   bool set;
@@ -418,14 +393,13 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
   }
   // CGDisplayRestoreColorSyncSettings();
 
-  // CGGammaValue gOriginalRedTable[ 256 ];
-  // CGGammaValue gOriginalGreenTable[ 256 ];
-  // CGGammaValue gOriginalBlueTable[ 256 ];
+  // CGGammaValue gOriginalRedTable[ 256 ]; CGGammaValue gOriginalGreenTable[
+  // 256 ]; CGGammaValue gOriginalBlueTable[ 256 ];
 
-  // CGTableCount sampleCount;
-  // CGDisplayErr cgErr;
+  // CGTableCount sampleCount; CGDisplayErr cgErr;
 
-  // cgErr = CGGetDisplayTransferByTable( 0, 256, _gOriginalRedTable, _gOriginalGreenTable, _gOriginalBlueTable, &_sampleCount);
+  // cgErr = CGGetDisplayTransferByTable( 0, 256, _gOriginalRedTable,
+  // _gOriginalGreenTable, _gOriginalBlueTable, &_sampleCount);
 
   CGGammaValue redTable[ 256 ];
   CGGammaValue greenTable[ 256 ];
@@ -456,12 +430,9 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
   return set;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::set_gamma
-//       Access: Published
-//  Description: Non static version of setting gamma.  Returns true
-//               on success.
-////////////////////////////////////////////////////////////////////
+/**
+ * Non static version of setting gamma.  Returns true on success.
+ */
 bool osxGraphicsStateGuardian::
 set_gamma(PN_stdfloat gamma) {
   bool set;
@@ -471,24 +442,18 @@ set_gamma(PN_stdfloat gamma) {
   return set;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::restore_gamma
-//       Access: Published
-//  Description: Restore original gamma.
-////////////////////////////////////////////////////////////////////
+/**
+ * Restore original gamma.
+ */
 void osxGraphicsStateGuardian::
 restore_gamma() {
   static_set_gamma(true, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::atexit_function
-//       Access: Public, Static
-//  Description: This function is passed to the atexit function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the atexit function.
+ */
 void osxGraphicsStateGuardian::
 atexit_function() {
   static_set_gamma(true, 1.0);
 }
-
-

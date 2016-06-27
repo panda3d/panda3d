@@ -30,14 +30,14 @@ class PhasedObject:
     definition lower in this file.
     """
     notify = directNotify.newCategory("PhasedObject")
-    
+
     def __init__(self, aliasMap = {}):
         self.phase = -1
         self.phaseAliasMap = {}
         self.aliasPhaseMap = {}
         self.__phasing = False
 
-        for alias,phase in aliasMap.items():
+        for alias,phase in list(aliasMap.items()):
             self.setAlias(phase, alias)
 
     def __repr__(self):
@@ -47,19 +47,19 @@ class PhasedObject:
         outStr = PhasedObject.__repr__(self)
         outStr += ' in phase \'%s\'' % self.getPhase()
         return outStr
-        
+
     def setAlias(self, phase, alias):
         """
         Map an alias to a phase number.
 
         phase must be >= 0 and alias must be a string
         of characters suitable for python variable names.
-        
-        The mapping must be one-to-one.        
+
+        The mapping must be one-to-one.
         """
         assert isinstance(phase,int) and phase >= 0
         assert isinstance(alias,str)
-        
+
         self.phaseAliasMap[phase] = alias
         self.aliasPhaseMap[alias] = phase
 
@@ -69,14 +69,14 @@ class PhasedObject:
         Otherwise, returns the phase number.
         """
         return self.phaseAliasMap.get(phase, phase)
-    
+
     def getAliasPhase(self, alias):
         """
         Returns the phase number of an alias, if it exists.
         Otherwise, returns the alias.
         """
         return self.aliasPhaseMap.get(alias, alias)
-        
+
     def getPhase(self):
         """
         Returns the current phase (or alias, if defined)
@@ -94,11 +94,11 @@ class PhasedObject:
         """
         assert not self.__phasing, 'Already phasing. Cannot setPhase() while phasing in progress.'
         self.__phasing = True
-        
+
         phase = self.aliasPhaseMap.get(aPhase,aPhase)
         assert isinstance(phase,int), 'Phase alias \'%s\' not found' % aPhase
         assert phase >= -1, 'Invalid phase number \'%s\'' % phase
-        
+
         if phase > self.phase:
             for x in range(self.phase + 1, phase + 1):
                 self.__loadPhase(x)
@@ -130,7 +130,7 @@ class PhasedObject:
 
     def __phaseNotFound(self, mode, aPhase):
         assert self.notify.debug('%s%s() not found!\n' % (mode,aPhase))
-        
+
 if __debug__:
     class AnfaPhasedObject(PhasedObject):
         """
@@ -166,28 +166,28 @@ if __debug__:
         def __init__(self):
             PhasedObject.__init__(self, {'At':3, 'Near':2, 'Far':1, 'Away':0})
             self.setPhase('Away')
-            
+
         def loadPhaseAway(self):
-            print 'loading Away'
+            print('loading Away')
 
         def unloadPhaseAway(self):
-            print 'unloading Away'
-                                
+            print('unloading Away')
+
         def loadPhaseFar(self):
-            print 'loading Far'
+            print('loading Far')
 
         def unloadPhaseFar(self):
-            print 'unloading Far'
-            
+            print('unloading Far')
+
         def loadPhaseNear(self):
-            print 'loading Near'
-        
+            print('loading Near')
+
         def unloadPhaseNear(self):
-            print 'unloading Near'
-        
+            print('unloading Near')
+
         def loadPhaseAt(self):
-            print 'loading At'
-        
+            print('loading At')
+
         def unloadPhaseAt(self):
-            print 'unloading At'
-        
+            print('unloading At')
+

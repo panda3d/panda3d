@@ -1,16 +1,15 @@
-// Filename: renderAttribRegistry.h
-// Created by:  drose (13Nov08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderAttribRegistry.h
+ * @author drose
+ * @date 2008-11-13
+ */
 
 #ifndef RENDERATTRIBREGISTRY_H
 #define RENDERATTRIBREGISTRY_H
@@ -24,13 +23,11 @@
 class RenderAttrib;
 class DeletedBufferChain;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderAttribRegistry
-// Description : This class is used to associate each RenderAttrib
-//               with a different slot index at runtime, so we can
-//               store a list of RenderAttribs in the RenderState
-//               object, and very quickly look them up by type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to associate each RenderAttrib with a different slot
+ * index at runtime, so we can store a list of RenderAttribs in the
+ * RenderState object, and very quickly look them up by type.
+ */
 class EXPCL_PANDA_PGRAPH RenderAttribRegistry {
 private:
   RenderAttribRegistry();
@@ -39,18 +36,18 @@ private:
 public:
   typedef CPT(RenderAttrib) MakeDefaultFunc();
 
-  // This typedef defines the native bitmask type for indicating which
-  // slots are present in a RenderState.  It must be wide enough to
-  // allow room for all of the possible RenderAttribs that might
-  // register themselves.  Presently, 32 bits is wide enough, but only
-  // barely; when we exceed this limit, we will need to go to a 64-bit
-  // type instead.  It will be interesting to see whether a BitMask64
-  // or a DoubleBitMask<BitMask32> will be faster on a 32-bit machine.
+  // This typedef defines the native bitmask type for indicating which slots
+  // are present in a RenderState.  It must be wide enough to allow room for
+  // all of the possible RenderAttribs that might register themselves.
+  // Presently, 32 bits is wide enough, but only barely; when we exceed this
+  // limit, we will need to go to a 64-bit type instead.  It will be
+  // interesting to see whether a BitMask64 or a DoubleBitMask<BitMask32> will
+  // be faster on a 32-bit machine.
   typedef BitMask32 SlotMask;
 
   // Raise this number whenever we add a new attrib.  This used to be
   // determined at runtime, but it's better to have it as a constexpr.
-  static const int _max_slots = 29;
+  static const int _max_slots = 32;
 
   int register_slot(TypeHandle type_handle, int sort,
                     RenderAttrib *default_attrib);

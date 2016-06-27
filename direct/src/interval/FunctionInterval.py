@@ -6,7 +6,7 @@ from panda3d.core import *
 from panda3d.direct import *
 from direct.showbase.MessengerGlobal import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
-import Interval
+from . import Interval
 
 
 #############################################################
@@ -21,7 +21,7 @@ class FunctionInterval(Interval.Interval):
 
     # Keep a list of function intervals currently in memory for
     # Control-C-Control-V redefining. These are just weakrefs so they
-    # should not cause any leaks. 
+    # should not cause any leaks.
     if __debug__:
         import weakref
         FunctionIntervals = weakref.WeakKeyDictionary()
@@ -29,16 +29,16 @@ class FunctionInterval(Interval.Interval):
         @classmethod
         def replaceMethod(self, oldFunction, newFunction):
             import types
-            count = 0        
+            count = 0
             for ival in self.FunctionIntervals:
                 # print 'testing: ', ival.function, oldFunction
                 # Note: you can only replace methods currently
                 if type(ival.function) == types.MethodType:
-                    if (ival.function.im_func == oldFunction):
+                    if ival.function.__func__ == oldFunction:
                         # print 'found: ', ival.function, oldFunction
                         ival.function = types.MethodType(newFunction,
-                                                         ival.function.im_self,
-                                                         ival.function.im_class)
+                                                         ival.function.__self__,
+                                                         ival.function.__self__.__class__)
                         count += 1
             return count
 
@@ -55,7 +55,7 @@ class FunctionInterval(Interval.Interval):
 
         # Record instance variables
         self.function = function
-            
+
         # Create a unique name for the interval if necessary
         if name is None:
             name = self.makeUniqueName(function)

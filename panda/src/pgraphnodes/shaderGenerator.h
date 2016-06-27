@@ -1,17 +1,17 @@
-// Filename: shaderGenerator.h
-// Created by: jyelon (15Dec07)
-// Updated by: weifengh, PandaSE(15Apr10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderGenerator.h
+ * @author jyelon
+ * @date 2007-12-15
+ * @author weifengh, PandaSE
+ * @date 2010-04-15
+ */
 
 #ifndef SHADERGENERATOR_H
 #define SHADERGENERATOR_H
@@ -35,39 +35,29 @@ class Spotlight;
 class LightAttrib;
 class GeomVertexAnimationSpec;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderGenerator
-// Description : The ShaderGenerator is a device that effectively
-//               replaces the classic fixed function pipeline with
-//               a 'next-gen' fixed function pipeline.  The next-gen
-//               fixed function pipeline supports features like
-//               normal mapping, gloss mapping, cartoon lighting,
-//               and so forth.  It works by automatically generating
-//               a shader from a given RenderState.
-//
-//               Currently, there is one ShaderGenerator object per
-//               GraphicsStateGuardian.  It is our intent that in
-//               time, people will write classes that derive from
-//               ShaderGenerator but which yield slightly different
-//               results.
-//
-//               The ShaderGenerator owes its existence to the
-//               'Bamboo Team' at Carnegie Mellon's Entertainment
-//               Technology Center.  This is a group of students
-//               who, as a semester project, decided that next-gen
-//               graphics should be accessible to everyone, even if
-//               they don't know shader programming.  The group
-//               consisted of:
-//
-//               Aaron Lo, Programmer
-//               Heegun Lee, Programmer
-//               Erin Fernandez, Artist/Tester
-//               Joe Grubb, Artist/Tester
-//               Ivan Ortega, Technical Artist/Tester
-//
-//               Thanks to them!
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The ShaderGenerator is a device that effectively replaces the classic fixed
+ * function pipeline with a 'next-gen' fixed function pipeline.  The next-gen
+ * fixed function pipeline supports features like normal mapping, gloss
+ * mapping, cartoon lighting, and so forth.  It works by automatically
+ * generating a shader from a given RenderState.
+ *
+ * Currently, there is one ShaderGenerator object per GraphicsStateGuardian.
+ * It is our intent that in time, people will write classes that derive from
+ * ShaderGenerator but which yield slightly different results.
+ *
+ * The ShaderGenerator owes its existence to the 'Bamboo Team' at Carnegie
+ * Mellon's Entertainment Technology Center.  This is a group of students who,
+ * as a semester project, decided that next-gen graphics should be accessible
+ * to everyone, even if they don't know shader programming.  The group
+ * consisted of:
+ *
+ * Aaron Lo, Programmer Heegun Lee, Programmer Erin Fernandez, Artist/Tester
+ * Joe Grubb, Artist/Tester Ivan Ortega, Technical Artist/Tester
+ *
+ * Thanks to them!
+ *
+ */
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
   ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host);
@@ -77,7 +67,6 @@ PUBLISHED:
 
 protected:
   CPT(RenderAttrib) create_shader_attrib(const string &txt);
-  PT(Texture) update_shadow_buffer(NodePath light_np);
   static const string combine_mode_as_string(CPT(TextureStage) stage,
                       TextureStage::CombineMode c_mode, bool alpha, short texindex);
   static const string combine_source_as_string(CPT(TextureStage) stage,
@@ -86,6 +75,7 @@ protected:
 
   // Shader register allocation:
 
+  bool _use_generic_attr;
   int _vcregs_used;
   int _fcregs_used;
   int _vtregs_used;
@@ -100,14 +90,8 @@ protected:
   Material *_material;
   int _num_textures;
 
-  pvector <AmbientLight *>     _alights;
-  pvector <DirectionalLight *> _dlights;
-  pvector <PointLight *>       _plights;
-  pvector <Spotlight *>        _slights;
-  pvector <NodePath>           _alights_np;
-  pvector <NodePath>           _dlights_np;
-  pvector <NodePath>           _plights_np;
-  pvector <NodePath>           _slights_np;
+  pvector<LightLensNode *> _lights;
+  pvector<NodePath> _lights_np;
 
   bool _vertex_colors;
   bool _flat_colors;

@@ -16,8 +16,8 @@ class PushesStateChanges:
 
     def destroy(self):
         if len(self._subscribers) != 0:
-            raise '%s object still has subscribers in destroy(): %s' % (
-                self.__class__.__name__, self._subscribers)
+            raise Exception('%s object still has subscribers in destroy(): %s' % (
+                self.__class__.__name__, self._subscribers))
         del self._subscribers
         del self._value
 
@@ -154,7 +154,7 @@ class ReceivesMultipleStateChanges:
         self._source2key = {}
 
     def destroy(self):
-        keys = self._key2source.keys()
+        keys = list(self._key2source.keys())
         for key in keys:
             self._unsubscribe(key)
         del self._key2source
@@ -202,15 +202,14 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
         # the value of arguments that push state
         self._bakedArgs = []
         self._bakedKargs = {}
-        for i in xrange(len(self._args)):
+        for i, arg in enumerate(self._args):
             key = i
-            arg = self._args[i]
             if isinstance(arg, PushesStateChanges):
                 self._bakedArgs.append(arg.getState())
                 self._subscribeTo(arg, key)
             else:
                 self._bakedArgs.append(self._args[i])
-        for key, arg in self._kArgs.iteritems():
+        for key, arg in self._kArgs.items():
             if isinstance(arg, PushesStateChanges):
                 self._bakedKargs[key] = arg.getState()
                 self._subscribeTo(arg, key)
@@ -249,7 +248,7 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
         if self._initialized:
             self._func(*self._bakedArgs, **self._bakedKargs)
             PushesStateChanges._handleStateChange(self)
-        
+
 if __debug__:
     l = []
     def handler(value, l=l):
@@ -351,7 +350,7 @@ class Pulse(PushesStateChanges):
     def sendPulse(self):
         self._handlePotentialStateChange(True)
         self._handlePotentialStateChange(False)
-    
+
 if __debug__:
     l = []
     def handler(value, l=l):
@@ -382,24 +381,6 @@ class EventPulse(Pulse, DirectObject):
         self.ignoreAll()
         Pulse.destroy(self)
 
-if __debug__:
-    l = []
-    def handler(value, l=l):
-        l.append(value)
-    ep = EventPulse('testEvent')
-    fc = FunctionCall(handler, ep)
-    assert l == []
-    messenger.send('testEvent')
-    assert l == [True, False, ]
-    messenger.send('testEvent')
-    assert l == [True, False, True, False, ]
-    fc.destroy()
-    ep.destroy()
-    del fc
-    del ep
-    del l
-    del handler
-    
 class EventArgument(PushesStateChanges, DirectObject):
     # tracks a particular argument to a particular messenger event
     def __init__(self, event, index=0):
@@ -411,28 +392,9 @@ class EventArgument(PushesStateChanges, DirectObject):
         self.ignoreAll()
         del self._index
         PushesStateChanges.destroy(self)
-        
+
     def _handleEvent(self, *args):
         self._handlePotentialStateChange(args[self._index])
-
-if __debug__:
-    l = []
-    def handler(value, l=l):
-        l.append(value)
-    ea = EventArgument('testEvent', index=1)
-    fc = FunctionCall(handler, ea)
-    assert l == []
-    fc.pushCurrentState()
-    assert l == [None, ]
-    messenger.send('testEvent', ['a', 'b'])
-    assert l == [None, 'b', ]
-    messenger.send('testEvent', [1, 2, 3, ])
-    assert l == [None, 'b', 2, ]
-    fc.destroy()
-    ea.destroy()
-    del fc
-    del ea
-    del l
 
 class AttrSetter(StateChangeNode):
     def __init__(self, source, object, attrName):

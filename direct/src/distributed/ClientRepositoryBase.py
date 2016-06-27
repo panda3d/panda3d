@@ -1,18 +1,17 @@
-from pandac.PandaModules import *
-from MsgTypes import *
+from panda3d.core import *
+from panda3d.direct import *
+from .MsgTypes import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
-import CRCache
+from . import CRCache
 from direct.distributed.CRDataCache import CRDataCache
 from direct.distributed.ConnectionRepository import ConnectionRepository
 from direct.showbase import PythonUtil
-import ParentMgr
-import RelatedObjectMgr
+from . import ParentMgr
+from . import RelatedObjectMgr
 import time
-from ClockDelta import *
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
-import types
+from .ClockDelta import *
+
 
 class ClientRepositoryBase(ConnectionRepository):
     """
@@ -73,7 +72,7 @@ class ClientRepositoryBase(ConnectionRepository):
         self.lastHeartbeat = 0
 
         self._delayDeletedDOs = {}
-        
+
         self.specialNameNumber = 0
 
     def setDeferInterval(self, deferInterval):
@@ -103,7 +102,7 @@ class ClientRepositoryBase(ConnectionRepository):
         ## self.send(datagram)
         ## # Make sure the message gets there.
         ## self.flush()
-        
+
     def specialName(self, label):
         name = ("SpecialName %s %s" % (self.specialNameNumber, label))
         self.specialNameNumber += 1
@@ -190,7 +189,7 @@ class ClientRepositoryBase(ConnectionRepository):
                 for dg, di in updates:
                     # non-DC updates that need to be played back in-order are
                     # stored as (msgType, (dg, di))
-                    if type(di) is types.TupleType:
+                    if type(di) is tuple:
                         msgType = dg
                         dg, di = di
                         self.replayDeferredGenerate(msgType, (dg, di))
@@ -205,7 +204,7 @@ class ClientRepositoryBase(ConnectionRepository):
     def doDeferredGenerate(self, task):
         """ This is the task that generates an object on the deferred
         queue. """
-        
+
         now = globalClock.getFrameTime()
         while self.deferredGenerates:
             if now - self.lastGenerate < self.deferInterval:
@@ -386,7 +385,7 @@ class ClientRepositoryBase(ConnectionRepository):
             del self.deferredGenerates[i]
             if len(self.deferredGenerates) == 0:
                 taskMgr.remove('deferredGenerate')
-            
+
         else:
             self._logFailedDisable(doId, ownerView)
 
@@ -422,7 +421,7 @@ class ClientRepositoryBase(ConnectionRepository):
         doId = di.getUint32()
 
         ovUpdated = self.__doUpdateOwner(doId, di)
-        
+
         if doId in self.deferredDoIds:
             # This object hasn't really been generated yet.  Sit on
             # the update.
@@ -436,8 +435,8 @@ class ClientRepositoryBase(ConnectionRepository):
         else:
             # This object has been fully generated.  It's OK to update.
             self.__doUpdate(doId, di, ovUpdated)
-            
-            
+
+
     def __doUpdate(self, doId, di, ovUpdated):
         # Find the DO
         do = self.doId2do.get(doId)
@@ -445,9 +444,9 @@ class ClientRepositoryBase(ConnectionRepository):
             # Let the dclass finish the job
             do.dclass.receiveUpdate(do, di)
         elif not ovUpdated:
-            # this next bit is looking for avatar handles so that if you get an update 
-            # for an avatar that isn't in your doId2do table but there is a 
-            # avatar handle for that object then it's messages will be forwarded to that 
+            # this next bit is looking for avatar handles so that if you get an update
+            # for an avatar that isn't in your doId2do table but there is a
+            # avatar handle for that object then it's messages will be forwarded to that
             # object. We are currently using that for whisper echoing
             # if you need a more general perpose system consider registering proxy objects on
             # a dict and adding the avatar handles to that dict when they are created
@@ -458,14 +457,14 @@ class ClientRepositoryBase(ConnectionRepository):
                 if handle:
                     dclass = self.dclassesByName[handle.dclassName]
                     dclass.receiveUpdate(handle, di)
-                    
+
                 else:
                     self.notify.warning(
                         "Asked to update non-existent DistObj " + str(doId))
             except:
                 self.notify.warning(
                         "Asked to update non-existent DistObj " + str(doId) + "and failed to find it")
- 
+
     def __doUpdateOwner(self, doId, di):
         ovObj = self.doId2ownerView.get(doId)
         if ovObj:
@@ -489,7 +488,7 @@ class ClientRepositoryBase(ConnectionRepository):
             self.bootedText = None
             self.notify.warning(
                 "Server is booting us out with no explanation.")
-        
+
         # disconnect now, don't wait for send/recv to fail
         self.stopReaderPollTask()
         self.lostConnection()
@@ -504,7 +503,7 @@ class ClientRepositoryBase(ConnectionRepository):
         message = di.getString()
         self.notify.info('Message from server: %s' % (message))
         return message
-        
+
     def handleSystemMessageAknowledge(self, di):
         # Got a system message from the server.
         message = di.getString()
@@ -602,8 +601,8 @@ class ClientRepositoryBase(ConnectionRepository):
         del self._delayDeletedDOs[key]
 
     def printDelayDeletes(self):
-        print 'DelayDeletes:'
-        print '============='
-        for obj in self._delayDeletedDOs.itervalues():
-            print '%s\t%s (%s)\tdelayDeletes=%s' % (
-                obj.doId, safeRepr(obj), itype(obj), obj.getDelayDeleteNames())
+        print('DelayDeletes:')
+        print('=============')
+        for obj in self._delayDeletedDOs.values():
+            print('%s\t%s (%s)\tdelayDeletes=%s' % (
+                obj.doId, safeRepr(obj), itype(obj), obj.getDelayDeleteNames()))

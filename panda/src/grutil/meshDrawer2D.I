@@ -1,44 +1,39 @@
-// Filename: meshDrawer.I
-// Created by:  treeform (19dec08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file meshDrawer2D.I
+ * @author treeform
+ * @date 2008-12-19
+ */
 
 #include "lpoint2.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::Constructor
-//       Access: Published
-//  Description: Creates the MeshDrawer2D low level system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the MeshDrawer2D low level system.
+ */
 INLINE MeshDrawer2D::
 MeshDrawer2D() {
-  _root = NodePath("MeshDrawer");  
+  _root = NodePath("MeshDrawer");
   _bv = NULL;
   _vertex = NULL;
   _uv = NULL;
   _color = NULL;
   _budget = 5000;
-  
+
   _clip_x = -1000000;
   _clip_y = -1000000;
   _clip_w = 1000000;
   _clip_h = 1000000;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::Destructor
-//       Access: Published
-//  Description: Destroys the MeshDrawer2D low level system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroys the MeshDrawer2D low level system.
+ */
 INLINE MeshDrawer2D::
 ~MeshDrawer2D() {
   _root.remove_node();
@@ -47,42 +42,34 @@ INLINE MeshDrawer2D::
   if (_color != NULL)  delete _color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::get_root
-//       Access: Published
-//  Description: Returns the root NodePath.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the root NodePath.
+ */
 INLINE NodePath MeshDrawer2D::
 get_root() {
   return _root;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::set_budget
-//       Access: Published
-//  Description: Sets the total triangle budget of the drawer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the total triangle budget of the drawer.
+ */
 INLINE void MeshDrawer2D::
 set_budget(int total_budget) {
   _budget = total_budget;
   generator(_budget);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::get_budget()
-//       Access: Published
-//  Description: Gets the total triangle budget of the drawer
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the total triangle budget of the drawer
+ */
 INLINE int MeshDrawer2D::
 get_budget() {
   return _budget;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::set_budget
-//       Access: Published
-//  Description: Sets clipping rectangle
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets clipping rectangle
+ */
 INLINE void MeshDrawer2D::
 set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
   _clip_x = x;
@@ -91,12 +78,9 @@ set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
   _clip_h = h;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::quad
-//       Access: Published
-//  Description: Draws a 2d rectangle.
-//               Ignores the cliping rectangle
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a 2d rectangle.  Ignores the cliping rectangle
+ */
 INLINE void MeshDrawer2D::
 quad_raw(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
      const LVector3 &v2, const LVector4 &c2, const LVector2 &uv2,
@@ -121,18 +105,18 @@ quad_raw(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
   _vertex->add_data3(v4);
   _color->add_data4(c4);
   _uv->add_data2(uv4);
-  
+
   _clear_index += 1;
 }
 
 
 INLINE void MeshDrawer2D::
-rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
-     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
+rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
      const LVector4 &color
 ) {
-    
-  quad_raw( 
+
+  quad_raw(
     LVector3(x,   0, y),   color, LVector2(u   , v),
     LVector3(x,   0, y+h), color, LVector2(u   , v+vs),
     LVector3(x+w, 0, y),   color, LVector2(u+us, v),
@@ -140,38 +124,36 @@ rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
     );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::quad
-//       Access: Published
-//  Description: Draws a 2d rectangle, that can be cliped
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a 2d rectangle, that can be cliped
+ */
 INLINE void MeshDrawer2D::
-rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
-     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
+rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
      const LVector4 &color
 ) {
-    
-  if( w == 0 &&  h == 0 ) return; // no size return 
+
+  if( w == 0 &&  h == 0 ) return; // no size return
   if (x > _clip_x+_clip_w) return;  // we are left of the clip
   if (y > _clip_y+_clip_h) return;  // we are above of the clip
   if (x+w < _clip_x) return; // we are right of the clip
-  if (y+h < _clip_y) return; // we are bellow clip 
-    
+  if (y+h < _clip_y) return; // we are bellow clip
+
   // the rectange fits but it might need to be cliped
-  
+
   PN_stdfloat x_uv_ratio = us/w;
   PN_stdfloat y_uv_ratio = vs/h;
   PN_stdfloat dt = 0;
-      
+
   if (x < _clip_x){
-    // clip right 
+    // clip right
     dt = _clip_x-x;
     x  += dt;
-    w  -= dt;              
+    w  -= dt;
     u  += dt*x_uv_ratio;
     us -= dt*x_uv_ratio;
-  } 
-                       
+  }
+
   if (y < _clip_y){
     // clip bottom
     dt = _clip_y-y;
@@ -180,23 +162,22 @@ rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
     v  += dt*y_uv_ratio;
     vs -= dt*y_uv_ratio;
   }
-      
+
   if (x+w > _clip_x+_clip_w){
-    // clip left 
+    // clip left
     dt = x+w - (_clip_x+_clip_w);
     w  -= dt;
     us -= dt*x_uv_ratio;
-  }                
-     
+  }
+
   if (y+h > _clip_y+_clip_h){
-    // clip top 
+    // clip top
     dt = y+h - (_clip_y+_clip_h);
-    h  -= dt; 
+    h  -= dt;
     vs -= dt*y_uv_ratio;
   }
 
   // we made it lets draw the quad
   rectangle_raw(x,y,w,h,u,v,us,vs,color);
-    
-}
 
+}

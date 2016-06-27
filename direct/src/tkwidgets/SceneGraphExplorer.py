@@ -4,8 +4,7 @@ __all__ = ['SceneGraphExplorer', 'SceneGraphExplorerItem', 'explore']
 
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-from Tree import *
+from .Tree import *
 import Pmw
 
 # changing these strings requires changing DirectSession.py SGE_ strs too!
@@ -27,7 +26,10 @@ DEFAULT_MENU_ITEMS = [
 
 class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
-    def __init__(self, parent = None, nodePath = render, isItemEditable = True, **kw):
+    def __init__(self, parent = None, nodePath = None, isItemEditable = True, **kw):
+        if nodePath is None:
+            nodePath = base.render
+
         # Define the megawidget options.
         optiondefs = (
             ('menuItems',   [],   Pmw.INITOPT),
@@ -133,7 +135,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Remove hooks
         self.ignore('DIRECT_activeParent')
         self.ignore('SGE_Update Explorer')
-   
+
     def updateSelection(self, searchKey):
         # [gjeon] update SGE selection with directSession
         sceneGraphItem = self._node.find(searchKey)
@@ -188,7 +190,10 @@ class SceneGraphExplorerItem(TreeItem):
         messenger.send('SGE_' + command, [self.nodePath])
 
 
-def explore(nodePath = render):
+def explore(nodePath = None):
+    if nodePath is None:
+        nodePath = base.render
+
     tl = Toplevel()
     tl.title('Explore: ' + nodePath.getName())
     sge = SceneGraphExplorer(parent = tl, nodePath = nodePath)

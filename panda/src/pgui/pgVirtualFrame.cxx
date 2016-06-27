@@ -1,16 +1,15 @@
-// Filename: pgVirtualFrame.cxx
-// Created by:  drose (17Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgVirtualFrame.cxx
+ * @author drose
+ * @date 2005-08-17
+ */
 
 #include "pgVirtualFrame.h"
 #include "scissorEffect.h"
@@ -18,11 +17,9 @@
 
 TypeHandle PGVirtualFrame::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGVirtualFrame::
 PGVirtualFrame(const string &name) : PGItem(name)
 {
@@ -32,20 +29,16 @@ PGVirtualFrame(const string &name) : PGItem(name)
   setup_child_nodes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGVirtualFrame::
 ~PGVirtualFrame() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGVirtualFrame::
 PGVirtualFrame(const PGVirtualFrame &copy) :
   PGItem(copy),
@@ -62,35 +55,27 @@ PGVirtualFrame(const PGVirtualFrame &copy) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PGVirtualFrame::
 make_copy() const {
   LightReMutexHolder holder(_lock);
   return new PGVirtualFrame(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::r_copy_children
-//       Access: Protected, Virtual
-//  Description: This is called by r_copy_subgraph(); the copy has
-//               already been made of this particular node (and this
-//               is the copy); this function's job is to copy all of
-//               the children from the original.
-//
-//               Note that it includes the parameter inst_map, which
-//               is a map type, and is not (and cannot be) exported
-//               from PANDA.DLL.  Thus, any derivative of PandaNode
-//               that is not also a member of PANDA.DLL *cannot*
-//               access this map, and probably should not even
-//               override this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by r_copy_subgraph(); the copy has already been made of this
+ * particular node (and this is the copy); this function's job is to copy all
+ * of the children from the original.
+ *
+ * Note that it includes the parameter inst_map, which is a map type, and is
+ * not (and cannot be) exported from PANDA.DLL.  Thus, any derivative of
+ * PandaNode that is not also a member of PANDA.DLL *cannot* access this map,
+ * and probably should not even override this function.
+ */
 void PGVirtualFrame::
 r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
                 Thread *current_thread) {
@@ -122,13 +107,10 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
     clear_clip_frame();
   }
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::setup
-//       Access: Published
-//  Description: Creates a PGVirtualFrame with the indicated 
-//               dimensions.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Creates a PGVirtualFrame with the indicated dimensions.
+ */
 void PGVirtualFrame::
 setup(PN_stdfloat width, PN_stdfloat height) {
   LightReMutexHolder holder(_lock);
@@ -150,16 +132,12 @@ setup(PN_stdfloat width, PN_stdfloat height) {
                  bevel, height - 2 * bevel);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::set_clip_frame
-//       Access: Published
-//  Description: Sets the bounding rectangle of the clip frame.
-//               This is the size of the small window through which we
-//               can see the virtual canvas.  Normally, this is the
-//               same size as the actual frame or smaller (typically
-//               it is smaller by the size of the bevel, or to make
-//               room for scroll bars).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the bounding rectangle of the clip frame.  This is the size of the
+ * small window through which we can see the virtual canvas.  Normally, this
+ * is the same size as the actual frame or smaller (typically it is smaller by
+ * the size of the bevel, or to make room for scroll bars).
+ */
 void PGVirtualFrame::
 set_clip_frame(const LVecBase4 &frame) {
   LightReMutexHolder holder(_lock);
@@ -172,44 +150,36 @@ set_clip_frame(const LVecBase4 &frame) {
        LPoint3(_clip_frame[1], _clip_frame[2], _clip_frame[2]),
        LPoint3(_clip_frame[1], _clip_frame[3], _clip_frame[3]),
        LPoint3(_clip_frame[0], _clip_frame[3], _clip_frame[3]));
-    
+
     _canvas_parent->set_effect(scissor_effect);
     clip_frame_changed();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::clear_clip_frame
-//       Access: Published
-//  Description: Removes the clip frame from the item.  This
-//               disables clipping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the clip frame from the item.  This disables clipping.
+ */
 void PGVirtualFrame::
 clear_clip_frame() {
   LightReMutexHolder holder(_lock);
   if (_has_clip_frame) {
     _has_clip_frame = false;
-    
+
     _canvas_parent->clear_effect(ScissorEffect::get_class_type());
     clip_frame_changed();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::clip_frame_changed
-//       Access: Protected, Virtual
-//  Description: Called when the user changes the clip_frame size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user changes the clip_frame size.
+ */
 void PGVirtualFrame::
 clip_frame_changed() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::setup_child_nodes
-//       Access: Private
-//  Description: Creates the special canvas_node and canvas_parent
-//               for this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the special canvas_node and canvas_parent for this object.
+ */
 void PGVirtualFrame::
 setup_child_nodes() {
   _canvas_parent = new ModelNode("canvas_parent");

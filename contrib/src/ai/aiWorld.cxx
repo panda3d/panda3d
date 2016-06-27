@@ -1,17 +1,15 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : aiWorld.cxx
-// Created by  : Deepak, John, Navin
-// Date        :  8 Sep 09
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file aiWorld.cxx
+ * @author Deepak, John, Navin
+ * @date 2009-09-08
+ */
 
 #include "aiWorld.h"
 
@@ -56,13 +54,10 @@ void AIWorld::print_list() {
   _ai_char_pool->print_list();
 }
 
-////////////////////////////////////////////////////////////////////////
-// Function : update
-// Description : The AIWorld update function calls the update function of all the
-//                AI characters which have been added to the AIWorld.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * The AIWorld update function calls the update function of all the AI
+ * characters which have been added to the AIWorld.
+ */
 void AIWorld::update() {
   AICharPool::node *ai_pool;
   ai_pool = _ai_char_pool->_head;
@@ -73,15 +68,11 @@ void AIWorld::update() {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : add_flock
-// Description : This function adds all the AI characters in the Flock object to
-//                the AICharPool. This function allows adding the AI characetrs as
-//                part of a flock.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function adds all the AI characters in the Flock object to the
+ * AICharPool.  This function allows adding the AI characetrs as part of a
+ * flock.
+ */
 void AIWorld::add_flock(Flock *flock) {
   // Add all the ai_characters in the flock to the AIWorld.
   for(unsigned int i = 0; i < flock->_ai_char_list.size(); ++i) {
@@ -91,13 +82,9 @@ void AIWorld::add_flock(Flock *flock) {
   _flock_pool.push_back(flock);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : get_flock
-// Description : This function returns a handle to the Flock whose id is passed.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function returns a handle to the Flock whose id is passed.
+ */
 Flock AIWorld::get_flock(unsigned int flock_id) {
   for(unsigned int i=0; i < _flock_pool.size(); ++i) {
     if(_flock_pool[i]->get_id() == flock_id) {
@@ -108,13 +95,9 @@ Flock AIWorld::get_flock(unsigned int flock_id) {
   return *null_flock;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : remove_flock
-// Description : This function removes the flock behavior completely.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function removes the flock behavior completely.
+ */
 void AIWorld::remove_flock(unsigned int flock_id) {
   for(unsigned int i = 0; i < _flock_pool.size(); ++i) {
     if(_flock_pool[i]->get_id() == flock_id) {
@@ -129,14 +112,10 @@ void AIWorld::remove_flock(unsigned int flock_id) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : flock_off
-// Description : This function turns off the flock behavior temporarily. Similar to
-//                pausing the behavior.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function turns off the flock behavior temporarily.  Similar to pausing
+ * the behavior.
+ */
 void AIWorld::flock_off(unsigned int flock_id) {
   for(unsigned int i = 0; i < _flock_pool.size(); ++i) {
     if(_flock_pool[i]->get_id() == flock_id) {
@@ -149,13 +128,9 @@ void AIWorld::flock_off(unsigned int flock_id) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : flock_on
-// Description : This function turns on the flock behavior.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function turns on the flock behavior.
+ */
 void AIWorld::flock_on(unsigned int flock_id) {
   for(unsigned int i = 0; i < _flock_pool.size(); ++i) {
     if(_flock_pool[i]->get_id() == flock_id) {
@@ -234,14 +209,10 @@ void AICharPool::del(string name) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : print_list
-// Description : This function prints the ai characters in the AICharPool. Used for
-//                debugging purposes.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function prints the ai characters in the AICharPool.  Used for
+ * debugging purposes.
+ */
 void AICharPool::print_list() {
   node* q;
   q = _head;
@@ -251,26 +222,18 @@ void AICharPool::print_list() {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : add_obstacle
-// Description : This function adds the nodepath as an obstacle that is needed
-//                by the obstacle avoidance behavior.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function adds the nodepath as an obstacle that is needed by the
+ * obstacle avoidance behavior.
+ */
 void AIWorld::add_obstacle(NodePath obstacle) {
   _obstacles.push_back(obstacle);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : remove_obstacle
-// Description : This function removes the nodepath from the obstacles list that is needed
-//                by the obstacle avoidance behavior.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function removes the nodepath from the obstacles list that is needed
+ * by the obstacle avoidance behavior.
+ */
 void AIWorld::remove_obstacle(NodePath obstacle) {
   for(unsigned int i = 0; i <= _obstacles.size(); ++i) {
     if(_obstacles[i] == obstacle) {

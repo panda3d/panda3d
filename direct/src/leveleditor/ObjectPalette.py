@@ -14,7 +14,7 @@ Then you need implement ObjectPalette class inheriting ObjectPaletteBase,
 and in the populate function you can define ObjectPalette tree structure.
 """
 
-from ObjectPaletteBase import *
+from .ObjectPaletteBase import *
 
 class ObjectProp(ObjectBase):
     def __init__(self, *args, **kw):
@@ -52,7 +52,7 @@ class ObjectDoubleSmileys(ObjectProp):
                                                     # it means this function belongs to the default objectHandler.
                                                     1.0, [0, 10, 0.1]]
 
-        
+
 class ObjectPalette(ObjectPaletteBase):
     def __init__(self):
         ObjectPaletteBase.__init__(self)
@@ -84,7 +84,7 @@ class ObjectPalette(ObjectPaletteBase):
                                                      {'val':OG.ARG_VAL, 'obj':OG.ARG_OBJ}),
                                                     1, [1, 10]],
                                         }),
-                 'Prop') # This object type will be added under the 'Prop' group.        
+                 'Prop') # This object type will be added under the 'Prop' group.
         self.add(ObjectDoubleSmileys(name='H Double Smiley',
                                      createFunction = ('.createDoubleSmiley', {})),
                                      # When the createFunction is defined like this,

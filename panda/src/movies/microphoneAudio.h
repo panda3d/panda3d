@@ -1,16 +1,15 @@
-// Filename: microphoneAudio.h
-// Created by: jyelon (02Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file microphoneAudio.h
+ * @author jyelon
+ * @date 2007-07-02
+ */
 
 #ifndef MICROPHONEAUDIO_H
 #define MICROPHONEAUDIO_H
@@ -19,11 +18,10 @@
 class MovieAudio;
 class MovieAudioCursor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MicrophoneAudio
-// Description : Class MicrophoneAudio provides the means to read
-//               raw audio samples from a microphone.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class MicrophoneAudio provides the means to read raw audio samples from a
+ * microphone.
+ */
 class EXPCL_PANDA_MOVIES MicrophoneAudio : public MovieAudio {
 
  PUBLISHED:
@@ -32,10 +30,14 @@ class EXPCL_PANDA_MOVIES MicrophoneAudio : public MovieAudio {
   static int                 get_num_options();
   static PT(MicrophoneAudio) get_option(int n);
   MAKE_SEQ(get_options, get_num_options, get_option);
-  
+
   INLINE int get_channels() const;
   INLINE int get_rate() const;
-  
+
+  MAKE_SEQ_PROPERTY(options, get_num_options, get_option);
+  MAKE_PROPERTY(channels, get_channels);
+  MAKE_PROPERTY(rate, get_rate);
+
   virtual PT(MovieAudioCursor) open() = 0;
 
 public:

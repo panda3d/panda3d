@@ -1,16 +1,15 @@
-// Filename: callbackNode.h
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file callbackNode.h
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #ifndef CALLBACKNODE_H
 #define CALLBACKNODE_H
@@ -20,11 +19,10 @@
 #include "callbackObject.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CallbackNode
-// Description : A special node that can issue arbitrary callbacks to
-//               user code, either during the cull or draw traversals.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special node that can issue arbitrary callbacks to user code, either
+ * during the cull or draw traversals.
+ */
 class EXPCL_PANDA_PGRAPHNODES CallbackNode : public PandaNode {
 PUBLISHED:
   CallbackNode(const string &name);
@@ -32,10 +30,12 @@ PUBLISHED:
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
+  MAKE_PROPERTY(cull_callback, get_cull_callback, set_cull_callback);
 
   INLINE void set_draw_callback(CallbackObject *object);
   INLINE void clear_draw_callback();
   INLINE CallbackObject *get_draw_callback() const;
+  MAKE_PROPERTY(draw_callback, get_draw_callback, set_draw_callback);
 
 public:
   CallbackNode(const CallbackNode &copy);

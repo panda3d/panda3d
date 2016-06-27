@@ -1,16 +1,15 @@
-// Filename: configVariableString.h
-// Created by:  drose (20Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableString.h
+ * @author drose
+ * @date 2004-10-20
+ */
 
 #ifndef CONFIGVARIABLESTRING_H
 #define CONFIGVARIABLESTRING_H
@@ -18,11 +17,9 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableString
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a string type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a string type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableString : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableString(const string &name);
@@ -32,8 +29,7 @@ PUBLISHED:
   INLINE void operator = (const string &value);
   INLINE operator const string & () const;
 
-  // These methods help the ConfigVariableString act like a C++ string
-  // object.
+  // These methods help the ConfigVariableString act like a C++ string object.
   INLINE const char *c_str() const;
   INLINE bool empty() const;
   INLINE size_t length() const;
@@ -47,6 +43,8 @@ PUBLISHED:
   INLINE void set_value(const string &value);
   INLINE const string &get_value() const;
   INLINE string get_default_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
   INLINE string get_word(size_t n) const;
   INLINE void set_word(size_t n, const string &value);

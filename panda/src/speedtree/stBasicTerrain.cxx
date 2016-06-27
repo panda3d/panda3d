@@ -1,16 +1,15 @@
-// Filename: stBasicTerrain.cxx
-// Created by:  drose (12Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stBasicTerrain.cxx
+ * @author drose
+ * @date 2010-10-12
+ */
 
 #include "stBasicTerrain.h"
 #include "geomVertexWriter.h"
@@ -19,8 +18,8 @@
 
 TypeHandle STBasicTerrain::_type_handle;
 
-// VERTEX_ATTRIB_END is defined as a macro that must be evaluated
-// within the SpeedTree namespace.
+// VERTEX_ATTRIB_END is defined as a macro that must be evaluated within the
+// SpeedTree namespace.
 namespace SpeedTree {
   static const SVertexAttribDesc st_attrib_end = VERTEX_ATTRIB_END();
 }
@@ -34,28 +33,23 @@ namespace SpeedTree {
     { VERTEX_ATTRIB_SEMANTIC_TEXCOORD0, VERTEX_ATTRIB_TYPE_FLOAT, 3 },
     VERTEX_ATTRIB_END( )
   };
-  static const int std_vertex_format_length = 
+  static const int std_vertex_format_length =
     sizeof(std_vertex_format) / sizeof(std_vertex_format[0]);
 };
 */
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 STBasicTerrain::
 STBasicTerrain() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::Copy Constructor
-//       Access: Published
-//  Description: Not sure whether any derived classes will implement
-//               the copy constructor, but it's defined here at the
-//               base level just in case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Not sure whether any derived classes will implement the copy constructor,
+ * but it's defined here at the base level just in case.
+ */
 STBasicTerrain::
 STBasicTerrain(const STBasicTerrain &copy) :
   STTerrain(copy),
@@ -64,20 +58,16 @@ STBasicTerrain(const STBasicTerrain &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 STBasicTerrain::
 ~STBasicTerrain() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::clear
-//       Access: Published, Virtual
-//  Description: Resets the terrain to its initial, unloaded state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the terrain to its initial, unloaded state.
+ */
 void STBasicTerrain::
 clear() {
   STTerrain::clear();
@@ -87,25 +77,21 @@ clear() {
   _height_scale = 1.0f;
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format
-    (new GeomVertexArrayFormat(InternalName::get_vertex(), 3, 
+    (new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
                                GeomEnums::NT_stdfloat, GeomEnums::C_point,
-                               InternalName::get_texcoord(), 3, 
+                               InternalName::get_texcoord(), 3,
                                GeomEnums::NT_stdfloat, GeomEnums::C_texcoord));
   set_vertex_format(format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::setup_terrain
-//       Access: Published
-//  Description: Sets up the terrain by reading a terrain.txt file as
-//               defined by SpeedTree.  This file names the various
-//               map files that define the terrain, as well as
-//               defining parameters size as its size and color.
-//
-//               If a relative filename is supplied, the model-path is
-//               searched.  If a directory is named, "terrain.txt" is
-//               implicitly appended.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the terrain by reading a terrain.txt file as defined by SpeedTree.
+ * This file names the various map files that define the terrain, as well as
+ * defining parameters size as its size and color.
+ *
+ * If a relative filename is supplied, the model-path is searched.  If a
+ * directory is named, "terrain.txt" is implicitly appended.
+ */
 bool STBasicTerrain::
 setup_terrain(const Filename &terrain_filename) {
   _is_valid = false;
@@ -132,23 +118,20 @@ setup_terrain(const Filename &terrain_filename) {
       << "Couldn't open " << terrain_filename << "\n";
     return false;
   }
-    
+
   bool success = setup_terrain(*in, fullpath);
   vfs->close_read_file(in);
 
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::setup_terrain
-//       Access: Published
-//  Description: Sets up the terrain by reading a terrain.txt file as
-//               defined by SpeedTree.  This variant on this method
-//               accepts an istream for an already-opened terrain.txt
-//               file.  The filename is provided for reference, to
-//               assist relative file operations.  It should name the
-//               terrain.txt file that has been opened.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the terrain by reading a terrain.txt file as defined by SpeedTree.
+ * This variant on this method accepts an istream for an already-opened
+ * terrain.txt file.  The filename is provided for reference, to assist
+ * relative file operations.  It should name the terrain.txt file that has
+ * been opened.
+ */
 bool STBasicTerrain::
 setup_terrain(istream &in, const Filename &pathname) {
   clear();
@@ -159,8 +142,8 @@ setup_terrain(istream &in, const Filename &pathname) {
   in >> keyword;
   while (in && !in.eof()) {
     if (keyword == "area") {
-      // "area" defines the size of the terrain in square kilometers.
-      // We apply speedtree_area_scale to convert that to local units.
+      // "area" defines the size of the terrain in square kilometers.  We
+      // apply speedtree_area_scale to convert that to local units.
       PN_stdfloat area;
       in >> area;
       _size = csqrt(area) * speedtree_area_scale;
@@ -211,8 +194,7 @@ setup_terrain(istream &in, const Filename &pathname) {
   in >> ws;
 
   if (!in.eof()) {
-    // If we didn't read all the way to end-of-file, there was an
-    // error.
+    // If we didn't read all the way to end-of-file, there was an error.
     in.clear();
     string text;
     in >> text;
@@ -221,8 +203,7 @@ setup_terrain(istream &in, const Filename &pathname) {
     return false;
   }
 
-  // The first two textures are the normal map and splat map,
-  // respectively.
+  // The first two textures are the normal map and splat map, respectively.
   if (!_splat_layers.empty()) {
     _normal_map = _splat_layers[0]._filename;
     _splat_layers.erase(_splat_layers.begin());
@@ -238,17 +219,13 @@ setup_terrain(istream &in, const Filename &pathname) {
   return _is_valid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::load_data
-//       Access: Published, Virtual
-//  Description: This will be called at some point after
-//               initialization.  It should be overridden by a derived
-//               class to load up the terrain data from its source and
-//               fill in the data members of this class appropriately,
-//               especially _is_valid.  After this call, if _is_valid
-//               is true, then get_height() etc. will be called to
-//               query the terrain's data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This will be called at some point after initialization.  It should be
+ * overridden by a derived class to load up the terrain data from its source
+ * and fill in the data members of this class appropriately, especially
+ * _is_valid.  After this call, if _is_valid is true, then get_height() etc.
+ * will be called to query the terrain's data.
+ */
 void STBasicTerrain::
 load_data() {
   _is_valid = false;
@@ -260,63 +237,48 @@ load_data() {
   _is_valid = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::get_height
-//       Access: Published, Virtual
-//  Description: After load_data() has been called, this should return
-//               the computed height value at point (x, y) of the
-//               terrain, where x and y are unbounded and may refer to
-//               any 2-d point in space.
-////////////////////////////////////////////////////////////////////
+/**
+ * After load_data() has been called, this should return the computed height
+ * value at point (x, y) of the terrain, where x and y are unbounded and may
+ * refer to any 2-d point in space.
+ */
 PN_stdfloat STBasicTerrain::
 get_height(PN_stdfloat x, PN_stdfloat y) const {
   return _height_data.calc_bilinear_interpolation(x / _size, y / _size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::get_smooth_height
-//       Access: Published, Virtual
-//  Description: After load_data() has been called, this should return
-//               the approximate average height value over a circle of
-//               the specified radius, centered at point (x, y) of the
-//               terrain.
-////////////////////////////////////////////////////////////////////
+/**
+ * After load_data() has been called, this should return the approximate
+ * average height value over a circle of the specified radius, centered at
+ * point (x, y) of the terrain.
+ */
 PN_stdfloat STBasicTerrain::
 get_smooth_height(PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const {
   return _height_data.calc_smooth(x / _size, y / _size, radius / _size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::get_slope
-//       Access: Published, Virtual
-//  Description: After load_data() has been called, this should return
-//               the directionless slope at point (x, y) of the
-//               terrain, where 0.0 is flat and 1.0 is vertical.  This
-//               is used for determining the legal points to place
-//               trees and grass.
-////////////////////////////////////////////////////////////////////
+/**
+ * After load_data() has been called, this should return the directionless
+ * slope at point (x, y) of the terrain, where 0.0 is flat and 1.0 is
+ * vertical.  This is used for determining the legal points to place trees and
+ * grass.
+ */
 PN_stdfloat STBasicTerrain::
 get_slope(PN_stdfloat x, PN_stdfloat y) const {
   return _slope_data.calc_bilinear_interpolation(x / _size, y / _size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::fill_vertices
-//       Access: Published, Virtual
-//  Description: After load_data() has been called, this will be
-//               called occasionally to populate the vertices for a
-//               terrain cell.
-//
-//               It will be passed a GeomVertexData whose format will
-//               match get_vertex_format(), and already allocated with
-//               num_xy * num_xy rows.  This method should fill the
-//               rows of the data with the appropriate vertex data for
-//               the terrain, over the grid described by the corners
-//               (start_x, start_y) up to and including (start_x +
-//               size_x, start_y + size_xy)--a square of the terrain
-//               with num_xy vertices on a size, arranged in row-major
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * After load_data() has been called, this will be called occasionally to
+ * populate the vertices for a terrain cell.
+ *
+ * It will be passed a GeomVertexData whose format will match
+ * get_vertex_format(), and already allocated with num_xy * num_xy rows.  This
+ * method should fill the rows of the data with the appropriate vertex data
+ * for the terrain, over the grid described by the corners (start_x, start_y)
+ * up to and including (start_x + size_x, start_y + size_xy)--a square of the
+ * terrain with num_xy vertices on a size, arranged in row-major order.
+ */
 void STBasicTerrain::
 fill_vertices(GeomVertexData *data,
               PN_stdfloat start_x, PN_stdfloat start_y,
@@ -335,41 +297,34 @@ fill_vertices(GeomVertexData *data,
       PN_stdfloat y = start_y + yt * size_xy;
 
       PN_stdfloat z = get_height(x, y);
-      
+
       vertex.set_data3(x, y, z);
       texcoord.set_data3(x * texcoord_scale, -y * texcoord_scale, 1.0f);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void STBasicTerrain::
 output(ostream &out) const {
   Namable::output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void STBasicTerrain::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << *this << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::read_height_map
-//       Access: Protected
-//  Description: Reads the height map image stored in _height_map, and
-//               stores it in _height_data.  Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the height map image stored in _height_map, and stores it in
+ * _height_data.  Returns true on success, false on failure.
+ */
 bool STBasicTerrain::
 read_height_map() {
   PNMImage image(_height_map);
@@ -396,16 +351,14 @@ read_height_map() {
   }
 
   compute_slope(0.5f);
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::compute_slope
-//       Access: Protected
-//  Description: Once _height_data has been filled in, compute the
-//               corresponding values for _slope_data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once _height_data has been filled in, compute the corresponding values for
+ * _slope_data.
+ */
 void STBasicTerrain::
 compute_slope(PN_stdfloat smoothing) {
   nassertv(!_height_data._data.empty());
@@ -461,9 +414,9 @@ compute_slope(PN_stdfloat smoothing) {
           int top = (j + height - 1) % height;
           int bottom = (j + 1) % height;
 
-          smoothed[i + j * width] = (_slope_data._data[right + j * width] + 
-                                     _slope_data._data[left + j * width] + 
-                                     _slope_data._data[i + top * width] + 
+          smoothed[i + j * width] = (_slope_data._data[right + j * width] +
+                                     _slope_data._data[left + j * width] +
+                                     _slope_data._data[i + top * width] +
                                      _slope_data._data[i + bottom * width] +
                                      _slope_data._data[right + top * width] +
                                      _slope_data._data[right + bottom * width] +
@@ -490,21 +443,17 @@ compute_slope(PN_stdfloat smoothing) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: STBasicTerrain::read_quoted_filename
-//       Access: Private, Static
-//  Description: Reads a quoted filename from the input stream, which
-//               is understood to be relative to the indicated
-//               directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a quoted filename from the input stream, which is understood to be
+ * relative to the indicated directory.
+ */
 void STBasicTerrain::
 read_quoted_filename(Filename &result, istream &in, const Filename &dirname) {
   string filename;
   in >> filename;
 
-  // The terrain.txt file should, in theory, support spaces, but the
-  // SpeedTree reference application doesn't, so we don't bother
-  // either.
+  // The terrain.txt file should, in theory, support spaces, but the SpeedTree
+  // reference application doesn't, so we don't bother either.
   if (filename.size() >= 2 && filename[0] == '"' && filename[filename.size() - 1] == '"') {
     filename = filename.substr(1, filename.size() - 2);
   }
@@ -514,4 +463,3 @@ read_quoted_filename(Filename &result, istream &in, const Filename &dirname) {
     result = Filename(dirname, result);
   }
 }
-

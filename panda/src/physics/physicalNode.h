@@ -1,16 +1,15 @@
-// Filename: physicalNode.h
-// Created by:  charles (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicalNode.h
+ * @author charles
+ * @date 2000-08-01
+ */
 
 #ifndef PHYSICALNODE_H
 #define PHYSICALNODE_H
@@ -23,24 +22,25 @@
 #include "physical.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//        Class : PhysicalNode
-//  Description : Graph node that encapsulated a series of physical
-//                objects
-////////////////////////////////////////////////////////////////////
+/**
+ * Graph node that encapsulated a series of physical objects
+ */
 class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
 PUBLISHED:
   PhysicalNode(const string &name);
   INLINE void clear();
-  INLINE Physical *get_physical(int index) const;
-  INLINE int get_num_physicals() const;
+  INLINE Physical *get_physical(size_t index) const;
+  INLINE size_t get_num_physicals() const;
   MAKE_SEQ(get_physicals, get_num_physicals, get_physical);
   INLINE void add_physical(Physical *physical);
 
   void add_physicals_from(const PhysicalNode &other);
+  void set_physical(size_t index, Physical *physical);
   void remove_physical(Physical *physical);
-  void remove_physical(int index);
-  
+  void remove_physical(size_t index);
+
+  MAKE_SEQ_PROPERTY(physicals, get_num_physicals, get_physical, set_physical, remove_physical);
+
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:

@@ -1,7 +1,7 @@
 from direct.showbase.DirectObject import DirectObject
-from DirectGlobals import *
-from DirectUtil import *
-from DirectGeometry import *
+from .DirectGlobals import *
+from .DirectUtil import *
+from .DirectGeometry import *
 
 COA_ORIGIN = 0
 COA_CENTER = 1
@@ -68,7 +68,7 @@ class SelectedNodePaths(DirectObject):
         """ Select the specified node path.  Multiselect as required """
         # Do nothing if nothing selected
         if not nodePath:
-            print 'Nothing selected!!'
+            print('Nothing selected!!')
             return None
 
         # Reset selected objects and highlight if multiSelect is false
@@ -160,7 +160,7 @@ class SelectedNodePaths(DirectObject):
             return None
 
     def getDeselectedAsList(self):
-        return self.deselectedDict.values()[:]
+        return list(self.deselectedDict.values())
 
     def getDeselectedDict(self, id):
         """
@@ -260,7 +260,7 @@ class SelectedNodePaths(DirectObject):
         return self.getDeselectedDict(id)
 
     def getNumSelected(self):
-        return len(self.selectedDict.keys())
+        return len(self.selectedDict)
 
 
 class DirectBoundingBox:
@@ -616,7 +616,7 @@ class SelectionRay(SelectionQueue):
         if direct:
             self.collider.setFromLens(base.direct.camNode, mx, my)
         else:
-            self.collider.setFromLens(base.camNode, mx, my)            
+            self.collider.setFromLens(base.camNode, mx, my)
         self.ct.traverse(targetNodePath)
         self.sortEntries()
 

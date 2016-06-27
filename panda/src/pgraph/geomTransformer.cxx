@@ -1,16 +1,15 @@
-// Filename: geomTransformer.cxx
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomTransformer.cxx
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #include "geomTransformer.h"
 #include "sceneGraphReducer.h"
@@ -41,11 +40,9 @@ PStatCollector GeomTransformer::_apply_set_format_collector("*:Flatten:apply:set
 
 TypeHandle GeomTransformer::NewCollectedData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomTransformer::
 GeomTransformer() :
   // The default value here comes from the Config file.
@@ -53,34 +50,27 @@ GeomTransformer() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomTransformer::
 GeomTransformer(const GeomTransformer &copy) :
   _max_collect_vertices(copy._max_collect_vertices)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomTransformer::
 ~GeomTransformer() {
   finish_collect(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::register_vertices
-//       Access: Public
-//  Description: Records the association of the Geom with its
-//               GeomVertexData, for the purpose of later removing
-//               unused vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the association of the Geom with its GeomVertexData, for the
+ * purpose of later removing unused vertices.
+ */
 void GeomTransformer::
 register_vertices(Geom *geom, bool might_have_unused) {
   VertexDataAssoc &assoc = _vdata_assoc[geom->get_vertex_data()];
@@ -90,13 +80,10 @@ register_vertices(Geom *geom, bool might_have_unused) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::register_vertices
-//       Access: Public
-//  Description: Records the association of the Geom with its
-//               GeomVertexData, for the purpose of later removing
-//               unused vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the association of the Geom with its GeomVertexData, for the
+ * purpose of later removing unused vertices.
+ */
 void GeomTransformer::
 register_vertices(GeomNode *node, bool might_have_unused) {
   Thread *current_thread = Thread::get_current_thread();
@@ -113,13 +100,10 @@ register_vertices(GeomNode *node, bool might_have_unused) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::transform_vertices
-//       Access: Public
-//  Description: Transforms the vertices and the normals in the
-//               indicated Geom by the indicated matrix.  Returns true
-//               if the Geom was changed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the vertices and the normals in the indicated Geom by the
+ * indicated matrix.  Returns true if the Geom was changed, false otherwise.
+ */
 bool GeomTransformer::
 transform_vertices(Geom *geom, const LMatrix4 &mat) {
   PStatTimer timer(_apply_vertex_collector);
@@ -128,7 +112,7 @@ transform_vertices(Geom *geom, const LMatrix4 &mat) {
   SourceVertices sv;
   sv._mat = mat;
   sv._vertex_data = geom->get_vertex_data();
-  
+
   NewVertexData &new_data = _vertices[sv];
   if (new_data._vdata.is_null()) {
     // We have not yet converted these vertices.  Do so now.
@@ -136,7 +120,7 @@ transform_vertices(Geom *geom, const LMatrix4 &mat) {
     new_vdata->transform_vertices(mat);
     new_data._vdata = new_vdata;
   }
-  
+
   geom->set_vertex_data(new_data._vdata);
   if (sv._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
@@ -147,17 +131,13 @@ transform_vertices(Geom *geom, const LMatrix4 &mat) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::transform_vertices
-//       Access: Public
-//  Description: Transforms the vertices and the normals in all of the
-//               Geoms within the indicated GeomNode by the indicated
-//               matrix.  Does not destructively change Geoms;
-//               instead, a copy will be made of each Geom to be
-//               changed, in case multiple GeomNodes reference the
-//               same Geom. Returns true if the GeomNode was changed,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the vertices and the normals in all of the Geoms within the
+ * indicated GeomNode by the indicated matrix.  Does not destructively change
+ * Geoms; instead, a copy will be made of each Geom to be changed, in case
+ * multiple GeomNodes reference the same Geom.  Returns true if the GeomNode
+ * was changed, false otherwise.
+ */
 bool GeomTransformer::
 transform_vertices(GeomNode *node, const LMatrix4 &mat) {
   bool any_changed = false;
@@ -186,15 +166,12 @@ transform_vertices(GeomNode *node, const LMatrix4 &mat) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::transform_texcoords
-//       Access: Public
-//  Description: Transforms the texture coordinates in the indicated
-//               Geom by the indicated matrix.  Returns true if the
-//               Geom was changed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the texture coordinates in the indicated Geom by the indicated
+ * matrix.  Returns true if the Geom was changed, false otherwise.
+ */
 bool GeomTransformer::
-transform_texcoords(Geom *geom, const InternalName *from_name, 
+transform_texcoords(Geom *geom, const InternalName *from_name,
                     InternalName *to_name, const LMatrix4 &mat) {
   PStatTimer timer(_apply_texcoord_collector);
 
@@ -205,7 +182,7 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
   st._from = from_name;
   st._to = to_name;
   st._vertex_data = geom->get_vertex_data();
-  
+
   NewVertexData &new_data = _texcoords[st];
   if (new_data._vdata.is_null()) {
     if (!st._vertex_data->has_column(from_name)) {
@@ -214,31 +191,31 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
     }
 
     PT(GeomVertexData) new_vdata;
-    
+
     // We have not yet converted these texcoords.  Do so now.
     if (st._vertex_data->has_column(to_name)) {
       new_vdata = new GeomVertexData(*st._vertex_data);
     } else {
-      const GeomVertexColumn *old_column = 
+      const GeomVertexColumn *old_column =
         st._vertex_data->get_format()->get_column(from_name);
       new_vdata = st._vertex_data->replace_column
         (to_name, old_column->get_num_components(),
          old_column->get_numeric_type(),
          old_column->get_contents());
     }
-    
+
     CPT(GeomVertexFormat) format = new_vdata->get_format();
-    
+
     GeomVertexWriter tdata(new_vdata, to_name);
     GeomVertexReader fdata(new_vdata, from_name);
-    
+
     while (!fdata.is_at_end()) {
       const LPoint4 &coord = fdata.get_data4();
       tdata.set_data4(coord * mat);
     }
     new_data._vdata = new_vdata;
   }
-  
+
   geom->set_vertex_data(new_data._vdata);
   if (st._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
@@ -249,17 +226,13 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::transform_texcoords
-//       Access: Public
-//  Description: Transforms the texture coordinates in all of the
-//               Geoms within the indicated GeomNode by the indicated
-//               matrix.  Does not destructively change Geoms;
-//               instead, a copy will be made of each Geom to be
-//               changed, in case multiple GeomNodes reference the
-//               same Geom. Returns true if the GeomNode was changed,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the texture coordinates in all of the Geoms within the indicated
+ * GeomNode by the indicated matrix.  Does not destructively change Geoms;
+ * instead, a copy will be made of each Geom to be changed, in case multiple
+ * GeomNodes reference the same Geom.  Returns true if the GeomNode was
+ * changed, false otherwise.
+ */
 bool GeomTransformer::
 transform_texcoords(GeomNode *node, const InternalName *from_name,
                     InternalName *to_name, const LMatrix4 &mat) {
@@ -281,13 +254,10 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::set_color
-//       Access: Public
-//  Description: Overrides the color indicated within the Geom with
-//               the given replacement color.  Returns true if the
-//               Geom was changed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overrides the color indicated within the Geom with the given replacement
+ * color.  Returns true if the Geom was changed, false otherwise.
+ */
 bool GeomTransformer::
 set_color(Geom *geom, const LColor &color) {
   PStatTimer timer(_apply_set_color_collector);
@@ -295,7 +265,7 @@ set_color(Geom *geom, const LColor &color) {
   SourceColors sc;
   sc._color = color;
   sc._vertex_data = geom->get_vertex_data();
-  
+
   NewVertexData &new_data = _fcolors[sc];
   if (new_data._vdata.is_null()) {
     // We have not yet converted these colors.  Do so now.
@@ -306,7 +276,7 @@ set_color(Geom *geom, const LColor &color) {
         (color, 1, Geom::NT_packed_dabc, Geom::C_color);
     }
   }
-  
+
   geom->set_vertex_data(new_data._vdata);
   if (sc._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
@@ -317,14 +287,11 @@ set_color(Geom *geom, const LColor &color) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::set_color
-//       Access: Public
-//  Description: Overrides the color indicated within the GeomNode
-//               with the given replacement color.  Returns true if
-//               any Geom in the GeomNode was changed, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overrides the color indicated within the GeomNode with the given
+ * replacement color.  Returns true if any Geom in the GeomNode was changed,
+ * false otherwise.
+ */
 bool GeomTransformer::
 set_color(GeomNode *node, const LColor &color) {
   bool any_changed = false;
@@ -344,13 +311,10 @@ set_color(GeomNode *node, const LColor &color) {
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::transform_colors
-//       Access: Public
-//  Description: Transforms the colors in the indicated Geom by the
-//               indicated scale.  Returns true if the Geom was
-//               changed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the colors in the indicated Geom by the indicated scale.
+ * Returns true if the Geom was changed, false otherwise.
+ */
 bool GeomTransformer::
 transform_colors(Geom *geom, const LVecBase4 &scale) {
   PStatTimer timer(_apply_scale_color_collector);
@@ -360,7 +324,7 @@ transform_colors(Geom *geom, const LVecBase4 &scale) {
   SourceColors sc;
   sc._color = scale;
   sc._vertex_data = geom->get_vertex_data();
-  
+
   NewVertexData &new_data = _tcolors[sc];
   if (new_data._vdata.is_null()) {
     // We have not yet converted these colors.  Do so now.
@@ -371,7 +335,7 @@ transform_colors(Geom *geom, const LVecBase4 &scale) {
         (scale, 1, Geom::NT_packed_dabc, Geom::C_color);
     }
   }
-  
+
   geom->set_vertex_data(new_data._vdata);
   if (sc._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
@@ -382,16 +346,13 @@ transform_colors(Geom *geom, const LVecBase4 &scale) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::transform_colors
-//       Access: Public
-//  Description: Transforms the colors in all of the Geoms within the
-//               indicated GeomNode by the indicated scale.  Does
-//               not destructively change Geoms; instead, a copy will
-//               be made of each Geom to be changed, in case multiple
-//               GeomNodes reference the same Geom. Returns true if
-//               the GeomNode was changed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the colors in all of the Geoms within the indicated GeomNode by
+ * the indicated scale.  Does not destructively change Geoms; instead, a copy
+ * will be made of each Geom to be changed, in case multiple GeomNodes
+ * reference the same Geom.  Returns true if the GeomNode was changed, false
+ * otherwise.
+ */
 bool GeomTransformer::
 transform_colors(GeomNode *node, const LVecBase4 &scale) {
   bool any_changed = false;
@@ -412,16 +373,13 @@ transform_colors(GeomNode *node, const LVecBase4 &scale) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::apply_texture_colors
-//       Access: Public
-//  Description: Removes textures from Geoms by applying the texture
-//               colors to the vertices.  
-//
-//               See apply_texure_colors(GeomNode *, RenderState *).
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes textures from Geoms by applying the texture colors to the vertices.
+ *
+ * See apply_texure_colors(GeomNode *, RenderState *).
+ */
 bool GeomTransformer::
-apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex, 
+apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
                      const TexMatrixAttrib *tma, const LColor &base_color,
                      bool keep_vertex_color) {
   PStatTimer timer(_apply_texture_color_collector);
@@ -433,12 +391,11 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     return false;
   }
 
-  if (peeker->get_x_size() == 1 && 
-      peeker->get_y_size() == 1 && 
+  if (peeker->get_x_size() == 1 &&
+      peeker->get_y_size() == 1 &&
       peeker->get_z_size() == 1) {
-    // If it's just a one-pixel texture (e.g. a simple ram image),
-    // don't bother scanning the UV's.  Just extract the color and
-    // apply it.
+    // If it's just a one-pixel texture (e.g.  a simple ram image), don't
+    // bother scanning the UV's.  Just extract the color and apply it.
     LColor color;
     peeker->lookup(color, 0.0f, 0.0f);
     color.set(color[0] * base_color[0],
@@ -459,13 +416,12 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     got_mat = !mat.almost_equal(LMatrix4::ident_mat());
   }
 
-  // This version of the code just applied one overall flat color to
-  // the entire mesh.  Turned out not to be good enough.  Instead,
-  // we'll look up each vertex in the texture map and apply the
-  // nearest color to the vertex.
+  // This version of the code just applied one overall flat color to the
+  // entire mesh.  Turned out not to be good enough.  Instead, we'll look up
+  // each vertex in the texture map and apply the nearest color to the vertex.
   /*
-  // Scan the UV's to get the used range.  This is particularly
-  // necessary for palettized textures.
+  // Scan the UV's to get the used range.  This is particularly necessary for
+  // palettized textures.
 
   LPoint3 min_point, max_point;
   bool found_any = false;
@@ -475,10 +431,10 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
                           ts->get_texcoord_name(),
                           Thread::get_current_thread());
   if (found_any) {
-    // Now use that UV range to determine the overall color of the
-    // geom's texture.
+    // Now use that UV range to determine the overall color of the geom's
+    // texture.
     LColor color;
-    peeker->filter_rect(color, 
+    peeker->filter_rect(color,
                         min_point[0], min_point[1], min_point[2],
                         max_point[0], max_point[1], max_point[2]);
     color.set(color[0] * base_color[0],
@@ -502,7 +458,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
   stc._base_color = base_color;
   stc._keep_vertex_color = keep_vertex_color;
   stc._vertex_data = geom->get_vertex_data();
-  
+
   NewVertexData &new_data = _tex_colors[stc];
   if (new_data._vdata.is_null()) {
     // We have not yet applied these texture colors.  Do so now.
@@ -518,7 +474,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
                                  (LColor(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
       keep_vertex_color = false;
     }
-    
+
     // Check whether it has 2-d or 3-d texture coordinates.
     bool tex3d = false;
     const GeomVertexColumn *column = vdata->get_format()->get_column(ts->get_texcoord_name());
@@ -528,14 +484,14 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     if (column->get_num_components() >= 3) {
       tex3d = true;
     }
-    
-    // Now walk through the vertices and apply each color from the
-    // texture as we go.
+
+    // Now walk through the vertices and apply each color from the texture as
+    // we go.
     if (keep_vertex_color) {
       // We want to modulate the existing vertex color.
       GeomVertexReader gtexcoord(vdata, ts->get_texcoord_name());
       GeomVertexRewriter gcolor(vdata, InternalName::get_color());
-      
+
       if (got_mat || tex3d) {
         while (!gtexcoord.is_at_end()) {
           LTexCoord3 p = gtexcoord.get_data3();
@@ -566,7 +522,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
       // We want to replace any existing vertex color.
       GeomVertexReader gtexcoord(vdata, ts->get_texcoord_name());
       GeomVertexWriter gcolor(vdata, InternalName::get_color());
-      
+
       if (got_mat || tex3d) {
         while (!gtexcoord.is_at_end()) {
           LTexCoord3 p = gtexcoord.get_data3();
@@ -605,23 +561,18 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::apply_texture_colors
-//       Access: Public
-//  Description: Removes textures from Geoms by applying the texture
-//               colors to the vertices.  This is primarily useful to
-//               simplify a low-LOD model.
-//
-//               Only the bottommost texture is used (if there is more
-//               than one), and it is applied as if it were
-//               M_modulate, and WM_repeat, regardless of its actual
-//               settings.  If the texture has a simple_ram_image,
-//               this may be used if the main image isn't resident.
-//
-//               After this call, there will be no texturing specified
-//               on the GeomNode level.  Of course, there might still
-//               be texturing inherited from above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes textures from Geoms by applying the texture colors to the vertices.
+ * This is primarily useful to simplify a low-LOD model.
+ *
+ * Only the bottommost texture is used (if there is more than one), and it is
+ * applied as if it were M_modulate, and WM_repeat, regardless of its actual
+ * settings.  If the texture has a simple_ram_image, this may be used if the
+ * main image isn't resident.
+ *
+ * After this call, there will be no texturing specified on the GeomNode
+ * level.  Of course, there might still be texturing inherited from above.
+ */
 bool GeomTransformer::
 apply_texture_colors(GeomNode *node, const RenderState *state) {
   bool any_changed = false;
@@ -677,13 +628,10 @@ apply_texture_colors(GeomNode *node, const RenderState *state) {
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::apply_state
-//       Access: Public
-//  Description: Applies the indicated render state to all the of
-//               Geoms.  Returns true if the GeomNode was changed,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated render state to all the of Geoms.  Returns true if
+ * the GeomNode was changed, false otherwise.
+ */
 bool GeomTransformer::
 apply_state(GeomNode *node, const RenderState *state) {
   bool any_changed = false;
@@ -703,12 +651,10 @@ apply_state(GeomNode *node, const RenderState *state) {
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::set_format
-//       Access: Public
-//  Description: Changes the GeomVertexData of the indicated Geom to
-//               use the specified format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the GeomVertexData of the indicated Geom to use the specified
+ * format.
+ */
 bool GeomTransformer::
 set_format(Geom *geom, const GeomVertexFormat *new_format) {
   PStatTimer timer(_apply_set_format_collector);
@@ -718,7 +664,7 @@ set_format(Geom *geom, const GeomVertexFormat *new_format) {
   SourceFormat sf;
   sf._format = new_format;
   sf._vertex_data = geom->get_vertex_data();
-  
+
   NewVertexData &new_data = _format[sf];
   if (new_data._vdata.is_null()) {
     if (sf._vertex_data->get_format() == new_format) {
@@ -731,7 +677,7 @@ set_format(Geom *geom, const GeomVertexFormat *new_format) {
     new_vdata->set_format(new_format);
     new_data._vdata = new_vdata;
   }
-  
+
   geom->set_vertex_data(new_data._vdata);
   if (sf._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
@@ -741,13 +687,10 @@ set_format(Geom *geom, const GeomVertexFormat *new_format) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::remove_column
-//       Access: Public
-//  Description: Removes the named column from the vertex data in the
-//               Geom.  Returns true if the Geom was changed, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the named column from the vertex data in the Geom.  Returns true if
+ * the Geom was changed, false otherwise.
+ */
 bool GeomTransformer::
 remove_column(Geom *geom, const InternalName *column) {
   CPT(GeomVertexFormat) format = geom->get_vertex_data()->get_format();
@@ -764,13 +707,10 @@ remove_column(Geom *geom, const InternalName *column) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::remove_column
-//       Access: Public
-//  Description: Removes the named column from the vertex datas within
-//               the GeomNode.  Returns true if the GeomNode was
-//               changed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the named column from the vertex datas within the GeomNode.
+ * Returns true if the GeomNode was changed, false otherwise.
+ */
 bool GeomTransformer::
 remove_column(GeomNode *node, const InternalName *column) {
   bool any_changed = false;
@@ -790,32 +730,28 @@ remove_column(GeomNode *node, const InternalName *column) {
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::make_compatible_state
-//       Access: Public
-//  Description: Checks if the different geoms in the GeomNode have
-//               different RenderStates.  If so, tries to make the 
-//               RenderStates the same.  It does this by
-//               canonicalizing the ColorAttribs, and in the future,
-//               possibly other attribs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks if the different geoms in the GeomNode have different RenderStates.
+ * If so, tries to make the RenderStates the same.  It does this by
+ * canonicalizing the ColorAttribs, and in the future, possibly other attribs.
+ */
 bool GeomTransformer::
 make_compatible_state(GeomNode *node) {
   if (node->get_num_geoms() < 2) {
     return false;
   }
-  
+
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
   PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
 
-  // For each geom, calculate a canonicalized RenderState, and
-  // classify all the geoms according to that.  By "canonicalize"
-  // here, we simply mean removing the ColorAttrib.
-  
+  // For each geom, calculate a canonicalized RenderState, and classify all
+  // the geoms according to that.  By "canonicalize" here, we simply mean
+  // removing the ColorAttrib.
+
   typedef pmap <CPT(RenderState), pvector<int> > StateTable;
   StateTable state_table;
-  
+
   for (int i = 0; i < (int)geoms->size(); i++) {
     GeomNode::GeomEntry &entry = (*geoms)[i];
     CPT(RenderState) canon = entry._state->remove_attrib(ColorAttrib::get_class_slot());
@@ -823,14 +759,14 @@ make_compatible_state(GeomNode *node) {
   }
 
   // For each group of geoms, check for mismatch.
-  
+
   bool any_changed = false;
   StateTable::iterator si;
   for (si = state_table.begin(); si != state_table.end(); si++) {
-    
-    // If the geoms in the group already have the same RenderStates,
-    // then nothing needs to be done to this group.
-    
+
+    // If the geoms in the group already have the same RenderStates, then
+    // nothing needs to be done to this group.
+
     const pvector<int> &indices = (*si).second;
     bool mismatch = false;
     for (int i = 1; i < (int)indices.size(); i++) {
@@ -842,11 +778,11 @@ make_compatible_state(GeomNode *node) {
     if (!mismatch) {
       continue;
     }
-    
-    // The geoms do not have the same RenderState, but they could,
-    // since their canonicalized states are the same.  Canonicalize
-    // them, by applying the colors to the vertices.
-    
+
+    // The geoms do not have the same RenderState, but they could, since their
+    // canonicalized states are the same.  Canonicalize them, by applying the
+    // colors to the vertices.
+
     const RenderState *canon_state = (*si).first;
     for (int i = 0; i < (int)indices.size(); i++) {
       GeomNode::GeomEntry &entry = (*geoms)[indices[i]];
@@ -861,8 +797,8 @@ make_compatible_state(GeomNode *node) {
           }
         }
       } else {
-        // A flat color (or "off", which is white).  Set the vertices
-        // to the indicated flat color.
+        // A flat color (or "off", which is white).  Set the vertices to the
+        // indicated flat color.
         LColor c = ca->get_color();
         PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
         if (set_color(new_geom, c)) {
@@ -873,17 +809,14 @@ make_compatible_state(GeomNode *node) {
       any_changed = true;
     }
   }
-  
+
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::reverse_normals
-//       Access: Public
-//  Description: Reverses the lighting normals on the vertex data, if
-//               any.  Returns true if the Geom was changed, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the lighting normals on the vertex data, if any.  Returns true if
+ * the Geom was changed, false otherwise.
+ */
 bool GeomTransformer::
 reverse_normals(Geom *geom) {
   nassertr(geom != (Geom *)NULL, false);
@@ -907,27 +840,20 @@ reverse_normals(Geom *geom) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::doubleside
-//       Access: Public
-//  Description: Duplicates triangles in this GeomNode so that each
-//               triangle is back-to-back with another triangle facing
-//               in the opposite direction.  If the geometry has
-//               vertex normals, this will also duplicate and reverse
-//               the normals, so that lighting will work correctly
-//               from both sides.  Note that calling this when the
-//               geometry is already doublesided (with back-to-back
-//               polygons) will result in multiple redundant coplanar
-//               polygons.
-//
-//               Also see CullFaceAttrib, which can enable rendering
-//               of both sides of a triangle without having to
-//               duplicate it (but which doesn't necessarily work in
-//               the presence of lighting).
-//
-//               Returns true if any Geoms are modified, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Duplicates triangles in this GeomNode so that each triangle is back-to-back
+ * with another triangle facing in the opposite direction.  If the geometry
+ * has vertex normals, this will also duplicate and reverse the normals, so
+ * that lighting will work correctly from both sides.  Note that calling this
+ * when the geometry is already doublesided (with back-to-back polygons) will
+ * result in multiple redundant coplanar polygons.
+ *
+ * Also see CullFaceAttrib, which can enable rendering of both sides of a
+ * triangle without having to duplicate it (but which doesn't necessarily work
+ * in the presence of lighting).
+ *
+ * Returns true if any Geoms are modified, false otherwise.
+ */
 bool GeomTransformer::
 doubleside(GeomNode *node) {
   int num_geoms = node->get_num_geoms();
@@ -935,41 +861,36 @@ doubleside(GeomNode *node) {
     CPT(Geom) orig_geom = node->get_geom(i);
     bool has_normals = (orig_geom->get_vertex_data()->has_column(InternalName::get_normal()));
     if (has_normals) {
-      // If the geometry has normals, we have to duplicate it to
-      // reverse the normals on the duplicate copy.
+      // If the geometry has normals, we have to duplicate it to reverse the
+      // normals on the duplicate copy.
       PT(Geom) new_geom = orig_geom->reverse();
       reverse_normals(new_geom);
       node->add_geom(new_geom, node->get_geom_state(i));
-      
+
     } else {
-      // If there are no normals, we can just doubleside it in
-      // place.  This is preferable because we can share vertices.
+      // If there are no normals, we can just doubleside it in place.  This is
+      // preferable because we can share vertices.
       orig_geom.clear();
       node->modify_geom(i)->doubleside_in_place();
     }
   }
-  
+
   return (num_geoms != 0);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::reverse
-//       Access: Public
-//  Description: Reverses the winding order of triangles in this
-//               GeomNode so that each triangle is facing in the
-//               opposite direction.  If the geometry has vertex
-//               normals, this will also reverse the normals, so that
-//               lighting will work correctly.
-//
-//               Also see CullFaceAttrib, which can effectively change
-//               the facing of a triangle having to modify its
-//               vertices (but which doesn't necessarily work in the
-//               presence of lighting).
-//
-//               Returns true if any Geoms are modified, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the winding order of triangles in this GeomNode so that each
+ * triangle is facing in the opposite direction.  If the geometry has vertex
+ * normals, this will also reverse the normals, so that lighting will work
+ * correctly.
+ *
+ * Also see CullFaceAttrib, which can effectively change the facing of a
+ * triangle having to modify its vertices (but which doesn't necessarily work
+ * in the presence of lighting).
+ *
+ * Returns true if any Geoms are modified, false otherwise.
+ */
 bool GeomTransformer::
 reverse(GeomNode *node) {
   int num_geoms = node->get_num_geoms();
@@ -978,22 +899,17 @@ reverse(GeomNode *node) {
     geom->reverse_in_place();
     reverse_normals(geom);
   }
-  
+
   return (num_geoms != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::finish_apply
-//       Access: Public
-//  Description: Should be called after performing any
-//               operations--particularly
-//               PandaNode::apply_attribs_to_vertices()--that might
-//               result in new GeomVertexData objects being duplicated
-//               and modified.  This walks through those newly
-//               duplicated objects and ensures that redundant unused
-//               vertices have not been created, removing them if they
-//               have.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called after performing any operations--particularly
+ * PandaNode::apply_attribs_to_vertices()--that might result in new
+ * GeomVertexData objects being duplicated and modified.  This walks through
+ * those newly duplicated objects and ensures that redundant unused vertices
+ * have not been created, removing them if they have.
+ */
 void GeomTransformer::
 finish_apply() {
   VertexDataAssocMap::iterator vi;
@@ -1012,23 +928,19 @@ finish_apply() {
   _format.clear();
   _reversed_normals.clear();
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::collect_vertex_data
-//       Access: Public
-//  Description: Collects together GeomVertexDatas from different
-//               geoms into one big (or several big) GeomVertexDatas.
-//               Returns the number of unique GeomVertexDatas created.
-//
-//               If format_only is true, this only makes
-//               GeomVertexFormats compatible; it does not otherwise
-//               combine vertices.
-//
-//               You should follow this up with a call to
-//               finish_collect(), but you probably don't want to call
-//               this method directly anyway.  Call
-//               SceneGraphReducer::collect_vertex_data() instead.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Collects together GeomVertexDatas from different geoms into one big (or
+ * several big) GeomVertexDatas.  Returns the number of unique GeomVertexDatas
+ * created.
+ *
+ * If format_only is true, this only makes GeomVertexFormats compatible; it
+ * does not otherwise combine vertices.
+ *
+ * You should follow this up with a call to finish_collect(), but you probably
+ * don't want to call this method directly anyway.  Call
+ * SceneGraphReducer::collect_vertex_data() instead.
+ */
 int GeomTransformer::
 collect_vertex_data(Geom *geom, int collect_bits, bool format_only) {
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
@@ -1069,16 +981,15 @@ collect_vertex_data(Geom *geom, int collect_bits, bool format_only) {
     return 0;
   }
 
-  // We haven't collected this vertex data yet; associate it with a
-  // new data.
+  // We haven't collected this vertex data yet; associate it with a new data.
   NewCollectedMap::iterator ni = _new_collected_map.find(key);
   NewCollectedData *ncd;
   if (ni != _new_collected_map.end()) {
     ncd = (*ni).second;
 
   } else {
-    // We haven't encountered a compatible GeomVertexData before.
-    // Create a new entry.
+    // We haven't encountered a compatible GeomVertexData before.  Create a
+    // new entry.
     ncd = new NewCollectedData(vdata);
     _new_collected_list.push_back(ncd);
     _new_collected_map[key] = ncd;
@@ -1109,7 +1020,7 @@ collect_vertex_data(Geom *geom, int collect_bits, bool format_only) {
   source_geom._geom = geom;
   source_geom._vertex_offset = vertex_offset;
   ncd->_source_geoms.push_back(source_geom);
-  
+
   SourceData source_data;
   source_data._vdata = vdata;
   source_data._num_vertices = this_num_vertices;
@@ -1121,23 +1032,18 @@ collect_vertex_data(Geom *geom, int collect_bits, bool format_only) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::collect_vertex_data
-//       Access: Public
-//  Description: Collects together individual GeomVertexData
-//               structures that share the same format into one big
-//               GeomVertexData structure.  This is intended to
-//               minimize context switches on the graphics card.
-//
-//               If format_only is true, this only makes
-//               GeomVertexFormats compatible; it does not otherwise
-//               combine vertices.
-//
-//               You should follow this up with a call to
-//               finish_collect(), but you probably don't want to call
-//               this method directly anyway.  Call
-//               SceneGraphReducer::collect_vertex_data() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects together individual GeomVertexData structures that share the same
+ * format into one big GeomVertexData structure.  This is intended to minimize
+ * context switches on the graphics card.
+ *
+ * If format_only is true, this only makes GeomVertexFormats compatible; it
+ * does not otherwise combine vertices.
+ *
+ * You should follow this up with a call to finish_collect(), but you probably
+ * don't want to call this method directly anyway.  Call
+ * SceneGraphReducer::collect_vertex_data() instead.
+ */
 int GeomTransformer::
 collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
   int num_adjusted = 0;
@@ -1153,13 +1059,13 @@ collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
 
     if ((collect_bits & SceneGraphReducer::CVD_avoid_dynamic) != 0 &&
         new_geom->get_vertex_data()->get_usage_hint() < Geom::UH_static) {
-      // This one has some dynamic properties.  Collect it
-      // independently of the outside world.
+      // This one has some dynamic properties.  Collect it independently of
+      // the outside world.
       if (dynamic == (GeomTransformer *)NULL) {
         dynamic = new GeomTransformer(*this);
       }
       num_adjusted += dynamic->collect_vertex_data(new_geom, collect_bits, format_only);
-      
+
     } else {
       num_adjusted += collect_vertex_data(new_geom, collect_bits, format_only);
     }
@@ -1173,26 +1079,21 @@ collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
   return num_adjusted;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::finish_collect
-//       Access: Public
-//  Description: This should be called after a call to
-//               collect_vertex_data() to finalize the changes and
-//               apply them to the vertices in the graph.  If this is
-//               not called, it will be called automatically by the
-//               GeomTransformer destructor.
-//
-//               If format_only is true, this returns the number of
-//               GeomVertexDatas modified to use a new format.  If
-//               false, it returns the number of GeomVertexDatas
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * This should be called after a call to collect_vertex_data() to finalize the
+ * changes and apply them to the vertices in the graph.  If this is not
+ * called, it will be called automatically by the GeomTransformer destructor.
+ *
+ * If format_only is true, this returns the number of GeomVertexDatas modified
+ * to use a new format.  If false, it returns the number of GeomVertexDatas
+ * created.
+ */
 int GeomTransformer::
 finish_collect(bool format_only) {
   int num_adjusted = 0;
 
   NewCollectedList::iterator nci;
-  for (nci = _new_collected_list.begin(); 
+  for (nci = _new_collected_list.begin();
        nci != _new_collected_list.end();
        ++nci) {
     NewCollectedData *ncd = (*nci);
@@ -1211,21 +1112,18 @@ finish_collect(bool format_only) {
   return num_adjusted;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::premunge_geom
-//       Access: Public
-//  Description: Uses the indicated munger to premunge the given Geom
-//               to optimize it for eventual rendering.  See
-//               SceneGraphReducer::premunge().
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the indicated munger to premunge the given Geom to optimize it for
+ * eventual rendering.  See SceneGraphReducer::premunge().
+ */
 PT(Geom) GeomTransformer::
 premunge_geom(const Geom *geom, GeomMunger *munger) {
-  // This method had been originally provided to cache the result for
-  // a particular geom/munger and vdata/munger combination, similar to
-  // the way other GeomTransformer methods work.  On reflection, this
-  // additional caching is not necessary, since the GeomVertexFormat
-  // does its own caching, and there's no danger of that cache filling
-  // up during the span of one frame.
+  // This method had been originally provided to cache the result for a
+  // particular geommunger and vdatamunger combination, similar to the way
+  // other GeomTransformer methods work.  On reflection, this additional
+  // caching is not necessary, since the GeomVertexFormat does its own
+  // caching, and there's no danger of that cache filling up during the span
+  // of one frame.
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
   vdata = munger->premunge_data(vdata);
@@ -1238,11 +1136,9 @@ premunge_geom(const Geom *geom, GeomMunger *munger) {
   return geom_copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::NewCollectedData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomTransformer::NewCollectedData::
 NewCollectedData(const GeomVertexData *source_data) {
   _new_format = source_data->get_format();
@@ -1251,22 +1147,18 @@ NewCollectedData(const GeomVertexData *source_data) {
   _num_vertices = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::NewCollectedData::apply_format_only_changes
-//       Access: Public
-//  Description: Actually adjusts the GeomVertexDatas found in a
-//               collect_vertex_data() format-only call to have the
-//               same vertex format.  Returns the number of vdatas
-//               modified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually adjusts the GeomVertexDatas found in a collect_vertex_data()
+ * format-only call to have the same vertex format.  Returns the number of
+ * vdatas modified.
+ */
 int GeomTransformer::NewCollectedData::
 apply_format_only_changes() {
   int num_modified = 0;
 
-  // We probably don't need to use a map, since
-  // GeomVertexData::convert_to() already caches its result, but we do
-  // it anyway just in case there's danger of overflowing the cache.
-  // What the heck, it's easy to do.
+  // We probably don't need to use a map, since GeomVertexData::convert_to()
+  // already caches its result, but we do it anyway just in case there's
+  // danger of overflowing the cache.  What the heck, it's easy to do.
   typedef pmap< CPT(GeomVertexData), CPT(GeomVertexData) > VDataMap;
   VDataMap vdata_map;
 
@@ -1295,12 +1187,10 @@ apply_format_only_changes() {
   return num_modified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::NewCollectedData::apply_collect_changes
-//       Access: Public
-//  Description: Actually combines all of the vertex datas found in a
-//               previous call to collect_vertex_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually combines all of the vertex datas found in a previous call to
+ * collect_vertex_data().
+ */
 int GeomTransformer::NewCollectedData::
 apply_collect_changes() {
   if (_num_vertices == 0) {
@@ -1320,9 +1210,9 @@ apply_collect_changes() {
     CPT(GeomVertexData) vdata = sd._vdata;
 
     if (_new_format != vdata->get_format()) {
-      // Convert (non-destructively) the current Geom's vertex
-      // data to the new format, so we can just blindly append the
-      // vertices to _new_data, within append_vdata().
+      // Convert (non-destructively) the current Geom's vertex data to the new
+      // format, so we can just blindly append the vertices to _new_data,
+      // within append_vdata().
       vdata = vdata->convert_to(_new_format);
     }
 
@@ -1346,12 +1236,10 @@ apply_collect_changes() {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::NewCollectedData::append_vdata
-//       Access: Public
-//  Description: Appends the vertices from the indicated source
-//               GeomVertexData to the end of the working data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends the vertices from the indicated source GeomVertexData to the end of
+ * the working data.
+ */
 void GeomTransformer::NewCollectedData::
 append_vdata(const GeomVertexData *vdata, int vertex_offset) {
   for (int i = 0; i < vdata->get_num_arrays(); ++i) {
@@ -1367,12 +1255,11 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
        old_array->get_handle(), 0, copy_bytes);
   }
 
-  // Also, copy the animation data (if any).  This means combining
-  // transform and/or slider tables, and might therefore mean
-  // remapping transform indices in the vertices.  Each of these has a
-  // slightly different way to handle the remapping, because they have
-  // slightly different kinds of data.
-  
+  // Also, copy the animation data (if any).  This means combining transform
+  // andor slider tables, and might therefore mean remapping transform indices
+  // in the vertices.  Each of these has a slightly different way to handle
+  // the remapping, because they have slightly different kinds of data.
+
   if (vdata->get_transform_table() != (TransformTable *)NULL ||
       _new_data->get_transform_table() != (TransformTable *)NULL) {
     // The TransformTable.
@@ -1386,34 +1273,33 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
       temp_table->add_transform(identity_transform);
       old_table = TransformTable::register_table(temp_table);
     }
-    
-    // First, build a mapping of the transforms we already have in the
-    // current table.  We must do this because the TransformTable
-    // doesn't automatically unquify index numbers for us (it doesn't
-    // store an index).
+
+    // First, build a mapping of the transforms we already have in the current
+    // table.  We must do this because the TransformTable doesn't
+    // automatically unquify index numbers for us (it doesn't store an index).
     typedef pmap<const VertexTransform *, int> AddedTransforms;
     AddedTransforms added_transforms;
-    
+
     int num_old_transforms = old_table->get_num_transforms();
     for (int i = 0; i < num_old_transforms; i++) {
       added_transforms[old_table->get_transform(i)] = i;
     }
-    
-    // Now create a new table.  We have to create a new table instead
-    // of modifying the existing one, since a registered
-    // TransformTable cannot be modified.
+
+    // Now create a new table.  We have to create a new table instead of
+    // modifying the existing one, since a registered TransformTable cannot be
+    // modified.
     PT(TransformTable) new_table;
     if (_new_data->get_transform_table() != (TransformTable *)NULL) {
       new_table = new TransformTable(*_new_data->get_transform_table());
     } else {
       new_table = new TransformTable;
     }
-    
-    // Now walk through the old table and copy over its transforms.
-    // We will build up an IndexMap of old index numbers to new index
-    // numbers while we go, which we can use to modify the vertices.
+
+    // Now walk through the old table and copy over its transforms.  We will
+    // build up an IndexMap of old index numbers to new index numbers while we
+    // go, which we can use to modify the vertices.
     IndexMap transform_map;
-    
+
     int num_transforms = old_table->get_num_transforms();
     transform_map.reserve(num_transforms);
     for (int ti = 0; ti < num_transforms; ++ti) {
@@ -1431,10 +1317,9 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
     }
     _new_data->set_transform_table(TransformTable::register_table(new_table));
 
-    // And now modify the vertices to update the indices to their new
-    // values in the new table.  This requires a nested loop, since
-    // each column of transform_index might define multiple index
-    // values.
+    // And now modify the vertices to update the indices to their new values
+    // in the new table.  This requires a nested loop, since each column of
+    // transform_index might define multiple index values.
     GeomVertexRewriter index(_new_data, InternalName::get_transform_index());
     if (index.has_column()) {
       int num_values = index.get_column()->get_num_values();
@@ -1453,16 +1338,15 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
   }
 
   if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL) {
-    // The TransformBlendTable.  This one is the easiest, because we
-    // can modify it directly, and it will uniquify blend objects for
-    // us.
+    // The TransformBlendTable.  This one is the easiest, because we can
+    // modify it directly, and it will uniquify blend objects for us.
 
-    // We have few special optimizations to handle the
-    // TransformBlendTable, since it's a very common case and
-    // therefore worth spending a bit of effort to optimize deeply.
-    
+    // We have few special optimizations to handle the TransformBlendTable,
+    // since it's a very common case and therefore worth spending a bit of
+    // effort to optimize deeply.
+
     CPT(TransformBlendTable) old_btable = vdata->get_transform_blend_table();
-    
+
     if (_new_btable == (TransformBlendTable *)NULL) {
       _new_btable = new TransformBlendTable;
       _new_btable->add_blend(TransformBlend());
@@ -1482,9 +1366,8 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
       blend_map.push_back(bj);
     }
 
-    // Modify the indices.  This is simpler than the transform_index,
-    // above, because each column of transform_blend may only define
-    // one index value.
+    // Modify the indices.  This is simpler than the transform_index, above,
+    // because each column of transform_blend may only define one index value.
     GeomVertexRewriter index(_new_data, InternalName::get_transform_blend());
     if (index.has_column()) {
       int num_rows = vdata->get_num_rows();
@@ -1498,13 +1381,13 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
       }
     }
   }
-  
+
   if (vdata->get_slider_table() != (SliderTable *)NULL) {
     // The SliderTable.  This one requires making a copy, like the
-    // TransformTable (since it can't be modified once registered
-    // either), but at least it uniquifies sliders added to it.  Also,
-    // it doesn't require indexing into it, so we don't have to build
-    // an IndexMap to modify the vertices with.
+    // TransformTable (since it can't be modified once registered either), but
+    // at least it uniquifies sliders added to it.  Also, it doesn't require
+    // indexing into it, so we don't have to build an IndexMap to modify the
+    // vertices with.
     const SliderTable *old_sliders = vdata->get_slider_table();
     PT(SliderTable) new_sliders;
     if (_new_data->get_slider_table() != (SliderTable *)NULL) {
@@ -1522,12 +1405,9 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::NewCollectedData::update_geoms
-//       Access: Public
-//  Description: Updates all of the source Geoms to reference the new
-//               vertex data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates all of the source Geoms to reference the new vertex data.
+ */
 void GeomTransformer::NewCollectedData::
 update_geoms() {
   SourceGeoms::iterator sgi;
@@ -1537,11 +1417,9 @@ update_geoms() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::VertexDataAssoc::remove_unused_vertices
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomTransformer::VertexDataAssoc::
 remove_unused_vertices(const GeomVertexData *vdata) {
   if (_geoms.empty()) {

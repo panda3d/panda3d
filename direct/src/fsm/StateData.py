@@ -5,7 +5,6 @@ __all__ = ['StateData']
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 
-from direct.directnotify import DirectNotifyGlobal
 
 class StateData(DirectObject):
     """
@@ -20,7 +19,7 @@ class StateData(DirectObject):
         self.doneStatus = None
         self.isLoaded = 0
         self.isEntered = 0
-    
+
     def enter(self):
         """
         Enters the StateData.  This makes it active in whatever sense

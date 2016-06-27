@@ -1,16 +1,15 @@
-// Filename: bamEnums.cxx
-// Created by:  drose (26Feb09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamEnums.cxx
+ * @author drose
+ * @date 2009-02-26
+ */
 
 #include "bamEnums.h"
 #include "string_utils.h"
@@ -21,7 +20,7 @@ operator << (ostream &out, BamEnums::BamEndian be) {
   switch (be) {
   case BamEnums::BE_bigendian:
     return out << "bigendian";
-   
+
   case BamEnums::BE_littleendian:
     return out << "littleendian";
   }
@@ -57,7 +56,7 @@ operator << (ostream &out, BamEnums::BamObjectCode boc) {
   switch (boc) {
   case BamEnums::BOC_push:
     return out << "push";
-   
+
   case BamEnums::BOC_pop:
     return out << "pop";
 
@@ -79,13 +78,13 @@ operator << (ostream &out, BamEnums::BamTextureMode btm) {
   switch (btm) {
   case BamEnums::BTM_unchanged:
     return out << "unchanged";
-   
+
   case BamEnums::BTM_fullpath:
     return out << "fullpath";
-    
+
   case BamEnums::BTM_relative:
     return out << "relative";
-    
+
   case BamEnums::BTM_basename:
     return out << "basename";
 

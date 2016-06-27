@@ -1,16 +1,15 @@
-// Filename: winStatsChartMenu.h
-// Created by:  drose (08Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winStatsChartMenu.h
+ * @author drose
+ * @date 2004-01-08
+ */
 
 #ifndef WINSTATSCHARTMENU_H
 #define WINSTATSCHARTMENU_H
@@ -23,11 +22,9 @@ class WinStatsMonitor;
 class PStatView;
 class PStatViewLevel;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsChartMenu
-// Description : A pulldown menu of charts available for a particular
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pulldown menu of charts available for a particular thread.
+ */
 class WinStatsChartMenu {
 public:
   WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index);
@@ -51,4 +48,3 @@ private:
 };
 
 #endif
-

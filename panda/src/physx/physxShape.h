@@ -1,16 +1,15 @@
-// Filename: physxShape.h
-// Created by:  enn0x (16Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxShape.h
+ * @author enn0x
+ * @date 2009-09-16
+ */
 
 #ifndef PHYSXSHAPE_H
 #define PHYSXSHAPE_H
@@ -34,10 +33,9 @@ class PhysxRay;
 class PhysxRaycastHit;
 class PhysxCcdSkeleton;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxShape
-// Description : Abstract base class for shapes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for shapes.
+ */
 class EXPCL_PANDAPHYSX PhysxShape : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -91,14 +89,13 @@ private:
   string _name;
   PT(PhysxCcdSkeleton) _skel;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxShape", 
+    register_type(_type_handle, "PhysxShape",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -1,23 +1,19 @@
-// Filename: threadWin32Impl.I
-// Created by:  drose (07Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadWin32Impl.I
+ * @author drose
+ * @date 2006-02-07
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ThreadWin32Impl::
 ThreadWin32Impl(Thread *parent_obj) :
   _cv(_mutex),
@@ -28,29 +24,23 @@ ThreadWin32Impl(Thread *parent_obj) :
   _status = S_new;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::preempt
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadWin32Impl::
 preempt() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::prepare_for_exit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadWin32Impl::
 prepare_for_exit() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::get_current_thread
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE Thread *ThreadWin32Impl::
 get_current_thread() {
   if (!_got_pt_ptr_index) {
@@ -59,13 +49,10 @@ get_current_thread() {
   return (Thread *)TlsGetValue(_pt_ptr_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::bind_thread
-//       Access: Public, Static
-//  Description: Associates the indicated Thread object with the
-//               currently-executing thread.  You should not call this
-//               directly; use Thread::bind_thread() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the indicated Thread object with the currently-executing thread.
+ * You should not call this directly; use Thread::bind_thread() instead.
+ */
 INLINE void ThreadWin32Impl::
 bind_thread(Thread *thread) {
   if (!_got_pt_ptr_index) {
@@ -75,61 +62,49 @@ bind_thread(Thread *thread) {
   nassertv(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::is_threading_supported
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ThreadWin32Impl::
 is_threading_supported() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::is_true_threads
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ThreadWin32Impl::
 is_true_threads() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::is_simple_threads
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ThreadWin32Impl::
 is_simple_threads() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::sleep
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadWin32Impl::
 sleep(double seconds) {
   Sleep((int)(seconds * 1000));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::yield
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadWin32Impl::
 yield() {
   Sleep(1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::consider_yield
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadWin32Impl::
 consider_yield() {
 }

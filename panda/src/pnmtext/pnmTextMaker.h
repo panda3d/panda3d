@@ -1,16 +1,15 @@
-// Filename: pnmTextMaker.h
-// Created by:  drose (03Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmTextMaker.h
+ * @author drose
+ * @date 2002-04-03
+ */
 
 #ifndef PNMTEXTMAKER_H
 #define PNMTEXTMAKER_H
@@ -27,15 +26,12 @@ class Filename;
 class PNMImage;
 class PNMTextGlyph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMTextMaker
-// Description : This object uses the Freetype library to generate
-//               text directly into an image.  It is different from
-//               the TextNode/DynamicTextFont interface, which use the
-//               Freetype library to generate text in the scene graph,
-//               to be rendered onscreen via the Panda render
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object uses the Freetype library to generate text directly into an
+ * image.  It is different from the TextNode/DynamicTextFont interface, which
+ * use the Freetype library to generate text in the scene graph, to be
+ * rendered onscreen via the Panda render traversal.
+ */
 class EXPCL_PANDA_PNMTEXT PNMTextMaker : public FreetypeFont {
 PUBLISHED:
   PNMTextMaker(const Filename &font_filename, int face_index);
@@ -64,6 +60,9 @@ PUBLISHED:
   INLINE void set_interior(const LColor &interior);
   INLINE const LColor &get_interior() const;
 
+  INLINE void set_distance_field_radius(int radius);
+  INLINE int get_distance_field_radius() const;
+
   INLINE int generate_into(const string &text,
                            PNMImage &dest_image, int x, int y);
   int generate_into(const wstring &text,
@@ -87,6 +86,7 @@ private:
   bool _interior_flag;
   LColor _fg;
   LColor _interior;
+  int _distance_field_radius;
 };
 
 #include "pnmTextMaker.I"

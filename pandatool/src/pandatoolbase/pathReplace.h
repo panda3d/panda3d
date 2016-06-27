@@ -1,16 +1,15 @@
-// Filename: pathReplace.h
-// Created by:  drose (07Feb03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pathReplace.h
+ * @author drose
+ * @date 2003-02-07
+ */
 
 #ifndef PATHREPLACE_H
 #define PATHREPLACE_H
@@ -24,19 +23,16 @@
 #include "pvector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PathReplace
-// Description : This encapsulates the user's command-line request to
-//               replace existing, incorrect pathnames to models and
-//               textures from a file with correct pathnames.  It
-//               corresponds to a sequence of -pr command-line
-//               options, as well as the -pp option.
-//
-//               This can also go the next step, which is to convert a
-//               known file into a suitable form for storing in a
-//               model file.  In this capacity, it corresponds to the
-//               -ps and -pd options.
-////////////////////////////////////////////////////////////////////
+/**
+ * This encapsulates the user's command-line request to replace existing,
+ * incorrect pathnames to models and textures from a file with correct
+ * pathnames.  It corresponds to a sequence of -pr command-line options, as
+ * well as the -pp option.
+ *
+ * This can also go the next step, which is to convert a known file into a
+ * suitable form for storing in a model file.  In this capacity, it
+ * corresponds to the -ps and -pd options.
+ */
 class PathReplace : public ReferenceCount {
 public:
   PathReplace();
@@ -54,13 +50,13 @@ public:
 
   INLINE bool is_empty() const;
 
-  Filename match_path(const Filename &orig_filename, 
+  Filename match_path(const Filename &orig_filename,
                       const DSearchPath &additional_path = DSearchPath());
   Filename store_path(const Filename &orig_filename);
 
   INLINE Filename convert_path(const Filename &orig_filename,
                                const DSearchPath &additional_path = DSearchPath());
-  
+
   void full_convert_path(const Filename &orig_filename,
                          const DSearchPath &additional_path,
                          Filename &resolved_path,
@@ -78,14 +74,13 @@ public:
   bool _copy_files;
   Filename _copy_into_directory;
 
-  // If this is this true, then the error flag is set (see had_error()
-  // and clear_error()) if any Filename passed to match_path() or
-  // convert_path(), and unmatched by one of the prefixes, happens to
-  // be an absolute pathname.
+  // If this is this true, then the error flag is set (see had_error() and
+  // clear_error()) if any Filename passed to match_path() or convert_path(),
+  // and unmatched by one of the prefixes, happens to be an absolute pathname.
   bool _noabs;
 
-  // If this is true, then the error flag is set if any Filename
-  // passed to match_path() or convert_path() cannot be found.
+  // If this is true, then the error flag is set if any Filename passed to
+  // match_path() or convert_path() cannot be found.
   bool _exists;
 
 private:
@@ -130,6 +125,3 @@ private:
 #include "pathReplace.I"
 
 #endif
-
-  
-  

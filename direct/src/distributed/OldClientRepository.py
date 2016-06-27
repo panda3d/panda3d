@@ -1,6 +1,6 @@
 """OldClientRepository module: contains the OldClientRepository class"""
 
-from ClientRepositoryBase import *
+from .ClientRepositoryBase import *
 
 class OldClientRepository(ClientRepositoryBase):
     """
@@ -126,7 +126,7 @@ class OldClientRepository(ClientRepositoryBase):
 
     def handleDatagram(self, di):
         if self.notify.getDebug():
-            print "ClientRepository received datagram:"
+            print("ClientRepository received datagram:")
             di.getDatagram().dumpHex(ostream)
 
         msgType = self.getMsgType()

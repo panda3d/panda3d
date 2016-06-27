@@ -1,16 +1,15 @@
-// Filename: geomVertexArrayData.h
-// Created by:  drose (17Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexArrayData.h
+ * @author drose
+ * @date 2005-03-17
+ */
 
 #ifndef GEOMVERTEXARRAYDATA_H
 #define GEOMVERTEXARRAYDATA_H
@@ -41,25 +40,21 @@ class GeomVertexArrayDataHandle;
 class VertexDataBook;
 class SimpleAllocatorBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayData
-// Description : This is the data for one array of a GeomVertexData
-//               structure.  Many GeomVertexData structures will only
-//               define one array, with all data elements interleaved
-//               (DirectX 8.0 and before insisted on this format);
-//               some will define multiple arrays.
-//
-//               DirectX calls this concept of one array a "stream".
-//               It also closely correlates with the concept of a
-//               vertex buffer.
-//
-//               This object is just a block of data.  In general, you
-//               should not be directly messing with this object from
-//               application code.  See GeomVertexData for the
-//               organizing structure, and see
-//               GeomVertexReader/Writer/Rewriter for high-level tools
-//               to manipulate the actual vertex data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the data for one array of a GeomVertexData structure.  Many
+ * GeomVertexData structures will only define one array, with all data
+ * elements interleaved (DirectX 8.0 and before insisted on this format); some
+ * will define multiple arrays.
+ *
+ * DirectX calls this concept of one array a "stream". It also closely
+ * correlates with the concept of a vertex buffer.
+ *
+ * This object is just a block of data.  In general, you should not be
+ * directly messing with this object from application code.  See
+ * GeomVertexData for the organizing structure, and see
+ * GeomVertexReader/Writer/Rewriter for high-level tools to manipulate the
+ * actual vertex data.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexArrayData : public CopyOnWriteObject, public SimpleLruPage, public GeomEnums {
 private:
   GeomVertexArrayData();
@@ -78,9 +73,11 @@ PUBLISHED:
   int compare_to(const GeomVertexArrayData &other) const;
 
   INLINE const GeomVertexArrayFormat *get_array_format() const;
+  MAKE_PROPERTY(array_format, get_array_format);
 
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
+  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
 
   INLINE bool has_column(const InternalName *name) const;
 
@@ -92,6 +89,8 @@ PUBLISHED:
 
   INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
+  MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -134,18 +133,16 @@ private:
   CPT(GeomVertexArrayFormat) _array_format;
 
   // A GeomVertexArrayData keeps a list (actually, a map) of all the
-  // PreparedGraphicsObjects tables that it has been prepared into.
-  // Each PGO conversely keeps a list (a set) of all the Geoms that
-  // have been prepared there.  When either destructs, it removes
-  // itself from the other's list.
+  // PreparedGraphicsObjects tables that it has been prepared into.  Each PGO
+  // conversely keeps a list (a set) of all the Geoms that have been prepared
+  // there.  When either destructs, it removes itself from the other's list.
   typedef pmap<PreparedGraphicsObjects *, VertexBufferContext *> Contexts;
   Contexts *_contexts;
 
   // This data is only needed when reading from a bam file.
   class BamAuxData : public BamReader::AuxData {
   public:
-    // set true to indicate the data must be endian-reversed in
-    // finalize().
+    // set true to indicate the data must be endian-reversed in finalize().
     bool _endian_reversed;
   };
 
@@ -235,22 +232,18 @@ private:
   friend class GeomVertexArrayDataHandle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayDataHandle
-// Description : This data object is returned by
-//               GeomVertexArrayData::get_handle() or modify_handle().
-//               As long as it exists, the data is locked; when the
-//               last of these destructs, the data is unlocked.
-//
-//               Only one thread at a time may lock the data; other
-//               threads attempting to lock the data will block.  A
-//               given thread may simultaneously lock the data
-//               multiple times.
-//
-//               This class serves in lieu of a pair of
-//               GeomVertexArrayDataPipelineReader and
-//               GeomVertexArrayDataPipelineWriter classes
-////////////////////////////////////////////////////////////////////
+/**
+ * This data object is returned by GeomVertexArrayData::get_handle() or
+ * modify_handle(). As long as it exists, the data is locked; when the last of
+ * these destructs, the data is unlocked.
+ *
+ * Only one thread at a time may lock the data; other threads attempting to
+ * lock the data will block.  A given thread may simultaneously lock the data
+ * multiple times.
+ *
+ * This class serves in lieu of a pair of GeomVertexArrayDataPipelineReader
+ * and GeomVertexArrayDataPipelineWriter classes
+ */
 class EXPCL_PANDA_GOBJ GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
 private:
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
@@ -274,9 +267,12 @@ public:
 PUBLISHED:
   INLINE const GeomVertexArrayData *get_object() const;
   INLINE GeomVertexArrayData *get_object();
+  MAKE_PROPERTY(object, get_object);
 
   INLINE const GeomVertexArrayFormat *get_array_format() const;
   INLINE UsageHint get_usage_hint() const;
+  MAKE_PROPERTY(array_format, get_array_format);
+  MAKE_PROPERTY(usage_hint, get_usage_hint);
 
   INLINE int get_num_rows() const;
   bool set_num_rows(int n);
@@ -286,6 +282,8 @@ PUBLISHED:
 
   INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
+  MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   INLINE bool request_resident() const;
 

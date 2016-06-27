@@ -1,16 +1,15 @@
-// Filename: dcPackerCatalog.h
-// Created by:  drose (21Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcPackerCatalog.h
+ * @author drose
+ * @date 2004-06-21
+ */
 
 #ifndef DCPACKERCATALOG_H
 #define DCPACKERCATALOG_H
@@ -21,14 +20,12 @@ class DCPackerInterface;
 class DCPacker;
 class DCSwitchParameter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCPackerCatalog
-// Description : This object contains the names of all of the nested
-//               fields available within a particular field.  It is
-//               created on demand when a catalog is first requested
-//               from a particular field; its ownership is retained by
-//               the field so it must not be deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object contains the names of all of the nested fields available within
+ * a particular field.  It is created on demand when a catalog is first
+ * requested from a particular field; its ownership is retained by the field
+ * so it must not be deleted.
+ */
 class EXPCL_DIRECT DCPackerCatalog {
 private:
   DCPackerCatalog(const DCPackerInterface *root);
@@ -36,8 +33,8 @@ private:
   ~DCPackerCatalog();
 
 public:
-  // The Entry class records the static catalog data: the name of each
-  // field and its relationship to its parent.
+  // The Entry class records the static catalog data: the name of each field
+  // and its relationship to its parent.
   class Entry {
   public:
     string _name;
@@ -46,10 +43,9 @@ public:
     int _field_index;
   };
 
-  // The LiveCatalog class adds the dynamic catalog data: the actual
-  // location of each field within the data record.  This might be
-  // different for different data records (since some data fields have
-  // a dynamic length).
+  // The LiveCatalog class adds the dynamic catalog data: the actual location
+  // of each field within the data record.  This might be different for
+  // different data records (since some data fields have a dynamic length).
   class LiveCatalogEntry {
   public:
     size_t _begin;
@@ -84,7 +80,7 @@ public:
 private:
   void add_entry(const string &name, const DCPackerInterface *field,
                  const DCPackerInterface *parent, int field_index);
-  
+
   void r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
                       const DCPackerInterface *parent, int field_index);
   void r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer,
@@ -92,11 +88,11 @@ private:
 
   const DCPackerCatalog *update_switch_fields(const DCSwitchParameter *dswitch,
                                               const DCPackerInterface *switch_case) const;
-    
+
 
   const DCPackerInterface *_root;
   LiveCatalog *_live_catalog;
-  
+
   typedef pvector<Entry> Entries;
   Entries _entries;
 

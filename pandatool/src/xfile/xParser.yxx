@@ -1,7 +1,8 @@
-// Filename: xParser.yxx
-// Created by:  drose (03Oct04)
-// 
-////////////////////////////////////////////////////////////////////
+/**
+ * @file xParser.yxx
+ * @author drose
+ * @date 2004-10-03
+ */
 
 // The grammar defined in this file is taken more-or-less from the
 // Microsoft DirectX File Format Specification document, version 1.13.

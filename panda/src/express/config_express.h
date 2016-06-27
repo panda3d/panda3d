@@ -1,16 +1,15 @@
-// Filename: config_express.h
-// Created by:  cary (04Jan00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_express.h
+ * @author cary
+ * @date 2000-01-04
+ */
 
 #ifndef __CONFIG_EXPRESS_H__
 #define __CONFIG_EXPRESS_H__
@@ -37,12 +36,11 @@ ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(clock, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 
-// Actually, we can't determine this config variable the normal way,
-// because we must be able to access it at static init time.  Instead
-// of declaring it a global constant, we'll make it a member of
-// MemoryUsage.
+// Actually, we can't determine this config variable the normal way, because
+// we must be able to access it at static init time.  Instead of declaring it
+// a global constant, we'll make it a member of MemoryUsage.
 
-//extern EXPCL_PANDAEXPRESS const bool track_memory_usage;
+// extern EXPCL_PANDAEXPRESS const bool track_memory_usage;
 
 EXPCL_PANDAEXPRESS bool get_use_high_res_clock();
 EXPCL_PANDAEXPRESS bool get_paranoid_clock();

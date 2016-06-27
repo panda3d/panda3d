@@ -1,16 +1,15 @@
-// Filename: interrogateBuilder.h
-// Created by:  drose (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateBuilder.h
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #ifndef INTERROGATEBUILDER_H
 #define INTERROGATEBUILDER_H
@@ -47,12 +46,10 @@ class InterrogateFunction;
 class FunctionRemap;
 class InterfaceMaker;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateBuilder
-// Description : This class builds up the InterrogateDatabase based on
-//               the data indicated by CPPParser after reading the
-//               source code.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class builds up the InterrogateDatabase based on the data indicated by
+ * CPPParser after reading the source code.
+ */
 class InterrogateBuilder {
 public:
   void add_source_file(const string &filename);
@@ -113,7 +110,7 @@ public:
                int flags, const string &expression = string());
 
   ElementIndex
-  get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type);
+  get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CPPScope *scope);
 
   MakeSeqIndex
   get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type);
@@ -168,5 +165,3 @@ public:
 extern InterrogateBuilder builder;
 
 #endif
-
-

@@ -2,7 +2,7 @@
 
 __all__ = []
 
-from ShowBase import *
+from .ShowBase import *
 
 # Create the showbase instance
 # This should be created by the game specific "start" file
@@ -14,11 +14,19 @@ assert base
 directNotify.setDconfigLevels()
 
 def inspect(anObject):
-    from direct.tkpanels import Inspector
+    # Don't use a regular import, to prevent ModuleFinder from picking
+    # it up as a dependency when building a .p3d package.
+    import importlib
+    Inspector = importlib.import_module('direct.tkpanels.Inspector')
     return Inspector.inspect(anObject)
 
-import __builtin__
-__builtin__.inspect = inspect
+import sys
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
+builtins.inspect = inspect
+
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:
     notify = directNotify.newCategory('ShowBaseGlobal')

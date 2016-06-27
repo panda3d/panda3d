@@ -1,16 +1,15 @@
-// Filename: load_plugin.h
-// Created by:  drose (19Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file load_plugin.h
+ * @author drose
+ * @date 2009-06-19
+ */
 
 #ifndef LOAD_PLUGIN_H
 #define LOAD_PLUGIN_H
@@ -61,8 +60,8 @@ extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream_ptr;
 extern P3D_instance_handle_event_func *P3D_instance_handle_event_ptr;
 
 string get_plugin_basename();
-bool 
-load_plugin(const string &p3d_plugin_filename, 
+bool
+load_plugin(const string &p3d_plugin_filename,
             const string &contents_filename, const string &host_url,
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
@@ -70,7 +69,7 @@ load_plugin(const string &p3d_plugin_filename,
             const string &root_dir, const string &host_dir,
             const string &start_dir, ostream &logfile);
 bool
-init_plugin(const string &contents_filename, const string &host_url, 
+init_plugin(const string &contents_filename, const string &host_url,
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,

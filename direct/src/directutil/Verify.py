@@ -41,7 +41,9 @@ only when debugging (i.e. when it won't be checked-in) or where it helps
 you resist using assert for error handling.
 """
 
-wantVerifyPdb = 0 # Set to true to load pdb on failure.
+from panda3d.core import ConfigVariableBool
+
+wantVerifyPdb = ConfigVariableBool('want-verify-pdb', False) # Set to true to load pdb on failure.
 
 
 def verify(assertion):
@@ -50,11 +52,11 @@ def verify(assertion):
     wish to have the assertion checked, even in release (-O) code.
     """
     if not assertion:
-        print "\n\nverify failed:"
+        print("\n\nverify failed:")
         import sys
-        print "    File \"%s\", line %d"%(
+        print("    File \"%s\", line %d"%(
                 sys._getframe(1).f_code.co_filename,
-                sys._getframe(1).f_lineno)
+                sys._getframe(1).f_lineno))
         if wantVerifyPdb:
             import pdb
             pdb.set_trace()

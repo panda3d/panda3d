@@ -1,16 +1,15 @@
-// Filename: colorAttrib.h
-// Created by:  drose (22Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorAttrib.h
+ * @author drose
+ * @date 2002-02-22
+ */
 
 #ifndef COLORATTRIB_H
 #define COLORATTRIB_H
@@ -22,11 +21,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorAttrib
-// Description : Indicates what color should be applied to renderable
-//               geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates what color should be applied to renderable geometry.
+ */
 class EXPCL_PANDA_PGRAPH ColorAttrib : public RenderAttrib {
 PUBLISHED:
   enum Type {
@@ -44,6 +41,10 @@ PUBLISHED:
 
   INLINE Type get_color_type() const;
   INLINE const LColor &get_color() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(color_type, get_color_type);
+  MAKE_PROPERTY(color, get_color);
 
 public:
   virtual void output(ostream &out) const;
@@ -77,7 +78,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -102,4 +103,3 @@ private:
 #include "colorAttrib.I"
 
 #endif
-

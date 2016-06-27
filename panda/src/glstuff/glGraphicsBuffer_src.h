@@ -1,62 +1,52 @@
-// Filename: glGraphicsBuffer_src.h
-// Created by:  jyelon (15Jan06)
-// Modified by: kleonard (27Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGraphicsBuffer_src.h
+ * @author jyelon
+ * @date 2006-01-15
+ * @author kleonard
+ * @date 2007-06-27
+ */
 
 #include "pandabase.h"
 #include "graphicsBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : glGraphicsBuffer
-// Description : An offscreen render buffer.
-//
-//               The glGraphicsBuffer is based on the OpenGL
-//               EXT_framebuffer_object and ARB_draw_buffers extensions.
-//               This design has significant advantages over the
-//               older wglGraphicsBuffer and glxGraphicsBuffer:
-//
-//               * Can export depth and stencil.
-//               * Supports auxiliary bitplanes.
-//               * Supports non-power-of-two padding.
-//               * Supports tracking of host window size.
-//               * Supports cumulative render-to-texture.
-//               * Faster than pbuffers.
-//               * Can render onto a texture without clearing it first.
-//               * Supports multisample antialiased rendering.
-//
-//               Some of these deserve a little explanation.
-//               Auxiliary bitplanes are additional bitplanes above
-//               and beyond the normal depth,stencil,color.  One can
-//               use them to render out multiple textures in a single
-//               pass.  Cumulative render-to-texture means that if
-//               don't clear the buffer, then the contents of the
-//               buffer will be equal to the texture's previous
-//               contents.  This alo means you can meaningfully
-//               share a bitplane between two buffers by binding
-//               the same texture to both buffers.
-//
-//               If either of the necessary OpenGL extensions is not
-//               available, then the glGraphicsBuffer will not be
-//               available (although it may still be possible to
-//               create a wglGraphicsBuffer or glxGraphicsBuffer).
-//
-//               This class now also uses the extensions
-//               EXT_framebuffer_multisample and EXT_framebuffer_blit
-//               to allow for multisample antialiasing these offscreen
-//               render targets.  If these extensions are unavailable
-//               the buffer will render as if multisamples is 0.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen render buffer.
+ *
+ * The glGraphicsBuffer is based on the OpenGL EXT_framebuffer_object and
+ * ARB_draw_buffers extensions.  This design has significant advantages over
+ * the older wglGraphicsBuffer and glxGraphicsBuffer:
+ *
+ * * Can export depth and stencil.  * Supports auxiliary bitplanes.  *
+ * Supports non-power-of-two padding.  * Supports tracking of host window
+ * size.  * Supports cumulative render-to-texture.  * Faster than pbuffers.  *
+ * Can render onto a texture without clearing it first.  * Supports
+ * multisample antialiased rendering.
+ *
+ * Some of these deserve a little explanation.  Auxiliary bitplanes are
+ * additional bitplanes above and beyond the normal depth,stencil,color.  One
+ * can use them to render out multiple textures in a single pass.  Cumulative
+ * render-to-texture means that if don't clear the buffer, then the contents
+ * of the buffer will be equal to the texture's previous contents.  This alo
+ * means you can meaningfully share a bitplane between two buffers by binding
+ * the same texture to both buffers.
+ *
+ * If either of the necessary OpenGL extensions is not available, then the
+ * glGraphicsBuffer will not be available (although it may still be possible
+ * to create a wglGraphicsBuffer or glxGraphicsBuffer).
+ *
+ * This class now also uses the extensions EXT_framebuffer_multisample and
+ * EXT_framebuffer_blit to allow for multisample antialiasing these offscreen
+ * render targets.  If these extensions are unavailable the buffer will render
+ * as if multisamples is 0.
+ *
+ */
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
 public:
   CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -68,6 +58,9 @@ public:
                       GraphicsOutput *host);
   virtual ~CLP(GraphicsBuffer)();
 
+#ifndef OPENGLES
+  virtual void clear(Thread *current_thread);
+#endif
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
@@ -103,12 +96,12 @@ private:
   void rebuild_bitplanes();
   void resolve_multisamples();
 
-  // We create one FBO for each cube map face we'll be rendering to.
-  // If we aren't rendering to any cube maps, we use only _fbo[0].
+  // We create one FBO for each cube map face we'll be rendering to.  If we
+  // aren't rendering to any cube maps, we use only _fbo[0].
   pvector<GLuint> _fbo;
 
-  // For multisample we render first to a multisample buffer, then
-  // filter it to _fbo[face] at the end of the frame.
+  // For multisample we render first to a multisample buffer, then filter it
+  // to _fbo[face] at the end of the frame.
   GLuint      _fbo_multisample;
   int         _requested_multisamples;
   int         _requested_coverage_samples;
@@ -119,8 +112,8 @@ private:
   int         _rb_size_y;
   int         _rb_size_z;
 
-  // Stores the render buffers for each plane.
-  // _rbm stores the multisample renderbuffers.
+  // Stores the render buffers for each plane.  _rbm stores the multisample
+  // renderbuffers.
   GLuint      _rb[RTP_COUNT];
   GLuint      _rbm[RTP_COUNT];
 
@@ -128,13 +121,13 @@ private:
   BufferContext *_rb_context;
   size_t _rb_data_size_bytes;
 
-  // List of textures for which we might have to generate mipmaps
-  // after rendering one frame.
+  // List of textures for which we might have to generate mipmaps after
+  // rendering one frame.
   typedef pvector<CLP(TextureContext)*> TextureContexts;
   TextureContexts _texture_contexts;
 
-  // The cube map face we are currently drawing to or have just
-  // finished drawing to, or -1 if we are not drawing to a cube map.
+  // The cube map face we are currently drawing to or have just finished
+  // drawing to, or -1 if we are not drawing to a cube map.
   int _bound_tex_page;
 
   bool _initial_clear;

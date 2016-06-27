@@ -1,5 +1,5 @@
 /*
-  maxEggExpOptions.h 
+  maxEggExpOptions.h
   Created by Phillip Saltzman, 2/15/05
   Carnegie Mellon University, Entetainment Technology Center
 
@@ -17,7 +17,7 @@
 /* Externed Globals */
 extern HINSTANCE hInstance;
 
-//Save/load chunk definitions
+// Saveload chunk definitions
 #define CHUNK_OVERWRITE_FLAG  0x1000
 #define CHUNK_PVIEW_FLAG      0x1001
 #define CHUNK_LOG_OUTPUT      0x1002
@@ -33,12 +33,10 @@ extern HINSTANCE hInstance;
 #define CHUNK_ALL_FRAMES      0x1109
 #define CHUNK_NODE_LIST       0x1200
 #define CHUNK_NODE_HANDLE     0x1201
-//
-//#define CHUNK_ADD_COLLISION   0x1202
-//#define CHUNK_CS_TYPE         0x1203
-//#define CHUNK_CF_TYPE         0x1204
+// #define CHUNK_ADD_COLLISION   0x1202 #define CHUNK_CS_TYPE         0x1203
+// #define CHUNK_CF_TYPE         0x1204
 
-//Global functions
+// Global functions
 void ChunkSave(ISave *isave, int chunkid, int value);
 void ChunkSave(ISave *isave, int chunkid, bool value);
 void ChunkSave(ISave *isave, int chunkid, char *value);
@@ -90,8 +88,8 @@ class MaxOptionsDialog : public MaxEggOptions
     MaxOptionsDialog();
     ~MaxOptionsDialog();
 
-    // All these List functions should probably take what list they need to operate on
-    // rather than just operating on a global list
+    // All these List functions should probably take what list they need to
+    // operate on rather than just operating on a global list
     void SetMaxInterface(IObjParam *iface) { _max_interface = iface; }
     void UpdateUI(HWND hWnd);
     bool UpdateFromUI(HWND hWnd);

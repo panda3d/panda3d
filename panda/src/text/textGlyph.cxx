@@ -1,53 +1,49 @@
-// Filename: textGlyph.cxx
-// Created by:  drose (08Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textGlyph.cxx
+ * @author drose
+ * @date 2002-02-08
+ */
 
 #include "textGlyph.h"
+#include "geomTextGlyph.h"
+#include "geomTriangles.h"
+#include "geomVertexReader.h"
+#include "geomVertexWriter.h"
 
 TypeHandle TextGlyph::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TextGlyph::
 ~TextGlyph() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::is_whitespace
-//       Access: Published, Virtual
-//  Description: Returns true if this glyph represents invisible
-//               whitespace, or false if it corresponds to some
-//               visible character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this glyph represents invisible whitespace, or false if it
+ * corresponds to some visible character.
+ */
 bool TextGlyph::
 is_whitespace() const {
-  // In a static font, there is no explicit glyph for whitespace, so
-  // all glyphs are non-whitespace.
+  // In a static font, there is no explicit glyph for whitespace, so all
+  // glyphs are non-whitespace.
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::get_geom
-//       Access: Published
-//  Description: Returns a Geom that renders the particular glyph.
-//               It will be generated if necessary.
-//
-//               This method will always return a copy of the Geom,
-//               so the caller is free to modify it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Geom that renders the particular glyph.  It will be generated if
+ * necessary.
+ *
+ * This method will always return a copy of the Geom, so the caller is free to
+ * modify it.
+ */
 PT(Geom) TextGlyph::
 get_geom(Geom::UsageHint usage_hint) const {
   if (_geom.is_null()) {
@@ -63,11 +59,11 @@ get_geom(Geom::UsageHint usage_hint) const {
     }
   }
 
-  // We always return a copy of the geom.  That will allow the caller
-  // to modify its vertices without fear of stomping on other copies.
-  // It is also important that we store a reference to this glyph on
-  // the Geom, since the DynamicTextFont relies on counting references
-  // to determine whether a glyph is no longer used.
+  // We always return a copy of the geom.  That will allow the caller to
+  // modify its vertices without fear of stomping on other copies.  It is also
+  // important that we store a reference to this glyph on the Geom, since the
+  // DynamicTextFont relies on counting references to determine whether a
+  // glyph is no longer used.
   PT(Geom) new_geom = new GeomTextGlyph(*_geom, this);
   new_geom->set_usage_hint(usage_hint);
   const GeomVertexData *vdata = new_geom->get_vertex_data();
@@ -78,15 +74,12 @@ get_geom(Geom::UsageHint usage_hint) const {
   return new_geom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::calc_tight_bounds
-//       Access: Public
-//  Description: Expands min_point and max_point to include all of the
-//               vertices in the glyph, if any.  found_any is set
-//               true if any points are found.  It is the caller's
-//               responsibility to initialize min_point, max_point,
-//               and found_any before calling this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expands min_point and max_point to include all of the vertices in the
+ * glyph, if any.  found_any is set true if any points are found.  It is the
+ * caller's responsibility to initialize min_point, max_point, and found_any
+ * before calling this function.
+ */
 void TextGlyph::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, Thread *current_thread) const {
@@ -100,14 +93,10 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::set_quad
-//       Access: Public
-//  Description: Sets the glyph using the given quad parameters.
-//               Any Geom assigned will be cleared.
-//               The order of the components is left, bottom,
-//               right, top.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the glyph using the given quad parameters.  Any Geom assigned will be
+ * cleared.  The order of the components is left, bottom, right, top.
+ */
 void TextGlyph::
 set_quad(const LVecBase4 &dimensions, const LVecBase4 &texcoords,
          const RenderState *state) {
@@ -119,16 +108,14 @@ set_quad(const LVecBase4 &dimensions, const LVecBase4 &texcoords,
   _state = state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::set_geom
-//       Access: Public
-//  Description: Sets the geom from a pre-built Geom object.
-//               Any quad parameters assigned will be cleared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the geom from a pre-built Geom object.  Any quad parameters assigned
+ * will be cleared.
+ */
 void TextGlyph::
-set_geom(GeomVertexData *vdata, GeomPrimitive *prim, 
+set_geom(GeomVertexData *vdata, GeomPrimitive *prim,
          const RenderState *state) {
-  PT(Geom) geom = new Geom(vdata);
+  PT(Geom) geom = new GeomTextGlyph(this, vdata);
   geom->add_primitive(prim);
   _geom = geom;
 
@@ -136,21 +123,17 @@ set_geom(GeomVertexData *vdata, GeomPrimitive *prim,
   _state = state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::check_quad_geom
-//       Access: Private
-//  Description: Checks if the geom that was passed in is actually
-//               a quad, and if so, sets the appropriate quad
-//               parameters.
-//
-//               This is useful when loading static text fonts, so
-//               that they can still benefit from the fast text
-//               assembly that is done for quads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks if the geom that was passed in is actually a quad, and if so, sets
+ * the appropriate quad parameters.
+ *
+ * This is useful when loading static text fonts, so that they can still
+ * benefit from the fast text assembly that is done for quads.
+ */
 void TextGlyph::
 check_quad_geom() {
-  // Currently it looks for rather specific signs that this glyph
-  // has been generated using egg-mkfont.  For now, this is fine.
+  // Currently it looks for rather specific signs that this glyph has been
+  // generated using egg-mkfont.  For now, this is fine.
   CPT(GeomVertexData) vdata = _geom->get_vertex_data();
   if (vdata->get_num_rows() != 4) {
     return;
@@ -253,24 +236,21 @@ check_quad_geom() {
   _has_quad = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::make_quad_geom
-//       Access: Private
-//  Description: Generates a Geom representing this text glyph, if
-//               at all possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a Geom representing this text glyph, if at all possible.
+ */
 void TextGlyph::
 make_quad_geom() {
-  // The default implementation is to generate a Geom based on the
-  // get_quad() implementation, if any.
+  // The default implementation is to generate a Geom based on the get_quad()
+  // implementation, if any.
   LVecBase4 dimensions, uvs;
   if (!get_quad(dimensions, uvs)) {
     return;
   }
 
-  // Create a corresponding triangle pair.  We use a pair of indexed
-  // triangles rather than a single triangle strip, to avoid the bad
-  // vertex duplication behavior with lots of two-triangle strips.
+  // Create a corresponding triangle pair.  We use a pair of indexed triangles
+  // rather than a single triangle strip, to avoid the bad vertex duplication
+  // behavior with lots of two-triangle strips.
   PT(GeomVertexData) vdata = new GeomVertexData
     (string(), GeomVertexFormat::get_v3t2(), Geom::UH_static);
   vdata->unclean_set_num_rows(4);
@@ -304,9 +284,9 @@ make_quad_geom() {
     index.set_data1i(3);
   }
 
-  // We create a regular Geom here, not a GeomTextGlyph, since doing so
-  // would create a circular reference.  When the get_geom method makes
-  // a copy, it will add in a pointer to this text glyph.
+  // We create a regular Geom here, not a GeomTextGlyph, since doing so would
+  // create a circular reference.  When the get_geom method makes a copy, it
+  // will add in a pointer to this text glyph.
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(tris);
   _geom = geom;

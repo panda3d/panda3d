@@ -1,16 +1,15 @@
-// Filename: typedWritable.h
-// Created by:  jason (08Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typedWritable.h
+ * @author jason
+ * @date 2000-06-08
+ */
 
 #ifndef TYPEDWRITABLE_H
 #define TYPEDWRITABLE_H
@@ -27,13 +26,11 @@ class Datagram;
 class DatagramIterator;
 class ReferenceCount;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypedWritable
-// Description : Base class for objects that can be written to and
-//               read from Bam files.
-//
-//               See also TypedObject for detailed instructions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Base class for objects that can be written to and read from Bam files.
+ *
+ * See also TypedObject for detailed instructions.
+ */
 class EXPCL_PANDA_PUTIL TypedWritable : public TypedObject {
 public:
   static TypedWritable* const Null;
@@ -50,7 +47,10 @@ public:
   virtual int complete_pointers(TypedWritable **p_list, BamReader *manager);
   virtual bool require_fully_complete() const;
 
+PUBLISHED:
   virtual void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   virtual void finalize(BamReader *manager);
 
   virtual ReferenceCount *as_reference_count();
@@ -73,9 +73,9 @@ private:
   void add_bam_writer(BamWriter *writer);
   void remove_bam_writer(BamWriter *writer);
 
-  // We may need to store a list of the BamWriter(s) that have a
-  // reference to this object, so that we can remove the object from
-  // those tables when it destructs.
+  // We may need to store a list of the BamWriter(s) that have a reference to
+  // this object, so that we can remove the object from those tables when it
+  // destructs.
   struct BamWriterLink {
     BamWriter *_writer;
     BamWriterLink *_next;

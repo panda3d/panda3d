@@ -1,16 +1,15 @@
-// Filename: pnmPainter.h
-// Created by:  drose (02Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmPainter.h
+ * @author drose
+ * @date 2007-02-02
+ */
 
 #ifndef PNMPAINTER_H
 #define PNMPAINTER_H
@@ -20,17 +19,14 @@
 
 class PNMImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMPainter
-// Description : This class provides a number of convenient methods
-//               for painting drawings directly into a PNMImage.
-//
-//               It stores a pointer to the PNMImage you pass it, but
-//               it does not take ownership of the object; you are
-//               responsible for ensuring that the PNMImage does not
-//               destruct during the lifetime of the PNMPainter
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a number of convenient methods for painting drawings
+ * directly into a PNMImage.
+ *
+ * It stores a pointer to the PNMImage you pass it, but it does not take
+ * ownership of the object; you are responsible for ensuring that the PNMImage
+ * does not destruct during the lifetime of the PNMPainter object.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMPainter {
 PUBLISHED:
   PNMPainter(PNMImage &image, int xo = 0, int yo = 0);
@@ -40,6 +36,9 @@ PUBLISHED:
   INLINE PNMBrush *get_pen() const;
   INLINE void set_fill(PNMBrush *fill);
   INLINE PNMBrush *get_fill() const;
+
+  MAKE_PROPERTY(pen, get_pen, set_pen);
+  MAKE_PROPERTY(fill, get_fill, set_fill);
 
   INLINE void draw_point(float x, float y);
   void draw_line(float xa, float ya, float xb, float yb);

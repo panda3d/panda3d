@@ -1,19 +1,20 @@
-// Filename: nodePath.h
-// Created by:  drose (25Feb02)
-// Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
-//   for set_shader_input)
-// Updated by: weifengh, PandaSE(30Apr10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePath.h
+ * @author drose
+ * @date 2002-02-25
+ * @author fperazzi, PandaSE
+ * @date 2010-04-06
+ *   for set_shader_input)
+ * @author weifengh, PandaSE
+ * @date 2010-04-30
+ */
 
 #ifndef NODEPATH_H
 #define NODEPATH_H
@@ -25,6 +26,7 @@
 #include "transformState.h"
 #include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
+#include "logicOpAttrib.h"
 #include "nodePathComponent.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
@@ -62,22 +64,22 @@ class Shader;
 class ShaderInput;
 
 //
-// A NodePath is the fundamental unit of high-level interaction with
-// the scene graph.  It encapsulates the complete path down to a node
-// from some other node, usually the root of the scene graph.  This is
-// used to resolve ambiguities associated with instancing.
+// A NodePath is the fundamental unit of high-level interaction with the scene
+// graph.  It encapsulates the complete path down to a node from some other
+// node, usually the root of the scene graph.  This is used to resolve
+// ambiguities associated with instancing.
 //
-// NodePath also contains a number of handy high-level methods for
-// common scene-graph manipulations, such as reparenting, and common
-// state changes, such as repositioning.
+// NodePath also contains a number of handy high-level methods for common
+// scene-graph manipulations, such as reparenting, and common state changes,
+// such as repositioning.
 //
-// There are also a number of NodePath methods for finding nodes deep
-// within the tree by name or by type.  These take a path string,
-// which at its simplest consists of a series of node names separated
-// by slashes, like a directory pathname.
+// There are also a number of NodePath methods for finding nodes deep within
+// the tree by name or by type.  These take a path string, which at its
+// simplest consists of a series of node names separated by slashes, like a
+// directory pathname.
 //
-// Each component of the path string may optionally consist of one of
-// the following special names, instead of a node name:
+// Each component of the path string may optionally consist of one of the
+// following special names, instead of a node name:
 //
 //   *          -- matches exactly one node, with any name.
 //   **         -- matches any sequence of zero or more nodes.
@@ -86,47 +88,45 @@ class ShaderInput;
 //   =tag       -- matches any node that has the indicated tag.
 //   =tag=value -- matches any node whose tag matches the indicated value.
 //
-// Furthermore, a node name may itself contain standard filename
-// globbing characters, like *, ?, and [a-z], that will be accepted as
-// a partial match.  (In fact, the '*' special name may be seen as
-// just a special case of this.)  The globbing characters may not be
-// used with the typename matches or with tag matches, but they may
-// be used to match a tag's value in the =tag=value syntax.
+// Furthermore, a node name may itself contain standard filename globbing
+// characters, like *, ?, and [a-z], that will be accepted as a partial match.
+// (In fact, the '*' special name may be seen as just a special case of this.)
+// The globbing characters may not be used with the typename matches or with
+// tag matches, but they may be used to match a tag's value in the =tag=value
+// syntax.
 //
-// The special characters "@@", appearing at the beginning of a node
-// name, indicate a stashed node.  Normally, stashed nodes are not
-// returned by a find (but see the special flags, below), but a
-// stashed node may be found if it is explicitly named with its
-// leading @@ characters.  By extension, "@@*" may be used to identify
-// any stashed node.
+// The special characters "@@", appearing at the beginning of a node name,
+// indicate a stashed node.  Normally, stashed nodes are not returned by a
+// find (but see the special flags, below), but a stashed node may be found if
+// it is explicitly named with its leading @@ characters.  By extension, "@@*"
+// may be used to identify any stashed node.
 //
 // Examples:
 //
-// "room//graph" will look for a node named "graph", which is a child
-// of an unnamed node, which is a child of a node named "room", which
-// is a child of the starting path.
+// "room//graph" will look for a node named "graph", which is a child of an
+// unnamed node, which is a child of a node named "room", which is a child of
+// the starting path.
 //
-// "**/red*" will look for any node anywhere in the tree (below the
-// starting path) with a name that begins with "red".
+// "**/red*" will look for any node anywhere in the tree (below the starting
+// path) with a name that begins with "red".
 //
-// "**/+PartBundleNode/**/head" will look for a node named "head",
-// somewhere below a PartBundleNode anywhere in the tree.
-//
-//
-// The search is always potentially ambiguous, even if the special
-// wildcard operators are not used, because there may be multiple
-// nodes in the tree with the same name.  In general, in the case of
-// an ambiguity, the shortest path is preferred; when a method (such
-// as extend_by) must choose only only one of several possible paths,
-// it will choose the shortest available; on the other hand, when a
-// method (such as find_all_matches) is to return all of the matching
-// paths, it will sort them so that the shortest paths appear first in
-// the output.
+// "**/+PartBundleNode/**/head" will look for a node named "head", somewhere
+// below a PartBundleNode anywhere in the tree.
 //
 //
-// Special flags.  The entire string may optionally be followed by the
-// ";" character, followed by one or more of the following special
-// control flags, with no intervening spaces or punctuation:
+// The search is always potentially ambiguous, even if the special wildcard
+// operators are not used, because there may be multiple nodes in the tree
+// with the same name.  In general, in the case of an ambiguity, the shortest
+// path is preferred; when a method (such as extend_by) must choose only only
+// one of several possible paths, it will choose the shortest available; on
+// the other hand, when a method (such as find_all_matches) is to return all
+// of the matching paths, it will sort them so that the shortest paths appear
+// first in the output.
+//
+//
+// Special flags.  The entire string may optionally be followed by the ";"
+// character, followed by one or more of the following special control flags,
+// with no intervening spaces or punctuation:
 //
 //    -h    Do not return hidden nodes.
 //    +h    Do return hidden nodes.
@@ -135,37 +135,31 @@ class ShaderInput;
 //    -i    Node name comparisons are not case insensitive: case must match
 //          exactly.
 //    +i    Node name comparisons are case insensitive: case is not important.
-//          This affects matches against the node name only; node type
-//          and tag strings are always case sensitive.
+//          This affects matches against the node name only; node type and tag
+//          strings are always case sensitive.
 //
 // The default flags are +h-s-i.
 //
 
-
-////////////////////////////////////////////////////////////////////
-//       Class : NodePath
-// Description : NodePath is the fundamental system for disambiguating
-//               instances, and also provides a higher-level interface
-//               for manipulating the scene graph.
-//
-//               A NodePath is a list of connected nodes from the root
-//               of the graph to any sub-node.  Each NodePath
-//               therefore uniquely describes one instance of a node.
-//
-//               NodePaths themselves are lightweight objects that may
-//               easily be copied and passed by value.  Their data is
-//               stored as a series of NodePathComponents that are
-//               stored on the nodes.  Holding a NodePath will keep a
-//               reference count to all the nodes in the path.
-//               However, if any node in the path is removed or
-//               reparented (perhaps through a different NodePath),
-//               the NodePath will automatically be updated to reflect
-//               the changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * NodePath is the fundamental system for disambiguating instances, and also
+ * provides a higher-level interface for manipulating the scene graph.
+ *
+ * A NodePath is a list of connected nodes from the root of the graph to any
+ * sub-node.  Each NodePath therefore uniquely describes one instance of a
+ * node.
+ *
+ * NodePaths themselves are lightweight objects that may easily be copied and
+ * passed by value.  Their data is stored as a series of NodePathComponents
+ * that are stored on the nodes.  Holding a NodePath will keep a reference
+ * count to all the nodes in the path.  However, if any node in the path is
+ * removed or reparented (perhaps through a different NodePath), the NodePath
+ * will automatically be updated to reflect the changes.
+ */
 class EXPCL_PANDA_PGRAPH NodePath {
 PUBLISHED:
-  // This enumeration is returned by get_error_type() for an empty
-  // NodePath to report the reason it's empty.
+  // This enumeration is returned by get_error_type() for an empty NodePath to
+  // report the reason it's empty.
   enum ErrorType {
     ET_ok = 0,     // i.e. not empty, or never assigned to anything.
     ET_not_found,  // returned from a failed find() or similar function.
@@ -209,10 +203,13 @@ PUBLISHED:
   int get_num_nodes(Thread *current_thread = Thread::get_current_thread()) const;
   PandaNode *get_node(int index, Thread *current_thread = Thread::get_current_thread()) const;
   MAKE_SEQ(get_nodes, get_num_nodes, get_node);
+  MAKE_SEQ_PROPERTY(nodes, get_num_nodes, get_node);
   NodePath get_ancestor(int index, Thread *current_thread = Thread::get_current_thread()) const;
   MAKE_SEQ(get_ancestors, get_num_nodes, get_ancestor);
+  MAKE_SEQ_PROPERTY(ancestors, get_num_nodes, get_ancestor);
 
   INLINE ErrorType get_error_type() const;
+  MAKE_PROPERTY(error_type, get_error_type);
 
   INLINE PandaNode *get_top_node(Thread *current_thread = Thread::get_current_thread()) const;
   NodePath get_top(Thread *current_thread = Thread::get_current_thread()) const;
@@ -226,13 +223,16 @@ PUBLISHED:
   INLINE bool is_ancestor_of(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE NodePath get_common_ancestor(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
 
-  // Methods that return collections of NodePaths derived from or
-  // related to this one.
+  // Methods that return collections of NodePaths derived from or related to
+  // this one.
 
   NodePathCollection get_children(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int get_num_children(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE NodePath get_child(int n, Thread *current_thread = Thread::get_current_thread()) const;
   NodePathCollection get_stashed_children(Thread *current_thread = Thread::get_current_thread()) const;
+
+  MAKE_PROPERTY(children, get_children);
+  MAKE_PROPERTY(stashed_children, get_stashed_children);
 
   INLINE int count_num_descendants() const;
 
@@ -240,16 +240,19 @@ PUBLISHED:
   INLINE NodePath get_parent(Thread *current_thread = Thread::get_current_thread()) const;
   int get_sort(Thread *current_thread = Thread::get_current_thread()) const;
 
+  MAKE_PROPERTY2(parent, has_parent, get_parent);
+  MAKE_PROPERTY(sort, get_sort);
+
   NodePath find(const string &path) const;
   NodePath find_path_to(PandaNode *node) const;
   NodePathCollection find_all_matches(const string &path) const;
   NodePathCollection find_all_paths_to(PandaNode *node) const;
 
-  // Methods that actually move nodes around in the scene graph.  The
-  // optional "sort" parameter can be used to force a particular
-  // ordering between sibling nodes, useful when dealing with LOD's
-  // and similar switch nodes.  If the sort value is the same, nodes
-  // will be arranged in the order they were added.
+  // Methods that actually move nodes around in the scene graph.  The optional
+  // "sort" parameter can be used to force a particular ordering between
+  // sibling nodes, useful when dealing with LOD's and similar switch nodes.
+  // If the sort value is the same, nodes will be arranged in the order they
+  // were added.
   void reparent_to(const NodePath &other, int sort = 0,
                    Thread *current_thread = Thread::get_current_thread());
   void stash_to(const NodePath &other, int sort = 0,
@@ -270,8 +273,7 @@ PUBLISHED:
   void remove_node(Thread *current_thread = Thread::get_current_thread());
   void detach_node(Thread *current_thread = Thread::get_current_thread());
 
-  // Handy ways to look at what's there, and other miscellaneous
-  // operations.
+  // Handy ways to look at what's there, and other miscellaneous operations.
 
   void output(ostream &out) const;
 
@@ -316,8 +318,8 @@ PUBLISHED:
   INLINE CPT(TransformState) get_net_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
 
 
-  // Methods that get and set the matrix transform: pos, hpr, scale,
-  // in the local coordinate system.
+  // Methods that get and set the matrix transform: pos, hpr, scale, in the
+  // local coordinate system.
 
   INLINE void set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   void set_pos(const LVecBase3 &pos);
@@ -411,8 +413,8 @@ PUBLISHED:
   INLINE void heads_up(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   void heads_up(const LPoint3 &point, const LVector3 &up = LVector3::up());
 
-  // Methods that get and set the matrix transforms relative to some
-  // other node in the scene graph.  These perform an implicit wrt().
+  // Methods that get and set the matrix transforms relative to some other
+  // node in the scene graph.  These perform an implicit wrt().
 
   INLINE void set_pos(const NodePath &other, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   void set_pos(const NodePath &other, const LVecBase3 &pos);
@@ -526,8 +528,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_distance(const NodePath &other) const;
 
 
-  // Methods that affect appearance of geometry: color, texture, etc.
-  // These affect the state at the bottom level only.
+  // Methods that affect appearance of geometry: color, texture, etc.  These
+  // affect the state at the bottom level only.
 
   void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a = 1.0,
                  int priority = 0);
@@ -820,6 +822,11 @@ PUBLISHED:
   bool has_transparency() const;
   TransparencyAttrib::Mode get_transparency() const;
 
+  void set_logic_op(LogicOpAttrib::Operation op, int priority = 0);
+  void clear_logic_op();
+  bool has_logic_op() const;
+  LogicOpAttrib::Operation get_logic_op() const;
+
   void set_antialias(unsigned short mode, int priority = 0);
   void clear_antialias();
   bool has_antialias() const;
@@ -880,7 +887,7 @@ PUBLISHED:
 
   EXTENSION(PyObject *get_tight_bounds(const NodePath &other = NodePath()) const);
 
-  //  void analyze() const;
+  // void analyze() const;
 
   int flatten_light();
   int flatten_medium();
@@ -912,6 +919,7 @@ PUBLISHED:
 
   INLINE void set_name(const string &name);
   INLINE string get_name() const;
+  MAKE_PROPERTY(name, get_name, set_name);
 
   BLOCKING bool write_bam_file(const Filename &filename) const;
   BLOCKING bool write_bam_stream(ostream &out) const;
@@ -993,6 +1001,11 @@ private:
 
   static PStatCollector _get_transform_pcollector;
   static PStatCollector _verify_complete_pcollector;
+
+public:
+  void write_datagram(BamWriter *manager, Datagram &dg) const;
+  int complete_pointers(TypedWritable **plist, BamReader *manager);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

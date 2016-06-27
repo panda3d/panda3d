@@ -1,16 +1,15 @@
-// Filename: portalNode.h
-// Created by: masad (13May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file portalNode.h
+ * @author masad
+ * @date 2004-05-13
+ */
 
 #ifndef PORTALNODE_H
 #define PORTALNODE_H
@@ -23,14 +22,11 @@
 #include "nodePath.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PortalNode 
-//       Description : A node in the scene graph that can hold a 
-//                     Portal Polygon, which is a rectangle. Other 
-//                     types of polygons are not supported for
-//                     now. It also holds a PT(PandaNode) Cell that 
-//                     this portal is connected to
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold a Portal Polygon, which is a
+ * rectangle.  Other types of polygons are not supported for now.  It also
+ * holds a PT(PandaNode) Cell that this portal is connected to
+ */
 class EXPCL_PANDA_PGRAPH PortalNode : public PandaNode {
 PUBLISHED:
   PortalNode(const string &name);
@@ -44,7 +40,7 @@ public:
   virtual PandaNode *make_copy() const;
   virtual bool preserve_name() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
 
   virtual void enable_clipping_planes();
 
@@ -88,7 +84,18 @@ PUBLISHED:
   INLINE void set_open(bool value);
   INLINE bool is_open();
 
-  //  void draw () const;
+  // void draw () const;
+
+  MAKE_PROPERTY(into_portal_mask, get_into_portal_mask, set_into_portal_mask);
+  MAKE_PROPERTY(from_portal_mask, get_from_portal_mask, set_from_portal_mask);
+  MAKE_PROPERTY(portal_geom, get_portal_geom, set_portal_geom);
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
+  MAKE_PROPERTY(cell_in, get_cell_in, set_cell_in);
+  MAKE_PROPERTY(cell_out, get_cell_out, set_cell_out);
+  MAKE_PROPERTY(clip_plane, is_clip_plane, set_clip_plane);
+  MAKE_PROPERTY(visible, is_visible, set_visible);
+  MAKE_PROPERTY(max_depth, get_max_depth, set_max_depth);
+  MAKE_PROPERTY(open, is_open, set_open);
 
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
@@ -99,9 +106,8 @@ protected:
 private:
   CPT(RenderState) get_last_pos_state();
 
-  // This data is not cycled, for now.  We assume the collision
-  // traversal will take place in App only.  Perhaps we will revisit
-  // this later.
+  // This data is not cycled, for now.  We assume the collision traversal will
+  // take place in App only.  Perhaps we will revisit this later.
   PortalMask _from_portal_mask;
   PortalMask _into_portal_mask;
 

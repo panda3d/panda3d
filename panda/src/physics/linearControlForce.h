@@ -1,31 +1,27 @@
-// Filename: linearControlForce.h
-// Created by: Dave Schuyler (2006)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearControlForce.h
+ * @author Dave Schuyler
+ * @date 2006
+ */
 
 #ifndef LINEARCONTROLFORCE_H
 #define LINEARCONTROLFORCE_H
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////
-//       Class : LinearControlForce
-// Description : Simple directed vector force.  This force is 
-//               different from the others in that it can be
-//               global and still only affect a single object.
-//               That might not make sense for a physics simulation,
-//               but it's very handy for a game.  I.e. this is
-//               the force applied by user on the selected object.
-////////////////////////////////////////////////////////////////
+/**
+ * Simple directed vector force.  This force is different from the others in
+ * that it can be global and still only affect a single object.  That might
+ * not make sense for a physics simulation, but it's very handy for a game.
+ * I.e.  this is the force applied by user on the selected object.
+ */
 class EXPCL_PANDAPHYSICS LinearControlForce : public LinearForce {
 PUBLISHED:
   LinearControlForce(const PhysicsObject *po = 0, PN_stdfloat a = 1.0f,
@@ -41,7 +37,7 @@ PUBLISHED:
   INLINE void set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
 
   INLINE LVector3 get_local_vector() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

@@ -1,9 +1,13 @@
 
-from cPickle import dumps, loads
-
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 from direct.showbase.Messenger import Messenger
+
+import sys
+if sys.version_info >= (3, 0):
+    from pickle import dumps, loads
+else:
+    from cPickle import dumps, loads
 
 
 class NetMessenger(Messenger):

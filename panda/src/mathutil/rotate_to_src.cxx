@@ -1,23 +1,20 @@
-// Filename: rotate_to_src.cxx
-// Created by:  drose (04Nov99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rotate_to_src.cxx
+ * @author drose
+ * @date 1999-11-04
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: _rotate_to
-//  Description: Computes the matrix necessary to rotate vector a onto
-//               vector b.  It is assumed that both vectors are
-//               normalized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the matrix necessary to rotate vector a onto vector b.  It is
+ * assumed that both vectors are normalized.
+ */
 static void
 _rotate_to(FLOATNAME(LMatrix3) &mat,
            const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
@@ -31,8 +28,8 @@ _rotate_to(FLOATNAME(LMatrix3) &mat,
     // The vectors are collinear.
 
     if (cos_theta < 0.0f) {
-      // The vectors are opposite; choose an arbitrary axis
-      // perpendicular to a.
+      // The vectors are opposite; choose an arbitrary axis perpendicular to
+      // a.
       FLOATNAME(LVector3) absa(fabs(a[0]), fabs(a[1]), fabs(a[2]));
       FLOATNAME(LVector3) lca(0., 0., 0.);
       lca[absa[0]<=absa[1] ? absa[0]<=absa[2] ? 0 : 2
@@ -80,4 +77,3 @@ rotate_to(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &a, const FLOATNAM
   _rotate_to(m3, a, b);
   mat = FLOATNAME(LMatrix4)(m3);
 }
-

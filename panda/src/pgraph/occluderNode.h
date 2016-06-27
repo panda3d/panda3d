@@ -1,16 +1,15 @@
-// Filename: occluderNode.h
-// Created by:  jenes (11Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file occluderNode.h
+ * @author jenes
+ * @date 2011-03-11
+ */
 
 #ifndef OCCLUDERNODE_H
 #define OCCLUDERNODE_H
@@ -23,15 +22,12 @@
 #include "geom.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OccluderNode 
-// Description : A node in the scene graph that can hold an 
-//               occluder polygon, which must be a rectangle.  When
-//               the occluder is activated with something like
-//               render.set_occluder(), then objects whose bouding
-//               volume lies entirely behind the occluder will not be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold an occluder polygon, which must be
+ * a rectangle.  When the occluder is activated with something like
+ * render.set_occluder(), then objects whose bouding volume lies entirely
+ * behind the occluder will not be rendered.
+ */
 class EXPCL_PANDA_PGRAPH OccluderNode : public PandaNode {
 PUBLISHED:
   OccluderNode(const string &name);
@@ -57,9 +53,14 @@ PUBLISHED:
   INLINE PN_stdfloat get_min_coverage();
   INLINE void set_vertices(const LPoint3 &v0, const LPoint3 &v1,
                            const LPoint3 &v2, const LPoint3 &v3);
-  INLINE int get_num_vertices() const;
-  INLINE const LPoint3 &get_vertex(int n) const;
+  INLINE size_t get_num_vertices() const;
+  INLINE const LPoint3 &get_vertex(size_t n) const;
+  INLINE void set_vertex(size_t n, const LPoint3 &v);
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
+
+  MAKE_PROPERTY(double_sided, is_double_sided, set_double_sided);
+  MAKE_PROPERTY(min_coverage, get_min_coverage, set_min_coverage);
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex, set_vertex);
 
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,

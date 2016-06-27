@@ -1,16 +1,15 @@
-// Filename: eggTopstrip.h
-// Created by:  drose (23Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggTopstrip.h
+ * @author drose
+ * @date 2001-02-23
+ */
 
 #ifndef EGGTOPSTRIP_H
 #define EGGTOPSTRIP_H
@@ -27,14 +26,11 @@ class EggCharacterDb;
 class EggJointData;
 class EggJointPointer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTopstrip
-// Description : Reads a character model and/or animations and strips
-//               out the animation from one of the top joints from the
-//               entire character.  Particularly useful for generating
-//               stackable character models from separately-extracted
-//               characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a character model and/or animations and strips out the animation from
+ * one of the top joints from the entire character.  Particularly useful for
+ * generating stackable character models from separately-extracted characters.
+ */
 class EggTopstrip : public EggCharacterFilter {
 public:
   EggTopstrip();
@@ -60,4 +56,3 @@ public:
 };
 
 #endif
-

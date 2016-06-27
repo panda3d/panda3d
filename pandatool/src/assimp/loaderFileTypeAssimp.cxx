@@ -1,16 +1,15 @@
-// Filename: loaderFileTypeAssimp.cxx
-// Created by:  rdb (29Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file loaderFileTypeAssimp.cxx
+ * @author rdb
+ * @date 2011-03-29
+ */
 
 #include "loaderFileTypeAssimp.h"
 #include "config_assimp.h"
@@ -18,20 +17,16 @@
 
 TypeHandle LoaderFileTypeAssimp::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeAssimp::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LoaderFileTypeAssimp::
 LoaderFileTypeAssimp() : _loader(new AssimpLoader) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeAssimp::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LoaderFileTypeAssimp::
 ~LoaderFileTypeAssimp() {
   if (_loader != NULL) {
@@ -39,33 +34,26 @@ LoaderFileTypeAssimp::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeAssimp::get_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string LoaderFileTypeAssimp::
 get_name() const {
   return "Assimp Importer";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeAssimp::get_extension
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string LoaderFileTypeAssimp::
 get_extension() const {
   return "";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeAssimp::get_additional_extensions
-//       Access: Public, Virtual
-//  Description: Returns a space-separated list of extension, in
-//               addition to the one returned by get_extension(), that
-//               are recognized by this converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a space-separated list of extension, in addition to the one
+ * returned by get_extension(), that are recognized by this converter.
+ */
 string LoaderFileTypeAssimp::
 get_additional_extensions() const {
   string exts;
@@ -73,23 +61,18 @@ get_additional_extensions() const {
   return exts;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeAssimp::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files
+ * (with a .pz or .gz extension), false otherwise.
+ */
 bool LoaderFileTypeAssimp::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeAssimp::load_file
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(PandaNode) LoaderFileTypeAssimp::
 load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {

@@ -1,16 +1,15 @@
-// Filename: pythonCallbackObject.h
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pythonCallbackObject.h
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #ifndef PYTHONCALLBACKOBJECT_H
 #define PYTHONCALLBACKOBJECT_H
@@ -22,12 +21,10 @@
 #include "py_panda.h"
 #include "callbackObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PythonCallbackObject
-// Description : This is a specialization on CallbackObject to allow
-//               a callback to directly call an arbitarary Python
-//               function.  Powerful!  But use with caution.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on CallbackObject to allow a callback to directly
+ * call an arbitarary Python function.  Powerful!  But use with caution.
+ */
 class PythonCallbackObject : public CallbackObject {
 PUBLISHED:
   PythonCallbackObject(PyObject *function = Py_None);
@@ -36,6 +33,8 @@ PUBLISHED:
 
   void set_function(PyObject *function);
   PyObject *get_function();
+
+  MAKE_PROPERTY(function, get_function, set_function);
 
 public:
   virtual void do_callback(CallbackData *cbdata);

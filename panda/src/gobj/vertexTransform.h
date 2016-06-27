@@ -1,16 +1,15 @@
-// Filename: vertexTransform.h
-// Created by:  drose (23Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexTransform.h
+ * @author drose
+ * @date 2005-03-23
+ */
 
 #ifndef VERTEXTRANSFORM_H
 #define VERTEXTRANSFORM_H
@@ -27,15 +26,12 @@
 
 class TransformTable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexTransform
-// Description : This is an abstract base class that holds a pointer
-//               to some transform, computed in some arbitrary way,
-//               that is to be applied to vertices during rendering.
-//               This is used to implement soft-skinned and animated
-//               vertices.  Derived classes will define how the
-//               transform is actually computed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class that holds a pointer to some transform,
+ * computed in some arbitrary way, that is to be applied to vertices during
+ * rendering.  This is used to implement soft-skinned and animated vertices.
+ * Derived classes will define how the transform is actually computed.
+ */
 class EXPCL_PANDA_GOBJ VertexTransform : public TypedWritableReferenceCount {
 PUBLISHED:
   VertexTransform();
@@ -45,7 +41,8 @@ PUBLISHED:
   virtual void mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const;
   virtual void accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const;
 
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(modified, get_modified);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;

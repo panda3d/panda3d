@@ -1,16 +1,15 @@
-// Filename: waitInterval.h
-// Created by:  drose (12Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file waitInterval.h
+ * @author drose
+ * @date 2002-09-12
+ */
 
 #ifndef WAITINTERVAL_H
 #define WAITINTERVAL_H
@@ -18,12 +17,10 @@
 #include "directbase.h"
 #include "cInterval.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WaitInterval
-// Description : This interval does absolutely nothing, and is mainly
-//               useful for marking time between other intervals
-//               within a sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * This interval does absolutely nothing, and is mainly useful for marking
+ * time between other intervals within a sequence.
+ */
 class EXPCL_DIRECT WaitInterval : public CInterval {
 PUBLISHED:
   INLINE WaitInterval(double duration);
@@ -51,4 +48,3 @@ private:
 #include "waitInterval.I"
 
 #endif
-

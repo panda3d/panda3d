@@ -1,57 +1,49 @@
-// Filename: interfaceMakerPython.cxx
-// Created by:  drose (21Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMakerPython.cxx
+ * @author drose
+ * @date 2001-09-21
+ */
 
 #include "interfaceMakerPython.h"
 #include "interrogate.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPython::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 InterfaceMakerPython::
 InterfaceMakerPython(InterrogateModuleDef *def) :
   InterfaceMaker(def)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPython::write_includes
-//       Access: Public, Virtual
-//  Description: Generates the list of #include ... whatever that's
-//               required by this particular interface to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of #include ... whatever that's required by this
+ * particular interface to the indicated output stream.
+ */
 void InterfaceMakerPython::
 write_includes(ostream &out) {
   InterfaceMaker::write_includes(out);
   out << "#undef _POSIX_C_SOURCE\n"
+      << "#undef _XOPEN_SOURCE\n"
       << "#define PY_SSIZE_T_CLEAN 1\n\n"
       << "#if PYTHON_FRAMEWORK\n"
-      << "  #include \"Python/Python.h\"\n"
+      << "  #include <Python/Python.h>\n"
       << "#else\n"
       << "  #include \"Python.h\"\n"
       << "#endif\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPython::test_assert
-//       Access: Protected
-//  Description: Outputs code to check to see if an assertion has
-//               failed while the C++ code was executing, and report
-//               this failure back to Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs code to check to see if an assertion has failed while the C++ code
+ * was executing, and report this failure back to Python.
+ */
 void InterfaceMakerPython::
 test_assert(ostream &out, int indent_level) const {
   if (watch_asserts) {

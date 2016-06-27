@@ -1,16 +1,15 @@
-// Filename: pstrtod.cxx
-// Created by:  drose (13Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pstrtod.cxx
+ * @author drose
+ * @date 2009-06-13
+ */
 
 #include "pstrtod.h"
 
@@ -22,15 +21,12 @@
 #define strncasecmp _strnicmp
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: pstrtod
-//  Description: This function re-implements strtod, to avoid the
-//               problems that occur when the LC_NUMERIC locale gets
-//               set to anything other than "C".  Regardless of the
-//               user's locale, we need to be able to parse
-//               floating-point numbers internally understanding a "."
-//               as the decimal point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function re-implements strtod, to avoid the problems that occur when
+ * the LC_NUMERIC locale gets set to anything other than "C".  Regardless of
+ * the user's locale, we need to be able to parse floating-point numbers
+ * internally understanding a "." as the decimal point.
+ */
 double
 pstrtod(const char *nptr, char **endptr) {
   // First, skip whitespace.
@@ -49,8 +45,8 @@ pstrtod(const char *nptr, char **endptr) {
   double value = 0.0;
 
   if (isalpha(*p)) {
-    // Windows' implementation of strtod doesn't support "inf" or
-    // "nan", so check for those here.
+    // Windows' implementation of strtod doesn't support "inf" or "nan", so
+    // check for those here.
     if (strncasecmp(p, "inf", 3) == 0) {
       p += 3;
       if (strncasecmp(p, "inity", 5) == 0) {
@@ -71,17 +67,17 @@ pstrtod(const char *nptr, char **endptr) {
         value = std::numeric_limits<double>::quiet_NaN();
       }
 
-      // It is optionally possible to include a character sequence
-      // between parentheses after "nan", to be passed to the new
-      // nan() function.  Since it isn't supported universally, we
-      // will only accept a pair of empty parentheses.
+      // It is optionally possible to include a character sequence between
+      // parentheses after "nan", to be passed to the new nan() function.
+      // Since it isn't supported universally, we will only accept a pair of
+      // empty parentheses.
       if (strncmp(p, "()", 2) == 0) {
         p += 2;
       }
 
     } else {
-      // Pass it up to the system implementation of strtod;
-      // perhaps it knows how to deal with this string.
+      // Pass it up to the system implementation of strtod; perhaps it knows
+      // how to deal with this string.
       return strtod(nptr, endptr);
     }
 
@@ -150,15 +146,12 @@ pstrtod(const char *nptr, char **endptr) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: patof
-//  Description: This function re-implements atof, to avoid the
-//               problems that occur when the LC_NUMERIC locale gets
-//               set to anything other than "C".  Regardless of the
-//               user's locale, we need to be able to parse
-//               floating-point numbers internally understanding a "."
-//               as the decimal point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function re-implements atof, to avoid the problems that occur when the
+ * LC_NUMERIC locale gets set to anything other than "C".  Regardless of the
+ * user's locale, we need to be able to parse floating-point numbers
+ * internally understanding a "." as the decimal point.
+ */
 double
 patof(const char *str) {
   return pstrtod(str, (char **)NULL);

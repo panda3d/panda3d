@@ -1,16 +1,15 @@
-// Filename: virtualFileMountRamdisk.h
-// Created by:  drose (19Sep11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFileMountRamdisk.h
+ * @author drose
+ * @date 2011-09-19
+ */
 
 #ifndef VIRTUALFILEMOUNTRAMDISK_H
 #define VIRTUALFILEMOUNTRAMDISK_H
@@ -21,16 +20,13 @@
 #include "mutexImpl.h"
 #include "streamWrapper.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountRamdisk
-// Description : Simulates an actual directory on disk with in-memory
-//               storage.  This is useful mainly for performing high
-//               level functions that expect disk I/O without actually
-//               writing files to disk.  Naturally, there are
-//               significant limits to the size of the files that may
-//               be written with this system; and "files" written here
-//               are not automatically persistent between sessions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simulates an actual directory on disk with in-memory storage.  This is
+ * useful mainly for performing high level functions that expect disk I/O
+ * without actually writing files to disk.  Naturally, there are significant
+ * limits to the size of the files that may be written with this system; and
+ * "files" written here are not automatically persistent between sessions.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMountRamdisk : public VirtualFileMount {
 PUBLISHED:
   VirtualFileMountRamdisk();
@@ -56,7 +52,7 @@ public:
   virtual streamsize get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
   virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);
@@ -158,7 +154,7 @@ private:
   };
 
   Directory _root;
-  MutexImpl _lock;
+  mutable MutexImpl _lock;
 
 public:
   virtual TypeHandle get_type() const {

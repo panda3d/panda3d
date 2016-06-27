@@ -1,16 +1,15 @@
-// Filename: animBundleMaker.cxx
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animBundleMaker.cxx
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #include "animBundleMaker.h"
 #include "config_egg2pg.h"
@@ -26,11 +25,9 @@
 #include "animChannelMatrixXfmTable.h"
 #include "animChannelScalarTable.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::Construtor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimBundleMaker::
 AnimBundleMaker(EggTable *root) : _root(root) {
   _fps = 0.0f;
@@ -60,21 +57,17 @@ AnimBundleMaker(EggTable *root) : _root(root) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::make_node
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimBundleNode *AnimBundleMaker::
 make_node() {
   return new AnimBundleNode(_root->get_name(), make_bundle());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::make_bundle
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimBundle *AnimBundleMaker::
 make_bundle() {
   AnimBundle *bundle = new AnimBundle(_root->get_name(), _fps, _num_frames);
@@ -93,12 +86,9 @@ make_bundle() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::inspect_tree
-//       Access: Private
-//  Description: Walks the egg tree, getting out the fps and the
-//               number of frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the egg tree, getting out the fps and the number of frames.
+ */
 void AnimBundleMaker::
 inspect_tree(EggNode *egg_node) {
   if (egg_node->is_of_type(EggAnimData::get_class_type())) {
@@ -172,19 +162,16 @@ inspect_tree(EggNode *egg_node) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::build_hierarchy
-//       Access: Private
-//  Description: Walks the egg tree again, creating the AnimChannels
-//               as appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the egg tree again, creating the AnimChannels as appropriate.
+ */
 void AnimBundleMaker::
 build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
   AnimGroup *this_node = NULL;
 
-  // First, scan the children of egg_table for anim data tables.  If
-  // any of them is named "xform", it's a special case--this one
-  // stands for the egg_table node itself.  Don't ask me why.
+  // First, scan the children of egg_table for anim data tables.  If any of
+  // them is named "xform", it's a special case--this one stands for the
+  // egg_table node itself.  Don't ask me why.
 
   EggTable::const_iterator ci;
   for (ci = egg_table->begin(); ci != egg_table->end(); ++ci) {
@@ -199,14 +186,12 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
     }
   }
 
-  // If none of them were named "xform", just create a plain old
-  // AnimGroup.
+  // If none of them were named "xform", just create a plain old AnimGroup.
   if (this_node == NULL) {
     this_node = new AnimGroup(parent, egg_table->get_name());
   }
 
-  // Now walk the children again, creating any leftover tables, and
-  // recursing.
+  // Now walk the children again, creating any leftover tables, and recursing.
   for (ci = egg_table->begin(); ci != egg_table->end(); ++ci) {
     if ((*ci)->get_name() == "xform") {
       // Skip this one.  We already got it.
@@ -222,20 +207,17 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::create_s_channel
-//       Access: Private
-//  Description: Creates an AnimChannelScalarTable corresponding to
-//               the given EggSAnimData structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an AnimChannelScalarTable corresponding to the given EggSAnimData
+ * structure.
+ */
 AnimChannelScalarTable *AnimBundleMaker::
 create_s_channel(EggSAnimData *egg_anim, const string &name,
                  AnimGroup *parent) {
   AnimChannelScalarTable *table
     = new AnimChannelScalarTable(parent, name);
 
-  // First we have to copy the table data from PTA_double to
-  // PTA_stdfloat.
+  // First we have to copy the table data from PTA_double to PTA_stdfloat.
   PTA_stdfloat new_data = PTA_stdfloat::empty_array(egg_anim->get_num_rows(),
                                                     table->get_class_type());
   for (int i = 0; i < egg_anim->get_num_rows(); i++) {
@@ -249,12 +231,10 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::create_xfm_channel (EggNode)
-//       Access: Private
-//  Description: Creates an AnimChannelMatrixXfmTable corresponding to
-//               the given EggNode structure, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an AnimChannelMatrixXfmTable corresponding to the given EggNode
+ * structure, if possible.
+ */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
 create_xfm_channel(EggNode *egg_node, const string &name,
                    AnimGroup *parent) {
@@ -275,25 +255,22 @@ create_xfm_channel(EggNode *egg_node, const string &name,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::create_xfm_channel (EggXfmSAnim)
-//       Access: Private
-//  Description: Creates an AnimChannelMatrixXfmTable corresponding to
-//               the given EggXfmSAnim structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an AnimChannelMatrixXfmTable corresponding to the given EggXfmSAnim
+ * structure.
+ */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
 create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
                    AnimGroup *parent) {
-  // Ensure that the anim table is optimal and that it is standard
-  // order.
+  // Ensure that the anim table is optimal and that it is standard order.
   egg_anim->optimize_to_standard_order();
 
   AnimChannelMatrixXfmTable *table
     = new AnimChannelMatrixXfmTable(parent, name);
 
-  // The EggXfmSAnim structure has a number of children which are
-  // EggSAnimData tables.  Each of these represents a separate
-  // component of the transform data, and will be added to the table.
+  // The EggXfmSAnim structure has a number of children which are EggSAnimData
+  // tables.  Each of these represents a separate component of the transform
+  // data, and will be added to the table.
 
   EggXfmSAnim::const_iterator ci;
   for (ci = egg_anim->begin(); ci != egg_anim->end(); ++ci) {

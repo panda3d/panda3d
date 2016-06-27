@@ -1,16 +1,15 @@
-// Filename: pgSliderBar.h
-// Created by:  masad (19Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgSliderBar.h
+ * @author masad
+ * @date 2004-10-19
+ */
 
 #ifndef PGSLIDERBAR_H
 #define PGSLIDERBAR_H
@@ -22,15 +21,13 @@
 #include "pgButtonNotify.h"
 #include "pgButton.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGSliderBar
-// Description : This is a particular kind of PGItem that draws a
-//               little bar with a slider that moves from left to 
-//               right indicating a value between the ranges.
-//
-//               This is used as an implementation for both
-//               DirectSlider and for DirectScrollBar.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of PGItem that draws a little bar with a slider
+ * that moves from left to right indicating a value between the ranges.
+ *
+ * This is used as an implementation for both DirectSlider and for
+ * DirectScrollBar.
+ */
 class EXPCL_PANDA_PGUI PGSliderBar : public PGItem, public PGButtonNotify {
 PUBLISHED:
   PGSliderBar(const string &name = "");

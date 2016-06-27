@@ -79,10 +79,10 @@ class DoCollectionManager:
             if re.search(str,repr(value)):
                 matches.append(value)
         return matches
-        
+
     def doFindAllOfType(self, query):
         """
-        Useful method for searching through the Distributed Object collection 
+        Useful method for searching through the Distributed Object collection
         for objects of a particular type
         """
         matches = []
@@ -117,29 +117,29 @@ class DoCollectionManager:
         return 1
 
     def dosByDistance(self):
-        objs = self.doId2do.values()
+        objs = list(self.doId2do.values())
         objs.sort(cmp=self._compareDistance)
         return objs
 
     def doByDistance(self):
         objs = self.dosByDistance()
         for obj in objs:
-            print '%s\t%s\t%s' % (obj.doId, self._getDistanceFromLA(obj),
-                                  obj.dclass.getName())
+            print('%s\t%s\t%s' % (obj.doId, self._getDistanceFromLA(obj),
+                                  obj.dclass.getName()))
 
     if __debug__:
         def printObjects(self):
             format="%10s %10s %10s %30s %20s"
             title=format%("parentId", "zoneId", "doId", "dclass", "name")
-            print title
-            print '-'*len(title)
+            print(title)
+            print('-'*len(title))
             for distObj in self.doId2do.values():
-                print format%(
+                print(format%(
                     distObj.__dict__.get("parentId"),
                     distObj.__dict__.get("zoneId"),
                     distObj.__dict__.get("doId"),
                     distObj.dclass.getName(),
-                    distObj.__dict__.get("name"))
+                    distObj.__dict__.get("name")))
 
     def _printObjects(self, table):
         class2count = {}
@@ -148,14 +148,14 @@ class DoCollectionManager:
             class2count.setdefault(className, 0)
             class2count[className] += 1
         count2classes = invertDictLossless(class2count)
-        counts = count2classes.keys()
+        counts = list(count2classes.keys())
         counts.sort()
         counts.reverse()
         for count in counts:
             count2classes[count].sort()
             for name in count2classes[count]:
-                print '%s %s' % (count, name)
-        print ''
+                print('%s %s' % (count, name))
+        print('')
 
     def _returnObjects(self, table):
         class2count = {}
@@ -165,7 +165,7 @@ class DoCollectionManager:
             class2count.setdefault(className, 0)
             class2count[className] += 1
         count2classes = invertDictLossless(class2count)
-        counts = count2classes.keys()
+        counts = list(count2classes.keys())
         counts.sort()
         counts.reverse()
         for count in counts:
@@ -185,16 +185,16 @@ class DoCollectionManager:
             strToReturn = '%s\n== doId2ownerView\n' % (strToReturn)
             strToReturn = '%s%s' % (strToReturn, self._returnObjects(self.getDoTable(ownerView=False)))
         return strToReturn
-        
+
 
     def printObjectCount(self):
         # print object counts by distributed object type
-        print '==== OBJECT COUNT ===='
+        print('==== OBJECT COUNT ====')
         if self.hasOwnerView():
-            print '== doId2do'
+            print('== doId2do')
         self._printObjects(self.getDoTable(ownerView=False))
         if self.hasOwnerView():
-            print '== doId2ownerView'
+            print('== doId2ownerView')
             self._printObjects(self.getDoTable(ownerView=True))
 
     def getDoList(self, parentId, zoneId=None, classType=None):
@@ -220,7 +220,7 @@ class DoCollectionManager:
     def hasOwnerViewDoId(self, doId):
         assert self.hasOwnerView()
         return doId in self.doId2ownerView
-    
+
     def getOwnerViewDoList(self, classType):
         assert self.hasOwnerView()
         l = []
@@ -295,7 +295,7 @@ class DoCollectionManager:
                 (doId, parentId, zoneId))
             # Let the object finish the job
             # calls storeObjectLocation()
-            obj.setLocation(parentId, zoneId) 
+            obj.setLocation(parentId, zoneId)
         else:
             self.notify.warning(
                 "handleObjectLocation: Asked to update non-existent obj: %s" % (doId))
@@ -322,7 +322,7 @@ class DoCollectionManager:
             if oldParentObj is not None:
                 oldParentObj.handleChildLeave(object, oldZoneId)
             self.deleteObjectLocation(object, oldParentId, oldZoneId)
-            
+
         elif (oldZoneId != zoneId):
             # Remove old location
             oldParentObj = self.doId2do.get(oldParentId)
@@ -367,7 +367,7 @@ class DoCollectionManager:
             elif parentId not in (None, 0, self.getGameDoId()):
                 self.notify.warning('storeObjectLocation(%s): parent %s not present' %
                                     (object.doId, parentId))
-            
+
     def deleteObjectLocation(self, object, parentId, zoneId):
         # Do not worry about null values
         if ((parentId is None) or (zoneId is None) or

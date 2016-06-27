@@ -1,17 +1,15 @@
-// Filename: cppPreprocessor.cxx
-// Created by:  drose (22Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppPreprocessor.cxx
+ * @author drose
+ * @date 1999-10-22
+ */
 
 #include "cppPreprocessor.h"
 #include "cppExpressionParser.h"
@@ -36,11 +34,11 @@
 #include <assert.h>
 #include <ctype.h>
 
-// We manage our own visibility counter, in addition to that managed
-// by cppBison.y.  We do this just so we can define manifests with the
-// correct visibility when they are declared.  (Asking the parser for
-// the current visibility is prone to error, since the parser might be
-// several tokens behind the preprocessor.)
+// We manage our own visibility counter, in addition to that managed by
+// cppBison.y.  We do this just so we can define manifests with the correct
+// visibility when they are declared.  (Asking the parser for the current
+// visibility is prone to error, since the parser might be several tokens
+// behind the preprocessor.)
 static CPPVisibility preprocessor_vis = V_public;
 
 static int
@@ -83,11 +81,9 @@ trim_blanks(const string &str) {
   return str.substr(first, last - first + 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::InputFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPPreprocessor::InputFile::
 InputFile() {
   _in = NULL;
@@ -99,18 +95,16 @@ InputFile() {
   _lock_position = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::InputFile::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPPreprocessor::InputFile::
 ~InputFile() {
   if (_in != NULL) {
-    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
-    // the stream pointer does not call the appropriate global delete
-    // function; instead apparently calling the system delete
-    // function.  So we call the delete function by hand instead.
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
+    // stream pointer does not call the appropriate global delete function;
+    // instead apparently calling the system delete function.  So we call the
+    // delete function by hand instead.
 #if !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     _in->~istream();
     (*global_operator_delete)(_in);
@@ -120,11 +114,9 @@ CPPPreprocessor::InputFile::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::InputFile::open
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool CPPPreprocessor::InputFile::
 open(const CPPFile &file) {
   assert(_in == NULL);
@@ -136,11 +128,9 @@ open(const CPPFile &file) {
   return _file._filename.open_read(*in);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::InputFile::connect_input
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool CPPPreprocessor::InputFile::
 connect_input(const string &input) {
   assert(_in == NULL);
@@ -150,11 +140,9 @@ connect_input(const string &input) {
   return !_in->fail();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::InputFile::get
-//       Access: Public
-//  Description: Fetches a single character from the source file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fetches a single character from the source file.
+ */
 int CPPPreprocessor::InputFile::
 get() {
   assert(_in != NULL);
@@ -166,9 +154,8 @@ get() {
 
   int c = _in->get();
 
-  // Quietly skip over embedded carriage-return characters.  We
-  // shouldn't see any of these unless there was some DOS-to-Unix file
-  // conversion problem.
+  // Quietly skip over embedded carriage-return characters.  We shouldn't see
+  // any of these unless there was some DOS-to-Unix file conversion problem.
   while (c == '\r') {
     c = _in->get();
   }
@@ -193,20 +180,17 @@ get() {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::InputFile::peek
-//       Access: Public
-//  Description: Like get(), but does not advance the file pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Like get(), but does not advance the file pointer.
+ */
 int CPPPreprocessor::InputFile::
 peek() {
   assert(_in != NULL);
 
   int c = _in->peek();
 
-  // Quietly skip over embedded carriage-return characters.  We
-  // shouldn't see any of these unless there was some DOS-to-Unix file
-  // conversion problem.
+  // Quietly skip over embedded carriage-return characters.  We shouldn't see
+  // any of these unless there was some DOS-to-Unix file conversion problem.
   while (c == '\r') {
     _in->get();
     c = _in->peek();
@@ -215,11 +199,9 @@ peek() {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPPreprocessor::
 CPPPreprocessor() {
   _noangles = false;
@@ -243,33 +225,26 @@ CPPPreprocessor() {
   _verbose = 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::set_verbose
-//       Access: Public
-//  Description: Sets the verbosity level of the parser.  At 0, no
-//               warnings will be reported; at 1 or higher, expect to
-//               get spammed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the verbosity level of the parser.  At 0, no warnings will be
+ * reported; at 1 or higher, expect to get spammed.
+ */
 void CPPPreprocessor::
 set_verbose(int verbose) {
   _verbose = verbose;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_verbose
-//       Access: Public
-//  Description: Returns the verbosity level of the parser.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the verbosity level of the parser.
+ */
 int CPPPreprocessor::
 get_verbose() const {
   return _verbose;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::copy_filepos
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 copy_filepos(const CPPPreprocessor &other) {
   assert(!_files.empty());
@@ -278,11 +253,9 @@ copy_filepos(const CPPPreprocessor &other) {
   _files.back()._col_number = other.get_col_number();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_file
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPFile CPPPreprocessor::
 get_file() const {
   if (_files.empty()) {
@@ -291,12 +264,9 @@ get_file() const {
   return _files.back()._file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_line_number
-//       Access: Public
-//  Description: Returns the line number of the last character
-//               returned by get().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the line number of the last character returned by get().
+ */
 int CPPPreprocessor::
 get_line_number() const {
   if (_files.empty()) {
@@ -305,12 +275,9 @@ get_line_number() const {
   return _files.back()._line_number;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_col_number
-//       Access: Public
-//  Description: Returns the column number of the last character
-//               returned by get().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the column number of the last character returned by get().
+ */
 int CPPPreprocessor::
 get_col_number() const {
   if (_files.empty()) {
@@ -319,11 +286,9 @@ get_col_number() const {
   return _files.back()._col_number;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_next_token
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPToken CPPPreprocessor::
 get_next_token() {
 
@@ -338,9 +303,9 @@ CPPToken CPPPreprocessor::
 get_next_token0() {
 #endif
 
-  // We make a nested call to internal_get_next_token(), so we can
-  // combine sequences of identifiers and scoping symbols into a
-  // single identifier, for yacc's convenience.
+  // We make a nested call to internal_get_next_token(), so we can combine
+  // sequences of identifiers and scoping symbols into a single identifier,
+  // for yacc's convenience.
 
   CPPToken token(0);
   if (!_saved_tokens.empty()) {
@@ -354,16 +319,14 @@ get_next_token0() {
 
   if (_resolve_identifiers &&
       (token._token == SIMPLE_IDENTIFIER || token._token == SCOPE)) {
-    // We will be returning a scoped identifier, or a scoping.  Keep
-    // pulling off tokens until we reach the end of the
-    // scope/identifier sequence.
+    // We will be returning a scoped identifier, or a scoping.  Keep pulling
+    // off tokens until we reach the end of the scopeidentifier sequence.
 
     string name;
 
-    // If we started the ball with an identifier, use it and get the
-    // next token.  Otherwise, we started with :: (global scope), and
-    // we indicate this with an empty string at the beginning of the
-    // scoping sequence.
+    // If we started the ball with an identifier, use it and get the next
+    // token.  Otherwise, we started with :: (global scope), and we indicate
+    // this with an empty string at the beginning of the scoping sequence.
     if (token._token == SIMPLE_IDENTIFIER) {
       name = token._lval.str;
       token = internal_get_next_token();
@@ -374,15 +337,17 @@ get_next_token0() {
     result.u.identifier = ident;
 
     if (token._token == '<') {
-      // If the next token is an angle bracket and the current
-      // identifier wants template instantiation, assume the angle
-      // bracket begins the instantiation and call yacc recursively to
-      // parse the template parameters.
+      // If the next token is an angle bracket and the current identifier
+      // wants template instantiation, assume the angle bracket begins the
+      // instantiation and call yacc recursively to parse the template
+      // parameters.
       CPPDeclaration *decl = ident->find_template(current_scope, global_scope);
       if (decl != NULL) {
         ident->_names.back().set_templ
           (nested_parse_template_instantiation(decl->get_template_scope()));
         token = internal_get_next_token();
+      } else {
+        error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
       }
     }
 
@@ -395,22 +360,20 @@ get_next_token0() {
       string token_prefix;
 
       if (token._token == '~') {
-        // A scoping operator followed by a tilde can only be the
-        // start of a scoped destructor name.  Make the tilde be part
-        // of the name.
+        // A scoping operator followed by a tilde can only be the start of a
+        // scoped destructor name.  Make the tilde be part of the name.
         name += "~";
         token_prefix = "~";
         token = internal_get_next_token();
       }
 
       if (token._token != SIMPLE_IDENTIFIER) {
-        // The last useful token was a SCOPE, thus this is a scoping
-        // token.
+        // The last useful token was a SCOPE, thus this is a scoping token.
 
         if (token._token == KW_OPERATOR) {
-          // Unless the last token we came across was the "operator"
-          // keyword.  We make a special case for this, because it's
-          // occasionally scoped in normal use.
+          // Unless the last token we came across was the "operator" keyword.
+          // We make a special case for this, because it's occasionally scoped
+          // in normal use.
           token._lval = result;
           _last_token_loc = token._lloc;
           return token;
@@ -431,21 +394,23 @@ get_next_token0() {
       token = internal_get_next_token();
 
       if (token._token == '<') {
-        // If the next token is an angle bracket and the current
-        // indentifier wants template instantiation, assume the angle
-        // bracket begins the instantiation and call yacc recursively to
-        // parse the template parameters.
+        // If the next token is an angle bracket and the current indentifier
+        // wants template instantiation, assume the angle bracket begins the
+        // instantiation and call yacc recursively to parse the template
+        // parameters.
         CPPDeclaration *decl =
           ident->find_template(current_scope, global_scope);
         if (decl != NULL) {
           ident->_names.back().set_templ
             (nested_parse_template_instantiation(decl->get_template_scope()));
           token = internal_get_next_token();
+        } else {
+          error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
         }
       }
     }
-    // The last useful token was a SIMPLE_IDENTIFIER, thus this is a
-    // normal scoped identifier.
+    // The last useful token was a SIMPLE_IDENTIFIER, thus this is a normal
+    // scoped identifier.
     _saved_tokens.push_back(token);
 
     int token_type = IDENTIFIER;
@@ -463,11 +428,9 @@ get_next_token0() {
   return token;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::peek_next_token
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPToken CPPPreprocessor::
 peek_next_token() {
   CPPToken token(0);
@@ -480,11 +443,9 @@ peek_next_token() {
   return token;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::warning
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 warning(const string &message) {
   if (_verbose < 2) {
@@ -501,11 +462,9 @@ warning(const string &message) {
   warning(message, loc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::warning
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 warning(const string &message, const YYLTYPE &loc) {
   if (_verbose >= 2) {
@@ -530,11 +489,9 @@ warning(const string &message, const YYLTYPE &loc) {
   _warning_count++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::error
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 error(const string &message) {
   int line = get_line_number();
@@ -548,16 +505,14 @@ error(const string &message) {
   error(message, loc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::error
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 error(const string &message, const YYLTYPE &loc) {
   if (_state == S_nested || _state == S_end_nested) {
-    // Don't report or log errors in the nested state.  These will be
-    // reported when the nesting level collapses.
+    // Don't report or log errors in the nested state.  These will be reported
+    // when the nesting level collapses.
     return;
   }
 
@@ -588,11 +543,9 @@ error(const string &message, const YYLTYPE &loc) {
   _error_count++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::show_line
-//       Access: Public
-//  Description: Shows the indicated line, useful for error messages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows the indicated line, useful for error messages.
+ */
 void CPPPreprocessor::
 show_line(const YYLTYPE &loc) {
   if (loc.file._filename.empty()) {
@@ -645,33 +598,26 @@ show_line(const YYLTYPE &loc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_warning_count
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 get_warning_count() const {
   return _warning_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_error_count
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 get_error_count() const {
   return _error_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_comment_before
-//       Access: Public
-//  Description: Returns the CPPCommentBlock immediately preceding the
-//               indicated line, if any.  If there is no such comment,
-//               returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CPPCommentBlock immediately preceding the indicated line, if
+ * any.  If there is no such comment, returns NULL.
+ */
 CPPCommentBlock *CPPPreprocessor::
 get_comment_before(int line, CPPFile file) {
   CPPComments::reverse_iterator ci;
@@ -702,13 +648,10 @@ get_comment_before(int line, CPPFile file) {
   return (CPPCommentBlock *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_comment_on
-//       Access: Public
-//  Description: Returns the CPPCommentBlock that starts on the
-//               indicated line, if any.  If there is no such
-//               comment, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CPPCommentBlock that starts on the indicated line, if any.  If
+ * there is no such comment, returns NULL.
+ */
 CPPCommentBlock *CPPPreprocessor::
 get_comment_on(int line, CPPFile file) {
   CPPComments::reverse_iterator ci;
@@ -730,11 +673,9 @@ get_comment_on(int line, CPPFile file) {
   return (CPPCommentBlock *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::init_cpp
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool CPPPreprocessor::
 init_cpp(const CPPFile &file) {
   _state = S_normal;
@@ -744,11 +685,9 @@ init_cpp(const CPPFile &file) {
   return push_file(file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::init_const_expr
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool CPPPreprocessor::
 init_const_expr(const string &expr) {
   _state = S_normal;
@@ -757,11 +696,9 @@ init_const_expr(const string &expr) {
   return push_string(expr, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::init_type
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool CPPPreprocessor::
 init_type(const string &type) {
   _state = S_normal;
@@ -770,11 +707,9 @@ init_type(const string &type) {
   return push_string(type, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::push_file
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
   if (_verbose >= 3) {
@@ -787,8 +722,7 @@ push_file(const CPPFile &file) {
   InputFile &infile = _files.back();
 
   if (infile.open(file)) {
-    // Record the fact that we opened the file for the benefit of user
-    // code.
+    // Record the fact that we opened the file for the benefit of user code.
     _parsed_files.insert(file);
 
     infile._prev_last_c = _last_c;
@@ -801,11 +735,9 @@ push_file(const CPPFile &file) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::push_string
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool CPPPreprocessor::
 push_string(const string &input, bool lock_position) {
 #ifdef CPP_VERBOSE_LEX
@@ -842,20 +774,17 @@ push_string(const string &input, bool lock_position) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::expand_manifests
-//       Access: Protected
-//  Description: Given a string, expand all manifests within the
-//               string and return the new string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, expand all manifests within the string and return the new
+ * string.
+ */
 string CPPPreprocessor::
 expand_manifests(const string &input_expr, bool expand_undefined,
                  const YYLTYPE &loc) {
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
 
-  // Repeatedly scan the expr for any manifest names or defined()
-  // function.
+  // Repeatedly scan the expr for any manifest names or defined() function.
 
   bool manifest_found;
   do {
@@ -908,25 +837,21 @@ expand_manifests(const string &input_expr, bool expand_undefined,
       }
     }
 
-    // If we expanded any manifests at all that time, then go back
-    // through the string and look again--we might have a manifest
-    // that expands to another manifest.
+    // If we expanded any manifests at all that time, then go back through the
+    // string and look again--we might have a manifest that expands to another
+    // manifest.
   } while (manifest_found);
 
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::parse_expr
-//       Access: Protected
-//  Description: Given a string, expand all manifests within the
-//               string and evaluate it as an expression.  Returns
-//               NULL if the string is not a valid expression.
-//
-//               This is an internal support function for
-//               CPPPreprocessor; however, there is a public variant
-//               of this function defined for CPPParser.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, expand all manifests within the string and evaluate it as
+ * an expression.  Returns NULL if the string is not a valid expression.
+ *
+ * This is an internal support function for CPPPreprocessor; however, there is
+ * a public variant of this function defined for CPPParser.
+ */
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope, const YYLTYPE &loc) {
@@ -941,11 +866,9 @@ parse_expr(const string &input_expr, CPPScope *current_scope,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::internal_get_next_token
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPToken CPPPreprocessor::
 internal_get_next_token() {
   if (_state == S_eof || _state == S_end_nested) {
@@ -958,8 +881,8 @@ internal_get_next_token() {
     c = get();
   }
 
-  // Skip any whitespace, comments, and preprocessor directives before
-  // the token.
+  // Skip any whitespace, comments, and preprocessor directives before the
+  // token.
   c = skip_whitespace(c);
   while (c == '#' && _start_of_line && !should_ignore_preprocessor()) {
     c = skip_whitespace(process_directive(c));
@@ -1010,9 +933,9 @@ internal_get_next_token() {
   }
 
   if (_state == S_nested) {
-    // If we're running a nested lexer, keep track of the paren
-    // levels.  When we encounter a comma or closing angle bracket at
-    // the bottom level, we stop.
+    // If we're running a nested lexer, keep track of the paren levels.  When
+    // we encounter a comma or closing angle bracket at the bottom level, we
+    // stop.
 
     switch (c) {
     case '(':
@@ -1041,9 +964,9 @@ internal_get_next_token() {
     }
   }
 
-  // Look for an end-of-line comment, and parse it before we finish
-  // this token.  This is not strictly necessary, but it allows us to
-  // pick up docstrings from comments after enum values.
+  // Look for an end-of-line comment, and parse it before we finish this
+  // token.  This is not strictly necessary, but it allows us to pick up
+  // docstrings from comments after enum values.
   while (next_c != EOF && isspace(next_c)) {
     get();
     next_c = peek();
@@ -1055,13 +978,10 @@ internal_get_next_token() {
   return CPPToken(c, loc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::check_digraph
-//       Access: Private
-//  Description: Checks the next character in the stream to see if
-//               this might be a two-character token.
-//               Returns 0 if it is only a single-character token.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the next character in the stream to see if this might be a two-
+ * character token.  Returns 0 if it is only a single-character token.
+ */
 int CPPPreprocessor::
 check_digraph(int c) {
   int next_c = peek();
@@ -1086,9 +1006,9 @@ check_digraph(int c) {
 
   case '>':
     if (_parsing_template_params && _paren_nesting <= 0) {
-      // Don't parse >> as right-shift when parsing a template list, as
-      // per C++11, to allow a syntax like A<B>>.
-      // However, nested >> must be preserved, such as in A<(2>>1)>
+      // Don't parse >> as right-shift when parsing a template list, as per
+      // C++11, to allow a syntax like A<B>>. However, nested >> must be
+      // preserved, such as in A<(2>>1)>
       break;
     }
     if (next_c == '>') return RSHIFT;
@@ -1151,14 +1071,11 @@ check_digraph(int c) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::check_trigraph
-//       Access: Private
-//  Description: Checks the next character in the stream to see if
-//               this might be a three-character token; usually
-//               called in conjunction with check_digraph.
-//               Returns 0 if it is not a three-character token.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the next character in the stream to see if this might be a three-
+ * character token; usually called in conjunction with check_digraph.  Returns
+ * 0 if it is not a three-character token.
+ */
 int CPPPreprocessor::
 check_trigraph(int c) {
   int next_c = peek();
@@ -1179,19 +1096,17 @@ check_trigraph(int c) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::skip_whitespace
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 skip_whitespace(int c) {
   while (c != EOF) {
     c = skip_comment(c);
 
     if (c == '\\') {
-      // This does not usually occur in the middle of unquoted C++
-      // code, except before a newline character.
+      // This does not usually occur in the middle of unquoted C++ code,
+      // except before a newline character.
       if (peek() != '\n') {
         return '\\';
       }
@@ -1206,11 +1121,9 @@ skip_whitespace(int c) {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::skip_comment
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 skip_comment(int c) {
   while (c == '/') {
@@ -1234,11 +1147,9 @@ skip_comment(int c) {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::skip_c_comment
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 skip_c_comment(int c) {
   YYLTYPE loc;
@@ -1303,11 +1214,9 @@ skip_c_comment(int c) {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::skip_cpp_comment
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 skip_cpp_comment(int c) {
   if (_save_comments) {
@@ -1315,17 +1224,17 @@ skip_cpp_comment(int c) {
 
     int line_number = get_line_number();
     if (c == '\n') {
-      // We have to subtract one from the line number as we just
-      // fetched a newline.
+      // We have to subtract one from the line number as we just fetched a
+      // newline.
       --line_number;
     }
 
     if (_last_cpp_comment && !_comments.empty() &&
         _comments.back()->_last_line >= line_number - 1) {
-      // If the last non-whitespace character read was also part of a
-      // C++ comment, then this is just a continuation of that comment
-      // block.  However, if there was a line without comment in between,
-      // it starts a new block anyway.
+      // If the last non-whitespace character read was also part of a C++
+      // comment, then this is just a continuation of that comment block.
+      // However, if there was a line without comment in between, it starts a
+      // new block anyway.
       comment = _comments.back();
       assert(!comment->_c_style);
       comment->_comment += "//";
@@ -1363,11 +1272,50 @@ skip_cpp_comment(int c) {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::process_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ * Skips a C++14 digit separator that has just been found through peek().
+ */
+int CPPPreprocessor::
+skip_digit_separator(int c) {
+  if (c != '\'') {
+    return c;
+  }
+
+  get();
+  c = peek();
+
+  if (isdigit(c)) {
+    return c;
+  }
+
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
+  loc.last_line = loc.first_line;
+  loc.last_column = loc.first_column;
+
+  if (c != '\'') {
+    // This assumes that this isn't a character constant directly follows a
+    // digit sequence, like 123'a' -- I can't think of a situation where
+    // that's legal anyway, though.
+    error("digit separator cannot occur at end of digit sequence", loc);
+    return c;
+  }
+
+  while (c == '\'') {
+    get();
+    ++loc.last_column;
+    c = peek();
+  }
+  error("adjacent digit separators", loc);
+
+  return c;
+}
+
+/**
+ *
+ */
 int CPPPreprocessor::
 process_directive(int c) {
   assert(c == '#');
@@ -1405,12 +1353,12 @@ process_directive(int c) {
   } else if (command == "if") {
     handle_if_directive(args, loc);
   } else if (command == "else" || command == "elif") {
-    // Presumably this follows some #if or #ifdef.  We don't bother to
-    // check this, however.
+    // Presumably this follows some #if or #ifdef.  We don't bother to check
+    // this, however.
     skip_false_if_block(false);
   } else if (command == "endif") {
-    // Presumably this follows some #if or #ifdef.  We don't bother to
-    // check this, however.
+    // Presumably this follows some #if or #ifdef.  We don't bother to check
+    // this, however.
   } else if (command == "include") {
     handle_include_directive(args, loc);
   } else if (command == "pragma") {
@@ -1431,11 +1379,9 @@ process_directive(int c) {
   return '\n';
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_preprocessor_command
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 get_preprocessor_command(int c, string &command) {
   // The next sequence of characters is the command.
@@ -1451,15 +1397,13 @@ get_preprocessor_command(int c, string &command) {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_preprocessor_args
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 get_preprocessor_args(int c, string &args) {
-  // Following the command, the rest of the line, as well as any text
-  // on successive lines, is part of the arguments to the command.
+  // Following the command, the rest of the line, as well as any text on
+  // successive lines, is part of the arguments to the command.
 
   while (c != EOF && c != '\n') {
     if (c == '\\') {
@@ -1486,11 +1430,9 @@ get_preprocessor_args(int c, string &args) {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_define_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_define_directive(const string &args, const YYLTYPE &loc) {
   if (args.empty()) {
@@ -1519,11 +1461,9 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_undef_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_undef_directive(const string &args, const YYLTYPE &loc) {
   if (args.empty()) {
@@ -1536,11 +1476,9 @@ handle_undef_directive(const string &args, const YYLTYPE &loc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_ifdef_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_ifdef_directive(const string &args, const YYLTYPE &loc) {
   Manifests::const_iterator mi = _manifests.find(args);
@@ -1553,11 +1491,9 @@ handle_ifdef_directive(const string &args, const YYLTYPE &loc) {
   skip_false_if_block(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_ifndef_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_ifndef_directive(const string &args, const YYLTYPE &loc) {
   Manifests::const_iterator mi = _manifests.find(args);
@@ -1571,15 +1507,12 @@ handle_ifndef_directive(const string &args, const YYLTYPE &loc) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_if_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_if_directive(const string &args, const YYLTYPE &loc) {
-  // When expanding manifests, we should replace unknown macros
-  // with 0.
+  // When expanding manifests, we should replace unknown macros with 0.
   string expr = expand_manifests(args, true, loc);
 
   int expression_result = 0;
@@ -1607,11 +1540,9 @@ handle_if_directive(const string &args, const YYLTYPE &loc) {
   skip_false_if_block(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_include_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_include_directive(const string &args, const YYLTYPE &loc) {
   bool okflag = false;
@@ -1621,12 +1552,12 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
 
   string expr = args;
 
-  // The filename to include might actually be hidden within a
-  // manifest definition.  Wow.  FreeType depends on this.
+  // The filename to include might actually be hidden within a manifest
+  // definition.  Wow.  FreeType depends on this.
 
-  // Just to play things safe, since our manifest-expansion logic
-  // might not filter out quotes and angle brackets properly, we'll
-  // only expand manifests if we don't begin with a quote or bracket.
+  // Just to play things safe, since our manifest-expansion logic might not
+  // filter out quotes and angle brackets properly, we'll only expand
+  // manifests if we don't begin with a quote or bracket.
   if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
     expr = expand_manifests(expr, false, loc);
   }
@@ -1637,25 +1568,23 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
       okflag = true;
 
       if (_files.size() == 1) {
-        // If we're currently processing a top-level file, record the
-        // include directive.  We don't need to record includes from
-        // included files.
+        // If we're currently processing a top-level file, record the include
+        // directive.  We don't need to record includes from included files.
         _quote_includes.insert(filename);
       }
     } else if (expr[0] == '<' && expr[expr.size() - 1] == '>') {
       filename = expr.substr(1, expr.size() - 2);
       if (!_noangles) {
-        // If _noangles is true, we don't make a distinction between
-        // angle brackets and quote marks--all #include statements are
-        // treated the same, as if they used quote marks.
+        // If _noangles is true, we don't make a distinction between angle
+        // brackets and quote marks--all #include statements are treated the
+        // same, as if they used quote marks.
         angle_quotes = true;
       }
       okflag = true;
 
       if (_files.size() == 1) {
-        // If we're currently processing a top-level file, record the
-        // include directive.  We don't need to record includes from
-        // included files.
+        // If we're currently processing a top-level file, record the include
+        // directive.  We don't need to record includes from included files.
         _angle_includes.insert(filename);
       }
     }
@@ -1664,8 +1593,8 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
   filename.set_text();
   filename_as_referenced = filename;
 
-  // Now look for the filename.  If we didn't use angle quotes, look
-  // first in the current directory.
+  // Now look for the filename.  If we didn't use angle quotes, look first in
+  // the current directory.
   bool found_file = false;
   CPPFile::Source source = CPPFile::S_none;
 
@@ -1711,6 +1640,12 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
     } else {
       _last_c = '\0';
 
+      // If it was explicitly named on the command-line, mark it S_local.
+      filename.make_absolute();
+      if (_explicit_files.count(filename)) {
+        source = CPPFile::S_local;
+      }
+
       CPPFile file(filename, filename_as_referenced, source);
 
       // Don't include it if we included it before and it had #pragma once.
@@ -1728,11 +1663,9 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_pragma_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_pragma_directive(const string &args, const YYLTYPE &loc) {
   if (args == "once") {
@@ -1742,24 +1675,19 @@ handle_pragma_directive(const string &args, const YYLTYPE &loc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::handle_error_directive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 handle_error_directive(const string &args, const YYLTYPE &loc) {
   error(args, loc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::skip_false_if_block
-//       Access: Private
-//  Description: We come here when we fail an #if or an #ifdef test,
-//               or when we reach the #else clause to something we
-//               didn't fail.  This function skips all text up until
-//               the matching #endif.
-////////////////////////////////////////////////////////////////////
+/**
+ * We come here when we fail an #if or an #ifdef test, or when we reach the
+ * #else clause to something we didn't fail.  This function skips all text up
+ * until the matching #endif.
+ */
 void CPPPreprocessor::
 skip_false_if_block(bool consider_elifs) {
   int level = 0;
@@ -1814,11 +1742,9 @@ skip_false_if_block(bool consider_elifs) {
   _save_comments = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_quoted_char
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPToken CPPPreprocessor::
 get_quoted_char(int c) {
   YYLTYPE loc;
@@ -1837,11 +1763,9 @@ get_quoted_char(int c) {
   return get_literal(CHAR_TOK, loc, str, result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_quoted_string
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPToken CPPPreprocessor::
 get_quoted_string(int c) {
   YYLTYPE loc;
@@ -1854,11 +1778,9 @@ get_quoted_string(int c) {
   return get_literal(SIMPLE_STRING, loc, str);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_identifier
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPToken CPPPreprocessor::
 get_identifier(int c) {
   YYLTYPE loc;
@@ -1882,8 +1804,8 @@ get_identifier(int c) {
   if ((c == '\'' || c == '"') &&
       (name == "L" || name == "u8" ||
        name == "u" || name == "U")) {
-    // This is actually a wide-character or wide-string literal or
-    // some such.  Figure out the correct character type to use.
+    // This is actually a wide-character or wide-string literal or some such.
+    // Figure out the correct character type to use.
 
     CPPExpression::Type type;
     if (name == "L") {
@@ -1949,13 +1871,10 @@ get_identifier(int c) {
   return CPPToken(SIMPLE_IDENTIFIER, loc, name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_literal
-//       Access: Private
-//  Description: Under the assumption that we've just parsed a
-//               string or real constant, parse a following custom
-//               literal, and returns a token for it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Under the assumption that we've just parsed a string or real constant,
+ * parse a following custom literal, and returns a token for it.
+ */
 CPPToken CPPPreprocessor::
 get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
   string suffix;
@@ -2052,7 +1971,8 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
                                        simple == CPPSimpleType::T_wchar_t ||
                                        simple == CPPSimpleType::T_char16_t ||
                                        simple == CPPSimpleType::T_char32_t)) {
-        // We currently don't have the means to check the exact character type.
+        // We currently don't have the means to check the exact character
+        // type.
         expr = new CPPExpression(value.u.integer);
         instance = (*it);
         break;
@@ -2071,8 +1991,8 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
 
       CPPSimpleType::Type simple = type->as_simple_type()->_type;
       if (simple == CPPSimpleType::T_char && params.size() == 1) {
-        // This is the raw literal operator.  Store it, but don't break;
-        // a non-raw version of the operator might follow, which we'd prefer.
+        // This is the raw literal operator.  Store it, but don't break; a
+        // non-raw version of the operator might follow, which we'd prefer.
         raw_instance = (*it);
 
       } else if (token == SIMPLE_STRING && simple == CPPSimpleType::T_char) {
@@ -2081,8 +2001,8 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
         break;
 
       } else if (token == STRING_LITERAL) {
-        // Verify that the character type of the string literal matches
-        // the character type of the parameter.
+        // Verify that the character type of the string literal matches the
+        // character type of the parameter.
         CPPExpression::Type str_type = value.u.expr->_type;
         if ((str_type == CPPExpression::T_string && simple == CPPSimpleType::T_char) ||
             (str_type == CPPExpression::T_wstring && simple == CPPSimpleType::T_wchar_t) ||
@@ -2114,11 +2034,9 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
   return CPPToken(CUSTOM_LITERAL, loc, str, result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::expand_manifest
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPToken CPPPreprocessor::
 expand_manifest(const CPPManifest *manifest) {
   vector_string args;
@@ -2146,11 +2064,9 @@ expand_manifest(const CPPManifest *manifest) {
   return internal_get_next_token();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::extract_manifest_args
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 extract_manifest_args(const string &name, int num_args, int va_arg,
                       vector_string &args) {
@@ -2227,8 +2143,8 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
         }
 
       } else if (c == '\\') {
-        // It could be a slash before a newline.
-        // If so, that's whitespace as well.
+        // It could be a slash before a newline.  If so, that's whitespace as
+        // well.
         c = get();
         if (c != '\n') {
           arg += '\\';
@@ -2262,12 +2178,10 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::expand_defined_function
-//       Access: Private
-//  Description: Expands the defined(manifest) function to either
-//               1 or 0, depending on whether the manifest exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expands the defined(manifest) function to either 1 or 0, depending on
+ * whether the manifest exists.
+ */
 void CPPPreprocessor::
 expand_defined_function(string &expr, size_t q, size_t &p) {
   string result;
@@ -2290,11 +2204,9 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
   p = q + result.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::expand_manifest_inline
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 expand_manifest_inline(string &expr, size_t q, size_t &p,
                        const CPPManifest *manifest) {
@@ -2309,11 +2221,9 @@ expand_manifest_inline(string &expr, size_t q, size_t &p,
   p = q + result.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::extract_manifest_args_inline
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPPreprocessor::
 extract_manifest_args_inline(const string &name, int num_args,
                              int va_arg, vector_string &args,
@@ -2382,11 +2292,10 @@ extract_manifest_args_inline(const string &name, int num_args,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get_number
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming that we've just read a digit or a period indicating the start of a
+ * number, read the rest.
+ */
 CPPToken CPPPreprocessor::
 get_number(int c) {
   YYLTYPE loc;
@@ -2400,16 +2309,16 @@ get_number(int c) {
   bool leading_zero = (c == '0');
   bool decimal_point = (c == '.');
 
-  c = peek();
+  c = skip_digit_separator(peek());
 
-  if (leading_zero && c == 'x') {
+  if (leading_zero && (c == 'x' || c == 'X')) {
     // Here we have a hex number.
     num += get();
     c = peek();
 
     while (c != EOF && (isdigit(c) || (tolower(c) >= 'a' && tolower(c) <= 'f'))) {
       num += get();
-      c = peek();
+      c = skip_digit_separator(peek());
     }
 
     loc.last_line = get_line_number();
@@ -2419,11 +2328,30 @@ get_number(int c) {
     result.u.integer = strtol(num.c_str(), (char **)NULL, 16);
 
     return get_literal(INTEGER, loc, num, result);
+
+  } else if (leading_zero && (c == 'b' || c == 'B')) {
+    // A C++14-style binary number.
+    get();
+    c = peek();
+    string bin(1, (char)c);
+
+    while (c != EOF && (c == '0' || c == '1')) {
+      bin += get();
+      c = skip_digit_separator(peek());
+    }
+
+    loc.last_line = get_line_number();
+    loc.last_column = get_col_number();
+
+    YYSTYPE result;
+    result.u.integer = strtol(bin.c_str(), (char **)NULL, 2);
+
+    return get_literal(INTEGER, loc, bin, result);
   }
 
   while (c != EOF && isdigit(c)) {
     num += get();
-    c = peek();
+    c = skip_digit_separator(peek());
   }
 
   if (c == '.' && !decimal_point) {
@@ -2449,7 +2377,7 @@ get_number(int c) {
       }
       while (c != EOF && isdigit(c)) {
         num += get();
-        c = peek();
+        c = skip_digit_separator(peek());
       }
     }
 
@@ -2470,9 +2398,9 @@ get_number(int c) {
   YYSTYPE result;
 
   if (leading_zero) {
-    // A leading zero implies an octal number.  strtol() is supposed
-    // to be able to make this distinction by itself, but we'll do it
-    // explicitly just to be sure.
+    // A leading zero implies an octal number.  strtol() is supposed to be
+    // able to make this distinction by itself, but we'll do it explicitly
+    // just to be sure.
     result.u.integer = strtol(num.c_str(), (char **)NULL, 8);
 
   } else {
@@ -2483,11 +2411,9 @@ get_number(int c) {
   return get_literal(INTEGER, loc, num, result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::check_keyword
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 check_keyword(const string &name) {
   if (name == "alignas") return KW_ALIGNAS;
@@ -2507,6 +2433,7 @@ check_keyword(const string &name) {
   if (name == "__const") return KW_CONST;
   if (name == "__const__") return KW_CONST;
   if (name == "constexpr") return KW_CONSTEXPR;
+  if (name == "const_cast") return KW_CONST_CAST;
   if (name == "decltype") return KW_DECLTYPE;
   if (name == "default") return KW_DEFAULT;
   if (name == "delete") return KW_DELETE;
@@ -2520,6 +2447,7 @@ check_keyword(const string &name) {
   if (name == "explicit") return KW_EXPLICIT;
   if (name == "__published") return KW_PUBLISHED;
   if (name == "false") return KW_FALSE;
+  if (name == "final") return KW_FINAL;
   if (name == "float") return KW_FLOAT;
   if (name == "friend") return KW_FRIEND;
   if (name == "for") return KW_FOR;
@@ -2530,18 +2458,23 @@ check_keyword(const string &name) {
   if (name == "__inline__") return KW_INLINE;
   if (name == "int") return KW_INT;
   if (name == "long") return KW_LONG;
+  if (name == "__make_map_property") return KW_MAKE_MAP_PROPERTY;
   if (name == "__make_property") return KW_MAKE_PROPERTY;
+  if (name == "__make_property2") return KW_MAKE_PROPERTY2;
   if (name == "__make_seq") return KW_MAKE_SEQ;
+  if (name == "__make_seq_property") return KW_MAKE_SEQ_PROPERTY;
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;
   if (name == "noexcept") return KW_NOEXCEPT;
   if (name == "nullptr") return KW_NULLPTR;
   if (name == "new") return KW_NEW;
   if (name == "operator") return KW_OPERATOR;
+  if (name == "override") return KW_OVERRIDE;
   if (name == "private") return KW_PRIVATE;
   if (name == "protected") return KW_PROTECTED;
   if (name == "public") return KW_PUBLIC;
   if (name == "register") return KW_REGISTER;
+  if (name == "reinterpret_cast") return KW_REINTERPRET_CAST;
   if (name == "return") return KW_RETURN;
   if (name == "short") return KW_SHORT;
   if (name == "signed") return KW_SIGNED;
@@ -2551,10 +2484,12 @@ check_keyword(const string &name) {
   if (name == "static_cast") return KW_STATIC_CAST;
   if (name == "struct") return KW_STRUCT;
   if (name == "template") return KW_TEMPLATE;
+  if (name == "thread_local") return KW_THREAD_LOCAL;
   if (name == "throw") return KW_THROW;
   if (name == "true") return KW_TRUE;
   if (name == "try") return KW_TRY;
   if (name == "typedef") return KW_TYPEDEF;
+  if (name == "typeid") return KW_TYPEID;
   if (name == "typename") return KW_TYPENAME;
   if (name == "union") return KW_UNION;
   if (name == "unsigned") return KW_UNSIGNED;
@@ -2578,18 +2513,12 @@ check_keyword(const string &name) {
   if (name == "xor") return '^';
   if (name == "xor_eq") return XOREQUAL;
 
-  if (!cpp_longlong_keyword.empty() && name == cpp_longlong_keyword) {
-    return KW_LONGLONG;
-  }
-
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::scan_escape_sequence
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 scan_escape_sequence(int c) {
   if (c != '\\') {
@@ -2662,11 +2591,9 @@ scan_escape_sequence(int c) {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::scan_quoted
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string CPPPreprocessor::
 scan_quoted(int c) {
   int quote_mark = c;
@@ -2689,13 +2616,10 @@ scan_quoted(int c) {
   return str;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::should_ignore_manifest
-//       Access: Public
-//  Description: Returns true if the manifest is one that is being
-//               ignored right now (presumably because we are
-//               presently expanding it).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the manifest is one that is being ignored right now
+ * (presumably because we are presently expanding it).
+ */
 bool CPPPreprocessor::
 should_ignore_manifest(const CPPManifest *manifest) const {
   Files::const_iterator fi;
@@ -2708,13 +2632,10 @@ should_ignore_manifest(const CPPManifest *manifest) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::should_ignore_preprocessor
-//       Access: Public
-//  Description: Returns true if we should ignore any preprocessor
-//               directives (e.g. we're presently expanding a
-//               manifest).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if we should ignore any preprocessor directives (e.g.  we're
+ * presently expanding a manifest).
+ */
 bool CPPPreprocessor::
 should_ignore_preprocessor() const {
   Files::const_iterator fi;
@@ -2727,11 +2648,9 @@ should_ignore_preprocessor() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::get
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int CPPPreprocessor::
 get() {
   if (_unget != '\0') {
@@ -2753,8 +2672,8 @@ get() {
 #endif
     _files.pop_back();
 
-    // Synthesize a newline, just in case the file doesn't already
-    // end with one.
+    // Synthesize a newline, just in case the file doesn't already end with
+    // one.
     c = '\n';
   }
 
@@ -2767,11 +2686,9 @@ get() {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::peek
-//       Access: Private
-//  Description: Like get(), but does not alter the current state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Like get(), but does not alter the current state.
+ */
 int CPPPreprocessor::
 peek() {
   if (_unget != '\0') {
@@ -2799,28 +2716,22 @@ peek() {
   return c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::unget
-//       Access: Private
-//  Description: Undoes the effects of a previous get().  Not
-//               recommended, use peek() instead where possible, as
-//               it doesn't cause the column index to be off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes the effects of a previous get().  Not recommended, use peek()
+ * instead where possible, as it doesn't cause the column index to be off.
+ */
 void CPPPreprocessor::
 unget(int c) {
   assert(_unget == '\0');
   _unget = c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::nested_parse_template_instantiation
-//       Access: Private
-//  Description: Recursively invokes yacc to parse the stuff within
-//               angle brackets that's the template instantiation part
-//               of an identifier.  This involves setting and
-//               restoring some state flags so we can return EOF when
-//               we reach the closing bracket.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively invokes yacc to parse the stuff within angle brackets that's
+ * the template instantiation part of an identifier.  This involves setting
+ * and restoring some state flags so we can return EOF when we reach the
+ * closing bracket.
+ */
 CPPTemplateParameterList *CPPPreprocessor::
 nested_parse_template_instantiation(CPPTemplateScope *scope) {
 #ifdef CPP_VERBOSE_LEX
@@ -2903,16 +2814,12 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::skip_to_end_nested
-//       Access: Private
-//  Description: This is an error-recovery function, called after
-//               returning from a nested parse.  If the state is not
-//               S_end_nested, there was an error in parsing the
-//               nested tokens, and not all of the nested tokens may
-//               have been consumed.  This function will consume the
-//               rest of the nested tokens.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an error-recovery function, called after returning from a nested
+ * parse.  If the state is not S_end_nested, there was an error in parsing the
+ * nested tokens, and not all of the nested tokens may have been consumed.
+ * This function will consume the rest of the nested tokens.
+ */
 void CPPPreprocessor::
 skip_to_end_nested() {
 #ifdef CPP_VERBOSE_LEX
@@ -2935,14 +2842,11 @@ skip_to_end_nested() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::skip_to_angle_bracket
-//       Access: Private
-//  Description: This is an error-recovery function, called after
-//               returning from a nested parse.  If we haven't yet
-//               consumed the closing angle bracket on the template
-//               instantiation, keep consuming tokens until we do.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an error-recovery function, called after returning from a nested
+ * parse.  If we haven't yet consumed the closing angle bracket on the
+ * template instantiation, keep consuming tokens until we do.
+ */
 void CPPPreprocessor::
 skip_to_angle_bracket() {
 #ifdef CPP_VERBOSE_LEX

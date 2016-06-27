@@ -1,16 +1,15 @@
-// Filename: eggMakeFont.h
-// Created by:  drose (16Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMakeFont.h
+ * @author drose
+ * @date 2001-02-16
+ */
 
 #ifndef EGGMAKEFONT_H
 #define EGGMAKEFONT_H
@@ -30,15 +29,12 @@ class EggVertexPool;
 class EggGroup;
 class TextureImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMakeFont
-// Description : This program uses FreeType to generate an egg file
-//               and a series of texture images from a font file
-//               input, such as a TTF file.  The resulting egg file
-//               can be loaded in Panda as a StaticTextFont object for
-//               rendering text, even if FreeType is not compiled into
-//               the executing Panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * This program uses FreeType to generate an egg file and a series of texture
+ * images from a font file input, such as a TTF file.  The resulting egg file
+ * can be loaded in Panda as a StaticTextFont object for rendering text, even
+ * if FreeType is not compiled into the executing Panda.
+ */
 class EggMakeFont : public EggWriter {
 public:
   EggMakeFont();
@@ -78,6 +74,7 @@ private:
   bool _no_native_aa;
   bool _no_palettize;
   int _palette_size[2];
+  bool _generate_distance_field;
 
   double _palettize_scale_factor;
   Filename _input_font_filename;
@@ -86,7 +83,7 @@ private:
   string _output_palette_pattern;
 
   PNMTextMaker *_text_maker;
-  
+
   EggTexture::Format _format;
   int _num_channels;
   EggVertexPool *_vpool;
@@ -101,4 +98,3 @@ private:
 
 
 #endif
-

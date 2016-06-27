@@ -1,16 +1,15 @@
-// Filename: geomVertexFormat.cxx
-// Created by:  drose (07Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexFormat.cxx
+ * @author drose
+ * @date 2005-03-07
+ */
 
 #include "geomVertexFormat.h"
 #include "geomVertexData.h"
@@ -23,11 +22,9 @@
 GeomVertexFormat::Registry *GeomVertexFormat::_registry = NULL;
 TypeHandle GeomVertexFormat::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomVertexFormat::
 GeomVertexFormat() :
   _is_registered(false),
@@ -35,11 +32,9 @@ GeomVertexFormat() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomVertexFormat::
 GeomVertexFormat(const GeomVertexArrayFormat *array_format) :
   _is_registered(false),
@@ -48,11 +43,9 @@ GeomVertexFormat(const GeomVertexArrayFormat *array_format) :
   add_array(array_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomVertexFormat::
 GeomVertexFormat(const GeomVertexFormat &copy) :
   _is_registered(false),
@@ -62,11 +55,9 @@ GeomVertexFormat(const GeomVertexFormat &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexFormat::
 operator = (const GeomVertexFormat &copy) {
   nassertv(!is_registered());
@@ -75,24 +66,19 @@ operator = (const GeomVertexFormat &copy) {
   _arrays = copy._arrays;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomVertexFormat::
 ~GeomVertexFormat() {
   // unref() should have unregistered us.
   nassertv(!is_registered());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::unref
-//       Access: Published, Virtual
-//  Description: This method overrides ReferenceCount::unref() to
-//               unregister the object when its reference count goes
-//               to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method overrides ReferenceCount::unref() to unregister the object when
+ * its reference count goes to zero.
+ */
 bool GeomVertexFormat::
 unref() const {
   Registry *registry = get_registry();
@@ -109,18 +95,14 @@ unref() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_post_animated_format
-//       Access: Published
-//  Description: Returns a suitable vertex format for sending the
-//               animated vertices to the graphics backend.  This is
-//               the same format as the source format, with the
-//               CPU-animation data elements removed.
-//
-//               This may only be called after the format has been
-//               registered.  The return value will have been already
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable vertex format for sending the animated vertices to the
+ * graphics backend.  This is the same format as the source format, with the
+ * CPU-animation data elements removed.
+ *
+ * This may only be called after the format has been registered.  The return
+ * value will have been already registered.
+ */
 CPT(GeomVertexFormat) GeomVertexFormat::
 get_post_animated_format() const {
   nassertr(is_registered(), NULL);
@@ -141,8 +123,8 @@ get_post_animated_format() const {
       GeomVertexFormat::register_format(new_format);
     ((GeomVertexFormat *)this)->_post_animated_format = registered;
     if (_post_animated_format != this) {
-      // We only keep the reference count if the new pointer is not
-      // the same as this, to avoid a circular dependency.
+      // We only keep the reference count if the new pointer is not the same
+      // as this, to avoid a circular dependency.
       _post_animated_format->ref();
     }
   }
@@ -152,29 +134,24 @@ get_post_animated_format() const {
   return _post_animated_format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_union_format
-//       Access: Published
-//  Description: Returns a new GeomVertexFormat that includes all of
-//               the columns defined in either this GeomVertexFormat
-//               or the other one.  If any column is defined in both
-//               formats with different sizes (for instance, texcoord2
-//               vs. texcoord3), the new format will include the
-//               larger of the two definitions.
-//
-//               This may only be called after both source formats
-//               have been registered.  The return value will also
-//               have been already registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new GeomVertexFormat that includes all of the columns defined in
+ * either this GeomVertexFormat or the other one.  If any column is defined in
+ * both formats with different sizes (for instance, texcoord2 vs.  texcoord3),
+ * the new format will include the larger of the two definitions.
+ *
+ * This may only be called after both source formats have been registered.
+ * The return value will also have been already registered.
+ */
 CPT(GeomVertexFormat) GeomVertexFormat::
 get_union_format(const GeomVertexFormat *other) const {
   nassertr(is_registered() && other->is_registered(), NULL);
 
   PT(GeomVertexFormat) new_format = new GeomVertexFormat;
 
-  // Preserve whichever animation type is not AT_None.  (If both
-  // animation types are not AT_None, but they are different, this
-  // whole operation is questionable.)
+  // Preserve whichever animation type is not AT_None.  (If both animation
+  // types are not AT_None, but they are different, this whole operation is
+  // questionable.)
   if (_animation.get_animation_type() != AT_none) {
     new_format->set_animation(_animation);
   } else {
@@ -185,18 +162,16 @@ get_union_format(const GeomVertexFormat *other) const {
   typedef pset< CPT(InternalName) > ColumnNames;
   ColumnNames column_names;
 
-  // We go through all the (0)-level arrays first, then all the
-  // (1)-level arrays, and so on.  We do this to ensure that the new
-  // format gets written out with all the (0)-level columns appearing
-  // before all the (1)-level columns, which might lead to a small
-  // optimization at render time.
+  // We go through all the (0)-level arrays first, then all the (1)-level
+  // arrays, and so on.  We do this to ensure that the new format gets written
+  // out with all the (0)-level columns appearing before all the (1)-level
+  // columns, which might lead to a small optimization at render time.
 
-  // We also try to keep the structure as similar as possible.  If
-  // both source formats have columns (A, B) in array 0, and columns
-  // (C, D, E) in array 1, then the resulting union format will also
-  // have (A, B) in array 0 and (C, D, E) in array 1.  In general, a
-  // column will appear in the result in the first array it appears in
-  // either of the inputs.
+  // We also try to keep the structure as similar as possible.  If both source
+  // formats have columns (A, B) in array 0, and columns (C, D, E) in array 1,
+  // then the resulting union format will also have (A, B) in array 0 and (C,
+  // D, E) in array 1.  In general, a column will appear in the result in the
+  // first array it appears in either of the inputs.
 
   size_t num_arrays = max(_arrays.size(), other->_arrays.size());
   for (size_t ai = 0; ai < num_arrays; ++ai) {
@@ -265,16 +240,12 @@ get_union_format(const GeomVertexFormat *other) const {
   return GeomVertexFormat::register_format(new_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::modify_array
-//       Access: Published
-//  Description: Returns a modifiable pointer to the indicated array.
-//               This means duplicating it if it is shared or
-//               registered.
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable pointer to the indicated array.  This means
+ * duplicating it if it is shared or registered.
+ *
+ * This may not be called once the format has been registered.
+ */
 GeomVertexArrayFormat *GeomVertexFormat::
 modify_array(size_t array) {
   nassertr(!is_registered(), NULL);
@@ -288,14 +259,11 @@ modify_array(size_t array) {
   return _arrays[array];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::set_array
-//       Access: Published
-//  Description: Replaces the definition of the indicated array.
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the definition of the indicated array.
+ *
+ * This may not be called once the format has been registered.
+ */
 void GeomVertexFormat::
 set_array(size_t array, const GeomVertexArrayFormat *format) {
   nassertv(!is_registered());
@@ -303,14 +271,11 @@ set_array(size_t array, const GeomVertexArrayFormat *format) {
   _arrays[array] = (GeomVertexArrayFormat *)format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::remove_array
-//       Access: Published
-//  Description: Removes the nth array from the format.
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth array from the format.
+ *
+ * This may not be called once the format has been registered.
+ */
 void GeomVertexFormat::
 remove_array(size_t array) {
   nassertv(!is_registered());
@@ -319,17 +284,13 @@ remove_array(size_t array) {
   _arrays.erase(_arrays.begin() + array);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::add_array
-//       Access: Published
-//  Description: Adds the indicated array definition to the list of
-//               arrays included within this vertex format definition.
-//               The return value is the index number of the new
-//               array.
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated array definition to the list of arrays included within
+ * this vertex format definition.  The return value is the index number of the
+ * new array.
+ *
+ * This may not be called once the format has been registered.
+ */
 size_t GeomVertexFormat::
 add_array(const GeomVertexArrayFormat *array_format) {
   nassertr(!is_registered(), 0);
@@ -339,17 +300,13 @@ add_array(const GeomVertexArrayFormat *array_format) {
   return new_array;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::insert_array
-//       Access: Published
-//  Description: Adds the indicated array definition to the list of
-//               arrays at the indicated position.  This works just
-//               like add_array(), except that you can specify which
-//               array index the new array should have.
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated array definition to the list of arrays at the indicated
+ * position.  This works just like add_array(), except that you can specify
+ * which array index the new array should have.
+ *
+ * This may not be called once the format has been registered.
+ */
 void GeomVertexFormat::
 insert_array(size_t array, const GeomVertexArrayFormat *array_format) {
   nassertv(!is_registered());
@@ -358,15 +315,11 @@ insert_array(size_t array, const GeomVertexArrayFormat *array_format) {
   _arrays.insert(_arrays.begin() + array, (GeomVertexArrayFormat *)array_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::clear_arrays
-//       Access: Published
-//  Description: Removes all of the array definitions from the format
-//               and starts over.
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the array definitions from the format and starts over.
+ *
+ * This may not be called once the format has been registered.
+ */
 void GeomVertexFormat::
 clear_arrays() {
   nassertv(!is_registered());
@@ -374,14 +327,11 @@ clear_arrays() {
   _arrays.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::remove_empty_arrays
-//       Access: Published
-//  Description: Removes the arrays that define no columns.
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the arrays that define no columns.
+ *
+ * This may not be called once the format has been registered.
+ */
 void GeomVertexFormat::
 remove_empty_arrays() {
   nassertv(!is_registered());
@@ -397,12 +347,10 @@ remove_empty_arrays() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_num_columns
-//       Access: Published
-//  Description: Returns the total number of different columns in
-//               the specification, across all arrays.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of different columns in the specification, across
+ * all arrays.
+ */
 size_t GeomVertexFormat::
 get_num_columns() const {
   size_t num_columns = 0;
@@ -413,12 +361,9 @@ get_num_columns() const {
   return num_columns;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_column
-//       Access: Published
-//  Description: Returns the ith column of the specification,
-//               across all arrays.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ith column of the specification, across all arrays.
+ */
 const GeomVertexColumn *GeomVertexFormat::
 get_column(size_t i) const {
   Arrays::const_iterator ai;
@@ -432,18 +377,13 @@ get_column(size_t i) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_array_with
-//       Access: Published
-//  Description: Returns the index number of the array with the
-//               ith column.
-//
-//               The return value can be passed to get_array_format()
-//               to get the format of the array.  It may also be
-//               passed to GeomVertexData::get_array_data() or
-//               get_data() or set_data() to manipulate the actual
-//               array data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the array with the ith column.
+ *
+ * The return value can be passed to get_array_format() to get the format of
+ * the array.  It may also be passed to GeomVertexData::get_array_data() or
+ * get_data() or set_data() to manipulate the actual array data.
+ */
 int GeomVertexFormat::
 get_array_with(size_t i) const {
   int array_index = 0;
@@ -457,22 +397,16 @@ get_array_with(size_t i) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_array_with
-//       Access: Published
-//  Description: Returns the index number of the array with the
-//               indicated column, or -1 if no arrays contained
-//               that name.
-//
-//               The return value can be passed to get_array_format()
-//               to get the format of the array.  It may also be
-//               passed to GeomVertexData::get_array_data() or
-//               get_data() or set_data() to manipulate the actual
-//               array data.
-//
-//               This may only be called after the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the array with the indicated column, or -1 if
+ * no arrays contained that name.
+ *
+ * The return value can be passed to get_array_format() to get the format of
+ * the array.  It may also be passed to GeomVertexData::get_array_data() or
+ * get_data() or set_data() to manipulate the actual array data.
+ *
+ * This may only be called after the format has been registered.
+ */
 int GeomVertexFormat::
 get_array_with(const InternalName *name) const {
   nassertr(_is_registered, -1);
@@ -485,19 +419,16 @@ get_array_with(const InternalName *name) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_column
-//       Access: Published
-//  Description: Returns the specification with the indicated name, or
-//               NULL if the name is not used.  Use get_array_with()
-//               to determine which array this column is associated
-//               with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the specification with the indicated name, or NULL if the name is
+ * not used.  Use get_array_with() to determine which array this column is
+ * associated with.
+ */
 const GeomVertexColumn *GeomVertexFormat::
 get_column(const InternalName *name) const {
   if (!_is_registered) {
-    // If the format hasn't yet been registered, we have to search for
-    // the column the hard way.
+    // If the format hasn't yet been registered, we have to search for the
+    // column the hard way.
     Arrays::const_iterator ai;
     for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
       const GeomVertexColumn *column = (*ai)->get_column(name);
@@ -508,8 +439,8 @@ get_column(const InternalName *name) const {
     return NULL;
 
   } else {
-    // If the format has been registered, we can just check the
-    // toplevel index.
+    // If the format has been registered, we can just check the toplevel
+    // index.
 
     DataTypesByName::const_iterator ai;
     ai = _columns_by_name.find(name);
@@ -524,26 +455,21 @@ get_column(const InternalName *name) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::remove_column
-//       Access: Published
-//  Description: Removes the named column from the format, from
-//               whichever array it exists in.  If there are other
-//               columns remaining in the array, the array is left
-//               with a gap where the column used to be; if this
-//               was the only column in the array, the array is
-//               removed (unless keep_empty_array is true).
-//
-//               This may not be called once the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the named column from the format, from whichever array it exists
+ * in.  If there are other columns remaining in the array, the array is left
+ * with a gap where the column used to be; if this was the only column in the
+ * array, the array is removed (unless keep_empty_array is true).
+ *
+ * This may not be called once the format has been registered.
+ */
 void GeomVertexFormat::
 remove_column(const InternalName *name, bool keep_empty_array) {
   nassertv(!_is_registered);
 
-  // Since the format's not registered, it doesn't yet have an index
-  // of columns--so we have to search all of the arrays, one at a
-  // time, until we find it.
+  // Since the format's not registered, it doesn't yet have an index of
+  // columns--so we have to search all of the arrays, one at a time, until we
+  // find it.
   for (int array = 0; array < (int)_arrays.size(); ++array) {
     GeomVertexArrayFormat *array_format = _arrays[array];
 
@@ -567,15 +493,13 @@ remove_column(const InternalName *name, bool keep_empty_array) {
     }
   }
 
-  // It appears that column wasn't part of the format anyway.  No
-  // problem; quietly return.
+  // It appears that column wasn't part of the format anyway.  No problem;
+  // quietly return.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::pack_columns
-//       Access: Published
-//  Description: Removes wasted space between columns.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes wasted space between columns.
+ */
 void GeomVertexFormat::
 pack_columns() {
   nassertv(!_is_registered);
@@ -588,16 +512,13 @@ pack_columns() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::align_columns_for_animation
-//       Access: Published
-//  Description: Reprocesses the columns in the format to align the
-//               C_point and C_vector columns to 16-byte boundaries to
-//               allow for the more efficient SSE2 operations
-//               (assuming SSE2 is enabled in the build).
-//
-//               Also see maybe_align_columns_for_animation().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reprocesses the columns in the format to align the C_point and C_vector
+ * columns to 16-byte boundaries to allow for the more efficient SSE2
+ * operations (assuming SSE2 is enabled in the build).
+ *
+ * Also see maybe_align_columns_for_animation().
+ */
 void GeomVertexFormat::
 align_columns_for_animation() {
   nassertv(!_is_registered);
@@ -610,13 +531,11 @@ align_columns_for_animation() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::maybe_align_columns_for_animation
-//       Access: Published
-//  Description: Calls align_columns_for_animation() if this format's
-//               AnimationSpec indicates that it contains animated
-//               vertices, and if vertex-animation-align-16 is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls align_columns_for_animation() if this format's AnimationSpec
+ * indicates that it contains animated vertices, and if vertex-animation-
+ * align-16 is true.
+ */
 void GeomVertexFormat::
 maybe_align_columns_for_animation() {
   if (_animation.get_animation_type() == AT_panda && vertex_animation_align_16) {
@@ -624,11 +543,9 @@ maybe_align_columns_for_animation() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexFormat::
 output(ostream &out) const {
   if (_arrays.empty()) {
@@ -650,11 +567,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexFormat::
 write(ostream &out, int indent_level) const {
   for (size_t i = 0; i < _arrays.size(); i++) {
@@ -669,11 +584,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::write_with_data
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexFormat::
 write_with_data(ostream &out, int indent_level,
                 const GeomVertexData *data) const {
@@ -689,19 +602,14 @@ write_with_data(ostream &out, int indent_level,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::get_array_info
-//       Access: Public
-//  Description: Quickly looks up the indicated column within all
-//               of the nested arrays and sets array_index and
-//               column appropriately.  Returns true if the data
-//               type exists in this format, false if it does not.  If
-//               it returns false, array_index is set to -1, and
-//               column is set to NULL.
-//
-//               This may only be called after the format has been
-//               registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Quickly looks up the indicated column within all of the nested arrays and
+ * sets array_index and column appropriately.  Returns true if the data type
+ * exists in this format, false if it does not.  If it returns false,
+ * array_index is set to -1, and column is set to NULL.
+ *
+ * This may only be called after the format has been registered.
+ */
 bool GeomVertexFormat::
 get_array_info(const InternalName *name, int &array_index,
                const GeomVertexColumn *&column) const {
@@ -721,11 +629,9 @@ get_array_info(const InternalName *name, int &array_index,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::compare_to
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int GeomVertexFormat::
 compare_to(const GeomVertexFormat &other) const {
   int compare = _animation.compare_to(other._animation);
@@ -747,11 +653,9 @@ compare_to(const GeomVertexFormat &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::make_registry
-//       Access: Private
-//  Description: Returns the global registry object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the global registry object.
+ */
 void GeomVertexFormat::
 make_registry() {
   if (_registry == (Registry *)NULL) {
@@ -760,11 +664,9 @@ make_registry() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::do_register
-//       Access: Private
-//  Description: Called internally when the format is registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the format is registered.
+ */
 void GeomVertexFormat::
 do_register() {
   nassertv(!is_registered());
@@ -779,10 +681,10 @@ do_register() {
       array_format = GeomVertexArrayFormat::register_format(array_format);
     }
 
-    // Let's keep arrays with nonzero stride but no used columns;
-    // they're needed to preserve the isomorphic nature of matching
-    // formats.  But we'll toss arrays with 0 stride, which add
-    // nothing of value and only cause problems later.
+    // Let's keep arrays with nonzero stride but no used columns; they're
+    // needed to preserve the isomorphic nature of matching formats.  But
+    // we'll toss arrays with 0 stride, which add nothing of value and only
+    // cause problems later.
     if (array_format->get_stride() == 0) {
       gobj_cat.warning()
         << "Dropping empty array from GeomVertexFormat.\n";
@@ -809,8 +711,8 @@ do_register() {
     }
   }
 
-  // Go back through the index now and identify the points, vectors,
-  // and morph descriptions, so we can quickly look these up later.
+  // Go back through the index now and identify the points, vectors, and morph
+  // descriptions, so we can quickly look these up later.
   DataTypesByName::iterator ni;
   for (ni = _columns_by_name.begin();
        ni != _columns_by_name.end();
@@ -864,8 +766,7 @@ do_register() {
       break;
 
     default:
-      // Some other type of value we don't care about caching a
-      // pointer to.
+      // Some other type of value we don't care about caching a pointer to.
       break;
     }
   }
@@ -880,11 +781,9 @@ do_register() {
                  _color_column);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::do_unregister
-//       Access: Private
-//  Description: Called internally when the format is unregistered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the format is unregistered.
+ */
 void GeomVertexFormat::
 do_unregister() {
   nassertv(_is_registered);
@@ -903,23 +802,18 @@ do_unregister() {
   _post_animated_format = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               GeomVertexFormat.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type GeomVertexFormat.
+ */
 void GeomVertexFormat::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void GeomVertexFormat::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
@@ -933,13 +827,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int GeomVertexFormat::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
@@ -952,15 +843,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type GeomVertexFormat is
-//               encountered in the Bam file.  It should create the
-//               GeomVertexFormat and extract its information
-//               from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type GeomVertexFormat is encountered in the Bam file.  It should create the
+ * GeomVertexFormat and extract its information from the file.
+ */
 TypedWritable *GeomVertexFormat::
 make_from_bam(const FactoryParams &params) {
   GeomVertexFormat *object = new GeomVertexFormat;
@@ -973,13 +860,10 @@ make_from_bam(const FactoryParams &params) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomVertexFormat.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new GeomVertexFormat.
+ */
 void GeomVertexFormat::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
@@ -994,22 +878,20 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Registry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomVertexFormat::Registry::
 Registry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Registry::make_standard_formats
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexFormat::Registry::
 make_standard_formats() {
+  _empty = register_format(new GeomVertexFormat);
+
   _v3 = register_format(new GeomVertexArrayFormat
                         (InternalName::get_vertex(), 3,
                          NT_stdfloat, C_point));
@@ -1067,9 +949,9 @@ make_standard_formats() {
                                InternalName::get_texcoord(), 2,
                                NT_stdfloat, C_texcoord));
 
-  // Define the OpenGL-style per-byte color formats.  This is not the
-  // same as a packed format, above, because the resulting byte order
-  // is endian-independent.
+  // Define the OpenGL-style per-byte color formats.  This is not the same as
+  // a packed format, above, because the resulting byte order is endian-
+  // independent.
   _v3c4 = register_format(new GeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
                            NT_stdfloat, C_point,
@@ -1103,30 +985,25 @@ make_standard_formats() {
                                NT_stdfloat, C_texcoord));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Registry::register_format
-//       Access: Public
-//  Description: Adds the indicated format to the registry, if there
-//               is not an equivalent format already there; in either
-//               case, returns the pointer to the equivalent format
-//               now in the registry.
-//
-//               This must be called before a format may be used in a
-//               Geom.  After this call, you should discard the
-//               original pointer you passed in (which may or may not
-//               now be invalid) and let its reference count decrement
-//               normally; you should use only the returned value from
-//               this point on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated format to the registry, if there is not an equivalent
+ * format already there; in either case, returns the pointer to the equivalent
+ * format now in the registry.
+ *
+ * This must be called before a format may be used in a Geom.  After this
+ * call, you should discard the original pointer you passed in (which may or
+ * may not now be invalid) and let its reference count decrement normally; you
+ * should use only the returned value from this point on.
+ */
 CPT(GeomVertexFormat) GeomVertexFormat::Registry::
 register_format(GeomVertexFormat *format) {
   if (format->is_registered()) {
     return format;
   }
 
-  // Save the incoming pointer in a local PointerTo, so that if it has
-  // a zero reference count and is not added into the map below, it
-  // will be automatically deleted when this function returns.
+  // Save the incoming pointer in a local PointerTo, so that if it has a zero
+  // reference count and is not added into the map below, it will be
+  // automatically deleted when this function returns.
   PT(GeomVertexFormat) pt_format = format;
 
   GeomVertexFormat *new_format;
@@ -1136,25 +1013,18 @@ register_format(GeomVertexFormat *format) {
     new_format = (*fi);
     if (!new_format->is_registered()) {
       new_format->do_register();
-      if (new_format->get_num_arrays() == 0) {
-        gobj_cat.warning()
-          << "Empty GeomVertexFormat registered.\n";
-      }
     }
   }
 
   return new_format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexFormat::Registry::unregister_format
-//       Access: Public
-//  Description: Removes the indicated format from the registry.
-//               Normally this should not be done until the format is
-//               destructing.
-//
-//               The lock should be held prior to calling this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated format from the registry.  Normally this should not
+ * be done until the format is destructing.
+ *
+ * The lock should be held prior to calling this method.
+ */
 void GeomVertexFormat::Registry::
 unregister_format(GeomVertexFormat *format) {
   nassertv(format->is_registered());

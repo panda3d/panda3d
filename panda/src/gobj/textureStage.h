@@ -1,16 +1,15 @@
-// Filename: textureStage.h
-// Created by:  drose (14Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureStage.h
+ * @author drose
+ * @date 2004-07-14
+ */
 
 #ifndef TEXTURESTAGE_H
 #define TEXTURESTAGE_H
@@ -25,16 +24,13 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureStage
-// Description : Defines the properties of a named stage of the
-//               multitexture pipeline.  The TextureAttrib will
-//               associated a number of these stages with Texture
-//               objects, and the GSG will render geometry by sorting
-//               all of the currently active TextureStages in order
-//               and then issuing the appropriate rendering calls to
-//               activate them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the properties of a named stage of the multitexture pipeline.  The
+ * TextureAttrib will associated a number of these stages with Texture
+ * objects, and the GSG will render geometry by sorting all of the currently
+ * active TextureStages in order and then issuing the appropriate rendering
+ * calls to activate them.
+ */
 class EXPCL_PANDA_GOBJ TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
   explicit TextureStage(const string &name);
@@ -77,8 +73,7 @@ PUBLISHED:
     CM_interpolate,
     CM_subtract,
 
-    // The following are valid only for combine_rgb, not
-    // combine_alpha.
+    // The following are valid only for combine_rgb, not combine_alpha.
     CM_dot3_rgb,
     CM_dot3_rgba,
   };
@@ -136,12 +131,12 @@ PUBLISHED:
   INLINE void set_tex_view_offset(int tex_view_offset);
   INLINE int get_tex_view_offset() const;
 
-  INLINE void set_combine_rgb(CombineMode mode, 
+  INLINE void set_combine_rgb(CombineMode mode,
                               CombineSource source0, CombineOperand operand0);
-  INLINE void set_combine_rgb(CombineMode mode, 
+  INLINE void set_combine_rgb(CombineMode mode,
                               CombineSource source0, CombineOperand operand0,
                               CombineSource source1, CombineOperand operand1);
-  INLINE void set_combine_rgb(CombineMode mode, 
+  INLINE void set_combine_rgb(CombineMode mode,
                               CombineSource source0, CombineOperand operand0,
                               CombineSource source1, CombineOperand operand1,
                               CombineSource source2, CombineOperand operand2);
@@ -154,12 +149,12 @@ PUBLISHED:
   INLINE CombineSource get_combine_rgb_source2() const;
   INLINE CombineOperand get_combine_rgb_operand2() const;
 
-  INLINE void set_combine_alpha(CombineMode mode, 
+  INLINE void set_combine_alpha(CombineMode mode,
                                 CombineSource source0, CombineOperand operand0);
-  INLINE void set_combine_alpha(CombineMode mode, 
+  INLINE void set_combine_alpha(CombineMode mode,
                                 CombineSource source0, CombineOperand operand0,
                                 CombineSource source1, CombineOperand operand1);
-  INLINE void set_combine_alpha(CombineMode mode, 
+  INLINE void set_combine_alpha(CombineMode mode,
                                 CombineSource source0, CombineOperand operand0,
                                 CombineSource source1, CombineOperand operand1,
                                 CombineSource source2, CombineOperand operand2);
@@ -187,6 +182,24 @@ PUBLISHED:
   void output(ostream &out) const;
 
   INLINE static TextureStage *get_default();
+
+PUBLISHED:
+  MAKE_PROPERTY(name, get_name, set_name);
+  MAKE_PROPERTY(sort, get_sort, set_sort);
+  MAKE_PROPERTY(priority, get_priority, set_priority);
+
+  MAKE_PROPERTY(texcoord_name, get_texcoord_name, set_texcoord_name);
+  MAKE_PROPERTY(tangent_name, get_tangent_name);
+  MAKE_PROPERTY(binormal_name, get_binormal_name);
+
+  MAKE_PROPERTY(mode, get_mode, set_mode);
+
+  MAKE_PROPERTY(color, get_color, set_color);
+  MAKE_PROPERTY(rgb_scale, get_rgb_scale, set_rgb_scale);
+  MAKE_PROPERTY(alpha_scale, get_alpha_scale, set_alpha_scale);
+  MAKE_PROPERTY(saved_result, get_saved_result, set_saved_result);
+
+  MAKE_PROPERTY(tex_view_offset, get_tex_view_offset, set_tex_view_offset);
 
 public:
   INLINE static UpdateSeq get_sort_seq();

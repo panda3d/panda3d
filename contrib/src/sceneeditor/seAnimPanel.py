@@ -31,7 +31,7 @@ class AnimPanel(AppShell):
     dragMode = False
     rateList= ['1/24.0', '0.1', '0.5', '1.0', '2.0', '5.0' , '10.0']
 
-    
+
     def __init__(self, aNode =  None, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         self.id = 'AnimPanel '+ aNode.getName()
@@ -63,7 +63,7 @@ class AnimPanel(AppShell):
         menuBar = self.menuBar
 
         menuBar.addmenu('Anim', 'Anim Panel Operations')
-        
+
         # Reset all actor controls
         menuBar.addmenuitem('File', 'command',
                             'Load Animation',
@@ -102,7 +102,7 @@ class AnimPanel(AppShell):
             scrolledlist_items = self['animList'])
         self.AnimEntry.place(x=240,y=10,anchor=NW)
 
-        
+
         self.playRateEntry = self.createcomponent(
             'playRateMenu', (), None,
             Pmw.ComboBox, (actorFrame,),
@@ -133,7 +133,7 @@ class AnimPanel(AppShell):
             command = self.updateDisplay,
             variable = self.unitsVar)
         self.displayButton.place(x=120,y=77,anchor=NW)
-        
+
         ## scale control
         frameFrame = Frame(actorFrame, relief = SUNKEN, bd = 1)
         self.minLabel = self.createcomponent(
@@ -158,7 +158,7 @@ class AnimPanel(AppShell):
             text = 24)
         self.maxLabel.pack(side = LEFT)
         frameFrame.pack(side = LEFT, expand = 1, fill = X)
-        
+
         ## button contorl
         ButtomFrame = Frame(actorFrame, relief = SUNKEN, bd = 1,borderwidth=5)
         self.toStartButton = self.createcomponent(
@@ -168,7 +168,7 @@ class AnimPanel(AppShell):
             width = 8,
             command = self.resetAllToZero)
         self.toStartButton.pack(side = LEFT, expand = 1, fill = X)
-        
+
         self.playButton = self.createcomponent(
             'playButton', (), None,
             Button, (ButtomFrame,),
@@ -214,14 +214,14 @@ class AnimPanel(AppShell):
         #################################################################
         # updateList(self)
         # This function will update the list of animations that the Actor
-        # currently has into the combo box widget. 
+        # currently has into the combo box widget.
         #################################################################
         self.ignore('DataH_loadFinish'+self.nodeName)
         del self.loaderWindow
         self['animList'] = self['actor'].getAnimNames()
         animL = self['actor'].getAnimNames()
         self.AnimEntry.setlist(animL)
-            
+
 
     def removeAnim(self):
         #################################################################
@@ -308,7 +308,7 @@ class AnimPanel(AppShell):
                 self.stopButton.config(state=DISABLED)
                 return Task.done
         else:
-            self.gotoT(self.currTime)    
+            self.gotoT(self.currTime)
         return Task.cont
 
     def stop(self):
@@ -329,7 +329,7 @@ class AnimPanel(AppShell):
         # the current animation. Most important thing this function do is
         # to recalculate all variables to fit the selected animation
         #################################################################
-        self.animName = self.AnimEntry.get()        
+        self.animName = self.AnimEntry.get()
         playRate = '%0.1f' % self['actor'].getPlayRate(self.animName)
         if playRate not in self.rateList:
             def strCmp(a, b):
@@ -376,7 +376,7 @@ class AnimPanel(AppShell):
         else:
             self.minLabel['text'] = '0.0'
             self.maxLabel['text'] = "%.2f" % self.duration
-            self.frameControl.configure(from_ = 0.0, 
+            self.frameControl.configure(from_ = 0.0,
                                         to = self.duration,
                                         resolution = 0.01)
 
@@ -429,7 +429,7 @@ class AnimPanel(AppShell):
         #################################################################
         self.dragMode = True
         return
-    
+
     def resetAllToZero(self):
         #################################################################
         # resetAllToZero(self)
@@ -536,8 +536,8 @@ class LoadAnimPanel(AppShell):
 
         mainFrame.pack(expand = 1, fill = BOTH)
 
-        
-        
+
+
     def onDestroy(self, event):
         messenger.send('AWL_close',[self.nodeName])
         '''

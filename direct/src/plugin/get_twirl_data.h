@@ -1,16 +1,15 @@
-// Filename: get_twirl_data.h
-// Created by:  drose (24Aug11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file get_twirl_data.h
+ * @author drose
+ * @date 2011-08-24
+ */
 
 #ifndef GET_TWIRL_DATA_H
 #define GET_TWIRL_DATA_H
@@ -26,4 +25,3 @@ bool get_twirl_data(unsigned char data[], size_t data_length, int step,
                     int bg_r, int bg_g, int bg_b);
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: pview.cxx
-// Created by:  drose (25Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pview.cxx
+ * @author drose
+ * @date 2002-02-25
+ */
 
 #include "pandaFramework.h"
 #include "pandaSystem.h"
@@ -28,9 +27,9 @@
 #include "preprocess_argv.h"
 #include "graphicsPipeSelection.h"
 
-// By including checkPandaVersion.h, we guarantee that runtime
-// attempts to run pview will fail if it inadvertently links with the
-// wrong version of libdtool.so/.dll.
+// By including checkPandaVersion.h, we guarantee that runtime attempts to run
+// pview will fail if it inadvertently links with the wrong version of
+// libdtool.so.dll.
 
 #include "checkPandaVersion.h"
 
@@ -70,7 +69,7 @@ event_W(const Event *, void *) {
     WindowFramework *old_window = framework.get_window(0);
     GraphicsOutput *win = old_window->get_graphics_output();
     pipe = win->get_pipe();
-    //    gsg = win->get_gsg();
+    // gsg = win->get_gsg();
   }
 
   WindowFramework *window = framework.open_window(pipe, gsg);
@@ -89,7 +88,7 @@ event_F(const Event *, void *) {
 
 void
 event_Enter(const Event *, void *) {
-  // alt-enter: toggle between window/fullscreen in the same scene.
+  // alt-enter: toggle between windowfullscreen in the same scene.
 
   // If we already have a window, use the same GSG.
   GraphicsPipe *pipe = (GraphicsPipe *)NULL;
@@ -112,7 +111,7 @@ event_Enter(const Event *, void *) {
   // set the toggle
   props.set_fullscreen(!props.get_fullscreen());
   int flags = GraphicsPipe::BF_require_window;
-  
+
   WindowFramework *window = framework.open_window(props, flags, pipe, gsg);
   if (window != (WindowFramework *)NULL) {
     window->enable_keyboard();
@@ -153,21 +152,20 @@ event_0(const Event *event, void *) {
   DisplayRegion *dr = buffer->make_display_region();
   dr->set_camera(NodePath(wf->get_camera(0)));
 
-  // Make the clear color on the buffer be yellow, so it's obviously
-  // different from the main scene's background color.
+  // Make the clear color on the buffer be yellow, so it's obviously different
+  // from the main scene's background color.
   buffer->set_clear_color(LColor(1, 1, 0, 0));
 
-  // Apply the offscreen buffer's texture to a card in the main
-  // window.
+  // Apply the offscreen buffer's texture to a card in the main window.
   CardMaker cm("card");
   cm.set_frame(0, 1, 0, 1);
   NodePath card_np(cm.generate());
-  
+
   card_np.reparent_to(wf->get_render_2d());
   card_np.set_texture(buffer->get_texture());
 }
 
-void 
+void
 usage() {
   cerr <<
     "\n"
@@ -175,7 +173,7 @@ usage() {
     "       pview -h\n\n";
 }
 
-void 
+void
 help() {
   usage();
   cerr <<
@@ -188,7 +186,7 @@ help() {
     "      Convert and play animations, if loading an external file type\n"
     "      (like .mb) directly and if the converter supports animations.\n"
     "      Also implicitly enables the animation controls.\n\n"
-    
+
     "  -c\n"
     "      Automatically center models within the viewing window on startup.\n"
     "      This can also be achieved with the 'c' hotkey at runtime.\n\n"
@@ -221,12 +219,12 @@ help() {
 
     "  -V\n"
     "      Report the current version of Panda, and exit.\n\n"
-    
+
     "  -h\n"
     "      Display this help text.\n\n";
 }
 
-void 
+void
 report_version() {
   nout << "\n";
   PandaSystem *ps = PandaSystem::get_global_ptr();
@@ -273,7 +271,7 @@ main(int argc, char **argv) {
     case 'l':
       show_loading = true;
       break;
-      
+
     case 'i':
       hierarchy_match_flags |= PartGroup::HMF_ok_wrong_root_name;
       break;
@@ -339,8 +337,8 @@ main(int argc, char **argv) {
       loading->set_align(TextNode::A_center);
       loading->set_text("Loading...");
 
-      // Allow a couple of frames to go by so the window will be fully
-      // created and the text will be visible.
+      // Allow a couple of frames to go by so the window will be fully created
+      // and the text will be visible.
       Thread *current_thread = Thread::get_current_thread();
       framework.do_frame(current_thread);
       framework.do_frame(current_thread);
@@ -370,7 +368,7 @@ main(int argc, char **argv) {
 
     // Make sure the textures are preloaded.
     framework.get_models().prepare_scene(window->get_graphics_output()->get_gsg());
-    
+
     loading_np.remove_node();
 
     if (apply_lighting) {

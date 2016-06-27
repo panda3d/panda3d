@@ -1,16 +1,15 @@
-// Filename: cppExtensionType.h
-// Created by:  drose (21Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppExtensionType.h
+ * @author drose
+ * @date 1999-10-21
+ */
 
 #ifndef CPPEXTENSIONTYPE_H
 #define CPPEXTENSIONTYPE_H
@@ -23,12 +22,11 @@
 class CPPScope;
 class CPPIdentifier;
 
-///////////////////////////////////////////////////////////////////
-//       Class : CPPExtensionType
-// Description : Base class of enum, class, struct, and union types.
-//               An instance of the base class (instead of one of
-//               the specializations) is used for forward references.
-////////////////////////////////////////////////////////////////////
+/**
+ * Base class of enum, class, struct, and union types.  An instance of the
+ * base class (instead of one of the specializations) is used for forward
+ * references.
+ */
 class CPPExtensionType : public CPPType {
 public:
   enum Type {
@@ -36,6 +34,8 @@ public:
     T_class,
     T_struct,
     T_union,
+    T_enum_class,
+    T_enum_struct,
   };
 
   CPPExtensionType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
@@ -48,6 +48,8 @@ public:
   virtual bool is_incomplete() const;
   virtual bool is_tbd() const;
   virtual bool is_trivial() const;
+  virtual bool is_default_constructible() const;
+  virtual bool is_copy_constructible() const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,

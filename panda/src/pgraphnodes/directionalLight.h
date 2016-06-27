@@ -1,16 +1,15 @@
-// Filename: directionalLight.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file directionalLight.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef DIRECTIONALLIGHT_H
 #define DIRECTIONALLIGHT_H
@@ -19,11 +18,10 @@
 
 #include "lightLensNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DirectionalLight
-// Description : A light shining from infinitely far away in a
-//               particular direction, like sunlight.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light shining from infinitely far away in a particular direction, like
+ * sunlight.
+ */
 class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightLensNode {
 PUBLISHED:
   DirectionalLight(const string &name);
@@ -43,12 +41,16 @@ public:
 PUBLISHED:
   INLINE const LColor &get_specular_color() const FINAL;
   INLINE void set_specular_color(const LColor &color);
+  INLINE void clear_specular_color();
+  MAKE_PROPERTY(specular_color, get_specular_color, set_specular_color);
 
   INLINE const LPoint3 &get_point() const;
   INLINE void set_point(const LPoint3 &point);
+  MAKE_PROPERTY(point, get_point, set_point);
 
   INLINE const LVector3 &get_direction() const;
   INLINE void set_direction(const LVector3 &direction);
+  MAKE_PROPERTY(direction, get_direction, set_direction);
 
   virtual int get_class_priority() const;
 
@@ -57,6 +59,8 @@ public:
                     int light_id);
 
 private:
+  bool _has_specular_color;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:

@@ -1,180 +1,106 @@
-// Filename: lvecBase3_src.I
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvecBase3_src.I
+ * @author drose
+ * @date 2000-03-08
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase3)::
-FLOATNAME(LVecBase3)() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase3)::
-FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase3) &copy) : _v(copy._v) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
-operator = (const FLOATNAME(LVecBase3) &copy) {
-  TAU_PROFILE("void LVecBase3::operator =(LVecBase3 &)", " ", TAU_USER);
-  _v = copy._v;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Fill Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
-operator = (FLOATTYPE fill_value) {
-  fill(fill_value);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 FLOATNAME(LVecBase3)(FLOATTYPE fill_value) {
   fill(fill_value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 FLOATNAME(LVecBase3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
   TAU_PROFILE("LVecBase3::LVecBase3(FLOATTYPE, ...)", " ", TAU_USER);
   _v(0) = x;
   _v(1) = y;
   _v(2) = z;
-//  set(x, y, z);
+// set(x, y, z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z) {
   set(copy[0], copy[1], z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::zero Named Constructor
-//       Access: Public
-//  Description: Returns a zero-length vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a zero-length vector.
+ */
 INLINE_LINMATH const FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
 zero() {
   return _zero;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::unit_x Named Constructor
-//       Access: Public
-//  Description: Returns a unit X vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a unit X vector.
+ */
 INLINE_LINMATH const FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
 unit_x() {
   return _unit_x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::unit_y Named Constructor
-//       Access: Public
-//  Description: Returns a unit Y vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a unit Y vector.
+ */
 INLINE_LINMATH const FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
 unit_y() {
   return _unit_y;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::unit_z Named Constructor
-//       Access: Public
-//  Description: Returns a unit Z vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a unit Z vector.
+ */
 INLINE_LINMATH const FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
 unit_z() {
   return _unit_z;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase3)::
-~FLOATNAME(LVecBase3)() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Indexing Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 operator [](int i) const {
   nassertr(i >= 0 && i < 3, 0);
   return _v(i);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Indexing Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LVecBase3)::
 operator [](int i) {
   nassertr(i >= 0 && i < 3, _v(0));
   return _v(i);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::size
-//       Access: Public, Static
-//  Description: Returns 3: the number of components of a LVecBase3.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(LVecBase3)::
+/**
+ * Returns 3: the number of components of a LVecBase3.
+ */
+CONSTEXPR int FLOATNAME(LVecBase3)::
 size() {
   return 3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::is_nan
-//       Access: Public
-//  Description: Returns true if any component of the vector is
-//               not-a-number, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any component of the vector is not-a-number, false
+ * otherwise.
+ */
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 is_nan() const {
 #ifdef FLOATTYPE_IS_INT
@@ -185,235 +111,189 @@ is_nan() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_cell
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_cell(int i) const {
   nassertr(i >= 0 && i < 3, 0);
   return _v(i);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_x
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_x() const {
   return _v(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_y
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_y() const {
   return _v(1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_z
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_z() const {
   return _v(2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::set_cell
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_cell(int i, FLOATTYPE value) {
   nassertv(i >= 0 && i < 3);
   _v(i) = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::set_x
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_x(FLOATTYPE value) {
   _v(0) = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::set_y
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_y(FLOATTYPE value) {
   _v(1) = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::set_z
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_z(FLOATTYPE value) {
   _v(2) = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_xy
-//       Access: Public
-//  Description: Returns a 2-component vector that shares just the
-//               first two components of this vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a 2-component vector that shares just the first two components of
+ * this vector.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase3)::
 get_xy() const {
   return FLOATNAME(LVecBase2)(_v(0), _v(1));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_xz
-//       Access: Public
-//  Description: Returns a 2-component vector that shares just the
-//               first and last components of this vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a 2-component vector that shares just the first and last components
+ * of this vector.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase3)::
 get_xz() const {
   return FLOATNAME(LVecBase2)(_v(0), _v(2));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_yz
-//       Access: Public
-//  Description: Returns a 2-component vector that shares just the
-//               last two components of this vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a 2-component vector that shares just the last two components of
+ * this vector.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase3)::
 get_yz() const {
   return FLOATNAME(LVecBase2)(_v(1), _v(2));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::add_to_cell
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 add_to_cell(int i, FLOATTYPE value) {
   nassertv(i >= 0 && i < 3);
   _v(i) += value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::add_x
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 add_x(FLOATTYPE value) {
   _v(0) += value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::add_y
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 add_y(FLOATTYPE value) {
   _v(1) += value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::add_z
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 add_z(FLOATTYPE value) {
   _v(2) += value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_data
-//       Access: Public
-//  Description: Returns the address of the first of the three data
-//               elements in the vector.  The remaining elements
-//               occupy the next positions consecutively in memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the address of the first of the three data elements in the vector.
+ * The remaining elements occupy the next positions consecutively in memory.
+ */
 INLINE_LINMATH const FLOATTYPE *FLOATNAME(LVecBase3)::
 get_data() const {
   return &_v(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_num_components
-//       Access: Public
-//  Description: Returns the number of elements in the vector, three.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(LVecBase3)::
-get_num_components() const {
+/**
+ * Returns the number of elements in the vector, three.
+ */
+CONSTEXPR int FLOATNAME(LVecBase3)::
+get_num_components() {
   return 3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::begin
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the
+ * matrix, STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)::iterator FLOATNAME(LVecBase3)::
 begin() {
   return &_v(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::end
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the
+ * matrix, STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)::iterator FLOATNAME(LVecBase3)::
 end() {
   return begin() + num_components;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::begin
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the
+ * matrix, STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)::const_iterator FLOATNAME(LVecBase3)::
 begin() const {
   return &_v(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::end
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the
+ * matrix, STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)::const_iterator FLOATNAME(LVecBase3)::
 end() const {
   return begin() + num_components;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::fill
-//       Access: Published
-//  Description: Sets each element of the vector to the indicated
-//               fill_value.  This is particularly useful for
-//               initializing to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets each element of the vector to the indicated fill_value.  This is
+ * particularly useful for initializing to zero.
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 fill(FLOATTYPE fill_value) {
   TAU_PROFILE("void LVecBase3::fill()", " ", TAU_USER);
@@ -426,11 +306,9 @@ fill(FLOATTYPE fill_value) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::set
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
   TAU_PROFILE("void LVecBase3::set()", " ", TAU_USER);
@@ -439,11 +317,9 @@ set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
   _v(2) = z;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::dot
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 dot(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("FLOATTYPE LVecBase3::dot()", " ", TAU_USER);
@@ -454,12 +330,9 @@ dot(const FLOATNAME(LVecBase3) &other) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::length_squared
-//       Access: Published
-//  Description: Returns the square of the vector's length, cheap and
-//               easy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the square of the vector's length, cheap and easy.
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 length_squared() const {
   TAU_PROFILE("FLOATTYPE LVecBase3::length_squared()", " ", TAU_USER);
@@ -471,12 +344,9 @@ length_squared() const {
 }
 
 #ifndef FLOATTYPE_IS_INT
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::length
-//       Access: Published
-//  Description: Returns the length of the vector, by the Pythagorean
-//               theorem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the length of the vector, by the Pythagorean theorem.
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 length() const {
   TAU_PROFILE("FLOATTYPE LVecBase3::length()", " ", TAU_USER);
@@ -487,13 +357,10 @@ length() const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::normalize
-//       Access: Published
-//  Description: Normalizes the vector in place.  Returns true if the
-//               vector was normalized, false if it was a zero-length
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normalizes the vector in place.  Returns true if the vector was normalized,
+ * false if it was a zero-length vector.
+ */
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 normalize() {
   TAU_PROFILE("bool LVecBase3::normalize()", " ", TAU_USER);
@@ -509,24 +376,32 @@ normalize() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::project
-//       Access: Published
-//  Description: Returns a new vector representing the projection of
-//               this vector onto another one.  The resulting vector
-//               will be a scalar multiple of onto.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normalizes the vector and returns the normalized vector as a copy.  If the
+ * vector was a zero-length vector, a zero length vector will be returned.
+ */
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
+normalized() const {
+  FLOATTYPE l2 = length_squared();
+  if (l2 == (FLOATTYPE)0.0f) {
+    return FLOATNAME(LVecBase3)(0.0f);
+  }
+  return (*this) / csqrt(l2);
+}
+
+/**
+ * Returns a new vector representing the projection of this vector onto
+ * another one.  The resulting vector will be a scalar multiple of onto.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 project(const FLOATNAME(LVecBase3) &onto) const {
   return onto * (dot(onto) / onto.length_squared());
 }
 #endif  // FLOATTYPE_IS_INT
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::cross
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 cross(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("LVecBase3 LVecBase3::cross()", " ", TAU_USER);
@@ -539,26 +414,20 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::operator <
-//       Access: Published
-//  Description: This performs a lexicographical comparison.  It's of
-//               questionable mathematical meaning, but sometimes has
-//               a practical purpose for sorting unique vectors,
-//               especially in an STL container.  Also see
-//               compare_to().
-////////////////////////////////////////////////////////////////////
+/**
+ * This performs a lexicographical comparison.  It's of questionable
+ * mathematical meaning, but sometimes has a practical purpose for sorting
+ * unique vectors, especially in an STL container.  Also see compare_to().
+ */
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 operator < (const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("bool LVecBase3::operator <(const LVecBase3 &)", " ", TAU_USER);
   return (compare_to(other) < 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 operator == (const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("bool LVecBase3::operator ==(const LVecBase3 &)", " ", TAU_USER);
@@ -571,23 +440,19 @@ operator == (const FLOATNAME(LVecBase3) &other) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::operator !=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 operator != (const FLOATNAME(LVecBase3) &other) const {
   return !operator == (other);
 }
 
 #ifndef FLOATTYPE_IS_INT
-////////////////////////////////////////////////////////////////////
-//     Function: get_standardized_rotation
-//       Access: file
-//  Description: return value in the range -180.0 to 179.99999.
-//     See Also: get_standardized_hpr
-////////////////////////////////////////////////////////////////////
+/**
+ * return value in the range -180.0 to 179.99999. See Also:
+ * get_standardized_hpr
+ */
 static INLINE_LINMATH FLOATTYPE
 get_standardized_rotation(FLOATTYPE angle_in_degrees) {
   if (angle_in_degrees<0.0) {
@@ -595,33 +460,26 @@ get_standardized_rotation(FLOATTYPE angle_in_degrees) {
   } else {
     angle_in_degrees = fmod(angle_in_degrees, FLOATCONST(360.0));
   }
-  // This can be changed to return values in the range 0.0 to 359.99999
-  // by skipping this next part and returning now.
-  
+  // This can be changed to return values in the range 0.0 to 359.99999 by
+  // skipping this next part and returning now.
+
   return (angle_in_degrees<FLOATCONST(180.0))?
       angle_in_degrees:
       angle_in_degrees - FLOATCONST(360.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_standardized_hpr
-//       Access: Published
-//  Description: Try to un-spin the hpr to a standard form.  Like
-//               all standards, someone decides between many
-//               arbitrary possible standards.  This function assumes
-//               that 0 and 360 are the same, as is 720 and
-//               -360.  Also 180 and -180 are the same.  Another
-//               example is -90 and 270.
-//               Each element will be in the range -180.0 to 179.99999.
-//               The original usage of this function is for human
-//               readable output.
-//
-//               It doesn't work so well for asserting that foo_hpr 
-//               is roughly equal to bar_hpr.  Try using
-//               LQuaternionf::is_same_direction() for that.
-//     See Also: get_standardized_rotation,
-//               LQuaternion::is_same_direction
-////////////////////////////////////////////////////////////////////
+/**
+ * Try to un-spin the hpr to a standard form.  Like all standards, someone
+ * decides between many arbitrary possible standards.  This function assumes
+ * that 0 and 360 are the same, as is 720 and -360.  Also 180 and -180 are the
+ * same.  Another example is -90 and 270. Each element will be in the range
+ * -180.0 to 179.99999. The original usage of this function is for human
+ * readable output.
+ *
+ * It doesn't work so well for asserting that foo_hpr is roughly equal to
+ * bar_hpr.  Try using LQuaternionf::is_same_direction() for that.  See Also:
+ * get_standardized_rotation, LQuaternion::is_same_direction
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 get_standardized_hpr() const {
   return FLOATNAME(LVecBase3)(
@@ -631,12 +489,10 @@ get_standardized_hpr() const {
 }
 #endif  // !FLOATTYPE_IS_INT
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::compare_to
-//       Access: Published
-//  Description: This flavor of compare_to uses a default threshold
-//               value based on the numeric type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of compare_to uses a default threshold value based on the
+ * numeric type.
+ */
 INLINE_LINMATH int FLOATNAME(LVecBase3)::
 compare_to(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("int LVecBase3::compare_to(const LVecBase3 &)", " ", TAU_USER);
@@ -656,41 +512,34 @@ compare_to(const FLOATNAME(LVecBase3) &other) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_hash
-//       Access: Published
-//  Description: Returns a suitable hash for phash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable hash for phash_map.
+ */
 INLINE_LINMATH size_t FLOATNAME(LVecBase3)::
 get_hash() const {
   TAU_PROFILE("size_t LVecBase3::get_hash()", " ", TAU_USER);
   return add_hash(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::add_hash
-//       Access: Published
-//  Description: Adds the vector into the running hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector into the running hash.
+ */
 INLINE_LINMATH size_t FLOATNAME(LVecBase3)::
 add_hash(size_t hash) const {
   TAU_PROFILE("size_t LVecBase3::add_hash(size_t)", " ", TAU_USER);
 #ifdef FLOATTYPE_IS_INT
-  int_hash ihasher;
-  hash = ihasher.add_hash(hash, _v(0));
-  hash = ihasher.add_hash(hash, _v(1));
-  hash = ihasher.add_hash(hash, _v(2));
+  hash = int_hash::add_hash(hash, _v(0));
+  hash = int_hash::add_hash(hash, _v(1));
+  hash = int_hash::add_hash(hash, _v(2));
   return hash;
 #else
   return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::generate_hash
-//       Access: Published
-//  Description: Adds the vector to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector to the indicated hash generator.
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 generate_hash(ChecksumHashGenerator &hashgen) const {
   TAU_PROFILE("LVecBase3::generate_hash(ChecksumHashGenerator &)", " ", TAU_USER);
@@ -704,15 +553,11 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::compare_to
-//       Access: Published
-//  Description: Sorts vectors lexicographically, componentwise.
-//               Returns a number less than 0 if this vector sorts
-//               before the other one, greater than zero if it sorts
-//               after, 0 if they are equivalent (within the indicated
-//               tolerance).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts vectors lexicographically, componentwise.  Returns a number less than
+ * 0 if this vector sorts before the other one, greater than zero if it sorts
+ * after, 0 if they are equivalent (within the indicated tolerance).
+ */
 INLINE_LINMATH int FLOATNAME(LVecBase3)::
 compare_to(const FLOATNAME(LVecBase3) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("int LVecBase3::compare_to(const LVecBase3 &, FLOATTYPE)", " ", TAU_USER);
@@ -728,22 +573,18 @@ compare_to(const FLOATNAME(LVecBase3) &other, FLOATTYPE threshold) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::get_hash
-//       Access: Published
-//  Description: Returns a suitable hash for phash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable hash for phash_map.
+ */
 INLINE_LINMATH size_t FLOATNAME(LVecBase3)::
 get_hash(FLOATTYPE threshold) const {
   TAU_PROFILE("size_t LVecBase3::get_hash(FLOATTYPE)", " ", TAU_USER);
   return add_hash(0, threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::add_hash
-//       Access: Published
-//  Description: Adds the vector into the running hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector into the running hash.
+ */
 INLINE_LINMATH size_t FLOATNAME(LVecBase3)::
 add_hash(size_t hash, FLOATTYPE threshold) const {
   TAU_PROFILE("LVecBase3::add_hash(size_t, FLOATTYPE)", " ", TAU_USER);
@@ -754,11 +595,9 @@ add_hash(size_t hash, FLOATTYPE threshold) const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::generate_hash
-//       Access: Published
-//  Description: Adds the vector to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector to the indicated hash generator.
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
   TAU_PROFILE("LVecBase3::generate_hash(ChecksumHashGenerator &, FLOATTYPE)", " ", TAU_USER);
@@ -768,11 +607,9 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
 }
 #endif  // FLOATTYPE_IS_INT
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::unary -
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator - () const {
 #ifdef HAVE_EIGEN
@@ -782,11 +619,9 @@ operator - () const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::vector + vector
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator + (const FLOATNAME(LVecBase3) &other) const {
 #ifdef HAVE_EIGEN
@@ -798,11 +633,9 @@ operator + (const FLOATNAME(LVecBase3) &other) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::vector - vector
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator - (const FLOATNAME(LVecBase3) &other) const {
 #ifdef HAVE_EIGEN
@@ -814,11 +647,9 @@ operator - (const FLOATNAME(LVecBase3) &other) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::vector * scalar
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator * (FLOATTYPE scalar) const {
 #ifdef HAVE_EIGEN
@@ -830,11 +661,9 @@ operator * (FLOATTYPE scalar) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::vector / scalar
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator / (FLOATTYPE scalar) const {
 #ifdef FLOATTYPE_IS_INT
@@ -847,11 +676,9 @@ operator / (FLOATTYPE scalar) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::operator +=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator += (const FLOATNAME(LVecBase3) &other) {
 #ifdef HAVE_EIGEN
@@ -863,11 +690,9 @@ operator += (const FLOATNAME(LVecBase3) &other) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::operator -=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator -= (const FLOATNAME(LVecBase3) &other) {
 #ifdef HAVE_EIGEN
@@ -879,11 +704,9 @@ operator -= (const FLOATNAME(LVecBase3) &other) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::operator *=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator *= (FLOATTYPE scalar) {
 #ifdef HAVE_EIGEN
@@ -895,11 +718,9 @@ operator *= (FLOATTYPE scalar) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::operator /=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator /= (FLOATTYPE scalar) {
 #ifdef FLOATTYPE_IS_INT
@@ -912,11 +733,9 @@ operator /= (FLOATTYPE scalar) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::componentwise_mult
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 componentwise_mult(const FLOATNAME(LVecBase3) &other) {
 #ifdef HAVE_EIGEN
@@ -928,11 +747,9 @@ componentwise_mult(const FLOATNAME(LVecBase3) &other) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::fmax
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 fmax(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("LVecBase3::fmax()", " ", TAU_USER);
@@ -945,11 +762,9 @@ fmax(const FLOATNAME(LVecBase3) &other) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::fmin
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 fmin(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("LVecBase3::fmin()", " ", TAU_USER);
@@ -962,22 +777,18 @@ fmin(const FLOATNAME(LVecBase3) &other) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::cross product (with assignment)
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 cross_into(const FLOATNAME(LVecBase3) &other) {
   (*this) = cross(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::almost_equal
-//       Access: Published
-//  Description: Returns true if two vectors are memberwise equal
-//               within a specified tolerance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if two vectors are memberwise equal within a specified
+ * tolerance.
+ */
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 almost_equal(const FLOATNAME(LVecBase3) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("bool LVecBase3::almost_equal(LVecBase3 &, FLOATTYPE)", " ", TAU_USER);
@@ -986,23 +797,19 @@ almost_equal(const FLOATNAME(LVecBase3) &other, FLOATTYPE threshold) const {
           IS_THRESHOLD_EQUAL(_v(2), other._v(2), threshold));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::almost_equal
-//       Access: Published
-//  Description: Returns true if two vectors are memberwise equal
-//               within a default tolerance based on the numeric type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if two vectors are memberwise equal within a default tolerance
+ * based on the numeric type.
+ */
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 almost_equal(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("bool LVecBase3::almost_equal(LVecBase3 &)", " ", TAU_USER);
   return almost_equal(other, NEARLY_ZERO(FLOATTYPE));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 output(ostream &out) const {
   out << MAYBE_ZERO(_v(0)) << " "
@@ -1010,17 +817,13 @@ output(ostream &out) const {
       << MAYBE_ZERO(_v(2));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::write_datagram_fixed
-//       Access: Published
-//  Description: Writes the vector to the Datagram using add_float32()
-//               or add_float64(), depending on the type of floats in
-//               the vector, regardless of the setting of
-//               Datagram::set_stdfloat_double().  This is appropriate
-//               when you want to write a fixed-width value to the
-//               datagram, especially when you are not writing a bam
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the vector to the Datagram using add_float32() or add_float64(),
+ * depending on the type of floats in the vector, regardless of the setting of
+ * Datagram::set_stdfloat_double().  This is appropriate when you want to
+ * write a fixed-width value to the datagram, especially when you are not
+ * writing a bam file.
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 write_datagram_fixed(Datagram &destination) const {
 #if FLOATTOKEN == 'i'
@@ -1038,12 +841,10 @@ write_datagram_fixed(Datagram &destination) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::read_datagram_fixed
-//       Access: Published
-//  Description: Reads the vector from the Datagram using get_float32()
-//               or get_float64().  See write_datagram_fixed().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the vector from the Datagram using get_float32() or get_float64().
+ * See write_datagram_fixed().
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 read_datagram_fixed(DatagramIterator &source) {
 #if FLOATTOKEN == 'i'
@@ -1061,14 +862,11 @@ read_datagram_fixed(DatagramIterator &source) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::write_datagram
-//       Access: Published
-//  Description: Writes the vector to the Datagram using
-//               add_stdfloat().  This is appropriate when you want to
-//               write the vector using the standard width setting,
-//               especially when you are writing a bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the vector to the Datagram using add_stdfloat().  This is
+ * appropriate when you want to write the vector using the standard width
+ * setting, especially when you are writing a bam file.
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 write_datagram(Datagram &destination) const {
 #if FLOATTOKEN == 'i'
@@ -1082,11 +880,9 @@ write_datagram(Datagram &destination) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::read_datagram
-//       Access: Published
-//  Description: Reads the vector from the Datagram using get_stdfloat().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the vector from the Datagram using get_stdfloat().
+ */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 read_datagram(DatagramIterator &source) {
 #if FLOATTOKEN == 'i'

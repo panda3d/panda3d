@@ -1,16 +1,15 @@
-// Filename: interrogateType.h
-// Created by:  drose (31Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateType.h
+ * @author drose
+ * @date 2000-07-31
+ */
 
 #ifndef INTERROGATETYPE_H
 #define INTERROGATETYPE_H
@@ -25,10 +24,9 @@ class IndexRemapper;
 class CPPType;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateType
-// Description : An internal representation of a type.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a type.
+ */
 class EXPCL_INTERROGATEDB InterrogateType : public InterrogateComponent {
 public:
   InterrogateType(InterrogateModuleDef *def = NULL);
@@ -67,6 +65,7 @@ public:
   INLINE int get_array_size() const;
 
   INLINE bool is_enum() const;
+  INLINE bool is_scoped_enum() const;
   INLINE int number_of_enum_values() const;
   INLINE const string &get_enum_value_name(int n) const;
   INLINE const string &get_enum_value_scoped_name(int n) const;
@@ -138,6 +137,7 @@ private:
     F_unpublished          = 0x100000,
     F_typedef              = 0x200000,
     F_array                = 0x400000,
+    F_scoped_enum          = 0x800000,
   };
 
 public:
@@ -170,9 +170,9 @@ public:
   };
 
 public:
-  // This nested class must be declared public just so we can declare
-  // the external ostream and istream I/O operator functions, on the
-  // SGI compiler.  Arguably a compiler bug, but what can you do.
+  // This nested class must be declared public just so we can declare the
+  // external ostream and istream IO operator functions, on the SGI compiler.
+  // Arguably a compiler bug, but what can you do.
   class Derivation {
   public:
     void output(ostream &out) const;
@@ -209,11 +209,11 @@ private:
   Types _nested_types;
 
 public:
-  // The rest of the members in this class aren't part of the public
-  // interface to interrogate, but are used internally as the
-  // interrogate database is built.  They are valid only during the
-  // session of interrogate that generates the database, and will not
-  // be filled in when the database is reloaded from disk.
+  // The rest of the members in this class aren't part of the public interface
+  // to interrogate, but are used internally as the interrogate database is
+  // built.  They are valid only during the session of interrogate that
+  // generates the database, and will not be filled in when the database is
+  // reloaded from disk.
   CPPType *_cpptype;
   CPPScope *_cppscope;
 

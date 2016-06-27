@@ -12,25 +12,17 @@ PathFollow::PathFollow(AICharacter *ai_ch, float follow_wt) {
 PathFollow::~PathFollow() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : add_to_path
-// Description : This function adds the positions generated from a pathfind or a simple
-//               path follow behavior to the _path list.
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function adds the positions generated from a pathfind or a simple path
+ * follow behavior to the _path list.
+ */
 void PathFollow::add_to_path(LVecBase3 pos) {
     _path.push_back(pos);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : start
-// Description : This function initiates the path follow behavior.
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function initiates the path follow behavior.
+ */
 void PathFollow::start(string type) {
     _type = type;
   _start = true;
@@ -43,24 +35,20 @@ void PathFollow::start(string type) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : do_follow
-// Description : This function allows continuous path finding by ai chars. There are 2
-//               ways in which this is implemented.
-//               1. The character re-calculates the optimal path everytime the target
-//                  changes its position. Less computationally expensive.
-//               2. The character continuosly re-calculates its optimal path to the
-//                  target. This is used in a scenario where the ai chars have to avoid
-//                  other ai chars. More computationally expensive.
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function allows continuous path finding by ai chars.  There are 2 ways
+ * in which this is implemented.  1. The character re-calculates the optimal
+ * path everytime the target changes its position.  Less computationally
+ * expensive.  2. The character continuosly re-calculates its optimal path to
+ * the target.  This is used in a scenario where the ai chars have to avoid
+ * other ai chars.  More computationally expensive.
+ */
 void PathFollow::do_follow() {
   if((_myClock->get_real_time() - _time) > 0.5) {
       if(_type=="pathfind") {
-      // This 'if' statement when 'true' causes the path to be re-calculated irrespective of target position.
-      // This is done when _dynamice_avoid is active. More computationally expensive.
+      // This 'if' statement when 'true' causes the path to be re-calculated
+      // irrespective of target position.  This is done when _dynamice_avoid
+      // is active.  More computationally expensive.
       if(_ai_char->_steering->_path_find_obj->_dynamic_avoid) {
         _ai_char->_steering->_path_find_obj->do_dynamic_avoid();
         if(check_if_possible()) {
@@ -77,8 +65,9 @@ void PathFollow::do_follow() {
           }
         }
       }
-      // This 'if' statement causes the path to be re-calculated only when there is a change in target position.
-      // Less computationally expensive.
+      // This 'if' statement causes the path to be re-calculated only when
+      // there is a change in target position.  Less computationally
+      // expensive.
       else if(_ai_char->_steering->_path_find_obj->_path_find_target.get_pos(_ai_char->_window_render)
         != _ai_char->_steering->_path_find_obj->_prev_position) {
         if(check_if_possible()) {
@@ -109,14 +98,10 @@ void PathFollow::do_follow() {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : check_if_possible
-// Description : This function checks if the current positions of the ai char and the
-//               target char can be used to generate an optimal path.
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * This function checks if the current positions of the ai char and the target
+ * char can be used to generate an optimal path.
+ */
 bool PathFollow::check_if_possible() {
   Node* src = find_in_mesh(_ai_char->_steering->_path_find_obj->_nav_mesh, _ai_char->_ai_char_np.get_pos(_ai_char->_window_render), _ai_char->_steering->_path_find_obj->_grid_size);
   LVecBase3 _prev_position = _ai_char->_steering->_path_find_obj->_path_find_target.get_pos(_ai_char->_window_render);

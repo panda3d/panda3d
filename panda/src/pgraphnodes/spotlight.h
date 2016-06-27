@@ -1,16 +1,15 @@
-// Filename: spotlight.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file spotlight.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef SPOTLIGHT_H
 #define SPOTLIGHT_H
@@ -20,20 +19,16 @@
 #include "lightLensNode.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Spotlight
-// Description : A light originating from a single point in space, and
-//               shining in a particular direction, with a cone-shaped
-//               falloff.
-//
-//               The Spotlight frustum is defined using a Lens, so it
-//               can have any of the properties that a camera lens can
-//               have.
-//
-//               Note that the class is named Spotlight instead of
-//               SpotLight, because "spotlight" is a single English
-//               word, instead of two words.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light originating from a single point in space, and shining in a
+ * particular direction, with a cone-shaped falloff.
+ *
+ * The Spotlight frustum is defined using a Lens, so it can have any of the
+ * properties that a camera lens can have.
+ *
+ * Note that the class is named Spotlight instead of SpotLight, because
+ * "spotlight" is a single English word, instead of two words.
+ */
 class EXPCL_PANDA_PGRAPHNODES Spotlight : public LightLensNode {
 PUBLISHED:
   Spotlight(const string &name);
@@ -53,12 +48,20 @@ public:
 PUBLISHED:
   INLINE PN_stdfloat get_exponent() const FINAL;
   INLINE void set_exponent(PN_stdfloat exponent);
+  MAKE_PROPERTY(exponent, get_exponent, set_exponent);
 
   INLINE const LColor &get_specular_color() const FINAL;
   INLINE void set_specular_color(const LColor &color);
+  INLINE void clear_specular_color();
+  MAKE_PROPERTY(specular_color, get_specular_color, set_specular_color);
 
   INLINE const LVecBase3 &get_attenuation() const FINAL;
   INLINE void set_attenuation(const LVecBase3 &attenuation);
+  MAKE_PROPERTY(attenuation, get_attenuation, set_attenuation);
+
+  INLINE PN_stdfloat get_max_distance() const;
+  INLINE void set_max_distance(PN_stdfloat max_distance);
+  MAKE_PROPERTY(max_distance, get_max_distance, set_max_distance);
 
   virtual int get_class_priority() const;
 
@@ -76,6 +79,8 @@ private:
   CPT(RenderState) get_viz_state();
 
 private:
+  bool _has_specular_color;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:
@@ -91,6 +96,7 @@ private:
     PN_stdfloat _exponent;
     LColor _specular_color;
     LVecBase3 _attenuation;
+    PN_stdfloat _max_distance;
   };
 
   PipelineCycler<CData> _cycler;

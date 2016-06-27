@@ -1,16 +1,15 @@
-// Filename: lens.h
-// Created by:  drose (18Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lens.h
+ * @author drose
+ * @date 1999-02-18
+ */
 
 #ifndef LENS_H
 #define LENS_H
@@ -30,18 +29,15 @@
 
 class BoundingVolume;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Lens
-// Description : A base class for any number of different kinds of
-//               lenses, linear and otherwise.  Presently, this
-//               includes perspective and orthographic lenses.
-//
-//               A Lens object is the main part of a Camera node,
-//               which defines the fundamental interface to
-//               point-of-view for rendering.  Lenses are also used in
-//               other contexts, however; for instance, a Spotlight is
-//               also defined using a lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any number of different kinds of lenses, linear and
+ * otherwise.  Presently, this includes perspective and orthographic lenses.
+ *
+ * A Lens object is the main part of a Camera node, which defines the
+ * fundamental interface to point-of-view for rendering.  Lenses are also used
+ * in other contexts, however; for instance, a Spotlight is also defined using
+ * a lens.
+ */
 class EXPCL_PANDA_GOBJ Lens : public TypedWritableReferenceCount {
 public:
   Lens();
@@ -70,9 +66,12 @@ PUBLISHED:
 
   INLINE void set_change_event(const string &event);
   INLINE const string &get_change_event() const;
+  MAKE_PROPERTY(change_event, get_change_event, set_change_event);
 
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
+  MAKE_PROPERTY(coordinate_system, get_coordinate_system,
+                                   set_coordinate_system);
 
   void clear();
 
@@ -80,13 +79,16 @@ PUBLISHED:
   INLINE void set_film_size(PN_stdfloat width, PN_stdfloat height);
   INLINE void set_film_size(const LVecBase2 &film_size);
   INLINE const LVecBase2 &get_film_size() const;
+  MAKE_PROPERTY(film_size, get_film_size, set_film_size);
 
   INLINE void set_film_offset(PN_stdfloat x, PN_stdfloat y);
   INLINE void set_film_offset(const LVecBase2 &film_offset);
   INLINE const LVector2 &get_film_offset() const;
+  MAKE_PROPERTY(film_offset, get_film_offset, set_film_offset);
 
   INLINE void set_focal_length(PN_stdfloat focal_length);
   INLINE PN_stdfloat get_focal_length() const;
+  MAKE_PROPERTY(focal_length, get_focal_length, set_focal_length);
 
   void set_min_fov(PN_stdfloat min_fov);
   INLINE void set_fov(PN_stdfloat fov);
@@ -96,48 +98,60 @@ PUBLISHED:
   INLINE PN_stdfloat get_hfov() const;
   INLINE PN_stdfloat get_vfov() const;
   PN_stdfloat get_min_fov() const;
+  MAKE_PROPERTY(fov, get_fov, set_fov);
+  MAKE_PROPERTY(min_fov, get_min_fov, set_min_fov);
 
   INLINE void set_aspect_ratio(PN_stdfloat aspect_ratio);
   INLINE PN_stdfloat get_aspect_ratio() const;
+  MAKE_PROPERTY(aspect_ratio, get_aspect_ratio, set_aspect_ratio);
 
   INLINE void set_near(PN_stdfloat near_distance);
   INLINE PN_stdfloat get_near() const;
   INLINE void set_far(PN_stdfloat far_distance);
   INLINE PN_stdfloat get_far() const;
   INLINE void set_near_far(PN_stdfloat near_distance, PN_stdfloat far_distance);
+  MAKE_PROPERTY(near, get_near, set_near);
+  MAKE_PROPERTY(far, get_far, set_far);
 
   static PN_stdfloat get_default_near();
   static PN_stdfloat get_default_far();
-  
+
   INLINE void set_view_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   void set_view_hpr(const LVecBase3 &view_hpr);
   const LVecBase3 &get_view_hpr() const;
+  MAKE_PROPERTY(view_hpr, get_view_hpr, set_view_hpr);
+
   INLINE void set_view_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat i, PN_stdfloat j, PN_stdfloat k);
   void set_view_vector(const LVector3 &view_vector, const LVector3 &up_vector);
   const LVector3 &get_view_vector() const;
   const LVector3 &get_up_vector() const;
   LPoint3 get_nodal_point() const;
+  MAKE_PROPERTY(nodal_point, get_nodal_point);
 
   INLINE void set_interocular_distance(PN_stdfloat interocular_distance);
   INLINE PN_stdfloat get_interocular_distance() const;
   INLINE void set_convergence_distance(PN_stdfloat convergence_distance);
   INLINE PN_stdfloat get_convergence_distance() const;
+  MAKE_PROPERTY(interocular_distance, get_interocular_distance, set_interocular_distance);
+  MAKE_PROPERTY(convergence_distance, get_convergence_distance, set_convergence_distance);
 
   INLINE void set_view_mat(const LMatrix4 &view_mat);
   INLINE const LMatrix4 &get_view_mat() const;
   void clear_view_mat();
+  MAKE_PROPERTY(view_mat, get_view_mat, set_view_mat);
 
   void set_keystone(const LVecBase2 &keystone);
   INLINE const LVecBase2 &get_keystone() const;
   void clear_keystone();
+  MAKE_PROPERTY(keystone, get_keystone, set_keystone);
 
   void set_custom_film_mat(const LMatrix4 &custom_film_mat);
   INLINE const LMatrix4 &get_custom_film_mat() const;
   void clear_custom_film_mat();
-  
-  // These flags are passed in as the last parameter to control the
-  // behavior of set_frustum_from_corners().  See the documentation
-  // for that method for an explanation of each flag.
+
+  // These flags are passed in as the last parameter to control the behavior
+  // of set_frustum_from_corners().  See the documentation for that method for
+  // an explanation of each flag.
   enum FromCorners {
     FC_roll         = 0x0001,
     FC_camera_plane = 0x0002,
@@ -251,7 +265,7 @@ private:
   static void build_shear_mat(LMatrix4 &shear_mat,
                               const LPoint3 &cul, const LPoint3 &cur,
                               const LPoint3 &cll, const LPoint3 &clr);
-  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin,
                                       const LVector3 &vec);
 
 protected:
@@ -311,7 +325,7 @@ protected:
     string _change_event;
     UpdateSeq _last_change;
     CoordinateSystem _cs;
-    
+
     LVecBase2 _film_size;
     LVector2 _film_offset;
     PN_stdfloat _focal_length;
@@ -319,31 +333,31 @@ protected:
     PN_stdfloat _min_fov;
     PN_stdfloat _aspect_ratio;
     PN_stdfloat _near_distance, _far_distance;
-    
+
     LVecBase3 _view_hpr;
     LVector3 _view_vector, _up_vector;
     PN_stdfloat _interocular_distance;
     PN_stdfloat _convergence_distance;
     LVecBase2 _keystone;
     LMatrix4 _custom_film_mat;
-    
+
     LMatrix4 _film_mat, _film_mat_inv;
     LMatrix4 _lens_mat, _lens_mat_inv;
     LMatrix4 _projection_mat, _projection_mat_inv;
     LMatrix4 _projection_mat_left, _projection_mat_left_inv;
     LMatrix4 _projection_mat_right, _projection_mat_right_inv;
-    
+
     short _user_flags;
     short _comp_flags;
 
-    // The user may only specify two of these three parameters.
-    // Specifying the third parameter wipes out the first one specified.
-    // We therefore need to remember the order in which the user has
-    // specified these three parameters.  A bit of a mess.
+    // The user may only specify two of these three parameters.  Specifying
+    // the third parameter wipes out the first one specified.  We therefore
+    // need to remember the order in which the user has specified these three
+    // parameters.  A bit of a mess.
     char _focal_length_seq, _fov_seq, _film_size_seq;
-    
+
     PT(GeomVertexData) _geom_data;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -351,11 +365,11 @@ protected:
     static void init_type() {
       register_type(_type_handle, "Lens::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
- 
+
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
@@ -390,4 +404,3 @@ EXPCL_PANDA_GOBJ INLINE ostream &operator << (ostream &out, const Lens &lens);
 #include "lens.I"
 
 #endif
-

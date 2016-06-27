@@ -1,17 +1,15 @@
-// Filename: config_chan.cxx
-// Created by:  drose (28Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_chan.cxx
+ * @author drose
+ * @date 2000-02-28
+ */
 
 #include "config_chan.h"
 #include "animBundle.h"
@@ -46,24 +44,19 @@ ConfigVariableBool compress_channels
           "the bam file only; it does not reduce the memory footprint of the "
           "channels when the bam file is loaded."));
 
-// There are some special values above 100 which are generally only
-// useful for debugging (specifically, to research at what point a
-// particular animation artifact is being introduced):
-//
-//   101  Output numerically lossless data.  The output is not run
-//        through the FFTCompressor.  This can be used to check
-//        whether a particular artifact is due to the FFT conversion
-//        or not.  However, joint angles (HPR) are still converted to
-//        quaternions and normalized, discarding the fourth
-//        (redundant) component.
-//
-//   102  As above, but the fourth quaternion component is preserved.
-//
-//   103  Quaternions are not used; instead, the HPR values are written
-//        directly.  All output is now completely lossless; if some
-//        artifacts are being introduced at this point, check your
-//        sanity.
-//
+/*
+ * There are some special values above 100 which are generally only useful for
+ * debugging (specifically, to research at what point a particular animation
+ * artifact is being introduced): 101  Output numerically lossless data.  The
+ * output is not run through the FFTCompressor.  This can be used to check
+ * whether a particular artifact is due to the FFT conversion or not.
+ * However, joint angles (HPR) are still converted to quaternions and
+ * normalized, discarding the fourth (redundant) component.  102  As above,
+ * but the fourth quaternion component is preserved.  103  Quaternions are not
+ * used; instead, the HPR values are written directly.  All output is now
+ * completely lossless; if some artifacts are being introduced at this point,
+ * check your sanity.
+ */
 ConfigVariableInt compress_chan_quality
 ("compress-chan-quality", 95,
  PRC_DESC("The quality level is an integer number that generally ranges "
@@ -124,14 +117,13 @@ ConfigureFn(config_chan) {
   PartBundleNode::init_type();
   PartGroup::init_type();
 
-  // This isn't defined in this package, but it *is* essential that it
-  // be initialized.  We have to do it explicitly here since template
-  // statics don't necessarily resolve very well across dynamic
-  // libraries.
+  // This isn't defined in this package, but it *is* essential that it be
+  // initialized.  We have to do it explicitly here since template statics
+  // don't necessarily resolve very well across dynamic libraries.
   LMatrix4::init_type();
 
-  //Registration of writeable object's creation
-  //functions with BamReader's factory
+  // Registration of writeable object's creation functions with BamReader's
+  // factory
   PartGroup::register_with_read_factory();
   PartBundle::register_with_read_factory();
   MovingPartMatrix::register_with_read_factory();
@@ -146,8 +138,15 @@ ConfigureFn(config_chan) {
   AnimChannelScalarTable::register_with_read_factory();
   AnimChannelScalarDynamic::register_with_read_factory();
   AnimPreloadTable::register_with_read_factory();
+
+  // For compatibility with old .bam files.
+#ifndef STDFLOAT_DOUBLE
+  TypeRegistry *reg = TypeRegistry::ptr();
+  reg->record_alternate_name(AnimChannelFixed<ACMatrixSwitchType>::get_class_type(),
+                             "AnimChannelFixed<LMatrix4f>");
+  reg->record_alternate_name(MovingPart<ACMatrixSwitchType>::get_class_type(),
+                             "MovingPart<LMatrix4f>");
+  reg->record_alternate_name(MovingPart<ACScalarSwitchType>::get_class_type(),
+                             "MovingPart<float>");
+#endif
 }
-
-
-
-

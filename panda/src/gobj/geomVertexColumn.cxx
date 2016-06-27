@@ -1,27 +1,24 @@
-// Filename: geomVertexColumn.cxx
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexColumn.cxx
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #include "geomVertexColumn.h"
 #include "geomVertexData.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::
 operator = (const GeomVertexColumn &copy) {
   _name = copy._name;
@@ -36,89 +33,69 @@ operator = (const GeomVertexColumn &copy) {
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::set_name
-//       Access: Published
-//  Description: Replaces the name of an existing column.  This is
-//               only legal on an unregistered format (i.e. when
-//               constructing the format initially).
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the name of an existing column.  This is only legal on an
+ * unregistered format (i.e.  when constructing the format initially).
+ */
 void GeomVertexColumn::
 set_name(InternalName *name) {
   _name = name;
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::set_num_components
-//       Access: Published
-//  Description: Changes the number of components of an existing
-//               column.  This is only legal on an unregistered format
-//               (i.e. when constructing the format initially).
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the number of components of an existing column.  This is only legal
+ * on an unregistered format (i.e.  when constructing the format initially).
+ */
 void GeomVertexColumn::
 set_num_components(int num_components) {
   _num_components = num_components;
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::set_numeric_type
-//       Access: Published
-//  Description: Changes the numeric type an existing column.  This is
-//               only legal on an unregistered format (i.e. when
-//               constructing the format initially).
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the numeric type an existing column.  This is only legal on an
+ * unregistered format (i.e.  when constructing the format initially).
+ */
 void GeomVertexColumn::
 set_numeric_type(NumericType numeric_type) {
   _numeric_type = numeric_type;
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::set_contents
-//       Access: Published
-//  Description: Changes the semantic meaning of an existing column.
-//               This is only legal on an unregistered format
-//               (i.e. when constructing the format initially).
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the semantic meaning of an existing column.  This is only legal on
+ * an unregistered format (i.e.  when constructing the format initially).
+ */
 void GeomVertexColumn::
 set_contents(Contents contents) {
   _contents = contents;
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::set_start
-//       Access: Published
-//  Description: Changes the start byte of an existing column.
-//               This is only legal on an unregistered format
-//               (i.e. when constructing the format initially).
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the start byte of an existing column.  This is only legal on an
+ * unregistered format (i.e.  when constructing the format initially).
+ */
 void GeomVertexColumn::
 set_start(int start) {
   _start = start;
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::set_column_alignment
-//       Access: Published
-//  Description: Changes the column alignment of an existing column.
-//               This is only legal on an unregistered format
-//               (i.e. when constructing the format initially).
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the column alignment of an existing column.  This is only legal on
+ * an unregistered format (i.e.  when constructing the format initially).
+ */
 void GeomVertexColumn::
 set_column_alignment(int column_alignment) {
   _column_alignment = column_alignment;
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::
 output(ostream &out) const {
   out << *get_name() << "(" << get_num_components();
@@ -167,12 +144,10 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::setup
-//       Access: Private
-//  Description: Called once at construction time (or at bam-reading
-//               time) to initialize the internal dependent values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once at construction time (or at bam-reading time) to initialize the
+ * internal dependent values.
+ */
 void GeomVertexColumn::
 setup() {
   nassertv(_num_components > 0 && _start >= 0);
@@ -190,12 +165,12 @@ setup() {
   switch (_numeric_type) {
   case NT_uint16:
   case NT_int16:
-    _component_bytes = 2;  // sizeof(PN_uint16)
+    _component_bytes = 2;  // sizeof(uint16_t)
     break;
 
   case NT_uint32:
   case NT_int32:
-    _component_bytes = 4;  // sizeof(PN_uint32)
+    _component_bytes = 4;  // sizeof(uint32_t)
     break;
 
   case NT_uint8:
@@ -205,7 +180,7 @@ setup() {
 
   case NT_packed_dcba:
   case NT_packed_dabc:
-    _component_bytes = 4;  // sizeof(PN_uint32)
+    _component_bytes = 4;  // sizeof(uint32_t)
     _num_values *= 4;
     break;
 
@@ -222,7 +197,7 @@ setup() {
     break;
 
   case NT_packed_ufloat:
-    _component_bytes = 4;  // sizeof(PN_uint32)
+    _component_bytes = 4;  // sizeof(uint32_t)
     _num_values *= 3;
     break;
   }
@@ -237,9 +212,8 @@ setup() {
   }
 
   if (_column_alignment < 1) {
-    // The default column alignment is to align to the individual
-    // numeric components, or to vertex_column_alignment, whichever is
-    // greater.
+    // The default column alignment is to align to the individual numeric
+    // components, or to vertex_column_alignment, whichever is greater.
     _column_alignment = max(_component_bytes, (int)vertex_column_alignment);
   }
 
@@ -259,13 +233,10 @@ setup() {
   _packer->_column = this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::make_packer
-//       Access: Private
-//  Description: Returns a newly-allocated Packer object suitable for
-//               packing and unpacking this column.  The _column
-//               member of the packer is not filled in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Packer object suitable for packing and unpacking
+ * this column.  The _column member of the packer is not filled in.
+ */
 GeomVertexColumn::Packer *GeomVertexColumn::
 make_packer() const {
   switch (get_contents()) {
@@ -276,8 +247,8 @@ make_packer() const {
     switch (get_numeric_type()) {
     case NT_float32:
       if (sizeof(float) == sizeof(PN_float32)) {
-        // Use the native float type implementation for a tiny bit
-        // more optimization.
+        // Use the native float type implementation for a tiny bit more
+        // optimization.
         switch (get_num_components()) {
         case 2:
           return new Packer_point_nativefloat_2;
@@ -299,8 +270,8 @@ make_packer() const {
       break;
     case NT_float64:
       if (sizeof(double) == sizeof(PN_float64)) {
-        // Use the native float type implementation for a tiny bit
-        // more optimization.
+        // Use the native float type implementation for a tiny bit more
+        // optimization.
         switch (get_num_components()) {
         case 2:
           return new Packer_point_nativedouble_2;
@@ -336,8 +307,8 @@ make_packer() const {
 
       case NT_float32:
         if (sizeof(float) == sizeof(PN_float32)) {
-          // Use the native float type implementation for a tiny bit
-          // more optimization.
+          // Use the native float type implementation for a tiny bit more
+          // optimization.
           return new Packer_rgba_nativefloat_4;
         } else {
           return new Packer_rgba_float32_4;
@@ -365,8 +336,8 @@ make_packer() const {
       switch (get_num_components()) {
       case 3:
         if (sizeof(float) == sizeof(PN_float32)) {
-          // Use the native float type implementation for a tiny bit
-          // more optimization.
+          // Use the native float type implementation for a tiny bit more
+          // optimization.
           return new Packer_nativefloat_3;
         } else {
           return new Packer_float32_3;
@@ -380,8 +351,8 @@ make_packer() const {
       switch (get_num_components()) {
       case 3:
         if (sizeof(double) == sizeof(PN_float64)) {
-          // Use the native float type implementation for a tiny bit
-          // more optimization.
+          // Use the native float type implementation for a tiny bit more
+          // optimization.
           return new Packer_nativedouble_3;
         } else {
           return new Packer_float64_3;
@@ -398,45 +369,54 @@ make_packer() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::write_datagram
-//       Access: Public
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void GeomVertexColumn::
 write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_pointer(dg, _name);
   dg.add_uint8(_num_components);
   dg.add_uint8(_numeric_type);
-  dg.add_uint8(_contents);
+
+  if (_contents == C_normal && manager->get_file_minor_ver() < 38) {
+    // Panda 1.9 did not have C_normal.
+    dg.add_uint8(C_vector);
+  } else {
+    dg.add_uint8(_contents);
+  }
+
   dg.add_uint16(_start);
-  dg.add_uint8(_column_alignment);
+
+  if (manager->get_file_minor_ver() >= 29) {
+    dg.add_uint8(_column_alignment);
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::complete_pointers
-//       Access: Public
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int GeomVertexColumn::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = 0;
 
   _name = DCAST(InternalName, p_list[pi++]);
 
+  // Make sure that old .bam files are corrected to have C_normal normal
+  // columns rather than C_vector.
+  if (manager->get_file_minor_ver() < 38 &&
+      _name == InternalName::get_normal() && _contents == C_vector) {
+    _contents = C_normal;
+  }
+
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomVertexColumn.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new GeomVertexColumn.
+ */
 void GeomVertexColumn::
 fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
@@ -457,41 +437,37 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GeomVertexColumn::Packer::
 ~Packer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data1f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 float GeomVertexColumn::Packer::
 get_data1f(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return *(const PN_uint8 *)pointer;
+    return *(const uint8_t *)pointer;
 
   case NT_uint16:
-    return *(const PN_uint16 *)pointer;
+    return *(const uint16_t *)pointer;
 
   case NT_uint32:
-    return *(const PN_uint32 *)pointer;
+    return *(const uint32_t *)pointer;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword);
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword);
     }
 
@@ -502,17 +478,17 @@ get_data1f(const unsigned char *pointer) {
     return *(const PN_float64 *)pointer;
 
   case NT_int8:
-    return *(const PN_int8 *)pointer;
+    return *(const int8_t *)pointer;
 
   case NT_int16:
-    return *(const PN_int16 *)pointer;
+    return *(const int16_t *)pointer;
 
   case NT_int32:
-    return *(const PN_int32 *)pointer;
+    return *(const int32_t *)pointer;
 
   case NT_packed_ufloat:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_ufloat_a(dword);
     }
 
@@ -523,11 +499,9 @@ get_data1f(const unsigned char *pointer) {
   return 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2f &GeomVertexColumn::Packer::
 get_data2f(const unsigned char *pointer) {
   if (_column->get_num_values() == 1) {
@@ -538,28 +512,28 @@ get_data2f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword));
       }
@@ -567,7 +541,7 @@ get_data2f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword));
       }
@@ -593,21 +567,21 @@ get_data2f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
@@ -621,11 +595,9 @@ get_data2f(const unsigned char *pointer) {
   return _v2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3f &GeomVertexColumn::Packer::
 get_data3f(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -644,28 +616,28 @@ get_data3f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword));
@@ -674,7 +646,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword));
@@ -701,28 +673,28 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_ufloat_a(dword),
                 GeomVertexData::unpack_ufloat_b(dword),
                 GeomVertexData::unpack_ufloat_c(dword));
@@ -734,11 +706,9 @@ get_data3f(const unsigned char *pointer) {
   return _v3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer::
 get_data4f(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -764,28 +734,28 @@ get_data4f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword),
@@ -795,7 +765,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword),
@@ -823,21 +793,21 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
@@ -851,32 +821,30 @@ get_data4f(const unsigned char *pointer) {
   return _v4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data1d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 double GeomVertexColumn::Packer::
 get_data1d(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return *(const PN_uint8 *)pointer;
+    return *(const uint8_t *)pointer;
 
   case NT_uint16:
-    return *(const PN_uint16 *)pointer;
+    return *(const uint16_t *)pointer;
 
   case NT_uint32:
-    return *(const PN_uint32 *)pointer;
+    return *(const uint32_t *)pointer;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword);
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword);
     }
 
@@ -891,17 +859,17 @@ get_data1d(const unsigned char *pointer) {
     return 0.0;
 
   case NT_int8:
-    return *(const PN_int8 *)pointer;
+    return *(const int8_t *)pointer;
 
   case NT_int16:
-    return *(const PN_int16 *)pointer;
+    return *(const int16_t *)pointer;
 
   case NT_int32:
-    return *(const PN_int32 *)pointer;
+    return *(const int32_t *)pointer;
 
   case NT_packed_ufloat:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_ufloat_a(dword);
     }
   }
@@ -909,11 +877,9 @@ get_data1d(const unsigned char *pointer) {
   return 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2d &GeomVertexColumn::Packer::
 get_data2d(const unsigned char *pointer) {
   if (_column->get_num_values() == 1) {
@@ -924,28 +890,28 @@ get_data2d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -953,7 +919,7 @@ get_data2d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -979,21 +945,21 @@ get_data2d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
@@ -1007,11 +973,9 @@ get_data2d(const unsigned char *pointer) {
   return _v2d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3d &GeomVertexColumn::Packer::
 get_data3d(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -1030,28 +994,28 @@ get_data3d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword));
@@ -1060,7 +1024,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword));
@@ -1087,28 +1051,28 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_ufloat_a(dword),
                  GeomVertexData::unpack_ufloat_b(dword),
                  GeomVertexData::unpack_ufloat_c(dword));
@@ -1120,11 +1084,9 @@ get_data3d(const unsigned char *pointer) {
   return _v3d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4d &GeomVertexColumn::Packer::
 get_data4d(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -1150,28 +1112,28 @@ get_data4d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -1181,7 +1143,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -1209,21 +1171,21 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
@@ -1237,11 +1199,9 @@ get_data4d(const unsigned char *pointer) {
   return _v4d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data1i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int GeomVertexColumn::Packer::
 get_data1i(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
@@ -1249,20 +1209,20 @@ get_data1i(const unsigned char *pointer) {
     return *pointer;
 
   case NT_uint16:
-    return *(const PN_uint16 *)pointer;
+    return *(const uint16_t *)pointer;
 
   case NT_uint32:
-    return *(const PN_uint32 *)pointer;
+    return *(const uint32_t *)pointer;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword);
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword);
     }
 
@@ -1277,17 +1237,17 @@ get_data1i(const unsigned char *pointer) {
     break;
 
   case NT_int8:
-    return *(const PN_int8 *)pointer;
+    return *(const int8_t *)pointer;
 
   case NT_int16:
-    return *(const PN_int16 *)pointer;
+    return *(const int16_t *)pointer;
 
   case NT_int32:
-    return *(const PN_int32 *)pointer;
+    return *(const int32_t *)pointer;
 
   case NT_packed_ufloat:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return (int)GeomVertexData::unpack_ufloat_a(dword);
     }
   }
@@ -1295,11 +1255,9 @@ get_data1i(const unsigned char *pointer) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data2i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2i &GeomVertexColumn::Packer::
 get_data2i(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -1315,21 +1273,21 @@ get_data2i(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2i.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -1337,7 +1295,7 @@ get_data2i(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v2i.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword));
       }
@@ -1363,21 +1321,21 @@ get_data2i(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
@@ -1391,11 +1349,9 @@ get_data2i(const unsigned char *pointer) {
   return _v2i;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data3i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3i &GeomVertexColumn::Packer::
 get_data3i(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -1418,21 +1374,21 @@ get_data3i(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3i.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword));
@@ -1441,7 +1397,7 @@ get_data3i(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3i.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword));
@@ -1468,28 +1424,28 @@ get_data3i(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
       }
       return _v3i;
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3i.set((int)GeomVertexData::unpack_ufloat_a(dword),
                  (int)GeomVertexData::unpack_ufloat_b(dword),
                  (int)GeomVertexData::unpack_ufloat_c(dword));
@@ -1501,11 +1457,9 @@ get_data3i(const unsigned char *pointer) {
   return _v3i;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::get_data4i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4i &GeomVertexColumn::Packer::
 get_data4i(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -1535,21 +1489,21 @@ get_data4i(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4i.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -1559,7 +1513,7 @@ get_data4i(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4i.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -1587,21 +1541,21 @@ get_data4i(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
@@ -1615,26 +1569,24 @@ get_data4i(const unsigned char *pointer) {
   return _v4i;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data1f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data1f(unsigned char *pointer, float data) {
   switch (_column->get_num_values()) {
   case 1:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      *(PN_uint8 *)pointer = (unsigned int)data;
+      *(uint8_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint16:
-      *(PN_uint16 *)pointer = (unsigned int)data;
+      *(uint16_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint32:
-      *(PN_uint32 *)pointer = (unsigned int)data;
+      *(uint32_t *)pointer = (unsigned int)data;
       break;
 
     case NT_packed_dcba:
@@ -1655,15 +1607,15 @@ set_data1f(unsigned char *pointer, float data) {
       break;
 
     case NT_int8:
-      *(PN_int8 *)pointer = (int)data;
+      *(int8_t *)pointer = (int)data;
       break;
 
     case NT_int16:
-      *(PN_int16 *)pointer = (int)data;
+      *(int16_t *)pointer = (int)data;
       break;
 
     case NT_int32:
-      *(PN_int32 *)pointer = (int)data;
+      *(int32_t *)pointer = (int)data;
       break;
 
     case NT_packed_ufloat:
@@ -1686,11 +1638,9 @@ set_data1f(unsigned char *pointer, float data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   switch (_column->get_num_values()) {
@@ -1702,7 +1652,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -1710,7 +1660,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -1718,7 +1668,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -1751,7 +1701,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -1759,7 +1709,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -1767,7 +1717,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -1789,11 +1739,9 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   switch (_column->get_num_values()) {
@@ -1809,7 +1757,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1818,7 +1766,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1827,7 +1775,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1863,7 +1811,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1872,7 +1820,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1881,7 +1829,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1889,7 +1837,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -1900,11 +1848,9 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   switch (_column->get_num_values()) {
@@ -1924,7 +1870,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1934,7 +1880,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1944,7 +1890,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -1953,11 +1899,11 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -1986,7 +1932,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -1996,7 +1942,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2006,7 +1952,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2022,26 +1968,24 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data1d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data1d(unsigned char *pointer, double data) {
   switch (_column->get_num_values()) {
   case 1:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      *(PN_uint8 *)pointer = (unsigned int)data;
+      *(uint8_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint16:
-      *(PN_uint16 *)pointer = (unsigned int)data;
+      *(uint16_t *)pointer = (unsigned int)data;
       break;
 
     case NT_uint32:
-      *(PN_uint32 *)pointer = (unsigned int)data;
+      *(uint32_t *)pointer = (unsigned int)data;
       break;
 
     case NT_packed_dcba:
@@ -2062,15 +2006,15 @@ set_data1d(unsigned char *pointer, double data) {
       break;
 
     case NT_int8:
-      *(PN_int8 *)pointer = (int)data;
+      *(int8_t *)pointer = (int)data;
       break;
 
     case NT_int16:
-      *(PN_int16 *)pointer = (int)data;
+      *(int16_t *)pointer = (int)data;
       break;
 
     case NT_int32:
-      *(PN_int32 *)pointer = (int)data;
+      *(int32_t *)pointer = (int)data;
       break;
 
     case NT_packed_ufloat:
@@ -2093,11 +2037,9 @@ set_data1d(unsigned char *pointer, double data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   switch (_column->get_num_values()) {
@@ -2108,7 +2050,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -2116,7 +2058,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -2124,7 +2066,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -2157,7 +2099,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -2165,7 +2107,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -2173,7 +2115,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
@@ -2195,11 +2137,9 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   switch (_column->get_num_values()) {
@@ -2215,7 +2155,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2224,7 +2164,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2233,7 +2173,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2269,7 +2209,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2278,7 +2218,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2287,7 +2227,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2295,7 +2235,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -2306,11 +2246,9 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   switch (_column->get_num_values()) {
@@ -2330,7 +2268,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2340,7 +2278,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2350,7 +2288,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -2359,11 +2297,11 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -2392,7 +2330,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2402,7 +2340,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2412,7 +2350,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -2428,11 +2366,9 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data1i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data1i(unsigned char *pointer, int data) {
   switch (_column->get_num_values()) {
@@ -2444,12 +2380,12 @@ set_data1i(unsigned char *pointer, int data) {
       break;
 
     case NT_uint16:
-      *(PN_uint16 *)pointer = data;
-      nassertv(*(PN_uint16 *)pointer == data);
+      *(uint16_t *)pointer = data;
+      nassertv(*(uint16_t *)pointer == data);
       break;
 
     case NT_uint32:
-      *(PN_uint32 *)pointer = data;
+      *(uint32_t *)pointer = data;
       break;
 
     case NT_packed_dcba:
@@ -2470,17 +2406,17 @@ set_data1i(unsigned char *pointer, int data) {
       break;
 
     case NT_int8:
-      *(PN_int8 *)pointer = data;
-      nassertv(*(PN_int8 *)pointer == data);
+      *(int8_t *)pointer = data;
+      nassertv(*(int8_t *)pointer == data);
       break;
 
     case NT_int16:
-      *(PN_int16 *)pointer = data;
-      nassertv(*(PN_int16 *)pointer == data);
+      *(int16_t *)pointer = data;
+      nassertv(*(int16_t *)pointer == data);
       break;
 
     case NT_int32:
-      *(PN_int32 *)pointer = data;
+      *(int32_t *)pointer = data;
       break;
 
     case NT_packed_ufloat:
@@ -2503,11 +2439,9 @@ set_data1i(unsigned char *pointer, int data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data2i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data2i(unsigned char *pointer, const LVecBase2i &data) {
   switch (_column->get_num_values()) {
@@ -2524,7 +2458,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2532,7 +2466,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2565,7 +2499,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2573,7 +2507,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2581,7 +2515,7 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
       }
@@ -2603,11 +2537,9 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data3i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data3i(unsigned char *pointer, const LVecBase3i &data) {
   switch (_column->get_num_values()) {
@@ -2629,7 +2561,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2638,7 +2570,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2674,7 +2606,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2683,7 +2615,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2692,7 +2624,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2700,7 +2632,7 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -2711,11 +2643,9 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::set_data4i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer::
 set_data4i(unsigned char *pointer, const LVecBase4i &data) {
   switch (_column->get_num_values()) {
@@ -2742,7 +2672,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2752,7 +2682,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2761,11 +2691,11 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -2794,7 +2724,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2804,7 +2734,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2814,7 +2744,7 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = data[0];
         pi[1] = data[1];
         pi[2] = data[2];
@@ -2830,11 +2760,9 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data1f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 float GeomVertexColumn::Packer_point::
 get_data1f(const unsigned char *pointer) {
   if (_column->get_num_values() == 4) {
@@ -2845,11 +2773,9 @@ get_data1f(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2f &GeomVertexColumn::Packer_point::
 get_data2f(const unsigned char *pointer) {
   if (_column->get_num_values() == 4) {
@@ -2861,11 +2787,9 @@ get_data2f(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3f &GeomVertexColumn::Packer_point::
 get_data3f(const unsigned char *pointer) {
   if (_column->get_num_values() == 4) {
@@ -2877,11 +2801,9 @@ get_data3f(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_point::
 get_data4f(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -2907,28 +2829,28 @@ get_data4f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword),
@@ -2938,7 +2860,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword),
@@ -2966,21 +2888,21 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
@@ -2994,11 +2916,9 @@ get_data4f(const unsigned char *pointer) {
   return _v4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data1d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 double GeomVertexColumn::Packer_point::
 get_data1d(const unsigned char *pointer) {
   if (_column->get_num_values() == 4) {
@@ -3009,11 +2929,9 @@ get_data1d(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2d &GeomVertexColumn::Packer_point::
 get_data2d(const unsigned char *pointer) {
   if (_column->get_num_values() == 4) {
@@ -3025,11 +2943,9 @@ get_data2d(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3d &GeomVertexColumn::Packer_point::
 get_data3d(const unsigned char *pointer) {
   if (_column->get_num_values() == 4) {
@@ -3041,11 +2957,9 @@ get_data3d(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::get_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4d &GeomVertexColumn::Packer_point::
 get_data4d(const unsigned char *pointer) {
   switch (_column->get_num_values()) {
@@ -3071,28 +2985,28 @@ get_data4d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -3102,7 +3016,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -3130,21 +3044,21 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_int8:
       {
-        const PN_int8 *pi = (const PN_int8 *)pointer;
+        const int8_t *pi = (const int8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int16:
       {
-        const PN_int16 *pi = (const PN_int16 *)pointer;
+        const int16_t *pi = (const int16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
 
     case NT_int32:
       {
-        const PN_int32 *pi = (const PN_int32 *)pointer;
+        const int32_t *pi = (const int32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
@@ -3158,11 +3072,9 @@ get_data4d(const unsigned char *pointer) {
   return _v4d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data1f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data1f(unsigned char *pointer, float data) {
   if (_column->get_num_values() == 4) {
@@ -3172,11 +3084,9 @@ set_data1f(unsigned char *pointer, float data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   if (_column->get_num_values() == 4) {
@@ -3186,11 +3096,9 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   if (_column->get_num_values() == 4) {
@@ -3200,11 +3108,9 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   switch (_column->get_num_values()) {
@@ -3224,7 +3130,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3234,7 +3140,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3244,7 +3150,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3253,11 +3159,11 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -3286,7 +3192,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3296,7 +3202,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3306,7 +3212,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3322,11 +3228,9 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data1d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data1d(unsigned char *pointer, double data) {
   if (_column->get_num_values() == 4) {
@@ -3336,11 +3240,9 @@ set_data1d(unsigned char *pointer, double data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   if (_column->get_num_values() == 4) {
@@ -3350,11 +3252,9 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   if (_column->get_num_values() == 4) {
@@ -3364,11 +3264,9 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point::set_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point::
 set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   switch (_column->get_num_values()) {
@@ -3388,7 +3286,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3398,7 +3296,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3408,7 +3306,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_uint32:
       {
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -3417,11 +3315,11 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
       break;
 
     case NT_packed_dcba:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[2], data[1], data[0]);
       break;
 
     case NT_packed_dabc:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_abcd(data[3], data[0], data[1], data[2]);
       break;
 
     case NT_float32:
@@ -3450,7 +3348,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int8:
       {
-        PN_int8 *pi = (PN_int8 *)pointer;
+        int8_t *pi = (int8_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3460,7 +3358,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int16:
       {
-        PN_int16 *pi = (PN_int16 *)pointer;
+        int16_t *pi = (int16_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3470,7 +3368,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
 
     case NT_int32:
       {
-        PN_int32 *pi = (PN_int32 *)pointer;
+        int32_t *pi = (int32_t *)pointer;
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
@@ -3486,32 +3384,30 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data1f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 float GeomVertexColumn::Packer_color::
 get_data1f(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return (*(const PN_uint8 *)pointer) / 255.0f;
+    return (*(const uint8_t *)pointer) / 255.0f;
 
   case NT_uint16:
-    return (*(const PN_uint16 *)pointer) / 65535.0f;
+    return (*(const uint16_t *)pointer) / 65535.0f;
 
   case NT_uint32:
-    return (*(const PN_uint32 *)pointer) / 4294967295.0f;
+    return (*(const uint32_t *)pointer) / 4294967295.0f;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword) / 255.0f;
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword) / 255.0f;
     }
 
@@ -3528,11 +3424,9 @@ get_data1f(const unsigned char *pointer) {
   return 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2f &GeomVertexColumn::Packer_color::
 get_data2f(const unsigned char *pointer) {
   if (_column->get_num_values() == 3) {
@@ -3546,18 +3440,16 @@ get_data2f(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3f &GeomVertexColumn::Packer_color::
 get_data3f(const unsigned char *pointer) {
   if (_column->get_num_values() == 3) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
         _v3 /= 255.0f;
       }
@@ -3565,7 +3457,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
         _v3 /= 65535.0f;
       }
@@ -3573,7 +3465,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
         _v3 /= 4294967295.0f;
       }
@@ -3607,7 +3499,7 @@ get_data3f(const unsigned char *pointer) {
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3.set(GeomVertexData::unpack_ufloat_a(dword),
                 GeomVertexData::unpack_ufloat_b(dword),
                 GeomVertexData::unpack_ufloat_c(dword));
@@ -3623,11 +3515,9 @@ get_data3f(const unsigned char *pointer) {
   return _v3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_color::
 get_data4f(const unsigned char *pointer) {
   if (_column->get_num_values() == 3) {
@@ -3638,7 +3528,7 @@ get_data4f(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
         _v4 /= 255.0f;
       }
@@ -3646,7 +3536,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
         _v4 /= 65535.0f;
       }
@@ -3654,7 +3544,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
         _v4 /= 4294967295.0f;
       }
@@ -3662,7 +3552,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_d(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_b(dword),
@@ -3673,7 +3563,7 @@ get_data4f(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4.set(GeomVertexData::unpack_abcd_b(dword),
                 GeomVertexData::unpack_abcd_c(dword),
                 GeomVertexData::unpack_abcd_d(dword),
@@ -3709,32 +3599,30 @@ get_data4f(const unsigned char *pointer) {
   return _v4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data1d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 double GeomVertexColumn::Packer_color::
 get_data1d(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return (*(const PN_uint8 *)pointer) / 255.0;
+    return (*(const uint8_t *)pointer) / 255.0;
 
   case NT_uint16:
-    return (*(const PN_uint16 *)pointer) / 65535.0;
+    return (*(const uint16_t *)pointer) / 65535.0;
 
   case NT_uint32:
-    return (*(const PN_uint32 *)pointer) / 4294967295.0;
+    return (*(const uint32_t *)pointer) / 4294967295.0;
 
   case NT_packed_dcba:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_d(dword) / 255.0;
     }
 
   case NT_packed_dabc:
     {
-      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      uint32_t dword = *(const uint32_t *)pointer;
       return GeomVertexData::unpack_abcd_b(dword) / 255.0;
     }
 
@@ -3751,11 +3639,9 @@ get_data1d(const unsigned char *pointer) {
   return 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2d &GeomVertexColumn::Packer_color::
 get_data2d(const unsigned char *pointer) {
   if (_column->get_num_values() == 3) {
@@ -3769,18 +3655,16 @@ get_data2d(const unsigned char *pointer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3d &GeomVertexColumn::Packer_color::
 get_data3d(const unsigned char *pointer) {
   if (_column->get_num_values() == 3) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
         _v3d /= 255.0;
       }
@@ -3788,7 +3672,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
         _v3d /= 65535.0;
       }
@@ -3796,7 +3680,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
         _v3d /= 4294967295.0;
       }
@@ -3830,7 +3714,7 @@ get_data3d(const unsigned char *pointer) {
 
     case NT_packed_ufloat:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v3d.set(GeomVertexData::unpack_ufloat_a(dword),
                  GeomVertexData::unpack_ufloat_b(dword),
                  GeomVertexData::unpack_ufloat_c(dword));
@@ -3846,11 +3730,9 @@ get_data3d(const unsigned char *pointer) {
   return _v3d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::get_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4d &GeomVertexColumn::Packer_color::
 get_data4d(const unsigned char *pointer) {
   if (_column->get_num_values() == 3) {
@@ -3861,7 +3743,7 @@ get_data4d(const unsigned char *pointer) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       {
-        const PN_uint8 *pi = (const PN_uint8 *)pointer;
+        const uint8_t *pi = (const uint8_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
         _v4d /= 255.0;
       }
@@ -3869,7 +3751,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_uint16:
       {
-        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        const uint16_t *pi = (const uint16_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
         _v4d /= 65535.0;
       }
@@ -3877,7 +3759,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_uint32:
       {
-        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        const uint32_t *pi = (const uint32_t *)pointer;
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
         _v4d /= 4294967295.0;
       }
@@ -3885,7 +3767,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dcba:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_d(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_b(dword),
@@ -3896,7 +3778,7 @@ get_data4d(const unsigned char *pointer) {
 
     case NT_packed_dabc:
       {
-        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        uint32_t dword = *(const uint32_t *)pointer;
         _v4d.set(GeomVertexData::unpack_abcd_b(dword),
                  GeomVertexData::unpack_abcd_c(dword),
                  GeomVertexData::unpack_abcd_d(dword),
@@ -3932,11 +3814,9 @@ get_data4d(const unsigned char *pointer) {
   return _v4d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data1f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data1f(unsigned char *pointer, float data) {
   if (_column->get_num_values() == 3) {
@@ -3946,11 +3826,9 @@ set_data1f(unsigned char *pointer, float data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   if (_column->get_num_values() == 3) {
@@ -3960,11 +3838,9 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   if (_column->get_num_values() == 3) {
@@ -3972,7 +3848,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_uint8:
       {
         LVecBase3f scaled = data * 255.0f;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -3982,7 +3858,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_uint16:
       {
         LVecBase3f scaled = data * 65535.0f;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -3992,7 +3868,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_uint32:
       {
         LVecBase3f scaled = data * 4294967295.0f;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -4002,7 +3878,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_packed_dcba:
       {
         LVecBase3f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0f, scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -4010,7 +3886,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_packed_dabc:
       {
         LVecBase3f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0f, scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -4041,7 +3917,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
   } else {
@@ -4049,11 +3925,9 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   if (_column->get_num_values() == 3) {
@@ -4063,7 +3937,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_uint8:
       {
         LVecBase4f scaled = data * 255.0f;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4074,7 +3948,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_uint16:
       {
         LVecBase4f scaled = data * 65535.0f;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4085,7 +3959,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_uint32:
       {
         LVecBase4f scaled = data * 4294967295.0f;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -4096,7 +3970,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_packed_dcba:
       {
         LVecBase4f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -4104,7 +3978,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_packed_dabc:
       {
         LVecBase4f scaled = data * 255.0f;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -4143,11 +4017,9 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data1d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data1d(unsigned char *pointer, double data) {
   if (_column->get_num_values() == 3) {
@@ -4157,11 +4029,9 @@ set_data1d(unsigned char *pointer, double data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   if (_column->get_num_values() == 3) {
@@ -4171,11 +4041,9 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   if (_column->get_num_values() == 3) {
@@ -4183,7 +4051,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_uint8:
       {
         LVecBase3d scaled = data * 255.0;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4193,7 +4061,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_uint16:
       {
         LVecBase3d scaled = data * 65535.0;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4203,7 +4071,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_uint32:
       {
         LVecBase3d scaled = data * 4294967295.0;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -4213,7 +4081,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_packed_dcba:
       {
         LVecBase3d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0, scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -4221,7 +4089,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_packed_dabc:
       {
         LVecBase3d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           1.0, scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -4252,7 +4120,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
       break;
 
     case NT_packed_ufloat:
-      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      *(uint32_t *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
   } else {
@@ -4260,11 +4128,9 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_color::set_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_color::
 set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   if (_column->get_num_values() == 3) {
@@ -4274,7 +4140,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_uint8:
       {
         LVecBase4d scaled = data * 255.0;
-        PN_uint8 *pi = (PN_uint8 *)pointer;
+        uint8_t *pi = (uint8_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4285,7 +4151,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_uint16:
       {
         LVecBase4d scaled = data * 65535.0;
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        uint16_t *pi = (uint16_t *)pointer;
         pi[0] = (unsigned int)scaled[0];
         pi[1] = (unsigned int)scaled[1];
         pi[2] = (unsigned int)scaled[2];
@@ -4296,7 +4162,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_uint32:
       {
         LVecBase4d scaled = data * 4294967295.0;
-        PN_uint32 *pi = (PN_uint32 *)pointer;
+        uint32_t *pi = (uint32_t *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -4307,7 +4173,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_packed_dcba:
       {
         LVecBase4d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[2], scaled[1], scaled[0]);
       }
       break;
@@ -4315,7 +4181,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_packed_dabc:
       {
         LVecBase4d scaled = data * 255.0;
-        *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(
+        *(uint32_t *)pointer = GeomVertexData::pack_abcd(
           scaled[3], scaled[0], scaled[1], scaled[2]);
       }
       break;
@@ -4354,11 +4220,9 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_float32_3::get_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3f &GeomVertexColumn::Packer_float32_3::
 get_data3f(const unsigned char *pointer) {
   const PN_float32 *pi = (const PN_float32 *)pointer;
@@ -4366,11 +4230,9 @@ get_data3f(const unsigned char *pointer) {
   return _v3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_float32_3::set_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_float32_3::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   PN_float32 *pi = (PN_float32 *)pointer;
@@ -4379,11 +4241,9 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   pi[2] = data[2];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float32_2::get_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2f &GeomVertexColumn::Packer_point_float32_2::
 get_data2f(const unsigned char *pointer) {
   const PN_float32 *pi = (const PN_float32 *)pointer;
@@ -4391,11 +4251,9 @@ get_data2f(const unsigned char *pointer) {
   return _v2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float32_2::set_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point_float32_2::
 set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   PN_float32 *pi = (PN_float32 *)pointer;
@@ -4403,11 +4261,9 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   pi[1] = data[1];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float32_3::get_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3f &GeomVertexColumn::Packer_point_float32_3::
 get_data3f(const unsigned char *pointer) {
   const PN_float32 *pi = (const PN_float32 *)pointer;
@@ -4415,11 +4271,9 @@ get_data3f(const unsigned char *pointer) {
   return _v3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float32_3::set_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point_float32_3::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   PN_float32 *pi = (PN_float32 *)pointer;
@@ -4428,11 +4282,9 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   pi[2] = data[2];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float32_4::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_point_float32_4::
 get_data4f(const unsigned char *pointer) {
   const PN_float32 *pi = (const PN_float32 *)pointer;
@@ -4440,11 +4292,9 @@ get_data4f(const unsigned char *pointer) {
   return _v4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float32_4::set_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point_float32_4::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   PN_float32 *pi = (PN_float32 *)pointer;
@@ -4454,51 +4304,41 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   pi[3] = data[3];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_nativefloat_3::get_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3f &GeomVertexColumn::Packer_nativefloat_3::
 get_data3f(const unsigned char *pointer) {
   return *(const LVecBase3f *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_nativefloat_2::get_data2f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2f &GeomVertexColumn::Packer_point_nativefloat_2::
 get_data2f(const unsigned char *pointer) {
   return *(const LVecBase2f *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_nativefloat_3::get_data3f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3f &GeomVertexColumn::Packer_point_nativefloat_3::
 get_data3f(const unsigned char *pointer) {
   return *(const LVecBase3f *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_nativefloat_4::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_point_nativefloat_4::
 get_data4f(const unsigned char *pointer) {
   return *(const LVecBase4f *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_float64_3::get_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3d &GeomVertexColumn::Packer_float64_3::
 get_data3d(const unsigned char *pointer) {
   const PN_float64 *pi = (const PN_float64 *)pointer;
@@ -4506,11 +4346,9 @@ get_data3d(const unsigned char *pointer) {
   return _v3d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_float64_3::set_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_float64_3::
 set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   PN_float64 *pi = (PN_float64 *)pointer;
@@ -4519,11 +4357,9 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   pi[2] = data[2];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float64_2::get_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2d &GeomVertexColumn::Packer_point_float64_2::
 get_data2d(const unsigned char *pointer) {
   const PN_float64 *pi = (const PN_float64 *)pointer;
@@ -4531,11 +4367,9 @@ get_data2d(const unsigned char *pointer) {
   return _v2d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float64_2::set_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point_float64_2::
 set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   PN_float64 *pi = (PN_float64 *)pointer;
@@ -4543,11 +4377,9 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   pi[1] = data[1];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float64_3::get_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3d &GeomVertexColumn::Packer_point_float64_3::
 get_data3d(const unsigned char *pointer) {
   const PN_float64 *pi = (const PN_float64 *)pointer;
@@ -4555,11 +4387,9 @@ get_data3d(const unsigned char *pointer) {
   return _v3d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float64_3::set_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point_float64_3::
 set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   PN_float64 *pi = (PN_float64 *)pointer;
@@ -4568,11 +4398,9 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   pi[2] = data[2];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float64_4::get_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4d &GeomVertexColumn::Packer_point_float64_4::
 get_data4d(const unsigned char *pointer) {
   const PN_float64 *pi = (const PN_float64 *)pointer;
@@ -4580,11 +4408,9 @@ get_data4d(const unsigned char *pointer) {
   return _v4d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_float64_4::set_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_point_float64_4::
 set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   PN_float64 *pi = (PN_float64 *)pointer;
@@ -4594,54 +4420,44 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   pi[3] = data[3];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_nativedouble_3::get_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3d &GeomVertexColumn::Packer_nativedouble_3::
 get_data3d(const unsigned char *pointer) {
   return *(const LVecBase3d *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_nativedouble_2::get_data2d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase2d &GeomVertexColumn::Packer_point_nativedouble_2::
 get_data2d(const unsigned char *pointer) {
   return *(const LVecBase2d *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_nativedouble_3::get_data3d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase3d &GeomVertexColumn::Packer_point_nativedouble_3::
 get_data3d(const unsigned char *pointer) {
   return *(const LVecBase3d *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_point_nativedouble_4::get_data4d
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4d &GeomVertexColumn::Packer_point_nativedouble_4::
 get_data4d(const unsigned char *pointer) {
   return *(const LVecBase4d *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_argb_packed::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_argb_packed::
 get_data4f(const unsigned char *pointer) {
-  PN_uint32 dword = *(const PN_uint32 *)pointer;
+  uint32_t dword = *(const uint32_t *)pointer;
   _v4.set(GeomVertexData::unpack_abcd_b(dword),
           GeomVertexData::unpack_abcd_c(dword),
           GeomVertexData::unpack_abcd_d(dword),
@@ -4650,28 +4466,23 @@ get_data4f(const unsigned char *pointer) {
   return _v4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_argb_packed::set_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_argb_packed::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
-  // when packing an argb, we want to make sure we cap 
-  // the input values at 1 since going above one will cause 
-  // the value to be truncated.
-  *(PN_uint32 *)pointer = GeomVertexData::pack_abcd
+  // when packing an argb, we want to make sure we cap the input values at 1
+  // since going above one will cause the value to be truncated.
+  *(uint32_t *)pointer = GeomVertexData::pack_abcd
     ((unsigned int)(min(max(data[3], 0.0f), 1.0f) * 255.0f),
      (unsigned int)(min(max(data[0], 0.0f), 1.0f) * 255.0f),
      (unsigned int)(min(max(data[1], 0.0f), 1.0f) * 255.0f),
      (unsigned int)(min(max(data[2], 0.0f), 1.0f) * 255.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_rgba_uint8_4::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_rgba_uint8_4::
 get_data4f(const unsigned char *pointer) {
   _v4.set((float)pointer[0], (float)pointer[1],
@@ -4680,11 +4491,9 @@ get_data4f(const unsigned char *pointer) {
   return _v4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_rgba_uint8_4::set_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_rgba_uint8_4::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   pointer[0] = (unsigned int)(min(max(data[0], 0.0f), 1.0f) * 255.0f);
@@ -4693,11 +4502,9 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   pointer[3] = (unsigned int)(min(max(data[3], 0.0f), 1.0f) * 255.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_rgba_float32_4::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_rgba_float32_4::
 get_data4f(const unsigned char *pointer) {
   const PN_float32 *pi = (const PN_float32 *)pointer;
@@ -4705,11 +4512,9 @@ get_data4f(const unsigned char *pointer) {
   return _v4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_rgba_float32_4::set_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_rgba_float32_4::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   PN_float32 *pi = (PN_float32 *)pointer;
@@ -4719,33 +4524,27 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   pi[3] = data[3];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_rgba_nativefloat_4::get_data4f
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVecBase4f &GeomVertexColumn::Packer_rgba_nativefloat_4::
 get_data4f(const unsigned char *pointer) {
   return *(const LVecBase4f *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_uint16_1::get_data1i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int GeomVertexColumn::Packer_uint16_1::
 get_data1i(const unsigned char *pointer) {
-  return *(const PN_uint16 *)pointer;
+  return *(const uint16_t *)pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer_uint16_1::set_data1i
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GeomVertexColumn::Packer_uint16_1::
 set_data1i(unsigned char *pointer, int data) {
-  *(PN_uint16 *)pointer = data;
-  nassertv(*(PN_uint16 *)pointer == data);
+  *(uint16_t *)pointer = data;
+  nassertv(*(uint16_t *)pointer == data);
 }

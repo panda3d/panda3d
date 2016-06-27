@@ -4,8 +4,6 @@ code that runs in a browser via the web plugin. """
 
 __all__ = ["UndefinedObject", "Undefined", "ConcreteStruct", "BrowserObject", "MethodWrapper"]
 
-import types
-
 class UndefinedObject:
     """ This is a special object that is returned by the browser to
     represent an "undefined" or "void" value, typically the value for
@@ -13,8 +11,10 @@ class UndefinedObject:
     attributes, similar to None, but it is a slightly different
     concept in JavaScript. """
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
+
+    __nonzero__ = __bool__ # Python 2
 
     def __str__(self):
         return "Undefined"
@@ -39,8 +39,8 @@ class ConcreteStruct:
         are to be passed to the concrete instance.  By default, this
         returns all properties of the object.  You can override this
         to restrict the set of properties that are uploaded. """
-        
-        return self.__dict__.items()
+
+        return list(self.__dict__.items())
 
 class BrowserObject:
     """ This class provides the Python wrapper around some object that
@@ -83,8 +83,10 @@ class BrowserObject:
     def __str__(self):
         return self.toString()
 
-    def __nonzero__(self):
+    def __bool__(self):
         return True
+
+    __nonzero__ = __bool__ # Python 2
 
     def __call__(self, *args, **kw):
         needsResponse = True
@@ -92,8 +94,8 @@ class BrowserObject:
             needsResponse = kw['needsResponse']
             del kw['needsResponse']
         if kw:
-            raise ArgumentError, 'Keyword arguments not supported'
-        
+            raise ArgumentError('Keyword arguments not supported')
+
         try:
             parentObj, attribName = self.__childObject
             if parentObj:
@@ -105,7 +107,7 @@ class BrowserObject:
                     # problems.
                     needsResponse = False
 
-                if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
+                if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], str):
                     # As another special hack, we make dom.eval() a
                     # special case, and map it directly into an eval()
                     # call.  If the string begins with 'void ', we further
@@ -125,7 +127,7 @@ class BrowserObject:
                 # Cache the method object on the parent so we won't
                 # have to look up the method wrapper again next time.
                 parentObj.__cacheMethod(attribName)
-                
+
             else:
                 # Call it as a plain function.
                 result = self.__runner.scriptRequest('call', self, value = args, needsResponse = needsResponse)
@@ -156,7 +158,7 @@ class BrowserObject:
             if self.__runner.scriptRequest('has_method', self, propertyName = name):
                 # Yes, so create a method wrapper for it.
                 return self.__cacheMethod(name)
-            
+
             raise AttributeError(name)
 
         if isinstance(value, BrowserObject):
@@ -203,7 +205,7 @@ class BrowserObject:
             # for numeric keys so we can properly support Python's
             # iterators, but we return KeyError for string keys to
             # emulate mapping objects.
-            if isinstance(key, types.StringTypes):
+            if isinstance(key, str):
                 raise KeyError(key)
             else:
                 raise IndexError(key)
@@ -215,7 +217,7 @@ class BrowserObject:
                                              propertyName = str(key),
                                              value = value)
         if not result:
-            if isinstance(key, types.StringTypes):
+            if isinstance(key, str):
                 raise KeyError(key)
             else:
                 raise IndexError(key)
@@ -224,7 +226,7 @@ class BrowserObject:
         result = self.__runner.scriptRequest('del_property', self,
                                              propertyName = str(key))
         if not result:
-            if isinstance(key, types.StringTypes):
+            if isinstance(key, str):
                 raise KeyError(key)
             else:
                 raise IndexError(key)
@@ -242,8 +244,10 @@ class MethodWrapper:
         parentObj, attribName = self.__childObject
         return "%s.%s" % (parentObj, attribName)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return True
+
+    __nonzero__ = __bool__ # Python 2
 
     def __call__(self, *args, **kw):
         needsResponse = True
@@ -251,8 +255,8 @@ class MethodWrapper:
             needsResponse = kw['needsResponse']
             del kw['needsResponse']
         if kw:
-            raise ArgumentError, 'Keyword arguments not supported'
-        
+            raise ArgumentError('Keyword arguments not supported')
+
         try:
             parentObj, attribName = self.__childObject
             # Call it as a method.
@@ -263,7 +267,7 @@ class MethodWrapper:
                 # problems.
                 needsResponse = False
 
-            if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
+            if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], str):
                 # As another special hack, we make dom.eval() a
                 # special case, and map it directly into an eval()
                 # call.  If the string begins with 'void ', we further

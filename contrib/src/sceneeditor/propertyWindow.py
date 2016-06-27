@@ -31,17 +31,17 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
     usestatusarea   = 0
     widgetsDict = {}
 
-    
+
     def __init__(self, target, type, info, parent = None, nodePath = render, **kw):
         self.nodePath = target
         self.name = target.getName()
         self.type = type
         self.info = info
-        
+
 
         # Initialise superclass
         Pmw.MegaWidget.__init__(self, parent)
-        
+
         # Define the megawidget options.
         optiondefs = (
             ('title',       self.appname,       None),
@@ -51,12 +51,12 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         if parent == None:
             self.parent = Toplevel()
         AppShell.__init__(self, self.parent)
-        
+
         self.parent.resizable(False,False) ## Disable the ability to resize for this Window.
-        
+
     def appInit(self):
         return
-        
+
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
@@ -110,15 +110,15 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         #### If nodePath has been binded with any curves
         if self.info.has_key('curveList'):
             self.createCurveFrame(self.contentFrame)
-       
+
         ## Set all stuff done
         mainFrame.pack(fill = 'both', expand = 1)
 
-    
+
     def createMenuBar(self):
         # we don't need menu bar here.
         self.menuBar.destroy()
-        
+
     def onDestroy(self, event):
         self.ignore('forPorpertyWindow'+self.name)
         messenger.send('PW_close', [self.name])
@@ -154,7 +154,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             widget = Button(frame, text=buttonText, font=('MSSansSerif', 10), command = defaultFunction)
             widget.pack(side=LEFT, padx=3)
             self.widgetsDict[text+'-'+'DefaultButton']=widget
-            
+
         frame.pack(side = side, fill = fill, expand = expand,pady=3)
 
 
@@ -175,7 +175,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.posX['commandData'] = ['x']
         self.posX['command'] = self.setNodePathPosHprScale
         self.posX.pack(side=LEFT,expand=0,fill=X, padx=1)
-        
+
         self.posY = self.createcomponent('posY', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Y', relief = FLAT,
@@ -185,7 +185,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.posY['commandData'] = ['y']
         self.posY['command'] = self.setNodePathPosHprScale
         self.posY.pack(side=LEFT, expand=0,fill=X, padx=1)
-        
+
         self.posZ = self.createcomponent('posZ', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Z', relief = FLAT,
@@ -215,7 +215,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.hprH['commandData'] = ['h']
         self.hprH['command'] = self.setNodePathPosHprScale
         self.hprH.pack(side = LEFT, expand=0,fill=X)
-        
+
         self.hprP = self.createcomponent('hprP', (), None,
                                          Dial.AngleDial, (hprInterior,),
                                          style = 'mini',
@@ -226,7 +226,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.hprP['commandData'] = ['p']
         self.hprP['command'] = self.setNodePathPosHprScale
         self.hprP.pack(side = LEFT, expand=0,fill=X)
-        
+
         self.hprR = self.createcomponent('hprR', (), None,
                                          Dial.AngleDial, (hprInterior,),
                                          style = 'mini',
@@ -249,7 +249,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         # And, it will set the call back function to setNodePathPosHprScale()
         #################################################################
         scaleInterior = Frame(contentFrame)
-        
+
         self.scale = self.createcomponent('scale', (), None,
                                            Floater.Floater, (scaleInterior,),
                                            text = 'Scale',
@@ -280,10 +280,10 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.nodeColor['command'] = self.setNodeColorVec
         self.nodeColor['resetValue'] = [255,255,255,255]
         self.nodeColor.place(anchor=NW,y=235)
-        self.bind(self.nodeColor, 'Set nodePath color')        
+        self.bind(self.nodeColor, 'Set nodePath color')
         self.nodeColor.pack(side=TOP,expand=0,fill=X, padx=3, pady=3)
         return
-    
+
     def setNodeColorVec(self, color):
         #################################################################
         # setNodeColorVec(self, color)
@@ -295,7 +295,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
                                color[3]/255.0)
         return
 
-    
+
     def setNodePathPosHprScale(self, data, axis):
         #################################################################
         # setNodePathPosHprScale(self, data, axis)
@@ -345,9 +345,9 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
                                       defaultFunction = lambda a = n, b = self : b.deleteCurve(a))
             group.pack(side = TOP, fill = X, expand = 0,pady=3, padx=3)
             self.curveFrame.pack(side = TOP, fill = X, expand = 0,pady=3, padx=3)
-            
+
         return
-    
+
     def deleteCurve(self, number = 0):
         #################################################################
         # deleteCurve(self, number = 0)
@@ -374,7 +374,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             return
         else:
             self.ignore('curveRemovedFromNode')
-            
+
         if curveList!= None:
             del self.info['curveList']
             self.info['curveList'] = curveList
@@ -397,7 +397,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         # cameraInterface(self, interior, mainFrame)
         # Create the interface for camera node.
         #################################################################
-        
+
         ## Type entry : unchageable
         widget = self.createEntryField(contentFrame,'Type:',
                                        value = self.type,
@@ -423,7 +423,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
                           tag_font=('MSSansSerif', 10))
         self.createHprEntry(group.interior())
         group.pack(side=TOP,fill = X, expand = 0, pady=3)
-        
+
         ## near entry
         group = Pmw.Group(contentFrame,tag_text='Lens Property',
                           tag_font=('MSSansSerif', 10))
@@ -471,7 +471,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         widget = Label(frame, text = "Film Size:", font=('MSSansSerif', 10),width=12)
         widget.pack(side=LEFT)
         frame.pack(side = TOP, fill = X, expand = 0, pady=3)
-            
+
         frame = Frame(lensFrame)
         widget = Pmw.EntryField(frame, labelpos='w', label_text = '                        ',
                                 value = self.info['FilmSize'].getX(),
@@ -490,7 +490,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         widget.pack(side=LEFT, padx=3)
         widget = Button(frame, text='Default', font=('MSSansSerif', 10), command = self.defaultCameraFilmSize)
         widget.pack(side=LEFT, padx=3)
-        self.widgetsDict['FilmSize'+'-'+'DefaultButton']=widget            
+        self.widgetsDict['FilmSize'+'-'+'DefaultButton']=widget
         frame.pack(side = TOP, fill = X, expand = 0,pady=0)
 
         ## Focal Length entry
@@ -504,7 +504,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
                                        defaultFunction = self.defaultCameraFocalLength)
         group.pack(side = TOP, fill = X, expand = 0,pady=2)
 
-        
+
     def defaultCameraFar(self):
         #################################################################
         # defaultCameraFar(self)
@@ -655,7 +655,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
                           tag_font=('MSSansSerif', 10))
         self.createPosEntry(group.interior())
         group.pack(side=TOP,fill = X, expand = 0, pady=3)
-        
+
         group = Pmw.Group(contentFrame,tag_text='Orientation',
                           tag_font=('MSSansSerif', 10))
         self.createHprEntry(group.interior())
@@ -689,7 +689,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.nodePath.setTransparency(True)
             self.nodePath.setBin("fixed", 1)
         return
-    
+
     def actorInterface(self, contentFrame):
         #################################################################
         # actorInterface(self, contentFrame)
@@ -744,7 +744,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             return
         else:
             self.ignore('animRemovedFromNode')
-            
+
         if len(animDict)!= 0:
             del self.info['animDict']
             self.info['animDict'] = animDict
@@ -784,14 +784,14 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.lightColor['resetValue'] = [0.3*255,0.3*255,0.3*255,0]
         self.lightColor.pack(side=TOP, fill=X,expand=1, padx = 2, pady =2)
         self.bind(self.lightColor, 'Set light color')
-        
+
         self.varActive = IntVar()
         self.varActive.set(self.lightNode.active)
         checkButton = Checkbutton(frame, text='Enable This Light',
                                   variable=self.varActive, command=self.toggleLight)
         checkButton.pack(side=RIGHT,pady=3)
         lightingGroup.pack(side=TOP, fill = X, expand =1)
-        
+
         # Directional light controls
         if self.lightNode.type == 'directional':
             lightingGroup = Pmw.Group(contentFrame,tag_pyclass=None)
@@ -815,10 +815,10 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.dOrientation['resetValue'] = [0,0,0,0]
             self.dOrientation.pack(fill = X, expand = 1)
             self.bind(self.dOrientation, 'Set directional light orientation')
-            
+
             lightingGroup.pack(side=TOP, fill = X, expand =1)
 
-        
+
         elif self.lightNode.type == 'point':
             # Point light controls
             lightingGroup = Pmw.Group(contentFrame,tag_pyclass=None)
@@ -830,7 +830,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.pSpecularColor.pack(fill = X, expand = 1)
             self.bind(self.pSpecularColor,
                       'Set point light specular color')
-    
+
             self.pPosition = VectorWidgets.Vector3Entry(
                 pointPage, text = 'Position',  label_font=('MSSansSerif', 10),
                 value = [self.lightNode.getPosition().getX(),self.lightNode.getPosition().getY(),self.lightNode.getPosition().getZ(),0])
@@ -848,7 +848,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.pConstantAttenuation.pack(fill = X, expand = 1)
             self.bind(self.pConstantAttenuation,
                       'Set point light constant attenuation')
-           
+
             self.pLinearAttenuation = Slider.Slider(
                 pointPage,
                 text = 'Linear Attenuation', label_font=('MSSansSerif', 10),
@@ -858,7 +858,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.pLinearAttenuation.pack(fill = X, expand = 1)
             self.bind(self.pLinearAttenuation,
                       'Set point light linear attenuation')
-           
+
             self.pQuadraticAttenuation = Slider.Slider(
                 pointPage,
                 text = 'Quadratic Attenuation', label_font=('MSSansSerif', 10),
@@ -871,8 +871,8 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
 
             lightingGroup.pack(side=TOP, fill = X, expand =1)
 
-           
-        elif self.lightNode.type == 'spot':     
+
+        elif self.lightNode.type == 'spot':
             # Spot light controls
             lightingGroup = Pmw.Group(contentFrame,tag_pyclass=None)
             spotPage = lightingGroup.interior()
@@ -893,7 +893,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.sConstantAttenuation.pack(fill = X, expand = 1)
             self.bind(self.sConstantAttenuation,
                       'Set spot light constant attenuation')
-           
+
             self.sLinearAttenuation = Slider.Slider(
                 spotPage,
                 text = 'Linear Attenuation', label_font=('MSSansSerif', 10),
@@ -903,7 +903,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.sLinearAttenuation.pack(fill = X, expand = 1)
             self.bind(self.sLinearAttenuation,
                       'Set spot light linear attenuation')
-           
+
             self.sQuadraticAttenuation = Slider.Slider(
                 spotPage,
                 text = 'Quadratic Attenuation', label_font=('MSSansSerif', 10),
@@ -913,7 +913,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.sQuadraticAttenuation.pack(fill = X, expand = 1)
             self.bind(self.sQuadraticAttenuation,
                       'Set spot light quadratic attenuation')
-           
+
             self.sExponent = Slider.Slider(
                 spotPage,
                 text = 'Exponent', label_font=('MSSansSerif', 10),
@@ -924,7 +924,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.bind(self.sExponent,
                       'Set spot light exponent')
             lightingGroup.pack(side=TOP, fill = X, expand =1)
-            
+
         return
 
     def setLightingColorVec(self,color):
@@ -950,19 +950,19 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             return
         self.lightNode.setOrientation(Vec3(orient[0],orient[1],orient[2]))
         return
-    
+
     def setConstantAttenuation(self, value):
         self.lightNode.setConstantAttenuation(value)
         return
-    
+
     def setLinearAttenuation(self, value):
         self.lightNode.setLinearAttenuation(value)
         return
-    
+
     def setQuadraticAttenuation(self, value):
         self.lightNode.setQuadraticAttenuation(value)
         return
-    
+
     def setExponent(self, value):
         self.lightNode.setExponent(value)
         return
@@ -988,12 +988,12 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
                                        command = None,
                                        initialState='disabled',
                                        side = 'top')
-        
+
         group = Pmw.Group(contentFrame,tag_text='Position',
                           tag_font=('MSSansSerif', 10))
         self.createPosEntry(group.interior())
         group.pack(side=TOP,fill = X, expand = 0, pady=3)
-        
+
         group = Pmw.Group(contentFrame,tag_text='Orientation',
                           tag_font=('MSSansSerif', 10))
         self.createHprEntry(group.interior())
@@ -1027,7 +1027,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         group.pack(side=TOP,fill = X, expand = 0, padx = 3, pady=3)
 
         gridPage = group.interior()
-        
+
         self.xyzSnap = BooleanVar()
         self.xyzSnapButton = Checkbutton(
             gridPage,
@@ -1056,7 +1056,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             value = SEditor.grid.getGridSpacing())
         self.gridSpacing['command'] = SEditor.grid.setGridSpacing
         self.gridSpacing.pack(fill = X, expand = 0, pady=3)
-        
+
         self.gridSize = Floater.Floater(
             gridPage,
             text = 'Grid Size',
@@ -1072,7 +1072,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             value = SEditor.grid.getSnapAngle())
         self.gridSnapAngle['command'] = SEditor.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = X, expand = 0, pady=3)
-        
+
         return
 
     def toggleXyzSnap(self):
@@ -1108,14 +1108,14 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
                           tag_font=('MSSansSerif', 10))
         self.createPosEntry(group.interior())
         group.pack(side=TOP,fill = X, expand = 0, pady=3)
-        
+
         group = Pmw.Group(contentFrame,tag_text='Orientation',
                           tag_font=('MSSansSerif', 10))
         self.createHprEntry(group.interior())
         group.pack(side=TOP,fill = X, expand = 0, pady=3)
 
         self.createScaleEntry(contentFrame)
-        
+
         collisionGroup = Pmw.Group(contentFrame,tag_text='Collision Object Properties',
                           tag_font=('MSSansSerif', 10))
         cObjFrame = collisionGroup.interior()
@@ -1139,7 +1139,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosX['commandData'] = ['sphere-o']
             self.cPosX['command'] = self.setCollisionPosHprScale
             self.cPosX.pack(side=LEFT,expand=0,fill=X, padx=1)
-        
+
             self.cPosY = self.createcomponent('originY', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Y', relief = FLAT,
@@ -1149,7 +1149,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosY['commandData'] = ['sphere-o']
             self.cPosY['command'] = self.setCollisionPosHprScale
             self.cPosY.pack(side=LEFT, expand=0,fill=X, padx=1)
-        
+
             self.cPosZ = self.createcomponent('originZ', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Z', relief = FLAT,
@@ -1164,7 +1164,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             group.pack(side=TOP,fill = X, expand = 0, pady=3)
 
             scaleInterior = Frame(cObjFrame)
-        
+
             self.scaleS = self.createcomponent('radius', (), None,
                                                Floater.Floater, (scaleInterior,),
                                                text = 'Radius',
@@ -1178,7 +1178,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
 
             scaleInterior.pack(side=TOP,expand=0,fill=X, padx=3, pady=3)
             pass
-        
+
         elif cType == 'CollisionPolygon':
             frame = Frame(cObjFrame)
             label = Label(frame, text= "Sorry!",font=('MSSansSerif', 10),
@@ -1199,9 +1199,9 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             label = Label(frame, text= "If you really need to change, recreate one...",font=('MSSansSerif', 10),
                           borderwidth=5)
             label.pack(side=LEFT)
-            frame.pack(side=TOP, fill=X, expand=True)        
+            frame.pack(side=TOP, fill=X, expand=True)
             pass
-        
+
         elif cType == 'CollisionSegment':
             pointA = self.collisionObj.getPointA()
             pointB = self.collisionObj.getPointB()
@@ -1217,7 +1217,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosX['commandData'] = ['segment-A']
             self.cPosX['command'] = self.setCollisionPosHprScale
             self.cPosX.pack(side=LEFT,expand=0,fill=X, padx=1)
-        
+
             self.cPosY = self.createcomponent('pointA-Y', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Y', relief = FLAT,
@@ -1227,7 +1227,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosY['commandData'] = ['segment-A']
             self.cPosY['command'] = self.setCollisionPosHprScale
             self.cPosY.pack(side=LEFT, expand=0,fill=X, padx=1)
-        
+
             self.cPosZ = self.createcomponent('pointA-Z', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Z', relief = FLAT,
@@ -1251,7 +1251,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosXB['commandData'] = ['segment-B']
             self.cPosXB['command'] = self.setCollisionPosHprScale
             self.cPosXB.pack(side=LEFT,expand=0,fill=X, padx=1)
-        
+
             self.cPosYB = self.createcomponent('pointB-Y', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Y', relief = FLAT,
@@ -1261,7 +1261,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosYB['commandData'] = ['segment-B']
             self.cPosYB['command'] = self.setCollisionPosHprScale
             self.cPosYB.pack(side=LEFT, expand=0,fill=X, padx=1)
-        
+
             self.cPosZB = self.createcomponent('pointB-Z', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Z', relief = FLAT,
@@ -1289,7 +1289,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosX['commandData'] = ['ray-A']
             self.cPosX['command'] = self.setCollisionPosHprScale
             self.cPosX.pack(side=LEFT,expand=0,fill=X, padx=1)
-        
+
             self.cPosY = self.createcomponent('origin-Y', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Y', relief = FLAT,
@@ -1299,7 +1299,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosY['commandData'] = ['ray-A']
             self.cPosY['command'] = self.setCollisionPosHprScale
             self.cPosY.pack(side=LEFT, expand=0,fill=X, padx=1)
-        
+
             self.cPosZ = self.createcomponent('origin-Z', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Z', relief = FLAT,
@@ -1323,7 +1323,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosXB['commandData'] = ['ray-B']
             self.cPosXB['command'] = self.setCollisionPosHprScale
             self.cPosXB.pack(side=LEFT,expand=0,fill=X, padx=1)
-        
+
             self.cPosYB = self.createcomponent('direction-Y', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Y', relief = FLAT,
@@ -1333,7 +1333,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             self.cPosYB['commandData'] = ['ray-B']
             self.cPosYB['command'] = self.setCollisionPosHprScale
             self.cPosYB.pack(side=LEFT, expand=0,fill=X, padx=1)
-        
+
             self.cPosZB = self.createcomponent('direction-Z', (), None,
                                              Floater.Floater, (posInterior,),
                                              text = 'Z', relief = FLAT,
@@ -1346,7 +1346,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             posInterior.pack(side=TOP, expand=0,fill=X, padx=3, pady=3)
             group.pack(side=TOP,fill = X, expand = 0, pady=3)
             pass
-            
+
         collisionGroup.pack(side=TOP,fill = X, expand = 0, pady=3)
 
         return
@@ -1422,18 +1422,18 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.hprR.set(hpr.getZ())
         self.scale.set(scale.getX())
         return
-    
+
     def trackDataFromSceneLight(self, pos=Point3(0,0,0), hpr=Vec3(0,0,0), scale=Point3(0,0,0)):
         if self.lightNode.type == 'directional':
             self.dPosition.set([pos.getX(),pos.getY(),pos.getZ()])
             self.dOrientation.set([hpr.getX(),hpr.getY(),hpr.getZ()])
             pass
-        
+
         elif self.lightNode.type == 'point':
             self.pPosition.set([pos.getX(),pos.getY(),pos.getZ()])
-            pass       
+            pass
         return
-    
+
     def trackDataFromSceneDummy(self, pos=Point3(0,0,0), hpr=Vec3(0,0,0), scale=Point3(0,0,0)):
         self.posX.set(pos.getX())
         self.posY.set(pos.getY())
@@ -1443,7 +1443,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.hprR.set(hpr.getZ())
         self.scale.set(scale.getX())
         return
-    
+
     def trackDataFromSceneCollision(self, pos=Point3(0,0,0), hpr=Vec3(0,0,0), scale=Point3(0,0,0)):
         self.posX.set(pos.getX())
         self.posY.set(pos.getY())
@@ -1453,4 +1453,4 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         self.hprR.set(hpr.getZ())
         self.scale.set(scale.getX())
         return
-        
+

@@ -30,7 +30,7 @@ class TexViewer(DirectObject):
         ls.drawTo(l, 0, t)
         ls.drawTo(l, 0, b)
         cards.attachNewNode(ls.create())
-        
+
 
         # And the "simple", reduced-resolution version goes on the
         # right.

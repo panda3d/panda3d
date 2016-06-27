@@ -1,16 +1,15 @@
-// Filename: bitArray.cxx
-// Created by:  drose (20Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bitArray.cxx
+ * @author drose
+ * @date 2006-01-20
+ */
 
 #include "bitArray.h"
 #include "sparseArray.h"
@@ -19,11 +18,9 @@
 
 TypeHandle BitArray::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Constructor (from SparseArray)
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BitArray::
 BitArray(const SparseArray &from) {
   _highest_bits = 0;
@@ -40,17 +37,14 @@ BitArray(const SparseArray &from) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::is_zero
-//       Access: Published
-//  Description: Returns true if the entire bitmask is zero, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the entire bitmask is zero, false otherwise.
+ */
 bool BitArray::
 is_zero() const {
   if (_highest_bits) {
-    // If all the infinite highest bits are set, certainly the bitmask
-    // is nonzero.
+    // If all the infinite highest bits are set, certainly the bitmask is
+    // nonzero.
     return false;
   }
 
@@ -64,17 +58,14 @@ is_zero() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::is_all_on
-//       Access: Published
-//  Description: Returns true if the entire bitmask is one, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the entire bitmask is one, false otherwise.
+ */
 bool BitArray::
 is_all_on() const {
   if (!_highest_bits) {
-    // If all the infinite highest bits are not set, certainly the
-    // bitmask is not all on.
+    // If all the infinite highest bits are not set, certainly the bitmask is
+    // not all on.
     return false;
   }
 
@@ -87,12 +78,9 @@ is_all_on() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::has_any_of
-//       Access: Published
-//  Description: Returns true if any bit in the indicated range is
-//               set, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any bit in the indicated range is set, false otherwise.
+ */
 bool BitArray::
 has_any_of(int low_bit, int size) const {
   if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
@@ -143,12 +131,9 @@ has_any_of(int low_bit, int size) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::has_all_of
-//       Access: Published
-//  Description: Returns true if all bits in the indicated range are
-//               set, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all bits in the indicated range are set, false otherwise.
+ */
 bool BitArray::
 has_all_of(int low_bit, int size) const {
   if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
@@ -199,11 +184,9 @@ has_all_of(int low_bit, int size) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::set_range
-//       Access: Published
-//  Description: Sets the indicated range of bits on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated range of bits on.
+ */
 void BitArray::
 set_range(int low_bit, int size) {
   int w = low_bit / num_bits_per_word;
@@ -251,11 +234,9 @@ set_range(int low_bit, int size) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::clear_range
-//       Access: Published
-//  Description: Sets the indicated range of bits off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated range of bits off.
+ */
 void BitArray::
 clear_range(int low_bit, int size) {
   int w = low_bit / num_bits_per_word;
@@ -303,13 +284,10 @@ clear_range(int low_bit, int size) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_num_on_bits
-//       Access: Published
-//  Description: Returns the number of bits that are set to 1 in the
-//               array.  Returns -1 if there are an infinite number of
-//               1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits that are set to 1 in the array.  Returns -1 if
+ * there are an infinite number of 1 bits.
+ */
 int BitArray::
 get_num_on_bits() const {
   if (_highest_bits) {
@@ -324,13 +302,10 @@ get_num_on_bits() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_num_off_bits
-//       Access: Published
-//  Description: Returns the number of bits that are set to 0 in the
-//               array.  Returns -1 if there are an infinite number of
-//               0 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits that are set to 0 in the array.  Returns -1 if
+ * there are an infinite number of 0 bits.
+ */
 int BitArray::
 get_num_off_bits() const {
   if (!_highest_bits) {
@@ -345,12 +320,10 @@ get_num_off_bits() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_lowest_on_bit
-//       Access: Published
-//  Description: Returns the index of the lowest 1 bit in the array.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 1 bit in the array.  Returns -1 if there
+ * are no 1 bits.
+ */
 int BitArray::
 get_lowest_on_bit() const {
   int num_words = get_num_words();
@@ -367,12 +340,10 @@ get_lowest_on_bit() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_lowest_off_bit
-//       Access: Published
-//  Description: Returns the index of the lowest 0 bit in the array.
-//               Returns -1 if there are no 0 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 0 bit in the array.  Returns -1 if there
+ * are no 0 bits.
+ */
 int BitArray::
 get_lowest_off_bit() const {
   int num_words = get_num_words();
@@ -389,13 +360,10 @@ get_lowest_off_bit() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_highest_on_bit
-//       Access: Published
-//  Description: Returns the index of the highest 1 bit in the array.
-//               Returns -1 if there are no 1 bits or if there an
-//               infinite number of 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 1 bit in the array.  Returns -1 if there
+ * are no 1 bits or if there an infinite number of 1 bits.
+ */
 int BitArray::
 get_highest_on_bit() const {
   if (_highest_bits) {
@@ -411,13 +379,10 @@ get_highest_on_bit() const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_highest_off_bit
-//       Access: Published
-//  Description: Returns the index of the highest 0 bit in the array.
-//               Returns -1 if there are no 0 bits or if there an
-//               infinite number of 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 0 bit in the array.  Returns -1 if there
+ * are no 0 bits or if there an infinite number of 1 bits.
+ */
 int BitArray::
 get_highest_off_bit() const {
   if (!_highest_bits) {
@@ -433,17 +398,13 @@ get_highest_off_bit() const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_next_higher_different_bit
-//       Access: Published
-//  Description: Returns the index of the next bit in the array, above
-//               low_bit, whose value is different that the value of
-//               low_bit.  Returns low_bit again if all bits higher
-//               than low_bit have the same value.
-//
-//               This can be used to quickly iterate through all of
-//               the bits in the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the next bit in the array, above low_bit, whose value
+ * is different that the value of low_bit.  Returns low_bit again if all bits
+ * higher than low_bit have the same value.
+ *
+ * This can be used to quickly iterate through all of the bits in the array.
+ */
 int BitArray::
 get_next_higher_different_bit(int low_bit) const {
   int w = low_bit / num_bits_per_word;
@@ -473,17 +434,15 @@ get_next_higher_different_bit(int low_bit) const {
     // The first bit of word w2 is different.
     return w2 * num_bits_per_word;
   }
-  
+
   b2 = _array[w2].get_next_higher_different_bit(0);
   return w2 * num_bits_per_word + b2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::invert_in_place
-//       Access: Published
-//  Description: Inverts all the bits in the BitArray.  This is
-//               equivalent to array = ~array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inverts all the bits in the BitArray.  This is equivalent to array =
+ * ~array.
+ */
 void BitArray::
 invert_in_place() {
   _highest_bits = !_highest_bits;
@@ -494,15 +453,12 @@ invert_in_place() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::has_bits_in_common
-//       Access: Published
-//  Description: Returns true if this BitArray has any "one" bits in
-//               common with the other one, false otherwise.
-//
-//               This is equivalent to (array & other) != 0, but may
-//               be faster.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this BitArray has any "one" bits in common with the other
+ * one, false otherwise.
+ *
+ * This is equivalent to (array & other) != 0, but may be faster.
+ */
 bool BitArray::
 has_bits_in_common(const BitArray &other) const {
   if (_highest_bits && other._highest_bits) {
@@ -514,9 +470,9 @@ has_bits_in_common(const BitArray &other) const {
 
   // Consider the words that are on top of either array.
   if (other._array.size() < _array.size() && other._highest_bits) {
-    // The other array has fewer actual words, and the top n words of
-    // the other array are all ones.  We have bits in common if any of
-    // our top n words are nonzero.
+    // The other array has fewer actual words, and the top n words of the
+    // other array are all ones.  We have bits in common if any of our top n
+    // words are nonzero.
     Array::const_iterator ai;
     for (ai = _array.begin() + other._array.size();
          ai != _array.end();
@@ -525,11 +481,11 @@ has_bits_in_common(const BitArray &other) const {
         return true;
       }
     }
-    
+
   } else if (_array.size() < other._array.size() && _highest_bits) {
-    // This array has fewer actual words, and the top n words of this
-    // array are all ones.  We have bits in common if any of the the
-    // other's top n words are nonzero.
+    // This array has fewer actual words, and the top n words of this array
+    // are all ones.  We have bits in common if any of the the other's top n
+    // words are nonzero.
     Array::const_iterator ai;
     for (ai = other._array.begin() + _array.size();
          ai != other._array.end();
@@ -551,25 +507,19 @@ has_bits_in_common(const BitArray &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::output
-//       Access: Published
-//  Description: Writes the BitArray out as a hex number.  For a
-//               BitArray, this is always the same as output_hex();
-//               it's too confusing for the output format to change
-//               back and forth at runtime.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitArray out as a hex number.  For a BitArray, this is always
+ * the same as output_hex(); it's too confusing for the output format to
+ * change back and forth at runtime.
+ */
 void BitArray::
 output(ostream &out) const {
   output_hex(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::output_binary
-//       Access: Published
-//  Description: Writes the BitArray out as a binary number, with
-//               spaces every four bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitArray out as a binary number, with spaces every four bits.
+ */
 void BitArray::
 output_binary(ostream &out, int spaces_every) const {
   if (_highest_bits) {
@@ -584,12 +534,10 @@ output_binary(ostream &out, int spaces_every) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::output_hex
-//       Access: Published
-//  Description: Writes the BitArray out as a hexadecimal number, with
-//               spaces every four digits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitArray out as a hexadecimal number, with spaces every four
+ * digits.
+ */
 void BitArray::
 output_hex(ostream &out, int spaces_every) const {
   int num_bits = get_num_bits();
@@ -612,25 +560,20 @@ output_hex(ostream &out, int spaces_every) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::write
-//       Access: Published
-//  Description: Writes the BitArray out as a binary or a hex number,
-//               according to the number of bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitArray out as a binary or a hex number, according to the
+ * number of bits.
+ */
 void BitArray::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this BitArray sorts
-//               before the indicated other BitArray, greater than zero
-//               if it sorts after, or 0 if they are equivalent.  This
-//               is based on the same ordering defined by operator <.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if this BitArray sorts before the indicated
+ * other BitArray, greater than zero if it sorts after, or 0 if they are
+ * equivalent.  This is based on the same ordering defined by operator <.
+ */
 int BitArray::
 compare_to(const BitArray &other) const {
   if (_highest_bits != other._highest_bits) {
@@ -650,11 +593,9 @@ compare_to(const BitArray &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator &=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BitArray::
 operator &= (const BitArray &other) {
   size_t num_common_words = min(_array.size(), other._array.size());
@@ -663,15 +604,13 @@ operator &= (const BitArray &other) {
 
   // Consider the words that are on top of either array.
   if (other._array.size() < _array.size() && !other._highest_bits) {
-    // The other array has fewer actual words, and the top n words of
-    // the other array are all zeroes.  "mask off" the top n words of
-    // this array.
+    // The other array has fewer actual words, and the top n words of the
+    // other array are all zeroes.  "mask off" the top n words of this array.
     _array.erase(_array.begin() + other._array.size(), _array.end());
 
   } else if (_array.size() < other._array.size() && _highest_bits) {
-    // This array has fewer actual words, and the top n words of this
-    // array are all ones.  "mask on" the top n words of the other
-    // array.
+    // This array has fewer actual words, and the top n words of this array
+    // are all ones.  "mask on" the top n words of the other array.
     Array::const_iterator ai;
     for (ai = other._array.begin() + _array.size();
          ai != other._array.end();
@@ -689,11 +628,9 @@ operator &= (const BitArray &other) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator |=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BitArray::
 operator |= (const BitArray &other) {
   size_t num_common_words = min(_array.size(), other._array.size());
@@ -702,15 +639,14 @@ operator |= (const BitArray &other) {
 
   // Consider the words that are on top of either array.
   if (other._array.size() < _array.size() && other._highest_bits) {
-    // The other array has fewer actual words, and the top n words of
-    // the other array are all ones.  The top n words of this array
-    // become ones too (which means we can drop them out).
+    // The other array has fewer actual words, and the top n words of the
+    // other array are all ones.  The top n words of this array become ones
+    // too (which means we can drop them out).
     _array.erase(_array.begin() + other._array.size(), _array.end());
 
   } else if (_array.size() < other._array.size() && !_highest_bits) {
-    // This array has fewer actual words, and the top n words of this
-    // array are all zeros.  Copy in the top n words of the other
-    // array.
+    // This array has fewer actual words, and the top n words of this array
+    // are all zeros.  Copy in the top n words of the other array.
     Array::const_iterator ai;
     for (ai = other._array.begin() + _array.size();
          ai != other._array.end();
@@ -728,11 +664,9 @@ operator |= (const BitArray &other) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator ^=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BitArray::
 operator ^= (const BitArray &other) {
   size_t num_common_words = min(_array.size(), other._array.size());
@@ -741,9 +675,8 @@ operator ^= (const BitArray &other) {
 
   // Consider the words that are on top of either array.
   if (other._array.size() < _array.size() && other._highest_bits) {
-    // The other array has fewer actual words, and the top n words of
-    // the other array are all ones.  The top n words of this array
-    // get inverted.
+    // The other array has fewer actual words, and the top n words of the
+    // other array are all ones.  The top n words of this array get inverted.
     Array::iterator ai;
     for (ai = _array.begin() + other._array.size();
          ai != _array.end();
@@ -753,9 +686,8 @@ operator ^= (const BitArray &other) {
 
   } else if (_array.size() < other._array.size()) {
     if (!_highest_bits) {
-      // This array has fewer actual words, and the top n words of this
-      // array are all zeros.  Copy in the top n words of the other
-      // array.
+      // This array has fewer actual words, and the top n words of this array
+      // are all zeros.  Copy in the top n words of the other array.
       Array::const_iterator ai;
       for (ai = other._array.begin() + _array.size();
            ai != other._array.end();
@@ -763,9 +695,8 @@ operator ^= (const BitArray &other) {
         _array.push_back(*ai);
       }
     } else {
-      // This array has fewer actual words, and the top n words of this
-      // array are all ones.  Copy in the top n words of the other
-      // array, inverted.
+      // This array has fewer actual words, and the top n words of this array
+      // are all ones.  Copy in the top n words of the other array, inverted.
       Array::const_iterator ai;
       for (ai = other._array.begin() + _array.size();
            ai != other._array.end();
@@ -784,13 +715,10 @@ operator ^= (const BitArray &other) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator <<=
-//       Access: Published
-//  Description: Logical left shift.  The rightmost bits are filled in
-//               with zeroes.  Since this is an infinite bit array,
-//               none of the bits on the left are lost.
-////////////////////////////////////////////////////////////////////
+/**
+ * Logical left shift.  The rightmost bits are filled in with zeroes.  Since
+ * this is an infinite bit array, none of the bits on the left are lost.
+ */
 void BitArray::
 operator <<= (int shift) {
   if (shift == 0 || _array.empty()) {
@@ -851,14 +779,11 @@ operator <<= (int shift) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator >>=
-//       Access: Published
-//  Description: Logical right shift.  The rightmost bits are lost.
-//               Since this is an infinite bit array, there is no
-//               question of sign extension; there is no need to
-//               synthesize bits on the left.
-////////////////////////////////////////////////////////////////////
+/**
+ * Logical right shift.  The rightmost bits are lost.  Since this is an
+ * infinite bit array, there is no question of sign extension; there is no
+ * need to synthesize bits on the left.
+ */
 void BitArray::
 operator >>= (int shift) {
   if (shift == 0 || _array.empty()) {
@@ -900,7 +825,7 @@ operator >>= (int shift) {
     Array::const_iterator ai = _array.begin() + w;
     nassertv(ai < _array.end());
     MaskType next_bits = ((*ai) & upper_mask) >> b;
-    
+
     ++ai;
     while (ai != _array.end()) {
       new_array.push_back((((*ai) & lower_mask) << upshift_count) | next_bits);
@@ -919,11 +844,9 @@ operator >>= (int shift) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::generate_hash
-//       Access: Public
-//  Description: Adds the bitmask to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the bitmask to the indicated hash generator.
+ */
 void BitArray::
 generate_hash(ChecksumHashGenerator &hashgen) const {
   hashgen.add_int(_highest_bits);
@@ -933,12 +856,9 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::ensure_has_word
-//       Access: Private
-//  Description: Ensures that at least word n has been allocated into
-//               the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that at least word n has been allocated into the array.
+ */
 void BitArray::
 ensure_has_word(int n) {
   copy_on_write();
@@ -954,13 +874,10 @@ ensure_has_word(int n) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::normalize
-//       Access: Private
-//  Description: Ensures that the array is the smallest array that
-//               represents this same value, by removing the topmost
-//               words that are all bits off (or on).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the array is the smallest array that represents this same
+ * value, by removing the topmost words that are all bits off (or on).
+ */
 void BitArray::
 normalize() {
   if (_highest_bits) {
@@ -982,12 +899,10 @@ normalize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::write_datagram
-//       Access: Public
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void BitArray::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint32(_array.size());
@@ -998,12 +913,9 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint8(_highest_bits);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::read_datagram
-//       Access: Public
-//  Description: Reads the object that was previously written to a Bam
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the object that was previously written to a Bam file.
+ */
 void BitArray::
 read_datagram(DatagramIterator &scan, BamReader *manager) {
   size_t num_words = scan.get_uint32();

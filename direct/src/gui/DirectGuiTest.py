@@ -5,7 +5,8 @@ __all__ = []
 
 if __name__ == "__main__":
     from direct.showbase.ShowBase import ShowBase
-    from DirectGui import *
+    from . import DirectGuiGlobals
+    from .DirectGui import *
     #from whrandom import *
     from random import *
 
@@ -17,7 +18,7 @@ if __name__ == "__main__":
 
     # Here we specify the button's command
     def dummyCmd(index):
-        print 'Button %d POW!!!!' % index
+        print('Button %d POW!!!!' % index)
 
     # Define some commands to bind to enter, exit and click events
     def shrink(db):
@@ -46,7 +47,7 @@ if __name__ == "__main__":
         db.component('geom0').setScale(db.component('geom2').getScale()[0])
         db.component('geom1').setScale(db.component('geom2').getScale()[0])
         db['text2_text'] = 'Ouch!'
-        db['geom2_color'] = Vec4(1, 0, 0, 1)
+        db['geom2_color'] = (1, 0, 0, 1)
         newX = -1.0 + random() * 2.0
         newZ = -1.0 + random() * 2.0
         db.lerpPos(Point3(newX, 0, newZ), 1.0, task = 'runAway',
@@ -66,7 +67,7 @@ if __name__ == "__main__":
                           text = ('Hi!', 'Ouch!', 'Bye!', 'ZZZZ!'),
                           scale = .15, relief = 'raised',
                           # Here we set an option for a component of the button
-                          geom1_color = Vec4(1, 0, 0, 1),
+                          geom1_color = (1, 0, 0, 1),
                           # Here is an example of a component group option
                           text_pos = (.6, -.8),
                           # Set audio characteristics
@@ -93,7 +94,7 @@ if __name__ == "__main__":
 
     # DIRECT ENTRY EXAMPLE
     def printEntryText(text):
-        print 'Text:', text
+        print('Text: %s' % (text))
 
     # Here we create an entry, and specify everything up front
     # CALL de1.get() and de1.set('new text') to get and set entry contents
@@ -109,7 +110,7 @@ if __name__ == "__main__":
 
     # DIRECT DIALOG EXAMPLE
     def printDialogValue(value):
-        print 'Value:', value
+        print('Value: %s' % (value))
 
     simpleDialog = YesNoDialog(text = 'Simple',
                                command = printDialogValue)
@@ -135,9 +136,9 @@ if __name__ == "__main__":
     # NOTE: There are some utility functions which help you get size
     # of a direct gui widget.  These can be used to position and scale an
     # image after you've created the entry.  scale = (width/2, 1, height/2)
-    print 'BOUNDS:', de1.getBounds()
-    print 'WIDTH:', de1.getWidth()
-    print 'HEIGHT:', de1.getHeight()
-    print 'CENTER:', de1.getCenter()
+    print('BOUNDS: %s' % de1.getBounds())
+    print('WIDTH: %s' % de1.getWidth())
+    print('HEIGHT: %s' % de1.getHeight())
+    print('CENTER: %s' % (de1.getCenter(),))
 
-    run()
+    base.run()

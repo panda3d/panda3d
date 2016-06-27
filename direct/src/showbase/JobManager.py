@@ -64,7 +64,7 @@ class JobManager:
         elif pri > self._highestPriority:
             self._highestPriority = pri
         self.notify.debug('added job: %s' % job.getJobName())
-        
+
     def remove(self, job):
         jobId = job._getJobId()
         # look up the job's priority
@@ -106,7 +106,7 @@ class JobManager:
         job.resume()
         while True:
             try:
-                result = gen.next()
+                result = next(gen)
             except StopIteration:
                 # Job didn't yield Job.Done, it ran off the end and returned
                 # treat it as if it returned Job.Done
@@ -137,7 +137,7 @@ class JobManager:
 
     def _getSortedPriorities(self):
         # returns all job priorities in ascending order
-        priorities = self._pri2jobId2job.keys()
+        priorities = list(self._pri2jobId2job.keys())
         priorities.sort()
         return priorities
 
@@ -152,11 +152,11 @@ class JobManager:
                 if self._jobIdGenerator is None:
                     # round-robin the jobs, giving high-priority jobs more timeslices
                     self._jobIdGenerator = flywheel(
-                        self._jobId2timeslices.keys(),
+                        list(self._jobId2timeslices.keys()),
                         countFunc = lambda jobId: self._jobId2timeslices[jobId])
                 try:
                     # grab the next jobId in the sequence
-                    jobId = self._jobIdGenerator.next()
+                    jobId = next(self._jobIdGenerator)
                 except StopIteration:
                     self._jobIdGenerator = None
                     continue
@@ -181,7 +181,7 @@ class JobManager:
                 job.resume()
                 while globalClock.getRealTime() < endT:
                     try:
-                        result = gen.next()
+                        result = next(gen)
                     except StopIteration:
                         # Job didn't yield Job.Done, it ran off the end and returned
                         # treat it as if it returned Job.Done
@@ -213,7 +213,7 @@ class JobManager:
                     if __debug__:
                         job._pstats.stop()
                     break
-                
+
                 if len(self._pri2jobId2job) == 0:
                     # there's nothing left to do, all the jobs are done!
                     break

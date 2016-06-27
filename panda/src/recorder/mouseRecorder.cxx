@@ -1,16 +1,15 @@
-// Filename: mouseRecorder.cxx
-// Created by:  drose (24Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mouseRecorder.cxx
+ * @author drose
+ * @date 2004-01-24
+ */
 
 #include "mouseRecorder.h"
 #include "recorderController.h"
@@ -20,11 +19,9 @@
 
 TypeHandle MouseRecorder::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MouseRecorder::
 MouseRecorder(const string &name) :
   DataNode(name)
@@ -46,23 +43,18 @@ MouseRecorder(const string &name) :
   _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MouseRecorder::
 ~MouseRecorder() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::record_frame
-//       Access: Public, Virtual
-//  Description: Records the most recent data collected into the
-//               indicated datagram, and returns true if there is any
-//               interesting data worth recording, or false if the
-//               datagram is meaningless.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the most recent data collected into the indicated datagram, and
+ * returns true if there is any interesting data worth recording, or false if
+ * the datagram is meaningless.
+ */
 void MouseRecorder::
 record_frame(BamWriter *manager, Datagram &dg) {
   nassertv(is_recording());
@@ -76,12 +68,9 @@ record_frame(BamWriter *manager, Datagram &dg) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::play_frame
-//       Access: Public, Virtual
-//  Description: Reloads the most recent data collected from the
-//               indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reloads the most recent data collected from the indicated datagram.
+ */
 void MouseRecorder::
 play_frame(DatagramIterator &scan, BamReader *manager) {
   nassertv(is_playing());
@@ -95,39 +84,30 @@ play_frame(DatagramIterator &scan, BamReader *manager) {
   _save_button_events->add_events(button_events);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void MouseRecorder::
 output(ostream &out) const {
   DataNode::output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void MouseRecorder::
 write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output
+ * parameters.  The input parameters may be accessed with the index numbers
+ * returned by the define_input() calls that were made earlier (presumably in
+ * the constructor); likewise, the output parameters should be set with the
+ * index numbers returned by the define_output() calls.
+ */
 void MouseRecorder::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
@@ -138,8 +118,8 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   _live_button_events->clear();
 
   if (is_playing()) {
-    // If we're playing back data, copy in the data from a previous
-    // call to play_frame().
+    // If we're playing back data, copy in the data from a previous call to
+    // play_frame().
     has_mouse = _has_mouse;
     mouse_xy = _mouse_xy;
     mouse_pixel_xy = _mouse_pixel_xy;
@@ -147,8 +127,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     _save_button_events->clear();
 
   } else {
-    // If we're not playing back data, query the data from the data
-    // graph
+    // If we're not playing back data, query the data from the data graph
 
     if (input.has_data(_xy_input)) {
       // The mouse is within the window.  Get the current mouse position.
@@ -194,53 +173,42 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   output.set_data(_pixel_size_output, input.get_data(_pixel_size_input));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Lens.
+ */
 void MouseRecorder::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
   RecorderController::get_factory()->register_factory(get_class_type(), make_recorder);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void MouseRecorder::
 write_datagram(BamWriter *manager, Datagram &dg) {
   DataNode::write_datagram(manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::write_recorder
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for encoding in the session file.  This is very
-//               similar to write_datagram() for TypedWritable
-//               objects, but it is used specifically to write the
-//               Recorder object when generating the session file.  In
-//               many cases, it will be the same as write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for encoding in the
+ * session file.  This is very similar to write_datagram() for TypedWritable
+ * objects, but it is used specifically to write the Recorder object when
+ * generating the session file.  In many cases, it will be the same as
+ * write_datagram().
+ */
 void MouseRecorder::
 write_recorder(BamWriter *manager, Datagram &dg) {
   RecorderBase::write_recorder(manager, dg);
   DataNode::write_recorder(manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Lens is encountered
-//               in the Bam file.  It should create the Lens
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type Lens is encountered in the Bam file.  It should create the Lens and
+ * extract its information from the file.
+ */
 TypedWritable *MouseRecorder::
 make_from_bam(const FactoryParams &params) {
   MouseRecorder *node = new MouseRecorder("");
@@ -253,13 +221,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::make_recorder
-//       Access: Protected, Static
-//  Description: This is similar to make_from_bam(), but it is
-//               designed for loading the RecorderBase object from the
-//               session log created by a RecorderController.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to make_from_bam(), but it is designed for loading the
+ * RecorderBase object from the session log created by a RecorderController.
+ */
 RecorderBase *MouseRecorder::
 make_recorder(const FactoryParams &params) {
   MouseRecorder *node = new MouseRecorder("");
@@ -272,25 +237,19 @@ make_recorder(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new MouseRecorder.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new MouseRecorder.
+ */
 void MouseRecorder::
 fillin(DatagramIterator &scan, BamReader *manager) {
   DataNode::fillin(scan, manager);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseRecorder::fillin_recorder
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new MouseRecorder.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new MouseRecorder.
+ */
 void MouseRecorder::
 fillin_recorder(DatagramIterator &scan, BamReader *manager) {
   RecorderBase::fillin_recorder(scan, manager);

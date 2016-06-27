@@ -1,22 +1,21 @@
-// Filename: dtoolbase_cc.h
-// Created by:  drose (13Sep00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dtoolbase_cc.h
+ * @author drose
+ * @date 2000-09-13
+ */
 
 #ifndef DTOOLBASE_CC_H
 #define DTOOLBASE_CC_H
 
-// This file should never be included directly; it's intended to be
-// included only from dtoolbase.h.  Include that file instead.
+// This file should never be included directly; it's intended to be included
+// only from dtoolbase.h.  Include that file instead.
 
 #ifdef __cplusplus
 
@@ -36,16 +35,16 @@ using namespace std;
 #define TYPENAME typename
 #define CONSTEXPR constexpr
 #define NOEXCEPT noexcept
-#define FINAL
-#define OVERRIDE
+#define FINAL final
+#define OVERRIDE override
 #define MOVE(x) x
+#define DEFAULT_CTOR = default
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
-// We define the macro PUBLISHED to mark C++ methods that are to be
-// published via interrogate to scripting languages.  However, if
-// we're not running the interrogate pass (CPPPARSER isn't defined),
-// this maps to public.
+// We define the macro PUBLISHED to mark C++ methods that are to be published
+// via interrogate to scripting languages.  However, if we're not running the
+// interrogate pass (CPPPARSER isn't defined), this maps to public.
 #define PUBLISHED __published
 
 typedef int ios_openmode;
@@ -124,9 +123,9 @@ typedef ios::seekdir ios_seekdir;
 #endif
 
 #ifdef FORCE_INLINING
-// If FORCE_INLINING is defined, we use the keyword __forceinline,
-// which tells MS VC++ to override its internal benefit heuristic
-// and inline the fn if it is technically possible to do so.
+// If FORCE_INLINING is defined, we use the keyword __forceinline, which tells
+// MS VC++ to override its internal benefit heuristic and inline the fn if it
+// is technically possible to do so.
 #define INLINE ALWAYS_INLINE
 #else
 #define INLINE inline
@@ -136,93 +135,113 @@ typedef ios::seekdir ios_seekdir;
 #if defined(__has_extension) // Clang magic.
 #  if __has_extension(cxx_constexpr)
 #    define CONSTEXPR constexpr
-#  else
-#    define CONSTEXPR INLINE
 #  endif
 #  if __has_extension(cxx_noexcept)
 #    define NOEXCEPT noexcept
-#  else
-#    define NOEXCEPT
 #  endif
 #  if __has_extension(cxx_rvalue_references) && (__cplusplus >= 201103L)
 #    define USE_MOVE_SEMANTICS
 #    define MOVE(x) move(x)
-#  else
-#    define MOVE(x) x
 #  endif
 #  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
 #    define FINAL final
 #    define OVERRIDE override
-#  else
-#    define FINAL
-#    define OVERRIDE
 #  endif
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
-// noexcept was introduced in GCC 4.6, constexpr in GCC 4.7, rvalue refs in
-// GCC 4.3.  However, GCC only started defining __cplusplus properly in 4.7.
+#  if __has_extension(cxx_defaulted_functions)
+#     define DEFAULT_CTOR = default
+#  endif
+#elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
+
+// GCC defines several macros which we can query.  List of all supported
+// builtin macros: https:gcc.gnu.orgprojectscxx0x.html
+#  if __cpp_constexpr >= 200704
+#    define CONSTEXPR constexpr
+#  endif
+
+// Starting at GCC 4.4
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
+#  define DEFAULT_CTOR = default
+#  endif
+
+// Starting at GCC 4.6
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#    define NOEXCEPT noexcept
+#    define USE_MOVE_SEMANTICS
+#    define FINAL final
+#    define MOVE(x) move(x)
+#  endif
+
+// Starting at GCC 4.7
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+#    define OVERRIDE override
+#  endif
+
+#elif defined(_MSC_VER) && _MSC_VER >= 1900 // Visual Studio 2015
 #  define CONSTEXPR constexpr
 #  define NOEXCEPT noexcept
 #  define USE_MOVE_SEMANTICS
 #  define FINAL final
 #  define OVERRIDE override
 #  define MOVE(x) move(x)
-#elif defined(_MSC_VER) && _MSC_VER >= 1900
-// MSVC 2015 supports all of this goodness.
-#  define CONSTEXPR constexpr
-#  define NOEXCEPT noexcept
-#  define USE_MOVE_SEMANTICS
-#  define FINAL final
-#  define OVERRIDE override
-#  define MOVE(x) move(x)
-#elif defined(_MSC_VER) && _MSC_VER >= 1600
-// MSVC 2010 has move semantics.  Not much else.
-#  define CONSTEXPR INLINE
+#  define DEFAULT_CTOR = default
+#elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
 #  define NOEXCEPT throw()
+#  define OVERRIDE override
 #  define USE_MOVE_SEMANTICS
-#  define FINAL
-#  define OVERRIDE
+#  define FINAL sealed
 #  define MOVE(x) move(x)
-#else
-#  define CONSTEXPR INLINE
-#  define NOEXCEPT
-#  define FINAL
-#  define OVERRIDE
-#  define MOVE(x) x
 #endif
 
+// Fallbacks if features are not supported
+#ifndef CONSTEXPR
+#  define CONSTEXPR INLINE
+#endif
+#ifndef NOEXCEPT
+#  define NOEXCEPT
+#endif
+#ifndef MOVE
+#  define MOVE(x) x
+#endif
+#ifndef FINAL
+#  define FINAL
+#endif
+#ifndef OVERRIDE
+#  define OVERRIDE
+#endif
+#ifndef DEFAULT_CTOR
+#  define DEFAULT_CTOR {}
+#endif
+
+
 #if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
-// This macro must be used to export an instantiated template class
-// from a DLL.  If the template class name itself contains commas, it
-// may be necessary to first define a macro for the class name, to
-// allow proper macro parameter passing.
+// This macro must be used to export an instantiated template class from a
+// DLL.  If the template class name itself contains commas, it may be
+// necessary to first define a macro for the class name, to allow proper macro
+// parameter passing.
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname) \
   exptp template class expcl classname;
 #else
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 #endif
 
-// We define the macro PUBLISHED to mark C++ methods that are to be
-// published via interrogate to scripting languages.  However, if
-// we're not running the interrogate pass (CPPPARSER isn't defined),
-// this maps to public.
+// We define the macro PUBLISHED to mark C++ methods that are to be published
+// via interrogate to scripting languages.  However, if we're not running the
+// interrogate pass (CPPPARSER isn't defined), this maps to public.
 #define PUBLISHED public
 
 #endif  // CPPPARSER
 
-// The ReferenceCount class is defined later, within Panda, but we
-// need to pass around forward references to it here at the very low
-// level.
+// The ReferenceCount class is defined later, within Panda, but we need to
+// pass around forward references to it here at the very low level.
 class ReferenceCount;
 
-// We need a pointer to a global MemoryHook object, to manage all
-// malloc and free requests from Panda.  See the comments in
-// MemoryHook itself.
+// We need a pointer to a global MemoryHook object, to manage all malloc and
+// free requests from Panda.  See the comments in MemoryHook itself.
 class MemoryHook;
 EXPCL_DTOOL extern MemoryHook *memory_hook;
 EXPCL_DTOOL void init_memory_hook();
 
-// Now redefine some handy macros to hook into the above MemoryHook
-// object.
+// Now redefine some handy macros to hook into the above MemoryHook object.
 #ifndef USE_MEMORY_NOWRAPPERS
 #define PANDA_MALLOC_SINGLE(size) (memory_hook->heap_alloc_single(size))
 #define PANDA_FREE_SINGLE(ptr) memory_hook->heap_free_single(ptr)
@@ -238,8 +257,8 @@ EXPCL_DTOOL void init_memory_hook();
 #endif  // USE_MEMORY_NOWRAPPERS
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-// We need another forward-reference function to allow low-level code
-// to cooperatively yield the timeslice, in SIMPLE_THREADS mode.
+// We need another forward-reference function to allow low-level code to
+// cooperatively yield the timeslice, in SIMPLE_THREADS mode.
 extern EXPCL_DTOOL void (*global_thread_yield)();
 extern EXPCL_DTOOL void (*global_thread_consider_yield)();
 

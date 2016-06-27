@@ -1,27 +1,23 @@
-// Filename: lmatrix3_src.h
-// Created by:  drose (29Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lmatrix3_src.h
+ * @author drose
+ * @date 1999-01-29
+ */
 
 class FLOATNAME(LMatrix4);
 
-////////////////////////////////////////////////////////////////////
-//       Class : LMatrix3
-// Description : This is a 3-by-3 transform matrix.  It typically will
-//               represent either a rotation-and-scale (no
-//               translation) matrix in 3-d, or a full affine matrix
-//               (rotation, scale, translation) in 2-d, e.g. for a
-//               texture matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a 3-by-3 transform matrix.  It typically will represent either a
+ * rotation-and-scale (no translation) matrix in 3-d, or a full affine matrix
+ * (rotation, scale, translation) in 2-d, e.g.  for a texture matrix.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LMatrix3) {
 public:
   typedef FLOATTYPE numeric_type;
@@ -90,6 +86,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase3) get_col(int col) const;
   MAKE_SEQ(get_rows, size, get_row);
   MAKE_SEQ(get_cols, size, get_col);
+  MAKE_SEQ_PROPERTY(rows, size, get_row);
+  MAKE_SEQ_PROPERTY(cols, size, get_col);
 
   INLINE_LINMATH FLOATNAME(LVecBase2) get_row2(int row) const;
   INLINE_LINMATH FLOATNAME(LVecBase2) get_col2(int col) const;
@@ -196,15 +194,14 @@ PUBLISHED:
 
   static INLINE_LINMATH const FLOATNAME(LMatrix3) &ident_mat();
 
-  // A 3x3 matrix is likely to be used for one of two purposes.  In
-  // 2-d coordinate space (e.g. texture or surface coordinates), it
-  // can contain a full affine transform, with scale, rotate,
-  // translate.  In 3-d coordinate space, it can contain only scale
-  // and/or rotate; e.g., the upper 3x3 rectangle of a full 4x4
-  // matrix.
+  // A 3x3 matrix is likely to be used for one of two purposes.  In 2-d
+  // coordinate space (e.g.  texture or surface coordinates), it can contain a
+  // full affine transform, with scale, rotate, translate.  In 3-d coordinate
+  // space, it can contain only scale andor rotate; e.g., the upper 3x3
+  // rectangle of a full 4x4 matrix.
 
-  // The following named constructors return 3x3 matrices suitable for
-  // affine transforms in 2-d coordinate space.
+  // The following named constructors return 3x3 matrices suitable for affine
+  // transforms in 2-d coordinate space.
 
   INLINE_LINMATH void
     set_translate_mat(const FLOATNAME(LVecBase2) &trans);
@@ -225,7 +222,7 @@ PUBLISHED:
     scale_mat(FLOATTYPE sx, FLOATTYPE sy);
 
   // The following named constructors return 3x3 matrices suitable for
-  // scale/rotate transforms in 3-d coordinate space.
+  // scalerotate transforms in 3-d coordinate space.
   void
     set_rotate_mat(FLOATTYPE angle,
                    const FLOATNAME(LVecBase3) &axis,
@@ -280,9 +277,8 @@ PUBLISHED:
   static const FLOATNAME(LMatrix3) &convert_mat(CoordinateSystem from,
                                                 CoordinateSystem to);
 
-  // We don't have a scale_mat() that takes a single uniform scale
-  // parameter, because it would be ambiguous whether we mean a 2-d or
-  // a 3-d scale.
+  // We don't have a scale_mat() that takes a single uniform scale parameter,
+  // because it would be ambiguous whether we mean a 2-d or a 3-d scale.
 
   bool almost_equal(const FLOATNAME(LMatrix3) &other,
                     FLOATTYPE threshold) const;
@@ -305,8 +301,8 @@ PUBLISHED:
 public:
   // The underlying implementation is via the Eigen library, if available.
 
-  // We don't bother to align LMatrix3, since it won't benefit from
-  // SSE2 optimizations anyway (it's an add number of floats).
+  // We don't bother to align LMatrix3, since it won't benefit from SSE2
+  // optimizations anyway (it's an add number of floats).
   typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 3, 3) EMatrix3;
   EMatrix3 _m;
 

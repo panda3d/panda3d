@@ -1,6 +1,5 @@
-
 from direct.showbase.DirectObject import DirectObject
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class DistributedObjectBase(DirectObject):
     """
@@ -8,12 +7,11 @@ class DistributedObjectBase(DirectObject):
     (i.e. distributed) objects.  These will usually (always?) have a
     dclass entry in a *.dc file.
     """
-    notify = DirectNotifyGlobal.directNotify.newCategory("DistributedObjectBase")
+    notify = directNotify.newCategory("DistributedObjectBase")
 
     def __init__(self, cr):
         assert self.notify.debugStateCall(self)
         self.cr = cr
-        self.children = {}
         self.parentId = None
         self.zoneId = None
 
@@ -22,14 +20,13 @@ class DistributedObjectBase(DirectObject):
             """
             print out "doId(parentId, zoneId) className"
             """
-            spaces=' '*(indent+2)
+            spaces = ' ' * (indent + 2)
             try:
-                print "%s%s:"%(
-                    ' '*indent, self.__class__.__name__)
-                print "%sfrom DistributedObject doId:%s, parent:%s, zone:%s"%(
-                    spaces,
-                    self.doId, self.parentId, self.zoneId),
-            except Exception, e: print "%serror printing status"%(spaces,), e
+                print("%s%s:" % (' ' * indent, self.__class__.__name__))
+                print("%sfrom DistributedObject doId:%s, parent:%s, zone:%s" % (
+                    spaces, self.doId, self.parentId, self.zoneId))
+            except Exception as e:
+                print("%serror printing status %s" % (spaces, e))
 
     def getLocation(self):
         try:
@@ -95,11 +92,10 @@ class DistributedObjectBase(DirectObject):
 
     def hasParentingRules(self):
         return self.dclass.getFieldByName('setParentingRules') != None
-    
+
     def delete(self):
         """
         Overwrite this to handle cleanup right before this object
         gets deleted.
         """
         pass
-

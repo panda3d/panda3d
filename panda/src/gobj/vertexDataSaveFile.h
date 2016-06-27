@@ -1,16 +1,15 @@
-// Filename: vertexDataSaveFile.h
-// Created by:  drose (12May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexDataSaveFile.h
+ * @author drose
+ * @date 2007-05-12
+ */
 
 #ifndef VERTEXDATASAVEFILE_H
 #define VERTEXDATASAVEFILE_H
@@ -29,13 +28,11 @@
 
 class VertexDataSaveBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexDataSaveFile
-// Description : A temporary file to hold the vertex data that has
-//               been evicted from memory and written to disk.  All
-//               vertex data arrays are written into one large flat
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A temporary file to hold the vertex data that has been evicted from memory
+ * and written to disk.  All vertex data arrays are written into one large
+ * flat file.
+ */
 class EXPCL_PANDA_GOBJ VertexDataSaveFile : public SimpleAllocator {
 public:
   VertexDataSaveFile(const Filename &directory, const string &prefix,
@@ -48,7 +45,7 @@ PUBLISHED:
   INLINE size_t get_total_file_size() const;
   INLINE size_t get_used_file_size() const;
 
-public:  
+public:
   PT(VertexDataSaveBlock) write_data(const unsigned char *data, size_t size,
                                      bool compressed);
   bool read_data(unsigned char *data, size_t size,
@@ -70,10 +67,9 @@ private:
 #endif  // _WIN32
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexDataSaveBlock
-// Description : A block of bytes on the save file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A block of bytes on the save file.
+ */
 class EXPCL_PANDA_GOBJ VertexDataSaveBlock : public SimpleAllocatorBlock, public ReferenceCount {
 protected:
   INLINE VertexDataSaveBlock(VertexDataSaveFile *file,

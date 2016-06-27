@@ -6,22 +6,22 @@ __all__ = ['FourState']
 
 from direct.directnotify import DirectNotifyGlobal
 #import DistributedObject
-import ClassicFSM
-import State
+from . import ClassicFSM
+from . import State
 
 
 class FourState:
     """
     Generic four state ClassicFSM base class.
-    
+
     This is a mix-in class that expects that your derived class
     is a DistributedObject.
-    
-    Inherit from FourStateFSM and pass in your states.  Two of 
-    the states should be oposites of each other and the other 
+
+    Inherit from FourStateFSM and pass in your states.  Two of
+    the states should be oposites of each other and the other
     two should be the transition states between the first two.
     E.g.
-    
+
                     +--------+
                  -->| closed | --
                 |   +--------+   |
@@ -35,10 +35,10 @@ class FourState:
                 |    +------+    |
                  ----| open |<---
                      +------+
-    
+
     There is a fifth off state, but that is an implementation
     detail (and that's why it's not called a five state ClassicFSM).
-    
+
     I found that this pattern repeated in several things I was
     working on, so this base class was created.
     """
@@ -47,22 +47,22 @@ class FourState:
     def __init__(self, names, durations = [0, 1, None, 1, 1]):
         """
         names is a list of state names
-        
+
         E.g.
             ['off', 'opening', 'open', 'closing', 'closed',]
-        
+
         e.g. 2:
             ['off', 'locking', 'locked', 'unlocking', 'unlocked',]
-        
+
         e.g. 3:
             ['off', 'deactivating', 'deactive', 'activating', 'activated',]
-        
+
         durations is a list of time values (floats) or None values.
-        
+
         Each list must have five entries.
-        
+
         More Details
-        
+
         Here is a diagram showing the where the names from the list
         are used:
 
@@ -86,11 +86,10 @@ class FourState:
 
         Each states also has an associated on or off value.  The only
         state that is 'on' is state 4.  So, the transition states
-        between off and on (states 1 and 3) are also considered 
-        off (and so is state 2 which is oposite of 4 and therefore 
+        between off and on (states 1 and 3) are also considered
+        off (and so is state 2 which is oposite of 4 and therefore
         oposite of 'on').
         """
-        self.stateIndex = 0
         assert self.debugPrint("FourState(names=%s)"%(names))
         self.track = None
         self.stateTime = 0.0
@@ -121,15 +120,16 @@ class FourState:
                            self.exitState4,
                            [names[1]]),
             }
+        self.stateIndex = 0
         self.fsm = ClassicFSM.ClassicFSM('FourState',
-                           self.states.values(),
+                           list(self.states.values()),
                            # Initial State
                            names[0],
                            # Final State
                            names[0],
                           )
         self.fsm.enterInitialState()
-    
+
     def setTrack(self, track):
         assert self.debugPrint("setTrack(track=%s)"%(track,))
         if self.track is not None:
@@ -138,18 +138,18 @@ class FourState:
         if track is not None:
             track.start(self.stateTime)
             self.track = track
-    
+
     def enterStateN(self, stateIndex):
         self.stateIndex = stateIndex
         self.duration = self.durations[stateIndex] or 0.0
-    
+
     # The AI is the authority on setting the On value.
     # If the client wants the state changed it needs to
     # send a request to the AI.
     #def setIsOn(self, isOn):
     #    assert self.debugPrint("setIsOn(isOn=%s)"%(isOn,))
     #    pass
-    
+
     def isOn(self):
         assert self.debugPrint("isOn() returning %s (stateIndex=%s)"%(self.stateIndex==4, self.stateIndex))
         return self.stateIndex==4
@@ -159,13 +159,13 @@ class FourState:
         Allow derived classes to overide this.
         """
         assert self.debugPrint("changedOnState(isOn=%s)"%(isOn,))
-    
+
     ##### state 0 #####
-    
+
     def enterState0(self):
         assert self.debugPrint("enter0()")
         self.enterStateN(0)
-    
+
     def exitState0(self):
         assert self.debugPrint("exit0()")
         # It's important for FourStates to broadcast their state
@@ -173,45 +173,45 @@ class FourState:
         # if a door was generated and went directly to an 'open' state,
         # it would not broadcast its state until it closed.
         self.changedOnState(0)
-    
+
     ##### state 1 #####
-    
+
     def enterState1(self):
         assert self.debugPrint("enterState1()")
         self.enterStateN(1)
-    
+
     def exitState1(self):
         assert self.debugPrint("exitState1()")
-    
+
     ##### state 2 #####
-    
+
     def enterState2(self):
         assert self.debugPrint("enterState2()")
         self.enterStateN(2)
-    
+
     def exitState2(self):
         assert self.debugPrint("exitState2()")
-    
+
     ##### state 3 #####
-    
+
     def enterState3(self):
         assert self.debugPrint("enterState3()")
         self.enterStateN(3)
-    
+
     def exitState3(self):
         assert self.debugPrint("exitState3()")
-    
+
     ##### state 4 #####
-    
+
     def enterState4(self):
         assert self.debugPrint("enterState4()")
         self.enterStateN(4)
         self.changedOnState(1)
-    
+
     def exitState4(self):
         assert self.debugPrint("exitState4()")
         self.changedOnState(0)
-    
+
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""

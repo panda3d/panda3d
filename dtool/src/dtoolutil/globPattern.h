@@ -1,16 +1,15 @@
-// Filename: globPattern.h
-// Created by:  drose (30May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file globPattern.h
+ * @author drose
+ * @date 2000-05-30
+ */
 
 #ifndef GLOBPATTERN_H
 #define GLOBPATTERN_H
@@ -19,21 +18,17 @@
 #include "filename.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GlobPattern
-// Description : This class can be used to test for string matches
-//               against standard Unix-shell filename globbing
-//               conventions.  It serves as a portable standin for the
-//               Posix fnmatch() call.
-//
-//               A GlobPattern is given a pattern string, which can
-//               contain operators like *, ?, and [].  Then it can be
-//               tested against any number of candidate strings; for
-//               each candidate, it will indicate whether the string
-//               matches the pattern or not.  It can be used, for
-//               example, to scan a directory for all files matching a
-//               particular pattern.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can be used to test for string matches against standard Unix-
+ * shell filename globbing conventions.  It serves as a portable standin for
+ * the Posix fnmatch() call.
+ *
+ * A GlobPattern is given a pattern string, which can contain operators like
+ * *, ?, and [].  Then it can be tested against any number of candidate
+ * strings; for each candidate, it will indicate whether the string matches
+ * the pattern or not.  It can be used, for example, to scan a directory for
+ * all files matching a particular pattern.
+ */
 class EXPCL_DTOOL GlobPattern {
 PUBLISHED:
   INLINE GlobPattern(const string &pattern = string());
@@ -46,12 +41,15 @@ PUBLISHED:
 
   INLINE void set_pattern(const string &pattern);
   INLINE const string &get_pattern() const;
+  MAKE_PROPERTY(pattern, get_pattern, set_pattern);
 
   INLINE void set_case_sensitive(bool case_sensitive);
   INLINE bool get_case_sensitive() const;
+  MAKE_PROPERTY(case_sensitive, get_case_sensitive, set_case_sensitive);
 
   INLINE void set_nomatch_chars(const string &nomatch_chars);
   INLINE const string &get_nomatch_chars() const;
+  MAKE_PROPERTY(nomatch_chars, get_nomatch_chars, set_nomatch_chars);
 
   INLINE bool matches(const string &candidate) const;
 

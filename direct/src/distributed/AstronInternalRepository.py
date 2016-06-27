@@ -569,7 +569,7 @@ class AstronInternalRepository(ConnectionRepository):
         dg.add_uint16(reasonCode)
         dg.addString(reason)
         self.send(dg)
-        
+
     def setClientState(self, clientChannel, state):
         """
         Sets the state of the client on the CA.

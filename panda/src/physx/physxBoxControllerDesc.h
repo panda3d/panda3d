@@ -1,16 +1,15 @@
-// Filename: physxBoxControllerDesc.h
-// Created by:  enn0x (22Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxBoxControllerDesc.h
+ * @author enn0x
+ * @date 2009-09-22
+ */
 
 #ifndef PHYSXBOXCONTROLLERDESC_H
 #define PHYSXBOXCONTROLLERDESC_H
@@ -21,10 +20,9 @@
 #include "physxControllerDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBoxControllerDesc
-// Description : Descriptor class for PhysxBoxController.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxBoxController.
+ */
 class EXPCL_PANDAPHYSX PhysxBoxControllerDesc : public PhysxControllerDesc {
 
 PUBLISHED:

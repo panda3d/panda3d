@@ -1,49 +1,40 @@
-// Filename: graphicsThreadingModel.cxx
-// Created by:  drose (27Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsThreadingModel.cxx
+ * @author drose
+ * @date 2003-01-27
+ */
 
 #include "graphicsThreadingModel.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsThreadingModel::Constructor
-//       Access: Published
-//  Description: The threading model accepts a string representing the
-//               names of the two threads that will process cull and
-//               draw for the given window, separated by a slash.  The
-//               names are completely arbitrary and are used only to
-//               differentiate threads.  The two names may be the
-//               same, meaning the same thread, or each may be the
-//               empty string, which represents the previous thread.
-//
-//               Thus, for example, "cull/draw" indicates that the
-//               window will be culled in a thread called "cull", and
-//               drawn in a separate thread called "draw".
-//               "draw/draw" or simply "draw" indicates the window
-//               will be culled and drawn in the same thread, "draw".
-//               On the other hand, "/draw" indicates the thread will
-//               be culled in the main, or app thread, and drawn in a
-//               separate thread named "draw".  The empty string, ""
-//               or "/", indicates the thread will be culled and drawn
-//               in the main thread; that is to say, a single-process
-//               model.
-//
-//               Finally, if the threading model begins with a "-"
-//               character, then cull and draw are run simultaneously,
-//               in the same thread, with no binning or state sorting.
-//               It simplifies the cull process but it forces the
-//               scene to render in scene graph order; state sorting
-//               and alpha sorting is lost.
-////////////////////////////////////////////////////////////////////
+/**
+ * The threading model accepts a string representing the names of the two
+ * threads that will process cull and draw for the given window, separated by
+ * a slash.  The names are completely arbitrary and are used only to
+ * differentiate threads.  The two names may be the same, meaning the same
+ * thread, or each may be the empty string, which represents the previous
+ * thread.
+ *
+ * Thus, for example, "cull/draw" indicates that the window will be culled in
+ * a thread called "cull", and drawn in a separate thread called "draw".
+ * "draw/draw" or simply "draw" indicates the window will be culled and drawn
+ * in the same thread, "draw". On the other hand, "/draw" indicates the thread
+ * will be culled in the main, or app thread, and drawn in a separate thread
+ * named "draw".  The empty string, "" or "/", indicates the thread will be
+ * culled and drawn in the main thread; that is to say, a single-process
+ * model.
+ *
+ * Finally, if the threading model begins with a "-" character, then cull and
+ * draw are run simultaneously, in the same thread, with no binning or state
+ * sorting.  It simplifies the cull process but it forces the scene to render
+ * in scene graph order; state sorting and alpha sorting is lost.
+ */
 GraphicsThreadingModel::
 GraphicsThreadingModel(const string &model) {
   _cull_sorting = true;
@@ -64,12 +55,10 @@ GraphicsThreadingModel(const string &model) {
   update_stages();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsThreadingModel::get_model
-//       Access: Published
-//  Description: Returns the string that describes the threading
-//               model.  See the constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string that describes the threading model.  See the
+ * constructor.
+ */
 string GraphicsThreadingModel::
 get_model() const {
   if (get_cull_sorting()) {
@@ -79,12 +68,10 @@ get_model() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsThreadingModel::update_stages
-//       Access: Private
-//  Description: Called internally to recompute _cull_stage and
-//               _draw_stage after either name has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to recompute _cull_stage and _draw_stage after either
+ * name has been changed.
+ */
 void GraphicsThreadingModel::
 update_stages() {
   if (_cull_name.empty()) {
@@ -102,4 +89,3 @@ update_stages() {
     _draw_stage = _cull_stage + 1;
   }
 }
-  

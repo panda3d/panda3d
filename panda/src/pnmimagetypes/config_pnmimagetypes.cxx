@@ -1,16 +1,15 @@
-// Filename: config_pnmimagetypes.cxx
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_pnmimagetypes.cxx
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #include "config_pnmimagetypes.h"
 #include "pnmFileTypeSGI.h"
@@ -23,6 +22,8 @@
 #include "pnmFileTypePNM.h"
 #include "pnmFileTypePfm.h"
 #include "pnmFileTypeTIFF.h"
+#include "pnmFileTypeEXR.h"
+#include "pnmFileTypeStbImage.h"
 #include "sgi.h"
 
 #include "config_pnmimage.h"
@@ -41,6 +42,7 @@ NotifyCategoryDefName(pnmimage_jpg, "jpg", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_png, "png", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_pnm, "pnm", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tiff, "tiff", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_exr, "exr", pnmimage_cat);
 
 ConfigVariableEnum<SGIStorageType> sgi_storage_type
 ("sgi-storage-type", SST_rle,
@@ -51,10 +53,10 @@ ConfigVariableString sgi_imagename
  PRC_DESC("This string is written to the header of an SGI (*.rgb) file.  "
           "It seems to have documentation purposes only."));
 
-// TGA supports RLE compression, as well as colormapping and/or
-// grayscale images.  Set these true to enable these features, if
-// possible, or false to disable them.  Some programs (like xv) have
-// difficulty reading these advanced TGA files.
+// TGA supports RLE compression, as well as colormapping andor grayscale
+// images.  Set these true to enable these features, if possible, or false to
+// disable them.  Some programs (like xv) have difficulty reading these
+// advanced TGA files.
 ConfigVariableBool tga_rle
 ("tga-rle", false,
  PRC_DESC("Set this true to enable RLE compression when writing TGA files."));
@@ -165,14 +167,12 @@ ConfigureFn(config_pnmimagetypes) {
   init_libpnmimagetypes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libpnmimagetypes
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libpnmimagetypes() {
   static bool initialized = false;
@@ -243,6 +243,18 @@ init_libpnmimagetypes() {
   tr->register_type(new PNMFileTypeTIFF);
 #endif
 
+#ifdef HAVE_OPENEXR
+  PNMFileTypeEXR::init_type();
+  PNMFileTypeEXR::register_with_read_factory();
+  tr->register_type(new PNMFileTypeEXR);
+#endif
+
+#ifdef HAVE_STB_IMAGE
+  PNMFileTypeStbImage::init_type();
+  PNMFileTypeStbImage::register_with_read_factory();
+  tr->register_type(new PNMFileTypeStbImage);
+#endif
+
   // And register with the PandaSystem.
   PandaSystem *ps = PandaSystem::get_global_ptr();
 
@@ -254,5 +266,8 @@ init_libpnmimagetypes() {
 #endif
 #ifdef HAVE_TIFF
   ps->add_system("libtiff");
+#endif
+#ifdef HAVE_OPENEXR
+  ps->add_system("openexr");
 #endif
 }

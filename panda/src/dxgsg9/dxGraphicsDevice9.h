@@ -1,32 +1,29 @@
-// Filename: dxGraphicsDevice.h
-// Created by:  masad (22Jul03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxGraphicsDevice9.h
+ * @author masad
+ * @date 2003-07-22
+ */
 
 #ifndef DXGRAPHICSDEVICE_H
 #define DXGRAPHICSDEVICE_H
 
-//#define GSG_VERBOSE 1
+// #define GSG_VERBOSE 1
 
 #include "dxgsg9base.h"
 #include "graphicsDevice.h"
 #include "wdxGraphicsPipe9.h"
 
 
-////////////////////////////////////////////////////////////////////
-//   Class : DXGraphicsDevice9
-// Description : A GraphicsDevice necessary for multi-window rendering
-//               in DX.
-////////////////////////////////////////////////////////////////////
+/**
+ * A GraphicsDevice necessary for multi-window rendering in DX.
+ */
 class EXPCL_PANDADX DXGraphicsDevice9 : public GraphicsDevice {
   friend class wdxGraphicsPipe9;
 

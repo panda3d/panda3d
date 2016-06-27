@@ -19,8 +19,8 @@ class EggCacher:
         self.pandaloader = Loader()
         self.loaderopts = LoaderOptions(LoaderOptions.LF_no_ram_cache)
         if (self.bamcache.getActive() == 0):
-            print "The model cache is not currently active."
-            print "You must set a model-cache-dir in your config file."
+            print("The model cache is not currently active.")
+            print("You must set a model-cache-dir in your config file.")
             sys.exit(1)
         self.parseArgs(args)
         files = self.scanPaths(self.paths)
@@ -39,13 +39,13 @@ class EggCacher:
             else:
                 break
         if (len(args) < 1):
-            print "Usage: eggcacher options file-or-directory"
+            print("Usage: eggcacher options file-or-directory")
             sys.exit(1)
         self.paths = args
 
     def scanPath(self, eggs, path):
         if (os.path.exists(path)==0):
-            print "No such file or directory: "+path
+            print("No such file or directory: " + path)
             return
         if (os.path.isdir(path)):
             for f in os.listdir(path):
@@ -55,7 +55,7 @@ class EggCacher:
             size = os.path.getsize(path)
             eggs.append((path,size))
             return
-        if (path.endswith(".egg.pz")):
+        if (path.endswith(".egg.pz") or path.endswith(".egg.gz")):
             size = os.path.getsize(path)
             if (self.pzkeep): eggs.append((path,size))
             else: eggs.append((path[:-3],size))
@@ -78,7 +78,7 @@ class EggCacher:
             percent = (progress * 100) / total
             report = path
             if (self.concise): report = os.path.basename(report)
-            print "Preprocessing Models %2d%% %s" % (percent, report)
+            print("Preprocessing Models %2d%% %s" % (percent, report))
             sys.stdout.flush()
             if (cached) and (cached.hasData()==0):
                 self.pandaloader.loadSync(fn, self.loaderopts)

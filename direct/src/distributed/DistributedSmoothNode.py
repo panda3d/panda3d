@@ -1,9 +1,9 @@
 """DistributedSmoothNode module: contains the DistributedSmoothNode class"""
 
 from pandac.PandaModules import *
-from ClockDelta import *
-import DistributedNode
-import DistributedSmoothNodeBase
+from .ClockDelta import *
+from . import DistributedNode
+from . import DistributedSmoothNodeBase
 from direct.task.Task import cont
 
 # This number defines our tolerance for out-of-sync telemetry packets.
@@ -113,7 +113,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         to specialize the behavior.
         """
         self.smoother.computeAndApplySmoothPosHpr(self, self)
-            
+
     def doSmoothTask(self, task):
         self.smoothPosition()
         return cont
@@ -205,7 +205,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                 self.smoother.markPosition()
 
         self.stopped = False
-        
+
     # distributed set pos and hpr functions
     # 'send' versions are inherited from DistributedSmoothNodeBase
     def setSmStop(self, timestamp=None):
@@ -398,7 +398,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         return self.getR()
     def getComponentT(self):
         return 0
-                
+
     @report(types = ['args'], dConfigParam = 'smoothnode')
     def clearSmoothing(self, bogus = None):
         # Call this to invalidate all the old position reports
@@ -442,7 +442,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.sendUpdate("suggestResync", [avId, timestampA, timestampB,
                                           serverTimeSec, serverTimeUSec,
                                           uncertainty])
-        
+
     def suggestResync(self, avId, timestampA, timestampB,
                       serverTimeSec, serverTimeUSec, uncertainty):
         """
@@ -471,14 +471,14 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                     self.cr.localAvatarDoId, timestampB,
                     serverTime,
                     globalClockDelta.getUncertainty())
-        
+
 
     def d_returnResync(self, avId, timestampB, serverTime, uncertainty):
         serverTimeSec = math.floor(serverTime)
         serverTimeUSec = (serverTime - serverTimeSec) * 10000.0
         self.sendUpdate("returnResync", [
             avId, timestampB, serverTimeSec, serverTimeUSec, uncertainty])
-        
+
     def returnResync(self, avId, timestampB, serverTimeSec, serverTimeUSec,
             uncertainty):
         """

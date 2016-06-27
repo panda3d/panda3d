@@ -1,16 +1,15 @@
-// Filename: partGroup.h
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file partGroup.h
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #ifndef PARTGROUP_H
 #define PARTGROUP_H
@@ -37,17 +36,15 @@ class TransformState;
 class PandaNode;
 class AnimChannelBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PartGroup
-// Description : This is the base class for PartRoot and
-//               MovingPart.  It defines a hierarchy of MovingParts.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for PartRoot and MovingPart.  It defines a hierarchy
+ * of MovingParts.
+ */
 class EXPCL_PANDA_CHAN PartGroup : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  // This enum defines bits which may be passed into check_hierarchy()
-  // and PartBundle::bind_anim() to allow an inexact match of channel
-  // hierarchies.  This specifies conditions that we don't care about
-  // enforcing.
+  // This enum defines bits which may be passed into check_hierarchy() and
+  // PartBundle::bind_anim() to allow an inexact match of channel hierarchies.
+  // This specifies conditions that we don't care about enforcing.
   enum HierarchyMatchFlags {
     HMF_ok_part_extra          = 0x01,
     HMF_ok_anim_extra          = 0x02,
@@ -55,10 +52,9 @@ PUBLISHED:
   };
 
 protected:
-  // The default constructor is protected: don't try to create a
-  // PartGroup without a parent.  To create a PartGroup hierarchy, you
-  // must first create a PartBundle, and use that as the parent of any
-  // subsequent children.
+  // The default constructor is protected: don't try to create a PartGroup
+  // without a parent.  To create a PartGroup hierarchy, you must first create
+  // a PartBundle, and use that as the parent of any subsequent children.
   INLINE PartGroup(const string &name = "");
   INLINE PartGroup(const PartGroup &copy);
 
@@ -74,6 +70,7 @@ PUBLISHED:
   int get_num_children() const;
   PartGroup *get_child(int n) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
+  MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
 
   PartGroup *get_child_named(const string &name) const;
   PartGroup *find_child(const string &name) const;
@@ -97,7 +94,7 @@ public:
                        int hierarchy_match_flags = 0) const;
 
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
-                         PartGroup *parent, bool parent_changed, 
+                         PartGroup *parent, bool parent_changed,
                          bool anim_changed, Thread *current_thread);
   virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
   virtual void determine_effective_channels(const CycleData *root_cdata);
@@ -108,10 +105,10 @@ protected:
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index,
-                              int &joint_index, bool is_included, 
+                              int &joint_index, bool is_included,
                               BitArray &bound_joints,
                               const PartSubset &subset);
-  virtual void find_bound_joints(int &joint_index, bool is_included, 
+  virtual void find_bound_joints(int &joint_index, bool is_included,
                                  BitArray &bound_joints,
                                  const PartSubset &subset);
 
@@ -156,5 +153,3 @@ private:
 #include "partGroup.I"
 
 #endif
-
-

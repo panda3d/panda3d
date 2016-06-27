@@ -1,4 +1,4 @@
-from pandac.PandaModules import Vec3
+from panda3d.core import Vec3
 # Utility functions that are useful to both AI and client CartesianGrid code
 
 class CartesianGridBase:
@@ -50,7 +50,7 @@ class CartesianGridBase:
         xMax = abs(spherePos[0])+sphereRadius
         yMax = abs(spherePos[1])+sphereRadius
         sphereRadius = Vec3(xMax,yMax,0).length()
-        
+
         # sphereRadius = max(sphereRadius, gridRadius*cellWidth)
         return max(2 * (sphereRadius // cellWidth), 1)
 

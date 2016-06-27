@@ -21,7 +21,6 @@ easier to use and understand.
 It is permissible to mix-and-match both threading and threading2
 within the same application. """
 
-import direct
 from panda3d import core
 from direct.stdpy import thread as _thread
 import sys as _sys
@@ -42,6 +41,7 @@ __all__ = [
     ]
 
 local = _thread._local
+_newname = _thread._newname
 
 class ThreadBase:
     """ A base class for both Thread and ExternalThread in this
@@ -52,12 +52,6 @@ class ThreadBase:
 
     def getName(self):
         return self.name
-
-    def is_alive(self):
-        return self.__thread.isStarted()
-
-    def isAlive(self):
-        return self.__thread.isStarted()
 
     def isDaemon(self):
         return self.daemon
@@ -98,8 +92,7 @@ class Thread(ThreadBase):
         self.__kwargs = kwargs
 
         if not name:
-            import threading2
-            name = threading2._newname()
+            name = _newname()
 
         current = current_thread()
         self.__dict__['daemon'] = current.daemon
@@ -114,6 +107,12 @@ class Thread(ThreadBase):
         # already been cleaned up.
         if _thread and _thread._remove_thread_id:
             _thread._remove_thread_id(self.ident)
+
+    def is_alive(self):
+        return self.__thread.isStarted()
+
+    def isAlive(self):
+        return self.__thread.isStarted()
 
     def start(self):
         if self.__thread.isStarted():
@@ -151,6 +150,12 @@ class ExternalThread(ThreadBase):
         self.__dict__['daemon'] = True
         self.__dict__['name'] = self.__thread.getName()
         self.__dict__['ident'] = threadId
+
+    def is_alive(self):
+        return self.__thread.isStarted()
+
+    def isAlive(self):
+        return self.__thread.isStarted()
 
     def start(self):
         raise RuntimeError
@@ -380,7 +385,7 @@ def enumerate():
     tlist = []
     _thread._threadsLock.acquire()
     try:
-        for thread, locals, wrapper in _thread._threads.values():
+        for thread, locals, wrapper in list(_thread._threads.values()):
             if wrapper and thread.isStarted():
                 tlist.append(wrapper)
         return tlist
@@ -404,106 +409,107 @@ def setprofile(func):
 def stack_size(size = None):
     raise ThreadError
 
-def _test():
+if __debug__:
+    def _test():
+        from collections import deque
 
-    from collections import deque
-    _sleep = core.Thread.sleep
+        _sleep = core.Thread.sleep
 
-    _VERBOSE = False
+        _VERBOSE = False
 
-    class _Verbose(object):
+        class _Verbose(object):
 
-        def __init__(self, verbose=None):
-            if verbose is None:
-                verbose = _VERBOSE
-            self.__verbose = verbose
+            def __init__(self, verbose=None):
+                if verbose is None:
+                    verbose = _VERBOSE
+                self.__verbose = verbose
 
-        def _note(self, format, *args):
-            if self.__verbose:
-                format = format % args
-                format = "%s: %s\n" % (
-                    currentThread().getName(), format)
-                _sys.stderr.write(format)
+            def _note(self, format, *args):
+                if self.__verbose:
+                    format = format % args
+                    format = "%s: %s\n" % (
+                        currentThread().getName(), format)
+                    _sys.stderr.write(format)
 
-    class BoundedQueue(_Verbose):
+        class BoundedQueue(_Verbose):
 
-        def __init__(self, limit):
-            _Verbose.__init__(self)
-            self.mon = Lock(name = "BoundedQueue.mon")
-            self.rc = Condition(self.mon)
-            self.wc = Condition(self.mon)
-            self.limit = limit
-            self.queue = deque()
+            def __init__(self, limit):
+                _Verbose.__init__(self)
+                self.mon = Lock(name = "BoundedQueue.mon")
+                self.rc = Condition(self.mon)
+                self.wc = Condition(self.mon)
+                self.limit = limit
+                self.queue = deque()
 
-        def put(self, item):
-            self.mon.acquire()
-            while len(self.queue) >= self.limit:
-                self._note("put(%s): queue full", item)
-                self.wc.wait()
-            self.queue.append(item)
-            self._note("put(%s): appended, length now %d",
-                       item, len(self.queue))
-            self.rc.notify()
-            self.mon.release()
+            def put(self, item):
+                self.mon.acquire()
+                while len(self.queue) >= self.limit:
+                    self._note("put(%s): queue full", item)
+                    self.wc.wait()
+                self.queue.append(item)
+                self._note("put(%s): appended, length now %d",
+                           item, len(self.queue))
+                self.rc.notify()
+                self.mon.release()
 
-        def get(self):
-            self.mon.acquire()
-            while not self.queue:
-                self._note("get(): queue empty")
-                self.rc.wait()
-            item = self.queue.popleft()
-            self._note("get(): got %s, %d left", item, len(self.queue))
-            self.wc.notify()
-            self.mon.release()
-            return item
+            def get(self):
+                self.mon.acquire()
+                while not self.queue:
+                    self._note("get(): queue empty")
+                    self.rc.wait()
+                item = self.queue.popleft()
+                self._note("get(): got %s, %d left", item, len(self.queue))
+                self.wc.notify()
+                self.mon.release()
+                return item
 
-    class ProducerThread(Thread):
+        class ProducerThread(Thread):
 
-        def __init__(self, queue, quota):
-            Thread.__init__(self, name="Producer")
-            self.queue = queue
-            self.quota = quota
+            def __init__(self, queue, quota):
+                Thread.__init__(self, name="Producer")
+                self.queue = queue
+                self.quota = quota
 
-        def run(self):
-            from random import random
-            counter = 0
-            while counter < self.quota:
-                counter = counter + 1
-                self.queue.put("%s.%d" % (self.getName(), counter))
-                _sleep(random() * 0.00001)
+            def run(self):
+                from random import random
+                counter = 0
+                while counter < self.quota:
+                    counter = counter + 1
+                    self.queue.put("%s.%d" % (self.getName(), counter))
+                    _sleep(random() * 0.00001)
 
 
-    class ConsumerThread(Thread):
+        class ConsumerThread(Thread):
 
-        def __init__(self, queue, count):
-            Thread.__init__(self, name="Consumer")
-            self.queue = queue
-            self.count = count
+            def __init__(self, queue, count):
+                Thread.__init__(self, name="Consumer")
+                self.queue = queue
+                self.count = count
 
-        def run(self):
-            while self.count > 0:
-                item = self.queue.get()
-                print item
-                self.count = self.count - 1
+            def run(self):
+                while self.count > 0:
+                    item = self.queue.get()
+                    print(item)
+                    self.count = self.count - 1
 
-    NP = 3
-    QL = 4
-    NI = 5
+        NP = 3
+        QL = 4
+        NI = 5
 
-    Q = BoundedQueue(QL)
-    P = []
-    for i in range(NP):
-        t = ProducerThread(Q, NI)
-        t.setName("Producer-%d" % (i+1))
-        P.append(t)
-    C = ConsumerThread(Q, NI*NP)
-    for t in P:
-        t.start()
-        _sleep(0.000001)
-    C.start()
-    for t in P:
-        t.join()
-    C.join()
+        Q = BoundedQueue(QL)
+        P = []
+        for i in range(NP):
+            t = ProducerThread(Q, NI)
+            t.setName("Producer-%d" % (i+1))
+            P.append(t)
+        C = ConsumerThread(Q, NI*NP)
+        for t in P:
+            t.start()
+            _sleep(0.000001)
+        C.start()
+        for t in P:
+            t.join()
+        C.join()
 
-if __name__ == '__main__':
-    _test()
+    if __name__ == '__main__':
+        _test()

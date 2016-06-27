@@ -1,32 +1,19 @@
-// Filename: lvector3_ext_src.I
-// Created by:  rdb (02Jan11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvector3_ext_src.I
+ * @author rdb
+ * @date 2011-01-02
+ */
 
-#ifdef FLOATTYPE_IS_INT
-#if PY_MAJOR_VERSION >= 3
-#define PY_FROM_FLOATTYPE PyLong_FromLong
-#else
-#define PY_FROM_FLOATTYPE PyInt_FromLong
-#endif
-#else
-#define PY_FROM_FLOATTYPE PyFloat_FromDouble
-#endif
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector3::__repr__
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH string Extension<FLOATNAME(LVector3)>::
 __repr__() const {
   ostringstream out;
@@ -37,11 +24,9 @@ __repr__() const {
   return out.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector3::__getattr__
-//       Access: Published
-//  Description: This is used to implement swizzle masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement swizzle masks.
+ */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVector3)>::
 __getattr__(PyObject *self, const string &attr_name) const {
 #ifndef CPPPARSER
@@ -59,7 +44,7 @@ __getattr__(PyObject *self, const string &attr_name) const {
 
   switch (attr_name.size()) {
     case 1:
-      return PY_FROM_FLOATTYPE(_this->_v(attr_name[0] - 'x'));
+      return Dtool_WrapValue(_this->_v(attr_name[0] - 'x'));
 
     case 2: {
       FLOATNAME(LVector2) *vec = new FLOATNAME(LVector2);
@@ -87,15 +72,11 @@ __getattr__(PyObject *self, const string &attr_name) const {
   return Dtool_Raise_AttributeError(self, attr_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector3::__setattr__
-//       Access: Published
-//  Description: This is used to implement write masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement write masks.
+ */
 INLINE_LINMATH int Extension<FLOATNAME(LVector3)>::
 __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   // Upcall to LVecBase3.
   return invoke_extension<FLOATNAME(LVecBase3)>(_this).__setattr__(self, attr_name, assign);
 }
-
-#undef PY_FROM_FLOATTYPE

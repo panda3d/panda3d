@@ -1,23 +1,19 @@
-// Filename: configVariableColor.I
-// Created by:  rdb (02Feb14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableColor.I
+ * @author rdb
+ * @date 2014-02-02
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ConfigVariableColor::
 ConfigVariableColor(const string &name) :
   ConfigVariable(name, VT_color),
@@ -27,11 +23,9 @@ ConfigVariableColor(const string &name) :
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ConfigVariableColor::
 ConfigVariableColor(const string &name, const LColor &default_value,
                     const string &description, int flags) :
@@ -47,11 +41,9 @@ ConfigVariableColor(const string &name, const LColor &default_value,
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ConfigVariableColor::
 ConfigVariableColor(const string &name, const string &default_value,
                     const string &description, int flags) :
@@ -67,43 +59,34 @@ ConfigVariableColor(const string &name, const string &default_value,
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::operator =
-//       Access: Published
-//  Description: Reassigns the variable's local value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reassigns the variable's local value.
+ */
 INLINE void ConfigVariableColor::
 operator = (const LColor &value) {
   set_value(value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::typecast operator
-//       Access: Published
-//  Description: Returns the variable's value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's value.
+ */
 INLINE ConfigVariableColor::
 operator const LColor & () const {
   return get_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::operator []
-//       Access: Published
-//  Description: Returns the value of the color's nth component
-//               (which is not necessarily the same thing as the
-//               variable's nth word).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the color's nth component (which is not necessarily
+ * the same thing as the variable's nth word).
+ */
 INLINE PN_stdfloat ConfigVariableColor::
 operator [] (int n) const {
   return get_value()[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::set_value
-//       Access: Published
-//  Description: Reassigns the variable's local value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reassigns the variable's local value.
+ */
 INLINE void ConfigVariableColor::
 set_value(const LColor &color) {
   set_string_value("");
@@ -113,11 +96,9 @@ set_value(const LColor &color) {
   set_double_word(3, color[3]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::get_value
-//       Access: Published
-//  Description: Returns the variable's value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's value.
+ */
 INLINE const LColor &ConfigVariableColor::
 get_value() const {
   TAU_PROFILE("const LColor &ConfigVariableColor::get_value() const", " ", TAU_USER);
@@ -154,11 +135,9 @@ get_value() const {
   return _cache;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::get_default_value
-//       Access: Published
-//  Description: Returns the variable's default value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's default value.
+ */
 INLINE LColor ConfigVariableColor::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();

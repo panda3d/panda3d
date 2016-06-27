@@ -1,27 +1,25 @@
 import math
-import types
-import string
+import sys
 
 from panda3d.core import *
-from DirectUtil import *
+from .DirectUtil import *
 
 from direct.showbase.DirectObject import DirectObject
 from direct.task import Task
 
-from DirectGlobals import DIRECT_NO_MOD
-from DirectCameraControl import DirectCameraControl
-from DirectManipulation import DirectManipulationControl
-from DirectSelection import SelectionRay, COA_ORIGIN, SelectedNodePaths
-from DirectGrid import DirectGrid
+from .DirectGlobals import DIRECT_NO_MOD
+from .DirectCameraControl import DirectCameraControl
+from .DirectManipulation import DirectManipulationControl
+from .DirectSelection import SelectionRay, COA_ORIGIN, SelectedNodePaths
+from .DirectGrid import DirectGrid
 #from DirectGeometry import *
-from DirectLights import DirectLights
+from .DirectLights import DirectLights
 from direct.cluster.ClusterClient import createClusterClient, DummyClusterClient
 from direct.cluster.ClusterServer import ClusterServer
 ## from direct.tkpanels import Placer
 ## from direct.tkwidgets import Slider
 ## from direct.tkwidgets import SceneGraphExplorer
 from direct.gui import OnscreenText
-from direct.showbase import Loader
 from direct.interval.IntervalGlobal import *
 
 class DirectSession(DirectObject):
@@ -115,7 +113,7 @@ class DirectSession(DirectObject):
             if fastrak:
                 from direct.directdevices import DirectFastrak
                 # parse string into format device:N where N is the sensor name
-                fastrak = string.split(fastrak)
+                fastrak = fastrak.split()
                 for i in range(len(fastrak))[1:]:
                     self.fastrak.append(DirectFastrak.DirectFastrak(fastrak[0] + ':' + fastrak[i]))
 
@@ -186,7 +184,7 @@ class DirectSession(DirectObject):
         if base.wantTk:
             from direct.tkpanels import Placer
             from direct.tkwidgets import Slider
-            from direct.tkwidgets import SceneGraphExplorer            
+            from direct.tkwidgets import SceneGraphExplorer
             self.actionEvents.extend([
             ['SGE_Place', Placer.place],
             ['SGE_Set Color', Slider.rgbPanel],
@@ -210,7 +208,7 @@ class DirectSession(DirectObject):
 
         self.keyEvents = keyList[:]
         self.keyEvents.extend(list(map(addCtrl, keyList)))
-        self.keyEvents.extend(list(map(addShift, keyList)))        
+        self.keyEvents.extend(list(map(addShift, keyList)))
         self.keyEvents.extend(self.specialKeys)
 
         self.mouseEvents = ['mouse1', 'mouse1-up',
@@ -291,7 +289,7 @@ class DirectSession(DirectObject):
                               'enter': 'DIRECT-enter',
                              }
 
-        self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
+        self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w']
 
         if base.wantTk:
             from direct.showbase import TkGlobal
@@ -403,7 +401,7 @@ class DirectSession(DirectObject):
             # Position a target point to lerp the oobe camera to
             base.direct.cameraControl.camManipRef.setPosHpr(self.trueCamera, 0, 0, 0, 0, 0, 0)
             ival = self.oobeCamera.posHprInterval(
-                2.0, pos = Point3(0), hpr = Vec3(0), 
+                2.0, pos = Point3(0), hpr = Vec3(0),
                 other = base.direct.cameraControl.camManipRef,
                 blendType = 'easeInOut')
             ival = Sequence(ival, Func(self.endOOBE), name = 'oobeTransition')
@@ -425,7 +423,7 @@ class DirectSession(DirectObject):
                 self.trueCamera, Vec3(-2, -20, 5))
             base.direct.cameraControl.camManipRef.lookAt(self.trueCamera)
             ival = self.oobeCamera.posHprInterval(
-                2.0, pos = Point3(0), hpr = Vec3(0), 
+                2.0, pos = Point3(0), hpr = Vec3(0),
                 other = base.direct.cameraControl.camManipRef,
                 blendType = 'easeInOut')
             ival = Sequence(ival, Func(self.beginOOBE), name = 'oobeTransition')
@@ -498,19 +496,19 @@ class DirectSession(DirectObject):
                     if input.endswith('-up') or\
                        input not in self.modifierEvents:
                         # to handle orphan events
-                        return                        
+                        return
 
                 if (self.fMouse1 == 0 and 'mouse1-up' in input) or\
                    (self.fMouse2 == 0 and 'mouse2-up' in input) or\
                    (self.fMouse3 == 0 and 'mouse3-up' in input):
                     # to handle orphan events
-                    return 
+                    return
 
                 if (self.fMouse1 or self.fMouse2 or self.fMouse3) and\
                    input[4:7] != base.direct.camera.getName()[:3] and\
                    input.endswith('-up'):
                     # to handle orphan events
-                    return  
+                    return
 
                 winCtrl = None
                 possibleWinCtrls = []
@@ -530,7 +528,7 @@ class DirectSession(DirectObject):
                                 winCtrl = cWinCtrl
                         else:
                             if input[4:7] != cWinCtrl.camera.getName()[:3]:
-                                winCtrl = cWinCtrl                                
+                                winCtrl = cWinCtrl
                 if winCtrl is None:
                     return
                 if input not in self.modifierEvents:
@@ -556,12 +554,12 @@ class DirectSession(DirectObject):
                     input = input[:-7]
 
         # Deal with keyboard and mouse input
-        if input in self.hotKeyMap.keys():
+        if input in self.hotKeyMap:
             keyDesc = self.hotKeyMap[input]
             messenger.send(keyDesc[1])
-        elif input in self.speicalKeyMap.keys():
+        elif input in self.speicalKeyMap:
             messenger.send(self.speicalKeyMap[input])
-        elif input in self.directOnlyKeyMap.keys():
+        elif input in self.directOnlyKeyMap:
             if self.fIgnoreDirectOnlyKeyMap:
                 return
             keyDesc = self.directOnlyKeyMap[input]
@@ -667,7 +665,7 @@ class DirectSession(DirectObject):
             taskMgr.add(self.widgetResizeTask, 'DIRECTWidgetResize')
         else:
             taskMgr.remove('DIRECTWidgetResize')
-            
+
     def widgetResizeTask(self, state):
         if not taskMgr.hasTaskNamed('resizeObjectHandles'):
             dnp = self.selected.last
@@ -680,7 +678,7 @@ class DirectSession(DirectObject):
                     nodeCamDist = Vec3(dnp.getPos(base.camList[3])).length()
                     sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList[3].fovV))
                     self.manipulationControl.widgetList[3].setDirectScalingFactor(sf)
-                        
+
                 else:
                     nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
                     sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
@@ -757,7 +755,7 @@ class DirectSession(DirectObject):
                 for widget in self.manipulationControl.widgetList:
                     widget.hideWidget()
             else:
-                self.widget.hideWidget()                
+                self.widget.hideWidget()
             self.selectedNPReadout.reparentTo(hidden)
             self.selectedNPReadout.setText(' ')
             taskMgr.remove('followSelectedNodePath')
@@ -808,7 +806,7 @@ class DirectSession(DirectObject):
 
     def isNotCycle(self, nodePath, parent):
         if nodePath == parent:
-            print 'DIRECT.reparent: Invalid parent'
+            print('DIRECT.reparent: Invalid parent')
             return 0
         elif parent.hasParent():
             return self.isNotCycle(nodePath, parent.getParent())
@@ -907,8 +905,11 @@ class DirectSession(DirectObject):
     def removeAllSelected(self):
         self.selected.removeAll()
 
-    def showAllDescendants(self, nodePath = render):
+    def showAllDescendants(self, nodePath = None):
         """ Show the level and its descendants """
+        if nodePath is None:
+            nodePath = base.render
+
         if not isinstance(nodePath, CollisionNode):
             nodePath.show()
 
@@ -941,7 +942,10 @@ class DirectSession(DirectObject):
 
     def getAndSetName(self, nodePath):
         """ Prompt user for new node path name """
-        from tkSimpleDialog import askstring
+        if sys.version_info >= (3, 0):
+            from tkinter.simpledialog import askstring
+        else:
+            from tkSimpleDialog import askstring
         newName = askstring('Node Path: ' + nodePath.getName(),
                             'Enter new name:')
         if newName:
@@ -1308,10 +1312,10 @@ class DisplayRegionList(DirectObject):
         self.mouseUpdate()
         # hack to test movement
         return Task.cont
-        
+
     def addDisplayRegionContext(self, cam):
         self.displayRegionList.append(DisplayRegionContext(cam))
-        
+
     def removeDisplayRegionContext(self, cam):
         for drc in self.displayRegionList:
             if drc.cam == cam:

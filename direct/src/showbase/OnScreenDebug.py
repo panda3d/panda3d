@@ -4,13 +4,14 @@ __all__ = ['OnScreenDebug']
 
 from panda3d.core import *
 
-import types
 from direct.gui import OnscreenText
 from direct.directtools import DirectUtil
 
 class OnScreenDebug:
+
+    enabled = ConfigVariableBool("on-screen-debug-enabled", False)
+
     def __init__(self):
-        self.enabled = config.GetBool("on-screen-debug-enabled", 0)
         self.onScreenText = None
         self.frame = 0
         self.text = ""
@@ -19,22 +20,22 @@ class OnScreenDebug:
     def load(self):
         if self.onScreenText:
             return
-        
-        fontPath = config.GetString("on-screen-debug-font", "cmtt12")
-        fontScale = config.GetFloat("on-screen-debug-font-scale", 0.05)
+
+        fontPath = ConfigVariableString("on-screen-debug-font", "cmtt12").value
+        fontScale = ConfigVariableDouble("on-screen-debug-font-scale", 0.05).value
 
         color = {
             "black": Vec4(0, 0, 0, 1),
             "white": Vec4(1, 1, 1, 1),
             }
-        fgColor = color[config.GetString("on-screen-debug-fg-color", "white")]
-        bgColor = color[config.GetString("on-screen-debug-bg-color", "black")]
-        fgColor.setW(config.GetFloat("on-screen-debug-fg-alpha", 0.85))
-        bgColor.setW(config.GetFloat("on-screen-debug-bg-alpha", 0.85))
-        
+        fgColor = color[ConfigVariableString("on-screen-debug-fg-color", "white").value]
+        bgColor = color[ConfigVariableString("on-screen-debug-bg-color", "black").value]
+        fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).value)
+        bgColor.setW(ConfigVariableDouble("on-screen-debug-bg-alpha", 0.85).value)
+
         font = loader.loadFont(fontPath)
         if not font.isValid():
-            print "failed to load OnScreenDebug font", fontPath
+            print("failed to load OnScreenDebug font %s" % fontPath)
             font = TextNode.getDefaultFont()
         self.onScreenText = OnscreenText.OnscreenText(
                 pos = (-1.0, 0.9), fg=fgColor, bg=bgColor,
@@ -49,7 +50,7 @@ class OnScreenDebug:
         if not self.onScreenText:
             self.load()
         self.onScreenText.clearText()
-        entries = self.data.items()
+        entries = list(self.data.items())
         entries.sort()
         for k, v in entries:
             if v[0] == self.frame:
@@ -57,12 +58,12 @@ class OnScreenDebug:
                 #isNew = " is"
                 isNew = "="
             else:
-                # This data is not for the current 
+                # This data is not for the current
                 # frame (key roughly equals value):
                 #isNew = "was"
                 isNew = "~"
             value = v[1]
-            if type(value) == types.FloatType:
+            if type(value) == float:
                 value = "% 10.4f"%(value,)
             # else: other types will be converted to str by the "%s"
             self.onScreenText.appendText("%20s %s %-44s\n"%(k, isNew, value))
@@ -86,7 +87,7 @@ class OnScreenDebug:
 
     def removeAllWithPrefix(self, prefix):
         toRemove = []
-        for key in self.data.keys():
+        for key in list(self.data.keys()):
             if len(key) >= len(prefix):
                 if key[:len(prefix)] == prefix:
                     toRemove.append(key)

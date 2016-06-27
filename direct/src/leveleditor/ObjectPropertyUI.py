@@ -10,8 +10,8 @@ from wx.lib.scrolledpanel import ScrolledPanel
 from wx.lib.agw.cubecolourdialog import *
 from direct.wxwidgets.WxSlider import *
 from pandac.PandaModules import *
-import ObjectGlobals as OG
-import AnimGlobals as AG
+from . import ObjectGlobals as OG
+from . import AnimGlobals as AG
 
 #----------------------------------------------------------------------
 Key = PyEmbeddedImage(
@@ -55,7 +55,7 @@ class AnimFileDrop(wx.FileDropTarget):
             objNP.loop(name)
             obj[OG.OBJ_ANIM] = animName
             self.editor.ui.objectPropertyUI.updateProps(obj)
-            
+
 class ObjectPropUI(wx.Panel):
     """
     Base class for ObjectPropUIs,
@@ -77,20 +77,20 @@ class ObjectPropUI(wx.Panel):
         sizer.Add(self.labelPane)
         sizer.Add(self.uiPane, 1, wx.EXPAND, 0)
         self.SetSizer(sizer)
-        
+
         self.setKeyButton.Bind(wx.EVT_BUTTON, self.onKey)
 
     def onKey(self,evt):
         self.parent = wx.GetTopLevelParent(self)
         if self.parent.editor.mode == self.parent.editor.ANIM_MODE:
             obj= self.parent.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
-            
+
             objUID = obj[OG.OBJ_UID]
             propertyName = self.label.GetLabelText()
-            
+
             value = self.getValue()
             frame = self.parent.editor.ui.animUI.curFrame
-            
+
             if (objUID, propertyName) in self.parent.editor.animMgr.keyFramesInfo:
                 for i in range(len(self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)])):
                     if self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)][i][AG.FRAME] == frame:
@@ -104,27 +104,27 @@ class ObjectPropUI(wx.Panel):
                             temp = sortKeyList[i]
                             sortKeyList[i] = sortKeyList[j]
                             sortKeyList[j] = temp
-                            
+
                 self.parent.editor.animMgr.generateSlope(self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)])
             else:
                 self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)] = [[frame, value, [], []]]
-            
+
             exist = False
             for keyFrame in self.parent.editor.animMgr.keyFrames:
                 if frame == keyFrame:
                     exist = True
                     break
-            
+
             if exist == False:
                 self.parent.editor.animMgr.keyFrames.append(frame)
                 self.parent.editor.ui.animUI.OnPropKey()
 
             else:
                 self.parent.editor.ui.animUI.OnPropKey()
-                
+
         else:
             evt.Skip()
-        
+
     def setValue(self, value):
         self.ui.SetValue(value)
 
@@ -290,7 +290,7 @@ class ObjectPropUITime(wx.Panel):
         if valFunc:
             self.uiAmPm.Bind(self.eventType, valFunc)
             self.uiHour.Bind(self.eventType, valFunc)
-            self.uiMin.Bind(self.eventType, valFunc)            
+            self.uiMin.Bind(self.eventType, valFunc)
 
 class ColorPicker(CubeColourDialog):
     def __init__(self, parent, colourData=None, style=CCD_SHOW_ALPHA, alpha = 255, updateCB=None, exitCB=None):
@@ -347,7 +347,7 @@ class ObjectPropertyUI(ScrolledPanel):
         self.propCR.setValue(r)
         self.propCG.setValue(g)
         self.propCB.setValue(b)
-        self.propCA.setValue(a)        
+        self.propCA.setValue(a)
 
         self.editor.objectMgr.updateObjectColor(r, g, b, a)
 
@@ -377,7 +377,7 @@ class ObjectPropertyUI(ScrolledPanel):
                 self.colorPicker.DrawAlpha()
 
         self.editor.objectMgr.updateObjectColor(r, g, b, a)
-        
+
     def openColorPicker(self, evt, colourData, alpha):
         if self.colorPicker:
             self.lastColorPickerPos = self.colorPicker.GetPosition()
@@ -388,10 +388,10 @@ class ObjectPropertyUI(ScrolledPanel):
         self.colorPicker.Show()
         if self.lastColorPickerPos:
             self.colorPicker.SetPosition(self.lastColorPickerPos)
-        
+
     def updateProps(self, obj, movable=True):
         self.clearPropUI()
-        
+
         self.propPane = wx.Panel(self)
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(self.propPane, 1, wx.EXPAND, 0)
@@ -439,8 +439,8 @@ class ObjectPropertyUI(ScrolledPanel):
         objRGBA = obj[OG.OBJ_RGBA]
         self.propCR = ObjectPropUISlider(self.lookPane, 'CR', objRGBA[0], 0, 1)
         self.propCG = ObjectPropUISlider(self.lookPane, 'CG', objRGBA[1], 0, 1)
-        self.propCB = ObjectPropUISlider(self.lookPane, 'CB', objRGBA[2], 0, 1)        
-        self.propCA = ObjectPropUISlider(self.lookPane, 'CA', objRGBA[3], 0, 1) 
+        self.propCB = ObjectPropUISlider(self.lookPane, 'CB', objRGBA[2], 0, 1)
+        self.propCA = ObjectPropUISlider(self.lookPane, 'CA', objRGBA[3], 0, 1)
         colorProps = [self.propCR, self.propCG, self.propCB, self.propCA]
 
         for colorProp in colorProps:
@@ -470,7 +470,7 @@ class ObjectPropertyUI(ScrolledPanel):
             else:
                 modelList = objDef.models
             propUI = ObjectPropUICombo(self.lookPane, 'model', defaultModel, modelList, obj, callBack=objDef.updateModelFunction)
-            sizer.Add(propUI)            
+            sizer.Add(propUI)
 
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
                             self.editor.objectMgr.onLeaveObjectPropUI,
@@ -480,9 +480,9 @@ class ObjectPropertyUI(ScrolledPanel):
         if len(objDef.anims) > 0 or animList:
             if animList is None:
                 animList = objDef.anims
-                
+
             propUI = ObjectPropUICombo(self.lookPane, 'anim', obj[OG.OBJ_ANIM], animList)
-            sizer.Add(propUI)            
+            sizer.Add(propUI)
 
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
                             self.editor.objectMgr.onLeaveObjectPropUI,
@@ -495,14 +495,14 @@ class ObjectPropertyUI(ScrolledPanel):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         propNames = objDef.orderedProperties[:]
-        for key in objDef.properties.keys():
+        for key in list(objDef.properties.keys()):
             if key not in propNames:
                 propNames.append(key)
 
         for key in propNames:
             # handling properties mask
             propMask = BitMask32()
-            for modeKey in objDef.propertiesMask.keys():
+            for modeKey in list(objDef.propertiesMask.keys()):
                 if key in objDef.propertiesMask[modeKey]:
                     propMask |= modeKey
 
@@ -543,20 +543,20 @@ class ObjectPropertyUI(ScrolledPanel):
                     continue
 
                 propUI = ObjectPropUISpinner(self.propsPane, key, value, propRange[OG.RANGE_MIN], propRange[OG.RANGE_MAX])
-                sizer.Add(propUI)                
+                sizer.Add(propUI)
 
             elif propType == OG.PROP_UI_CHECK:
                 if value is None:
                     continue
 
                 propUI = ObjectPropUICheck(self.propsPane, key, value)
-                sizer.Add(propUI)                  
+                sizer.Add(propUI)
 
             elif propType == OG.PROP_UI_RADIO:
                 if len(propDef) <= OG.PROP_RANGE:
                     continue
                 propRange = propDef[OG.PROP_RANGE]
-                
+
                 if value is None:
                     continue
 
@@ -572,7 +572,7 @@ class ObjectPropertyUI(ScrolledPanel):
             elif propType == OG.PROP_UI_COMBO:
                 if len(propDef) <= OG.PROP_RANGE:
                     continue
-                propRange = propDef[OG.PROP_RANGE]                
+                propRange = propDef[OG.PROP_RANGE]
 
                 if value is None:
                     continue
@@ -589,7 +589,7 @@ class ObjectPropertyUI(ScrolledPanel):
             elif propType == OG.PROP_UI_COMBO_DYNAMIC:
                 if len(propDef) <= OG.PROP_DYNAMIC_KEY:
                     continue
-                
+
                 propDynamicKey = propDef[OG.PROP_DYNAMIC_KEY]
                 if propDynamicKey == OG.PROP_MODEL:
                     dynamicRangeKey = obj[OG.OBJ_MODEL]
@@ -618,7 +618,7 @@ class ObjectPropertyUI(ScrolledPanel):
                 if value not in propRange:
                     value = propRange[0]
                     self.editor.objectMgr.updateObjectPropValue(obj, key, value, fUndo=False)
-                    
+
                 propUI = ObjectPropUICombo(self.propsPane, key, value, propRange)
                 sizer.Add(propUI)
 
@@ -629,7 +629,7 @@ class ObjectPropertyUI(ScrolledPanel):
 
                 propUI = ObjectPropUITime(self.propsPane, key, value)
                 sizer.Add(propUI)
-                
+
             else:
                 # unspported property type
                 continue
@@ -648,4 +648,4 @@ class ObjectPropertyUI(ScrolledPanel):
             self.nb.SetSelection(1)
         elif self.lastPropTab == 'Properties':
             self.nb.SetSelection(2)
-            
+

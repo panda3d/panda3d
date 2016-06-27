@@ -1,16 +1,15 @@
-// Filename: virtualFileMount.h
-// Created by:  drose (03Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFileMount.h
+ * @author drose
+ * @date 2002-08-03
+ */
 
 #ifndef VIRTUALFILEMOUNT_H
 #define VIRTUALFILEMOUNT_H
@@ -24,12 +23,11 @@
 
 class VirtualFileSystem;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMount
-// Description : The abstract base class for a mount definition used
-//               within a VirtualFileSystem.  Normally users don't
-//               need to monkey with this class directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for a mount definition used within a
+ * VirtualFileSystem.  Normally users don't need to monkey with this class
+ * directly.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMount : public TypedReferenceCount {
 PUBLISHED:
   INLINE VirtualFileMount();
@@ -78,7 +76,7 @@ public:
   virtual time_t get_timestamp(const Filename &file) const=0;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const=0;
 
   virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);

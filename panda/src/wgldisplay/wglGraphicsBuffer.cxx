@@ -1,21 +1,21 @@
-// Filename: wglGraphicsBuffer.cxx
-// Created by:  drose (08Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wglGraphicsBuffer.cxx
+ * @author drose
+ * @date 2004-02-08
+ */
 
 #include "wglGraphicsBuffer.h"
 #include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
 #include "glgsg.h"
+#include "wglGraphicsStateGuardian.h"
 #include "pStatTimer.h"
 
 #include <wingdi.h>
@@ -23,11 +23,9 @@
 TypeHandle wglGraphicsBuffer::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 wglGraphicsBuffer::
 wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -41,30 +39,25 @@ wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
   release_pbuffer();
-  
-  // Since the pbuffer never gets flipped, we get screenshots from the
-  // same buffer we draw into.
+
+  // Since the pbuffer never gets flipped, we get screenshots from the same
+  // buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 wglGraphicsBuffer::
 ~wglGraphicsBuffer() {
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool wglGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
@@ -81,20 +74,22 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
-  if (_fb_properties.is_single_buffered()) {
-    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
-  } else {
-    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
+  if (_pbuffer_bound) {
+    if (_fb_properties.is_single_buffered()) {
+      wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
+    } else {
+      wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
+    }
   }
 
   if (!rebuild_bitplanes()) {
     wglGraphicsPipe::wgl_make_current(0, 0, &_make_current_pcollector);
     return false;
   }
-  
+
   wglGraphicsPipe::wgl_make_current(_pbuffer_dc, context,
                                     &_make_current_pcollector);
-  
+
   if (mode == FM_render) {
     CDLockedReader cdata(_cycler);
     for (size_t i = 0; i != cdata->_textures.size(); ++i) {
@@ -114,13 +109,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void wglGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -130,35 +123,32 @@ end_frame(FrameMode mode, Thread *current_thread) {
     copy_to_textures();
     bind_texture_to_pbuffer();
   }
-  
+
   _gsg->end_frame(current_thread);
-  
+
   if (mode == FM_render) {
     trigger_flip();
     clear_cube_map_selection();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::bind_texture_to_pbuffer
-//       Access: Private
-//  Description: Looks for the appropriate texture,
-//               and binds that texture to the pbuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for the appropriate texture, and binds that texture to the pbuffer.
+ */
 void wglGraphicsBuffer::
 bind_texture_to_pbuffer() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
-  // Find the color texture, if there is one. That one can be bound to
-  // the framebuffer.  All others must be marked RTM_copy_to_texture.
+  // Find the color texture, if there is one.  That one can be bound to the
+  // framebuffer.  All others must be marked RTM_copy_to_texture.
 
   int tex_index = -1;
   CDLockedReader cdata(_cycler);
   for (size_t i = 0; i != cdata->_textures.size(); ++i) {
     const RenderTexture &rt = cdata->_textures[i];
     RenderTexturePlane plane = rt._plane;
-    if (plane == RTP_color) {
+    if (plane == RTP_color && rt._rtm_mode == RTM_bind_or_copy) {
       tex_index = i;
       break;
     }
@@ -205,15 +195,11 @@ bind_texture_to_pbuffer() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::select_target_tex_page
-//       Access: Public, Virtual
-//  Description: Called internally when the window is in
-//               render-to-a-texture mode and we are in the process of
-//               rendering the six faces of a cube map.  This should
-//               do whatever needs to be done to switch the buffer to
-//               the indicated face.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the window is in render-to-a-texture mode and we are
+ * in the process of rendering the six faces of a cube map.  This should do
+ * whatever needs to be done to switch the buffer to the indicated face.
+ */
 void wglGraphicsBuffer::
 select_target_tex_page(int page) {
   wglGraphicsStateGuardian *wglgsg;
@@ -235,38 +221,31 @@ select_target_tex_page(int page) {
   wglgsg->_wglSetPbufferAttribARB(_pbuffer, iattrib_list);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties()
+ *
+ * This function is called only within the window thread.
+ */
 void wglGraphicsBuffer::
 process_events() {
   GraphicsBuffer::process_events();
 
   MSG msg;
-    
-  // Handle all the messages on the queue in a row.  Some of these
-  // might be for another window, but they will get dispatched
-  // appropriately.
+
+  // Handle all the messages on the queue in a row.  Some of these might be
+  // for another window, but they will get dispatched appropriately.
   while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
     process_1_event();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::get_supports_render_texture
-//       Access: Published, Virtual
-//  Description: Returns true if this particular GraphicsOutput can
-//               render directly into a texture, or false if it must
-//               always copy-to-texture at the end of each frame to
-//               achieve this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GraphicsOutput can render directly into a
+ * texture, or false if it must always copy-to-texture at the end of each
+ * frame to achieve this effect.
+ */
 bool wglGraphicsBuffer::
 get_supports_render_texture() const {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
@@ -278,12 +257,9 @@ get_supports_render_texture() const {
   return wglgsg->get_supports_wgl_render_texture();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void wglGraphicsBuffer::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -292,31 +268,28 @@ close_buffer() {
 
     _gsg.clear();
   }
-  
+
   release_pbuffer();
-  
+
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool wglGraphicsBuffer::
 open_buffer() {
 
-  // pbuffers don't seem to work correctly in double-buffered
-  // mode. Besides, the back buffer is a pointless waste of space.  
-  // So always use a single-buffered gsg.
-  
+  // pbuffers don't seem to work correctly in double-buffered mode.  Besides,
+  // the back buffer is a pointless waste of space.  So always use a single-
+  // buffered gsg.
+
   _fb_properties.set_back_buffers(0);
   _draw_buffer_type = RenderBuffer::T_front;
   _screenshot_buffer_type = RenderBuffer::T_front;
-  
-  // GSG creation/initialization.
+
+  // GSG creationinitialization.
 
   wglGraphicsStateGuardian *wglgsg;
   if (_gsg == 0) {
@@ -325,8 +298,8 @@ open_buffer() {
     wglgsg->choose_pixel_format(_fb_properties, true);
     _gsg = wglgsg;
   } else {
-    // If the old gsg has the wrong pixel format, create a
-    // new one that shares with the old gsg.
+    // If the old gsg has the wrong pixel format, create a new one that shares
+    // with the old gsg.
     DCAST_INTO_R(wglgsg, _gsg, false);
     if ((!wglgsg->get_fb_properties().subsumes(_fb_properties))||
         (!wglgsg->get_fb_properties().is_single_buffered())||
@@ -336,9 +309,9 @@ open_buffer() {
       _gsg = wglgsg;
     }
   }
-  
+
   // Use the temp window to initialize the gsg.
-  
+
   HDC twindow_dc = wglgsg->get_twindow_dc();
   if (twindow_dc == 0) {
     // If we couldn't make a window, we can't get a GL context.
@@ -360,35 +333,32 @@ open_buffer() {
     return false;
   }
   _fb_properties = wglgsg->get_fb_properties();
-  
-  // Now that we have fully made a window and used that window to
-  // create a rendering context, we can attempt to create a pbuffer.
-  // This might fail if the pbuffer extensions are not supported.
+
+  // Now that we have fully made a window and used that window to create a
+  // rendering context, we can attempt to create a pbuffer.  This might fail
+  // if the pbuffer extensions are not supported.
 
   if (!rebuild_bitplanes()) {
     wglGraphicsPipe::wgl_make_current(0, 0, &_make_current_pcollector);
     _gsg = NULL;
     return false;
   }
-  
+
   _is_valid = true;
 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::release_pbuffer
-//       Access: Private
-//  Description: Destroys the pbuffer if it has been created.  The
-//               intent is that this may allow it to be recreated
-//               with different options.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroys the pbuffer if it has been created.  The intent is that this may
+ * allow it to be recreated with different options.
+ */
 void wglGraphicsBuffer::
 release_pbuffer() {
   if (_gsg == 0) {
     return;
   }
-  
+
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
@@ -411,14 +381,11 @@ release_pbuffer() {
   _pbuffer_type = Texture::TT_2d_texture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::rebuild_bitplanes
-//       Access: Private
-//  Description: Once the GL context has been fully realized, attempts
-//               to create an offscreen pbuffer if the graphics API
-//               supports it.  Returns true if successful, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the GL context has been fully realized, attempts to create an
+ * offscreen pbuffer if the graphics API supports it.  Returns true if
+ * successful, false on failure.
+ */
 bool wglGraphicsBuffer::
 rebuild_bitplanes() {
   wglGraphicsStateGuardian *wglgsg;
@@ -440,8 +407,7 @@ rebuild_bitplanes() {
     }
   }
 
-  // If we already have a pbuffer, and if it's lost, then 
-  // force the rebuild.
+  // If we already have a pbuffer, and if it's lost, then force the rebuild.
 
   if (_pbuffer_dc) {
     int flag = 0;
@@ -451,8 +417,8 @@ rebuild_bitplanes() {
     }
   }
 
-  // Determine what pbuffer attributes are needed
-  // for currently-applicable textures.
+  // Determine what pbuffer attributes are needed for currently-applicable
+  // textures.
 
   if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
     if (_host->get_size() != _size) {
@@ -478,7 +444,7 @@ rebuild_bitplanes() {
       (_pbuffer_sizey == desired_y)&&
       (_pbuffer_mipmap == desired_mipmap)&&
       (_pbuffer_type == desired_type)) {
-    // the pbuffer we already have is fine. Do not rebuild.
+    // the pbuffer we already have is fine.  Do not rebuild.
     return true;
   }
 
@@ -493,7 +459,7 @@ rebuild_bitplanes() {
   static const int max_attrib_list = 64;
   int iattrib_list[max_attrib_list];
   int ni = 0;
-  
+
   if (_fb_properties.get_alpha_bits()) {
     iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
     iattrib_list[ni++] = WGL_TEXTURE_RGBA_ARB;
@@ -512,17 +478,17 @@ rebuild_bitplanes() {
     iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
     iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_ARB;
     break;
-    
+
   case Texture::TT_1d_texture:
     iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
     iattrib_list[ni++] = WGL_TEXTURE_1D_ARB;
     break;
-    
+
   default:
     iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
     iattrib_list[ni++] = WGL_TEXTURE_2D_ARB;
   }
-  
+
   // Terminate the list.
   nassertr(ni <= max_attrib_list, false);
   iattrib_list[ni] = 0;
@@ -531,7 +497,7 @@ rebuild_bitplanes() {
   if (twindow_dc == 0) {
     return false;
   }
-  
+
   HGLRC context = wglgsg->get_context(twindow_dc);
   if (context == 0) {
     return false;
@@ -539,9 +505,9 @@ rebuild_bitplanes() {
   wglGraphicsPipe::wgl_make_current(twindow_dc, context,
                                     &_make_current_pcollector);
 
-  _pbuffer = wglgsg->_wglCreatePbufferARB(twindow_dc, pfnum, 
+  _pbuffer = wglgsg->_wglCreatePbufferARB(twindow_dc, pfnum,
                                           desired_x, desired_y, iattrib_list);
-  
+
   if (_pbuffer == 0) {
     wgldisplay_cat.info()
       << "Attempt to create pbuffer failed.\n";
@@ -553,22 +519,20 @@ rebuild_bitplanes() {
   _pbuffer_type = desired_type;
   _pbuffer_sizex = desired_x;
   _pbuffer_sizey = desired_y;
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::process_1_event
-//       Access: Private, Static
-//  Description: Handles one event from the message queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles one event from the message queue.
+ */
 void wglGraphicsBuffer::
 process_1_event() {
   MSG msg;
 
   if (!GetMessage(&msg, NULL, 0, 0)) {
     // WM_QUIT received.  We need a cleaner way to deal with this.
-    //    DestroyAllWindows(false);
+    // DestroyAllWindows(false);
     exit(msg.wParam);  // this will invoke AtExitFn
   }
 
@@ -577,5 +541,3 @@ process_1_event() {
   // Call window_proc
   DispatchMessage(&msg);
 }
-
-

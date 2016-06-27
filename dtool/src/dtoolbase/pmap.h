@@ -1,16 +1,15 @@
-// Filename: pmap.h
-// Created by:  drose (05Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pmap.h
+ * @author drose
+ * @date 2001-06-05
+ */
 
 #ifndef PMAP_H
 #define PMAP_H
@@ -25,7 +24,7 @@
 #include <hash_map>
 #endif
 
-#ifndef USE_STL_ALLOCATOR
+#if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define pmap map
@@ -41,13 +40,11 @@
 
 #else  // USE_STL_ALLOCATOR
 
-////////////////////////////////////////////////////////////////////
-//       Class : pmap
-// Description : This is our own Panda specialization on the default
-//               STL map.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL map.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-
+ * allocated memory.
+ */
 template<class Key, class Value, class Compare = less<Key> >
 class pmap : public map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
@@ -66,13 +63,13 @@ public:
   }
 
   std::pair<TYPENAME base_class::iterator, bool>
-  insert(const TYPENAME base_class::value_type &x) { 
+  insert(const TYPENAME base_class::value_type &x) {
     TAU_PROFILE("pmap::insert(const value_type &)", " ", TAU_USER);
-    return base_class::insert(x); 
+    return base_class::insert(x);
   }
 
   TYPENAME base_class::iterator
-  insert(TYPENAME base_class::iterator position, 
+  insert(TYPENAME base_class::iterator position,
          const TYPENAME base_class::value_type &x) {
     TAU_PROFILE("pmap::insert(iterator, const value_type &)", " ", TAU_USER);
     return base_class::insert(position, x);
@@ -111,13 +108,11 @@ public:
 #endif  // USE_TAU
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : pmultimap
-// Description : This is our own Panda specialization on the default
-//               STL multimap.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL multimap.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-
+ * allocated memory.
+ */
 template<class Key, class Value, class Compare = less<Key> >
 class pmultimap : public multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
@@ -128,13 +123,11 @@ public:
 };
 
 #ifdef HAVE_STL_HASH
-////////////////////////////////////////////////////////////////////
-//       Class : phash_map
-// Description : This is our own Panda specialization on the default
-//               STL hash_map.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL hash_map.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-
+ * allocated memory.
+ */
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class phash_map : public stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
 public:
@@ -143,13 +136,11 @@ public:
   phash_map(const Compare &comp) : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(comp) { }
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : phash_multimap
-// Description : This is our own Panda specialization on the default
-//               STL hash_multimap.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL hash_multimap.  Its
+ * main purpose is to call the hooks for MemoryUsage to properly track STL-
+ * allocated memory.
+ */
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class phash_multimap : public stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
 public:

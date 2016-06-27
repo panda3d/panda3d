@@ -1,16 +1,15 @@
-// Filename: glmisc_src.h
-// Created by:  drose (09Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glmisc_src.h
+ * @author drose
+ * @date 2004-02-09
+ */
 
 #include "pandabase.h"
 #include "configVariableBool.h"
@@ -19,8 +18,8 @@
 #include "geomEnums.h"
 #include "coordinateSystem.h"
 
-// Define some macros to transparently map to the double or float
-// versions of the OpenGL function names.
+// Define some macros to transparently map to the double or float versions of
+// the OpenGL function names.
 #ifndef GLf
 
 #ifndef STDFLOAT_DOUBLE
@@ -39,13 +38,14 @@
 
 #endif  // GLf
 
-//#define GSG_VERBOSE 1
+// #define GSG_VERBOSE 1
 
 extern ConfigVariableInt gl_version;
 extern EXPCL_PANDAGL ConfigVariableBool gl_support_fbo;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
 extern ConfigVariableBool gl_support_clamp_to_border;
+extern ConfigVariableBool gl_support_texture_lod;
 extern ConfigVariableBool gl_ignore_filters;
 extern ConfigVariableBool gl_ignore_mipmaps;
 extern ConfigVariableBool gl_force_mipmaps;
@@ -76,6 +76,7 @@ extern ConfigVariableBool gl_immutable_texture_storage;
 extern ConfigVariableBool gl_use_bindless_texture;
 extern ConfigVariableBool gl_enable_memory_barriers;
 extern ConfigVariableBool gl_vertex_array_objects;
+extern ConfigVariableBool gl_fixed_vertex_attrib_locations;
 extern ConfigVariableBool gl_support_primitive_restart_index;
 extern ConfigVariableBool gl_support_sampler_objects;
 extern ConfigVariableBool gl_support_shadow_filter;

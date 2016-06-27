@@ -9,7 +9,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import PythonUtil
 from direct.stdpy.threading import RLock
-import types
+
 
 class FSMException(Exception):
     pass
@@ -190,14 +190,14 @@ class FSM(DirectObject):
     def getCurrentFilter(self):
         if not self.state:
             error = "FSM cannot determine current filter while in transition (%s -> %s)." % (self.oldState, self.newState)
-            raise AlreadyInTransition, error
+            raise AlreadyInTransition(error)
 
         filter = getattr(self, "filter" + self.state, None)
         if not filter:
             # If there's no matching filterState() function, call
             # defaultFilter() instead.
             filter = self.defaultFilter
-            
+
         return filter
 
     def getCurrentOrNextState(self):
@@ -238,7 +238,7 @@ class FSM(DirectObject):
 
         self.fsmLock.acquire()
         try:
-            assert isinstance(request, types.StringTypes)
+            assert isinstance(request, str)
             self.notify.debug("%s.forceTransition(%s, %s" % (
                 self.name, request, str(args)[1:]))
 
@@ -266,7 +266,7 @@ class FSM(DirectObject):
 
         self.fsmLock.acquire()
         try:
-            assert isinstance(request, types.StringTypes)
+            assert isinstance(request, str)
             self.notify.debug("%s.demand(%s, %s" % (
                 self.name, request, str(args)[1:]))
             if not self.state:
@@ -276,7 +276,7 @@ class FSM(DirectObject):
                 return
 
             if not self.request(request, *args):
-                raise RequestDenied, "%s (from state: %s)" % (request, self.state)
+                raise RequestDenied("%s (from state: %s)" % (request, self.state))
         finally:
             self.fsmLock.release()
 
@@ -305,14 +305,14 @@ class FSM(DirectObject):
 
         self.fsmLock.acquire()
         try:
-            assert isinstance(request, types.StringTypes)
+            assert isinstance(request, str)
             self.notify.debug("%s.request(%s, %s" % (
                 self.name, request, str(args)[1:]))
 
             filter = self.getCurrentFilter()
             result = filter(request, args)
             if result:
-                if isinstance(result, types.StringTypes):
+                if isinstance(result, str):
                     # If the return value is a string, it's just the name
                     # of the state.  Wrap it in a tuple for consistency.
                     result = (result,) + args
@@ -381,7 +381,7 @@ class FSM(DirectObject):
             # request) not listed in defaultTransitions and not
             # handled by an earlier filter.
             if request[0].isupper():
-                raise RequestDenied, "%s (from state: %s)" % (request, self.state)
+                raise RequestDenied("%s (from state: %s)" % (request, self.state))
 
         # In either case, we quietly ignore unhandled command
         # (lowercase) requests.
@@ -394,7 +394,7 @@ class FSM(DirectObject):
         if request[0].isupper():
             return (request,) + args
         return self.defaultFilter(request, args)
-        
+
 
     def setStateArray(self, stateArray):
         """array of unique states to iterate through"""

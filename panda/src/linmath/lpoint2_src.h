@@ -1,28 +1,24 @@
-// Filename: lpoint2_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lpoint2_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//       Class : LPoint2
-// Description : This is a two-component point in space.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a two-component point in space.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LPoint2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LPoint2)();
-  INLINE_LINMATH FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LPoint2) &operator = (const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LPoint2) &operator = (FLOATTYPE fill_value);
+
+  INLINE_LINMATH FLOATNAME(LPoint2)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2)& copy);
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE x, FLOATTYPE y);
 
@@ -51,6 +47,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2) operator / (FLOATTYPE scalar) const;
 
 #ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATNAME(LPoint2) normalized() const;
   INLINE_LINMATH FLOATNAME(LPoint2) project(const FLOATNAME(LVecBase2) &onto) const;
 #endif
 

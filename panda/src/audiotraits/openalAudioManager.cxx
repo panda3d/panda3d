@@ -1,24 +1,22 @@
-// Filename: openalAudioManager.cxx
-// Created by:  Ben Buchwald <bb2@alumni.cmu.edu>
-//
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file openalAudioManager.cxx
+ * @author Ben Buchwald <bb2@alumni.cmu.edu>
+ */
 
 #include "pandabase.h"
 
-//Panda headers.
+// Panda headers.
 #include "config_audio.h"
 #include "config_util.h"
 #include "config_express.h"
+#include "config_openalAudio.h"
 #include "openalAudioManager.h"
 #include "openalAudioSound.h"
 #include "virtualFileSystem.h"
@@ -26,6 +24,14 @@
 #include "reMutexHolder.h"
 
 #include <algorithm>
+
+#ifndef ALC_DEFAULT_ALL_DEVICES_SPECIFIER
+#define ALC_DEFAULT_ALL_DEVICES_SPECIFIER 0x1012
+#endif
+
+#ifndef ALC_ALL_DEVICES_SPECIFIER
+#define ALC_ALL_DEVICES_SPECIFIER 0x1013
+#endif
 
 TypeHandle OpenALAudioManager::_type_handle;
 
@@ -35,17 +41,15 @@ bool OpenALAudioManager::_openal_active = false;
 ALCdevice* OpenALAudioManager::_device = NULL;
 ALCcontext* OpenALAudioManager::_context = NULL;
 
-// This is the list of all OpenALAudioManager objects in the world.  It
-// must be a pointer rather than a concrete object, so it won't be
-// destructed at exit time before we're done removing things from it.
+// This is the list of all OpenALAudioManager objects in the world.  It must
+// be a pointer rather than a concrete object, so it won't be destructed at
+// exit time before we're done removing things from it.
 OpenALAudioManager::Managers *OpenALAudioManager::_managers = NULL;
 
 OpenALAudioManager::SourceCache *OpenALAudioManager::_al_sources = NULL;
 
 
-////////////////////////////////////////////////////////////////////
 // Central dispatcher for audio errors.
-////////////////////////////////////////////////////////////////////
 void al_audio_errcheck(const char *context) {
   ALenum result = alGetError();
   if (result != AL_NO_ERROR) {
@@ -60,22 +64,18 @@ void alc_audio_errcheck(const char *context,ALCdevice* device) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Create_OpenALAudioManager
-//       Access: Private
-//  Description: Factory Function
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory Function
+ */
 AudioManager *Create_OpenALAudioManager() {
   audio_debug("Create_OpenALAudioManager()");
   return new OpenALAudioManager;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 OpenALAudioManager::
 OpenALAudioManager() {
   ReMutexHolder holder(_lock);
@@ -90,13 +90,13 @@ OpenALAudioManager() {
   _active = audio_active;
   _volume = audio_volume;
   _play_rate = 1.0f;
-  
+
   _cache_limit = audio_cache_limit;
 
   _concurrent_sound_limit = 0;
   _is_valid = true;
 
-  //Init 3D attributes
+  // Init 3D attributes
   _distance_factor = 3.28;
   _drop_off_factor = 1;
 
@@ -116,23 +116,52 @@ OpenALAudioManager() {
   _forward_up[5] = 0;
 
   // Initialization
+  audio_cat.init();
   if (_active_managers == 0 || !_openal_active) {
-    _device = alcOpenDevice(NULL); // select the "preferred device"
-    if (!_device) {
-      // this is a unique kind of error
-      audio_error("OpenALAudioManager: alcOpenDevice(NULL): ALC couldn't open device");
+    _device = NULL;
+    string dev_name = select_audio_device();
+
+    if (!dev_name.empty()) {
+      // Open a specific device by name.
+      audio_cat.info() << "Using OpenAL device " << dev_name << "\n";
+      _device = alcOpenDevice(dev_name.c_str());
+
+      if (_device == NULL) {
+        audio_cat.error()
+          << "Couldn't open OpenAL device \"" << dev_name << "\", falling back to default device\n";
+      }
     } else {
+      audio_cat.info() << "Using default OpenAL device\n";
+    }
+
+    if (_device == NULL) {
+      // Open the default device.
+      _device = alcOpenDevice(NULL);
+
+      if (_device == NULL && dev_name != "OpenAL Soft") {
+        // Try the OpenAL Soft driver instead, which is fairly reliable.
+        _device = alcOpenDevice("OpenAL Soft");
+
+        if (_device == NULL) {
+          audio_cat.error()
+            << "Couldn't open default OpenAL device\n";
+        }
+      }
+    }
+
+    if (_device != NULL) {
+      // We managed to get a device open.
       alcGetError(_device); // clear errors
       _context = alcCreateContext(_device, NULL);
-      alc_audio_errcheck("alcCreateContext(_device, NULL)",_device);
+      alc_audio_errcheck("alcCreateContext(_device, NULL)", _device);
       if (_context != NULL) {
         _openal_active = true;
       }
     }
   }
-  // We increment _active_managers regardless of possible errors above.
-  // The shutdown call will do the right thing when it's called,
-  // either way.
+
+  // We increment _active_managers regardless of possible errors above.  The
+  // shutdown call will do the right thing when it's called, either way.
   ++_active_managers;
   nassertv(_active_managers>0);
 
@@ -150,23 +179,21 @@ OpenALAudioManager() {
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
 
     if (audio_cat.is_debug()) {
-      audio_cat->debug()
+      audio_cat.debug()
         << "ALC_DEVICE_SPECIFIER:" << alcGetString(_device, ALC_DEVICE_SPECIFIER) << endl;
     }
   }
 
   if (audio_cat.is_debug()) {
-    audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
-    audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
-    audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
+    audio_cat.debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
+    audio_cat.debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
+    audio_cat.debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 OpenALAudioManager::
 ~OpenALAudioManager() {
   ReMutexHolder holder(_lock);
@@ -177,15 +204,12 @@ OpenALAudioManager::
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::shutdown
-//       Access: Published, Virtual
-//  Description: Call this at exit time to shut down the audio system.
-//               This will invalidate all currently-active
-//               AudioManagers and AudioSounds in the system.  If you
-//               change your mind and want to play sounds again, you
-//               will have to recreate all of these objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Call this at exit time to shut down the audio system.  This will invalidate
+ * all currently-active AudioManagers and AudioSounds in the system.  If you
+ * change your mind and want to play sounds again, you will have to recreate
+ * all of these objects.
+ */
 void OpenALAudioManager::
 shutdown() {
   ReMutexHolder holder(_lock);
@@ -200,37 +224,103 @@ shutdown() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::is_valid
-//       Access:
-//  Description: This is mostly for debugging, but it it could be
-//               used to detect errors in a release build if you
-//               don't mind the cpu cost.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is mostly for debugging, but it it could be used to detect errors in a
+ * release build if you don't mind the cpu cost.
+ */
 bool OpenALAudioManager::
 is_valid() {
   return _is_valid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::make_current
-//       Access: Private
-//  Description: This makes this manager's OpenAL context the 
-//         current context. Needed before any parameter sets.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enumerate the audio devices, selecting the one that is most appropriate or
+ * has been selected by the user.
+ */
+string OpenALAudioManager::
+select_audio_device() {
+  string selected_device = openal_device;
+
+  const char *devices = NULL;
+
+  // This extension gives us all audio paths on all drivers.
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
+    string default_device = alcGetString(NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
+
+    if (devices) {
+      audio_cat.debug() << "All OpenAL devices:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
+    }
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATE_ALL_EXT not supported\n";
+  }
+
+  // This extension just gives us generic driver names, like "OpenAL Soft" and
+  // "Generic Software", rather than individual outputs.
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) {
+    string default_device = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+
+    if (devices) {
+      audio_cat.debug() << "OpenAL drivers:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (selected_device.empty() && device == "OpenAL Soft" &&
+            default_device == "Generic Software") {
+          // Prefer OpenAL Soft over the buggy Generic Software driver.
+          selected_device = "OpenAL Soft";
+        }
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
+    }
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATION_EXT not supported\n";
+  }
+
+  return selected_device;
+}
+
+/**
+ * This makes this manager's OpenAL context the current context.  Needed
+ * before any parameter sets.
+ */
 void OpenALAudioManager::
 make_current() const {
   // Since we only use one context, this is now a no-op.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::can_use_audio
-//       Access: Private
-//  Description: Returns true if the specified MovieAudioCursor
-//               can be used by this AudioManager.  Mostly, this
-//               involves checking whether or not the format is
-//               implemented/supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the specified MovieAudioCursor can be used by this
+ * AudioManager.  Mostly, this involves checking whether or not the format is
+ * implemented/supported.
+ */
 bool OpenALAudioManager::
 can_use_audio(MovieAudioCursor *source) {
   ReMutexHolder holder(_lock);
@@ -242,14 +332,11 @@ can_use_audio(MovieAudioCursor *source) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::should_load_audio
-//       Access: Private
-//  Description: Returns true if the specified MovieAudio should be
-//               cached into RAM.  A lot of conditions have to be met
-//               in order to allow caching - if any are not met,
-//               the file will be streamed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the specified MovieAudio should be cached into RAM.  A lot
+ * of conditions have to be met in order to allow caching - if any are not
+ * met, the file will be streamed.
+ */
 bool OpenALAudioManager::
 should_load_audio(MovieAudioCursor *source, int mode) {
   ReMutexHolder holder(_lock);
@@ -279,22 +366,20 @@ should_load_audio(MovieAudioCursor *source, int mode) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_sound_data
-//       Access: Private
-//  Description: Obtains a SoundData for the specified sound.
-//
-//               When you are done with the SoundData, you need
-//               to decrement the client count.
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a SoundData for the specified sound.
+ *
+ * When you are done with the SoundData, you need to decrement the client
+ * count.
+ */
 OpenALAudioManager::SoundData *OpenALAudioManager::
 get_sound_data(MovieAudio *movie, int mode) {
   ReMutexHolder holder(_lock);
   const Filename &path = movie->get_filename();
-  
+
   // Search for an already-cached sample or an already-opened stream.
   if (!path.empty()) {
-    
+
     if (mode != SM_stream) {
       SampleCache::iterator lsmi=_sample_cache.find(path);
       if (lsmi != _sample_cache.end()) {
@@ -315,18 +400,18 @@ get_sound_data(MovieAudio *movie, int mode) {
       }
     }
   }
-  
+
   PT(MovieAudioCursor) stream = movie->open();
   if (stream == 0) {
     audio_error("Cannot open file: "<<path);
     return NULL;
   }
-  
+
   if (!can_use_audio(stream)) {
     audio_error("File is not in usable format: "<<path);
     return NULL;
   }
-  
+
   SoundData *sd = new SoundData();
   sd->_client_count = 1;
   sd->_manager  = this;
@@ -353,7 +438,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     }
     int channels = stream->audio_channels();
     int samples = (int)(stream->length() * stream->audio_rate());
-    PN_int16 *data = new PN_int16[samples * channels];
+    int16_t *data = new int16_t[samples * channels];
     stream->read_samples(samples, data);
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
@@ -369,73 +454,66 @@ get_sound_data(MovieAudio *movie, int mode) {
     audio_debug(path.get_basename() << ": loading as stream");
     sd->_stream = stream;
   }
-  
+
   return sd;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_sound
-//       Access: Public
-//  Description: This is what creates a sound instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is what creates a sound instance.
+ */
 PT(AudioSound) OpenALAudioManager::
 get_sound(MovieAudio *sound, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if(!is_valid()) {
     return get_null_sound();
   }
-  PT(OpenALAudioSound) oas = 
+  PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, sound, positional, mode);
-  
+
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
   return res;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_sound
-//       Access: Public
-//  Description: This is what creates a sound instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is what creates a sound instance.
+ */
 PT(AudioSound) OpenALAudioManager::
 get_sound(const string &file_name, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if(!is_valid()) {
     return get_null_sound();
   }
-  
+
   Filename path = file_name;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
-  
+
   if (path.empty()) {
     audio_error("get_sound - invalid filename");
     return NULL;
   }
 
   PT(MovieAudio) mva = MovieAudio::get(path);
-  
-  PT(OpenALAudioSound) oas = 
+
+  PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
-  
+
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
   return res;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::uncache_sound
-//       Access: Public
-//  Description: Deletes a sample from the expiration queues.
-//               If the sound is actively in use, then the sound
-//               cannot be deleted, and this function has no effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes a sample from the expiration queues.  If the sound is actively in
+ * use, then the sound cannot be deleted, and this function has no effect.
+ */
 void OpenALAudioManager::
 uncache_sound(const string& file_name) {
   ReMutexHolder holder(_lock);
   assert(is_valid());
   Filename path = file_name;
-  
+
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
 
@@ -450,22 +528,18 @@ uncache_sound(const string& file_name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::clear_cache
-//       Access: Public
-//  Description: Clear out the sound cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clear out the sound cache.
+ */
 void OpenALAudioManager::
 clear_cache() {
   ReMutexHolder holder(_lock);
   discard_excess_cache(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::set_cache_limit
-//       Access: Public
-//  Description: Set the number of sounds that the cache can hold.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the number of sounds that the cache can hold.
+ */
 void OpenALAudioManager::
 set_cache_limit(unsigned int count) {
   ReMutexHolder holder(_lock);
@@ -473,21 +547,17 @@ set_cache_limit(unsigned int count) {
   discard_excess_cache(count);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_cache_limit
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 unsigned int OpenALAudioManager::
 get_cache_limit() const {
   return _cache_limit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::release_sound
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void OpenALAudioManager::
 release_sound(OpenALAudioSound* audioSound) {
   ReMutexHolder holder(_lock);
@@ -497,12 +567,10 @@ release_sound(OpenALAudioSound* audioSound) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::set_volume(PN_stdfloat volume)
-//       Access: Public
-//  Description: 
-//        Sets listener gain
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ * Sets listener gain
+ */
 void OpenALAudioManager::set_volume(PN_stdfloat volume) {
   ReMutexHolder holder(_lock);
   if (_volume!=volume) {
@@ -514,9 +582,9 @@ void OpenALAudioManager::set_volume(PN_stdfloat volume) {
       (**i).set_volume((**i).get_volume());
     }
 
-    /* 
-    // this was neat alternative to the above look
-    // when we had a seperate context for each manager
+    /*
+    // this was neat alternative to the above look when we had a seperate
+    // context for each manager
     make_current();
 
     alGetError(); // clear errors
@@ -525,22 +593,18 @@ void OpenALAudioManager::set_volume(PN_stdfloat volume) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_volume()
-//       Access: Public
-//  Description: 
-//        Gets listener gain
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ * Gets listener gain
+ */
 PN_stdfloat OpenALAudioManager::
 get_volume() const {
   return _volume;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::set_play_rate
-//       Access: Public
-//  Description: set the overall play rate
-////////////////////////////////////////////////////////////////////
+/**
+ * set the overall play rate
+ */
 void OpenALAudioManager::
 set_play_rate(PN_stdfloat play_rate) {
   ReMutexHolder holder(_lock);
@@ -554,22 +618,17 @@ set_play_rate(PN_stdfloat play_rate) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_play_rate
-//       Access: Public
-//  Description: get the overall speed/pitch/play rate
-////////////////////////////////////////////////////////////////////
+/**
+ * get the overall speed/pitch/play rate
+ */
 PN_stdfloat OpenALAudioManager::
 get_play_rate() const {
   return _play_rate;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::set_active(bool active)
-//       Access: Public
-//  Description: Turn on/off
-//               Warning: not implemented.
-////////////////////////////////////////////////////////////////////
+/**
+ * Turn on/off Warning: not implemented.
+ */
 void OpenALAudioManager::
 set_active(bool active) {
   ReMutexHolder holder(_lock);
@@ -583,37 +642,31 @@ set_active(bool active) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_active()
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool OpenALAudioManager::
 get_active() const {
   return _active;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_set_listener_attributes
-//       Access: Public
-//  Description: Set position of the "ear" that picks up 3d sounds
-//        NOW LISTEN UP!!! THIS IS IMPORTANT!
-//        Both Panda3D and OpenAL use a right handed coordinate system.
-//        But there is a major difference!
-//        In Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.
-//        In OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
-//        The solution is simple, we just flip the Y and Z axis and negate the Z, as we move coordinates
-//        from Panda to OpenAL and back.
-//        What does did mean to average Panda user?  Nothing, they shouldn't notice anyway.
-//        But if you decide to do any 3D audio work in here you have to keep it in mind.
-//        I told you, so you can't say I didn't.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set position of the "ear" that picks up 3d sounds NOW LISTEN UP!!! THIS IS
+ * IMPORTANT! Both Panda3D and OpenAL use a right handed coordinate system.
+ * But there is a major difference!  In Panda3D the Y-Axis is going into the
+ * Screen and the Z-Axis is going up.  In OpenAL the Y-Axis is going up and
+ * the Z-Axis is coming out of the screen.  The solution is simple, we just
+ * flip the Y and Z axis and negate the Z, as we move coordinates from Panda
+ * to OpenAL and back.  What does did mean to average Panda user?  Nothing,
+ * they shouldn't notice anyway.  But if you decide to do any 3D audio work in
+ * here you have to keep it in mind.  I told you, so you can't say I didn't.
+ */
 void OpenALAudioManager::
 audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
   ReMutexHolder holder(_lock);
   _position[0] = px;
   _position[1] = pz;
-  _position[2] = -py; 
+  _position[2] = -py;
 
   _velocity[0] = vx;
   _velocity[1] = vz;
@@ -626,8 +679,8 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
   _forward_up[3] = ux;
   _forward_up[4] = uz;
   _forward_up[5] = -uy;
-    
-  
+
+
   make_current();
 
   alGetError(); // clear errors
@@ -639,11 +692,9 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
   al_audio_errcheck("alListerfv(AL_ORIENTATION)");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_get_listener_attributes
-//       Access: Public
-//  Description: Get position of the "ear" that picks up 3d sounds
-////////////////////////////////////////////////////////////////////
+/**
+ * Get position of the "ear" that picks up 3d sounds
+ */
 void OpenALAudioManager::
 audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
   ReMutexHolder holder(_lock);
@@ -658,22 +709,19 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
   *fx = _forward_up[0];
   *fy = -_forward_up[2];
   *fz = _forward_up[1];
-  
+
   *ux = _forward_up[3];
   *uy = -_forward_up[5];
   *uz = _forward_up[4];
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_set_distance_factor
-//       Access: Public
-//  Description: Set units per foot
-//               WARNING: OpenAL has no distance factor but we use this as a scale
-//                        on the min/max distances of sounds to preserve FMOD compatibility.
-//                        Also, adjusts the speed of sound to compensate for unit difference.
-//                        OpenAL's default speed of sound is 343.3 m/s == 1126.3 ft/s
-////////////////////////////////////////////////////////////////////
+/**
+ * Set units per foot WARNING: OpenAL has no distance factor but we use this
+ * as a scale on the min/max distances of sounds to preserve FMOD
+ * compatibility.  Also, adjusts the speed of sound to compensate for unit
+ * difference.  OpenAL's default speed of sound is 343.3 m/s == 1126.3 ft/s
+ */
 void OpenALAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
   ReMutexHolder holder(_lock);
@@ -686,7 +734,8 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
   if (_distance_factor>0) {
     alSpeedOfSound(1126.3*_distance_factor);
     al_audio_errcheck("alSpeedOfSound()");
-    // resets the doppler factor to the correct setting in case it was set to 0.0 by a distance_factor<=0.0
+    // resets the doppler factor to the correct setting in case it was set to
+    // 0.0 by a distance_factor<=0.0
     alDopplerFactor(_doppler_factor);
     al_audio_errcheck("alDopplerFactor()");
   } else {
@@ -702,50 +751,40 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_get_distance_factor
-//       Access: Public
-//  Description: Sets units per foot
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets units per foot
+ */
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_distance_factor() const {
   return _distance_factor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_set_doppler_factor
-//       Access: Public
-//  Description: Exaggerates or diminishes the Doppler effect. 
-//               Defaults to 1.0
-////////////////////////////////////////////////////////////////////
+/**
+ * Exaggerates or diminishes the Doppler effect.  Defaults to 1.0
+ */
 void OpenALAudioManager::
 audio_3d_set_doppler_factor(PN_stdfloat factor) {
   ReMutexHolder holder(_lock);
   _doppler_factor = factor;
 
   make_current();
-  
+
   alGetError(); // clear errors
   alDopplerFactor(_doppler_factor);
   al_audio_errcheck("alDopplerFactor()");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_get_doppler_factor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_doppler_factor() const {
   return _doppler_factor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_set_drop_off_factor
-//       Access: Public
-//  Description: Control the effect distance has on audability.
-//               Defaults to 1.0
-////////////////////////////////////////////////////////////////////
+/**
+ * Control the effect distance has on audability.  Defaults to 1.0
+ */
 void OpenALAudioManager::
 audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   ReMutexHolder holder(_lock);
@@ -757,41 +796,37 @@ audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::audio_3d_get_drop_off_factor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_drop_off_factor() const {
   return _drop_off_factor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::starting_sound
-//       Access: 
-//  Description: Inform the manager that a sound is about to play.
-//               The manager will add this sound to the table of
-//               sounds that are playing, and will allocate a source
-//               to this sound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inform the manager that a sound is about to play.  The manager will add
+ * this sound to the table of sounds that are playing, and will allocate a
+ * source to this sound.
+ */
 void OpenALAudioManager::
 starting_sound(OpenALAudioSound* audio) {
   ReMutexHolder holder(_lock);
   ALuint source=0;
-  
+
   // If the sound already has a source, we don't need to do anything.
   if (audio->_source) {
     return;
   }
 
-  // first give all sounds that have finished a chance to stop, so that these get stopped first
+  // first give all sounds that have finished a chance to stop, so that these
+  // get stopped first
   update();
 
   if (_concurrent_sound_limit) {
     reduce_sounds_playing_to(_concurrent_sound_limit-1); // because we're about to add one
   }
-  
+
   // get a source from the source pool or create a new source
   if (_al_sources->empty()) {
     make_current();
@@ -800,7 +835,8 @@ starting_sound(OpenALAudioSound* audio) {
     ALenum result = alGetError();
     if (result!=AL_NO_ERROR) {
       audio_error("alGenSources(): " << alGetString(result) );
-      // if we can't create any more sources, set stop a sound to free a source
+      // if we can't create any more sources, set stop a sound to free a
+      // source
       reduce_sounds_playing_to(_sounds_playing.size()-1);
       source = 0;
     }
@@ -812,18 +848,15 @@ starting_sound(OpenALAudioSound* audio) {
   }
 
   audio->_source = source;
-  
+
   if (source)
     _sounds_playing.insert(audio);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::stopping_sound
-//       Access: 
-//  Description: Inform the manager that a sound is finished or 
-//               someone called stop on the sound (this should not
-//               be called if a sound is only paused).
-////////////////////////////////////////////////////////////////////
+/**
+ * Inform the manager that a sound is finished or someone called stop on the
+ * sound (this should not be called if a sound is only paused).
+ */
 void OpenALAudioManager::
 stopping_sound(OpenALAudioSound* audio) {
   ReMutexHolder holder(_lock);
@@ -834,11 +867,9 @@ stopping_sound(OpenALAudioSound* audio) {
   _sounds_playing.erase(audio); // This could cause the sound to destruct.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::set_concurrent_sound_limit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void OpenALAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
   ReMutexHolder holder(_lock);
@@ -846,67 +877,58 @@ set_concurrent_sound_limit(unsigned int limit) {
   reduce_sounds_playing_to(_concurrent_sound_limit);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_concurrent_sound_limit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 unsigned int OpenALAudioManager::
 get_concurrent_sound_limit() const {
   return _concurrent_sound_limit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::reduce_sounds_playing_to
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void OpenALAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
   ReMutexHolder holder(_lock);
-  // first give all sounds that have finished a chance to stop, so that these get stopped first
+  // first give all sounds that have finished a chance to stop, so that these
+  // get stopped first
   update();
 
   int limit = _sounds_playing.size() - count;
   while (limit-- > 0) {
     SoundsPlaying::iterator sound = _sounds_playing.begin();
     assert(sound != _sounds_playing.end());
-    // When the user stops a sound, there is still a PT in the
-    // user's hand.  When we stop a sound here, however, 
-    // this can remove the last PT.  This can cause an ugly
-    // recursion where stop calls the destructor, and the
-    // destructor calls stop.  To avoid this, we create
-    // a temporary PT, stop the sound, and then release the PT.
+    // When the user stops a sound, there is still a PT in the user's hand.
+    // When we stop a sound here, however, this can remove the last PT.  This
+    // can cause an ugly recursion where stop calls the destructor, and the
+    // destructor calls stop.  To avoid this, we create a temporary PT, stop
+    // the sound, and then release the PT.
     PT(OpenALAudioSound) s = (*sound);
     s->stop();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::stop_all_sounds()
-//       Access: Public
-//  Description: Stop playback on all sounds managed by this manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stop playback on all sounds managed by this manager.
+ */
 void OpenALAudioManager::
 stop_all_sounds() {
   ReMutexHolder holder(_lock);
   reduce_sounds_playing_to(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::update
-//       Access: Public
-//  Description: Perform all per-frame update functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Perform all per-frame update functions.
+ */
 void OpenALAudioManager::
 update() {
   ReMutexHolder holder(_lock);
 
-  // See if any of our playing sounds have ended
-  // we must first collect a seperate list of finished sounds and then
-  // iterated over those again calling their finished method. We 
-  // can't call finished() within a loop iterating over _sounds_playing
-  // since finished() modifies _sounds_playing
+  // See if any of our playing sounds have ended we must first collect a
+  // seperate list of finished sounds and then iterated over those again
+  // calling their finished method.  We can't call finished() within a loop
+  // iterating over _sounds_playing since finished() modifies _sounds_playing
   SoundsPlaying sounds_finished;
 
   double rtc = TrueClock::get_global_ptr()->get_short_time();
@@ -923,7 +945,7 @@ update() {
       sounds_finished.insert(*i);
     }
   }
-  
+
   i=sounds_finished.begin();
   for (; i!=sounds_finished.end(); ++i) {
     (**i).finished();
@@ -931,13 +953,10 @@ update() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::cleanup
-//       Access: Private
-//  Description: Shuts down the audio manager and releases any
-//               resources associated with it.  Also cleans up all
-//               AudioSounds created via the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shuts down the audio manager and releases any resources associated with it.
+ * Also cleans up all AudioSounds created via the manager.
+ */
 void OpenALAudioManager::
 cleanup() {
   ReMutexHolder holder(_lock);
@@ -946,15 +965,15 @@ cleanup() {
   }
 
   stop_all_sounds();
-  
+
   AllSounds sounds(_all_sounds);
   AllSounds::iterator ai;
   for (ai = sounds.begin(); ai != sounds.end(); ++ai) {
     (*ai)->cleanup();
   }
-  
+
   clear_cache();
-  
+
   nassertv(_active_managers > 0);
   --_active_managers;
 
@@ -978,7 +997,7 @@ cleanup() {
       alcGetError(_device); // clear errors
       alcMakeContextCurrent(NULL);
       alc_audio_errcheck("alcMakeContextCurrent(NULL)",_device);
-      
+
       alcDestroyContext(_context);
       alc_audio_errcheck("alcDestroyContext(_context)",_device);
       _context = NULL;
@@ -986,7 +1005,7 @@ cleanup() {
       if (_device) {
         audio_debug("Going to try to close openAL");
         alcCloseDevice(_device);
-        //alc_audio_errcheck("alcCloseDevice(_device)",_device);
+        // alc_audio_errcheck("alcCloseDevice(_device)",_device);
         _device = NULL;
         audio_debug("openAL Closed");
       }
@@ -997,11 +1016,9 @@ cleanup() {
   _cleanup_required = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::SoundData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 OpenALAudioManager::SoundData::
 SoundData() :
   _manager(0),
@@ -1015,11 +1032,9 @@ SoundData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::SoundData::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 OpenALAudioManager::SoundData::
 ~SoundData() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
@@ -1032,13 +1047,10 @@ OpenALAudioManager::SoundData::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::increment_client_count
-//       Access: Public
-//  Description: Increments the SoundData's client count.  Any
-//               SoundData that is actively in use (ie, has a client)
-//               is removed entirely from the expiration queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments the SoundData's client count.  Any SoundData that is actively in
+ * use (ie, has a client) is removed entirely from the expiration queue.
+ */
 void OpenALAudioManager::
 increment_client_count(SoundData *sd) {
   ReMutexHolder holder(_lock);
@@ -1053,15 +1065,11 @@ increment_client_count(SoundData *sd) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::decrement_client_count
-//       Access: Public
-//  Description: Decrements the SoundData's client count.  Sounds
-//               that are no longer in use (ie, have no clients)
-//               go into the expiration queue.  When the expiration
-//               queue reaches the cache limit, the first item on
-//               the queue is freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decrements the SoundData's client count.  Sounds that are no longer in use
+ * (ie, have no clients) go into the expiration queue.  When the expiration
+ * queue reaches the cache limit, the first item on the queue is freed.
+ */
 void OpenALAudioManager::
 decrement_client_count(SoundData *sd) {
   ReMutexHolder holder(_lock);
@@ -1081,12 +1089,10 @@ decrement_client_count(SoundData *sd) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::discard_excess_cache
-//       Access: Public
-//  Description: Discards sounds from the sound cache until the
-//               number of sounds remaining is under the limit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Discards sounds from the sound cache until the number of sounds remaining
+ * is under the limit.
+ */
 void OpenALAudioManager::
 discard_excess_cache(int sample_limit) {
   ReMutexHolder holder(_lock);

@@ -1,16 +1,15 @@
-// Filename: cDistributedSmoothNodeBase.h
-// Created by:  drose (03Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cDistributedSmoothNodeBase.h
+ * @author drose
+ * @date 2004-09-03
+ */
 
 #ifndef CDISTRIBUTEDSMOOTHNODEBASE_H
 #define CDISTRIBUTEDSMOOTHNODEBASE_H
@@ -25,17 +24,15 @@
 class DCClass;
 class CConnectionRepository;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CDistributedSmoothNodeBase
-// Description : This class defines some basic methods of
-//               DistributedSmoothNodeBase which have been moved into
-//               C++ as a performance optimization.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines some basic methods of DistributedSmoothNodeBase which
+ * have been moved into C++ as a performance optimization.
+ */
 class EXPCL_DIRECT CDistributedSmoothNodeBase {
 PUBLISHED:
   CDistributedSmoothNodeBase();
   ~CDistributedSmoothNodeBase();
-  
+
   INLINE void
   set_repository(CConnectionRepository *repository,
                  bool is_ai, CHANNEL_TYPE ai_id);
@@ -54,7 +51,7 @@ PUBLISHED:
   void broadcast_pos_hpr_xyh();
   void broadcast_pos_hpr_xy();
 
-  void set_curr_l(PN_uint64 l);
+  void set_curr_l(uint64_t l);
   void print_curr_l();
 
 private:
@@ -70,7 +67,7 @@ private:
   INLINE void d_setSmXYH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat h);
   INLINE void d_setSmXYZH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h);
   INLINE void d_setSmPosHpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
-  INLINE void d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, PN_uint64 l);
+  INLINE void d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, uint64_t l);
 
   void begin_send_update(DCPacker &packer, const string &field_name);
   void finish_send_update(DCPacker &packer);
@@ -98,9 +95,9 @@ private:
   LPoint3 _store_xyz;
   LVecBase3 _store_hpr;
   bool _store_stop;
-  // contains most recently sent location info as
-  // index 0, index 1 contains most recently set location info
-  PN_uint64 _currL[2];
+  // contains most recently sent location info as index 0, index 1 contains
+  // most recently set location info
+  uint64_t _currL[2];
 };
 
 #include "cDistributedSmoothNodeBase.I"

@@ -1,16 +1,15 @@
-// Filename: cppScope.h
-// Created by:  drose (21Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppScope.h
+ * @author drose
+ * @date 1999-10-21
+ */
 
 #ifndef CPPSCOPE_H
 #define CPPSCOPE_H
@@ -43,10 +42,9 @@ class CPPPreprocessor;
 class CPPNameComponent;
 struct cppyyltype;
 
-///////////////////////////////////////////////////////////////////
-//       Class : CPPScope
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPScope {
 public:
   CPPScope(CPPScope *parent_scope,
@@ -63,9 +61,9 @@ public:
   virtual void add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
                                CPPPreprocessor *preprocessor,
                                const cppyyltype &pos);
-  virtual void add_enum_value(CPPInstance *inst,
-                              CPPPreprocessor *preprocessor,
-                              const cppyyltype &pos);
+  virtual void add_enum_value(CPPInstance *inst);
+  virtual void define_typedef_type(CPPTypedefType *type,
+                                   CPPPreprocessor *error_sink = NULL);
   virtual void define_extension_type(CPPExtensionType *type,
                                      CPPPreprocessor *error_sink = NULL);
   virtual void define_namespace(CPPNamespace *scope);

@@ -1,16 +1,15 @@
-// Filename: ffmpegAudioCursor.cxx
-// Created by: jyelon (01Aug2007)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ffmpegAudioCursor.cxx
+ * @author jyelon
+ * @date 2007-08-01
+ */
 
 #include "config_ffmpeg.h"
 #include "ffmpegAudioCursor.h"
@@ -40,11 +39,9 @@ TypeHandle FfmpegAudioCursor::_type_handle;
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::Constructor
-//       Access: Protected
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 FfmpegAudioCursor::
 FfmpegAudioCursor(FfmpegAudio *src) :
   MovieAudioCursor(src),
@@ -156,7 +153,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
 
   _packet = new AVPacket;
   _buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE / 2;
-  _buffer_alloc = new PN_int16[_buffer_size + 64];
+  _buffer_alloc = new int16_t[_buffer_size + 64];
 
   // Allocate enough space for 1024 samples per channel.
   if ((_packet == 0)||(_buffer_alloc == 0)) {
@@ -165,8 +162,8 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   }
   memset(_packet, 0, sizeof(AVPacket));
 
-  // Align the buffer to a 64-byte boundary
-  // The ffmpeg codec likes this, because it uses SSE/SSE2.
+  // Align the buffer to a 64-byte boundary The ffmpeg codec likes this,
+  // because it uses SSESSE2.
   _buffer = _buffer_alloc;
   while (((size_t)_buffer) & 31) {
     _buffer += 1;
@@ -180,21 +177,17 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _buffer_tail = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 FfmpegAudioCursor::
 ~FfmpegAudioCursor() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::cleanup
-//       Access: Public
-//  Description: Reset to a standard inactive state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reset to a standard inactive state.
+ */
 void FfmpegAudioCursor::
 cleanup() {
   if (_frame) {
@@ -210,7 +203,11 @@ cleanup() {
 
   if (_packet) {
     if (_packet->data) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+      av_packet_unref(_packet);
+#else
       av_free_packet(_packet);
+#endif
     }
     delete _packet;
     _packet = NULL;
@@ -242,16 +239,18 @@ cleanup() {
   _audio_index = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::fetch_packet
-//       Access: Protected
-//  Description: Fetches an audio packet and stores it in the
-//               packet buffer.  Also sets packet_size and packet_data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fetches an audio packet and stores it in the packet buffer.  Also sets
+ * packet_size and packet_data.
+ */
 void FfmpegAudioCursor::
 fetch_packet() {
   if (_packet->data) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    av_packet_unref(_packet);
+#else
     av_free_packet(_packet);
+#endif
   }
   while (av_read_frame(_format_ctx, _packet) >= 0) {
     if (_packet->stream_index == _audio_index) {
@@ -259,21 +258,22 @@ fetch_packet() {
       _packet_data = _packet->data;
       return;
     }
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    av_packet_unref(_packet);
+#else
     av_free_packet(_packet);
+#endif
   }
   _packet->data = 0;
   _packet_size = 0;
   _packet_data = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::reload_buffer
-//       Access: Protected
-//  Description: Reloads the audio buffer by decoding audio packets
-//               until one of those audio packets finally yields
-//               some samples.  If we encounter the end of the
-//               stream, we synthesize silence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reloads the audio buffer by decoding audio packets until one of those audio
+ * packets finally yields some samples.  If we encounter the end of the
+ * stream, we synthesize silence.
+ */
 bool FfmpegAudioCursor::
 reload_buffer() {
 
@@ -295,8 +295,8 @@ reload_buffer() {
                                       _packet_data, _packet_size);
       movies_debug("avcodec_decode_audio2 returned " << len);
 #elif LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 25, 0)
-      // We should technically also consider resampling in this case,
-      // but whatever.  Just upgrade your ffmpeg version if you get garbage.
+      // We should technically also consider resampling in this case, but
+      // whatever.  Just upgrade your ffmpeg version if you get garbage.
       AVPacket pkt;
       av_init_packet(&pkt);
       pkt.data = _packet_data;
@@ -312,7 +312,11 @@ reload_buffer() {
       pkt.size = _packet_size;
       int len = avcodec_decode_audio4(_audio_ctx, _frame, &got_frame, &pkt);
       movies_debug("avcodec_decode_audio4 returned " << len);
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+      av_packet_unref(&pkt);
+#else
       av_free_packet(&pkt);
+#endif
 
       bufsize = 0;
       if (got_frame) {
@@ -352,17 +356,14 @@ reload_buffer() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::seek
-//       Access: Protected
-//  Description: Seeks to a target location.  Afterward, the
-//               packet_time is guaranteed to be less than or
-//               equal to the specified time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Seeks to a target location.  Afterward, the packet_time is guaranteed to be
+ * less than or equal to the specified time.
+ */
 void FfmpegAudioCursor::
 seek(double t) {
-  PN_int64 target_ts = (PN_int64)(t / _audio_timebase);
-  if (target_ts < (PN_int64)(_initial_dts)) {
+  int64_t target_ts = (int64_t)(t / _audio_timebase);
+  if (target_ts < (int64_t)(_initial_dts)) {
     // Attempts to seek before the first packet will fail.
     target_ts = _initial_dts;
   }
@@ -397,16 +398,13 @@ seek(double t) {
   _samples_read = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::read_samples
-//       Access: Public, Virtual
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.
-//               Multiple-channel audio will be interleaved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Read audio samples from the stream.  N is the number of samples you wish to
+ * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
+ * audio will be interleaved.
+ */
 void FfmpegAudioCursor::
-read_samples(int n, PN_int16 *data) {
+read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
   while (desired > 0) {

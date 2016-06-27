@@ -1,16 +1,15 @@
-// Filename: config_pstats.cxx
-// Created by:  drose (09Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_pstats.cxx
+ * @author drose
+ * @date 2000-07-09
+ */
 
 #include "config_pstats.h"
 
@@ -79,8 +78,8 @@ ConfigVariableBool pstats_gpu_timing
           "is not usually an accurate reflectino of how long the actual "
           "operation takes on the video card."));
 
-// The rest are different in that they directly control the server,
-// not the client.
+// The rest are different in that they directly control the server, not the
+// client.
 ConfigVariableBool pstats_scroll_mode
 ("pstats-scroll-mode", true);
 ConfigVariableDouble pstats_history
@@ -94,14 +93,12 @@ ConfigVariableBool pstats_mem_other
           "the total into a single \"Other\" category, or false to show "
           "each nonzero memory category."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libpstatclient
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libpstatclient() {
   static bool initialized = false;
@@ -110,4 +107,3 @@ init_libpstatclient() {
   }
   initialized = true;
 }
-

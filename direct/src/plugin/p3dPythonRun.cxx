@@ -1,16 +1,15 @@
-// Filename: p3dPythonRun.cxx
-// Created by:  drose (05Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPythonRun.cxx
+ * @author drose
+ * @date 2009-06-05
+ */
 
 #include "p3dPythonRun.h"
 #include "asyncTaskManager.h"
@@ -26,18 +25,16 @@ extern "C" {
   extern struct _frozen _PyImport_FrozenModules[];
 };
 
-// There is only one P3DPythonRun object in any given process space.
-// Makes the statics easier to deal with, and we don't need multiple
-// instances of this thing.
+// There is only one P3DPythonRun object in any given process space.  Makes
+// the statics easier to deal with, and we don't need multiple instances of
+// this thing.
 P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
 
 TypeHandle P3DPythonRun::P3DWindowHandle::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DPythonRun::
 P3DPythonRun(const char *program_name, const char *archive_file,
              FHandle input_handle, FHandle output_handle,
@@ -98,12 +95,12 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   // Prevent Python from complaining about finding the standard modules.
   Py_FrozenFlag = 1;
 
-  // This contains the modules we need in order to call Py_Initialize,
-  // as well as the VFSImporter.
+  // This contains the modules we need in order to call Py_Initialize, as well
+  // as the VFSImporter.
   PyImport_FrozenModules = _PyImport_FrozenModules;
 
-  // Initialize Python.  It appears to be important to do this before
-  // we open the pipe streams and spawn the thread, below.
+  // Initialize Python.  It appears to be important to do this before we open
+  // the pipe streams and spawn the thread, below.
 #if PY_MAJOR_VERSION >= 3
   Py_SetProgramName((wchar_t *)_program_name.c_str());
   Py_SetPythonHome((wchar_t *)L"");
@@ -126,8 +123,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
     }
   }
 
-  // Open the pipe streams with the input and output handles from the
-  // parent.
+  // Open the pipe streams with the input and output handles from the parent.
   _pipe_read.open_read(input_handle);
   _pipe_write.open_write(output_handle);
 
@@ -141,11 +137,9 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   spawn_read_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DPythonRun::
 ~P3DPythonRun() {
   terminate_session();
@@ -159,33 +153,30 @@ P3DPythonRun::
   join_read_thread();
   DESTROY_LOCK(_commands_lock);
 
-  // Restore the notify stream in case it tries to write to anything
-  // else after our shutdown.
+  // Restore the notify stream in case it tries to write to anything else
+  // after our shutdown.
   Notify::ptr()->set_ostream_ptr(&cerr, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::run_python
-//       Access: Public
-//  Description: Runs the embedded Python process.  This method does
-//               not return until the plugin is ready to exit.
-//
-//               Returns the exit status, which will be 0 on success.
-////////////////////////////////////////////////////////////////////
+/**
+ * Runs the embedded Python process.  This method does not return until the
+ * plugin is ready to exit.
+ *
+ * Returns the exit status, which will be 0 on success.
+ */
 int P3DPythonRun::
 run_python() {
 #if defined(_WIN32) && defined(USE_DEBUG_PYTHON)
-  // On Windows, in a debug build, we have to preload sys.dll_suffix =
-  // "_d", so that the Panda DLL preloader can import the correct
-  // filenames.
+  // On Windows, in a debug build, we have to preload sys.dll_suffix = "_d",
+  // so that the Panda DLL preloader can import the correct filenames.
   PyRun_SimpleString("import sys; sys.dll_suffix = '_d'");
 #endif
 
   Filename dir = _archive_file.get_dirname();
 
-  // We'll need to synthesize a 'panda3d' module before loading
-  // VFSImporter.  We could simply freeze it, but Python has a bug
-  // setting __path__ of frozen modules properly.
+  // We'll need to synthesize a 'panda3d' module before loading VFSImporter.
+  // We could simply freeze it, but Python has a bug setting __path__ of
+  // frozen modules properly.
   PyObject *panda3d_module = PyImport_AddModule("panda3d");
   if (panda3d_module == NULL) {
     nout << "Failed to add panda3d module:\n";
@@ -193,7 +184,7 @@ run_python() {
     return 1;
   }
 
-  // Set the __path__ such that it can find panda3d/core.pyd, etc.
+  // Set the __path__ such that it can find panda3dcore.pyd, etc.
   Filename panda3d_dir(dir, "panda3d");
   string dir_str = panda3d_dir.to_os_specific();
   PyModule_AddObject(panda3d_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
@@ -208,8 +199,8 @@ run_python() {
   }
 
   // Now repair the "direct" and "direct.showbase" trees, which were
-  // presumably frozen along with the VFSImporter, by setting their
-  // __path__ such that we can still find the other direct modules.
+  // presumably frozen along with the VFSImporter, by setting their __path__
+  // such that we can still find the other direct modules.
   Filename direct_dir(dir, "direct");
   PyObject *direct_module = PyImport_AddModule("direct");
   if (direct_module != NULL) {
@@ -226,6 +217,24 @@ run_python() {
     PyModule_AddStringConstant(showbase_module, "__package__", "direct.showbase");
   }
 
+  PyObject *stdpy_module = PyImport_AddModule("direct.stdpy");
+  if (stdpy_module != NULL) {
+    Filename stdpy_dir(direct_dir, "stdpy");
+    dir_str = stdpy_dir.to_os_specific();
+    PyModule_AddObject(stdpy_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(stdpy_module, "__package__", "direct.stdpy");
+  }
+
+  // And the encodings package as well, since we've presumably picked up a
+  // bunch of encodings modules as part of the frozen bundle.
+  Filename encodings_dir(dir, "encodings");
+  PyObject *encodings_module = PyImport_AddModule("encodings");
+  if (encodings_module != NULL) {
+    dir_str = encodings_dir.to_os_specific();
+    PyModule_AddObject(encodings_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(encodings_module, "__package__", "encodings");
+  }
+
   // And register the VFSImporter.
   PyObject *result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
   if (result == NULL) {
@@ -236,10 +245,9 @@ run_python() {
   Py_DECREF(result);
   Py_DECREF(vfsimporter_module);
 
-  // Now, the VFSImporter has been registered, which means we can
-  // start importing the rest of the Python modules, which are all
-  // defined in the multifile.  First, we need to mount the multifile
-  // into the VFS.
+  // Now, the VFSImporter has been registered, which means we can start
+  // importing the rest of the Python modules, which are all defined in the
+  // multifile.  First, we need to mount the multifile into the VFS.
   PT(Multifile) mf = new Multifile;
   if (!mf->open_read(_archive_file)) {
     nout << "Could not read " << _archive_file << "\n";
@@ -322,7 +330,8 @@ run_python() {
   Py_DECREF(app_runner_module);
   Py_DECREF(javascript_module);
 
-  // Construct a Python wrapper around our methods we need to expose to Python.
+  // Construct a Python wrapper around our methods we need to expose to
+  // Python.
   static PyMethodDef p3dpython_methods[] = {
     { "check_comm", P3DPythonRun::st_check_comm, METH_VARARGS,
       "Poll for communications from the parent process" },
@@ -354,8 +363,8 @@ run_python() {
     return 1;
   }
 
-  // Now pass that func pointer back to our AppRunner instance, so it
-  // can call up to us.
+  // Now pass that func pointer back to our AppRunner instance, so it can call
+  // up to us.
   result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"N", request_func);
   if (result == NULL) {
     PyErr_Print();
@@ -363,17 +372,15 @@ run_python() {
   }
   Py_DECREF(result);
 
-  // Now add check_comm() as a task.  It can be a threaded task, but
-  // this does mean that application programmers will have to be alert
-  // to asynchronous calls coming in from JavaScript.  We'll put it on
-  // its own task chain so the application programmer can decide how
-  // it should be.
+  // Now add check_comm() as a task.  It can be a threaded task, but this does
+  // mean that application programmers will have to be alert to asynchronous
+  // calls coming in from JavaScript.  We'll put it on its own task chain so
+  // the application programmer can decide how it should be.
   AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
   PT(AsyncTaskChain) chain = task_mgr->make_task_chain("JavaScript");
 
-  // The default is not threaded (num_threads == 0), but if the app
-  // programmer decides to enable threads, the default is TP_low
-  // priority.
+  // The default is not threaded (num_threads == 0), but if the app programmer
+  // decides to enable threads, the default is TP_low priority.
   chain->set_thread_priority(TP_low);
 
   PyObject *check_comm = PyObject_GetAttrString(p3dpython, "check_comm");
@@ -398,8 +405,8 @@ run_python() {
     int status = 1;
 
     // An uncaught application exception, and not handled by
-    // appRunner.exceptionHandler.  If it is a SystemExit, extract
-    // the exit status that we should return.
+    // appRunner.exceptionHandler.  If it is a SystemExit, extract the exit
+    // status that we should return.
     if (PyErr_ExceptionMatches(PyExc_SystemExit)) {
       PyObject *ptype, *ptraceback;
       PyObject *value = NULL;
@@ -449,15 +456,12 @@ run_python() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::set_window_open
-//       Access: Public
-//  Description: Called from low-level Panda (via the P3DWindowHandle
-//               object) when a child window has been attached or
-//               detached from the browser window.  This triggers the
-//               "onwindowattach" and "onwindowdetach" JavaScript
-//               notifications.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from low-level Panda (via the P3DWindowHandle object) when a child
+ * window has been attached or detached from the browser window.  This
+ * triggers the "onwindowattach" and "onwindowdetach" JavaScript
+ * notifications.
+ */
 void P3DPythonRun::
 set_window_open(P3DCInstance *inst, bool is_open) {
   TiXmlDocument doc;
@@ -474,21 +478,16 @@ set_window_open(P3DCInstance *inst, bool is_open) {
   write_xml(_pipe_write, &doc, nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::request_keyboard_focus
-//       Access: Public
-//  Description: Called from low-level Panda (via the P3DWindowHandle
-//               object) when its main window requires keyboard focus,
-//               but is unable to assign it directly.  This is
-//               particularly necessary under Windows Vista, where a
-//               child window of the browser is specifically
-//               disallowed from being given keyboard focus.
-//
-//               This sends a notify request up to the parent process,
-//               to ask the parent to manage keyboard events by proxy,
-//               and send them back down to Panda, again via the
-//               P3DWindowHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from low-level Panda (via the P3DWindowHandle object) when its main
+ * window requires keyboard focus, but is unable to assign it directly.  This
+ * is particularly necessary under Windows Vista, where a child window of the
+ * browser is specifically disallowed from being given keyboard focus.
+ *
+ * This sends a notify request up to the parent process, to ask the parent to
+ * manage keyboard events by proxy, and send them back down to Panda, again
+ * via the P3DWindowHandle.
+ */
 void P3DPythonRun::
 request_keyboard_focus(P3DCInstance *inst) {
   TiXmlDocument doc;
@@ -501,15 +500,12 @@ request_keyboard_focus(P3DCInstance *inst) {
   write_xml(_pipe_write, &doc, nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::run_interactive_console
-//       Access: Private
-//  Description: Gives the user a chance to type interactive Python
-//               commands, for easy development of a p3d application.
-//               This method is only called if "interactive_console=1"
-//               is set as a web token, and "allow_python_dev" is set
-//               within the application itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gives the user a chance to type interactive Python commands, for easy
+ * development of a p3d application.  This method is only called if
+ * "interactive_console=1" is set as a web token, and "allow_python_dev" is
+ * set within the application itself.
+ */
 void P3DPythonRun::
 run_interactive_console() {
 #ifdef _WIN32
@@ -517,13 +513,12 @@ run_interactive_console() {
   SetConsoleCtrlHandler(NULL, false);
 #endif
 
-  // The "readline" module makes the Python prompt friendlier, with
-  // command history and everything.  Simply importing it is
-  // sufficient.
+  // The "readline" module makes the Python prompt friendlier, with command
+  // history and everything.  Simply importing it is sufficient.
   PyObject *readline_module = PyImport_ImportModule("readline");
   if (readline_module == NULL) {
-    // But, the module might not exist on certain platforms.  If not,
-    // no sweat.
+    // But, the module might not exist on certain platforms.  If not, no
+    // sweat.
     PyErr_Clear();
   } else {
     Py_DECREF(readline_module);
@@ -532,16 +527,12 @@ run_interactive_console() {
   PyRun_InteractiveLoop(stdin, "<stdin>");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::handle_command
-//       Access: Private
-//  Description: Handles a command received from the plugin host, via
-//               an XML syntax on the wire.  Ownership of the XML
-//               document object is passed into this method.
-//
-//               It's important *not* to be holding _commands_lock
-//               when calling this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles a command received from the plugin host, via an XML syntax on the
+ * wire.  Ownership of the XML document object is passed into this method.
+ *
+ * It's important *not* to be holding _commands_lock when calling this method.
+ */
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
   TiXmlElement *xcommand = doc->FirstChildElement("command");
@@ -558,14 +549,14 @@ handle_command(TiXmlDocument *doc) {
       if (strcmp(cmd, "init") == 0) {
         assert(!needs_response);
 
-        // The only purpose of the "init" command is to send us a
-        // unique session ID, which in fact we don't do much with.
+        // The only purpose of the "init" command is to send us a unique
+        // session ID, which in fact we don't do much with.
         xcommand->Attribute("session_id", &_session_id);
 
-        // We do use it to initiate our object id sequence with a
-        // number at least a little bit distinct from other sessions,
-        // though.  No technical requirement that we do this, but it
-        // does make debugging the logs a bit easier.
+        // We do use it to initiate our object id sequence with a number at
+        // least a little bit distinct from other sessions, though.  No
+        // technical requirement that we do this, but it does make debugging
+        // the logs a bit easier.
         _next_sent_id = _session_id * 1000;
 
         PyObject *obj = PyObject_CallMethod(_runner, (char*)"setSessionId", (char *)"i", _session_id);
@@ -597,9 +588,8 @@ handle_command(TiXmlDocument *doc) {
 
       } else if (strcmp(cmd, "windows_message") == 0) {
         assert(!needs_response);
-        // This is a special message that we use to proxy keyboard
-        // events from the parent process down into Panda, a necessary
-        // hack on Vista.
+        // This is a special message that we use to proxy keyboard events from
+        // the parent process down into Panda, a necessary hack on Vista.
         int instance_id = 0, msg = 0, wparam = 0, lparam = 0;
         xcommand->Attribute("instance_id", &instance_id);
         xcommand->Attribute("msg", &msg);
@@ -616,14 +606,14 @@ handle_command(TiXmlDocument *doc) {
         handle_pyobj_command(xcommand, needs_response, want_response_id);
 
       } else if (strcmp(cmd, "script_response") == 0) {
-        // Response from a script request.  In this case, we just
-        // store it away instead of processing it immediately.
+        // Response from a script request.  In this case, we just store it
+        // away instead of processing it immediately.
 
         MutexHolder holder(_responses_lock);
         _responses.push_back(doc);
 
-        // And now we must return out, instead of deleting the
-        // document at the bottom of this method.
+        // And now we must return out, instead of deleting the document at the
+        // bottom of this method.
         return;
 
       } else if (strcmp(cmd, "drop_pyobj") == 0) {
@@ -654,12 +644,10 @@ handle_command(TiXmlDocument *doc) {
   delete doc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::handle_pyobj_command
-//       Access: Private
-//  Description: Handles the pyobj command, which queries or modifies
-//               a Python object from the browser scripts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the pyobj command, which queries or modifies a Python object from
+ * the browser scripts.
+ */
 void P3DPythonRun::
 handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
                      int want_response_id) {
@@ -693,8 +681,8 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         (_runner, (char *)"setBrowserScriptObject", (char *)"N", obj));
 
     } else if (strcmp(op, "call") == 0) {
-      // Call the named method on the indicated object, or the object
-      // itself if method_name isn't given.
+      // Call the named method on the indicated object, or the object itself
+      // if method_name isn't given.
       TiXmlElement *xobject = xcommand->FirstChildElement("object");
       if (xobject != NULL) {
         PyObject *obj = xml_to_pyobj(xobject);
@@ -744,8 +732,8 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
 
         } else if (strcmp(method_name, "__set_property__") == 0) {
           // We call these methods __set_property__ et al instead of
-          // __setattr__ et al, because they do not precisely
-          // duplicate the Python semantics.
+          // __setattr__ et al, because they do not precisely duplicate the
+          // Python semantics.
           char *property_name;
           PyObject *value;
           if (PyArg_ParseTuple(params, "sO", &property_name, &value)) {
@@ -760,8 +748,8 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
               }
             }
 
-            // If the object supports the mapping protocol, store it
-            // in the object's dictionary.
+            // If the object supports the mapping protocol, store it in the
+            // object's dictionary.
             if (!success && PyMapping_Check(obj)) {
               if (PyMapping_SetItemString(obj, property_name, value) != -1) {
                 success = true;
@@ -878,8 +866,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         }
         Py_DECREF(params);
 
-        // Feed the return value back through the XML pipe to the
-        // caller.
+        // Feed the return value back through the XML pipe to the caller.
         if (result != NULL) {
           xresponse->LinkEndChild(pyobj_to_xml(result));
           Py_DECREF(result);
@@ -898,17 +885,14 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::check_comm
-//       Access: Private
-//  Description: This method is added to the task manager (via
-//               st_check_comm, below) so that it gets a call every
-//               frame.  Its job is to check for commands received
-//               from the plugin host in the parent process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is added to the task manager (via st_check_comm, below) so that
+ * it gets a call every frame.  Its job is to check for commands received from
+ * the plugin host in the parent process.
+ */
 void P3DPythonRun::
 check_comm() {
-  //  nout << ":";
+  // nout << ":";
   ACQUIRE_LOCK(_commands_lock);
   while (!_commands.empty()) {
     TiXmlDocument *doc = _commands.front();
@@ -923,47 +907,42 @@ check_comm() {
   RELEASE_LOCK(_commands_lock);
 
   if (!_program_continue) {
-    // The low-level thread detected an error, for instance pipe
-    // closed.  We should exit gracefully.
+    // The low-level thread detected an error, for instance pipe closed.  We
+    // should exit gracefully.
     terminate_session();
     return;
   }
 
-  // Sleep to yield the timeslice, but only if we're not running in
-  // the main thread.
+  // Sleep to yield the timeslice, but only if we're not running in the main
+  // thread.
   if (Thread::get_current_thread() != Thread::get_main_thread()) {
     Thread::sleep(0.001);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::st_check_comm
-//       Access: Private, Static
-//  Description: This is a static Python wrapper around py_check_comm,
-//               needed to add the function to a PythonTask.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a static Python wrapper around py_check_comm, needed to add the
+ * function to a PythonTask.
+ */
 PyObject *P3DPythonRun::
 st_check_comm(PyObject *, PyObject *args) {
   P3DPythonRun::_global_ptr->check_comm();
   return Py_BuildValue("i", AsyncTask::DS_cont);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::wait_script_response
-//       Access: Private
-//  Description: This method is similar to check_comm(), above, but
-//               instead of handling all events, it waits for a
-//               specific script_response ID to come back from the
-//               browser, and leaves all other events in the queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is similar to check_comm(), above, but instead of handling all
+ * events, it waits for a specific script_response ID to come back from the
+ * browser, and leaves all other events in the queue.
+ */
 TiXmlDocument *P3DPythonRun::
 wait_script_response(int response_id) {
-  //  nout << "waiting script_response " << response_id << "\n";
+  // nout << "waiting script_response " << response_id << "\n";
   while (true) {
     Commands::iterator ci;
 
-    // First, walk through the _commands queue to see if there's
-    // anything that needs immediate processing.
+    // First, walk through the _commands queue to see if there's anything that
+    // needs immediate processing.
     ACQUIRE_LOCK(_commands_lock);
     for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
       TiXmlDocument *doc = (*ci);
@@ -974,10 +953,9 @@ wait_script_response(int response_id) {
         if ((cmd != NULL && strcmp(cmd, "script_response") == 0) ||
             xcommand->Attribute("want_response_id") != NULL) {
 
-          // This is either a response, or it's a command that will
-          // want a response itself.  In either case we should handle
-          // it right away.  ("handling" a response means moving it to
-          // the _responses queue.)
+          // This is either a response, or it's a command that will want a
+          // response itself.  In either case we should handle it right away.
+          // ("handling" a response means moving it to the _responses queue.)
           _commands.erase(ci);
           RELEASE_LOCK(_commands_lock);
           handle_command(doc);
@@ -991,8 +969,8 @@ wait_script_response(int response_id) {
     }
     RELEASE_LOCK(_commands_lock);
 
-    // Now, walk through the _responses queue to look for the
-    // particular response we're waiting for.
+    // Now, walk through the _responses queue to look for the particular
+    // response we're waiting for.
     _responses_lock.acquire();
     for (ci = _responses.begin(); ci != _responses.end(); ++ci) {
       TiXmlDocument *doc = (*ci);
@@ -1008,7 +986,7 @@ wait_script_response(int response_id) {
           // This is the response we were waiting for.
           _responses.erase(ci);
           _responses_lock.release();
-          //          nout << "got script_response " << unique_id << "\n";
+          // nout << "got script_response " << unique_id << "\n";
           return doc;
         }
       }
@@ -1021,32 +999,28 @@ wait_script_response(int response_id) {
     }
 
 #ifdef _WIN32
-    // Make sure we process the Windows event loop while we're
-    // waiting, or everything that depends on Windows messages will
-    // starve.
+    // Make sure we process the Windows event loop while we're waiting, or
+    // everything that depends on Windows messages will starve.
 
-    // We appear to be best off with just a single PeekMessage() call
-    // here; the full message pump seems to cause problems.
+    // We appear to be best off with just a single PeekMessage() call here;
+    // the full message pump seems to cause problems.
     MSG msg;
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
 #endif  // _WIN32
 
-    //    nout << ".";
+    // nout << ".";
 
-    // It hasn't shown up yet.  Give the sub-thread a chance to
-    // process the input and append it to the queue.
+    // It hasn't shown up yet.  Give the sub-thread a chance to process the
+    // input and append it to the queue.
     Thread::force_yield();
   }
   assert(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::py_request_func
-//       Access: Private
-//  Description: This method is a special Python function that is
-//               added as a callback to the AppRunner class, to allow
-//               Python to upcall into this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is a special Python function that is added as a callback to the
+ * AppRunner class, to allow Python to upcall into this object.
+ */
 PyObject *P3DPythonRun::
 py_request_func(PyObject *args) {
   int instance_id;
@@ -1057,9 +1031,8 @@ py_request_func(PyObject *args) {
   }
 
   if (strcmp(request_type, "wait_script_response") == 0) {
-    // This is a special case.  Instead of generating a new request,
-    // this means to wait for a particular script_response to come in
-    // on the wire.
+    // This is a special case.  Instead of generating a new request, this
+    // means to wait for a particular script_response to come in on the wire.
     int response_id;
     if (!PyArg_ParseTuple(extra_args, "i", &response_id)) {
       return NULL;
@@ -1078,9 +1051,8 @@ py_request_func(PyObject *args) {
     if (xvalue != NULL) {
       value = xml_to_pyobj(xvalue);
     } else {
-      // An absence of a <value> element is an exception.  We will
-      // return NULL from this function, but first set the error
-      // condition.
+      // An absence of a <value> element is an exception.  We will return NULL
+      // from this function, but first set the error condition.
       PyErr_SetString(PyExc_EnvironmentError, "Error on script call");
     }
 
@@ -1131,8 +1103,7 @@ py_request_func(PyObject *args) {
     write_xml(_pipe_write, &doc, nout);
 
   } else if (strcmp(request_type, "drop_p3dobj") == 0) {
-    // Release a particular P3D_object that we were holding a
-    // reference to.
+    // Release a particular P3D_object that we were holding a reference to.
     int object_id;
     if (!PyArg_ParseTuple(extra_args, "i", &object_id)) {
       return NULL;
@@ -1142,8 +1113,8 @@ py_request_func(PyObject *args) {
     write_xml(_pipe_write, &doc, nout);
 
   } else if (strcmp(request_type, "forget_package") == 0) {
-    // A request to the instance to drop a particular package (or
-    // host) from the cache.
+    // A request to the instance to drop a particular package (or host) from
+    // the cache.
     const char *host_url;
     const char *package_name;
     const char *package_version;
@@ -1169,54 +1140,44 @@ py_request_func(PyObject *args) {
   return Py_BuildValue("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::st_request_func
-//       Access: Private, Static
-//  Description: This is the static wrapper around py_request_func.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the static wrapper around py_request_func.
+ */
 PyObject *P3DPythonRun::
 st_request_func(PyObject *, PyObject *args) {
   return P3DPythonRun::_global_ptr->py_request_func(args);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::spawn_read_thread
-//       Access: Private
-//  Description: Starts the read thread.  This thread is responsible
-//               for reading the standard input socket for XML
-//               commands and storing them in the _commands queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the read thread.  This thread is responsible for reading the
+ * standard input socket for XML commands and storing them in the _commands
+ * queue.
+ */
 void P3DPythonRun::
 spawn_read_thread() {
   assert(!_read_thread_continue);
 
-  // We have to use direct OS calls to create the thread instead of
-  // Panda constructs, because it has to be an actual thread, not
-  // necessarily a Panda thread (we can't use Panda's simple threads
-  // implementation, because we can't get overlapped I/O on an
-  // anonymous pipe in Windows).
+  // We have to use direct OS calls to create the thread instead of Panda
+  // constructs, because it has to be an actual thread, not necessarily a
+  // Panda thread (we can't use Panda's simple threads implementation, because
+  // we can't get overlapped IO on an anonymous pipe in Windows).
 
   _read_thread_continue = true;
   SPAWN_THREAD(_read_thread, rt_thread_run, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::join_read_thread
-//       Access: Private
-//  Description: Waits for the read thread to stop.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for the read thread to stop.
+ */
 void P3DPythonRun::
 join_read_thread() {
   _read_thread_continue = false;
   JOIN_THREAD(_read_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::start_instance
-//       Access: Private
-//  Description: Starts the indicated instance running within the
-//               Python process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the indicated instance running within the Python process.
+ */
 void P3DPythonRun::
 start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
   _instances[inst->get_instance_id()] = inst;
@@ -1240,11 +1201,9 @@ start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::terminate_instance
-//       Access: Private
-//  Description: Stops the instance with the indicated id.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops the instance with the indicated id.
+ */
 void P3DPythonRun::
 terminate_instance(int id) {
   Instances::iterator ii = _instances.find(id);
@@ -1257,17 +1216,15 @@ terminate_instance(int id) {
   _instances.erase(ii);
   delete inst;
 
-  // TODO: we don't currently have any way to stop just one instance
-  // of a multi-instance session.  This will require a different
-  // Python interface than ShowBase.
+  // TODO: we don't currently have any way to stop just one instance of a
+  // multi-instance session.  This will require a different Python interface
+  // than ShowBase.
   terminate_session();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::set_instance_info
-//       Access: Private
-//  Description: Sets some global information about the instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets some global information about the instance.
+ */
 void P3DPythonRun::
 set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
   const char *root_dir = xinstance->Attribute("root_dir");
@@ -1315,11 +1272,9 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
   Py_XDECREF(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::add_package_info
-//       Access: Private
-//  Description: Adds some information about a pre-loaded package.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds some information about a pre-loaded package.
+ */
 void P3DPythonRun::
 add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
   const char *name = xpackage->Attribute("name");
@@ -1355,12 +1310,9 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
   Py_XDECREF(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::set_p3d_filename
-//       Access: Private
-//  Description: Sets the startup filename and tokens for the
-//               indicated instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the startup filename and tokens for the indicated instance.
+ */
 void P3DPythonRun::
 set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   string p3d_filename;
@@ -1431,11 +1383,9 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   Py_XDECREF(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::setup_window
-//       Access: Private
-//  Description: Sets the window parameters for the indicated instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the window parameters for the indicated instance.
+ */
 void P3DPythonRun::
 setup_window(int id, TiXmlElement *xwparams) {
   Instances::iterator ii = _instances.find(id);
@@ -1448,11 +1398,9 @@ setup_window(int id, TiXmlElement *xwparams) {
   setup_window(inst, xwparams);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::setup_window
-//       Access: Private
-//  Description: Sets the window parameters for the indicated instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the window parameters for the indicated instance.
+ */
 void P3DPythonRun::
 setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   string window_type;
@@ -1477,8 +1425,8 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   }
 
 #elif __APPLE__
-  // On Mac, we don't parent windows directly to the browser; instead,
-  // we have to go through this subprocess-window nonsense.
+  // On Mac, we don't parent windows directly to the browser; instead, we have
+  // to go through this subprocess-window nonsense.
 
   const char *subprocess_window = xwparams->Attribute("subprocess_window");
   if (subprocess_window != NULL) {
@@ -1506,15 +1454,15 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
     inst->_parent_window_handle = parent_window_handle;
 
     // Also pass this P3DWindowHandle object down into Panda, via the
-    // setupWindow() call.  For this, we need to create a Python
-    // wrapper objcet.
+    // setupWindow() call.  For this, we need to create a Python wrapper
+    // objcet.
     parent_window_handle->ref();
     py_handle = DTool_CreatePyInstanceTyped(parent_window_handle.p(), true);
   }
   Py_INCREF(py_handle);
 
-  // TODO: direct this into the particular instance.  This will
-  // require a specialized ShowBase replacement.
+  // TODO: direct this into the particular instance.  This will require a
+  // specialized ShowBase replacement.
   PyObject *result = PyObject_CallMethod
     (_runner, (char *)"setupWindow", (char *)"siiiiN", window_type.c_str(),
      win_x, win_y, win_width, win_height, py_handle);
@@ -1529,13 +1477,10 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   Py_XDECREF(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::send_windows_message
-//       Access: Public
-//  Description: This is used to deliver a windows keyboard message to
-//               the Panda process from the parent process, a
-//               necessary hack on Vista.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to deliver a windows keyboard message to the Panda process
+ * from the parent process, a necessary hack on Vista.
+ */
 void P3DPythonRun::
 send_windows_message(int id, unsigned int msg, int wparam, int lparam) {
   Instances::iterator ii = _instances.find(id);
@@ -1549,11 +1494,9 @@ send_windows_message(int id, unsigned int msg, int wparam, int lparam) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::terminate_session
-//       Access: Private
-//  Description: Stops all currently-running instances.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops all currently-running instances.
+ */
 void P3DPythonRun::
 terminate_session() {
   Instances::iterator ii;
@@ -1577,13 +1520,10 @@ terminate_session() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::pyobj_to_xml
-//       Access: Private
-//  Description: Converts the indicated PyObject to the appropriate
-//               XML representation of a P3D_value type, and returns a
-//               freshly-allocated TiXmlElement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated PyObject to the appropriate XML representation of a
+ * P3D_value type, and returns a freshly-allocated TiXmlElement.
+ */
 TiXmlElement *P3DPythonRun::
 pyobj_to_xml(PyObject *value) {
   TiXmlElement *xvalue = new TiXmlElement("value");
@@ -1604,8 +1544,8 @@ pyobj_to_xml(PyObject *value) {
 #endif
 
   } else if (PyLong_Check(value)) {
-    // A long integer value.  This gets converted either as an integer
-    // or as a floating-point type, whichever fits.
+    // A long integer value.  This gets converted either as an integer or as a
+    // floating-point type, whichever fits.
     long lvalue = PyLong_AsLong(value);
     if (PyErr_Occurred()) {
       // It won't fit as an integer; make it a double.
@@ -1629,8 +1569,8 @@ pyobj_to_xml(PyObject *value) {
     xvalue->SetAttribute("type", "string");
 
 #if PY_MAJOR_VERSION >= 3
-    // In Python 3, there are only unicode strings, and there is a
-    // handy function for getting the UTF-8 encoded version.
+    // In Python 3, there are only unicode strings, and there is a handy
+    // function for getting the UTF-8 encoded version.
     Py_ssize_t length = 0;
     char *buffer = PyUnicode_AsUTF8AndSize(value, &length);
     if (buffer != NULL) {
@@ -1650,8 +1590,8 @@ pyobj_to_xml(PyObject *value) {
     }
 
   } else if (PyString_Check(value)) {
-    // A string value.  Insist that it is utf-8 encoded, by decoding
-    // it first using the standard encoding, then re-encoding it.
+    // A string value.  Insist that it is utf-8 encoded, by decoding it first
+    // using the standard encoding, then re-encoding it.
     xvalue->SetAttribute("type", "string");
 
     PyObject *ustr = PyUnicode_FromEncodedObject(value, NULL, NULL);
@@ -1716,8 +1656,8 @@ pyobj_to_xml(PyObject *value) {
               as_str = PyUnicode_AsUTF8String(a);
 #endif
             } else {
-              // The key is a string value or something else.  Make it
-              // a string.
+              // The key is a string value or something else.  Make it a
+              // string.
               as_str = PyObject_Str(a);
             }
             char *buffer;
@@ -1741,8 +1681,7 @@ pyobj_to_xml(PyObject *value) {
       }
     }
 
-    // We've already avoided errors in the above code; clear the error
-    // flag.
+    // We've already avoided errors in the above code; clear the error flag.
     PyErr_Clear();
 
     Py_DECREF(items);
@@ -1752,9 +1691,8 @@ pyobj_to_xml(PyObject *value) {
     xvalue->SetAttribute("type", "undefined");
 
   } else if (PyObject_IsInstance(value, _browser_object_class)) {
-    // This is a BrowserObject, a reference to an object that actually
-    // exists in the host namespace.  So, pass up the appropriate
-    // object ID.
+    // This is a BrowserObject, a reference to an object that actually exists
+    // in the host namespace.  So, pass up the appropriate object ID.
     PyObject *objectId = PyObject_GetAttrString(value, (char *)"_BrowserObject__objectId");
     if (objectId != NULL) {
       int object_id = PyInt_AsLong(objectId);
@@ -1764,18 +1702,17 @@ pyobj_to_xml(PyObject *value) {
     }
 
   } else {
-    // Some other kind of object.  Make it a generic Python object.
-    // This is more expensive for the caller to deal with--it requires
-    // a back-and-forth across the XML pipe--but it's much more
-    // general.
+    // Some other kind of object.  Make it a generic Python object.  This is
+    // more expensive for the caller to deal with--it requires a back-and-
+    // forth across the XML pipe--but it's much more general.
 
     int object_id = _next_sent_id;
     ++_next_sent_id;
     bool inserted = _sent_objects.insert(SentObjects::value_type(object_id, value)).second;
     while (!inserted) {
-      // Hmm, we must have cycled around the entire int space?  Either
-      // that, or there's a logic bug somewhere.  Assume the former,
-      // and keep looking for an empty slot.
+      // Hmm, we must have cycled around the entire int space?  Either that,
+      // or there's a logic bug somewhere.  Assume the former, and keep
+      // looking for an empty slot.
       object_id = _next_sent_id;
       ++_next_sent_id;
       inserted = _sent_objects.insert(SentObjects::value_type(object_id, value)).second;
@@ -1791,12 +1728,10 @@ pyobj_to_xml(PyObject *value) {
   return xvalue;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::xml_to_pyobj
-//       Access: Private
-//  Description: Converts the XML representation of a P3D_value type
-//               into the equivalent Python object and returns it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the XML representation of a P3D_value type into the equivalent
+ * Python object and returns it.
+ */
 PyObject *P3DPythonRun::
 xml_to_pyobj(TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
@@ -1826,8 +1761,8 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     }
 
   } else if (strcmp(type, "string") == 0) {
-    // Using the string form here instead of the char * form, so we
-    // don't get tripped up on embedded null characters.
+    // Using the string form here instead of the char * form, so we don't get
+    // tripped up on embedded null characters.
     const string *value = xvalue->Attribute(string("value"));
     if (value != NULL) {
       return PyUnicode_DecodeUTF8(value->data(), value->length(), NULL);
@@ -1905,11 +1840,9 @@ xml_to_pyobj(TiXmlElement *xvalue) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::rt_thread_run
-//       Access: Private
-//  Description: The main function for the read thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main function for the read thread.
+ */
 void P3DPythonRun::
 rt_thread_run() {
   while (_read_thread_continue) {
@@ -1922,8 +1855,8 @@ rt_thread_run() {
 
     // Successfully read an XML document.
 
-    // Check for one special case: the "exit" command means we shut
-    // down the read thread along with everything else.
+    // Check for one special case: the "exit" command means we shut down the
+    // read thread along with everything else.
     TiXmlElement *xcommand = doc->FirstChildElement("command");
     if (xcommand != NULL) {
       const char *cmd = xcommand->Attribute("cmd");
@@ -1941,11 +1874,9 @@ rt_thread_run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::P3DWindowHandle::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DPythonRun::P3DWindowHandle::
 P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
                 const WindowHandle &copy) :
@@ -1956,12 +1887,10 @@ P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::P3DWindowHandle::attach_child
-//       Access: Public, Virtual
-//  Description: Called on a parent handle to indicate a child
-//               window's intention to attach itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called on a parent handle to indicate a child window's intention to attach
+ * itself.
+ */
 void P3DPythonRun::P3DWindowHandle::
 attach_child(WindowHandle *child) {
   WindowHandle::attach_child(child);
@@ -1973,12 +1902,10 @@ attach_child(WindowHandle *child) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::P3DWindowHandle::detach_child
-//       Access: Public, Virtual
-//  Description: Called on a parent handle to indicate a child
-//               window's intention to detach itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called on a parent handle to indicate a child window's intention to detach
+ * itself.
+ */
 void P3DPythonRun::P3DWindowHandle::
 detach_child(WindowHandle *child) {
   WindowHandle::detach_child(child);
@@ -1990,12 +1917,10 @@ detach_child(WindowHandle *child) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::P3DWindowHandle::request_keyboard_focus
-//       Access: Public, Virtual
-//  Description: Called on a parent handle to indicate a child
-//               window's wish to receive keyboard button events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called on a parent handle to indicate a child window's wish to receive
+ * keyboard button events.
+ */
 void P3DPythonRun::P3DWindowHandle::
 request_keyboard_focus(WindowHandle *child) {
   WindowHandle::request_keyboard_focus(child);

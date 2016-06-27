@@ -1,16 +1,15 @@
-// Filename: textGlyph.h
-// Created by:  drose (08Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textGlyph.h
+ * @author drose
+ * @date 2002-02-08
+ */
 
 #ifndef TEXTGLYPH_H
 #define TEXTGLYPH_H
@@ -22,16 +21,14 @@
 #include "pointerTo.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextGlyph
-// Description : A representation of a single glyph (character) from a
-//               font.  This is a piece of renderable geometry of some
-//               kind.
-////////////////////////////////////////////////////////////////////
+/**
+ * A representation of a single glyph (character) from a font.  This is a
+ * piece of renderable geometry of some kind.
+ */
 class EXPCL_PANDA_TEXT TextGlyph : public TypedReferenceCount {
 public:
   INLINE TextGlyph(int character, PN_stdfloat advance=0);
-  INLINE TextGlyph(int character, const Geom *geom, 
+  INLINE TextGlyph(int character, const Geom *geom,
                    const RenderState *state, PN_stdfloat advance);
   INLINE TextGlyph(const TextGlyph &copy);
   INLINE void operator = (const TextGlyph &copy);
@@ -43,6 +40,10 @@ PUBLISHED:
   INLINE bool get_quad(LVecBase4 &dimensions, LVecBase4 &texcoords) const;
   INLINE const RenderState *get_state() const;
   INLINE PN_stdfloat get_advance() const;
+
+  MAKE_PROPERTY(character, get_character);
+  MAKE_PROPERTY(state, get_state);
+  MAKE_PROPERTY(advance, get_advance);
 
   virtual bool is_whitespace() const;
 

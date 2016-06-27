@@ -1,16 +1,15 @@
-// Filename: collisionSegment.h
-// Created by:  drose (30Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionSegment.h
+ * @author drose
+ * @date 2001-01-30
+ */
 
 #ifndef COLLISIONSEGMENT_H
 #define COLLISIONSEGMENT_H
@@ -21,17 +20,14 @@
 
 class LensNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionSegment
-// Description : A finite line segment, with two specific endpoints
-//               but no thickness.  It's similar to a CollisionRay,
-//               except it does not continue to infinity.
-//
-//               It does have an ordering, from point A to point B.
-//               If more than a single point of the segment is
-//               intersecting a solid, the reported intersection point
-//               is generally the closest on the segment to point A.
-////////////////////////////////////////////////////////////////////
+/**
+ * A finite line segment, with two specific endpoints but no thickness.  It's
+ * similar to a CollisionRay, except it does not continue to infinity.
+ *
+ * It does have an ordering, from point A to point B. If more than a single
+ * point of the segment is intersecting a solid, the reported intersection
+ * point is generally the closest on the segment to point A.
+ */
 class EXPCL_PANDA_COLLIDE CollisionSegment : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSegment();
@@ -63,6 +59,10 @@ PUBLISHED:
 
   bool set_from_lens(LensNode *camera, const LPoint2 &point);
   INLINE bool set_from_lens(LensNode *camera, PN_stdfloat px, PN_stdfloat py);
+
+PUBLISHED:
+  MAKE_PROPERTY(point_a, get_point_a, set_point_a);
+  MAKE_PROPERTY(point_b, get_point_b, set_point_b);
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
@@ -102,5 +102,3 @@ private:
 #include "collisionSegment.I"
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: physxControllerDesc.h
-// Created by:  enn0x (22Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxControllerDesc.h
+ * @author enn0x
+ * @date 2009-09-22
+ */
 
 #ifndef PHYSXCONTROLLERDESC_H
 #define PHYSXCONTROLLERDESC_H
@@ -20,10 +19,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxControllerDesc
-// Description : Descriptor class for a character controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for a character controller.
+ */
 class EXPCL_PANDAPHYSX PhysxControllerDesc {
 
 PUBLISHED:

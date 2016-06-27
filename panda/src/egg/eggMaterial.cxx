@@ -1,16 +1,15 @@
-// Filename: eggMaterial.cxx
-// Created by:  drose (29Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMaterial.cxx
+ * @author drose
+ * @date 1999-01-29
+ */
 
 #include "eggMaterial.h"
 
@@ -19,11 +18,9 @@
 TypeHandle EggMaterial::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMaterial::
 EggMaterial(const string &mref_name)
   : EggNode(mref_name)
@@ -31,34 +28,47 @@ EggMaterial(const string &mref_name)
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMaterial::
 EggMaterial(const EggMaterial &copy)
   : EggNode(copy),
+    _base(copy._base),
     _diff(copy._diff),
     _amb(copy._amb),
     _emit(copy._emit),
     _spec(copy._spec),
     _shininess(copy._shininess),
+    _roughness(copy._roughness),
+    _metallic(copy._metallic),
+    _ior(copy._ior),
     _local(copy._local),
     _flags(copy._flags)
 {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::write
-//       Access: Public, Virtual
-//  Description: Writes the material definition to the indicated output
-//               stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the material definition to the indicated output stream in Egg
+ * format.
+ */
 void EggMaterial::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Material>");
+
+  if (has_base()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> baser { " << get_base()[0] << " }\n";
+    indent(out, indent_level + 2)
+      << "<Scalar> baseg { " << get_base()[1] << " }\n";
+    indent(out, indent_level + 2)
+      << "<Scalar> baseb { " << get_base()[2] << " }\n";
+    if (get_base()[3] != 1.0) {
+      indent(out, indent_level + 2)
+        << "<Scalar> basea { " << get_base()[3] << " }\n";
+    }
+  }
 
   if (has_diff()) {
     indent(out, indent_level + 2)
@@ -117,6 +127,21 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> shininess { " << get_shininess() << " }\n";
   }
 
+  if (has_roughness()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> roughness { " << get_roughness() << " }\n";
+  }
+
+  if (has_metallic()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> metallic { " << get_metallic() << " }\n";
+  }
+
+  if (has_ior()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> ior { " << get_ior() << " }\n";
+  }
+
   if (has_local()) {
     indent(out, indent_level + 2)
       << "<Scalar> local { " << get_local() << " }\n";
@@ -125,33 +150,31 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::is_equivalent_to
-//       Access: Public
-//  Description: Returns true if the two materials are equivalent in
-//               all relevant properties (according to eq), false
-//               otherwise.
-//
-//               The Equivalence parameter, eq, should be set to the
-//               bitwise OR of the following properties, according to
-//               what you consider relevant:
-//
-//               EggMaterial::E_attributes:
-//                 All material attributes (diff, spec,
-//                 etc.) except MRef name.
-//
-//               EggMaterial::E_mref_name:
-//                 The MRef name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the two materials are equivalent in all relevant properties
+ * (according to eq), false otherwise.
+ *
+ * The Equivalence parameter, eq, should be set to the bitwise OR of the
+ * following properties, according to what you consider relevant:
+ *
+ * EggMaterial::E_attributes: All material attributes (diff, spec, etc.)
+ * except MRef name.
+ *
+ * EggMaterial::E_mref_name: The MRef name.
+ */
 bool EggMaterial::
 is_equivalent_to(const EggMaterial &other, int eq) const {
   if (eq & E_attributes) {
     if (_flags != other._flags ||
+        (has_base() && get_base() != other.get_base()) ||
         (has_diff() && get_diff() != other.get_diff()) ||
         (has_amb() && get_amb() != other.get_amb()) ||
         (has_emit() && get_emit() != other.get_emit()) ||
         (has_spec() && get_spec() != other.get_spec()) ||
         (has_shininess() && get_shininess() != other.get_shininess()) ||
+        (has_roughness() && get_roughness() != other.get_roughness()) ||
+        (has_metallic() && get_metallic() != other.get_metallic()) ||
+        (has_ior() && get_ior() != other.get_ior()) ||
         (has_local() && get_local() != other.get_local())) {
       return false;
     }
@@ -166,15 +189,11 @@ is_equivalent_to(const EggMaterial &other, int eq) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::sorts_less_than
-//       Access: Public
-//  Description: An ordering operator to compare two materials for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique materials, according to the
-//               indicated Equivalence factor.  See
-//               is_equivalent_to().
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordering operator to compare two materials for sorting order.  This
+ * imposes an arbitrary ordering useful to identify unique materials,
+ * according to the indicated Equivalence factor.  See is_equivalent_to().
+ */
 bool EggMaterial::
 sorts_less_than(const EggMaterial &other, int eq) const {
   if (eq & E_attributes) {
@@ -195,6 +214,15 @@ sorts_less_than(const EggMaterial &other, int eq) const {
     }
     if (has_shininess() && get_shininess() != other.get_shininess()) {
       return get_shininess() < other.get_shininess();
+    }
+    if (has_roughness() && get_roughness() != other.get_roughness()) {
+      return get_roughness() < other.get_roughness();
+    }
+    if (has_metallic() && get_metallic() != other.get_metallic()) {
+      return get_metallic() < other.get_metallic();
+    }
+    if (has_ior() && get_ior() != other.get_ior()) {
+      return get_ior() < other.get_ior();
     }
     if (has_local() && get_local() != other.get_local()) {
       return get_local() < other.get_local();

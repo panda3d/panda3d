@@ -3,9 +3,9 @@
 __all__ = ['DirectSlider']
 
 from panda3d.core import *
-import DirectGuiGlobals as DGG
-from DirectFrame import *
-from DirectButton import *
+from . import DirectGuiGlobals as DGG
+from .DirectFrame import *
+from .DirectButton import *
 
 """
 import DirectSlider
@@ -111,7 +111,7 @@ class DirectSlider(DirectFrame):
         elif self['orientation'] == DGG.VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, 1))
         else:
-            raise ValueError, 'Invalid value for orientation: %s' % (self['orientation'])
+            raise ValueError('Invalid value for orientation: %s' % (self['orientation']))
 
     def destroy(self):
         if (hasattr(self, 'thumb')):
@@ -124,4 +124,4 @@ class DirectSlider(DirectFrame):
         self._optionInfo['value'][DGG._OPT_VALUE] = self.guiItem.getValue()
 
         if self['command']:
-            apply(self['command'], self['extraArgs'])
+            self['command'](*self['extraArgs'])

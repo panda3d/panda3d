@@ -3,14 +3,15 @@
 __all__ = ['VectorEntry', 'Vector2Entry', 'Vector3Entry', 'Vector4Entry', 'ColorEntry']
 
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-import Valuator
-import Floater
-import Slider
-import string
-import tkColorChooser
-import types
+from . import Valuator
 import Pmw
+import sys
+
+if sys.version_info >= (3, 0):
+    from tkinter.colorchooser import askcolor
+else:
+    from tkColorChooser import askcolor
+
 
 class VectorEntry(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
@@ -176,7 +177,7 @@ class VectorEntry(Pmw.MegaWidget):
         return self._value[index]
 
     def set(self, value, fCommand = 1):
-        if type(value) in (types.FloatType, types.IntType, types.LongType):
+        if type(value) in (float, int):
             value = [value] * self['dim']
         for i in range(self['dim']):
             self._value[i] = value[i]
@@ -192,7 +193,7 @@ class VectorEntry(Pmw.MegaWidget):
         entryVar = self.variableList[index]
         # Did we get a valid float?
         try:
-            newVal = string.atof(entryVar.get())
+            newVal = float(entryVar.get())
         except ValueError:
             return
 
@@ -330,7 +331,7 @@ class ColorEntry(VectorEntry):
 
     def popupColorPicker(self):
         # Can pass in current color with: color = (255, 0, 0)
-        color = tkColorChooser.askcolor(
+        color = askcolor(
             parent = self.interior(),
             # Initialize it to current color
             initialcolor = tuple(self.get()[:3]))[0]

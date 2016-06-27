@@ -1,16 +1,15 @@
-// Filename: fltTransformRotateAboutPoint.cxx
-// Created by:  drose (30Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTransformRotateAboutPoint.cxx
+ * @author drose
+ * @date 2000-08-30
+ */
 
 #include "fltTransformRotateAboutPoint.h"
 #include "fltRecordReader.h"
@@ -18,11 +17,9 @@
 
 TypeHandle FltTransformRotateAboutPoint::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltTransformRotateAboutPoint::
 FltTransformRotateAboutPoint(FltHeader *header) : FltTransformRecord(header) {
   _center.set(0.0, 0.0, 0.0);
@@ -30,12 +27,10 @@ FltTransformRotateAboutPoint(FltHeader *header) : FltTransformRecord(header) {
   _angle = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::set
-//       Access: Public
-//  Description: Defines the rotation.  The angle is given in degrees,
-//               counterclockwise about the axis as seen from point a.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the rotation.  The angle is given in degrees, counterclockwise
+ * about the axis as seen from point a.
+ */
 void FltTransformRotateAboutPoint::
 set(const LPoint3d &center, const LVector3 &axis, PN_stdfloat angle) {
   _center = center;
@@ -45,42 +40,33 @@ set(const LPoint3d &center, const LVector3 &axis, PN_stdfloat angle) {
   recompute_matrix();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::get_center
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LPoint3d &FltTransformRotateAboutPoint::
 get_center() const {
   return _center;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::get_axis
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVector3 &FltTransformRotateAboutPoint::
 get_axis() const {
   return _axis;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::get_angle
-//       Access: Public
-//  Description: Returns the angle of rotation, in degrees
-//               counterclockwise about the axis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the angle of rotation, in degrees counterclockwise about the axis.
+ */
 PN_stdfloat FltTransformRotateAboutPoint::
 get_angle() const {
   return _angle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::recompute_matrix
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FltTransformRotateAboutPoint::
 recompute_matrix() {
   if (_axis == LVector3::zero()) {
@@ -96,14 +82,11 @@ recompute_matrix() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in
+ * the indicated datagram, whose opcode has already been read.  Returns true
+ * on success, false if the datagram is invalid.
+ */
 bool FltTransformRotateAboutPoint::
 extract_record(FltRecordReader &reader) {
   if (!FltTransformRecord::extract_record(reader)) {
@@ -129,14 +112,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutPoint::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this
+ * record, but does not advance the writer.  Returns true on success, false if
+ * there is some error.
+ */
 bool FltTransformRotateAboutPoint::
 build_record(FltRecordWriter &writer) const {
   if (!FltTransformRecord::build_record(writer)) {
@@ -158,4 +138,3 @@ build_record(FltRecordWriter &writer) const {
 
   return true;
 }
-

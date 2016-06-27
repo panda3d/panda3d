@@ -324,7 +324,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             indicator.instanceTo(contactIndicatorNode)
             self.physContactIndicator=contactIndicatorNode
         else:
-            print "failed load of physics indicator"
+            print("failed load of physics indicator")
 
     def avatarPhysicsIndicator(self, task):
         #assert self.debugPrint("avatarPhysicsIndicator()")
@@ -469,12 +469,12 @@ class PhysicsWalker(DirectObject.DirectObject):
         slideLeft = 0#inputState.isSet("slideLeft")
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
-        
+
         # Check for Auto-Run
         if base.localAvatar.getAutoRun():
             forward = 1
             reverse = 0
-                
+
         # Determine what the speeds are based on the buttons:
         self.__speed=(forward and self.avatarControlForwardSpeed or
                 reverse and -self.avatarControlReverseSpeed)
@@ -710,7 +710,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     def setPriorParentVector(self):
         assert self.debugPrint("doDeltaPos()")
 
-        print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
+        print("self.__oldDt %s self.__oldPosDelta %s" % (self.__oldDt, self.__oldPosDelta))
         if __debug__:
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",

@@ -1,16 +1,15 @@
-// Filename: graphicsPipeSelection.h
-// Created by:  drose (15Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsPipeSelection.h
+ * @author drose
+ * @date 2002-08-15
+ */
 
 #ifndef GRAPHICSPIPESELECTION_H
 #define GRAPHICSPIPESELECTION_H
@@ -26,13 +25,11 @@
 class HardwareChannel;
 class GraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsPipeSelection
-// Description : This maintains a list of GraphicsPipes by type that
-//               are available for creation.  Normally there is one
-//               default interactive GraphicsPipe, and possibly other
-//               types available as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * This maintains a list of GraphicsPipes by type that are available for
+ * creation.  Normally there is one default interactive GraphicsPipe, and
+ * possibly other types available as well.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsPipeSelection {
 protected:
   GraphicsPipeSelection();
@@ -42,6 +39,7 @@ PUBLISHED:
   int get_num_pipe_types() const;
   TypeHandle get_pipe_type(int n) const;
   MAKE_SEQ(get_pipe_types, get_num_pipe_types, get_pipe_type);
+  MAKE_SEQ_PROPERTY(pipe_types, get_num_pipe_types, get_pipe_type);
   void print_pipe_types() const;
 
   PT(GraphicsPipe) make_pipe(const string &type_name,
@@ -91,9 +89,8 @@ private:
   bool _default_module_loaded;
 
   static GraphicsPipeSelection *_global_ptr;
-};  
+};
 
 #include "graphicsPipeSelection.I"
 
 #endif
-

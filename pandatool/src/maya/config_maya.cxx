@@ -1,16 +1,15 @@
-// Filename: config_maya.cxx
-// Created by:  drose (15Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_maya.cxx
+ * @author drose
+ * @date 2002-04-15
+ */
 
 #include "config_maya.h"
 
@@ -33,14 +32,12 @@ ConfigVariableDouble init_maya_timeout
  PRC_DESC("The number of seconds to wait between attempts to acquire the "
           "Maya license."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libmaya
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libmaya() {
   static bool initialized = false;
@@ -49,4 +46,3 @@ init_libmaya() {
   }
   initialized = true;
 }
-

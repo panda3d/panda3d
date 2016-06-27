@@ -1,16 +1,15 @@
-// Filename: switchNode.h
-// Created by:  drose (31Jul02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file switchNode.h
+ * @author drose
+ * @date 2002-07-31
+ */
 
 #ifndef SWITCHNODE_H
 #define SWITCHNODE_H
@@ -19,11 +18,10 @@
 
 #include "selectiveChildNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SwitchNode
-// Description : A node that renders only one of its children,
-//               according to the user's indication.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that renders only one of its children, according to the user's
+ * indication.
+ */
 class EXPCL_PANDA_PGRAPHNODES SwitchNode : public SelectiveChildNode {
 PUBLISHED:
   INLINE SwitchNode(const string &name);
@@ -42,6 +40,8 @@ public:
 PUBLISHED:
   INLINE void set_visible_child(int index);
   virtual int get_visible_child() const;
+
+  MAKE_PROPERTY(visible_child, get_visible_child, set_visible_child);
 
 private:
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {

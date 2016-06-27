@@ -1,16 +1,15 @@
-// Filename: displayInformation.h
-// Created by:  aignacio (17Jan07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayInformation.h
+ * @author aignacio
+ * @date 2007-01-17
+ */
 
 #ifndef DISPLAYINFORMATION_H
 #define DISPLAYINFORMATION_H
@@ -31,10 +30,9 @@ PUBLISHED:
   void output(ostream &out) const;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayInformation
-// Description : This class contains various display information.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class contains various display information.
+ */
 class EXPCL_PANDA_DISPLAY DisplayInformation {
 PUBLISHED:
   enum DetectionState {
@@ -71,18 +69,18 @@ PUBLISHED:
   int get_texture_memory();
 
   void update_memory_information();
-  PN_uint64 get_physical_memory();
-  PN_uint64 get_available_physical_memory();
-  PN_uint64 get_page_file_size();
-  PN_uint64 get_available_page_file_size();
-  PN_uint64 get_process_virtual_memory();
-  PN_uint64 get_available_process_virtual_memory();
+  uint64_t get_physical_memory();
+  uint64_t get_available_physical_memory();
+  uint64_t get_page_file_size();
+  uint64_t get_available_page_file_size();
+  uint64_t get_process_virtual_memory();
+  uint64_t get_available_process_virtual_memory();
   int get_memory_load();
-  PN_uint64 get_page_fault_count();
-  PN_uint64 get_process_memory();
-  PN_uint64 get_peak_process_memory();
-  PN_uint64 get_page_file_usage();
-  PN_uint64 get_peak_page_file_usage();
+  uint64_t get_page_fault_count();
+  uint64_t get_process_memory();
+  uint64_t get_peak_process_memory();
+  uint64_t get_page_file_usage();
+  uint64_t get_peak_page_file_usage();
 
   int get_vendor_id();
   int get_device_id();
@@ -104,12 +102,12 @@ PUBLISHED:
   const char *get_cpu_brand_string();
   unsigned int get_cpu_version_information();
   unsigned int get_cpu_brand_index();
-  
-  PN_uint64 get_cpu_frequency();
-  PN_uint64 get_cpu_time();
 
-  PN_uint64 get_maximum_cpu_frequency();
-  PN_uint64 get_current_cpu_frequency();
+  uint64_t get_cpu_frequency();
+  uint64_t get_cpu_time();
+
+  uint64_t get_maximum_cpu_frequency();
+  uint64_t get_current_cpu_frequency();
   void update_cpu_frequency(int processor_number);
 
   int get_num_cpu_cores();
@@ -119,7 +117,7 @@ PUBLISHED:
   int get_os_version_minor();
   int get_os_version_build();
   int get_os_platform_id();
-  
+
 public:
   DetectionState _state;
   int _get_adapter_display_mode_state;
@@ -133,19 +131,19 @@ public:
   int _video_memory;
   int _texture_memory;
 
-  PN_uint64 _physical_memory;
-  PN_uint64 _available_physical_memory;
-  PN_uint64 _page_file_size;
-  PN_uint64 _available_page_file_size;
-  PN_uint64 _process_virtual_memory;
-  PN_uint64 _available_process_virtual_memory;
+  uint64_t _physical_memory;
+  uint64_t _available_physical_memory;
+  uint64_t _page_file_size;
+  uint64_t _available_page_file_size;
+  uint64_t _process_virtual_memory;
+  uint64_t _available_process_virtual_memory;
 
-  PN_uint64 _page_fault_count;
-  PN_uint64 _process_memory;
-  PN_uint64 _peak_process_memory;
-  PN_uint64 _page_file_usage;
-  PN_uint64 _peak_page_file_usage;
-  
+  uint64_t _page_fault_count;
+  uint64_t _process_memory;
+  uint64_t _peak_process_memory;
+  uint64_t _page_file_usage;
+  uint64_t _peak_page_file_usage;
+
   int _memory_load;
 
   int _vendor_id;
@@ -168,19 +166,19 @@ public:
   char *_cpu_brand_string;
   unsigned int _cpu_version_information;
   unsigned int _cpu_brand_index;
-  
-  PN_uint64 _cpu_frequency;
-  
-  PN_uint64 _maximum_cpu_frequency;
-  PN_uint64 _current_cpu_frequency;
+
+  uint64_t _cpu_frequency;
+
+  uint64_t _maximum_cpu_frequency;
+  uint64_t _current_cpu_frequency;
 
   int _num_cpu_cores;
   int _num_logical_cpus;
-  
+
   void (*_get_memory_information_function) (DisplayInformation *display_information);
-  PN_uint64 (*_cpu_time_function) (void);
+  uint64_t (*_cpu_time_function) (void);
   int (*_update_cpu_frequency_function) (int processor_number, DisplayInformation *display_information);
-  
+
   int _os_version_major;
   int _os_version_minor;
   int _os_version_build;

@@ -1,16 +1,15 @@
-// Filename: glShaderContext_src.h
-// Created by: jyelon (01Sep05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glShaderContext_src.h
+ * @author jyelon
+ * @date 2005-09-01
+ */
 
 #ifndef OPENGLES_1
 
@@ -24,10 +23,9 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLShaderContext
-// Description : xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 class EXPCL_GL CLP(ShaderContext) : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
@@ -37,10 +35,8 @@ public:
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
-#ifndef OPENGLES
   void reflect_uniform_block(int i, const char *block_name,
                              char *name_buffer, GLsizei name_buflen);
-#endif
   void reflect_uniform(int i, char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
 
@@ -69,20 +65,17 @@ private:
   typedef pvector<GLuint> GLSLShaders;
   GLSLShaders _glsl_shaders;
 
-  CPT(RenderState) _state_rs;
+  WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _projection_transform;
 
-  //struct ParamContext {
-  //  CPT(InternalName) _name;
-  //  GLint _location;
-  //  GLsizei _count;
-  //  WPT(ParamValue) _value;
-  //  UpdateSeq _updated;
-  //};
-  //typedef pvector<ParamContext> ParamContexts;
-  //ParamContexts _params;
+/*
+ * struct ParamContext { CPT(InternalName) _name; GLint _location; GLsizei
+ * _count; WPT(ParamValue) _value; UpdateSeq _updated; }; typedef
+ * pvector<ParamContext> ParamContexts; ParamContexts _params;
+ */
 
+  BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
   GLint _transform_table_index;
   GLint _slider_table_index;
@@ -90,7 +83,9 @@ private:
   GLsizei _slider_table_size;
   GLint _frame_number_loc;
   GLint _frame_number;
+#ifndef OPENGLES
   pmap<GLint, GLuint64> _glsl_uniform_handles;
+#endif
 
   struct ImageInput {
     CPT(InternalName) _name;
@@ -102,7 +97,6 @@ private:
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
-  bool _has_divisor;
 
   void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal);
   void glsl_report_program_errors(GLuint program, bool fatal);

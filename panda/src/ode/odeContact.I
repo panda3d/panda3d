@@ -1,16 +1,15 @@
-// Filename: odeContact.I
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeContact.I
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 INLINE OdeSurfaceParameters OdeContact::
 get_surface() const {
@@ -46,5 +45,3 @@ set_fdir1(const LVecBase3f &fdir1) {
   _contact.fdir1[1] = fdir1[1];
   _contact.fdir1[2] = fdir1[2];
 }
-
-

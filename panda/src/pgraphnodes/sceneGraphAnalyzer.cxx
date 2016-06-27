@@ -1,16 +1,15 @@
-// Filename: sceneGraphAnalyzer.cxx
-// Created by:  drose (02Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneGraphAnalyzer.cxx
+ * @author drose
+ * @date 2000-07-02
+ */
 
 #include "sceneGraphAnalyzer.h"
 #include "config_pgraph.h"
@@ -33,32 +32,25 @@
 #include "pta_ushort.h"
 #include "geomVertexReader.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SceneGraphAnalyzer::
 SceneGraphAnalyzer() {
   _lod_mode = LM_all;
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SceneGraphAnalyzer::
 ~SceneGraphAnalyzer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::clear
-//       Access: Published
-//  Description: Resets all of the data in the analyzer in preparation
-//               for a new run.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all of the data in the analyzer in preparation for a new run.
+ */
 void SceneGraphAnalyzer::
 clear() {
   _nodes.clear();
@@ -105,25 +97,19 @@ clear() {
   _total_normal_length = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::add_node
-//       Access: Published
-//  Description: Adds a new node to the set of data for analysis.
-//               Normally, this would only be called once, and passed
-//               the top of the scene graph, but it's possible to
-//               repeatedly pass in subgraphs to get an analysis of
-//               all the graphs together.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new node to the set of data for analysis.  Normally, this would only
+ * be called once, and passed the top of the scene graph, but it's possible to
+ * repeatedly pass in subgraphs to get an analysis of all the graphs together.
+ */
 void SceneGraphAnalyzer::
 add_node(PandaNode *node) {
   collect_statistics(node, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::write
-//       Access: Published
-//  Description: Describes all the data collected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes all the data collected.
+ */
 void SceneGraphAnalyzer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -140,8 +126,8 @@ write(ostream &out, int indent_level) const {
   out << "\n";
 
   indent(out, indent_level)
-    << _num_geoms << " Geoms, with " << _num_geom_vertex_datas 
-    << " GeomVertexDatas and " << _num_geom_vertex_formats 
+    << _num_geoms << " Geoms, with " << _num_geom_vertex_datas
+    << " GeomVertexDatas and " << _num_geom_vertex_formats
     << " GeomVertexFormats, appear on " << _num_geom_nodes
     << " GeomNodes.\n";
 
@@ -167,11 +153,11 @@ write(ostream &out, int indent_level) const {
   }
 
   indent(out, indent_level)
-    << "GeomVertexData arrays occupy " << (_vertex_data_size + 1023) / 1024 
+    << "GeomVertexData arrays occupy " << (_vertex_data_size + 1023) / 1024
     << "K memory.\n";
 
   indent(out, indent_level)
-    << "GeomPrimitive arrays occupy " << (_prim_data_size + 1023) / 1024 
+    << "GeomPrimitive arrays occupy " << (_prim_data_size + 1023) / 1024
     << "K memory.\n";
 
   int unreferenced_vertices = 0;
@@ -207,7 +193,7 @@ write(ostream &out, int indent_level) const {
     }
     indent(out, indent_level)
       << _vadatas.size() - _unique_vadatas.size()
-      << " GeomVertexArrayDatas are redundant, wasting " 
+      << " GeomVertexArrayDatas are redundant, wasting "
       << (wasted_bytes + 1023) / 1024 << "K.\n";
   }
   if (_unique_prim_vadatas.size() != _prim_vadatas.size()) {
@@ -225,7 +211,7 @@ write(ostream &out, int indent_level) const {
     }
     indent(out, indent_level)
       << _prim_vadatas.size() - _unique_prim_vadatas.size()
-      << " GeomPrimitive arrays are redundant, wasting " 
+      << " GeomPrimitive arrays are redundant, wasting "
       << (wasted_bytes + 1023) / 1024 << "K.\n";
   }
 
@@ -274,12 +260,9 @@ write(ostream &out, int indent_level) const {
     << (_texture_bytes + 1023) / 1024 << "K texture memory required.\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::collect_statistics
-//       Access: Private
-//  Description: Recursively visits each node, counting up the
-//               statistics.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively visits each node, counting up the statistics.
+ */
 void SceneGraphAnalyzer::
 collect_statistics(PandaNode *node, bool under_instance) {
   _num_nodes++;
@@ -290,8 +273,7 @@ collect_statistics(PandaNode *node, bool under_instance) {
       // This is the first time this node has been encountered.
       _nodes.insert(Nodes::value_type(node, 1));
     } else {
-      // This node has been encountered before; that makes it an
-      // instance.
+      // This node has been encountered before; that makes it an instance.
       (*ni).second++;
       _num_instances++;
       under_instance = true;
@@ -300,14 +282,14 @@ collect_statistics(PandaNode *node, bool under_instance) {
 
   if (!node->get_state()->is_empty()) {
     _num_nodes_with_attribs++;
-    const RenderAttrib *attrib = 
+    const RenderAttrib *attrib =
       node->get_attrib(TextureAttrib::get_class_slot());
     if (attrib != (RenderAttrib *)NULL) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {
         collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
       }
-    }      
+    }
   }
   if (!node->get_transform()->is_identity()) {
     _num_transforms++;
@@ -349,12 +331,9 @@ collect_statistics(PandaNode *node, bool under_instance) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::collect_statistics
-//       Access: Private
-//  Description: Recursively visits each node, counting up the
-//               statistics.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively visits each node, counting up the statistics.
+ */
 void SceneGraphAnalyzer::
 collect_statistics(GeomNode *geom_node) {
   nassertv(geom_node != (GeomNode *)NULL);
@@ -370,23 +349,20 @@ collect_statistics(GeomNode *geom_node) {
 
     const RenderState *geom_state = geom_node->get_geom_state(i);
 
-    const RenderAttrib *attrib = 
+    const RenderAttrib *attrib =
       geom_state->get_attrib(TextureAttrib::get_class_slot());
     if (attrib != (RenderAttrib *)NULL) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {
         collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
       }
-    }      
+    }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::collect_statistics
-//       Access: Private
-//  Description: Recursively visits each node, counting up the
-//               statistics.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively visits each node, counting up the statistics.
+ */
 void SceneGraphAnalyzer::
 collect_statistics(const Geom *geom) {
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
@@ -394,7 +370,7 @@ collect_statistics(const Geom *geom) {
   if (result.second) {
     // This is the first time we've encountered this vertex data.
     ++_num_geom_vertex_datas;
-    
+
     CPT(GeomVertexFormat) vformat = vdata->get_format();
     bool format_inserted = _vformats.insert(vformat).second;
     if (format_inserted) {
@@ -460,16 +436,16 @@ collect_statistics(const Geom *geom) {
         collect_statistics(prim->get_maxs());
       }
     }
-      
+
     if (prim->is_of_type(GeomPoints::get_class_type())) {
       _num_points += prim->get_num_primitives();
-      
+
     } else if (prim->is_of_type(GeomLines::get_class_type())) {
       _num_lines += prim->get_num_primitives();
-      
+
     } else if (prim->is_of_type(GeomLinestrips::get_class_type())) {
       _num_lines += prim->get_num_faces();
-      
+
     } else if (prim->is_of_type(GeomTriangles::get_class_type())) {
       _num_tris += prim->get_num_primitives();
       _num_individual_tris += prim->get_num_primitives();
@@ -496,12 +472,9 @@ collect_statistics(const Geom *geom) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::collect_statistics
-//       Access: Private
-//  Description: Recursively visits each node, counting up the
-//               statistics.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively visits each node, counting up the statistics.
+ */
 void SceneGraphAnalyzer::
 collect_statistics(Texture *texture) {
   nassertv(texture != (Texture *)NULL);
@@ -511,16 +484,15 @@ collect_statistics(Texture *texture) {
     // This is the first time this texture has been encountered.
     _textures.insert(Textures::value_type(texture, 1));
 
-    // Attempt to guess how many bytes of texture memory this one
-    // requires.
+    // Attempt to guess how many bytes of texture memory this one requires.
     int bytes =
-      texture->get_x_size() * texture->get_y_size() * 
+      texture->get_x_size() * texture->get_y_size() *
       texture->get_num_components() * texture->get_component_width();
-    
+
     if (texture->uses_mipmaps()) {
       bytes *= 4/3;
     }
-    
+
     _texture_bytes += bytes;
 
   } else {
@@ -529,12 +501,9 @@ collect_statistics(Texture *texture) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::collect_statistics
-//       Access: Private
-//  Description: Recursively visits each node, counting up the
-//               statistics.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively visits each node, counting up the statistics.
+ */
 void SceneGraphAnalyzer::
 collect_statistics(const GeomVertexArrayData *vadata) {
   nassertv(vadata != NULL);
@@ -547,14 +516,11 @@ collect_statistics(const GeomVertexArrayData *vadata) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::collect_prim_statistics
-//       Access: Private
-//  Description: Recursively visits each node, counting up the
-//               statistics.  This one records the vertex index array
-//               associated with a GeomPrimitive, as opposed to the
-//               vertex data array, component of a GeomVertexData.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively visits each node, counting up the statistics.  This one records
+ * the vertex index array associated with a GeomPrimitive, as opposed to the
+ * vertex data array, component of a GeomVertexData.
+ */
 void SceneGraphAnalyzer::
 collect_prim_statistics(const GeomVertexArrayData *vadata) {
   nassertv(vadata != NULL);

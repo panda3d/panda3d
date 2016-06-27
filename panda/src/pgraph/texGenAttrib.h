@@ -1,16 +1,15 @@
-// Filename: texGenAttrib.h
-// Created by:  masad (21Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texGenAttrib.h
+ * @author masad
+ * @date 2004-06-21
+ */
 
 #ifndef TEXGENATTRIB_H
 #define TEXGENATTRIB_H
@@ -24,21 +23,17 @@
 #include "pointerTo.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TexGenAttrib
-// Description : Computes texture coordinates for geometry
-//               automatically based on vertex position and/or normal.
-//               This can be used to implement reflection and/or
-//               refraction maps, for instance to make shiny surfaces,
-//               as well as other special effects such as projective
-//               texturing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes texture coordinates for geometry automatically based on vertex
+ * position and/or normal.  This can be used to implement reflection and/or
+ * refraction maps, for instance to make shiny surfaces, as well as other
+ * special effects such as projective texturing.
+ */
 class EXPCL_PANDA_PGRAPH TexGenAttrib : public RenderAttrib {
 PUBLISHED:
-  // We inherit the definition of our Mode enumerated type from
-  // RenderAttrib.  Normally, Mode would be defined here, but we
-  // define it in the base class instead as a hack to avoid a problem
-  // with circular includes.
+  // We inherit the definition of our Mode enumerated type from RenderAttrib.
+  // Normally, Mode would be defined here, but we define it in the base class
+  // instead as a hack to avoid a problem with circular includes.
   typedef RenderAttrib::TexGenMode Mode;
 
 protected:
@@ -92,23 +87,22 @@ private:
   typedef pmap<PT(TextureStage), ModeDef> Stages;
   Stages _stages;
 
-  // This is a set of TextureStage pointers for which texture
-  // coordinates will not be needed from the Geom.  It's redundant;
-  // it's almost the same set that is listed in _stages, above.  It's
-  // just here as an optimization during rendering.
+  // This is a set of TextureStage pointers for which texture coordinates will
+  // not be needed from the Geom.  It's redundant; it's almost the same set
+  // that is listed in _stages, above.  It's just here as an optimization
+  // during rendering.
   typedef pset<TextureStage *> NoTexCoordStages;
   NoTexCoordStages _no_texcoords;
 
-  // This element is only used during reading from a bam file.  It has
-  // no meaningful value any other time.
+  // This element is only used during reading from a bam file.  It has no
+  // meaningful value any other time.
   pvector<Mode> _read_modes;
 
   int _num_point_sprites;
 
-  // _point_geom_rendering is the GeomRendering bits that are added by
-  // the TexGenAttrib if there are any points in the Geom.
-  // _geom_rendering is the GeomRendering bits that are added
-  // regardless of the kind of Geom it is.
+  // _point_geom_rendering is the GeomRendering bits that are added by the
+  // TexGenAttrib if there are any points in the Geom.  _geom_rendering is the
+  // GeomRendering bits that are added regardless of the kind of Geom it is.
   int _point_geom_rendering;
   int _geom_rendering;
 
@@ -154,4 +148,3 @@ private:
 #include "texGenAttrib.I"
 
 #endif
-

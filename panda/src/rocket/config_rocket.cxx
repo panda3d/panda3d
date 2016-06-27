@@ -1,16 +1,15 @@
-// Filename: config_rocket.cxx
-// Created by:  rdb (04Nov11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_rocket.cxx
+ * @author rdb
+ * @date 2011-11-04
+ */
 
 #include "config_rocket.h"
 #include "rocketFileInterface.h"
@@ -34,14 +33,12 @@ ConfigureFn(config_rocket) {
   init_librocket();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_librocket
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_librocket() {
   static bool initialized = false;
@@ -53,6 +50,10 @@ init_librocket() {
   RocketInputHandler::init_type();
   RocketRegion::init_type();
 
+  if (rocket_cat->is_debug()) {
+    rocket_cat->debug() << "Initializing libRocket library.\n";
+  }
+
   RocketFileInterface* fi = new RocketFileInterface;
   Rocket::Core::SetFileInterface(fi);
 
@@ -60,6 +61,10 @@ init_librocket() {
   Rocket::Core::SetSystemInterface(si);
 
   Rocket::Core::Initialise();
+
+  // Register that we have the libRocket system.
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("libRocket");
 
 #ifdef COMPILE_IN_DEFAULT_FONT
 #ifdef HAVE_FREETYPE

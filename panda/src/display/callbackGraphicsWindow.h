@@ -1,16 +1,15 @@
-// Filename: callbackGraphicsWindow.h
-// Created by:  drose (06Jan11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file callbackGraphicsWindow.h
+ * @author drose
+ * @date 2011-01-06
+ */
 
 #ifndef CALLBACKGRAPHICSWINDOW_H
 #define CALLBACKGRAPHICSWINDOW_H
@@ -18,19 +17,16 @@
 #include "pandabase.h"
 #include "graphicsWindow.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CallbackGraphicsWindow
-// Description : This special window object doesn't represent a window
-//               in its own right, but instead hooks into some
-//               third-party API for creating and rendering to windows
-//               via callbacks.  This can be used to allow Panda to
-//               render into an already-created OpenGL context, for
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special window object doesn't represent a window in its own right, but
+ * instead hooks into some third-party API for creating and rendering to
+ * windows via callbacks.  This can be used to allow Panda to render into an
+ * already-created OpenGL context, for instance.
+ */
 class EXPCL_PANDA_DISPLAY CallbackGraphicsWindow : public GraphicsWindow {
 protected:
   CallbackGraphicsWindow(GraphicsEngine *engine,
-                         GraphicsPipe *pipe, 
+                         GraphicsPipe *pipe,
                          const string &name,
                          const FrameBufferProperties &fb_prop,
                          const WindowProperties &win_prop,
@@ -46,10 +42,11 @@ PUBLISHED:
 
   PUBLISHED:
     INLINE CallbackGraphicsWindow *get_window() const;
-    
+    MAKE_PROPERTY(window, get_window);
+
   protected:
     PT(CallbackGraphicsWindow) _window;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -63,7 +60,7 @@ PUBLISHED:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -74,7 +71,7 @@ PUBLISHED:
 
   PUBLISHED:
     virtual void upcall();
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -88,7 +85,7 @@ PUBLISHED:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -104,7 +101,7 @@ PUBLISHED:
 
   private:
     WindowProperties &_properties;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -118,7 +115,7 @@ PUBLISHED:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -137,9 +134,12 @@ PUBLISHED:
   PUBLISHED:
     INLINE CallbackGraphicsWindow::RenderCallbackType get_callback_type() const;
     INLINE GraphicsOutput::FrameMode get_frame_mode() const;
+    MAKE_PROPERTY(callback_type, get_callback_type);
+    MAKE_PROPERTY(frame_mode, get_frame_mode);
 
     INLINE void set_render_flag(bool render_flag);
     INLINE bool get_render_flag() const;
+    MAKE_PROPERTY(render_flag, get_render_flag, set_render_flag);
 
     virtual void upcall();
 
@@ -147,7 +147,7 @@ PUBLISHED:
     RenderCallbackType _callback_type;
     FrameMode _frame_mode;
     bool _render_flag;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -161,11 +161,11 @@ PUBLISHED:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
-  
+
   INLINE void set_events_callback(CallbackObject *object);
   INLINE void clear_events_callback();
   INLINE CallbackObject *get_events_callback() const;

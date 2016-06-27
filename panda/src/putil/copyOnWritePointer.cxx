@@ -1,16 +1,15 @@
-// Filename: copyOnWritePointer.cxx
-// Created by:  drose (09Apr07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file copyOnWritePointer.cxx
+ * @author drose
+ * @date 2007-04-09
+ */
 
 #include "copyOnWritePointer.h"
 #include "mutexHolder.h"
@@ -18,16 +17,12 @@
 #include "config_pipeline.h"
 
 #ifdef COW_THREADED
-////////////////////////////////////////////////////////////////////
-//     Function: CopyOnWritePointer::get_read_pointer
-//       Access: Public
-//  Description: Returns a pointer locked for read.  Until this
-//               pointer dereferences, calls to get_write_pointer()
-//               will force a copy.
-//
-//               This flavor of the method is written for the threaded
-//               case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer locked for read.  Until this pointer dereferences, calls
+ * to get_write_pointer() will force a copy.
+ *
+ * This flavor of the method is written for the threaded case.
+ */
 CPT(CopyOnWriteObject) CopyOnWritePointer::
 get_read_pointer() const {
   if (_cow_object == (CopyOnWriteObject *)NULL) {
@@ -57,19 +52,15 @@ get_read_pointer() const {
 #endif  // COW_THREADED
 
 #ifdef COW_THREADED
-////////////////////////////////////////////////////////////////////
-//     Function: CopyOnWritePointer::get_write_pointer
-//       Access: Public
-//  Description: Returns a pointer locked for write.  If another
-//               thread or threads already hold the pointer locked for
-//               read, then this will force a copy.
-//
-//               Until this pointer dereferences, calls to
-//               get_read_pointer() or get_write_pointer() will block.
-//
-//               This flavor of the method is written for the threaded
-//               case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer locked for write.  If another thread or threads already
+ * hold the pointer locked for read, then this will force a copy.
+ *
+ * Until this pointer dereferences, calls to get_read_pointer() or
+ * get_write_pointer() will block.
+ *
+ * This flavor of the method is written for the threaded case.
+ */
 PT(CopyOnWriteObject) CopyOnWritePointer::
 get_write_pointer() {
   if (_cow_object == (CopyOnWriteObject *)NULL) {
@@ -104,9 +95,9 @@ get_write_pointer() {
     _cow_object->cache_ref();
 
   } else if (_cow_object->get_cache_ref_count() > 1) {
-    // No one else has it specifically read-locked, but there are
-    // other CopyOnWritePointers holding the same object, so we should
-    // make our own writable copy anyway.
+    // No one else has it specifically read-locked, but there are other
+    // CopyOnWritePointers holding the same object, so we should make our own
+    // writable copy anyway.
     if (util_cat.is_debug()) {
       util_cat.debug()
         << "Making copy of " << _cow_object->get_type()
@@ -121,12 +112,12 @@ get_write_pointer() {
 
   } else {
     // No other thread has the pointer locked, and we're the only
-    // CopyOnWritePointer with this object.  We can safely write to it
-    // without making a copy.
+    // CopyOnWritePointer with this object.  We can safely write to it without
+    // making a copy.
 
-    // We can't assert that there are no outstanding ordinary
-    // references to it, though, since the creator of the object might
-    // have saved himself a reference.
+    // We can't assert that there are no outstanding ordinary references to
+    // it, though, since the creator of the object might have saved himself a
+    // reference.
   }
   _cow_object->_lock_status = CopyOnWriteObject::LS_locked_write;
   _cow_object->_locking_thread = current_thread;

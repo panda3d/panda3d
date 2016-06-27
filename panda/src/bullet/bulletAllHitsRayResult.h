@@ -1,16 +1,15 @@
-// Filename: bulletAllHitsRayResult.h
-// Created by:  enn0x (21Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletAllHitsRayResult.h
+ * @author enn0x
+ * @date 2010-02-21
+ */
 
 #ifndef __BULLET_ALL_HITS_RAY_RESULT_H__
 #define __BULLET_ALL_HITS_RAY_RESULT_H__
@@ -24,10 +23,9 @@
 #include "pandaNode.h"
 #include "collideMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletRayHit
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 struct EXPCL_PANDABULLET BulletRayHit {
 
 PUBLISHED:
@@ -42,7 +40,7 @@ PUBLISHED:
   int get_triangle_index() const;
 
 private:
-  const btCollisionObject *_object; 
+  const btCollisionObject *_object;
   btVector3 _normal;
   btVector3 _pos;
   btScalar _fraction;
@@ -53,10 +51,9 @@ private:
   friend struct BulletAllHitsRayResult;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletAllHitsRayResult
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 struct EXPCL_PANDABULLET BulletAllHitsRayResult : public btCollisionWorld::AllHitsRayResultCallback {
 
 PUBLISHED:

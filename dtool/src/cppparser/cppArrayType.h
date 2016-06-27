@@ -1,16 +1,15 @@
-// Filename: cppArrayType.h
-// Created by:  drose (19Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppArrayType.h
+ * @author drose
+ * @date 1999-10-19
+ */
 
 #ifndef CPPARRAYTYPE_H
 #define CPPARRAYTYPE_H
@@ -21,10 +20,9 @@
 
 class CPPExpression;
 
-///////////////////////////////////////////////////////////////////
-//       Class : CPPArrayType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPArrayType : public CPPType {
 public:
   CPPArrayType(CPPType *element_type, CPPExpression *bounds);
@@ -41,6 +39,8 @@ public:
                                 CPPScope *global_scope);
   virtual bool is_tbd() const;
   virtual bool is_trivial() const;
+  virtual bool is_default_constructible() const;
+  virtual bool is_copy_constructible() const;
   virtual bool is_equivalent(const CPPType &other) const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,

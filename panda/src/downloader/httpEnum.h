@@ -1,35 +1,31 @@
-// Filename: httpEnum.h
-// Created by:  drose (25Oct02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpEnum.h
+ * @author drose
+ * @date 2002-10-25
+ */
 
 #ifndef HTTPENUM_H
 #define HTTPENUM_H
 
 #include "pandabase.h"
 
-// This module requires OpenSSL to compile, even if you do not intend
-// to use this to establish https connections; this is because it uses
-// the OpenSSL library to portably handle all of the socket
-// communications.
+// This module requires OpenSSL to compile, even if you do not intend to use
+// this to establish https connections; this is because it uses the OpenSSL
+// library to portably handle all of the socket communications.
 
 #ifdef HAVE_OPENSSL
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPEnum
-// Description : This class is just used as a namespace wrapper for
-//               some of the enumerated types used by various classes
-//               within the HTTPClient family.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is just used as a namespace wrapper for some of the enumerated
+ * types used by various classes within the HTTPClient family.
+ */
 class EXPCL_PANDAEXPRESS HTTPEnum {
 PUBLISHED:
   enum HTTPVersion {
@@ -56,4 +52,3 @@ ostream &operator << (ostream &out, HTTPEnum::Method method);
 #endif // HAVE_OPENSSL
 
 #endif
-

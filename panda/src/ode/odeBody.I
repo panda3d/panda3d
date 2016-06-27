@@ -1,35 +1,29 @@
-// Filename: odeBody.I
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeBody.I
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeBody::is_empty
-//       Access: Published
-//  Description: Returns true if the ID is 0, meaning the OdeBody
-//               does not point to a valid body. It is an error to
-//               call a method on an empty body.
-//               Note that an empty OdeBody also evaluates to False.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the ID is 0, meaning the OdeBody does not point to a valid
+ * body.  It is an error to call a method on an empty body.  Note that an
+ * empty OdeBody also evaluates to False.
+ */
 INLINE bool OdeBody::
 is_empty() const {
   return (_id == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeBody::get_id
-//       Access: Published
-//  Description: Returns the underlying dBodyID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the underlying dBodyID.
+ */
 INLINE dBodyID OdeBody::
 get_id() const {
   return _id;
@@ -95,22 +89,7 @@ set_data(void *data) {
   dBodySetData(_id, data);
 }
 
-#ifdef HAVE_PYTHON
-INLINE void OdeBody::
-set_data(PyObject *data) {
-  Py_XDECREF((PyObject*) dBodyGetData(_id));
-  Py_XINCREF(data);
-  dBodySetData(_id, data);
-}
-
-INLINE PyObject* OdeBody::
-get_data() const {
-  PyObject* data = (PyObject*) dBodyGetData(_id);
-  Py_XINCREF(data);
-  return data;
-}
-#else
-
+#ifndef HAVE_PYTHON
 INLINE void* OdeBody::
 get_data() const {
   return dBodyGetData(_id);
@@ -132,7 +111,7 @@ set_rotation(const LMatrix3f &r) {
   dMatrix3 mat3 = { r(0, 0), r(0, 1), r(0, 2), 0,
                     r(1, 0), r(1, 1), r(1, 2), 0,
                     r(2, 0), r(2, 1), r(2, 2), 0 };
-  
+
   dBodySetRotation(_id, mat3);
 }
 

@@ -1,16 +1,15 @@
-// Filename: interrogateMakeSeq.h
-// Created by:  drose (15Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateMakeSeq.h
+ * @author drose
+ * @date 2009-09-15
+ */
 
 #ifndef INTERROGATEMAKESEQ_H
 #define INTERROGATEMAKESEQ_H
@@ -21,11 +20,9 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateMakeSeq
-// Description : Represents a synthetic method created via the
-//               MAKE_SEQ() macro.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a synthetic method created via the MAKE_SEQ() macro.
+ */
 class EXPCL_INTERROGATEDB InterrogateMakeSeq : public InterrogateComponent {
 public:
   INLINE InterrogateMakeSeq(InterrogateModuleDef *def = NULL);

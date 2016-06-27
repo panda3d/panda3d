@@ -29,7 +29,7 @@ class Mopath(DirectObject):
         elif isinstance( objectToLoad, str ):
             self.loadFile( objectToLoad )
         elif objectToLoad is not None:
-            print "Mopath: Unable to load object '%s', objectToLoad must be a file name string or a NodePath" % objectToLoad
+            print("Mopath: Unable to load object '%s', objectToLoad must be a file name string or a NodePath" % objectToLoad)
 
     def getMaxT(self):
         return self.maxT * self.timeScale
@@ -40,7 +40,7 @@ class Mopath(DirectObject):
             self.loadNodePath(nodePath)
             nodePath.removeNode()
         else:
-            print 'Mopath: no data in file: %s' % filename
+            print('Mopath: no data in file: %s' % filename)
 
 
     def loadNodePath(self, nodePath, fReset = 1):
@@ -55,7 +55,7 @@ class Mopath(DirectObject):
         elif (self.hprNurbsCurve != None):
             self.maxT = self.hprNurbsCurve.getMaxT()
         else:
-            print 'Mopath: no valid curves in nodePath: %s' % nodePath
+            print('Mopath: no valid curves in nodePath: %s' % nodePath)
 
 
     def reset(self):
@@ -77,7 +77,7 @@ class Mopath(DirectObject):
                 if (self.xyzNurbsCurve == None):
                     self.xyzNurbsCurve = node
                 else:
-                    print 'Mopath: got a PCT_NONE curve and an XYZ Curve in nodePath: %s' % nodePath
+                    print('Mopath: got a PCT_NONE curve and an XYZ Curve in nodePath: %s' % nodePath)
             elif (node.getCurveType() == PCTT):
                 self.tNurbsCurve.append(node)
         else:
@@ -106,7 +106,7 @@ class Mopath(DirectObject):
 
     def goTo(self, node, time):
         if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
-            print 'Mopath: Mopath has no curves'
+            print('Mopath: Mopath has no curves')
             return
         time /= self.timeScale
         self.playbackTime = self.calcTime(CLAMP(time, 0.0, self.maxT))
@@ -145,7 +145,7 @@ class Mopath(DirectObject):
 
     def play(self, node, time = 0.0, loop = 0):
         if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
-            print 'Mopath: Mopath has no curves'
+            print('Mopath: Mopath has no curves')
             return
         self.node = node
         self.loop = loop
@@ -185,6 +185,6 @@ class Mopath(DirectObject):
             tp = self.calcTime(t)
             self.xyzNurbsCurve.getPoint(tp, p)
             ls.drawTo(p)
-        
+
         return NodePath(ls.create())
-    
+

@@ -1,16 +1,15 @@
-// Filename: cppPreprocessor.h
-// Created by:  drose (22Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppPreprocessor.h
+ * @author drose
+ * @date 1999-10-22
+ */
 
 #ifndef CPPPREPROCESSOR_H
 #define CPPPREPROCESSOR_H
@@ -33,12 +32,11 @@ class CPPScope;
 class CPPTemplateParameterList;
 class CPPExpression;
 
-//#define CPP_VERBOSE_LEX
+// #define CPP_VERBOSE_LEX
 
-///////////////////////////////////////////////////////////////////
-//       Class : CPPPreprocessor
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPPreprocessor {
 public:
   CPPPreprocessor();
@@ -88,17 +86,19 @@ public:
   Includes _quote_includes;
   Includes _angle_includes;
 
-  // This is normally true, to indicate that the preprocessor should
-  // decode identifiers like foo::bar<snarf> into a single IDENTIFIER,
-  // TYPENAME_IDENTIFIER, or SCOPING token for yacc's convenience.
-  // When false, it leaves them alone and returns a sequence of
-  // SIMPLE_IDENTIFIER and SCOPE tokens instead.
+  set<Filename> _explicit_files;
+
+  // This is normally true, to indicate that the preprocessor should decode
+  // identifiers like foo::bar<snarf> into a single IDENTIFIER,
+  // TYPENAME_IDENTIFIER, or SCOPING token for yacc's convenience.  When
+  // false, it leaves them alone and returns a sequence of SIMPLE_IDENTIFIER
+  // and SCOPE tokens instead.
   bool _resolve_identifiers;
 
-  // The default _verbose level is 1, which will output normal error
-  // and warning messages but nothing else.  Set this to 0 to make the
-  // warning messages go away (although the counts will still be
-  // incremented), or set it higher to get more debugging information.
+  // The default _verbose level is 1, which will output normal error and
+  // warning messages but nothing else.  Set this to 0 to make the warning
+  // messages go away (although the counts will still be incremented), or set
+  // it higher to get more debugging information.
   int _verbose;
 
   // The location of the last token.
@@ -124,6 +124,7 @@ private:
   int skip_comment(int c);
   int skip_c_comment(int c);
   int skip_cpp_comment(int c);
+  int skip_digit_separator(int c);
   int process_directive(int c);
 
   int get_preprocessor_command(int c, string &command);
@@ -194,8 +195,8 @@ private:
     int _prev_last_c;
   };
 
-  // This must be a list and not a vector because we don't have a good
-  // copy constructor defined for InputFile.
+  // This must be a list and not a vector because we don't have a good copy
+  // constructor defined for InputFile.
   typedef list<InputFile> Files;
   Files _files;
 

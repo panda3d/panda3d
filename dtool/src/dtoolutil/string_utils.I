@@ -1,17 +1,15 @@
-// Filename: string_utils.I
-// Created by:  drose (14Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file string_utils.I
+ * @author drose
+ * @date 2000-07-14
+ */
 
 template<class Thing>
 INLINE string
@@ -82,13 +80,13 @@ format_string(int value) {
 }
 
 INLINE string
-format_string(PN_int64 value) {
+format_string(int64_t value) {
   char buffer[21];
   char *p = buffer + 20;
   *p = 0;
 
   if (value < 0) {
-    PN_uint64 posv = (PN_uint64)-value;
+    uint64_t posv = (uint64_t)-value;
     do {
       *--p = '0' + (posv % 10);
       posv /= 10;

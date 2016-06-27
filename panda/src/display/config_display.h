@@ -1,16 +1,15 @@
-// Filename: config_display.h
-// Created by:  drose (06Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_display.h
+ * @author drose
+ * @date 1999-10-06
+ */
 
 #ifndef CONFIG_DISPLAY_H
 #define CONFIG_DISPLAY_H
@@ -102,6 +101,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableInt stencil_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt accum_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt multisamples;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt back_buffers;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt shadow_depth_bits;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableDouble pixel_zoom;
 

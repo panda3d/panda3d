@@ -40,8 +40,6 @@ class HostInfo:
         Note that perPlatform is also restricted by the individual
         package's specification.  """
 
-        assert appRunner or rootDir or hostDir
-
         self.__setHostUrl(hostUrl)
         self.appRunner = appRunner
         self.rootDir = rootDir
@@ -111,6 +109,52 @@ class HostInfo:
             # the same as hostUrlPrefix, but in the case of an
             # https-protected hostUrl, it will be the cleartext channel.
             self.downloadUrlPrefix = self.hostUrlPrefix
+
+    def freshenFile(self, http, fileSpec, localPathname):
+        """ Ensures that the localPathname is the most current version
+        of the file defined by fileSpec, as offered by host.  If not,
+        it downloads a new version on-the-spot.  Returns true on
+        success, false on failure. """
+
+        if fileSpec.quickVerify(pathname = localPathname):
+            # It's good, keep it.
+            return True
+
+        # It's stale, get a new one.
+        doc = None
+        if self.appRunner and self.appRunner.superMirrorUrl:
+            # Use the "super mirror" first.
+            url = core.URLSpec(self.appRunner.superMirrorUrl + fileSpec.filename)
+            self.notify.info("Freshening %s" % (url))
+            doc = http.getDocument(url)
+
+        if not doc or not doc.isValid():
+            # Failing the super mirror, contact the actual host.
+            url = core.URLSpec(self.hostUrlPrefix + fileSpec.filename)
+            self.notify.info("Freshening %s" % (url))
+            doc = http.getDocument(url)
+            if not doc.isValid():
+                return False
+
+        file = Filename.temporary('', 'p3d_')
+        if not doc.downloadToFile(file):
+            # Failed to download.
+            file.unlink()
+            return False
+
+        # Successfully downloaded!
+        localPathname.makeDir()
+        if not file.renameTo(localPathname):
+            # Couldn't move it into place.
+            file.unlink()
+            return False
+
+        if not fileSpec.fullVerify(pathname = localPathname, notify = self.notify):
+            # No good after download.
+            self.notify.info("%s is still no good after downloading." % (url))
+            return False
+
+        return True
 
     def downloadContentsFile(self, http, redownload = False,
                              hashVal = None):
@@ -200,10 +244,10 @@ class HostInfo:
                             # if we get here there may be some bigger problem.  Just
                             # give the generic "big problem" message.
                             launcher.setPandaErrorCode(6)
-                    except NameError,e:
+                    except NameError as e:
                         # no launcher
                         pass
-                    except AttributeError, e:
+                    except AttributeError as e:
                         self.notify.warning("%s" % (str(e),))
                         pass
                     return False
@@ -609,8 +653,8 @@ class HostInfo:
 
         packages = packages[:]
 
-        for key, platforms in self.packages.items():
-            for platform, package in platforms.items():
+        for key, platforms in list(self.packages.items()):
+            for platform, package in list(platforms.items()):
                 if package in packages:
                     self.__deletePackageFiles(package)
                     del platforms[platform]

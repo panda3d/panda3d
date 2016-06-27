@@ -5,7 +5,6 @@ __all__ = ['Diff', 'ObjectPool']
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr
 from direct.showbase.PythonUtil import getNumberedTypedString, getNumberedTypedSortedString
-from direct.showbase.PythonUtil import getNumberedTypedSortedStringWithReferrersGen
 import gc
 
 class Diff:
@@ -13,14 +12,14 @@ class Diff:
         self.lost=lost
         self.gained=gained
     def printOut(self, full=False):
-        print 'lost %s objects, gained %s objects' % (len(self.lost), len(self.gained))
-        print '\n\nself.lost\n'
-        print self.lost.typeFreqStr()
-        print '\n\nself.gained\n'
-        print self.gained.typeFreqStr()
+        print('lost %s objects, gained %s objects' % (len(self.lost), len(self.gained)))
+        print('\n\nself.lost\n')
+        print(self.lost.typeFreqStr())
+        print('\n\nself.gained\n')
+        print(self.gained.typeFreqStr())
         if full:
             self.gained.printObjsByType()
-            print '\n\nGAINED-OBJECT REFERRERS\n'
+            print('\n\nGAINED-OBJECT REFERRERS\n')
             self.gained.printReferrers(1)
 
 class ObjectPool:
@@ -54,14 +53,14 @@ class ObjectPool:
         del self._count2types
 
     def getTypes(self):
-        return self._type2objs.keys()
+        return list(self._type2objs.keys())
 
     def getObjsOfType(self, type):
         return self._type2objs.get(type, [])
 
     def printObjsOfType(self, type):
         for obj in self._type2objs.get(type, []):
-            print repr(obj)
+            print(repr(obj))
 
     def diff(self, other):
         """print difference between this pool and 'other' pool"""
@@ -97,9 +96,9 @@ class ObjectPool:
                 s += '\n%s\t%s' % (count, typ)
         return s
 
-    def printObjsByType(self, printReferrers=False):
-        print   'Object Pool: Objects By Type'
-        print '\n============================'
+    def printObjsByType(self):
+        print('Object Pool: Objects By Type')
+        print('\n============================')
         counts = list(set(self._count2types.keys()))
         counts.sort()
         # print types with the smallest number of instances first, in case
@@ -108,12 +107,8 @@ class ObjectPool:
         for count in counts:
             types = makeList(self._count2types[count])
             for typ in types:
-                print 'TYPE: %s, %s objects' % (repr(typ), len(self._type2objs[typ]))
-                if printReferrers:
-                    for line in getNumberedTypedSortedStringWithReferrersGen(self._type2objs[typ]):
-                        print line
-                else:
-                    print getNumberedTypedSortedString(self._type2objs[typ])
+                print('TYPE: %s, %s objects' % (repr(typ), len(self._type2objs[typ])))
+                print(getNumberedTypedSortedString(self._type2objs[typ]))
 
     def containerLenStr(self):
         s  =   'Object Pool: Container Lengths'
@@ -132,17 +127,17 @@ class ObjectPool:
         for count in counts:
             types = makeList(self._count2types[count])
             for typ in types:
-                print '\n\nTYPE: %s' % repr(typ)
-                for i in xrange(min(numEach,len(self._type2objs[typ]))):
+                print('\n\nTYPE: %s' % repr(typ))
+                for i in range(min(numEach, len(self._type2objs[typ]))):
                     obj = self._type2objs[typ][i]
-                    print '\nOBJ: %s\n' % safeRepr(obj)
+                    print('\nOBJ: %s\n' % safeRepr(obj))
                     referrers = gc.get_referrers(obj)
-                    print '%s REFERRERS:\n' % len(referrers)
+                    print('%s REFERRERS:\n' % len(referrers))
                     if len(referrers):
-                        print getNumberedTypedString(referrers, maxLen=80,
-                                                    numPrefix='REF')
+                        print(getNumberedTypedString(referrers, maxLen=80,
+                                                    numPrefix='REF'))
                     else:
-                        print '<No Referrers>'
+                        print('<No Referrers>')
 
     def __len__(self):
         return len(self._objs)

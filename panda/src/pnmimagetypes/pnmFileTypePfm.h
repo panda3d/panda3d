@@ -1,16 +1,15 @@
-// Filename: pnmFileTypePfm.h
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypePfm.h
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #ifndef PNMFILETYPEPFM_H
 #define PNMFILETYPEPFM_H
@@ -22,11 +21,10 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypePfm
-// Description : For reading and writing PFM files using the basic
-//               PNMImage interface, as if they were basic RGB files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing PFM files using the basic PNMImage interface, as if
+ * they were basic RGB files.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMFileTypePfm : public PNMFileType {
 public:
   PNMFileTypePfm();
@@ -48,7 +46,7 @@ public:
   class Reader : public PNMReader {
   public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
-    
+
     virtual bool is_floating_point();
     virtual bool read_pfm(PfmFile &pfm);
 
@@ -92,5 +90,3 @@ private:
 };
 
 #endif
-
-

@@ -53,7 +53,7 @@ def iglob(pathname):
 def glob1(dirname, pattern):
     if not dirname:
         dirname = os.curdir
-    if isinstance(pattern, unicode) and not isinstance(dirname, unicode):
+    if sys.version_info < (3, 0) and isinstance(pattern, unicode) and not isinstance(dirname, unicode):
         dirname = unicode(dirname, sys.getfilesystemencoding() or
                                    sys.getdefaultencoding())
     try:
@@ -61,7 +61,7 @@ def glob1(dirname, pattern):
     except os.error:
         return []
     if pattern[0] != '.':
-        names = filter(lambda x: x[0] != '.', names)
+        names = [x for x in names if x[0] != '.']
     return fnmatch.filter(names, pattern)
 
 def glob0(dirname, basename):

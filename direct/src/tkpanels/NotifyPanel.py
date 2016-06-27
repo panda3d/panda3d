@@ -56,7 +56,7 @@ class NotifyPanel:
             items = categoryNames,
             selectioncommand = self.setActivePandaCategory)
         self.categoryList.pack(expand = 1, fill = 'both')
-                                           
+
         # Severity frame
         Label(severityFrame, text = 'Severity:',
               font=('MSSansSerif', 10, 'bold'),
@@ -131,7 +131,7 @@ class NotifyPanel:
     def _getPandaCategoriesAsList(self, pc, list):
         import types
         for item in pc:
-            if type(item) == types.ListType:
+            if type(item) == list:
                 self._getPandaCategoriesAsList(item, list)
             else:
                 list.append(item)

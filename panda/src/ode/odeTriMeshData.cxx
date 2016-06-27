@@ -1,17 +1,16 @@
-// Filename: odeTriMeshData.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#include "config_ode.h"
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeTriMeshData.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
+
 #include "odeTriMeshData.h"
 
 TypeHandle OdeTriMeshData::_type_handle;
@@ -45,7 +44,7 @@ unlink_data(dGeomID id) {
 
 void OdeTriMeshData::
 print_data(const string &marker) {
-  odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n"; 
+  odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n";
   const TriMeshDataMap &data_map = get_tri_mesh_data_map();
   TriMeshDataMap::const_iterator iter = data_map.begin();
   for (;iter != data_map.end(); ++iter) {
@@ -58,7 +57,7 @@ remove_data(OdeTriMeshData *data) {
   odetrimeshdata_cat.debug() << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
   nassertv(_tri_mesh_data_map != (TriMeshDataMap *)NULL);
   TriMeshDataMap::iterator iter;
-  
+
   for (iter = _tri_mesh_data_map->begin();
        iter != _tri_mesh_data_map->end();
        ++iter) {
@@ -66,10 +65,10 @@ remove_data(OdeTriMeshData *data) {
       break;
     }
   }
-  
+
   while (iter != _tri_mesh_data_map->end()) {
     _tri_mesh_data_map->erase(iter);
-    
+
     for (iter = _tri_mesh_data_map->begin();
          iter != _tri_mesh_data_map->end();
          ++iter) {
@@ -81,9 +80,6 @@ remove_data(OdeTriMeshData *data) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-
 OdeTriMeshData::
 OdeTriMeshData(const NodePath& model, bool use_normals) :
   _id(dGeomTriMeshDataCreate()),
@@ -93,7 +89,7 @@ OdeTriMeshData(const NodePath& model, bool use_normals) :
   _num_vertices(0),
   _num_faces(0) {
   odetrimeshdata_cat.debug() << get_type() << "(" << _id << ")" << "\n";
-  
+
   process_model(model, use_normals);
 
   write_faces(odetrimeshdata_cat.debug());
@@ -129,8 +125,8 @@ OdeTriMeshData::
     _faces = 0;
   }
   if (_normals != 0) {
-    // This is never allocated?  Until we use _normals, assert that we
-    // don't accidentally free it here through some mistake.
+    // This is never allocated?  Until we use _normals, assert that we don't
+    // accidentally free it here through some mistake.
     nassertv(false);
     PANDA_FREE_ARRAY(_normals);
   }
@@ -142,7 +138,7 @@ destroy() {
   if (_id != 0) {
     dGeomTriMeshDataDestroy(_id);
     remove_data(this);
-    _id = 0; 
+    _id = 0;
   }
 }
 
@@ -168,10 +164,10 @@ process_model(const NodePath& model, bool &use_normals) {
 
   odetrimeshdata_cat.debug() << "Found " << _num_vertices << " vertices.\n";
   odetrimeshdata_cat.debug() << "Found " << _num_faces << " faces.\n";
-  
+
   _vertices = (StridedVertex *)PANDA_MALLOC_ARRAY(_num_vertices * sizeof(StridedVertex));
   _faces = (StridedTri *)PANDA_MALLOC_ARRAY(_num_faces * sizeof(StridedTri));
-  
+
   _num_vertices = 0, _num_faces = 0;
 
   for (int i = 0; i < geomNodePaths.get_num_paths(); ++i) {
@@ -198,7 +194,7 @@ process_geom(const Geom *geom) {
   out.width(4); out << "" << "process_geom(" << *geom << ")" << "\n";
   if (geom->get_primitive_type() != Geom::PT_polygons) {
     return;
-  } 
+  }
 
   CPT(GeomVertexData) vData = geom->get_vertex_data();
 
@@ -208,16 +204,16 @@ process_geom(const Geom *geom) {
 }
 
 void OdeTriMeshData::
-process_primitive(const GeomPrimitive *primitive, 
+process_primitive(const GeomPrimitive *primitive,
                    CPT(GeomVertexData) vData) {
   GeomVertexReader vReader(vData, "vertex");
   GeomVertexReader nReader(vData, "normal");
   LVecBase3f vertex, normal;
-  //CPT(GeomPrimitive) dPrimitive = primitive->decompose();
+  // CPT(GeomPrimitive) dPrimitive = primitive->decompose();
   CPT(GeomPrimitive) dPrimitive = primitive;
   ostream &out = odetrimeshdata_cat.debug();
   out.width(6); out << "" << "process_primitive(" << *dPrimitive << ")" << "\n";
-  
+
 
   if (dPrimitive->get_type() == GeomTriangles::get_class_type()) {
     for (int i = 0; i < dPrimitive->get_num_primitives(); i++, _num_faces++) {
@@ -229,7 +225,7 @@ process_primitive(const GeomPrimitive *primitive,
         vReader.set_row_unsafe(vRowIndex);
         nReader.set_row_unsafe(vRowIndex);
         vertex = vReader.get_data3f();
-        //normal = nReader.get_data3f();
+        // normal = nReader.get_data3f();
         _faces[_num_faces].Indices[m] = _num_vertices;
 
         _vertices[_num_vertices].Vertex[0] = vertex[0];
@@ -250,7 +246,7 @@ process_primitive(const GeomPrimitive *primitive,
         vReader.set_row_unsafe(vRowIndex);
         nReader.set_row_unsafe(vRowIndex);
         vertex = vReader.get_data3f();
-        //normal = nReader.get_data3f();
+        // normal = nReader.get_data3f();
 
         _vertices[_num_vertices].Vertex[0] = vertex[0];
         _vertices[_num_vertices].Vertex[1] = vertex[1];
@@ -270,7 +266,7 @@ process_primitive(const GeomPrimitive *primitive,
             _faces[_num_faces].Indices[1] = _num_vertices-1;
             _faces[_num_faces].Indices[2] = _num_vertices;
           }
-        }      
+        }
       }
       out << "\n";
     }
@@ -287,7 +283,7 @@ void OdeTriMeshData::
 analyze(const Geom *geom) {
   if (geom->get_primitive_type() != Geom::PT_polygons) {
     return;
-  } 
+  }
 
   for (int i = 0; i < geom->get_num_primitives(); ++i) {
     analyze(geom->get_primitive(i));
@@ -308,7 +304,7 @@ write_faces(ostream &out) const {
   for (unsigned int i = 0; i < _num_faces; ++i) {
     out.width(2); out << "Face " << i << ":\n";
     for (int j = 0; j < 3; ++j) {
-      out.width(4); 
+      out.width(4);
       out << "(" << _vertices[_faces[i].Indices[j]].Vertex[0] \
           << ", " << _vertices[_faces[i].Indices[j]].Vertex[1] \
           << ", " << _vertices[_faces[i].Indices[j]].Vertex[2] << ")\n" ;

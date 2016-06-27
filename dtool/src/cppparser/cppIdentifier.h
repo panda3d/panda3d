@@ -1,16 +1,15 @@
-// Filename: cppIdentifier.h
-// Created by:  drose (26Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppIdentifier.h
+ * @author drose
+ * @date 1999-10-26
+ */
 
 #ifndef CPPIDENTIFIER_H
 #define CPPIDENTIFIER_H
@@ -30,10 +29,9 @@ class CPPType;
 class CPPPreprocessor;
 class CPPTemplateParameterList;
 
-///////////////////////////////////////////////////////////////////
-//       Class : CPPIdentifier
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPIdentifier {
 public:
   CPPIdentifier(const string &name, const CPPFile &file = CPPFile());

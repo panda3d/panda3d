@@ -1,16 +1,15 @@
-// Filename: androidGraphicsStateGuardian.cxx
-// Created by:  rdb (11Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file androidGraphicsStateGuardian.cxx
+ * @author rdb
+ * @date 2013-01-11
+ */
 
 #include "androidGraphicsStateGuardian.h"
 #include "config_androiddisplay.h"
@@ -20,11 +19,9 @@
 
 TypeHandle AndroidGraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AndroidGraphicsStateGuardian::
 AndroidGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
        AndroidGraphicsStateGuardian *share_with) :
@@ -46,11 +43,9 @@ AndroidGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AndroidGraphicsStateGuardian::
 ~AndroidGraphicsStateGuardian() {
   if (_context != (EGLContext)NULL) {
@@ -62,12 +57,9 @@ AndroidGraphicsStateGuardian::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::get_properties
-//       Access: Private
-//  Description: Gets the FrameBufferProperties to match the
-//               indicated config.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties to match the indicated config.
+ */
 void AndroidGraphicsStateGuardian::
 get_properties(FrameBufferProperties &properties,
       bool &pbuffer_supported, bool &pixmap_supported,
@@ -127,12 +119,10 @@ get_properties(FrameBufferProperties &properties,
   properties.set_force_hardware(1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::choose_pixel_format
-//       Access: Private
-//  Description: Selects a visual or fbconfig for all the windows
-//               and buffers that use this gsg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects a visual or fbconfig for all the windows and buffers that use this
+ * gsg.
+ */
 void AndroidGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
                     bool need_pbuffer, bool need_pixmap) {
@@ -152,7 +142,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
     EGL_NONE
   };
 
-  // First get the number of matching configurations, so we know how much memory to allocate.
+  // First get the number of matching configurations, so we know how much
+  // memory to allocate.
   int num_configs = 0, returned_configs;
   if (!eglChooseConfig(_egl_display, attrib_list, NULL, num_configs, &returned_configs) || returned_configs <= 0) {
     androiddisplay_cat.error() << "eglChooseConfig failed: "
@@ -179,8 +170,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
     bool pbuffer_supported, pixmap_supported, slow;
     get_properties(fbprops, pbuffer_supported, pixmap_supported,
                    slow, configs[i]);
-    // We're not protecting this code by an is_debug() check, because if we do,
-    // some weird compiler bug appears and somehow makes the quality always 0.
+    // We're not protecting this code by an is_debug() check, because if we
+    // do, some weird compiler bug appears and somehow makes the quality
+    // always 0.
     const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
     const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
     const char *slowtext = slow ? " (slow)" : "";
@@ -222,12 +214,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   delete[] configs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::create_context
-//       Access: Private
-//  Description: Creates the context based on the config previously
-//               obtained in choose_pixel_format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the context based on the config previously obtained in
+ * choose_pixel_format.
+ */
 bool AndroidGraphicsStateGuardian::
 create_context() {
   if (_context != EGL_NO_CONTEXT) {
@@ -253,12 +243,9 @@ create_context() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::destroy_context
-//       Access: Private
-//  Description: Destroys the context previously created by
-//               create_context.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroys the context previously created by create_context.
+ */
 void AndroidGraphicsStateGuardian::
 destroy_context() {
   if (_context == EGL_NO_CONTEXT) {
@@ -276,12 +263,9 @@ destroy_context() {
   _context = EGL_NO_CONTEXT;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
 void AndroidGraphicsStateGuardian::
 reset() {
 #ifdef OPENGLES_2
@@ -300,12 +284,10 @@ reset() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::egl_is_at_least_version
-//       Access: Public
-//  Description: Returns true if the runtime GLX version number is at
-//               least the indicated value, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the runtime GLX version number is at least the indicated
+ * value, false otherwise.
+ */
 bool AndroidGraphicsStateGuardian::
 egl_is_at_least_version(int major_version, int minor_version) const {
   if (_egl_version_major < major_version) {
@@ -317,11 +299,9 @@ egl_is_at_least_version(int major_version, int minor_version) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::gl_flush
-//       Access: Protected, Virtual
-//  Description: Calls glFlush().
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls glFlush().
+ */
 void AndroidGraphicsStateGuardian::
 gl_flush() const {
 #ifdef OPENGLES_2
@@ -331,11 +311,9 @@ gl_flush() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::gl_get_error
-//       Access: Protected, Virtual
-//  Description: Returns the result of glGetError().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the result of glGetError().
+ */
 GLenum AndroidGraphicsStateGuardian::
 gl_get_error() const {
 #ifdef OPENGLES_2
@@ -345,11 +323,9 @@ gl_get_error() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::query_gl_version
-//       Access: Protected, Virtual
-//  Description: Queries the runtime version of OpenGL in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the runtime version of OpenGL in use.
+ */
 void AndroidGraphicsStateGuardian::
 query_gl_version() {
 #ifdef OPENGLES_2
@@ -358,16 +334,16 @@ query_gl_version() {
   GLESGraphicsStateGuardian::query_gl_version();
 #endif
 
-  // Calling eglInitialize on an already-initialized display will
-  // just provide us the version numbers.
+  // Calling eglInitialize on an already-initialized display will just provide
+  // us the version numbers.
   if (!eglInitialize(_egl_display, &_egl_version_major, &_egl_version_minor)) {
     androiddisplay_cat.error() << "Failed to get EGL version number: "
       << get_egl_error_string(eglGetError()) << "\n";
   }
 
   // We output to glesgsg_cat instead of androiddisplay_cat, since this is
-  // where the GL version has been output, and it's nice to see the
-  // two of these together.
+  // where the GL version has been output, and it's nice to see the two of
+  // these together.
 #ifdef OPENGLES_2
   if (gles2gsg_cat.is_debug()) {
     gles2gsg_cat.debug()
@@ -380,29 +356,22 @@ query_gl_version() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::get_extra_extensions
-//       Access: Protected, Virtual
-//  Description: This may be redefined by a derived class (e.g. glx or
-//               wgl) to get whatever further extensions strings may
-//               be appropriate to that interface, in addition to the
-//               GL extension strings return by glGetString().
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be redefined by a derived class (e.g.  glx or wgl) to get whatever
+ * further extensions strings may be appropriate to that interface, in
+ * addition to the GL extension strings return by glGetString().
+ */
 void AndroidGraphicsStateGuardian::
 get_extra_extensions() {
   save_extensions(eglQueryString(_egl_display, EGL_EXTENSIONS));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name.
+ * It is the responsibility of the caller to ensure that the required
+ * extension is defined in the OpenGL runtime prior to calling this; it is an
+ * error to call this for a function that is not defined.
+ */
 void *AndroidGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   return (void *)eglGetProcAddress(name);

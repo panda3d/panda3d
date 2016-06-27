@@ -31,7 +31,7 @@ class Placer(AppShell):
 
         # Call superclass initialization function
         AppShell.__init__(self)
-        
+
         self.initialiseoptions(Placer)
 
         # Accept the message from sceneEditor to update the information about the target nodePath
@@ -44,7 +44,7 @@ class Placer(AppShell):
             'placerOrbitFromCS')
         self.orbitToCS = SEditor.group.attachNewNode('placerOrbitToCS')
         self.refCS = self.tempCS
-        
+
         # Dictionary keeping track of all node paths manipulated so far
         self.nodePathDict = {}
         self.nodePathDict['camera'] = SEditor.camera
@@ -109,7 +109,7 @@ class Placer(AppShell):
             'Toggle widget manipulation mode',
             label = 'Toggle Widget Mode',
             command = SEditor.manipulationControl.toggleObjectHandlesMode)
-        
+
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
         self.nodePathMenu = Pmw.ComboBox(
@@ -133,7 +133,7 @@ class Placer(AppShell):
                                   menubutton_width = 8)
         modeMenu.pack(side = 'left', expand = 0)
         self.bind(modeMenu, 'Select manipulation mode')
-        
+
         self.refNodePathMenu = Pmw.ComboBox(
             menuFrame, entry_width = 16,
             selectioncommand = self.selectRefNodePathNamed,
@@ -190,7 +190,7 @@ class Placer(AppShell):
         self.posX['postCallback'] = self.xformStop
         self.posX['callbackData'] = ['x']
         self.posX.pack(expand=1,fill='both')
-        
+
         self.posY = self.createcomponent('posY', (), None,
                                          Floater, (posInterior,),
                                          text = 'Y', relief = Tkinter.FLAT,
@@ -201,7 +201,7 @@ class Placer(AppShell):
         self.posY['postCallback'] = self.xformStop
         self.posY['callbackData'] = ['y']
         self.posY.pack(expand=1,fill='both')
-        
+
         self.posZ = self.createcomponent('posZ', (), None,
                                          Floater, (posInterior,),
                                          text = 'Z', relief = Tkinter.FLAT,
@@ -228,7 +228,7 @@ class Placer(AppShell):
         hprMenubutton['menu'] = hprMenu
         hprGroup.pack(side='left',fill = 'both', expand = 1)
         hprInterior = hprGroup.interior()
-        
+
         # Create the dials
         self.hprH = self.createcomponent('hprH', (), None,
                                          AngleDial, (hprInterior,),
@@ -241,7 +241,7 @@ class Placer(AppShell):
         self.hprH['postCallback'] = self.xformStop
         self.hprH['callbackData'] = ['h']
         self.hprH.pack(expand=1,fill='both')
-        
+
         self.hprP = self.createcomponent('hprP', (), None,
                                          AngleDial, (hprInterior,),
                                          style = 'mini',
@@ -253,7 +253,7 @@ class Placer(AppShell):
         self.hprP['postCallback'] = self.xformStop
         self.hprP['callbackData'] = ['p']
         self.hprP.pack(expand=1,fill='both')
-        
+
         self.hprR = self.createcomponent('hprR', (), None,
                                          AngleDial, (hprInterior,),
                                          style = 'mini',
@@ -297,7 +297,7 @@ class Placer(AppShell):
         # Pack group widgets
         scaleGroup.pack(side='left',fill = 'both', expand = 1)
         scaleInterior = scaleGroup.interior()
-        
+
         # Create the dials
         self.scaleX = self.createcomponent('scaleX', (), None,
                                            Floater, (scaleInterior,),
@@ -311,7 +311,7 @@ class Placer(AppShell):
         self.scaleX['preCallback'] = self.xformStart
         self.scaleX['postCallback'] = self.xformStop
         self.scaleX.pack(expand=1,fill='both')
-        
+
         self.scaleY = self.createcomponent('scaleY', (), None,
                                            Floater, (scaleInterior,),
                                            text = 'Y Scale',
@@ -324,7 +324,7 @@ class Placer(AppShell):
         self.scaleY['preCallback'] = self.xformStart
         self.scaleY['postCallback'] = self.xformStop
         self.scaleY.pack(expand=1,fill='both')
-        
+
         self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Floater, (scaleInterior,),
                                            text = 'Z Scale',
@@ -417,7 +417,7 @@ class Placer(AppShell):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    SEditor.selected.getWrtAll()                    
+                    SEditor.selected.getWrtAll()
         # Update active node path
         self.setActiveNodePath(nodePath)
 
@@ -490,7 +490,7 @@ class Placer(AppShell):
         else:
             # Flash entry
             self.refNodePathMenuEntry.configure(background = 'Pink')
-        
+
     def addNodePath(self, nodePath):
         self.addNodePathToDict(nodePath, self.nodePathNames,
                                self.nodePathMenu, self.nodePathDict)
@@ -568,7 +568,7 @@ class Placer(AppShell):
             else:
                 # Move the objects with the widget
                 SEditor.selected.moveWrtWidgetAll()
-    
+
     def xformStart(self, data):
         # Record undo point
         self.pushUndo()
@@ -581,7 +581,7 @@ class Placer(AppShell):
         self.deltaHpr = self['nodePath'].getHpr(self.refCS)
         # Update placer to reflect new state
         self.updatePlacer()
-        
+
     def xformStop(self, data):
         # Throw event to signal manipulation done
         # Send nodepath as a list
@@ -746,7 +746,7 @@ class Placer(AppShell):
 
     def pushRedo(self):
         SEditor.pushRedo([self['nodePath']])
-        
+
     def redoHook(self, nodePathList = []):
         # Reflect new changes
         self.updatePlacer()
@@ -758,7 +758,7 @@ class Placer(AppShell):
     def redoListEmptyHook(self):
         # Make sure button is deactivated
         self.redoButton.configure(state = 'disabled')
-        
+
     def printNodePathInfo(self):
         np = self['nodePath']
         if np:
@@ -787,7 +787,7 @@ class Placer(AppShell):
         # Also, stop accepting the updata message from sceneEditor
         messenger.send('Placer_close')
         self.ignore('placerUpdate')
-        
+
 def place(nodePath):
     return Placer(nodePath = nodePath)
 

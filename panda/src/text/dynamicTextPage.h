@@ -1,16 +1,15 @@
-// Filename: dynamicTextPage.h
-// Created by:  drose (09Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dynamicTextPage.h
+ * @author drose
+ * @date 2002-02-09
+ */
 
 #ifndef DYNAMICTEXTPAGE_H
 #define DYNAMICTEXTPAGE_H
@@ -26,13 +25,11 @@
 
 class DynamicTextFont;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DynamicTextPage
-// Description : A single "page" of a DynamicTextFont.  This is a
-//               single texture that holds a number of glyphs for
-//               rendering.  The font starts out with one page, and
-//               will add more as it needs them.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single "page" of a DynamicTextFont.  This is a single texture that holds
+ * a number of glyphs for rendering.  The font starts out with one page, and
+ * will add more as it needs them.
+ */
 class EXPCL_PANDA_TEXT DynamicTextPage : public Texture {
 public:
   DynamicTextPage(DynamicTextFont *font, int page_number);

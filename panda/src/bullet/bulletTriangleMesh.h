@@ -1,16 +1,15 @@
-// Filename: bulletTriangleMesh.h
-// Created by:  enn0x (09Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletTriangleMesh.h
+ * @author enn0x
+ * @date 2010-02-09
+ */
 
 #ifndef __BULLET_TRIANGLE_MESH_H__
 #define __BULLET_TRIANGLE_MESH_H__
@@ -27,10 +26,9 @@
 #include "pta_LVecBase3.h"
 #include "pta_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletTriangleMesh
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
 
 PUBLISHED:
@@ -44,7 +42,7 @@ PUBLISHED:
   void add_array(const PTA_LVecBase3 &points,
                  const PTA_int &indices,
                  bool remove_duplicate_vertices=false);
-  void add_geom(const Geom *geom, 
+  void add_geom(const Geom *geom,
                 bool remove_duplicate_vertices=false,
                 const TransformState *ts=TransformState::make_identity());
 
@@ -77,7 +75,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "BulletTriangleMesh", 
+    register_type(_type_handle, "BulletTriangleMesh",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

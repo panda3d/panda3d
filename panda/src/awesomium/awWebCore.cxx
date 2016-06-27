@@ -1,16 +1,15 @@
-// Filename: awWebCore.cxx
-// Created by:  rurbino (12Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file awWebCore.cxx
+ * @author rurbino
+ * @date 2009-10-12
+ */
 
 #include "config_awesomium.h"
 #include "awWebCore.h"
@@ -19,12 +18,12 @@
 TypeHandle AwWebCore::_type_handle;
 
 AwWebCore::
-AwWebCore(AwWebCore::LogLevel level, bool enablePlugins , AwWebCore::PixelFormat pixelFormat) 
+AwWebCore(AwWebCore::LogLevel level, bool enablePlugins , AwWebCore::PixelFormat pixelFormat)
 #ifndef CPPPARSER
 :
-  WebCore(static_cast<Awesomium::LogLevel>(level), enablePlugins, static_cast<Awesomium::PixelFormat>(pixelFormat)) 
+  WebCore(static_cast<Awesomium::LogLevel>(level), enablePlugins, static_cast<Awesomium::PixelFormat>(pixelFormat))
 #endif
-  {  
+  {
   awesomium_cat.info() << "constructing webcore\n";
 }
 
@@ -54,4 +53,3 @@ AwWebCore::PixelFormat AwWebCore::
 getPixelFormat() const {
   return ( static_cast<AwWebCore::PixelFormat>( WebCore::getPixelFormat()) );
 }
-
