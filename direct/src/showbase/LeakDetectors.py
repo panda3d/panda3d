@@ -1,6 +1,6 @@
 # objects that report different types of leaks to the ContainerLeakDetector
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Job import Job
 import gc, sys

@@ -1,7 +1,7 @@
 
 from direct.showbase.InputStateGlobal import inputState
 from direct.task.Task import Task
-from pandac.PandaModules import *
+from panda3d.core import *
 from . import GravityWalker
 
 BattleStrafe = 0

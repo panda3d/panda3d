@@ -3,7 +3,8 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
 from direct.showbase import PythonUtil
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
