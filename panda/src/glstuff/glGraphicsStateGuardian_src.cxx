@@ -7120,11 +7120,20 @@ do_issue_blending() {
     enable_multisample_alpha_mask(false);
     enable_blend(true);
     _glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (old_alpha_blend) {
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else {
+      _glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
 
     if (GLCAT.is_spam()) {
       GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
-      GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+      if (_supports_blend_equation_separate && !old_alpha_blend) {
+        GLCAT.spam() << "glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA)\n";
+      } else {
+        GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+      }
     }
     return;
 

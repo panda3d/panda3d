@@ -3798,7 +3798,14 @@ do_issue_blending() {
   case TransparencyAttrib::M_multisample_mask:
   case TransparencyAttrib::M_dual:
     set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-    set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
+    if (old_alpha_blend) {
+      set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
+    } else {
+      set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+      set_render_state(D3DRS_BLENDOPALPHA, D3DBLENDOP_ADD);
+      set_render_state(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+      set_render_state(D3DRS_DESTBLENDALPHA, D3DBLEND_INVSRCALPHA);
+    }
     set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
     set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
     set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
