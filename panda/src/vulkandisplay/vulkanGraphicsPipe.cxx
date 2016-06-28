@@ -83,6 +83,7 @@ VulkanGraphicsPipe() {
   VkInstanceCreateInfo inst_info;
   inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   inst_info.pNext = NULL;
+  inst_info.flags = 0;
   inst_info.pApplicationInfo = &app_info;
   inst_info.enabledLayerCount = 1;
   inst_info.ppEnabledLayerNames = layers;

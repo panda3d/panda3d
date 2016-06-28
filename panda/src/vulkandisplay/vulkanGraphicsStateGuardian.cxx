@@ -2178,7 +2178,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
       att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
       att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
       att_state[0].colorBlendOp = VK_BLEND_OP_ADD;
-      att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+      att_state[0].srcAlphaBlendFactor = old_alpha_blend ? VK_BLEND_FACTOR_SRC_ALPHA : VK_BLEND_FACTOR_ONE;
       att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
       att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
       break;
