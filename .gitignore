@@ -1,4 +1,9 @@
-/built_x64
-/built
-/thirdparty
-/targetroot
+/built*/
+/thirdparty/
+/targetroot/
+/dstroot/
+core
+core.*
+vgcore.*
+*.save
+*.save.1
