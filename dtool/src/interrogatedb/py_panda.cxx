@@ -70,7 +70,7 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *c
 //               wrong type, raises an AttributeError.
 ////////////////////////////////////////////////////////////////////
 bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer) {
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self)) {
+  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
@@ -93,7 +93,7 @@ bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef
 bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                             void **answer, const char *method_name) {
 
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self)) {
+  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
