@@ -40,7 +40,6 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "samplerState.h"
-#include "pnmImage.h"
 #include "colorSpace.h"
 #include "geomEnums.h"
 #include "bamCacheRecord.h"

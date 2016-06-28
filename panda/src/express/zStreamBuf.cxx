@@ -176,13 +176,19 @@ close_write() {
  */
 streampos ZStreamBuf::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
-  // Necessary for tellg() to work after seeking to 0.
-  if (dir == ios::cur && off == 0) {
-    if (_source->tellg() == (streampos)0) {
-      return 0;
-    } else {
-      return -1;
-    }
+  if (which != ios::in) {
+    // We can only do this with the input stream.
+    return -1;
+  }
+
+  // Determine the current position.
+  size_t n = egptr() - gptr();
+  streampos gpos = _z_source.total_out - n;
+
+  // Implement tellg() and seeks to current position.
+  if ((dir == ios::cur && off == 0) ||
+      (dir == ios::beg && off == gpos)) {
+    return gpos;
   }
 
   if (off != 0 || dir != ios::beg) {
@@ -190,12 +196,6 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     return -1;
   }
 
-  if (which != ios::in) {
-    // We can only do this with the input stream.
-    return -1;
-  }
-
-  size_t n = egptr() - gptr();
   gbump(n);
 
   _source->seekg(0, ios::beg);

@@ -2890,10 +2890,12 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   // traverseproc tp_traverse;
-  write_function_slot(out, 4, slots, "tp_traverse");
+  out << "    0, // tp_traverse\n";
+  //write_function_slot(out, 4, slots, "tp_traverse");
 
   // inquiry tp_clear;
-  write_function_slot(out, 4, slots, "tp_clear");
+  out << "    0, // tp_clear\n";
+  //write_function_slot(out, 4, slots, "tp_clear");
 
   // richcmpfunc tp_richcompare;
   if (has_local_richcompare) {
@@ -4794,6 +4796,26 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       clear_error = true;
       only_pyobjects = false;
 
+    } else if (TypeManager::is_vector_unsigned_char(type)) {
+      indent(out, indent_level) << "unsigned char *" << param_name << "_str = NULL;\n";
+      indent(out, indent_level) << "Py_ssize_t " << param_name << "_len;\n";
+
+      if (args_type == AT_single_arg) {
+        extra_param_check << " && PyBytes_AsStringAndSize(arg, (char **)&"
+          << param_name << "_str, &" << param_name << "_len) >= 0";
+      } else {
+        format_specifiers += "\" FMTCHAR_BYTES \"#";
+        parameter_list += ", &" + param_name + "_str, &" + param_name + "_len";
+      }
+
+      pexpr_string = type->get_local_name(&parser);
+      pexpr_string += "(" + param_name + "_str, " + param_name + "_str + " + param_name + "_len" + ")";
+      expected_params += "bytes";
+
+      // Remember to clear the TypeError that any of the above methods raise.
+      clear_error = true;
+      only_pyobjects = false;
+
     } else if (TypeManager::is_bool(type)) {
       if (args_type == AT_single_arg) {
         param_name = "arg";
@@ -6072,7 +6094,8 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       TypeManager::is_char_pointer(type) ||
       TypeManager::is_wchar_pointer(type) ||
       TypeManager::is_pointer_to_PyObject(type) ||
-      TypeManager::is_pointer_to_Py_buffer(type)) {
+      TypeManager::is_pointer_to_Py_buffer(type) ||
+      TypeManager::is_vector_unsigned_char(type)) {
     // Most types are now handled by the many overloads of Dtool_WrapValue,
     // defined in py_panda.h.
     indent(out, indent_level)
@@ -6241,7 +6264,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out <<
         "  " << cClassName  << " *local_this = NULL;\n"
         "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
-        "    return NULL;\n"
+        "    return -1;\n"
         "  }\n"
         "  return (Py_ssize_t)" << len_remap->get_call_str("local_this", pexprs) << ";\n";
     } else {
@@ -6712,6 +6735,8 @@ is_cpp_type_legal(CPPType *in_ctype) {
   } else if (TypeManager::is_basic_string_char(type)) {
     return true;
   } else if (TypeManager::is_basic_string_wchar(type)) {
+    return true;
+  } else if (TypeManager::is_vector_unsigned_char(type)) {
     return true;
   } else if (TypeManager::is_simple(type)) {
     return true;

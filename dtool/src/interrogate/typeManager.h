@@ -81,6 +81,8 @@ public:
   static bool is_const_ref_to_basic_string_wchar(CPPType *type);
   static bool is_const_ptr_to_basic_string_wchar(CPPType *type);
   static bool is_wstring(CPPType *type);
+  static bool is_vector_unsigned_char(CPPType *type);
+  static bool is_const_vector_unsigned_char(CPPType *type);
   static bool is_pair(CPPType *type);
   static bool is_bool(CPPType *type);
   static bool is_integer(CPPType *type);

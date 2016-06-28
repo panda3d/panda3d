@@ -217,6 +217,24 @@ run_python() {
     PyModule_AddStringConstant(showbase_module, "__package__", "direct.showbase");
   }
 
+  PyObject *stdpy_module = PyImport_AddModule("direct.stdpy");
+  if (stdpy_module != NULL) {
+    Filename stdpy_dir(direct_dir, "stdpy");
+    dir_str = stdpy_dir.to_os_specific();
+    PyModule_AddObject(stdpy_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(stdpy_module, "__package__", "direct.stdpy");
+  }
+
+  // And the encodings package as well, since we've presumably picked up a
+  // bunch of encodings modules as part of the frozen bundle.
+  Filename encodings_dir(dir, "encodings");
+  PyObject *encodings_module = PyImport_AddModule("encodings");
+  if (encodings_module != NULL) {
+    dir_str = encodings_dir.to_os_specific();
+    PyModule_AddObject(encodings_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(encodings_module, "__package__", "encodings");
+  }
+
   // And register the VFSImporter.
   PyObject *result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
   if (result == NULL) {

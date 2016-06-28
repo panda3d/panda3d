@@ -1,4 +1,4 @@
-from pandac.PandaModules import Vec3
+from panda3d.core import Vec3
 # Utility functions that are useful to both AI and client CartesianGrid code
 
 class CartesianGridBase:

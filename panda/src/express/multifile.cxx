@@ -2297,9 +2297,11 @@ read_index() {
   }
 
   // Now read the index out.
-  _next_index = read->tellg() - _offset;
-  _next_index = normalize_streampos(_next_index);
-  read->seekg(_next_index + _offset);
+  streampos curr_pos = read->tellg() - _offset;
+  _next_index = normalize_streampos(curr_pos);
+  if (_next_index > curr_pos) {
+    read->ignore(_next_index - curr_pos);
+  }
   _last_index = 0;
   _last_data_byte = 0;
   streampos index_forward;
@@ -2334,10 +2336,12 @@ read_index() {
       }
       _last_data_byte = max(_last_data_byte, subfile->get_last_byte_pos());
     }
-    streampos curr_pos = normalize_streampos(read->tellg() - _offset);
-    bytes_skipped = index_forward - curr_pos;
-    read->seekg(index_forward + _offset);
+    streampos curr_pos = read->tellg() - _offset;
+    bytes_skipped = index_forward - normalize_streampos(curr_pos);
     _next_index = index_forward;
+    if (_next_index > curr_pos) {
+      read->ignore(_next_index - curr_pos);
+    }
     subfile = new Subfile;
     index_forward = subfile->read_index(*read, _next_index, this);
   }

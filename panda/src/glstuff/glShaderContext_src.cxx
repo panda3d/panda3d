@@ -510,7 +510,6 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
 
   GLint data_size = 0;
   GLint param_count = 0;
-  GLsizei param_size;
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param_count);
 
@@ -2683,7 +2682,6 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
       Filename fn = _shader->get_filename_from_index(fileno, type);
       GLCAT.warning(false)
         << "WARNING: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
-
 
     } else if (sscanf(line.c_str(), "%d(%d) : %n", &fileno, &lineno, &prefixlen) == 2
                && prefixlen > 0) {

@@ -16,6 +16,7 @@
 
 #include "dtoolbase.h"
 
+#include "cppBisonDefs.h"
 #include "cppExtensionType.h"
 
 #include <vector>

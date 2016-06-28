@@ -1167,8 +1167,10 @@ scan_typedef_type(CPPTypedefType *type) {
     return;
   }
 
-  // A typedef cannot be a template declaration.
-  assert(!type->is_template());
+  if (type->is_template()) {
+    // The type is a template declaration, not a true type.
+    return;
+  }
 
   if (type->_file.is_c_file()) {
     // This type declaration appears in a .C file.  We can only export types

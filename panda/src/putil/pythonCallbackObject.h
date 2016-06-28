@@ -34,6 +34,8 @@ PUBLISHED:
   void set_function(PyObject *function);
   PyObject *get_function();
 
+  MAKE_PROPERTY(function, get_function, set_function);
+
 public:
   virtual void do_callback(CallbackData *cbdata);
 

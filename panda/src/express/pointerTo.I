@@ -15,7 +15,7 @@
  *
  */
 template<class T>
-INLINE PointerTo<T>::
+ALWAYS_INLINE PointerTo<T>::
 PointerTo(To *ptr) : PointerToBase<T>(ptr) {
 }
 
@@ -136,7 +136,7 @@ operator = (const PointerTo<T> &copy) {
  *
  */
 template<class T>
-INLINE ConstPointerTo<T>::
+ALWAYS_INLINE ConstPointerTo<T>::
 ConstPointerTo(const TYPENAME ConstPointerTo<T>::To *ptr) :
   PointerToBase<T>((TYPENAME ConstPointerTo<T>::To *)ptr)
 {

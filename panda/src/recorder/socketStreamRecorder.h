@@ -74,6 +74,7 @@ public:
   static void register_with_read_factory();
   virtual void write_recorder(BamWriter *manager, Datagram &dg);
 
+  INLINE virtual int get_ref_count() const FINAL { return ReferenceCount::get_ref_count(); };
   INLINE virtual void ref() const FINAL { ReferenceCount::ref(); };
   INLINE virtual bool unref() const FINAL { return ReferenceCount::unref(); };
 

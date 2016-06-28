@@ -17,12 +17,13 @@ try:
 except:
     sys.exit("Please install Python megawidgets")
 
+# Makes sure that Panda is configured to play nice with Tkinter
+from panda3d.core import *
+loadPrcFileData("", "want-tk true")
+
 # Open the Panda window
 from direct.showbase.ShowBase import ShowBase
 base = ShowBase()
-
-# Makes sure that Panda is configured to play nice with Tkinter
-base.startTk()
 
 from direct.tkpanels.ParticlePanel import ParticlePanel
 

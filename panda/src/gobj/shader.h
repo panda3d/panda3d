@@ -560,10 +560,10 @@ public:
 #endif
 
 public:
-  pvector <ShaderPtrSpec> _ptr_spec;
-  epvector <ShaderMatSpec> _mat_spec;
-  pvector <ShaderTexSpec> _tex_spec;
-  pvector <ShaderVarSpec> _var_spec;
+  pvector<ShaderPtrSpec> _ptr_spec;
+  epvector<ShaderMatSpec> _mat_spec;
+  pvector<ShaderTexSpec> _tex_spec;
+  pvector<ShaderVarSpec> _var_spec;
   int _mat_deps;
 
   bool _error_flag;
@@ -620,7 +620,7 @@ private:
 public:
   ~Shader();
 
-  INLINE Filename get_filename_from_index(int index, ShaderType type) const;
+  Filename get_filename_from_index(int index, ShaderType type) const;
 
 public:
   static void register_with_read_factory();

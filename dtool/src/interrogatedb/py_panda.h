@@ -128,6 +128,13 @@ typedef long Py_hash_t;
 #endif
 #endif
 
+// Which character to use in PyArg_ParseTuple et al for a byte string.
+#if PY_MAJOR_VERSION >= 3
+#define FMTCHAR_BYTES "y"
+#else
+#define FMTCHAR_BYTES "s"
+#endif
+
 using namespace std;
 
 // this is tempory .. untill this is glued better into the panda build system

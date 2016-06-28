@@ -12,6 +12,7 @@
  */
 
 #include "multiplexStreamBuf.h"
+#include "lightMutexHolder.h"
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 #define WINDOWS_LEAN_AND_MEAN
@@ -113,10 +114,8 @@ void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
            MultiplexStreamBuf::OutputType output_type,
            ostream *out, FILE *fout, bool owns_obj) {
-#ifdef OLD_HAVE_IPC
   // Ensure that we have the mutex while we fiddle with the list of outputs.
-  mutex_lock m(_lock);
-#endif
+  LightMutexHolder holder(_lock);
 
   Output o;
   o._buffer_type = buffer_type;
@@ -133,9 +132,7 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
  */
 void MultiplexStreamBuf::
 flush() {
-#ifdef OLD_HAVE_IPC
-  mutex_lock m(_lock);
-#endif
+  LightMutexHolder holder(_lock);
 
   write_chars("", 0, true);
 }
@@ -146,9 +143,7 @@ flush() {
  */
 int MultiplexStreamBuf::
 overflow(int ch) {
-#ifdef OLD_HAVE_IPC
-  mutex_lock m(_lock);
-#endif
+  LightMutexHolder holder(_lock);
 
   streamsize n = pptr() - pbase();
 
@@ -172,9 +167,7 @@ overflow(int ch) {
  */
 int MultiplexStreamBuf::
 sync() {
-#ifdef OLD_HAVE_IPC
-  mutex_lock m(_lock);
-#endif
+  LightMutexHolder holder(_lock);
 
   streamsize n = pptr() - pbase();
 
@@ -242,5 +235,4 @@ write_chars(const char *start, int length, bool flush) {
       break;
     }
   }
-
 }

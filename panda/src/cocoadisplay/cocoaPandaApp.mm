@@ -25,4 +25,24 @@
     [super sendEvent: event];
   }
 }
+
+- (void) _setup: (void *) interp {
+  // This is called by Tk when it launches and naively assumes that it is
+  // the first to create an NSApplication.  We can't do anything about it
+  // at this point except display an error message.
+
+  cocoadisplay_cat.error()
+    << "Detected attempt to initialize Tk after creating a Panda window.  "
+       "This will likely cause a crash.\n"
+       "To fix this, set 'want-tk true' in Config.prc to force "
+       "initialization of Tk before opening the Panda window.\n";
+}
+
+- (void) _setupEventLoop {
+  NSAutoreleasePool *pool = [NSAutoreleasePool new];
+  [self finishLaunching];
+  [self setWindowsNeedUpdate:YES];
+  [pool drain];
+}
+
 @end

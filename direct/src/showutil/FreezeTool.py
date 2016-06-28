@@ -1190,7 +1190,7 @@ class Freezer:
 
             if self.storePythonSource:
                 filename += '.py'
-                stream = StringStream('')
+                stream = StringStream(b'')
                 if multifile.findSubfile(filename) < 0:
                     multifile.addSubfile(filename, stream, 0)
                     multifile.flush()

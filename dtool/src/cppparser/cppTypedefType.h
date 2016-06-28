@@ -21,7 +21,9 @@ class CPPIdentifier;
 class CPPInstanceIdentifier;
 
 /**
- *
+ * A type alias created by a C++ typedef or using declaration.  These aren't
+ * officially supposed to be types in themselves, but we represent them as
+ * such so that we can preserve typedef names in the generated code.
  */
 class CPPTypedefType : public CPPType {
 public:
@@ -45,6 +47,11 @@ public:
   virtual bool is_copy_constructible() const;
 
   virtual bool is_fully_specified() const;
+
+  virtual CPPDeclaration *
+  instantiate(const CPPTemplateParameterList *actual_params,
+              CPPScope *current_scope, CPPScope *global_scope,
+              CPPPreprocessor *error_sink = NULL) const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,

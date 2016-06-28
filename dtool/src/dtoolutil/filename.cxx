@@ -443,7 +443,11 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
     // generate a 6-character hex code.
     int hash = (clock() * time(NULL)) & 0xffffff;
     char hex_code[10];
-    sprintf(hex_code, "%06x", hash);
+#ifdef _WIN32
+    sprintf_s(hex_code, 10, "%06x", hash);
+#else
+    snprintf(hex_code, 10, "%06x", hash);
+#endif
     result = Filename(fdirname, Filename(prefix + hex_code + suffix));
     result.set_type(type);
   } while (result.exists());

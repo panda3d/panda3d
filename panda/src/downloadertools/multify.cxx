@@ -18,6 +18,7 @@
 #include "filename.h"
 #include "pset.h"
 #include "vector_string.h"
+#include "virtualFileSystem.h"
 #include <stdio.h>
 #include <time.h>
 
@@ -631,8 +632,17 @@ list_files(const vector_string &params) {
     cerr << multifile_name << " not found.\n";
     return false;
   }
+  // We happen to know that we can read the index without doing a seek.
+  // So this is the only place where we accept a .pz/.gz compressed .mf.
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *istr = vfs->open_read_file(multifile_name, true);
+  if (istr == NULL) {
+    cerr << "Unable to open " << multifile_name << " for reading.\n";
+    return false;
+  }
+
   PT(Multifile) multifile = new Multifile;
-  if (!multifile->open_read(multifile_name)) {
+  if (!multifile->open_read(new IStreamWrapper(istr, true), true)) {
     cerr << "Unable to open " << multifile_name << " for reading.\n";
     return false;
   }

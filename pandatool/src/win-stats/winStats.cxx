@@ -79,17 +79,7 @@ create_toplevel_window(HINSTANCE application) {
   return toplevel_window;
 }
 
-
-// WinMain() is the correct way to start a Windows-only application, but it is
-// sometimes more convenient during development to use main() instead, which
-// doesn't squelch the stderr output.
-
-#ifndef DEVELOP_WINSTATS
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-#else
-int main(int argc, char *argv[])
-#endif
-{
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   HINSTANCE application = GetModuleHandle(NULL);
   HWND toplevel_window = create_toplevel_window(application);
 
@@ -127,4 +117,12 @@ int main(int argc, char *argv[])
   }
 
   return (0);
+}
+
+// WinMain() is the correct way to start a Windows-only application, but it is
+// sometimes more convenient during development to use main() instead, which
+// doesn't squelch the stderr output.
+
+int main(int argc, char *argv[]) {
+  return WinMain(NULL, NULL, NULL, 0);
 }

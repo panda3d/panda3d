@@ -16,10 +16,10 @@ else:
     import cPickle as pickle
     import thread
 
-SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
+SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB = [".lib",".ilb"]
-VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg"])
+VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
 VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
 MAINTHREAD = threading.currentThread()
@@ -76,6 +76,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2014","2014"),
                    ("MAYA2015","2015"),
                    ("MAYA2016","2016"),
+                   ("MAYA20165","2016.5")
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -1392,7 +1393,12 @@ def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
     for l in result.split(" "):
         if (l.startswith("-D")):
             d = l.replace("-D", "").replace("\"", "").strip().split("=")
-            if (len(d) == 1):
+
+            if d[0] in ('NDEBUG', '_DEBUG'):
+                # Setting one of these flags by accident could cause serious harm.
+                if GetVerbose():
+                    print("Ignoring %s flag provided by %s" % (l, tool))
+            elif len(d) == 1:
                 defs[d[0]] = ""
             else:
                 defs[d[0]] = d[1]
@@ -1452,7 +1458,7 @@ def ChooseLib(libs, thirdparty=None):
             print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
-def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config"):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config", thirdparty_dir = None):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
@@ -1482,16 +1488,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
     custom_loc = PkgHasCustomLocation(pkg)
 
-    if pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h"):
-        # Let it be handled by the ffmpeg package
-        LibName(target_pkg, "-lswscale")
-        return
-    if pkg.lower() == "swresample" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswresample/swresample.h"):
-        LibName(target_pkg, "-lswresample")
-        return
+    # Determine the location of the thirdparty directory.
+    if not thirdparty_dir:
+        thirdparty_dir = pkg.lower()
+    pkg_dir = os.path.join(GetThirdpartyDir(), thirdparty_dir)
 
-    # First check if the package is in the thirdparty directory.
-    pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
+    # First check if the library can be found in the thirdparty directory.
     if not custom_loc and os.path.isdir(pkg_dir):
         if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
             FrameworkDirectory(target_pkg, pkg_dir)
@@ -1541,12 +1543,17 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
             location = LocateLibrary(libname, lpath, prefer_static=True)
             if location is not None:
+                # If it's a .so or .dylib we may have changed it and copied it to the built/lib dir.
+                if location.endswith('.so') or location.endswith('.dylib'):
+                    location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
                 LibName(target_pkg, location)
             else:
                 # This is for backward compatibility - in the thirdparty dir,
                 # we kept some libs with "panda" prefix, like libpandatiff.
                 location = LocateLibrary("panda" + libname, lpath, prefer_static=True)
                 if location is not None:
+                    if location.endswith('.so') or location.endswith('.dylib'):
+                        location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
                     LibName(target_pkg, location)
                 else:
                     print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
@@ -2325,7 +2332,7 @@ def SetupVisualStudioEnviron():
 
     binpath = SDK["VISUALSTUDIO"] + "VC\\bin\\" + bindir
     if not os.path.isdir(binpath):
-        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1.")
+        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
 
     AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")

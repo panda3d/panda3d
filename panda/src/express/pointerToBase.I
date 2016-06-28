@@ -17,7 +17,15 @@
 template<class T>
 INLINE PointerToBase<T>::
 PointerToBase(To *ptr) {
-  reassign(ptr);
+  _void_ptr = (void *)ptr;
+  if (ptr != (To *)NULL) {
+    ptr->ref();
+#ifdef DO_MEMORY_USAGE
+    if (MemoryUsage::get_track_memory_usage()) {
+      update_type(ptr);
+    }
+#endif
+  }
 }
 
 /**
@@ -26,7 +34,16 @@ PointerToBase(To *ptr) {
 template<class T>
 INLINE PointerToBase<T>::
 PointerToBase(const PointerToBase<T> &copy) {
-  reassign(copy);
+  _void_ptr = copy._void_ptr;
+  if (_void_ptr != NULL) {
+    To *ptr = (To *)_void_ptr;
+    ptr->ref();
+#ifdef DO_MEMORY_USAGE
+    if (MemoryUsage::get_track_memory_usage()) {
+      update_type(ptr);
+    }
+#endif
+  }
 }
 
 /**
@@ -35,7 +52,10 @@ PointerToBase(const PointerToBase<T> &copy) {
 template<class T>
 INLINE PointerToBase<T>::
 ~PointerToBase() {
-  reassign((To *)NULL);
+  if (_void_ptr != NULL) {
+    unref_delete((To *)_void_ptr);
+    _void_ptr = NULL;
+  }
 }
 
 #ifdef USE_MOVE_SEMANTICS
