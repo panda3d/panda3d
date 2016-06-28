@@ -181,7 +181,10 @@ do_set_vibration(double strong, double weak) {
     play.code = _ff_id;
     play.value = 1;
 
-    write(_fd, &play, sizeof(play));
+    if (write(_fd, &play, sizeof(play)) < 0) {
+      device_cat.warning()
+        << "Failed to write force-feedback event: " << strerror(errno) << "\n";
+    }
   }
 }
 
@@ -301,22 +304,22 @@ init_device() {
     int num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
-        // Emulate D-Pad buttons if necessary.
-        if (i > ABS_HAT0Y) {
+        if (i >= ABS_HAT0X) {
           set_control_map(i, C_none);
 
-        } else if (i == ABS_HAT0X && emulate_dpad) {
-          _dpad_x_axis = i;
-          _dpad_left_button = (int)_buttons.size();
-          _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
-          _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+          // Emulate D-Pad buttons if necessary.
+          if (i == ABS_HAT0X && emulate_dpad) {
+            _dpad_x_axis = i;
+            _dpad_left_button = (int)_buttons.size();
+            _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
+            _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
 
-        } else if (i == ABS_HAT0Y && emulate_dpad) {
-          _dpad_y_axis = i;
-          _dpad_up_button = (int)_buttons.size();
-          _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
-          _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
-
+          } else if (i == ABS_HAT0Y && emulate_dpad) {
+            _dpad_y_axis = i;
+            _dpad_up_button = (int)_buttons.size();
+            _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
+            _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+          }
         } else {
           set_control_map(i, axis_map[i]);
         }
@@ -379,27 +382,30 @@ init_device() {
   sprintf(path, "/sys/class/input/event%d/device/device/../product", _index);
   FILE *f = fopen(path, "r");
   if (f) {
-    fgets(buffer, sizeof(buffer), f);
-    buffer[strcspn(buffer, "\r\n")] = 0;
-    if (buffer[0] != 0) {
-      _name.assign(buffer);
+    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+      buffer[strcspn(buffer, "\r\n")] = 0;
+      if (buffer[0] != 0) {
+        _name.assign(buffer);
+      }
     }
     fclose(f);
   }
   sprintf(path, "/sys/class/input/event%d/device/device/../manufacturer", _index);
   f = fopen(path, "r");
   if (f) {
-    fgets(buffer, sizeof(buffer), f);
-    buffer[strcspn(buffer, "\r\n")] = 0;
-    _manufacturer.assign(buffer);
+    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+      buffer[strcspn(buffer, "\r\n")] = 0;
+      _manufacturer.assign(buffer);
+    }
     fclose(f);
   }
   sprintf(path, "/sys/class/input/event%d/device/device/../serial", _index);
   f = fopen(path, "r");
   if (f) {
-    fgets(buffer, sizeof(buffer), f);
-    buffer[strcspn(buffer, "\r\n")] = 0;
-    _serial_number.assign(buffer);
+    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+      buffer[strcspn(buffer, "\r\n")] = 0;
+      _serial_number.assign(buffer);
+    }
     fclose(f);
   }
 

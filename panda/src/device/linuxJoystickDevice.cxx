@@ -319,40 +319,47 @@ open_device() {
   sprintf(path, "/sys/class/input/js%d/device/id/vendor", _index);
   FILE *f = fopen(path, "r");
   if (f) {
-    fscanf(f, "%hx", &_vendor_id);
+    if (fscanf(f, "%hx", &_vendor_id) < 1) {
+      _vendor_id = 0;
+    }
     fclose(f);
   }
   sprintf(path, "/sys/class/input/js%d/device/id/product", _index);
   f = fopen(path, "r");
   if (f) {
-    fscanf(f, "%hx", &_product_id);
+    if (fscanf(f, "%hx", &_product_id) < 1) {
+      _product_id = 0;
+    }
     fclose(f);
   }
   char buffer[256];
   sprintf(path, "/sys/class/input/js%d/device/device/../product", _index);
   f = fopen(path, "r");
   if (f) {
-    fgets(buffer, sizeof(buffer), f);
-    buffer[strcspn(buffer, "\r\n")] = 0;
-    if (buffer[0] != 0) {
-      _name.assign(buffer);
+    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+      buffer[strcspn(buffer, "\r\n")] = 0;
+      if (buffer[0] != 0) {
+        _name.assign(buffer);
+      }
     }
     fclose(f);
   }
   sprintf(path, "/sys/class/input/js%d/device/device/../manufacturer", _index);
   f = fopen(path, "r");
   if (f) {
-    fgets(buffer, sizeof(buffer), f);
-    buffer[strcspn(buffer, "\r\n")] = 0;
-    _manufacturer.assign(buffer);
+    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+      buffer[strcspn(buffer, "\r\n")] = 0;
+      _manufacturer.assign(buffer);
+    }
     fclose(f);
   }
   sprintf(path, "/sys/class/input/js%d/device/device/../serial", _index);
   f = fopen(path, "r");
   if (f) {
-    fgets(buffer, sizeof(buffer), f);
-    buffer[strcspn(buffer, "\r\n")] = 0;
-    _serial_number.assign(buffer);
+    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+      buffer[strcspn(buffer, "\r\n")] = 0;
+      _serial_number.assign(buffer);
+    }
     fclose(f);
   }
 
