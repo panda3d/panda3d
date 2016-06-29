@@ -31,7 +31,7 @@ public:
  * extended should create a specialization of this class template.
  */
 template<class T>
-class EXPCL_INTERROGATEDB Extension : public ExtensionBase<T> {
+class Extension : public ExtensionBase<T> {
 };
 
 /**
