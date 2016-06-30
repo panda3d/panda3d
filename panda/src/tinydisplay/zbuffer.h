@@ -107,23 +107,26 @@ typedef unsigned int PIXEL;
 #define PCOMPONENT_BLEND(c1, c2, a2) \
   ((((unsigned int)(c1) * ((unsigned int)0xffff - (unsigned int)(a2)) + (unsigned int)(c2) * (unsigned int)(a2))) >> 16)
 
-#define _BLEND_RGB(r1, g1, b1, r2, g2, b2, a2) \
+#define PALPHA_BLEND(a1, a2) \
+  ((((unsigned int)(a1) * ((unsigned int)0xffff - (unsigned int)(a2))) >> 16) + (unsigned int)(a2))
+
+#define _BLEND_RGB(r1, g1, b1, a1, r2, g2, b2, a2) \
   RGBA_TO_PIXEL(PCOMPONENT_BLEND(r1, r2, a2),   \
                 PCOMPONENT_BLEND(g1, g2, a2),   \
                 PCOMPONENT_BLEND(b1, b2, a2),   \
-                a2)
+                PALPHA_BLEND(a1, a2))
 
-#define _BLEND_SRGB(r1, g1, b1, r2, g2, b2, a2) \
+#define _BLEND_SRGB(r1, g1, b1, a1, r2, g2, b2, a2) \
   SRGBA_TO_PIXEL(PCOMPONENT_BLEND(r1, r2, a2),   \
                  PCOMPONENT_BLEND(g1, g2, a2),   \
                  PCOMPONENT_BLEND(b1, b2, a2),   \
-                 a2)
+                 PALPHA_BLEND(a1, a2))
 
 #define PIXEL_BLEND_RGB(rgb, r, g, b, a) \
-  _BLEND_RGB(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), r, g, b, a)
+  _BLEND_RGB(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), PIXEL_A(rgb), r, g, b, a)
 
 #define PIXEL_BLEND_SRGB(rgb, r, g, b, a) \
-  _BLEND_SRGB(PIXEL_SR(rgb), PIXEL_SG(rgb), PIXEL_SB(rgb), r, g, b, a)
+  _BLEND_SRGB(PIXEL_SR(rgb), PIXEL_SG(rgb), PIXEL_SB(rgb), PIXEL_A(rgb), r, g, b, a)
 
 
 typedef struct {
