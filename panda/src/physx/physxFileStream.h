@@ -17,6 +17,7 @@
 #include "pandabase.h"
 #include "virtualFile.h"
 #include "filename.h"
+#include <stdio.h>
 
 #include "physx_includes.h"
 
