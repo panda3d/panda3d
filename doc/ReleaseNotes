@@ -18,6 +18,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix crashes with pbuffers on Intel cards on Windows
 * Support for Autodesk Maya 2016.5
 * Add shadow-depth-bits config var to control shadow map depth
+* No longer reuses cull result for different GSG or lens index
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

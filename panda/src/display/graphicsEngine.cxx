@@ -120,6 +120,23 @@ PStatCollector GraphicsEngine::_occlusion_passed_pcollector("Occlusion results:V
 PStatCollector GraphicsEngine::_occlusion_failed_pcollector("Occlusion results:Occluded");
 PStatCollector GraphicsEngine::_occlusion_tests_pcollector("Occlusion tests");
 
+// This is used to keep track of which scenes we have already culled.
+struct CullKey {
+  GraphicsStateGuardian *_gsg;
+  NodePath _camera;
+  int _lens_index;
+};
+
+INLINE static bool operator < (const CullKey &a, const CullKey &b) {
+  if (a._gsg != b._gsg) {
+    return a._gsg < b._gsg;
+  }
+  if (a._camera != b._camera) {
+    return a._camera < b._camera;
+  }
+  return a._lens_index < b._lens_index;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
 //       Access: Published
@@ -1487,7 +1504,7 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
   // Keep track of the cameras we have already used in this thread to
   // render DisplayRegions.
-  typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
+  typedef pmap<CullKey, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
   size_t wlist_size = wlist.size();
@@ -1501,8 +1518,13 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         if (dr != (DisplayRegion *)NULL) {
           DisplayRegionPipelineReader *dr_reader =
             new DisplayRegionPipelineReader(dr, current_thread);
-          NodePath camera = dr_reader->get_camera();
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, (DisplayRegion *)NULL)).first;
+
+          CullKey key;
+          key._gsg = win->get_gsg();
+          key._camera = dr_reader->get_camera();
+          key._lens_index = dr_reader->get_lens_index();
+
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(key, (DisplayRegion *)NULL)).first;
           if ((*aci).second == NULL) {
             // We have not used this camera already in this thread.
             // Perform the cull operation.
