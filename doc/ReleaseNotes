@@ -17,6 +17,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Improve performance of texture load and store operations
 * Fix crashes with pbuffers on Intel cards on Windows
 * Support for Autodesk Maya 2016.5
+* Add shadow-depth-bits config var to control shadow map depth
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

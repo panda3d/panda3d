@@ -3176,13 +3176,17 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
 
   nassertr(light->_sbuffers.count(this) == 0, NULL);
 
-  display_cat.debug() << "Constructing shadow buffer for light '" << light->get_name()
-    << "', size=" << light->_sb_xsize << "x" << light->_sb_ysize
-    << ", sort=" << light->_sb_sort << "\n";
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Constructing shadow buffer for light '" << light->get_name()
+      << "', size=" << light->_sb_xsize << "x" << light->_sb_ysize
+      << ", sort=" << light->_sb_sort << "\n";
+  }
 
-  // Setup some flags and properties
+  // Determine the properties for creating the depth buffer.
   FrameBufferProperties fbp;
-  fbp.set_depth_bits(1); // We only need depth
+  fbp.set_depth_bits(shadow_depth_bits);
+
   WindowProperties props = WindowProperties::size(light->_sb_xsize, light->_sb_ysize);
   int flags = GraphicsPipe::BF_refuse_window;
   if (is_point) {
