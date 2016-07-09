@@ -18,7 +18,9 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix crashes with pbuffers on Intel cards on Windows
 * Support for Autodesk Maya 2016.5
 * Add shadow-depth-bits config var to control shadow map depth
-* No longer reuses cull result for different GSG or lens index
+* Fix cull issue when rendering cube map (or any multi-lens setup)
+* Fix crash rendering with the same camera to different contexts
+* Fix compile error when making static build with DX9 renderer
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
