@@ -130,8 +130,10 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual PandaNode *make_copy() const;
 
 protected:
+  BulletRigidBodyNode(const BulletRigidBodyNode &copy);
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 

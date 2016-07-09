@@ -37,6 +37,25 @@ BulletBodyNode(const char *name) : PandaNode(name) {
 }
 
 /**
+ *
+ */
+BulletBodyNode::
+BulletBodyNode(const BulletBodyNode &copy) :
+  PandaNode(copy),
+  _shapes(copy._shapes)
+{
+  if (copy._shape && copy._shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
+    _shape = new btCompoundShape(copy._shape);
+  }
+  else if (copy._shape && copy._shape->getShapeType() == EMPTY_SHAPE_PROXYTYPE) {
+    _shape = new btEmptyShape();
+  }
+  else {
+    _shape = copy._shape;
+  }
+}
+
+/**
  * Returns the subset of CollideMask bits that may be set for this particular
  * type of PandaNode.  For BodyNodes this returns all bits on.
  */
