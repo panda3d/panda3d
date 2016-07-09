@@ -704,7 +704,7 @@ class Installer:
 
         if portable:
             if platform.startswith("osx"):
-                self.buildPKG(output, platform)
+                self.buildAPP(output, platform)
             elif platform.startswith("win") or platform.startswith("linux"):
                 self.buildPortable(output, platform)
             else:
