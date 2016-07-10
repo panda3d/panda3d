@@ -16,6 +16,7 @@
 
 #include "config_vulkandisplay.h"
 
+class VulkanIndexBufferContext;
 class VulkanShaderContext;
 class VulkanTextureContext;
 class VulkanVertexBufferContext;
@@ -57,6 +58,9 @@ public:
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
+  bool update_index_buffer(VulkanIndexBufferContext *ibc,
+                           const GeomPrimitivePipelineReader *reader,
+                           bool force);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z);

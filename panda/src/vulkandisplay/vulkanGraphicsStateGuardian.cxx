@@ -1134,6 +1134,9 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
   vbc->_buffer = buffer;
   vbc->_memory = memory;
   vbc->update_data_size_bytes(data_size);
+
+  update_vertex_buffer(vbc, handle, false);
+
   return vbc;
 }
 
@@ -1211,6 +1214,18 @@ prepare_index_buffer(GeomPrimitive *primitive) {
   CPT(GeomVertexArrayDataHandle) handle = primitive->get_vertices()->get_handle();
   VkDeviceSize data_size = handle->get_data_size_bytes();
 
+  GeomEnums::NumericType index_type = primitive->get_index_type();
+  if (index_type == GeomEnums::NT_uint8) {
+    // We widen 8-bits indices to 16-bits.
+    data_size *= 2;
+
+  } else if (index_type != GeomEnums::NT_uint16 &&
+             index_type != GeomEnums::NT_uint32) {
+    vulkandisplay_cat.error()
+      << "Unsupported index type: " << index_type;
+    return NULL;
+  }
+
   //TODO: don't use host-visible memory, but copy from a staging buffer.
   VkBuffer buffer;
   VkDeviceMemory memory;
@@ -1227,21 +1242,76 @@ prepare_index_buffer(GeomPrimitive *primitive) {
   ibc->_memory = memory;
   ibc->update_data_size_bytes(data_size);
 
-  void *data;
-  VkResult
-  err = vkMapMemory(_device, memory, 0, data_size, 0, &data);
-  if (err || !data) {
-    vulkan_error(err, "Failed to map index buffer memory");
-    vkDestroyBuffer(_device, buffer, NULL);
-    vkFreeMemory(_device, memory, NULL);
-    return NULL;
+  if (index_type == GeomEnums::NT_uint32) {
+    ibc->_index_type = VK_INDEX_TYPE_UINT32;
+  } else {
+    // NT_uint8 is automatically promoted to uint16 below.
+    ibc->_index_type = VK_INDEX_TYPE_UINT16;
   }
 
-  const unsigned char *source_data = handle->get_read_pointer(true);
-  memcpy(data, source_data, data_size);
+  GeomPrimitivePipelineReader reader(primitive, Thread::get_current_thread());
+  update_index_buffer(ibc, &reader, false);
 
-  vkUnmapMemory(_device, memory);
   return ibc;
+}
+
+/**
+ * Makes sure that the data in the index buffer is up-to-date.
+ */
+bool VulkanGraphicsStateGuardian::
+update_index_buffer(VulkanIndexBufferContext *ibc,
+                    const GeomPrimitivePipelineReader *reader,
+                    bool force) {
+  ibc->set_active(true);
+
+  if (ibc->was_modified(reader)) {
+    VkDeviceSize num_bytes = reader->get_data_size_bytes();
+    if (num_bytes != 0) {
+      const unsigned char *client_pointer = reader->get_read_pointer(force);
+      if (client_pointer == NULL) {
+        return false;
+      }
+
+      GeomEnums::NumericType index_type = reader->get_index_type();
+      if (index_type == GeomEnums::NT_uint8) {
+        // We widen 8-bits indices to 16-bits.
+        num_bytes *= 2;
+
+      } else if (index_type != GeomEnums::NT_uint16 &&
+                 index_type != GeomEnums::NT_uint32) {
+        vulkandisplay_cat.error()
+          << "Unsupported index type: " << index_type;
+        return NULL;
+      }
+
+      void *data;
+      VkResult
+      err = vkMapMemory(_device, ibc->_memory, 0, num_bytes, 0, &data);
+      if (err || !data) {
+        vulkan_error(err, "Failed to map index buffer memory");
+        return false;
+      }
+
+      if (index_type == GeomEnums::NT_uint8) {
+        // Widen to 16-bits, as Vulkan doesn't support 8-bits indices.
+        uint16_t *ptr = (uint16_t *)data;
+        for (size_t i = 0; i < num_bytes; i += 2) {
+          *ptr++ = (uint16_t)*client_pointer++;
+        }
+      } else {
+        memcpy(data, client_pointer, num_bytes);
+      }
+
+      vkUnmapMemory(_device, ibc->_memory);
+
+      _data_transferred_pcollector.add_level(num_bytes);
+    }
+
+    ibc->mark_loaded(reader);
+  }
+  ibc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+
+  return true;
 }
 
 /**
@@ -1740,21 +1810,11 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
     VulkanIndexBufferContext *ibc;
     DCAST_INTO_R(ibc, reader->prepare_now(get_prepared_objects(), this), false);
 
-    VkIndexType index_type;
-    switch (reader->get_index_type()) {
-    case GeomEnums::NT_uint16:
-      index_type = VK_INDEX_TYPE_UINT16;
-      break;
-    case GeomEnums::NT_uint32:
-      index_type = VK_INDEX_TYPE_UINT32;
-      break;
-    default:
-      vulkandisplay_cat.error()
-        << "Unsupported index type: " << reader->get_index_type() << "\n";
+    if (!update_index_buffer(ibc, reader, force)) {
       return false;
     }
 
-    vkCmdBindIndexBuffer(_cmd, ibc->_buffer, 0, index_type);
+    vkCmdBindIndexBuffer(_cmd, ibc->_buffer, 0, ibc->_index_type);
     vkCmdDrawIndexed(_cmd, num_vertices, 1, 0, 0, 0);
   } else {
     // A non-indexed primitive.

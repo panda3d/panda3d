@@ -32,6 +32,7 @@ public:
 public:
   VkBuffer _buffer;
   VkDeviceMemory _memory;
+  VkIndexType _index_type;
 
 public:
   static TypeHandle get_class_type() {
