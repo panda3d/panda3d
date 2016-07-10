@@ -329,16 +329,18 @@ rebuild_bitplanes() {
         case RTP_aux_float_3:
           {
             CDWriter cdataw(_cycler, cdata, false);
-            nassertr(cdata->_textures.size() == cdataw->_textures.size(), false);
             cdataw->_textures[i]._rtm_mode = RTM_none;
           }
+          // Creating the CDWriter invalidated the CDLockedReader.
+          cdata = CDLockedReader(_cycler);
           break;
         default:
           {
             CDWriter cdataw(_cycler, cdata, false);
-            nassertr(cdata->_textures.size() == cdataw->_textures.size(), false);
             cdataw->_textures[i]._rtm_mode = RTM_copy_texture;
           }
+          // Creating the CDWriter invalidated the CDLockedReader.
+          cdata = CDLockedReader(_cycler);
           break;
         }
       }

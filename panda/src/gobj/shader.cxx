@@ -1620,6 +1620,69 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
     return false;
   }
 
+  // This is present to work around a bug in the Cg compiler for Direct3D 9.
+  // It generates "texld_sat" instructions that the result in an
+  // D3DXERR_INVALIDDATA error when trying to load the shader, since the _sat
+  // modifier may not be used on tex* instructions.
+  if (_cg_fprofile == CG_PROFILE_PS_2_0 ||
+      _cg_fprofile == CG_PROFILE_PS_2_X ||
+      _cg_fprofile == CG_PROFILE_PS_3_0) {
+    vector_string lines;
+    tokenize(cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM), lines, "\n");
+
+    ostringstream out;
+    int num_modified = 0;
+
+    for (size_t i = 0; i < lines.size(); ++i) {
+      const string &line = lines[i];
+
+      size_t space = line.find(' ');
+      if (space == string::npos) {
+        out << line << '\n';
+        continue;
+      }
+
+      string instr = line.substr(0, space);
+
+      // Look for a texld instruction with _sat modifier.
+      if (instr.compare(0, 5, "texld") == 0 &&
+          instr.compare(instr.size() - 4, 4, "_sat") == 0) {
+        // Which destination register are we operating on?
+        string reg = line.substr(space + 1, line.find(',', space) - space - 1);
+
+        // Move the saturation operation to a separate instruction.
+        instr.resize(instr.size() - 4);
+        out << instr << ' ' << line.substr(space + 1) << '\n';
+        out << "mov_sat " << reg << ", " << reg << '\n';
+        ++num_modified;
+      } else {
+        out << line << '\n';
+      }
+    }
+
+    if (num_modified > 0) {
+      string result = out.str();
+      CGprogram new_program;
+      new_program = cgCreateProgram(context, CG_OBJECT, result.c_str(),
+                                    (CGprofile)_cg_fprofile, "fshader",
+                                    (const char**)NULL);
+      if (new_program) {
+        cgDestroyProgram(_cg_fprogram);
+        _cg_fprogram = new_program;
+
+        if (shader_cat.is_debug()) {
+          shader_cat.debug()
+            << "Replaced " << num_modified << " invalid texld_sat instruction"
+            << ((num_modified == 1) ? "" : "s") << " in compiled shader\n";
+        }
+      } else {
+        shader_cat.warning()
+          << "Failed to load shader with fixed texld_sat instructions: "
+          << cgGetErrorString(cgGetError()) << "\n";
+      }
+    }
+  }
+
   // DEBUG: output the generated program
   if (shader_cat.is_debug()) {
     const char *vertex_program;
