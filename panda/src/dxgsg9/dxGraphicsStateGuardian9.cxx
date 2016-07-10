@@ -3584,6 +3584,8 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 D3DFORMAT DXGraphicsStateGuardian9::
 get_index_type(Geom::NumericType numeric_type) {
   switch (numeric_type) {
+  // NT_uint8 is automatically promoted to uint16.
+  case Geom::NT_uint8:
   case Geom::NT_uint16:
     return D3DFMT_INDEX16;
 

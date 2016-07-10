@@ -24,6 +24,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix assertion when using aux render targets in DX9
 * Work around Cg bug generating invalid ASM for saturated tex loads
 * Fix issues with certain Cg shader inputs in DX9
+* Support uint8 index buffers in DX9
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
