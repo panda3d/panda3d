@@ -235,6 +235,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_basic_shaders = false;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
+  _supports_compute_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
 

@@ -21,6 +21,10 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix cull issue when rendering cube map (or any multi-lens setup)
 * Fix crash rendering with the same camera to different contexts
 * Fix compile error when making static build with DX9 renderer
+* Fix assertion when using aux render targets in DX9
+* Work around Cg bug generating invalid ASM for saturated tex loads
+* Fix issues with certain Cg shader inputs in DX9
+* Support uint8 index buffers in DX9
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

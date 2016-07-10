@@ -1765,6 +1765,69 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
     return false;
   }
 
+  // This is present to work around a bug in the Cg compiler for Direct3D 9.
+  // It generates "texld_sat" instructions that the result in an
+  // D3DXERR_INVALIDDATA error when trying to load the shader, since the _sat
+  // modifier may not be used on tex* instructions.
+  if (_cg_fprofile == CG_PROFILE_PS_2_0 ||
+      _cg_fprofile == CG_PROFILE_PS_2_X ||
+      _cg_fprofile == CG_PROFILE_PS_3_0) {
+    vector_string lines;
+    tokenize(cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM), lines, "\n");
+
+    ostringstream out;
+    int num_modified = 0;
+
+    for (size_t i = 0; i < lines.size(); ++i) {
+      const string &line = lines[i];
+
+      size_t space = line.find(' ');
+      if (space == string::npos) {
+        out << line << '\n';
+        continue;
+      }
+
+      string instr = line.substr(0, space);
+
+      // Look for a texld instruction with _sat modifier.
+      if (instr.compare(0, 5, "texld") == 0 &&
+          instr.compare(instr.size() - 4, 4, "_sat") == 0) {
+        // Which destination register are we operating on?
+        string reg = line.substr(space + 1, line.find(',', space) - space - 1);
+
+        // Move the saturation operation to a separate instruction.
+        instr.resize(instr.size() - 4);
+        out << instr << ' ' << line.substr(space + 1) << '\n';
+        out << "mov_sat " << reg << ", " << reg << '\n';
+        ++num_modified;
+      } else {
+        out << line << '\n';
+      }
+    }
+
+    if (num_modified > 0) {
+      string result = out.str();
+      CGprogram new_program;
+      new_program = cgCreateProgram(context, CG_OBJECT, result.c_str(),
+                                    (CGprofile)_cg_fprofile, "fshader",
+                                    (const char**)NULL);
+      if (new_program) {
+        cgDestroyProgram(_cg_fprogram);
+        _cg_fprogram = new_program;
+
+        if (shader_cat.is_debug()) {
+          shader_cat.debug()
+            << "Replaced " << num_modified << " invalid texld_sat instruction"
+            << ((num_modified == 1) ? "" : "s") << " in compiled shader\n";
+        }
+      } else {
+        shader_cat.warning()
+          << "Failed to load shader with fixed texld_sat instructions: "
+          << cgGetErrorString(cgGetError()) << "\n";
+      }
+    }
+  }
+
   // DEBUG: output the generated program
   if (shader_cat.is_debug()) {
     const char *vertex_program;
@@ -1881,59 +1944,95 @@ cg_analyze_shader(const ShaderCaps &caps) {
   // Assign sequence numbers to all parameters.  GLCgShaderContext relies on
   // the fact that the varyings start at seqno 0.
   int seqno = 0;
-  for (int i=0; i<(int)_var_spec.size(); i++) {
+  for (size_t i = 0; i < _var_spec.size(); ++i) {
     _var_spec[i]._id._seqno = seqno++;
   }
-  for (int i=0; i<(int)_mat_spec.size(); i++) {
+  for (size_t i = 0; i < _mat_spec.size(); ++i) {
     _mat_spec[i]._id._seqno = seqno++;
   }
-  for (int i=0; i<(int)_tex_spec.size(); i++) {
+  for (size_t i = 0; i < _tex_spec.size(); ++i) {
     _tex_spec[i]._id._seqno = seqno++;
   }
 
-  for (int i=0; i<(int)_ptr_spec.size(); i++) {
+  for (size_t i = 0; i < _ptr_spec.size(); ++i) {
     _ptr_spec[i]._id._seqno = seqno++;
     _ptr_spec[i]._info._id = _ptr_spec[i]._id;
   }
 
-/*
- * The following code is present to work around a bug in the Cg compiler.  It
- * does not generate correct code for shadow map lookups when using arbfp1.
- * This is a particularly onerous limitation, given that arbfp1 is the only Cg
- * target that works on radeons.  I suspect this is an intentional omission on
- * nvidia's part.  The following code fetches the output listing, detects the
- * error, repairs the code, and resumbits the repaired code to Cg.  if
- * ((_cg_fprofile == CG_PROFILE_ARBFP1) && (gsghint->_supports_shadow_filter))
- * { bool shadowunit[32]; bool anyshadow = false; memset(shadowunit, 0,
- * sizeof(shadowunit)); vector_string lines;
- * tokenize(cgGetProgramString(_cg_program[SHADER_type_frag],
- * CG_COMPILED_PROGRAM), lines, "\n"); figure out which texture units contain
- * shadow maps.  for (int lineno=0; lineno<(int)lines.size(); lineno++) { if
- * (lines[lineno].compare(0,21,"#var sampler2DSHADOW ")) { continue; }
- * vector_string fields; tokenize(lines[lineno], fields, ":"); if
- * (fields.size()!=5) { continue; } vector_string words;
- * tokenize(trim(fields[2]), words, " "); if (words.size()!=2) { continue; }
- * int unit = atoi(words[1].c_str()); if ((unit < 0)||(unit >= 32)) {
- * continue; } anyshadow = true; shadowunit[unit] = true; } modify all TEX
- * statements that use the relevant texture units.  if (anyshadow) { for (int
- * lineno=0; lineno<(int)lines.size(); lineno++) { if
- * (lines[lineno].compare(0,4,"TEX ")) { continue; } vector_string fields;
- * tokenize(lines[lineno], fields, ","); if
- * ((fields.size()!=4)||(trim(fields[3]) != "2D;")) { continue; }
- * vector_string texunitf; tokenize(trim(fields[2]), texunitf, "[]"); if
- * ((texunitf.size()!=3)||(texunitf[0] != "texture")||(texunitf[2]!="")) {
- * continue; } int unit = atoi(texunitf[1].c_str()); if ((unit < 0) || (unit
- * >= 32) || (shadowunit[unit]==false)) { continue; } lines[lineno] =
- * fields[0]+","+fields[1]+","+fields[2]+", SHADOW2D;"; } string result =
- * "!!ARBfp1.0\nOPTION ARB_fragment_program_shadow;\n"; for (int lineno=1;
- * lineno<(int)lines.size(); lineno++) { result += (lines[lineno] + "\n"); }
- * _cg_program[2] = _cg_program[SHADER_type_frag];
- * _cg_program[SHADER_type_frag] = cgCreateProgram(_cg_context, CG_OBJECT,
- * result.c_str(), _cg_profile[SHADER_type_frag], "fshader", (const
- * char**)NULL); cg_report_errors(s->get_name(), _cg_context); if
- * (_cg_program[SHADER_type_frag]==0) { release_resources(); return false; } }
- * }
- */
+  /*
+  // The following code is present to work around a bug in the Cg compiler.
+  // It does not generate correct code for shadow map lookups when using arbfp1.
+  // This is a particularly onerous limitation, given that arbfp1 is the only
+  // Cg target that works on radeons.  I suspect this is an intentional
+  // omission on nvidia's part.  The following code fetches the output listing,
+  // detects the error, repairs the code, and resumbits the repaired code to Cg.
+  if ((_cg_fprofile == CG_PROFILE_ARBFP1) && (gsghint->_supports_shadow_filter)) {
+    bool shadowunit[32];
+    bool anyshadow = false;
+    memset(shadowunit, 0, sizeof(shadowunit));
+    vector_string lines;
+    tokenize(cgGetProgramString(_cg_program[SHADER_type_frag],
+                                CG_COMPILED_PROGRAM), lines, "\n");
+    // figure out which texture units contain shadow maps.
+    for (int lineno=0; lineno<(int)lines.size(); lineno++) {
+      if (lines[lineno].compare(0,21,"#var sampler2DSHADOW ")) {
+        continue;
+      }
+      vector_string fields;
+      tokenize(lines[lineno], fields, ":");
+      if (fields.size()!=5) {
+        continue;
+      }
+      vector_string words;
+      tokenize(trim(fields[2]), words, " ");
+      if (words.size()!=2) {
+        continue;
+      }
+      int unit = atoi(words[1].c_str());
+      if ((unit < 0)||(unit >= 32)) {
+        continue;
+      }
+      anyshadow = true;
+      shadowunit[unit] = true;
+    }
+    // modify all TEX statements that use the relevant texture units.
+    if (anyshadow) {
+      for (int lineno=0; lineno<(int)lines.size(); lineno++) {
+        if (lines[lineno].compare(0,4,"TEX ")) {
+          continue;
+        }
+        vector_string fields;
+        tokenize(lines[lineno], fields, ",");
+        if ((fields.size()!=4)||(trim(fields[3]) != "2D;")) {
+          continue;
+        }
+        vector_string texunitf;
+        tokenize(trim(fields[2]), texunitf, "[]");
+        if ((texunitf.size()!=3)||(texunitf[0] != "texture")||(texunitf[2]!="")) {
+          continue;
+        }
+        int unit = atoi(texunitf[1].c_str());
+        if ((unit < 0) || (unit >= 32) || (shadowunit[unit]==false)) {
+          continue;
+        }
+        lines[lineno] = fields[0]+","+fields[1]+","+fields[2]+", SHADOW2D;";
+      }
+      string result = "!!ARBfp1.0\nOPTION ARB_fragment_program_shadow;\n";
+      for (int lineno=1; lineno<(int)lines.size(); lineno++) {
+        result += (lines[lineno] + "\n");
+      }
+      _cg_program[2] = _cg_program[SHADER_type_frag];
+      _cg_program[SHADER_type_frag] =
+        cgCreateProgram(_cg_context, CG_OBJECT, result.c_str(),
+                        _cg_profile[SHADER_type_frag], "fshader", (const char**)NULL);
+      cg_report_errors(s->get_name(), _cg_context);
+      if (_cg_program[SHADER_type_frag]==0) {
+        release_resources();
+        return false;
+      }
+    }
+  }
+  */
 
   cg_release_resources();
   return true;
