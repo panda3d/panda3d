@@ -2145,7 +2145,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
       // Bind the vertex buffer to the binding index.
       if (ai >= _glgsg->_current_vertex_buffers.size()) {
-        _glgsg->_current_vertex_buffers.resize(ai + 1, 0);
+        GLuint zero = 0;
+        _glgsg->_current_vertex_buffers.resize(ai + 1, zero);
       }
       if (_glgsg->_current_vertex_buffers[ai] != gvbc->_index) {
         _glgsg->_glBindVertexBuffer(ai, gvbc->_index, 0, stride);

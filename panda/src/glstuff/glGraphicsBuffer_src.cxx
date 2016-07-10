@@ -514,7 +514,8 @@ rebuild_bitplanes() {
   if (num_fbos > _fbo.size()) {
     // Generate more FBO handles.
     int start = _fbo.size();
-    _fbo.resize(num_fbos, 0);
+    GLuint zero = 0;
+    _fbo.resize(num_fbos, zero);
     glgsg->_glGenFramebuffers(num_fbos - start, &_fbo[start]);
   }
 
