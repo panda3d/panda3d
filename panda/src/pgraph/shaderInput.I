@@ -688,9 +688,15 @@ get_ptr() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const SamplerState &ShaderInput::
 get_sampler() const {
-  return (_type == M_texture)
-    ? get_texture()->get_default_sampler()
-    : _sampler;
+  if (_type != M_texture) {
+    return _sampler;
+
+  } else if (!_value.is_null()) {
+    return get_texture()->get_default_sampler();
+
+  } else {
+    return SamplerState::get_default();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

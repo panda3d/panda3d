@@ -431,10 +431,35 @@ extract_texture_data(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
+  PStatTimer timer(_prepare_shader_pcollector);
+
+  switch (se->get_language()) {
+  case Shader::SL_GLSL:
+    dxgsg9_cat.error()
+      << "Tried to load GLSL shader, but GLSL shaders not supported by Direct3D 9.\n";
+    return NULL;
+
+  case Shader::SL_Cg:
 #ifdef HAVE_CG
-  CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
-  return result;
+    if (_supports_basic_shaders) {
+      return new CLP(ShaderContext)(se, this);
+    } else {
+      dxgsg9_cat.error()
+        << "Tried to load Cg shader, but basic shaders not supported.\n";
+      return NULL;
+    }
+#else
+    dxgsg9_cat.error()
+      << "Tried to load Cg shader, but Cg support not compiled in.\n";
+    return NULL;
 #endif
+
+  default:
+    dxgsg9_cat.error()
+      << "Tried to load shader with unsupported shader language!\n";
+    return NULL;
+  }
+
   return NULL;
 }
 

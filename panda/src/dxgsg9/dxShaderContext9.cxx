@@ -49,7 +49,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   CGcontext context = DCAST(DXGraphicsStateGuardian9, gsg)->_cg_context;
 
   if (s->get_language() == Shader::SL_Cg) {
-
     // Ask the shader to compile itself for us and
     // to give us the resulting Cg program objects.
     if (!s->cg_compile_for(gsg->_shader_caps, context,
@@ -259,43 +258,54 @@ issue_parameters(GSG *gsg, int altered) {
 #ifdef HAVE_CG
   if (_cg_program) {
 
-  // Iterate through _ptr parameters
-    for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
-      if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])){
-#ifdef HAVE_CG
-        const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
-        Shader::ShaderPtrData* _ptr_data =
-          const_cast< Shader::ShaderPtrData*>(gsg->fetch_ptr_parameter(_ptr));
+    // Iterate through _ptr parameters
+    for (size_t i = 0; i < _shader->_ptr_spec.size(); ++i) {
+      const Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
-        if (_ptr_data == NULL){ //the input is not contained in ShaderPtrData
+      if (altered & (spec._dep[0] | spec._dep[1])) {
+        const Shader::ShaderPtrData *ptr_data = gsg->fetch_ptr_parameter(spec);
+
+        if (ptr_data == NULL) { //the input is not contained in ShaderPtrData
           release_resources();
           return;
         }
 
-        CGparameter p = _cg_parameter_map[_ptr._id._seqno];
+        // Calculate how many elements to transfer; no more than it expects,
+        // but certainly no more than we have.
+        int input_size = min(abs(spec._dim[0] * spec._dim[1] * spec._dim[2]), ptr_data->_size);
 
-        switch(_ptr_data->_type) {
+        CGparameter p = _cg_parameter_map[spec._id._seqno];
+        switch (ptr_data->_type) {
+        case Shader::SPT_int:
+          cgSetParameterValueic(p, input_size, (int *)ptr_data->_ptr);
+          break;
+
+        case Shader::SPT_double:
+          cgSetParameterValuedc(p, input_size, (double *)ptr_data->_ptr);
+          break;
+
         case Shader::SPT_float:
-          cgD3D9SetUniform(p, (PN_stdfloat*)_ptr_data->_ptr);
+          cgSetParameterValuefc(p, input_size, (float *)ptr_data->_ptr);
           break;
 
         default:
           dxgsg9_cat.error()
-            << _ptr._id._name << ":" << "unrecognized parameter type\n";
+            << spec._id._name << ": unrecognized parameter type\n";
           release_resources();
           return;
         }
       }
-#endif
     }
 
-    for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
-      if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
-        CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
+    for (size_t i = 0; i < _shader->_mat_spec.size(); ++i) {
+      Shader::ShaderMatSpec &spec = _shader->_mat_spec[i];
+
+      if (altered & (spec._dep[0] | spec._dep[1])) {
+        CGparameter p = _cg_parameter_map[spec._id._seqno];
         if (p == NULL) {
           continue;
         }
-        const LMatrix4 *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
+        const LMatrix4 *val = gsg->fetch_specified_value(spec, altered);
         if (val) {
           HRESULT hr;
           PN_stdfloat v [4];
@@ -309,12 +319,12 @@ issue_parameters(GSG *gsg, int altered) {
           #if DEBUG_SHADER
           // DEBUG
           global_data = (PN_stdfloat *) data;
-          global_shader_mat_spec = &_shader->_mat_spec[i];
+          global_shader_mat_spec = &spec;
           global_internal_name_0 = global_shader_mat_spec -> _arg [0];
           global_internal_name_1 = global_shader_mat_spec -> _arg [1];
           #endif
 
-          switch (_shader->_mat_spec[i]._piece) {
+          switch (spec._piece) {
           case Shader::SMP_whole:
             // TRANSPOSE REQUIRED
             temp_matrix.transpose_in_place();
@@ -363,26 +373,22 @@ issue_parameters(GSG *gsg, int altered) {
 
           default:
             dxgsg9_cat.error()
-              << "issue_parameters ( ) SMP parameter type not implemented " << _shader->_mat_spec[i]._piece << "\n";
+              << "issue_parameters ( ) SMP parameter type not implemented " << spec._piece << "\n";
             break;
           }
 
           if (FAILED (hr)) {
-
             string name = "unnamed";
 
-            if (_shader->_mat_spec[i]._arg [0]) {
-              name = _shader->_mat_spec[i]._arg [0] -> get_basename ( );
+            if (spec._arg[0]) {
+              name = spec._arg[0]->get_basename();
             }
 
             dxgsg9_cat.error()
-              << "NAME  " << name << "\n"
-              << "MAT TYPE  "
-              << _shader->_mat_spec[i]._piece
-              << " cgD3D9SetUniform failed "
-              << D3DERRORSTRING(hr);
+              << "NAME  " << name << "\n" << "MAT TYPE  " << spec._piece
+              << " cgD3D9SetUniform failed " << D3DERRORSTRING(hr);
 
-            CGerror error = cgGetError ();
+            CGerror error = cgGetError();
             if (error != CG_NO_ERROR) {
               dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
             }
@@ -713,25 +719,26 @@ disable_shader_texture_bindings(GSG *gsg)
 //               reenable them.  We may optimize this someday.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
-{
-  if (prev) prev->disable_shader_texture_bindings(gsg);
+update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
+  if (prev) {
+    prev->disable_shader_texture_bindings(gsg);
+  }
 
 #ifdef HAVE_CG
   if (_cg_program) {
-
-    for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
-      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+    for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
+      const Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
+      CGparameter p = _cg_parameter_map[spec._id._seqno];
       if (p == NULL) {
         continue;
       }
+
       Texture *tex = NULL;
       int view = gsg->get_current_tex_view_offset();
-      InternalName *id = _shader->_tex_spec[i]._name;
       SamplerState sampler;
 
-      if (id != NULL) {
-        const ShaderInput *input = gsg->_target_shader->get_shader_input(id);
+      if (spec._name != NULL) {
+        const ShaderInput *input = gsg->_target_shader->get_shader_input(spec._name);
         tex = input->get_texture();
         sampler = input->get_sampler();
 
@@ -741,31 +748,33 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         const TextureAttrib *texattrib = DCAST(TextureAttrib, gsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
         nassertv(texattrib != (TextureAttrib *)NULL);
 
-        if (_shader->_tex_spec[i]._stage >= texattrib->get_num_on_stages()) {
+        if (spec._stage >= texattrib->get_num_on_stages()) {
           continue;
         }
-        TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
+        TextureStage *stage = texattrib->get_on_stage(spec._stage);
         tex = texattrib->get_on_texture(stage);
         sampler = texattrib->get_on_sampler(stage);
         view += stage->get_tex_view_offset();
       }
-      if (_shader->_tex_spec[i]._suffix != 0) {
-        // The suffix feature is inefficient. It is a temporary hack.
+
+      if (spec._suffix != 0) {
+        // The suffix feature is inefficient.  It is a temporary hack.
         if (tex == 0) {
           continue;
         }
-        tex = tex->load_related(_shader->_tex_spec[i]._suffix);
+        tex = tex->load_related(spec._suffix);
       }
-      if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
+
+      if ((tex == 0) || (tex->get_texture_type() != spec._desired_type)) {
         continue;
       }
+
       TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
       if (tc == (TextureContext*)NULL) {
         continue;
       }
 
       int texunit = cgGetParameterResourceIndex(p);
-
       gsg->apply_texture(texunit, tc, sampler);
     }
   }
