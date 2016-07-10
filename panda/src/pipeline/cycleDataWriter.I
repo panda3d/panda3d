@@ -122,13 +122,43 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                 CycleDataLockedReader<CycleDataType> &take_from,
-        bool force_to_0) :
+                bool force_to_0) :
   _cycler(&cycler),
   _current_thread(take_from.get_current_thread())
 {
   _pointer = _cycler->elevate_read_upstream(take_from.take_pointer(),
                                             force_to_0, _current_thread);
 }
+
+#ifdef USE_MOVE_SEMANTICS
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(CycleDataWriter<CycleDataType> &&from) NOEXCEPT :
+  _cycler(from._cycler),
+  _current_thread(from._current_thread),
+  _pointer(from._pointer)
+{
+  from._pointer = NULL;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE void CycleDataWriter<CycleDataType>::
+operator = (CycleDataWriter<CycleDataType> &&from) NOEXCEPT {
+  nassertv(_pointer == (CycleDataType *)NULL);
+  nassertv(_current_thread == from._current_thread);
+
+  _cycler = from._cycler;
+  _pointer = from._pointer;
+
+  from._pointer = NULL;
+}
+#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

@@ -47,6 +47,11 @@ public:
   INLINE CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy);
   INLINE void operator = (const CycleDataLockedReader<CycleDataType> &copy);
 
+#if defined(USE_MOVE_SEMANTICS) && defined(DO_PIPELINING)
+  INLINE CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT;
+  INLINE void operator = (CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT;
+#endif
+
   INLINE ~CycleDataLockedReader();
 
   INLINE const CycleDataType *operator -> () const;
