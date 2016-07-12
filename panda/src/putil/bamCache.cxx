@@ -321,13 +321,24 @@ emergency_read_only() {
 ////////////////////////////////////////////////////////////////////
 void BamCache::
 consider_flush_index() {
-  ReMutexHolder holder(_lock);
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
+  if (!_lock.try_acquire()) {
+    // If we can't grab the lock, no big deal.  We don't want to hold up
+    // the frame waiting for a cache operation.  We can try again later.
+    return;
+  }
+#endif
+
   if (_index_stale_since != 0) {
     int elapsed = (int)time(NULL) - (int)_index_stale_since;
     if (elapsed > _flush_time) {
       flush_index();
     }
   }
+
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
+  _lock.release();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
