@@ -25,6 +25,8 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Work around Cg bug generating invalid ASM for saturated tex loads
 * Fix issues with certain Cg shader inputs in DX9
 * Support uint8 index buffers in DX9
+* Fix occasional frame lag when loading a big model asynchronously
+* Fix race condition reading string config var
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

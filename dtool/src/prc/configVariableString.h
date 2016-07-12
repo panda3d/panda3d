@@ -50,6 +50,9 @@ PUBLISHED:
   INLINE void set_word(size_t n, const string &value);
 
 private:
+  void reload_cache();
+
+private:
   AtomicAdjust::Integer _local_modified;
   string _cache;
 };
