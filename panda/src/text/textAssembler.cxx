@@ -1489,6 +1489,7 @@ assemble_row(TextAssembler::TextRow &row,
       placement._scale = properties->get_glyph_scale();
       placement._xpos = (xpos - frame[0]);
       placement._ypos = (properties->get_glyph_shift() - frame[2]);
+      placement._slant = properties->get_slant();
       placement._properties = properties;
 
       placed_glyphs.push_back(placement);
