@@ -358,8 +358,10 @@ class ServerRepository:
             #datagram.dumpHex(ostream)
 
         dgi = DatagramIterator(datagram)
-
         type = dgi.getUint16()
+        
+        if dgi.getRemainingSize() == 0 and type != CLIENT_DISCONNECT_CMU:
+            return
 
         if type == CLIENT_DISCONNECT_CMU:
             self.handleClientDisconnect(client)
@@ -372,7 +374,7 @@ class ServerRepository:
         elif type == CLIENT_OBJECT_UPDATE_FIELD_TARGETED_CMU:
             self.handleClientObjectUpdateField(datagram, dgi, targeted = True)
         elif type == OBJECT_DELETE_CMU:
-            self.handleClientDeleteObject(datagram, dgi.getUint32())
+            self.handleClientDeleteObject(datagram, dgi)
         elif type == OBJECT_SET_ZONE_CMU:
             self.handleClientObjectSetZone(datagram, dgi)
         else:
@@ -380,12 +382,25 @@ class ServerRepository:
 
     def handleMessageType(self, msgType, di):
         self.notify.warning("unrecognized message type %s" % (msgType))
+    
+    def disconnectClient(self, connection):
+        """ disconnects the client """
+        client = self.clientsByConnection[connection]
+        
+        del self.clientsByConnection[connection]
+        del self.clientsByDoIdBase[client.doIdBase]
+        self.qcr.removeConnection(connection)
 
     def handleClientCreateObject(self, datagram, dgi):
         """ client wants to create an object, so we store appropriate
         data, and then pass message along to corresponding zones """
 
         connection = datagram.getConnection()
+        
+        if dgi.getRemainingSize() < 3:
+            self.disconnectClient(connection)
+            return
+        
         zoneId  = dgi.getUint32()
         classId = dgi.getUint16()
         doId    = dgi.getUint32()
@@ -439,9 +454,19 @@ class ServerRepository:
         """ Received an update request from a client. """
         connection = datagram.getConnection()
         client = self.clientsByConnection[connection]
+        
+        if targeted:
+            if dgi.getRemainingSize() < 3:
+                self.disconnectClient(connection)
+                return
+        else:
+            if dgi.getRemainingSize() < 2:
+                self.disconnectClient(connection)
+                return
 
         if targeted:
             targetId = dgi.getUint32()
+        
         doId = dgi.getUint32()
         fieldId = dgi.getUint16()
 
@@ -513,12 +538,18 @@ class ServerRepository:
 
         return int(doId / self.doIdRange) * self.doIdRange + 1
 
-    def handleClientDeleteObject(self, datagram, doId):
+    def handleClientDeleteObject(self, datagram, dgi):
         """ client deletes an object, let everyone who has interest in
         the object's zone know about it. """
 
         connection = datagram.getConnection()
         client = self.clientsByConnection[connection]
+        
+        if dgi.getRemainingSize() < 1:
+            self.disconnectClient(connection)
+            return
+        
+        doId = dgi.getUint32()
         object = client.objectsByDoId.get(doId)
         if not object:
             self.notify.warning(
@@ -541,11 +572,15 @@ class ServerRepository:
     def handleClientObjectSetZone(self, datagram, dgi):
         """ The client is telling us the object is changing to a new
         zone. """
-        doId = dgi.getUint32()
-        zoneId = dgi.getUint32()
-
         connection = datagram.getConnection()
         client = self.clientsByConnection[connection]
+        
+        if dgi.getRemainingSize() < 2:
+            self.disconnectClient(connection)
+            return
+        
+        doId = dgi.getUint32()
+        zoneId = dgi.getUint32()
         object = client.objectsByDoId.get(doId)
         if not object:
             # Don't know this object.
@@ -690,6 +725,7 @@ class ServerRepository:
         for client in self.clientsByConnection.values():
             if not self.qcr.isConnectionOk(client.connection):
                 self.handleClientDisconnect(client)
+        
         return Task.cont
 
     def sendToZoneExcept(self, zoneId, datagram, exceptionList):
