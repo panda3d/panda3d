@@ -1597,7 +1597,7 @@ replace_node(PandaNode *other) {
   // Switch the parents.
   Thread *current_thread = Thread::get_current_thread();
   Parents other_parents = other->get_parents();
-  for (int i = 0; i < other_parents.get_num_parents(); ++i) {
+  for (size_t i = 0; i < other_parents.get_num_parents(); ++i) {
     PandaNode *parent = other_parents.get_parent(i);
     if (find_parent(parent) != -1) {
       // This node was already a child of this parent; don't change it.
@@ -1902,7 +1902,7 @@ is_under_scene_root() const {
   }
 
   Parents parents = get_parents();
-  for (int i = 0; i < parents.get_num_parents(); ++i) {
+  for (size_t i = 0; i < parents.get_num_parents(); ++i) {
     PandaNode *parent = parents.get_parent(i);
     if (parent->find_stashed((PandaNode *)this) == -1) {
       if (parent->is_under_scene_root()) {
@@ -2401,7 +2401,7 @@ void PandaNode::
 r_mark_geom_bounds_stale(Thread *current_thread) {
   Children children = get_children(current_thread);
 
-  int i;
+  size_t i;
   for (i = 0; i < children.get_num_children(); i++) {
     PandaNode *child = children.get_child(i);
     child->r_mark_geom_bounds_stale(current_thread);
@@ -2550,7 +2550,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
   Children children = get_children(current_thread);
   // We must call get_num_children() each time through the loop, in case we're
   // running SIMPLE_THREADS and we get interrupted.
-  int i;
+  size_t i;
   for (i = 0; i < children.get_num_children(); i++) {
     PandaNode *child = children.get_child(i);
     CPT(RenderState) child_state = node_state->compose(child->get_state());
@@ -2760,7 +2760,7 @@ find_node_above(PandaNode *node) {
   }
 
   Parents parents = get_parents();
-  for (int i = 0; i < parents.get_num_parents(); ++i) {
+  for (size_t i = 0; i < parents.get_num_parents(); ++i) {
     PandaNode *parent = parents.get_parent(i);
     if (parent->find_node_above(node)) {
       return true;

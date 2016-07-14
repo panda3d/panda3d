@@ -534,7 +534,7 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   // After rendering, increment the view index
   ++_current_view_index;
 
-  if (_current_view_index > stm_max_views) {
+  if (_current_view_index > (size_t)stm_max_views) {
     shader_terrain_cat.error() << "More views than supported! Increase the stm-max-views config variable!" << endl;
   }
 

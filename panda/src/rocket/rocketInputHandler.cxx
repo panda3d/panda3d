@@ -152,7 +152,6 @@ get_rocket_key(const ButtonHandle handle) {
 void RocketInputHandler::
 do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
-  Thread *current_thread = trav->get_current_thread();
   MutexHolder holder(_lock);
 
   if (input.has_data(_pixel_xy_input)) {

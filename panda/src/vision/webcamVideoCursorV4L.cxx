@@ -305,7 +305,7 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
 
   // Set up the mmap buffers
   struct v4l2_buffer buf;
-  for (int i = 0; i < _bufcount; ++i) {
+  for (unsigned int i = 0; i < (unsigned int)_bufcount; ++i) {
     memset(&buf, 0, sizeof buf);
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
@@ -367,7 +367,7 @@ WebcamVideoCursorV4L::
     close(_fd);
   }
   if (_buffers) {
-    for (int i = 0; i < _bufcount; ++i) {
+    for (unsigned int i = 0; i < (unsigned int)_bufcount; ++i) {
       munmap(_buffers[i], _buflens[i]);
     }
     free(_buffers);
@@ -455,7 +455,7 @@ fetch_buffer() {
     }
 
     // Flip the image vertically
-    for (size_t row = 0; row < _size_y; ++row) {
+    for (int row = 0; row < _size_y; ++row) {
       memcpy(block + (_size_y - row - 1) * new_bpl, newbuf + row * new_bpl, new_bpl);
     }
     free(newbuf);

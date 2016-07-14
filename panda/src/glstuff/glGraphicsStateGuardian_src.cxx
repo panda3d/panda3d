@@ -10804,8 +10804,6 @@ do_issue_tex_matrix() {
  */
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
-  bool force_normal = false;
-
   nassertv(_num_active_texture_stages <= _max_texture_stages);
 
   // These are passed in for the four OBJECT_PLANE or EYE_PLANE values; they
@@ -10849,7 +10847,6 @@ do_issue_tex_gen() {
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
       glEnable(GL_TEXTURE_GEN_S);
       glEnable(GL_TEXTURE_GEN_T);
-      force_normal = true;
       break;
 
     case TexGenAttrib::M_eye_cube_map:
@@ -10872,7 +10869,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 
@@ -10900,7 +10896,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 
@@ -10924,7 +10919,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 
@@ -10952,7 +10946,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 

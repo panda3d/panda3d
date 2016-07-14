@@ -3374,7 +3374,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
     unsigned int dimension = dds.get_uint32();
     unsigned int misc_flag = dds.get_uint32();
     unsigned int array_size = dds.get_uint32();
-    unsigned int alpha_mode = dds.get_uint32();
+    /*unsigned int alpha_mode = */dds.get_uint32();
 
     switch (format) {
     case 2:    // DXGI_FORMAT_R32G32B32A32_FLOAT
@@ -4947,8 +4947,8 @@ do_compress_ram_image_bc4(const RamImage &uncompressed_image,
   // of the secondary interpolation mode supported by BC4.  This is not
   // important for most textures, but it may be added in the future.
 
-  nassertv(x_blocks * y_blocks * 4 * 4 <= uncompressed_image._page_size);
-  nassertv(x_size * y_size == uncompressed_image._page_size);
+  nassertv((size_t)x_blocks * (size_t)y_blocks * 4 * 4 <= uncompressed_image._page_size);
+  nassertv((size_t)x_size * (size_t)y_size == uncompressed_image._page_size);
 
   static const int remap[] = {1, 7, 6, 5, 4, 3, 2, 0};
 
@@ -5046,8 +5046,8 @@ do_compress_ram_image_bc5(const RamImage &uncompressed_image,
   // BC5 uses the same compression algorithm as BC4, except repeated for two
   // channels.
 
-  nassertv(x_blocks * y_blocks * 4 * 4 * 2 <= uncompressed_image._page_size);
-  nassertv(stride * y_size == uncompressed_image._page_size);
+  nassertv((size_t)x_blocks * (size_t)y_blocks * 4 * 4 * 2 <= uncompressed_image._page_size);
+  nassertv((size_t)stride * (size_t)y_size == uncompressed_image._page_size);
 
   static const int remap[] = {1, 7, 6, 5, 4, 3, 2, 0};
 

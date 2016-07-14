@@ -1329,10 +1329,9 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
     // width is defined by the wordwrap size with the upper left corner
     // starting from 0,0,0 if the wordwrap size is unspecified the alignment
     // could eventually result wrong.
-    PN_stdfloat xpos;
+    PN_stdfloat xpos = 0;
     switch (align) {
     case TextProperties::A_left:
-      xpos = 0.0f;
       _lr[0] = max(_lr[0], row_width);
       break;
 
@@ -1348,7 +1347,6 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
       break;
 
     case TextProperties::A_boxed_left:
-      xpos = 0.0f;
       _lr[0] = max(_lr[0], max(row_width, wordwrap));
       break;
 

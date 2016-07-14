@@ -42,14 +42,13 @@ PUBLISHED:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
   INLINE bool test_ref_count_integrity() const;
-
-protected:
   INLINE void node_unref_only() const;
 
+protected:
   bool do_test_ref_count_integrity() const;
 
 private:
-  AtomicAdjust::Integer _node_ref_count;
+  mutable AtomicAdjust::Integer _node_ref_count;
 
 public:
   static TypeHandle get_class_type() {

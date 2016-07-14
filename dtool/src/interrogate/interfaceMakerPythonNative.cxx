@@ -4196,7 +4196,7 @@ write_function_forset(ostream &out,
     return;
   }
 
-  FunctionRemap *remap;
+  FunctionRemap *remap = NULL;
   std::set<FunctionRemap *>::iterator sii;
 
   bool all_nonconst = false;

@@ -1508,7 +1508,7 @@ do_defpose() {
   nassertv(anim_index != -1);
 
   // Now we can recursively apply the default pose to the hierarchy.
-  ch->get_root_joint()->apply_default_pose(anim_index, frame);
+  root_joint->apply_default_pose(anim_index, frame);
 }
 
 int main(int argc, char *argv[]) {

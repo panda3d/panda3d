@@ -1527,7 +1527,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         // We have to place this collector inside begin_frame, because we need
         // a current context for PStatGPUTimer to work.
         {
-          PStatGPUTimer timer(win->get_gsg(), win->get_draw_window_pcollector(), current_thread);
+          PStatGPUTimer timer(gsg, win->get_draw_window_pcollector(), current_thread);
           win->clear(current_thread);
 
           if (display_cat.is_spam()) {
@@ -1547,8 +1547,8 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         if (_auto_flip) {
 #ifdef DO_PSTATS
           // This is a good time to perform a latency query.
-          if (win->get_gsg()->get_timer_queries_active()) {
-            win->get_gsg()->issue_timer_query(GraphicsStateGuardian::_command_latency_pcollector.get_index());
+          if (gsg->get_timer_queries_active()) {
+            gsg->issue_timer_query(GraphicsStateGuardian::_command_latency_pcollector.get_index());
           }
 #endif
 
@@ -1560,7 +1560,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
               win->begin_flip();
             }
             {
-              PStatGPUTimer timer(win->get_gsg(), GraphicsEngine::_flip_end_pcollector, current_thread);
+              PStatGPUTimer timer(gsg, GraphicsEngine::_flip_end_pcollector, current_thread);
               win->end_flip();
             }
           }

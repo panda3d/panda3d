@@ -1851,9 +1851,9 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       }
 
       // The getter must either take no arguments, or all defaults.
-      if (ftype->_parameters->_parameters.size() == (int)is_seq ||
-          (ftype->_parameters->_parameters.size() > (int)is_seq &&
-           ftype->_parameters->_parameters[(int)is_seq]->_initializer != NULL)) {
+      if (ftype->_parameters->_parameters.size() == (size_t)is_seq ||
+          (ftype->_parameters->_parameters.size() > (size_t)is_seq &&
+           ftype->_parameters->_parameters[(size_t)is_seq]->_initializer != NULL)) {
         // If this is a sequence getter, it must take an index argument.
         if (is_seq && !TypeManager::is_integer(ftype->_parameters->_parameters[0]->_type)) {
           continue;
@@ -1909,7 +1909,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype = function->_type->as_function_type();
-      if (ftype != NULL && ftype->_parameters->_parameters.size() == (int)is_seq) {
+      if (ftype != NULL && ftype->_parameters->_parameters.size() == (size_t)is_seq) {
         deleter = function;
         break;
       }

@@ -756,17 +756,13 @@ make_texture_layer(const NodePath &render,
     case TextureStage::CM_modulate:
       {
         TextureStage::CombineSource source0 = stage_info._stage->get_combine_rgb_source0();
-        TextureStage::CombineOperand operand0 = stage_info._stage->get_combine_rgb_operand0();
         TextureStage::CombineSource source1 = stage_info._stage->get_combine_rgb_source1();
-        TextureStage::CombineOperand operand1 = stage_info._stage->get_combine_rgb_operand1();
         // Since modulate doesn't care about order, let's establish the
         // convention that the lowest-numbered source operand is in slot 0
         // (just for purposes of comparison).
         if (source1 < source0) {
           source0 = stage_info._stage->get_combine_rgb_source1();
-          operand0 = stage_info._stage->get_combine_rgb_operand1();
           source1 = stage_info._stage->get_combine_rgb_source0();
-          operand1 = stage_info._stage->get_combine_rgb_operand0();
         }
 
         if (source0 == TextureStage::CS_primary_color &&
