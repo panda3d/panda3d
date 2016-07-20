@@ -827,10 +827,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
         if not PkgSkip("PYTHON"):
-            if GetTarget() == "darwin" and not RTDIST and not PkgHasCustomLocation("PYTHON"):
-                LibName("PYTHON", "-framework Python")
-            else:
-                SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+            SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
@@ -4096,7 +4093,7 @@ if (PkgSkip("VISION") == 0) and (not RUNTIME):
 #
 
 if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
-  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET']
+  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET', 'PYTHON']
   TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
 
   TargetAdd('libp3rocket.dll', input='p3rocket_composite1.obj')
