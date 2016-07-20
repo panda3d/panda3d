@@ -5562,12 +5562,6 @@ typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
 #endif
 
-#ifndef GL_ARB_vertex_buffer_object
-/* GL types for handling large vertex buffer objects */
-typedef ptrdiff_t GLintptrARB;
-typedef ptrdiff_t GLsizeiptrARB;
-#endif
-
 #ifndef GL_ARB_shader_objects
 /* GL types for program/shader text and shader object handles */
 typedef char GLcharARB;
@@ -6827,9 +6821,9 @@ GLAPI void APIENTRY glBindBufferARB (GLenum target, GLuint buffer);
 GLAPI void APIENTRY glDeleteBuffersARB (GLsizei n, const GLuint *buffers);
 GLAPI void APIENTRY glGenBuffersARB (GLsizei n, GLuint *buffers);
 GLAPI GLboolean APIENTRY glIsBufferARB (GLuint buffer);
-GLAPI void APIENTRY glBufferDataARB (GLenum target, GLsizeiptrARB size, const GLvoid *data, GLenum usage);
-GLAPI void APIENTRY glBufferSubDataARB (GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid *data);
-GLAPI void APIENTRY glGetBufferSubDataARB (GLenum target, GLintptrARB offset, GLsizeiptrARB size, GLvoid *data);
+GLAPI void APIENTRY glBufferDataARB (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
+GLAPI void APIENTRY glBufferSubDataARB (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data);
+GLAPI void APIENTRY glGetBufferSubDataARB (GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
 GLAPI GLvoid* APIENTRY glMapBufferARB (GLenum target, GLenum access);
 GLAPI GLboolean APIENTRY glUnmapBufferARB (GLenum target);
 GLAPI void APIENTRY glGetBufferParameterivARB (GLenum target, GLenum pname, GLint *params);
@@ -6839,9 +6833,9 @@ typedef void (APIENTRYP PFNGLBINDBUFFERARBPROC) (GLenum target, GLuint buffer);
 typedef void (APIENTRYP PFNGLDELETEBUFFERSARBPROC) (GLsizei n, const GLuint *buffers);
 typedef void (APIENTRYP PFNGLGENBUFFERSARBPROC) (GLsizei n, GLuint *buffers);
 typedef GLboolean (APIENTRYP PFNGLISBUFFERARBPROC) (GLuint buffer);
-typedef void (APIENTRYP PFNGLBUFFERDATAARBPROC) (GLenum target, GLsizeiptrARB size, const GLvoid *data, GLenum usage);
-typedef void (APIENTRYP PFNGLBUFFERSUBDATAARBPROC) (GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid *data);
-typedef void (APIENTRYP PFNGLGETBUFFERSUBDATAARBPROC) (GLenum target, GLintptrARB offset, GLsizeiptrARB size, GLvoid *data);
+typedef void (APIENTRYP PFNGLBUFFERDATAARBPROC) (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
+typedef void (APIENTRYP PFNGLBUFFERSUBDATAARBPROC) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data);
+typedef void (APIENTRYP PFNGLGETBUFFERSUBDATAARBPROC) (GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
 typedef GLvoid* (APIENTRYP PFNGLMAPBUFFERARBPROC) (GLenum target, GLenum access);
 typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERARBPROC) (GLenum target);
 typedef void (APIENTRYP PFNGLGETBUFFERPARAMETERIVARBPROC) (GLenum target, GLenum pname, GLint *params);
@@ -11332,7 +11326,7 @@ typedef void (APIENTRYP PFNGLGETOBJECTPARAMETERIVAPPLEPROC) (GLenum objectType, 
 #define GL_NV_video_capture 1
 #ifdef GL_GLEXT_PROTOTYPES
 GLAPI void APIENTRY glBeginVideoCaptureNV (GLuint video_capture_slot);
-GLAPI void APIENTRY glBindVideoCaptureStreamBufferNV (GLuint video_capture_slot, GLuint stream, GLenum frame_region, GLintptrARB offset);
+GLAPI void APIENTRY glBindVideoCaptureStreamBufferNV (GLuint video_capture_slot, GLuint stream, GLenum frame_region, GLintptr offset);
 GLAPI void APIENTRY glBindVideoCaptureStreamTextureNV (GLuint video_capture_slot, GLuint stream, GLenum frame_region, GLenum target, GLuint texture);
 GLAPI void APIENTRY glEndVideoCaptureNV (GLuint video_capture_slot);
 GLAPI void APIENTRY glGetVideoCaptureivNV (GLuint video_capture_slot, GLenum pname, GLint *params);
@@ -11345,7 +11339,7 @@ GLAPI void APIENTRY glVideoCaptureStreamParameterfvNV (GLuint video_capture_slot
 GLAPI void APIENTRY glVideoCaptureStreamParameterdvNV (GLuint video_capture_slot, GLuint stream, GLenum pname, const GLdouble *params);
 #endif /* GL_GLEXT_PROTOTYPES */
 typedef void (APIENTRYP PFNGLBEGINVIDEOCAPTURENVPROC) (GLuint video_capture_slot);
-typedef void (APIENTRYP PFNGLBINDVIDEOCAPTURESTREAMBUFFERNVPROC) (GLuint video_capture_slot, GLuint stream, GLenum frame_region, GLintptrARB offset);
+typedef void (APIENTRYP PFNGLBINDVIDEOCAPTURESTREAMBUFFERNVPROC) (GLuint video_capture_slot, GLuint stream, GLenum frame_region, GLintptr offset);
 typedef void (APIENTRYP PFNGLBINDVIDEOCAPTURESTREAMTEXTURENVPROC) (GLuint video_capture_slot, GLuint stream, GLenum frame_region, GLenum target, GLuint texture);
 typedef void (APIENTRYP PFNGLENDVIDEOCAPTURENVPROC) (GLuint video_capture_slot);
 typedef void (APIENTRYP PFNGLGETVIDEOCAPTUREIVNVPROC) (GLuint video_capture_slot, GLenum pname, GLint *params);
