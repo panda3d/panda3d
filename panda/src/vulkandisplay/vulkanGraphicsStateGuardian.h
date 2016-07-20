@@ -105,8 +105,13 @@ public:
   virtual bool framebuffer_copy_to_texture(Texture *tex, int view, int z,
                                            const DisplayRegion *dr,
                                            const RenderBuffer &rb);
+  virtual bool framebuffer_copy_to_ram(Texture *tex, int view, int z,
+                                       const DisplayRegion *dr,
+                                       const RenderBuffer &rb);
 
 private:
+  bool do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z=-1);
+
   bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
                          VkPrimitiveTopology topology);
 
@@ -178,7 +183,6 @@ private:
   VkCommandBuffer _cmd;
   VkCommandBuffer _transfer_cmd;
   pvector<VkRect2D> _viewports;
-  VkRenderPass _render_pass;
   VkPipelineCache _pipeline_cache;
   VkPipelineLayout _pipeline_layout;
   VkDescriptorSetLayout _descriptor_set_layout;
@@ -186,6 +190,11 @@ private:
   VulkanShaderContext *_default_sc;
   CPT(GeomVertexFormat) _format;
   PT(Texture) _white_texture;
+
+  // Stores current framebuffer info.
+  VkRenderPass _render_pass;
+  VulkanTextureContext *_fb_color_tc;
+  VulkanTextureContext *_fb_depth_tc;
 
   // Palette for flat colors.
   VkBuffer _color_vertex_buffer;
@@ -199,6 +208,17 @@ private:
   typedef pmap<DescriptorSetKey, VkDescriptorSet> DescriptorSetMap;
   DescriptorSetMap _descriptor_set_map;
 
+  // Queued buffer-to-RAM transfer.
+  struct QueuedDownload {
+    VkBuffer _buffer;
+    VkDeviceMemory _memory;
+    PT(Texture) _texture;
+    int _view;
+  };
+  typedef pvector<QueuedDownload> DownloadQueue;
+  DownloadQueue _download_queue;
+
+  friend class VulkanGraphicsBuffer;
   friend class VulkanGraphicsWindow;
 
 public:

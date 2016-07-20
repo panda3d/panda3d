@@ -557,9 +557,16 @@ release_texture(TextureContext *) {
  * This method should only be called by the GraphicsEngine.  Do not call it
  * directly; call GraphicsEngine::extract_texture_data() instead.
  *
- * This method will be called in the draw thread to download the texture
- * memory's image into its ram_image value.  It returns true on success, false
- * otherwise.
+ * Please note that this may be a very expensive operation as it stalls the
+ * graphics pipeline while waiting for the rendered results to become
+ * available.  The graphics implementation may choose to defer writing the ram
+ * image until the next end_frame() call.
+ *
+ * This method will be called in the draw thread between begin_frame() and
+ * end_frame() to download the texture memory's image into its ram_image
+ * value.  It may not be called between begin_scene() and end_scene().
+ *
+ * @return true on success, false otherwise
  */
 bool GraphicsStateGuardian::
 extract_texture_data(Texture *) {
@@ -2635,7 +2642,11 @@ do_issue_light() {
  * Copy the pixels within the indicated display region from the framebuffer
  * into texture memory.
  *
- * If z > -1, it is the cube map index into which to copy.
+ * This should be called between begin_frame() and end_frame(), but not be
+ * called between begin_scene() and end_scene().
+ *
+ * @param z if z > -1, it is the cube map index into which to copy
+ * @return true on success, false on failure
  */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
@@ -2643,13 +2654,19 @@ framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
   return false;
 }
 
-
 /**
  * Copy the pixels within the indicated display region from the framebuffer
- * into system memory, not texture memory.  Returns true on success, false on
- * failure.
+ * into system memory, not texture memory.  Please note that this may be a
+ * very expensive operation as it stalls the graphics pipeline while waiting
+ * for the rendered results to become available.  The graphics implementation
+ * may choose to defer writing the ram image until the next end_frame() call.
  *
  * This completely redefines the ram image of the indicated texture.
+ *
+ * This should be called between begin_frame() and end_frame(), but not be
+ * called between begin_scene() and end_scene().
+ *
+ * @return true on success, false on failure
  */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,

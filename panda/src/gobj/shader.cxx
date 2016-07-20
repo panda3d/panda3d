@@ -2797,8 +2797,8 @@ spirv_analyze_shader(const string &data) {
   ShaderType shader_type = ST_none;
 
   while (words < end) {
-    uint16_t wcount = words[0] >> 16;
-    SpvOp opcode = (SpvOp)(words[0] & 0xffff);
+    uint16_t wcount = words[0] >> SpvWordCountShift;
+    SpvOp opcode = (SpvOp)(words[0] & SpvOpCodeMask);
 
     switch (opcode) {
     case SpvOpMemoryModel:

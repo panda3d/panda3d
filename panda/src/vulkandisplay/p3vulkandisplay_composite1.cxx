@@ -1,4 +1,5 @@
 #include "config_vulkandisplay.cxx"
+#include "vulkanGraphicsBuffer.cxx"
 #include "vulkanGraphicsPipe.cxx"
 #include "vulkanGraphicsStateGuardian.cxx"
 #include "vulkanGraphicsWindow.cxx"

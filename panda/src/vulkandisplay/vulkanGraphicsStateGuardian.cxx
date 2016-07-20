@@ -196,7 +196,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Create a dummy vertex buffer.  This will be used to store default values
   // for attributes when they are not bound to a vertex buffer, as well as any
   // flat color assigned via ColorAttrib.
-  VkBuffer buffer;
   VkDeviceMemory memory;
   uint32_t palette_size = (uint32_t)min(2, vulkan_color_palette_size.get_value()) * 16;
   if (!create_buffer(palette_size, _color_vertex_buffer, memory,
@@ -250,9 +249,9 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_occlusion_query = false;
   _supports_timer_query = false;
 
-  // Initially, we set this to false; a GSG that knows it has this property
-  // should set it to true.
-  _copy_texture_inverted = false;
+  // Set to indicate that we get an inverted result when we copy the
+  // framebuffer to a texture.
+  _copy_texture_inverted = true;
 
   // Similarly with these capabilities flags.
   _supports_multisample = true;
@@ -264,6 +263,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_basic_shaders = false;
   _supports_geometry_shaders = (features.geometryShader != VK_FALSE);
   _supports_tessellation_shaders = (features.tessellationShader != VK_FALSE);
+  _supports_compute_shaders = true;
   _supports_glsl = false;
   _supports_hlsl = false;
   _supports_framebuffer_multisample = true;
@@ -283,9 +283,14 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     Geom::GR_point |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
-    Geom::GR_line_strip;
-  //TODO: designate provoking vertex used for flat shading
-  //TODO: add flags indicating support for render modes
+    Geom::GR_line_strip |
+    Geom::GR_flat_first_vertex | //TODO: is this correct?
+    Geom::GR_strip_cut_index;
+
+  if (features.fillModeNonSolid) {
+    _supported_geom_rendering |= Geom::GR_render_mode_wireframe |
+                                 Geom::GR_render_mode_point;
+  }
 
   if (features.largePoints) {
     _supported_geom_rendering |= Geom::GR_point_uniform_size;
@@ -663,6 +668,7 @@ prepare_texture(Texture *texture, int view) {
   tc->_extent = image_info.extent;
   tc->_mipmap_begin = mipmap_begin;
   tc->_mipmap_end = mipmap_end;
+  tc->_mip_levels = image_info.mipLevels;
   tc->_array_layers = image_info.arrayLayers;
   tc->_aspect_mask = view_info.subresourceRange.aspectMask;
   tc->_generate_mipmaps = generate_mipmaps;
@@ -691,30 +697,18 @@ upload_texture(VulkanTextureContext *tc) {
   uint32_t mip_levels = tc->_mipmap_end - tc->_mipmap_begin;
   VkResult err;
 
+  //TODO: check if the image is currently in use on a different queue, and if
+  // so, use a semaphore to control order or create a new image and discard
+  // the old one.
+
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), false);
 
   // Issue a command to transition the image into a layout optimal for
   // transferring into.
-  VkImageMemoryBarrier barrier;
-  barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-  barrier.pNext = NULL;
-  barrier.srcAccessMask = 0;
-  barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-  barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-  barrier.srcQueueFamilyIndex = _graphics_queue_family_index;
-  barrier.dstQueueFamilyIndex = _graphics_queue_family_index;
-  barrier.image = image;
-  barrier.subresourceRange.aspectMask = tc->_aspect_mask;
-  barrier.subresourceRange.baseMipLevel = 0;
-  barrier.subresourceRange.levelCount = mip_levels;
-  barrier.subresourceRange.baseArrayLayer = 0;
-  barrier.subresourceRange.layerCount = tc->_array_layers;
-
-  vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0,
-                       0, NULL, 0, NULL, 1, &barrier);
+  tc->transition(_transfer_cmd, _graphics_queue_family_index,
+    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
 
   // Do we even have an image to upload?
   if (texture->get_ram_image().is_null()) {
@@ -727,14 +721,12 @@ upload_texture(VulkanTextureContext *tc) {
         value.float32[1] = col[1];
         value.float32[2] = col[2];
         value.float32[3] = col[3];
-        vkCmdClearColorImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
-                             &value, 1, &barrier.subresourceRange);
+        tc->clear_color_image(_transfer_cmd, value);
       } else {
         VkClearDepthStencilValue value;
         value.depth = col[0];
         value.stencil = 0;
-        vkCmdClearDepthStencilImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
-                                    &value, 1, &barrier.subresourceRange);
+        tc->clear_depth_stencil_image(_transfer_cmd, value);
       }
     }
 
@@ -956,13 +948,34 @@ release_texture(TextureContext *) {
  * This method should only be called by the GraphicsEngine.  Do not call it
  * directly; call GraphicsEngine::extract_texture_data() instead.
  *
- * This method will be called in the draw thread to download the texture
- * memory's image into its ram_image value.  It returns true on success, false
- * otherwise.
+ * Please note that this may be a very expensive operation as it stalls the
+ * graphics pipeline while waiting for the rendered results to become
+ * available.  The graphics implementation may choose to defer writing the ram
+ * image until the next end_frame() call.
+ *
+ * This method will be called in the draw thread between begin_frame() and
+ * end_frame() to download the texture memory's image into its ram_image
+ * value.  It may not be called between begin_scene() and end_scene().
+ *
+ * @return true on success, false otherwise
  */
 bool VulkanGraphicsStateGuardian::
-extract_texture_data(Texture *) {
-  return false;
+extract_texture_data(Texture *tex) {
+  bool success = true;
+
+  // If we wanted to optimize this use-case, we could allocate a single buffer
+  // to hold all texture views and copy that in one go.
+  int num_views = tex->get_num_views();
+  for (int view = 0; view < num_views; ++view) {
+    VulkanTextureContext *tc;
+    DCAST_INTO_R(tc, tex->prepare_now(view, get_prepared_objects(), this), false);
+
+    if (!do_extract_image(tc, tex, view)) {
+      success = false;
+    }
+  }
+
+  return success;
 }
 
 /**
@@ -1395,6 +1408,11 @@ set_state_and_transform(const RenderState *state,
     VulkanTextureContext *tc;
     DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
     update_texture(tc, true);
+
+    tc->transition(_cmd, _graphics_queue_family_index,
+                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                   VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                   VK_ACCESS_SHADER_READ_BIT);
   }
 
   VkDescriptorSet ds = get_descriptor_set(state);
@@ -1529,6 +1547,7 @@ begin_frame(Thread *current_thread) {
 
     // Make sure that the previous command buffer is done executing, so that
     // we don't update or delete resources while they're still being used.
+    // We should probably come up with a better mechanism for this.
     err = vkWaitForFences(_device, 1, &_fence, VK_TRUE, 1000000000ULL);
     if (err == VK_TIMEOUT) {
       vulkandisplay_cat.error()
@@ -1660,8 +1679,88 @@ end_frame(Thread *current_thread) {
   nassertv(_transfer_cmd != VK_NULL_HANDLE);
   vkEndCommandBuffer(_transfer_cmd);
 
+  // Issue commands to transition the staging buffers of the texture downloads
+  // to make sure that the previous copy operations are visible to host reads.
+  if (!_download_queue.empty()) {
+    size_t num_downloads = _download_queue.size();
+    VkBufferMemoryBarrier *barriers = (VkBufferMemoryBarrier *)
+      alloca(sizeof(VkBufferMemoryBarrier) * num_downloads);
+
+    for (size_t i = 0; i < num_downloads; ++i) {
+      barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+      barriers[i].pNext = NULL;
+      barriers[i].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barriers[i].dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+      barriers[i].srcQueueFamilyIndex = _graphics_queue_family_index;
+      barriers[i].dstQueueFamilyIndex = _graphics_queue_family_index;
+      barriers[i].buffer = _download_queue[i]._buffer;
+      barriers[i].offset = 0;
+      barriers[i].size = VK_WHOLE_SIZE;
+    }
+
+    vkCmdPipelineBarrier(_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0,
+                         0, NULL, (uint32_t)num_downloads, barriers, 0, NULL);
+  }
+
   nassertv(_cmd != VK_NULL_HANDLE);
   vkEndCommandBuffer(_cmd);
+
+  VkCommandBuffer cmdbufs[] = {_transfer_cmd, _cmd};
+
+  // Submit the command buffers to the queue.
+  VkSubmitInfo submit_info;
+  submit_info.pNext = NULL;
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.waitSemaphoreCount = 0;
+  submit_info.pWaitSemaphores = NULL;
+  submit_info.pWaitDstStageMask = NULL;
+  submit_info.commandBufferCount = 2;
+  submit_info.pCommandBuffers = cmdbufs;
+  submit_info.signalSemaphoreCount = 0;
+  submit_info.pSignalSemaphores = NULL;
+
+  VkResult err;
+  err = vkQueueSubmit(_queue, 1, &submit_info, _fence);
+  if (err) {
+    vulkan_error(err, "Error submitting queue");
+    return;
+  }
+
+  // If we queued up texture downloads, wait for the queue to finish (slow!)
+  // and then copy the data from Vulkan host memory to Panda memory.
+  if (!_download_queue.empty()) {
+    {
+      PStatTimer timer(_flush_pcollector);
+      err = vkWaitForFences(_device, 1, &_fence, VK_TRUE, ~0ULL);
+    }
+    if (err) {
+      vulkan_error(err, "Failed to wait for command buffer execution");
+    }
+
+    DownloadQueue::const_iterator it;
+    for (it = _download_queue.begin(); it != _download_queue.end(); ++it) {
+      const QueuedDownload &down = *it;
+      PTA_uchar target = down._texture->modify_ram_image();
+      size_t view_size = down._texture->get_ram_view_size();
+
+      void *data;
+      err = vkMapMemory(_device, down._memory, 0, view_size, 0, &data);
+      if (err) {
+        vulkan_error(err, "Failed to map memory for RAM transfer");
+        vkDestroyBuffer(_device, down._buffer, NULL);
+        vkFreeMemory(_device, down._memory, NULL);
+        continue;
+      }
+
+      memcpy(target.p() + view_size * down._view, data, view_size);
+
+      // We won't need these any more.
+      vkUnmapMemory(_device, down._memory);
+      vkDestroyBuffer(_device, down._buffer, NULL);
+      vkFreeMemory(_device, down._memory, NULL);
+    }
+    _download_queue.clear();
+  }
 
   //TODO: delete command buffer, schedule for deletion, or recycle.
 }
@@ -1784,12 +1883,157 @@ reset() {
  * Copy the pixels within the indicated display region from the framebuffer
  * into texture memory.
  *
- * If z > -1, it is the cube map index into which to copy.
+ * This should be called between begin_frame() and end_frame(), but not be
+ * called between begin_scene() and end_scene().
+ *
+ * @param z if z > -1, it is the cube map index into which to copy
+ * @return true on success, false on failure
  */
 bool VulkanGraphicsStateGuardian::
-framebuffer_copy_to_texture(Texture *tex, int view, int z, const DisplayRegion *,
-                            const RenderBuffer &) {
-  return false;
+framebuffer_copy_to_texture(Texture *tex, int view, int z,
+                            const DisplayRegion *dr, const RenderBuffer &rb) {
+
+  // You're not allowed to call this while a render pass is active.
+  nassertr(_render_pass == VK_NULL_HANDLE, false);
+
+  nassertr(_fb_color_tc != NULL, false);
+  VulkanTextureContext *fbtc = _fb_color_tc;
+
+  //TODO: proper format checking and size calculation.
+  tex->setup_2d_texture(fbtc->_extent.width, fbtc->_extent.height, Texture::T_unsigned_byte, Texture::F_rgba8);
+  VkDeviceSize buffer_size = fbtc->_extent.width * fbtc->_extent.height * 4;
+
+  VulkanTextureContext *tc;
+  DCAST_INTO_R(tc, tex->prepare_now(view, get_prepared_objects(), this), false);
+
+  nassertr(fbtc->_extent.width == tc->_extent.width &&
+           fbtc->_extent.height == tc->_extent.height &&
+           fbtc->_extent.depth == tc->_extent.depth, false);
+  nassertr(fbtc->_mip_levels == tc->_mip_levels, false);
+  nassertr(fbtc->_array_layers == tc->_array_layers, false);
+  nassertr(fbtc->_aspect_mask == tc->_aspect_mask, false);
+
+  VkImageCopy region;
+  region.srcSubresource.aspectMask = fbtc->_aspect_mask;
+  region.srcSubresource.mipLevel = 0;
+  if (z != -1) {
+    nassertr(z >= 0 && (uint32_t)z < fbtc->_array_layers, false);
+    region.srcSubresource.baseArrayLayer = z;
+    region.srcSubresource.layerCount = 1;
+  } else {
+    region.srcSubresource.baseArrayLayer = 0;
+    region.srcSubresource.layerCount = fbtc->_array_layers;
+  }
+  region.srcOffset.x = 0;
+  region.srcOffset.y = 0;
+  region.srcOffset.z = 0;
+  region.dstSubresource = region.srcSubresource;
+  region.dstOffset.x = 0;
+  region.dstOffset.y = 0;
+  region.dstOffset.z = 0;
+  region.extent = fbtc->_extent;
+
+  // Issue a command to transition the image into a layout optimal for
+  // transferring from.
+  fbtc->transition(_cmd, _graphics_queue_family_index,
+    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+
+  tc->transition(_cmd, _graphics_queue_family_index,
+    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+
+  vkCmdCopyImage(_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region);
+  return true;
+}
+
+/**
+ * Copy the pixels within the indicated display region from the framebuffer
+ * into system memory, not texture memory.  Please note that this may be a
+ * very expensive operation as it stalls the graphics pipeline while waiting
+ * for the rendered results to become available.  The graphics implementation
+ * may choose to defer writing the ram image until the next end_frame() call.
+ *
+ * This completely redefines the ram image of the indicated texture.
+ *
+ * This should be called between begin_frame() and end_frame(), but not be
+ * called between begin_scene() and end_scene().
+ *
+ * @return true on success, false on failure
+ */
+bool VulkanGraphicsStateGuardian::
+framebuffer_copy_to_ram(Texture *tex, int view, int z,
+                        const DisplayRegion *dr, const RenderBuffer &rb) {
+
+  // Please note that this doesn't complete immediately, but instead queues it
+  // until the next end_frame().  This seems to be okay given existing usage,
+  // and it prevents having to do the equivalent of glFinish() mid-render.
+
+  // You're not allowed to call this while a render pass is active.
+  nassertr(_render_pass == VK_NULL_HANDLE, false);
+
+  nassertr(_fb_color_tc != NULL, false);
+  VulkanTextureContext *fbtc = _fb_color_tc;
+
+  //TODO: proper format checking and size calculation.
+  tex->setup_2d_texture(fbtc->_extent.width, fbtc->_extent.height, Texture::T_unsigned_byte, Texture::F_rgba8);
+
+  return do_extract_image(fbtc, tex, view);
+}
+
+/**
+ * Internal method used by extract_texture_data and framebuffer_copy_to_ram.
+ * Queues up a texture-to-RAM download.
+ */
+bool VulkanGraphicsStateGuardian::
+do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
+  VkDeviceSize buffer_size = tc->_extent.width * tc->_extent.height * 4;
+
+  // Create a temporary buffer for transferring into.
+  QueuedDownload down;
+  if (!create_buffer(buffer_size, down._buffer, down._memory,
+                     VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+    vulkandisplay_cat.error()
+      << "Failed to create staging buffer for framebuffer-to-RAM copy.\n";
+    return false;
+  }
+
+  // We tack this onto the existing command buffer, for now.
+  VkCommandBuffer cmd = _cmd;
+
+  VkBufferImageCopy region;
+  region.bufferOffset = 0;
+  region.bufferRowLength = 0;
+  region.bufferImageHeight = 0;
+  region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  region.imageSubresource.mipLevel = 0;
+  if (z != -1) {
+    nassertr(z >= 0 && (uint32_t)z < tc->_array_layers, false);
+    region.imageSubresource.baseArrayLayer = z;
+    region.imageSubresource.layerCount = 1;
+  } else {
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = tc->_array_layers;
+  }
+  region.imageOffset.x = 0;
+  region.imageOffset.y = 0;
+  region.imageOffset.z = 0;
+  region.imageExtent = tc->_extent;
+
+  // Issue a command to transition the image into a layout optimal for
+  // transferring from.
+  tc->transition(cmd, _graphics_queue_family_index,
+    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+
+  vkCmdCopyImageToBuffer(cmd, tc->_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                         down._buffer, 1, &region);
+
+  down._texture = tex;
+  down._view = view;
+  _download_queue.push_back(down);
+  return true;
 }
 
 /**
@@ -1921,10 +2165,10 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   static PT(Shader) default_shader;
   if (default_shader.is_null()) {
     default_shader = Shader::load(Shader::SL_SPIR_V, "vert.spv", "frag.spv");
-    nassertr(default_shader, NULL);
+    nassertr(default_shader, VK_NULL_HANDLE);
 
     ShaderContext *sc = default_shader->prepare_now(get_prepared_objects(), this);
-    nassertr(sc, NULL);
+    nassertr(sc, VK_NULL_HANDLE);
     _default_sc = DCAST(VulkanShaderContext, sc);
   }
 
@@ -2140,17 +2384,22 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   raster_info.depthClampEnable = VK_TRUE;
   raster_info.rasterizerDiscardEnable = VK_FALSE;
 
-  switch (render_mode->get_mode()) {
-  case RenderModeAttrib::M_filled:
-  default:
+  if (_supported_geom_rendering & Geom::GR_render_mode_wireframe) {
+    switch (render_mode->get_mode()) {
+    case RenderModeAttrib::M_filled:
+    default:
+      raster_info.polygonMode = VK_POLYGON_MODE_FILL;
+      break;
+    case RenderModeAttrib::M_wireframe:
+      raster_info.polygonMode = VK_POLYGON_MODE_LINE;
+      break;
+    case RenderModeAttrib::M_point:
+      raster_info.polygonMode = VK_POLYGON_MODE_POINT;
+      break;
+    }
+  } else {
+    // Not supported.  The geometry will have been changed at munge time.
     raster_info.polygonMode = VK_POLYGON_MODE_FILL;
-    break;
-  case RenderModeAttrib::M_wireframe:
-    raster_info.polygonMode = VK_POLYGON_MODE_LINE;
-    break;
-  case RenderModeAttrib::M_point:
-    raster_info.polygonMode = VK_POLYGON_MODE_POINT;
-    break;
   }
 
   raster_info.cullMode = (VkCullModeFlagBits)cull_face->get_effective_mode();
@@ -2412,7 +2661,7 @@ make_descriptor_set(const RenderState *state) {
   VkDescriptorImageInfo image_info;
   image_info.sampler = sc->_sampler;
   image_info.imageView = tc->_image_view;
-  image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+  image_info.imageLayout = tc->_layout;
 
   VkWriteDescriptorSet write;
   write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

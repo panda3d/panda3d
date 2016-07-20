@@ -71,22 +71,15 @@ private:
   VkSurfaceFormatKHR _surface_format;
 
   struct SwapBuffer {
-    VkImage _image;
-    VkImageView _image_view;
+    VulkanTextureContext *_tc;
     VkFramebuffer _framebuffer;
-    bool _layout_defined;
   };
   typedef pvector<SwapBuffer> SwapBuffers;
   SwapBuffers _swap_buffers;
   uint32_t _image_index;
 
-  pvector<VkCommandBuffer> _present_cmds;
-
-  bool _depth_stencil_layout_defined;
+  VulkanTextureContext *_depth_stencil_tc;
   VkFormat _depth_stencil_format;
-  VkImage _depth_stencil_image;
-  VkImageView _depth_stencil_view;
-  VkDeviceMemory _depth_stencil_memory;
   VkImageAspectFlags _depth_stencil_aspect_mask;
 
 public:
