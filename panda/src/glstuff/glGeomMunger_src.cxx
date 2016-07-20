@@ -409,41 +409,6 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   return format;
 }
 
-#ifdef OPENGLES
-/**
- * Converts a Geom and/or its data as necessary.
- */
-void CLP(GeomMunger)::
-munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
-                Thread *current_thread) {
-  StandardMunger::munge_geom_impl(geom, vertex_data, current_thread);
-
-  // OpenGL ES has no polygon mode, so we have to emulate it.
-  RenderModeAttrib::Mode render_mode = get_render_mode();
-  if (render_mode == RenderModeAttrib::M_point) {
-    geom = geom->make_points();
-  } else if (render_mode == RenderModeAttrib::M_wireframe) {
-    geom = geom->make_lines();
-  }
-}
-
-/**
- * Converts a Geom and/or its data as necessary.
- */
-void CLP(GeomMunger)::
-premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
-  StandardMunger::premunge_geom_impl(geom, vertex_data);
-
-  // OpenGL ES has no polygon mode, so we have to emulate it.
-  RenderModeAttrib::Mode render_mode = get_render_mode();
-  if (render_mode == RenderModeAttrib::M_point) {
-    geom = geom->make_points();
-  } else if (render_mode == RenderModeAttrib::M_wireframe) {
-    geom = geom->make_lines();
-  }
-}
-#endif  // OPENGLES
-
 /**
  * Called to compare two GeomMungers who are known to be of the same type, for
  * an apples-to-apples comparison.  This will never be called on two pointers
@@ -473,11 +438,6 @@ compare_to_impl(const GeomMunger *other) const {
 int CLP(GeomMunger)::
 geom_compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
-#ifdef OPENGLES
-  if (get_render_mode() != om->get_render_mode()) {
-    return get_render_mode() < om->get_render_mode() ? -1 : 1;
-  }
-#endif
   if (_texture != om->_texture) {
     return _texture < om->_texture ? -1 : 1;
   }

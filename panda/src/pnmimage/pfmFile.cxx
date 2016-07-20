@@ -86,7 +86,8 @@ clear() {
 void PfmFile::
 clear(int x_size, int y_size, int num_channels) {
   nassertv(x_size >= 0 && y_size >= 0);
-  nassertv(num_channels > 0 && num_channels <= 4 || (x_size == 0 && y_size == 0 && num_channels == 0));
+  nassertv((num_channels > 0 && num_channels <= 4) ||
+           (x_size == 0 && y_size == 0 && num_channels == 0));
 
   _x_size = x_size;
   _y_size = y_size;
@@ -632,7 +633,6 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
         continue;
       }
 
-      const LPoint3f &p = get_point(xi, yi);
       int gi = (yi - min_y) * y_size + (xi - min_x);
       nassertr(gi >= 0 && gi < size, false);
       mini_grid[gi]._sxi = xi;
@@ -1541,7 +1541,7 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   int new_x_size = x_end - x_begin;
   int new_y_size = y_end - y_begin;
   Table new_table;
-  int new_size = new_x_size * new_y_size * _num_channels;
+  size_t new_size = (size_t)new_x_size * (size_t)new_y_size * (size_t)_num_channels;
 
   // We allocate a little bit bigger to allow safe overflow: you can call
   // get_point3() or get_point4() on the last point of a 1- or 3-channel

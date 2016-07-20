@@ -23,7 +23,7 @@ class DCSwitch;
  * This represents a switch object used as a parameter itself, which packs the
  * appropriate fields of the switch into the message.
  */
-class EXPCL_DIRECT DCSwitchParameter : public DCParameter {
+class DCSwitchParameter : public DCParameter {
 public:
   DCSwitchParameter(const DCSwitch *dswitch);
   DCSwitchParameter(const DCSwitchParameter &copy);

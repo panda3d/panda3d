@@ -38,6 +38,10 @@ PUBLISHED:
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
 
+  MAKE_PROPERTY(orig, get_orig);
+  MAKE_PROPERTY(ready, is_ready);
+  MAKE_PROPERTY(model, get_model);
+
 protected:
   virtual DoneStatus do_task();
 

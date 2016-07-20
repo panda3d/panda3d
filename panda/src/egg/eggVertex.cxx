@@ -138,11 +138,7 @@ has_uvw(const string &name) const {
 bool EggVertex::
 has_aux(const string &name) const {
   AuxMap::const_iterator xi = _aux_map.find(name);
-  if (xi != _aux_map.end()) {
-    EggVertexAux *aux_obj = (*xi).second;
-    return true;
-  }
-  return false;
+  return (xi != _aux_map.end());
 }
 
 /**

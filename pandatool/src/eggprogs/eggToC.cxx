@@ -21,7 +21,6 @@
 #include "eggPolysetMaker.h"
 #include "eggBin.h"
 #include "string_utils.h"
-#include "pystub.h"
 
 /**
  *
@@ -364,9 +363,6 @@ write_bin(EggBin *bin) {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   EggToC prog;
   prog.parse_command_line(argc, argv);
   prog.run();

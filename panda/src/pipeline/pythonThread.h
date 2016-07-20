@@ -24,13 +24,22 @@
  * the Python level.  It will spawn a thread that executes an arbitrary Python
  * functor.
  */
-class EXPCL_PANDA_PIPELINE PythonThread : public Thread {
+class PythonThread : public Thread {
 PUBLISHED:
   PythonThread(PyObject *function, PyObject *args,
                const string &name, const string &sync_name);
   virtual ~PythonThread();
 
   BLOCKING PyObject *join();
+
+public:
+  PyObject *get_args() const;
+  void set_args(PyObject *);
+
+  static PyObject *call_python_func(PyObject *function, PyObject *args);
+
+PUBLISHED:
+  MAKE_PROPERTY(args, get_args, set_args);
 
 protected:
   virtual void thread_main();

@@ -64,7 +64,7 @@ END_PUBLISH
  * Normally these methods are called only by the DCPacker object; the user
  * wouldn't normally call these directly.
  */
-class EXPCL_DIRECT DCPackerInterface {
+class DCPackerInterface {
 public:
   DCPackerInterface(const string &name = string());
   DCPackerInterface(const DCPackerInterface &copy);

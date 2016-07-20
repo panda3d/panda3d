@@ -38,9 +38,6 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _auto_shader(false),
   _shader_skinning(false)
 {
-  _render_mode = (const RenderModeAttrib *)
-    state->get_attrib(RenderModeAttrib::get_class_slot());
-
   if (!get_gsg()->get_runtime_color_scale()) {
     // We might need to munge the colors.
     const ColorAttrib *color_attrib;
@@ -183,14 +180,14 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
     // it rather than draw them one by one.
     if ((unsupported_bits & Geom::GR_composite_bits) != 0 ||
         (unsupported_bits & Geom::GR_strip_cut_index) != 0) {
-/*
- * This decomposes everything in the primitive, so that if (for instance) the
- * primitive contained both strips and fans, but the GSG didn't support fans,
- * it would decompose the strips too.  To handle this correctly, we'd need a
- * separate decompose_fans() and decompose_strips() call; but for now, we'll
- * just say it's good enough.  In practice, we don't have any GSG's that can
- * support strips without also supporting fans.
- */
+
+      // This decomposes everything in the primitive, so that if (for
+      // instance) the primitive contained both strips and fans, but the GSG
+      // didn't support fans, it would decompose the strips too.  To handle
+      // this correctly, we'd need a separate decompose_fans() and
+      // decompose_strips() call; but for now, we'll just say it's good
+      // enough.  In practice, we don't have any GSG's that can support strips
+      // without also supporting fans.
       geom = geom->decompose();
 
       // Decomposing might produce an indexed Geom, so re-check the
@@ -228,14 +225,14 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
     // it rather than draw them one by one.
     if ((unsupported_bits & Geom::GR_composite_bits) != 0 ||
         (unsupported_bits & Geom::GR_strip_cut_index) != 0) {
-/*
- * This decomposes everything in the primitive, so that if (for instance) the
- * primitive contained both strips and fans, but the GSG didn't support fans,
- * it would decompose the strips too.  To handle this correctly, we'd need a
- * separate decompose_fans() and decompose_strips() call; but for now, we'll
- * just say it's good enough.  In practice, we don't have any GSG's that can
- * support strips without also supporting fans.
- */
+
+      // This decomposes everything in the primitive, so that if (for
+      // instance) the primitive contained both strips and fans, but the GSG
+      // didn't support fans, it would decompose the strips too.  To handle
+      // this correctly, we'd need a separate decompose_fans() and
+      // decompose_strips() call; but for now, we'll just say it's good
+      // enough.  In practice, we don't have any GSG's that can support strips
+      // without also supporting fans.
       geom = geom->decompose();
 
       // Decomposing might produce an indexed Geom, so re-check the
@@ -266,10 +263,6 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
 int StandardMunger::
 compare_to_impl(const GeomMunger *other) const {
   const StandardMunger *om = (const StandardMunger *)other;
-
-  if (_render_mode != om->_render_mode) {
-    return _render_mode < om->_render_mode ? -1 : 1;
-  }
 
   if (_munge_color != om->_munge_color) {
     return (int)_munge_color - (int)om->_munge_color;

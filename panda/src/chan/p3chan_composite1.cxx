@@ -3,6 +3,7 @@
 #include "animBundleNode.cxx"
 #include "animChannel.cxx"
 #include "animChannelBase.cxx"
+#include "animChannelFixed.cxx"
 #include "animChannelMatrixDynamic.cxx"
 #include "animChannelMatrixFixed.cxx"
 #include "animChannelMatrixXfmTable.cxx"

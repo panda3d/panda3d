@@ -114,10 +114,10 @@ static void cb_skip(void *user, int n) {
 
     // Implement skip by just reading and discarding the result.
     static const int size = 4096;
-    char data[4096];
-    while (n > 4096) {
-      in->read(data, 4096);
-      n -= 4096;
+    char data[size];
+    while (n > size) {
+      in->read(data, size);
+      n -= size;
     }
     if (n > 0) {
       in->read(data, n);

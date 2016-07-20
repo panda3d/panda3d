@@ -18,10 +18,6 @@
 #include "throw_event.h"
 #include "eventParameter.h"
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
-
 AtomicAdjust::Integer AsyncTask::_next_task_id;
 PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
 TypeHandle AsyncTask::_type_handle;
@@ -48,9 +44,6 @@ AsyncTask(const string &name) :
   _total_dt(0.0),
   _num_frames(0)
 {
-#ifdef HAVE_PYTHON
-  _python_object = NULL;
-#endif  // HAVE_PYTHON
   set_name(name);
 
   // Carefully copy _next_task_id and increment it so that we get a unique ID.
@@ -68,9 +61,6 @@ AsyncTask(const string &name) :
 AsyncTask::
 ~AsyncTask() {
   nassertv(_state == S_inactive && _manager == NULL && _chain == NULL);
-#ifdef HAVE_PYTHON
-  set_python_object(NULL);
-#endif
 }
 
 /**
@@ -354,35 +344,6 @@ set_priority(int priority) {
     }
   }
 }
-
-#ifdef HAVE_PYTHON
-/**
- * Specifies an arbitrary Python object that will be piggybacked on the task
- * object.
- */
-void AsyncTask::
-set_python_object(PyObject *python_object) {
-  Py_XINCREF(python_object);
-  Py_XDECREF(_python_object);
-  _python_object = python_object;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Returns the Python object that was specified to set_python_object(), if
- * any, or None if no object was specified.
- */
-PyObject *AsyncTask::
-get_python_object() const {
-  if (_python_object != (PyObject *)NULL) {
-    Py_XINCREF(_python_object);
-    return _python_object;
-  }
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-#endif  // HAVE_PYTHON
 
 /**
  *

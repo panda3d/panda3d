@@ -935,11 +935,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
 
   if (manager->get_file_minor_ver() >= 40) {
-    for (int i = 0; i < _off_lights.size(); ++i) {
+    for (size_t i = 0; i < _off_lights.size(); ++i) {
       pi += _off_lights[i].complete_pointers(p_list + pi, manager);
     }
 
-    for (int i = 0; i < _on_lights.size(); ++i) {
+    for (size_t i = 0; i < _on_lights.size(); ++i) {
       pi += _on_lights[i].complete_pointers(p_list + pi, manager);
     }
 
@@ -978,7 +978,7 @@ finalize(BamReader *manager) {
 
     // Check if any of the nodes we loaded are mentioned in the
     // AttribNodeRegistry.  If so, replace them.
-    for (int i = 0; i < _off_lights.size(); ++i) {
+    for (size_t i = 0; i < _off_lights.size(); ++i) {
       int n = areg->find_node(_off_lights[i]);
       if (n != -1) {
         // If it's in the registry, replace it.
@@ -986,7 +986,7 @@ finalize(BamReader *manager) {
       }
     }
 
-    for (int i = 0; i < _on_lights.size(); ++i) {
+    for (size_t i = 0; i < _on_lights.size(); ++i) {
       int n = areg->find_node(_on_lights[i]);
       if (n != -1) {
         // If it's in the registry, replace it.
@@ -1067,12 +1067,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   if (manager->get_file_minor_ver() >= 40) {
     _off_lights.resize(scan.get_uint16());
-    for (int i = 0; i < _off_lights.size(); ++i) {
+    for (size_t i = 0; i < _off_lights.size(); ++i) {
       _off_lights[i].fillin(scan, manager);
     }
 
     _on_lights.resize(scan.get_uint16());
-    for (int i = 0; i < _on_lights.size(); ++i) {
+    for (size_t i = 0; i < _on_lights.size(); ++i) {
       _on_lights[i].fillin(scan, manager);
     }
   } else {

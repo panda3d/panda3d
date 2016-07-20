@@ -22,14 +22,13 @@ struct InternalBufferData {
   string _format;
 };
 
-#if PY_VERSION_HEX >= 0x02060000
 /**
  * This is used to implement the buffer protocol, in order to allow efficient
  * access to the array data through a Python multiview object.
  */
 int Extension<GeomVertexArrayData>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-
+#if PY_VERSION_HEX >= 0x02060000
   PT(GeomVertexArrayDataHandle) handle = _this->modify_handle();
   CPT(GeomVertexArrayFormat) format = handle->get_array_format();
 
@@ -79,6 +78,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->suboffsets = NULL;
 
   return 0;
+#else
+  return -1;
+#endif
 }
 
 /**
@@ -86,7 +88,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
  */
 int Extension<GeomVertexArrayData>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-
+#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
       PyErr_SetString(PyExc_BufferError,
                       "Object is not writable.");
@@ -142,6 +144,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->suboffsets = NULL;
 
   return 0;
+#else
+  return -1;
+#endif
 }
 
 /**
@@ -149,8 +154,8 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
  */
 void Extension<GeomVertexArrayData>::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
+#if PY_VERSION_HEX >= 0x02060000
   // Note: PyBuffer_Release automatically decrements view->obj.
-
   InternalBufferData *data;
   data = (InternalBufferData *) view->internal;
   if (data == NULL) {
@@ -158,9 +163,8 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
   }
   delete data;
   view->internal = NULL;
+#endif
 }
-
-#endif  // PY_VERSION_HEX >= 0x02060000
 
 /**
  * Copies all data from the given buffer object.  The array is rescaled as

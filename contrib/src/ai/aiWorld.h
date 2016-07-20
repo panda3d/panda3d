@@ -11,11 +11,6 @@
  * @date 2009-09-08
  */
 
-#pragma warning (disable:4996)
-#pragma warning (disable:4005)
-#pragma warning(disable:4275)
-
-
 #ifndef _AIWORLD_H
 #define _AIWORLD_H
 

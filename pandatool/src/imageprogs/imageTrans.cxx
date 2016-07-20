@@ -13,7 +13,6 @@
 
 #include "imageTrans.h"
 #include "string_utils.h"
-#include "pystub.h"
 
 /**
  *
@@ -203,9 +202,6 @@ extract_alpha() {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   ImageTrans prog;
   prog.parse_command_line(argc, argv);
   prog.run();

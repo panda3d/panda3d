@@ -32,7 +32,7 @@ class HashGenerator;
  * This may also be a typedef reference to another type, which has the same
  * properties as the referenced type, but a different name.
  */
-class EXPCL_DIRECT DCParameter : public DCField {
+class DCParameter : public DCField {
 protected:
   DCParameter();
   DCParameter(const DCParameter &copy);

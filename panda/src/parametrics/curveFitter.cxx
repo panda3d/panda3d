@@ -154,11 +154,9 @@ void CurveFitter::
 sample(ParametricCurveCollection *curves, int count) {
   nassertv(curves != (ParametricCurveCollection *)NULL);
   PN_stdfloat max_t = curves->get_max_t();
-  PN_stdfloat t, last_t, d;
+  PN_stdfloat t;
   DataPoint dp;
 
-  last_t = 0.0f;
-  d = 0.0f;
   int i;
   for (i = 0; i < count; i++) {
     t = max_t * (PN_stdfloat)i / (PN_stdfloat)(count-1);

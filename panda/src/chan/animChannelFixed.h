@@ -62,6 +62,8 @@ private:
   static TypeHandle _type_handle;
 };
 
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, AnimChannelFixed<ACMatrixSwitchType>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, AnimChannelFixed<ACScalarSwitchType>);
 
 #include "animChannelFixed.I"
 

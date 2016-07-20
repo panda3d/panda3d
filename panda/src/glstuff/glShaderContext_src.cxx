@@ -1296,12 +1296,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_SAMPLER_2D_ARRAY_SHADOW:
 #ifndef OPENGLES
       case GL_INT_SAMPLER_1D:
+      case GL_INT_SAMPLER_1D_ARRAY:
       case GL_INT_SAMPLER_BUFFER:
       case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_1D:
+      case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_BUFFER:
       case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_SAMPLER_1D:
+      case GL_SAMPLER_1D_ARRAY:
       case GL_SAMPLER_1D_SHADOW:
       case GL_SAMPLER_BUFFER:
       case GL_SAMPLER_CUBE_MAP_ARRAY:
@@ -1596,6 +1599,12 @@ get_sampler_texture_type(int &out, GLenum param_type) {
   case GL_UNSIGNED_INT_SAMPLER_1D:
   case GL_SAMPLER_1D:
     out = Texture::TT_1d_texture;
+    return true;
+
+  case GL_INT_SAMPLER_1D_ARRAY:
+  case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+  case GL_SAMPLER_1D_ARRAY:
+    out = Texture::TT_1d_texture_array;
     return true;
 #endif
 
@@ -2145,7 +2154,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
       // Bind the vertex buffer to the binding index.
       if (ai >= _glgsg->_current_vertex_buffers.size()) {
-        _glgsg->_current_vertex_buffers.resize(ai + 1, 0);
+        GLuint zero = 0;
+        _glgsg->_current_vertex_buffers.resize(ai + 1, zero);
       }
       if (_glgsg->_current_vertex_buffers[ai] != gvbc->_index) {
         _glgsg->_glBindVertexBuffer(ai, gvbc->_index, 0, stride);

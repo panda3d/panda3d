@@ -806,7 +806,7 @@ expand_manifests(const string &input_expr, bool expand_undefined,
           Manifests::const_iterator mi = _manifests.find(ident);
           if (mi != _manifests.end()) {
             const CPPManifest *manifest = (*mi).second;
-            expand_manifest_inline(expr, q, p, (*mi).second);
+            expand_manifest_inline(expr, q, p, manifest);
             manifest_found = true;
 
           } else if (expand_undefined && ident != "true" && ident != "false") {
@@ -1192,8 +1192,6 @@ skip_c_comment(int c) {
 
   } else {
     CPPFile first_file = get_file();
-    int first_line_number = get_line_number();
-    int first_col_number = get_col_number() - 2;
 
     while (c != EOF) {
       if (c == '*') {
@@ -1816,8 +1814,9 @@ get_identifier(int c) {
       type = CPPExpression::T_u16string;
     } else if (name == "U") {
       type = CPPExpression::T_u32string;
+    } else {
+      type = CPPExpression::T_string;
     }
-
     get();
     string str = scan_quoted(c);
 

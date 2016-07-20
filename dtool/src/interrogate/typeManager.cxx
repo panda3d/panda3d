@@ -41,7 +41,7 @@ resolve_type(CPPType *type, CPPScope *scope) {
     scope = &parser;
   }
 
-  CPPType *orig_type = type;
+  //CPPType *orig_type = type;
   type = type->resolve_type(scope, &parser);
   string name = type->get_local_name(&parser);
   if (name.empty()) {
