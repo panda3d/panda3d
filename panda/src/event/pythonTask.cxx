@@ -18,12 +18,9 @@
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 
-TypeHandle PythonTask::_type_handle;
+#include "pythonThread.h"
 
-Configure(config_pythonTask);
-ConfigureFn(config_pythonTask) {
-  PythonTask::init_type();
-}
+TypeHandle PythonTask::_type_handle;
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
@@ -404,8 +401,7 @@ do_python_task() {
   if (_generator == (PyObject *)NULL) {
     // We are calling the function directly.
     PyObject *args = get_args();
-    result =
-      Thread::get_current_thread()->call_python_func(_function, args);
+    result = PythonThread::call_python_func(_function, args);
     Py_DECREF(args);
 
 #ifdef PyGen_Check

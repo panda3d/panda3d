@@ -21,8 +21,6 @@
 #include "get_tinyxml.h"
 #include "windowHandle.h"
 
-#include <Python.h>
-
 class P3DSession;
 
 /**

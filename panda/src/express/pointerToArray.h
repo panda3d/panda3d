@@ -102,10 +102,8 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
 
 #ifdef HAVE_PYTHON
-#if PY_VERSION_HEX >= 0x02060000
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
-#endif
 #endif
 
 #else  // CPPPARSER
@@ -257,10 +255,8 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
 
 #ifdef HAVE_PYTHON
-#if PY_VERSION_HEX >= 0x02060000
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
-#endif
 #endif
 
 #else  // CPPPARSER

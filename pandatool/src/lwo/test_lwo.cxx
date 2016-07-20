@@ -14,13 +14,9 @@
 #include "lwoInputFile.h"
 #include "lwoChunk.h"
 #include "config_lwo.h"
-#include "pystub.h"
 
 int
 main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   init_liblwo();
   if (argc != 2) {
     nout << "test_lwo file.lwo\n";

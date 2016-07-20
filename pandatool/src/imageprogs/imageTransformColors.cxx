@@ -13,7 +13,6 @@
 
 #include "imageTransformColors.h"
 #include "string_utils.h"
-#include "pystub.h"
 #include "pnmImage.h"
 #include <math.h>
 
@@ -471,9 +470,6 @@ process_image(PNMImage &image) {
 }
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   ImageTransformColors prog;
   prog.parse_command_line(argc, argv);
   prog.run();

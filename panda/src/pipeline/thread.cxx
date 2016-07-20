@@ -19,10 +19,6 @@
 #include "conditionVarDebug.h"
 #include "conditionVarFullDebug.h"
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
-
 Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
 TypeHandle Thread::_type_handle;
@@ -47,32 +43,16 @@ Thread(const string &name, const string &sync_name) :
 {
   _started = false;
   _pstats_index = -1;
+  _python_index = -1;
   _pstats_callback = NULL;
   _pipeline_stage = 0;
   _joinable = false;
   _current_task = NULL;
 
-#ifdef HAVE_PYTHON
-  _python_data = Py_None;
-  Py_INCREF(_python_data);
-#endif
-
 #ifdef DEBUG_THREADS
   _blocked_on_mutex = NULL;
   _waiting_on_cvar = NULL;
   _waiting_on_cvar_full = NULL;
-#endif
-
-#if defined(HAVE_PYTHON) && !defined(SIMPLE_THREADS)
-  // Ensure that the Python threading system is initialized and ready to go.
-#ifdef WITH_THREAD  // This symbol defined within Python.h
-
-#if PY_VERSION_HEX >= 0x03020000
-  Py_Initialize();
-#endif
-
-  PyEval_InitThreads();
-#endif
 #endif
 }
 
@@ -81,10 +61,6 @@ Thread(const string &name, const string &sync_name) :
  */
 Thread::
 ~Thread() {
-#ifdef HAVE_PYTHON
-  Py_DECREF(_python_data);
-#endif
-
 #ifdef DEBUG_THREADS
   nassertv(_blocked_on_mutex == NULL &&
            _waiting_on_cvar == NULL &&
@@ -224,242 +200,6 @@ start(ThreadPriority priority, bool joinable) {
 
   return _started;
 }
-
-#ifdef HAVE_PYTHON
-/**
- * Sets an arbitrary Python object that may be associated with this thread
- * object.  This is just for the purposes of associated arbitrary Python data
- * with the C++ object; other than managing the reference count, the C++ code
- * does nothing with this object.
- */
-void Thread::
-set_python_data(PyObject *python_data) {
-  Py_DECREF(_python_data);
-  _python_data = python_data;
-  Py_INCREF(_python_data);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Returns the Python object that was set with set_python_data().
- */
-PyObject *Thread::
-get_python_data() const {
-  Py_INCREF(_python_data);
-  return _python_data;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Internal function to safely call a Python function within a sub-thread,
- * that might execute in parallel with existing Python code.  The return value
- * is the return value of the Python function, or NULL if there was an
- * exception.
- */
-PyObject *Thread::
-call_python_func(PyObject *function, PyObject *args) {
-  nassertr(this == get_current_thread(), NULL);
-
-  // Create a new Python thread state data structure, so Python can properly
-  // lock itself.
-  PyObject *result = NULL;
-
-  if (this == get_main_thread()) {
-    // In the main thread, just call the function.
-    result = PyObject_Call(function, args, NULL);
-
-    if (result == (PyObject *)NULL) {
-      if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit)) {
-        // If we caught SystemExit, let it pass by without bothering to print
-        // a callback.
-
-      } else {
-        // Temporarily save and restore the exception state so we can print a
-        // callback on-the-spot.
-        PyObject *exc, *val, *tb;
-        PyErr_Fetch(&exc, &val, &tb);
-
-        Py_XINCREF(exc);
-        Py_XINCREF(val);
-        Py_XINCREF(tb);
-        PyErr_Restore(exc, val, tb);
-        PyErr_Print();
-
-        PyErr_Restore(exc, val, tb);
-      }
-    }
-
-  } else {
-#ifndef HAVE_THREADS
-    // Shouldn't be possible to come here without having some kind of
-    // threading support enabled.
-    nassertr(false, NULL);
-#else
-
-#ifdef SIMPLE_THREADS
-    // We can't use the PyGILState interface, which assumes we are using true
-    // OS-level threading.  PyGILState enforces policies like only one thread
-    // state per OS-level thread, which is not true in the case of
-    // SIMPLE_THREADS.
-
-    // For some reason I don't fully understand, I'm getting a crash when I
-    // clean up old PyThreadState objects with PyThreadState_Delete().  It
-    // appears that the thread state is still referenced somewhere at the time
-    // I call delete, and the crash occurs because I've deleted an active
-    // pointer.
-
-    // Storing these pointers in a vector for permanent recycling seems to
-    // avoid this problem.  I wish I understood better what's going wrong, but
-    // I guess this workaround will do.
-    static pvector<PyThreadState *> thread_states;
-
-    PyThreadState *orig_thread_state = PyThreadState_Get();
-    PyInterpreterState *istate = orig_thread_state->interp;
-    PyThreadState *new_thread_state;
-    if (thread_states.empty()) {
-      new_thread_state = PyThreadState_New(istate);
-    } else {
-      new_thread_state = thread_states.back();
-      thread_states.pop_back();
-    }
-    PyThreadState_Swap(new_thread_state);
-
-    // Call the user's function.
-    result = PyObject_Call(function, args, NULL);
-    if (result == (PyObject *)NULL && PyErr_Occurred()) {
-      // We got an exception.  Move the exception from the current thread into
-      // the main thread, so it can be handled there.
-      PyObject *exc, *val, *tb;
-      PyErr_Fetch(&exc, &val, &tb);
-
-      thread_cat.error()
-        << "Exception occurred within " << *this << "\n";
-
-      // Temporarily restore the exception state so we can print a callback
-      // on-the-spot.
-      Py_XINCREF(exc);
-      Py_XINCREF(val);
-      Py_XINCREF(tb);
-      PyErr_Restore(exc, val, tb);
-      PyErr_Print();
-
-      PyThreadState_Swap(orig_thread_state);
-      thread_states.push_back(new_thread_state);
-      // PyThreadState_Clear(new_thread_state);
-      // PyThreadState_Delete(new_thread_state);
-
-      PyErr_Restore(exc, val, tb);
-
-      // Now attempt to force the main thread to the head of the ready queue,
-      // so it can respond to the exception immediately.  This only works if
-      // the main thread is not blocked, of course.
-      Thread::get_main_thread()->preempt();
-
-    } else {
-      // No exception.  Restore the thread state normally.
-      PyThreadState *state = PyThreadState_Swap(orig_thread_state);
-      thread_states.push_back(new_thread_state);
-      // PyThreadState_Clear(new_thread_state);
-      // PyThreadState_Delete(new_thread_state);
-    }
-
-#else  // SIMPLE_THREADS
-    // With true threading enabled, we're better off using PyGILState.
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
-
-    // Call the user's function.
-    result = PyObject_Call(function, args, NULL);
-    if (result == (PyObject *)NULL && PyErr_Occurred()) {
-      // We got an exception.  Move the exception from the current thread into
-      // the main thread, so it can be handled there.
-      PyObject *exc, *val, *tb;
-      PyErr_Fetch(&exc, &val, &tb);
-
-      thread_cat.error()
-        << "Exception occurred within " << *this << "\n";
-
-      // Temporarily restore the exception state so we can print a callback
-      // on-the-spot.
-      Py_XINCREF(exc);
-      Py_XINCREF(val);
-      Py_XINCREF(tb);
-      PyErr_Restore(exc, val, tb);
-      PyErr_Print();
-
-      PyGILState_Release(gstate);
-
-      PyErr_Restore(exc, val, tb);
-    } else {
-      // No exception.  Restore the thread state normally.
-      PyGILState_Release(gstate);
-    }
-
-
-#endif  // SIMPLE_THREADS
-#endif  // HAVE_THREADS
-  }
-
-  return result;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Called when a Python exception is raised during processing of a thread.
- * Gets the error string and passes it back to the calling Python process in a
- * sensible way.
- */
-void Thread::
-handle_python_exception() {
-  /*
-  PyObject *exc, *val, *tb;
-  PyErr_Fetch(&exc, &val, &tb);
-
-  ostringstream strm;
-  strm << "\n";
-
-  if (PyObject_HasAttrString(exc, "__name__")) {
-    PyObject *exc_name = PyObject_GetAttrString(exc, "__name__");
-    PyObject *exc_str = PyObject_Str(exc_name);
-    strm << PyString_AsString(exc_str);
-    Py_DECREF(exc_str);
-    Py_DECREF(exc_name);
-  } else {
-    PyObject *exc_str = PyObject_Str(exc);
-    strm << PyString_AsString(exc_str);
-    Py_DECREF(exc_str);
-  }
-  Py_DECREF(exc);
-
-  if (val != (PyObject *)NULL) {
-    PyObject *val_str = PyObject_Str(val);
-    strm << ": " << PyString_AsString(val_str);
-    Py_DECREF(val_str);
-    Py_DECREF(val);
-  }
-  if (tb != (PyObject *)NULL) {
-    Py_DECREF(tb);
-  }
-
-  strm << "\nException occurred within thread " << get_name();
-  string message = strm.str();
-  nout << message << "\n";
-
-  nassert_raise(message);
-  */
-
-  thread_cat.error()
-    << "Exception occurred within " << *this << "\n";
-
-  // Now attempt to force the main thread to the head of the ready queue, so
-  // it will be the one to receive the above assertion.  This mainly only has
-  // an effect if SIMPLE_THREADS is in use.
-  Thread::get_main_thread()->preempt();
-}
-#endif  // HAVE_PYTHON
 
 /**
  * Creates the Thread object that represents the main thread.

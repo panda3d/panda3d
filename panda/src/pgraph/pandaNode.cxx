@@ -27,7 +27,6 @@
 #include "config_mathutil.h"
 #include "lightReMutexHolder.h"
 #include "graphicsStateGuardianBase.h"
-#include "py_panda.h"
 
 // This category is just temporary for debugging convenience.
 NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
@@ -131,7 +130,8 @@ PandaNode(const PandaNode &copy) :
   TypedWritableReferenceCount(copy),
   Namable(copy),
   _paths_lock("PandaNode::_paths_lock"),
-  _dirty_prev_transform(false)
+  _dirty_prev_transform(false),
+  _python_tag_data(copy._python_tag_data)
 {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
@@ -172,12 +172,6 @@ PandaNode(const PandaNode &copy) :
     ++cdata->_internal_bounds_mark;
     cdata->_final_bounds = copy_cdata->_final_bounds;
     cdata->_fancy_bits = copy_cdata->_fancy_bits;
-
-#ifdef HAVE_PYTHON
-    // Copy and increment all of the Python objects held by the other node.
-    cdata->_python_tag_data = copy_cdata->_python_tag_data;
-    cdata->inc_py_refs();
-#endif  // HAVE_PYTHON
   }
 }
 
@@ -1270,32 +1264,13 @@ copy_tags(PandaNode *other) {
       cdataw->_tag_data[(*ti).first] = (*ti).second;
     }
     cdataw->set_fancy_bit(FB_tag, !cdataw->_tag_data.empty());
-
-#ifdef HAVE_PYTHON
-    PythonTagData::const_iterator pti;
-    for (pti = cdatar->_python_tag_data.begin();
-         pti != cdatar->_python_tag_data.end();
-         ++pti) {
-      const string &key = (*pti).first;
-      PyObject *value = (*pti).second;
-      Py_XINCREF(value);
-
-      pair<PythonTagData::iterator, bool> result;
-      result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
-
-      if (!result.second) {
-        // The insert was unsuccessful; that means the key was already present
-        // in the map.  In this case, we should decrement the original value's
-        // reference count and replace it with the new object.
-        PythonTagData::iterator wpti = result.first;
-        PyObject *old_value = (*wpti).second;
-        Py_XDECREF(old_value);
-        (*wpti).second = value;
-      }
-    }
-#endif // HAVE_PYTHON
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  // It's okay to copy the tags by pointer, because get_python_tags does a
+  // copy-on-write.
+  _python_tag_data = other->_python_tag_data;
+
   mark_bam_modified();
 }
 
@@ -1321,20 +1296,9 @@ list_tags(ostream &out, const string &separator) const {
     }
   }
 
-#ifdef HAVE_PYTHON
-  if (!cdata->_python_tag_data.empty()) {
-    if (!cdata->_tag_data.empty()) {
-      out << separator;
-    }
-    PythonTagData::const_iterator ti = cdata->_python_tag_data.begin();
-    out << (*ti).first;
-    ++ti;
-    while (ti != cdata->_python_tag_data.end()) {
-      out << separator << (*ti).first;
-      ++ti;
-    }
-  }
-#endif  // HAVE_PYTHON
+  // We used to list the Python tags here.  That's a bit awkward, though,
+  // since that means calling up into Python code to print the keys.  If
+  // someone finds it useful, we can implement it in an extension method.
 }
 
 /**
@@ -1393,50 +1357,11 @@ compare_tags(const PandaNode *other) const {
     return -1;
   }
 
-#ifdef HAVE_PYTHON
-  PythonTagData::const_iterator api = cdata->_python_tag_data.begin();
-  PythonTagData::const_iterator bpi = cdata_other->_python_tag_data.begin();
-  while (api != cdata->_python_tag_data.end() &&
-         bpi != cdata_other->_python_tag_data.end()) {
-    int cmp = strcmp((*api).first.c_str(), (*bpi).first.c_str());
-    if (cmp != 0) {
-      return cmp;
-    }
-
-#if PY_MAJOR_VERSION >= 3
-    if (PyObject_RichCompareBool((*api).second, (*bpi).second, Py_LT) == 1) {
-      return -1;
-    } else if (PyObject_RichCompareBool((*api).second, (*bpi).second, Py_GT) == 1) {
-      return 1;
-    } else if (PyObject_RichCompareBool((*api).second, (*bpi).second, Py_EQ) == 1) {
-      cmp = 0;
-    } else {
-#else
-    if (PyObject_Cmp((*api).second, (*bpi).second, &cmp) == -1) {
-#endif
-      // Unable to compare objects; just compare pointers.
-      if ((*api).second != (*bpi).second) {
-        cmp = (*api).second < (*bpi).second ? -1 : 1;
-      } else {
-        cmp = 0;
-      }
-    }
-    if (cmp != 0) {
-      return cmp;
-    }
-
-    ++api;
-    ++bpi;
+  // We compare these by pointer, since it's problematic to call up into
+  // Python from arbitrary C++ code.
+  if (_python_tag_data != other->_python_tag_data) {
+    return (_python_tag_data < other->_python_tag_data) ? -1 : 1;
   }
-  if (api != cdata->_python_tag_data.end()) {
-    // list A is longer.
-    return 1;
-  }
-  if (bpi != cdata_other->_python_tag_data.end()) {
-    // list B is longer.
-    return -1;
-  }
-#endif  // HAVE_PYTHON
 
   return 0;
 }
@@ -1494,30 +1419,6 @@ copy_all_properties(PandaNode *other) {
       cdataw->_tag_data[(*ti).first] = (*ti).second;
     }
 
-#ifdef HAVE_PYTHON
-    PythonTagData::const_iterator pti;
-    for (pti = cdatar->_python_tag_data.begin();
-         pti != cdatar->_python_tag_data.end();
-         ++pti) {
-      const string &key = (*pti).first;
-      PyObject *value = (*pti).second;
-      Py_XINCREF(value);
-
-      pair<PythonTagData::iterator, bool> result;
-      result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
-
-      if (!result.second) {
-        // The insert was unsuccessful; that means the key was already present
-        // in the map.  In this case, we should decrement the original value's
-        // reference count and replace it with the new object.
-        PythonTagData::iterator wpti = result.first;
-        PyObject *old_value = (*wpti).second;
-        Py_XDECREF(old_value);
-        (*wpti).second = value;
-      }
-    }
-#endif // HAVE_PYTHON
-
     static const int change_bits = (FB_transform | FB_state | FB_effects |
                                     FB_tag | FB_draw_mask);
     cdataw->_fancy_bits =
@@ -1531,6 +1432,10 @@ copy_all_properties(PandaNode *other) {
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  // It's okay to copy the tags by pointer, because get_python_tags does a
+  // copy-on-write.
+  _python_tag_data = other->_python_tag_data;
 
   if (any_transform_changed || any_state_changed || any_draw_mask_changed) {
     mark_bounds_stale(current_thread);
@@ -3810,7 +3715,6 @@ CData(const PandaNode::CData &copy) :
 
   _effects(copy._effects),
   _tag_data(copy._tag_data),
-  // _python_tag_data appears below.
   _draw_control_mask(copy._draw_control_mask),
   _draw_show_mask(copy._draw_show_mask),
   _into_collide_mask(copy._into_collide_mask),
@@ -3836,12 +3740,6 @@ CData(const PandaNode::CData &copy) :
   // Note that this copy constructor is not used by the PandaNode copy
   // constructor!  Any elements that must be copied between nodes should also
   // be explicitly copied there.
-
-#ifdef HAVE_PYTHON
-  // Copy and increment all of the Python objects held by the other node.
-  _python_tag_data = copy._python_tag_data;
-  inc_py_refs();
-#endif  // HAVE_PYTHON
 }
 
 /**
@@ -3849,10 +3747,6 @@ CData(const PandaNode::CData &copy) :
  */
 PandaNode::CData::
 ~CData() {
-#ifdef HAVE_PYTHON
-  // Free all of the Python objects held by this node.
-  dec_py_refs();
-#endif  // HAVE_PYTHON
 }
 
 /**
@@ -4028,62 +3922,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   fillin_down_list(*modify_down(), "down", scan, manager);
   fillin_down_list(*modify_stashed(), "stashed", scan, manager);
 }
-
-#ifdef HAVE_PYTHON
-/**
- * Increments the reference counts on all held Python objects.
- */
-void PandaNode::CData::
-inc_py_refs() {
-  if (!_python_tag_data.empty()) {
-#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-    // This might happen at any time, so be sure the Python state is ready for
-    // it.
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
-#endif
-    PythonTagData::const_iterator ti;
-    for (ti = _python_tag_data.begin();
-         ti != _python_tag_data.end();
-         ++ti) {
-      PyObject *value = (*ti).second;
-      Py_XINCREF(value);
-    }
-#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-    PyGILState_Release(gstate);
-#endif
-  }
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Decrements the reference counts on all held Python objects.
- */
-void PandaNode::CData::
-dec_py_refs() {
-  if (!_python_tag_data.empty()) {
-#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-    // This might happen at any time, so be sure the Python state is ready for
-    // it.
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
-#endif
-
-    PythonTagData::const_iterator ti;
-    for (ti = _python_tag_data.begin();
-         ti != _python_tag_data.end();
-         ++ti) {
-      PyObject *value = (*ti).second;
-      Py_XDECREF(value);
-    }
-
-#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-    PyGILState_Release(gstate);
-#endif
-  }
-}
-#endif  // HAVE_PYTHON
 
 /**
  * Writes the indicated list of parent node pointers to the datagram.

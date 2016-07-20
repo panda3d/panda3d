@@ -170,9 +170,9 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_points() const);
 
-#if PY_VERSION_HEX >= 0x02060000
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
 #endif
 

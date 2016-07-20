@@ -172,7 +172,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
  * node contains this tag definition.  See set_python_tag().
  */
 NodePath Extension<NodePath>::
-find_net_python_tag(const string &key) const {
+find_net_python_tag(PyObject *key) const {
   if (_this->is_empty()) {
     return NodePath::not_found();
   }
