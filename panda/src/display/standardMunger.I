@@ -18,13 +18,3 @@ INLINE GraphicsStateGuardian *StandardMunger::
 get_gsg() const {
   return (GraphicsStateGuardian *)GeomMunger::get_gsg();
 }
-
-/**
- * Returns the render mode active on this munger.  Intended for derived
- * classes that may have to munge differently depending on render mode.
- */
-INLINE RenderModeAttrib::Mode StandardMunger::
-get_render_mode() const {
-  return (_render_mode != NULL) ? _render_mode->get_mode()
-                                : RenderModeAttrib::M_filled;
-}

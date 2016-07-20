@@ -2209,7 +2209,8 @@ reset() {
     Geom::GR_point_perspective | Geom::GR_point_sprite |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
-    Geom::GR_flat_first_vertex;
+    Geom::GR_flat_first_vertex |
+    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point;
 
   // overwrite gsg defaults with these values
 
@@ -2844,7 +2845,8 @@ do_issue_shader() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_render_mode() {
-  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
+  const RenderModeAttrib *target_render_mode;
+  _target_rs->get_attrib_def(target_render_mode);
   RenderModeAttrib::Mode mode = target_render_mode->get_mode();
 
   switch (mode) {

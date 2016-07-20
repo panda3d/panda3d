@@ -628,6 +628,9 @@ reset() {
   }
 
   _supported_geom_rendering =
+#ifndef OPENGLES
+    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point |
+#endif
     Geom::GR_indexed_point |
     Geom::GR_point | Geom::GR_point_uniform_size |
     Geom::GR_indexed_other |
