@@ -370,6 +370,14 @@ open_window() {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, _pipe, false);
 
+#ifdef HAVE_X11
+  int depth = DefaultDepth(_display, _screen);
+  _visual_info = new XVisualInfo;
+  XMatchVisualInfo(_display, _screen, depth, TrueColor, _visual_info);
+
+  setup_colormap(_visual_info);
+#endif
+
   if (!BaseGraphicsWindow::open_window()) {
     return false;
   }
@@ -753,18 +761,20 @@ create_swapchain() {
   swapchain_info.oldSwapchain = NULL;
 
   // Choose a present mode.  Use FIFO mode as fallback, which is always
-  // available.  TODO: respect sync_video when choosing a mode.
+  // available.
   swapchain_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-  for (size_t i = 0; i < num_present_modes; ++i) {
-    if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-      // This is the lowest-latency non-tearing mode, so we'll take this.
-      swapchain_info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-      break;
-    }
-    if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-      // This is the fastest present mode, though it tears, so we'll use this
-      // if mailbox mode isn't available.
-      swapchain_info.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+  if (!sync_video) {
+    for (size_t i = 0; i < num_present_modes; ++i) {
+      if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+        // This is the lowest-latency non-tearing mode, so we'll take this.
+        swapchain_info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+        break;
+      }
+      if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+        // This is the fastest present mode, though it tears, so we'll use this
+        // if mailbox mode isn't available.
+        swapchain_info.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+      }
     }
   }
 

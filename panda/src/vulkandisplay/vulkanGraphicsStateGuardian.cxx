@@ -370,12 +370,16 @@ prepare_texture(Texture *texture, int view) {
   image_info.pNext = NULL;
   image_info.flags = 0;
 
+  int width = texture->get_x_size();
+  int height = texture->get_y_size();
   int depth = 1;
   int num_layers = 1;
 
   switch (texture->get_texture_type()) {
   case Texture::TT_1d_texture:
+  case Texture::TT_1d_texture_array:
     image_info.imageType = VK_IMAGE_TYPE_1D;
+    swap(height, num_layers);
     break;
 
   case Texture::TT_cube_map:
@@ -399,8 +403,8 @@ prepare_texture(Texture *texture, int view) {
   }
 
   image_info.format = get_image_format(texture);
-  image_info.extent.width = texture->get_x_size();
-  image_info.extent.height = texture->get_y_size();
+  image_info.extent.width = width;
+  image_info.extent.height = height;
   image_info.extent.depth = depth;
   image_info.mipLevels = 1;
   image_info.arrayLayers = num_layers;
@@ -467,9 +471,9 @@ prepare_texture(Texture *texture, int view) {
   if (mipmap_begin != 0) {
     vulkandisplay_cat.info()
       << "Reducing image " << texture->get_name() << " from "
-      << texture->get_x_size() << " x " << texture->get_y_size() << " x "
-      << texture->get_z_size() << " to " << image_info.extent.width << " x "
-      << image_info.extent.height << " x " << image_info.extent.depth << "\n";
+      << width << " x " << height << " x " << depth << " to "
+      << image_info.extent.width << " x " << image_info.extent.height << " x "
+      << image_info.extent.depth << "\n";
 
     if (!texture->has_ram_mipmap_image(mipmap_begin)) {
       // Ugh, and to do this, we have to generate mipmaps on the CPU.
@@ -586,6 +590,9 @@ prepare_texture(Texture *texture, int view) {
   case Texture::TT_cube_map_array:
     view_info.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
     break;
+  case Texture::TT_1d_texture_array:
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+    break;
   }
 
   view_info.format = image_info.format;
@@ -679,12 +686,9 @@ prepare_texture(Texture *texture, int view) {
   tc->_image_view = image_view;
   tc->update_data_size_bytes(alloc_info.allocationSize);
 
-  if (upload_texture(tc)) {
-    return tc;
-  } else {
-    delete tc;
-    return (TextureContext *)NULL;
-  }
+  // We can't upload it at this point because the texture lock is currently
+  // held, so accessing the RAM image will cause a deadlock.
+  return tc;
 }
 
 /**
@@ -910,6 +914,10 @@ update_texture(TextureContext *tc, bool force) {
     if (tex->get_texture_type() == Texture::TT_3d_texture) {
       extent.depth = tex->get_z_size();
       arrayLayers = 1;
+    } else if (tex->get_texture_type() == Texture::TT_1d_texture_array) {
+      extent.height = 1;
+      extent.depth = 1;
+      arrayLayers = tex->get_y_size();
     } else {
       extent.depth = 1;
       arrayLayers = tex->get_z_size();
@@ -917,7 +925,7 @@ update_texture(TextureContext *tc, bool force) {
 
     VkFormat format = get_image_format(tex);
 
-    if (format != vtc->_format ||
+    if (//format != vtc->_format ||
         extent.width != vtc->_extent.width ||
         extent.height != vtc->_extent.height ||
         extent.depth != vtc->_extent.depth ||
@@ -1294,7 +1302,7 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
                  index_type != GeomEnums::NT_uint32) {
         vulkandisplay_cat.error()
           << "Unsupported index type: " << index_type;
-        return NULL;
+        return false;
       }
 
       void *data;
@@ -2834,6 +2842,8 @@ get_image_format(const Texture *texture) const {
     return (VkFormat)(VK_FORMAT_A2R10G10B10_UNORM_PACK32 + is_signed);
   case Texture::F_rg:
     return (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
+  case Texture::F_r16i:
+    return (VkFormat)(VK_FORMAT_R16_UINT + is_signed);
   }
 
   return VK_FORMAT_UNDEFINED;
