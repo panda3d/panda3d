@@ -693,6 +693,12 @@ map_button(int code) {
   case BTN_TR2:
     return GamepadButton::rtrigger();
 
+  case BTN_1:
+    return GamepadButton::action_1();
+
+  case BTN_2:
+    return GamepadButton::action_2();
+
   case BTN_SELECT:
     return GamepadButton::back();
 
@@ -701,6 +707,12 @@ map_button(int code) {
 
   case BTN_MODE:
     return GamepadButton::guide();
+
+  case KEY_NEXT:
+    return GamepadButton::next();
+
+  case KEY_PREVIOUS:
+    return GamepadButton::previous();
 
   case BTN_THUMBL:
     return GamepadButton::lstick();
