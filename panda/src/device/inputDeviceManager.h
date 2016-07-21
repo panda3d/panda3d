@@ -38,7 +38,8 @@ private:
 #endif
 
 public:
-  InputDeviceSet get_gamepads() const;
+  InputDeviceSet get_devices() const;
+  InputDeviceSet get_devices(InputDevice::DeviceClass device_class) const;
 
 PUBLISHED:
   void add_device(InputDevice *device);
@@ -48,8 +49,8 @@ PUBLISHED:
 
   INLINE static InputDeviceManager *get_global_ptr();
 
-  // The set of all currently connected gamepad devices.
-  MAKE_PROPERTY(gamepads, get_gamepads);
+  // The set of all currently connected devices.
+  MAKE_PROPERTY(devices, get_devices);
 
 private:
   LightMutex _lock;

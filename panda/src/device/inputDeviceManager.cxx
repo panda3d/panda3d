@@ -246,22 +246,39 @@ consider_add_js_device(int js_index) {
 #endif
 
 /**
- * Description: Returns all currently connected gamepad devices.
+ * Description: Returns all currently connected devices.
  */
 InputDeviceSet InputDeviceManager::
-get_gamepads() const {
-  InputDeviceSet gamepads;
+get_devices() const {
+  InputDeviceSet devices;
   LightMutexHolder holder(_lock);
 
   for (size_t i = 0; i < _connected_devices.size(); ++i) {
     InputDevice *device = _connected_devices[i];
-    if (device->get_device_class() == InputDevice::DC_gamepad) {
-      gamepads.add_device(device);
+    devices.add_device(device);
+  }
+
+  return devices;
+}
+
+/**
+ * Description: Returns all currently connected devices of the given device class.
+ */
+InputDeviceSet InputDeviceManager::
+get_devices(InputDevice::DeviceClass device_class) const {
+  InputDeviceSet devices;
+  LightMutexHolder holder(_lock);
+
+  for (size_t i = 0; i < _connected_devices.size(); ++i) {
+    InputDevice *device = _connected_devices[i];
+    if (device->get_device_class() == device_class) {
+      devices.add_device(device);
     }
   }
 
-  return gamepads;
+  return devices;
 }
+
 
 /**
  * Called when a new device has been discovered.  This may also be used to
