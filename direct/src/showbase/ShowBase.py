@@ -177,6 +177,7 @@ class ShowBase(DirectObject.DirectObject):
         self.trackball = None
         self.texmem = None
         self.showVertices = None
+        self.deviceButtonThrowers = []
 
         ## This is a NodePath pointing to the Camera object set up for the 3D scene.
         ## This is usually a child of self.camera.
@@ -301,6 +302,7 @@ class ShowBase(DirectObject.DirectObject):
         ## The global job manager, as imported from JobManagerGlobal.
         self.jobMgr = jobMgr
 
+
         ## Particle manager
         self.particleMgr = None
         self.particleMgrEnabled = 0
@@ -313,6 +315,12 @@ class ShowBase(DirectObject.DirectObject):
         ## This is the global input device manager, which keeps track of
         ## connected input devices.
         self.devices = InputDeviceManager.getGlobalPtr()
+        # add existing devices to the data graph
+        for device in self.devices.devices:
+            self.connectDevice(device)
+        # Checks for device connection and disconnection
+        self.accept('connect-device', self.connectDevice)
+        self.accept('disconnect-device', self.disconnectDevice)
 
         self.createStats()
 
@@ -1664,6 +1672,74 @@ class ShowBase(DirectObject.DirectObject):
         return self.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.meta())
 
+    def connectDevice(self, device):
+        """
+        This function will get called each time a new device got
+        connected and will add that new device to the data graph.
+
+        Each device class will get a specific prefix for thrown events. Those
+        are currently as follow
+
+        gamepad
+        flight_stick
+        steering_wheel
+        dance_pad
+        mouse
+        keyboard
+        unclassified_device
+
+        In addition, the index of that device will appended to the prefix,
+        so for example if you hit the A button of the first connected gamepad
+        you will get an event like "gamepad0-action_a" the second gamepad will
+        then be catchable via "gamepad1-button_event" and so on.
+        Note, each device class will have a separate 0 based index, this way
+        you can have a gamepad0 as well as a steering_wheel0 and flight_stick0.
+
+        All newly created button throwers will be stored in
+        the deviceButtonThrowers lsit
+        """
+        idn = self.dataRoot.attachNewNode(InputDeviceNode(device, device.getName()))
+        prefix = "unclassified_device"
+        if device.getDeviceClass() == InputDevice.DC_gamepad:
+            prefix = "gamepad"
+        elif device.getDeviceClass() == InputDevice.DC_flight_stick:
+            prefix = "flight_stick"
+        elif device.getDeviceClass() == InputDevice.DC_steering_wheel:
+            prefix = "steering_wheel"
+        elif device.getDeviceClass() == InputDevice.DC_dance_pad:
+            prefix = "dance_pad"
+        elif device.getDeviceClass() == InputDevice.DC_mouse:
+            prefix = "mouse"
+        elif device.getDeviceClass() == InputDevice.DC_keyboard:
+            prefix = "keyboard"
+
+        id = 0
+        for dev in self.devices.devices:
+            if dev == device:
+                break
+            elif dev.getDeviceClass() == device.getDeviceClass():
+                id += 1
+        print ""
+        print "MAPPED", device, "AS", prefix, "SET CLASS", device.getDeviceClass()
+        print ""
+        bt = idn.attachNewNode(ButtonThrower(prefix))
+        bt.node().setPrefix("{}{}-".format(prefix, id))
+        self.deviceButtonThrowers.append(bt)
+
+    def disconnectDevice(self, device):
+        """
+        This function will get called each time a new device got
+        connected. It is then used to clean up the given device from the
+        data graph.
+        """
+        print device.getName()
+        idn = self.dataRoot.find("**/{}".format(device.getName))
+        for bt in self.deviceButtonThrowers.list():
+            if bt.getName() == idn.getName():
+                self.deviceButtonThrowers.remove(bt)
+                break
+        self.dataRoot.removeNode(idn)
+
     def addAngularIntegrator(self):
         if not self.physicsMgrAngular:
             physics = importlib.import_module('panda3d.physics')
@@ -1855,6 +1931,10 @@ class ShowBase(DirectObject.DirectObject):
     def __dataLoop(self, state):
         # Check if there were newly connected devices.
         self.devices.update()
+
+        # Poll all connected devices.
+        for device in self.devices.devices:
+            device.poll()
 
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
