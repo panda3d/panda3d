@@ -10,3 +10,4 @@
 #include "inputDeviceManager.cxx"
 #include "inputDeviceSet.cxx"
 #include "linuxJoystickDevice.cxx"
+#include "inputDeviceNode.cxx"

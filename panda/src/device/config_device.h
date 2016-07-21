@@ -17,10 +17,12 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
+#include "configVariableInt.h"
 
 NotifyCategoryDecl(device, EXPCL_PANDA_DEVICE, EXPTP_PANDA_DEVICE);
 
 extern ConfigVariableBool asynchronous_clients;
+extern ConfigVariableInt low_battery_level;
 
 extern EXPCL_PANDA_DEVICE void init_libdevice();
 
