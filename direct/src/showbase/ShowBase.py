@@ -1713,17 +1713,20 @@ class ShowBase(DirectObject.DirectObject):
         elif device.getDeviceClass() == InputDevice.DC_keyboard:
             prefix = "keyboard"
 
+        currentPrefixes = []
+        for np in self.dataRoot.findAllMatches("**/{}".format(prefix)):
+            bt = np.node()
+            currentPrefixes.append(bt.getPrefix())
+
         id = 0
-        for dev in self.devices.devices:
-            if dev == device:
-                break
-            elif dev.getDeviceClass() == device.getDeviceClass():
-                id += 1
-        print ""
-        print "MAPPED", device, "AS", prefix, "SET CLASS", device.getDeviceClass()
-        print ""
+        # Find the next free ID for the newly connected device
+        while "{}{}-".format(prefix, id) in currentPrefixes:
+            id+=1
+        # Setup the button thrower for that device and register it's event prefix
         bt = idn.attachNewNode(ButtonThrower(prefix))
+        self.notify.debug("Registred event prefix {}{}-".format(prefix, id))
         bt.node().setPrefix("{}{}-".format(prefix, id))
+        # append the new button thrower to the list of device button throwers
         self.deviceButtonThrowers.append(bt)
 
     def disconnectDevice(self, device):
@@ -1732,13 +1735,13 @@ class ShowBase(DirectObject.DirectObject):
         connected. It is then used to clean up the given device from the
         data graph.
         """
-        print device.getName()
-        idn = self.dataRoot.find("**/{}".format(device.getName))
-        for bt in self.deviceButtonThrowers.list():
+        self.notify.debug("Disconnect device {}".format(device.getName()))
+        idn = self.dataRoot.find("**/{}".format(device.getName()))
+        for bt in list(self.deviceButtonThrowers):
             if bt.getName() == idn.getName():
                 self.deviceButtonThrowers.remove(bt)
                 break
-        self.dataRoot.removeNode(idn)
+        idn.removeNode()
 
     def addAngularIntegrator(self):
         if not self.physicsMgrAngular:
