@@ -37,11 +37,10 @@ private:
   InputDevice *consider_add_js_device(int index);
 #endif
 
-public:
+PUBLISHED:
   InputDeviceSet get_devices() const;
   InputDeviceSet get_devices(InputDevice::DeviceClass device_class) const;
 
-PUBLISHED:
   void add_device(InputDevice *device);
   void remove_device(InputDevice *device);
 
