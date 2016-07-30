@@ -2602,7 +2602,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       // Check for special preprocessing extensions.
       char extension[256];
       char behavior[9];
-      if (sscanf(line.c_str(), " # extension%*[ \t]%255s : %8s", extension, behavior) == 2) {
+      if (sscanf(line.c_str(), " # extension%*[ \t]%255s%*[ \t]:%*[ \t]%8s", extension, behavior) == 2) {
         // Parse the behavior string.
         int mode;
         if (strcmp(behavior, "require") == 0 || strcmp(behavior, "enable") == 0) {
