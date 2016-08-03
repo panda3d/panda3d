@@ -77,6 +77,9 @@ PUBLISHED:
 
     // Head-mounted display.
     DC_hmd,
+
+    // Count of this enum, used for loops
+    DC_COUNT,
   };
 
 protected:
