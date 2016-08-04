@@ -55,12 +55,14 @@ class App(ShowBase):
         self.environment = loader.loadModel("environment")
         self.environment.reparentTo(render)
 
+        # save the center position of the wheel
+        # NOTE: here we assume, that the wheel is centered when the application get started.
+        #       In real world applications, you should notice the user and give him enough time
+        #       to center the wheel until you store the center position of the controler!
         self.wheelCenter = 0
         wheels = base.devices.getDevices(InputDevice.DC_steering_wheel)
         if len(wheels) > 0:
-            for i in range(wheels[0].getNumControls()):
-                if wheels[0].getControlMap(i) == InputDevice.C_wheel:
-                    self.wheelCenter = wheels[0].getControlState(i)
+            self.wheelCenter = wheels[0].findControl(InputDevice.C_wheel).state
 
         # disable pandas default mouse-camera controls so we can handle the camera
         # movements by ourself
@@ -111,24 +113,21 @@ class App(ShowBase):
                 self.currentMoveSpeed = 0
 
         # we will use the first found wheel
-        for i in range(wheels[0].getNumControls()):
+        # Acclerate
+        accleration = wheels[0].findControl(InputDevice.C_accelerator).state * self.maxAccleration
+        if self.currentMoveSpeed > wheels[0].findControl(InputDevice.C_accelerator).state * self.maxSpeed:
+            self.currentMoveSpeed -= dt * self.deaccleration
+        self.currentMoveSpeed += dt * accleration
 
-            if wheels[0].getControlMap(i) == InputDevice.C_accelerator:
-                accleration = wheels[0].getControlState(i) * self.maxAccleration
-                self.currentMoveSpeed += dt * accleration
+        # Break
+        deacleration = wheels[0].findControl(InputDevice.C_brake).state * self.deaclerationBreak
+        self.currentMoveSpeed -= dt * deacleration
+        if self.currentMoveSpeed < 0:
+            self.currentMoveSpeed = 0
 
-                if self.currentMoveSpeed > wheels[0].getControlState(i) * self.maxSpeed:
-                    self.currentMoveSpeed -= dt * self.deaccleration
-            elif wheels[0].getControlMap(i) == InputDevice.C_brake:
-                deacleration = wheels[0].getControlState(i) * self.deaclerationBreak
-                self.currentMoveSpeed -= dt * deacleration
-
-            elif self.currentMoveSpeed < 0:
-                self.currentMoveSpeed = 0
-
-            if wheels[0].getControlMap(i) == InputDevice.C_wheel:
-                rotation = self.wheelCenter - wheels[0].getControlState(i)
-                base.camera.setH(base.camera, 100 * dt * rotation)
+        # Steering
+        rotation = self.wheelCenter - wheels[0].findControl(InputDevice.C_wheel).state
+        base.camera.setH(base.camera, 100 * dt * rotation)
 
         # calculate movement
         base.camera.setY(base.camera, dt * self.currentMoveSpeed)
