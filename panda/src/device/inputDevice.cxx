@@ -171,12 +171,12 @@ set_button_state(int index, bool down) {
   }
 
   State new_state = down ? S_down : S_up;
-  if (_buttons[index]._state == new_state) {
+  if (_buttons[index].state == new_state) {
     return;
   }
-  _buttons[index]._state = new_state;
+  _buttons[index].state = new_state;
 
-  ButtonHandle handle = _buttons[index]._handle;
+  ButtonHandle handle = _buttons[index].handle;
 
   if (device_cat.is_spam()) {
     device_cat.spam()
@@ -208,19 +208,19 @@ set_control_state(int index, double state) {
     _controls.resize(index + 1, AnalogState());
   }
 
-  if (device_cat.is_spam() && _controls[index]._state != state) {
+  if (device_cat.is_spam() && _controls[index].state != state) {
     device_cat.spam()
       << "Changed control " << index;
 
-    if (_controls[index]._axis != C_none) {
-      device_cat.spam(false) << " (" << _controls[index]._axis << ")";
+    if (_controls[index].known != C_none) {
+      device_cat.spam(false) << " (" << _controls[index].known << ")";
     }
 
     device_cat.spam(false) << " to " << state << "\n";
   }
 
-  _controls[index]._state = state;
-  _controls[index]._known = true;
+  _controls[index].state = state;
+  _controls[index].known = true;
 }
 
 /**
@@ -308,13 +308,13 @@ output_buttons(ostream &out) const {
   Buttons::const_iterator bi;
   for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
     const ButtonState &state = (*bi);
-    if (state._state != S_unknown) {
+    if (state.state != S_unknown) {
       if (any_buttons) {
         out << ", ";
       }
       any_buttons = true;
       out << (int)(bi - _buttons.begin()) << "=";
-      if (state._state == S_up) {
+      if (state.state == S_up) {
         out << "up";
       } else {
         out << "down";
@@ -336,17 +336,17 @@ write_buttons(ostream &out, int indent_level) const {
   Buttons::const_iterator bi;
   for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
     const ButtonState &state = (*bi);
-    if (state._state != S_unknown) {
+    if (state.state != S_unknown) {
       any_buttons = true;
 
       indent(out, indent_level)
         << (int)(bi - _buttons.begin()) << ". ";
 
-      if (state._handle != ButtonHandle::none()) {
-        out << "(" << state._handle << ") ";
+      if (state.handle != ButtonHandle::none()) {
+        out << "(" << state.handle << ") ";
       }
 
-      if (state._state == S_up) {
+      if (state.state == S_up) {
         out << "up";
       } else {
         out << "down";
@@ -372,11 +372,11 @@ write_controls(ostream &out, int indent_level) const {
   Controls::const_iterator ai;
   for (ai = _controls.begin(); ai != _controls.end(); ++ai) {
     const AnalogState &state = (*ai);
-    if (state._known) {
+    if (state.known) {
       any_controls = true;
 
       indent(out, indent_level)
-        << (int)(ai - _controls.begin()) << ". " << state._state << "\n";
+        << (int)(ai - _controls.begin()) << ". " << state.state << "\n";
     }
   }
 

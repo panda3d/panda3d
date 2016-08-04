@@ -197,7 +197,7 @@ set_button_map(int index, ButtonHandle button) {
     _buttons.resize(index + 1, ButtonState());
   }
 
-  _buttons[index]._handle = button;
+  _buttons[index].handle = button;
 }
 
 /**
@@ -208,7 +208,7 @@ set_button_map(int index, ButtonHandle button) {
 INLINE ButtonHandle InputDevice::
 get_button_map(int index) const {
   if (index >= 0 && index < (int)_buttons.size()) {
-    return _buttons[index]._handle;
+    return _buttons[index].handle;
   } else {
     return ButtonHandle::none();
   }
@@ -221,7 +221,7 @@ get_button_map(int index) const {
 INLINE bool InputDevice::
 get_button_state(int index) const {
   if (index >= 0 && index < (int)_buttons.size()) {
-    return (_buttons[index]._state == S_down);
+    return (_buttons[index].state == S_down);
   } else {
     return false;
   }
@@ -234,10 +234,41 @@ get_button_state(int index) const {
 INLINE bool InputDevice::
 is_button_known(int index) const {
   if (index >= 0 && index < (int)_buttons.size()) {
-    return _buttons[index]._state != S_unknown;
+    return _buttons[index].state != S_unknown;
   } else {
     return false;
   }
+}
+
+/**
+ * Returns the ButtonState that is set at the given index, or throw an assection
+ * if the index was not found in the list.
+ */
+INLINE InputDevice::ButtonState InputDevice::
+get_button(size_t index) const {
+  if (index >= 0 && index < (int)_buttons.size()) {
+    return _buttons[index];
+  } else {
+    /*device_cat.error()
+      << "Index " << index<< " was not found in the controls list\n";*/
+    nassertr(false, ButtonState());
+  }
+}
+
+/**
+ * Returns the first ButtonState found with the given axis, or throw an assection
+ * if the button handle was not found in the list.
+ */
+INLINE InputDevice::ButtonState InputDevice::
+find_button(ButtonHandle handle) const {
+  for (int i; i < (int)_buttons.size(); i++) {
+    if (_buttons[i].handle == handle) {
+      return _buttons[i];
+    }
+  }
+  /*device_cat.error()
+    << "Axis " << axis << " was not found in the controls list\n";*/
+  nassertr(false, ButtonState());
 }
 
 /**
@@ -264,7 +295,7 @@ set_control_map(int index, ControlAxis axis) {
     _controls.resize(index + 1, AnalogState());
   }
 
-  _controls[index]._axis = axis;
+  _controls[index].axis = axis;
 }
 
 /**
@@ -275,7 +306,7 @@ set_control_map(int index, ControlAxis axis) {
 INLINE InputDevice::ControlAxis InputDevice::
 get_control_map(int index) const {
   if (index >= 0 && index < (int)_controls.size()) {
-    return _controls[index]._axis;
+    return _controls[index].axis;
   } else {
     return C_none;
   }
@@ -289,10 +320,41 @@ get_control_map(int index) const {
 INLINE double InputDevice::
 get_control_state(int index) const {
   if (index >= 0 && index < (int)_controls.size()) {
-    return _controls[index]._state;
+    return _controls[index].state;
   } else {
     return 0.0;
   }
+}
+
+/**
+ * Returns the AnalogAxis that is set at the given index, or throw an assection
+ * if the index was not found in the list.
+ */
+INLINE InputDevice::AnalogState InputDevice::
+get_control(size_t index) const {
+  if (index >= 0 && index < (int)_controls.size()) {
+    return _controls[index];
+  } else {
+    /*device_cat.error()
+      << "Index " << index<< " was not found in the controls list\n";*/
+    nassertr(false, AnalogState());
+  }
+}
+
+/**
+ * Returns the first AnalogAxis found with the given axis, or throw an assection
+ * if the axis was not found in the list.
+ */
+INLINE InputDevice::AnalogState InputDevice::
+find_control(ControlAxis axis) const {
+  for (int i; i < (int)_controls.size(); i++) {
+    if (_controls[i].axis == axis) {
+      return _controls[i];
+    }
+  }
+  /*device_cat.error()
+    << "Axis " << axis << " was not found in the controls list\n";*/
+  nassertr(false, AnalogState());
 }
 
 /**
@@ -302,7 +364,7 @@ get_control_state(int index) const {
 INLINE bool InputDevice::
 is_control_known(int index) const {
   if (index >= 0 && index < (int)_controls.size()) {
-    return _controls[index]._known;
+    return _controls[index].known;
   } else {
     return false;
   }
@@ -377,8 +439,8 @@ operator < (const InputDevice &) const {
  */
 INLINE InputDevice::ButtonState::
 ButtonState() :
-  _handle(ButtonHandle::none()),
-  _state(S_unknown)
+  handle(ButtonHandle::none()),
+  state(S_unknown)
 {
 }
 
@@ -387,8 +449,8 @@ ButtonState() :
  */
 INLINE InputDevice::ButtonState::
 ButtonState(ButtonHandle handle) :
-  _handle(handle),
-  _state(S_unknown)
+  handle(handle),
+  state(S_unknown)
 {
 }
 
@@ -397,8 +459,8 @@ ButtonState(ButtonHandle handle) :
  */
 INLINE InputDevice::AnalogState::
 AnalogState() :
-  _axis(C_none),
-  _state(0.0),
-  _known(false)
+  axis(C_none),
+  state(0.0),
+  known(false)
 {
 }

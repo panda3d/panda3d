@@ -324,16 +324,11 @@ init_device() {
   }
 
   // Check which device type got the most points
-  bool highscore_found = false;
   size_t highest_score = 0;
-  while (!highscore_found) {
-    highscore_found = true;
-    for (size_t i = 0; i < DC_COUNT; i++) {
-      if (device_scores[i] > highest_score) {
-        highest_score = device_scores[i];
-        _device_class = (DeviceClass)i;
-        highscore_found = false;
-      }
+  for (size_t i = 0; i < DC_COUNT; i++) {
+    if (device_scores[i] > highest_score) {
+      highest_score = device_scores[i];
+      _device_class = (DeviceClass)i;
     }
   }
   //cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
@@ -354,12 +349,12 @@ init_device() {
         set_button_map(bi, map_button(i));
         //cerr << "Button " << bi << " is mapped by the driver to " << i << "\n";
         if (test_bit(i, states)) {
-          _buttons[bi]._state = S_down;
+          _buttons[bi].state = S_down;
           all_values_zero = false;
         } else {
-          _buttons[bi]._state = S_up;
+          _buttons[bi].state = S_up;
         }
-        if (_buttons[bi]._handle == GamepadButton::dpad_left()) {
+        if (_buttons[bi].handle == GamepadButton::dpad_left()) {
           emulate_dpad = false;
         }
         ++bi;
@@ -419,7 +414,7 @@ init_device() {
 
           _axis_ranges[i]._scale = factor;
           _axis_ranges[i]._bias = bias;
-          _controls[i]._state = fma(absinfo.value, factor, bias);
+          _controls[i].state = fma(absinfo.value, factor, bias);
 
           if (absinfo.value != 0) {
             all_values_zero = false;

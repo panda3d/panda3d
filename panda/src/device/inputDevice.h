@@ -250,13 +250,15 @@ public:
     S_down
   };
 
+PUBLISHED:
   class ButtonState {
   public:
     INLINE ButtonState();
     INLINE ButtonState(ButtonHandle handle);
 
-    ButtonHandle _handle;
-    State _state;
+  PUBLISHED:
+    ButtonHandle handle;
+    State state;
   };
   typedef pvector<ButtonState> Buttons;
   Buttons _buttons;
@@ -265,9 +267,10 @@ public:
   public:
     INLINE AnalogState();
 
-    ControlAxis _axis;
-    double _state;
-    bool _known;
+  PUBLISHED:
+    ControlAxis axis;
+    double state;
+    bool known;
   };
   typedef pvector<AnalogState> Controls;
   Controls _controls;
@@ -276,6 +279,16 @@ public:
   short _max_battery_level;
 
   TrackerData _tracker_data;
+
+
+  INLINE ButtonState get_button(size_t index) const;
+  INLINE ButtonState find_button(ButtonHandle handle) const;
+
+  INLINE AnalogState get_control(size_t index) const;
+  INLINE AnalogState find_control(ControlAxis axis) const;
+
+  // Make device controls iterable
+  MAKE_SEQ_PROPERTY(controls, get_num_controls, get_control);
 
 public:
   static TypeHandle get_class_type() {
