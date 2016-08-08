@@ -28,6 +28,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix occasional frame lag when loading a big model asynchronously
 * Fix race condition reading string config var
 * Fix interrogate parsing issue with "const static"
+* Add back missing libp3pystub.a to Mac OS X SDK
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
