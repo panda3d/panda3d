@@ -22,6 +22,36 @@
 TypeHandle glxGraphicsStateGuardian::_type_handle;
 
 /**
+ * List of known OpenGL versions.
+ * @see glinfo_common.h, from https://cgit.freedesktop.org/mesa/demos
+ */
+static const struct { int major, minor; } gl_versions[] = {
+   {4, 5},
+   {4, 4},
+   {4, 3},
+   {4, 2},
+   {4, 1},
+   {4, 0},
+
+   {3, 3},
+   {3, 2},
+   {3, 1},
+   {3, 0},
+
+   {2, 1},
+   {2, 0},
+
+   {1, 5},
+   {1, 4},
+   {1, 3},
+   {1, 2},
+   {1, 1},
+   {1, 0},
+
+   {0, 0} /* end of list */
+};
+
+/**
  *
  */
 glxGraphicsStateGuardian::
@@ -70,6 +100,43 @@ glxGraphicsStateGuardian::
     glXDestroyContext(_display, _context);
     _context = (GLXContext)NULL;
   }
+}
+
+/**
+ * Stand-alone Mesa doesn't really implement the GLX protocol so it
+ * doesn't really know the GLX attributes associated with an X visual.
+ * The first time a visual is presented to Mesa's pseudo-GLX it
+ * attaches ancilliary buffers to it (like depth and stencil).
+ * But that usually only works if glXChooseVisual is used.
+ * This function calls glXChooseVisual() to sort of "prime the pump"
+ * for Mesa's GLX so that the visuals that get reported actually
+ * reflect what applications will see.
+ * This has no effect when using true GLX.
+ *
+ * @see glxinfo.c, from https://cgit.freedesktop.org/mesa/demos
+ */
+static void
+mesa_hack(X11_Display *dpy, int scrnum)
+{
+   static int attribs[] = {
+      GLX_RGBA,
+      GLX_RED_SIZE, 1,
+      GLX_GREEN_SIZE, 1,
+      GLX_BLUE_SIZE, 1,
+      GLX_DEPTH_SIZE, 1,
+      GLX_STENCIL_SIZE, 1,
+      GLX_ACCUM_RED_SIZE, 1,
+      GLX_ACCUM_GREEN_SIZE, 1,
+      GLX_ACCUM_BLUE_SIZE, 1,
+      GLX_ACCUM_ALPHA_SIZE, 1,
+      GLX_DOUBLEBUFFER,
+      None
+   };
+   XVisualInfo *visinfo;
+
+   visinfo = glXChooseVisual(dpy, scrnum, attribs);
+   if (visinfo)
+      XFree(visinfo);
 }
 
 /**
@@ -724,6 +791,132 @@ show_glx_server_string(const string &name, int id) {
   }
 }
 
+/// Flag to know if something failed creating the context
+static Bool CreateContextErrorFlag;
+
+/**
+ * OpenGL errors handler.
+ * Extracted from glxinfo.c (https://cgit.freedesktop.org/mesa/demos)
+ */
+static int
+create_context_error_handler(X11_Display *dpy, XErrorEvent *error)
+{
+   (void) dpy;
+   (void) error->error_code;
+   CreateContextErrorFlag = True;
+   return 0;
+}
+
+/**
+ * Is extension 'ext' supported?
+ * Extracted from glinfo_common.c (https://cgit.freedesktop.org/mesa/demos)
+ */
+GLboolean
+extension_supported(const char *ext, const char *extensionsList)
+{
+   while (1) {
+      const char *p = strstr(extensionsList, ext);
+      if (p) {
+         /* check that next char is a space or end of string */
+         int extLen = strlen(ext);
+         if (p[extLen] == 0 || p[extLen] == ' ') {
+            return 1;
+         }
+         else {
+            /* We found a superset string, keep looking */
+            extensionsList += extLen;
+         }
+      }
+      else {
+         break;
+      }
+   }
+   return 0;
+}
+
+/**
+ * Try to create a GLX context of the given version with flags/options.
+ * Note: A version number is required in order to get a core profile
+ * (at least w/ NVIDIA).
+ * Extracted from glxinfo.c (https://cgit.freedesktop.org/mesa/demos)
+ */
+static GLXContext
+create_context_flags(X11_Display *dpy, GLXFBConfig fbconfig, int major, int minor,
+                     int contextFlags, int profileMask, Bool direct)
+{
+#ifdef GLX_ARB_create_context
+   static PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB_func = 0;
+   static Bool firstCall = True;
+   int (*old_handler)(X11_Display *, XErrorEvent *);
+   GLXContext context;
+   int attribs[20];
+   int n = 0;
+
+   if (firstCall) {
+      /* See if we have GLX_ARB_create_context_profile and get pointer to
+       * glXCreateContextAttribsARB() function.
+       */
+      const char *glxExt = glXQueryExtensionsString(dpy, 0);
+      if (extension_supported("GLX_ARB_create_context_profile", glxExt)) {
+         glXCreateContextAttribsARB_func = (PFNGLXCREATECONTEXTATTRIBSARBPROC)
+            glXGetProcAddress((const GLubyte *) "glXCreateContextAttribsARB");
+      }
+      firstCall = False;
+   }
+
+   if (!glXCreateContextAttribsARB_func){
+      return 0;
+   }
+
+   /* setup attribute array */
+   if (major) {
+      attribs[n++] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+      attribs[n++] = major;
+      attribs[n++] = GLX_CONTEXT_MINOR_VERSION_ARB;
+      attribs[n++] = minor;
+   }
+   if (contextFlags) {
+      attribs[n++] = GLX_CONTEXT_FLAGS_ARB;
+      attribs[n++] = contextFlags;
+   }
+#ifdef GLX_ARB_create_context_profile
+   if (profileMask) {
+      attribs[n++] = GLX_CONTEXT_PROFILE_MASK_ARB;
+      attribs[n++] = profileMask;
+   }
+#endif
+   attribs[n++] = 0;
+
+   /* install X error handler */
+   old_handler = XSetErrorHandler(create_context_error_handler);
+   CreateContextErrorFlag = False;
+
+   /* try creating context */
+   context = glXCreateContextAttribsARB_func(dpy,
+                                             fbconfig,
+                                             0, /* share_context */
+                                             direct,
+                                             attribs);
+
+   /* restore error handler */
+   XSetErrorHandler(old_handler);
+
+   if (CreateContextErrorFlag)
+      context = 0;
+
+   if (context && direct) {
+      if (!glXIsDirect(dpy, context)) {
+         glXDestroyContext(dpy, context);
+         return 0;
+      }
+   }
+
+   return context;
+#else
+   return 0;
+#endif
+}
+
 /**
  * Selects an XVisual for an initial OpenGL context.  This may be called
  * initially, to create the first context needed in order to create the
@@ -733,7 +926,7 @@ show_glx_server_string(const string &name, int id) {
 void glxGraphicsStateGuardian::
 choose_temp_visual(const FrameBufferProperties &properties) {
   nassertv(_temp_context == (GLXContext)NULL);
-
+  int i;
   int best_quality = 0;
   int best_result = 0;
   FrameBufferProperties best_props;
@@ -744,9 +937,10 @@ choose_temp_visual(const FrameBufferProperties &properties) {
     _visuals = NULL;
   }
   int nvisuals = 0;
+  mesa_hack(_display, 0);
   _visuals = XGetVisualInfo(_display, 0, 0, &nvisuals);
   if (_visuals != 0) {
-    for (int i = 0; i < nvisuals; i++) {
+    for (i = 0; i < nvisuals; i++) {
       FrameBufferProperties fbprops;
       get_properties(fbprops, _visuals + i);
       int quality = fbprops.get_quality(properties);
@@ -760,7 +954,99 @@ choose_temp_visual(const FrameBufferProperties &properties) {
 
   if (best_quality > 0) {
     _visual = _visuals + best_result;
-    _temp_context = glXCreateContext(_display, _visual, None, GL_TRUE);
+    // We must try to generate a temporal OpenGL context with the largest
+    // available OpenGL profile (even core profile). Calling directly
+    // glXCreateContext in a MESA implementation is generating a 3.x OpenGL
+    // context (as much). I guess it is widely related with the core profile.
+    // In glxinfo.c (https://cgit.freedesktop.org/mesa/demos) they are just
+    // simply iteratively trying to create contexts from the largest known one
+    // (currently 4.5), to the simplest one 1.0.
+    // Actually, we can use this method to look for contexts GL >= 3.0.
+    // Otherwise we can use the traditional glXCreateContext method 
+    int render_type = 0, double_buffer = False, stereo = False;
+    if (best_props.get_rgb_color()) {
+      render_type |= GLX_RGBA_BIT;
+    }
+    if (best_props.get_indexed_color()) {
+      render_type |= GLX_COLOR_INDEX_BIT;
+    }
+
+    if(best_props.get_back_buffers()){
+        double_buffer = True;
+    }
+
+    if(best_props.get_stereo()){
+        stereo = True;
+    }
+
+    /*
+    int fbAttribSingle[] = {
+      GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+      GLX_RED_SIZE,      1,
+      GLX_GREEN_SIZE,    1,
+      GLX_BLUE_SIZE,     1,
+      GLX_DOUBLEBUFFER,  False,
+      None };
+    int fbAttribDouble[] = {
+      GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+      GLX_RED_SIZE,      1,
+      GLX_GREEN_SIZE,    1,
+      GLX_BLUE_SIZE,     1,
+      GLX_DOUBLEBUFFER,  True,
+      None };
+    GLXFBConfig *configs;
+    int nConfigs;
+
+    configs = glXChooseFBConfig(_display, 0, fbAttribSingle, &nConfigs);
+    if (!configs)
+      configs = glXChooseFBConfig(_display, 0, fbAttribDouble, &nConfigs);
+    */
+
+    int fbAttribs[] = {
+      GLX_RENDER_TYPE,   render_type,
+      GLX_DEPTH_SIZE,    best_props.get_depth_bits(),
+      GLX_RED_SIZE,      best_props.get_red_bits(),
+      GLX_GREEN_SIZE,    best_props.get_green_bits(),
+      GLX_BLUE_SIZE,     best_props.get_blue_bits(),
+      GLX_ALPHA_SIZE,    best_props.get_alpha_bits(),
+      GLX_STENCIL_SIZE,  best_props.get_stencil_bits(),
+      GLX_DOUBLEBUFFER,  double_buffer,
+      GLX_STEREO,        stereo,
+      None };
+    GLXFBConfig *configs;
+    int nConfigs;
+    configs = glXChooseFBConfig(_display, 0, fbAttribs, &nConfigs);
+
+    // A lot of valid configs are available right now, so we must select the one
+    // matching with the chosen visual
+    GLXFBConfig config;
+    for (i = 0; i < nConfigs; i++){
+      if(_visual->visualid ==
+         glXGetVisualFromFBConfig(_display, configs[i])->visualid){
+        config = configs[i];
+        break;
+      }
+    }
+
+    for (i = 0; gl_versions[i].major > 0; i++) {
+      if (gl_versions[i].major == 3 &&
+          gl_versions[i].minor == 0)
+        break;
+
+      _temp_context = create_context_flags(_display,
+                                           config,
+                                           gl_versions[i].major,
+                                           gl_versions[i].minor,
+                                           0x0,
+                                           GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                                           GL_TRUE);
+      if(_temp_context)
+        break;
+    }
+    // We have not been able to build even a single GL >= 3.0 context, so let's
+    // fallback to the traditional glXCreateContext method
+    if(!_temp_context)
+        _temp_context = glXCreateContext(_display, _visual, None, GL_TRUE);
     if (_temp_context) {
       _fbprops = best_props;
       return;
