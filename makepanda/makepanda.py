@@ -6950,8 +6950,10 @@ def MakeInstallerOSX():
         oscmd("cp -R %s/lib/libp3fmod_audio.* dstroot/fmodex/Developer/Panda3D/lib/" % GetOutputDir())
         oscmd("cp -R %s/lib/libfmodex* dstroot/fmodex/Developer/Panda3D/lib/" % GetOutputDir())
 
-    oscmd("mkdir -p dstroot/headers/Developer/Panda3D")
+    oscmd("mkdir -p dstroot/headers/Developer/Panda3D/lib")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % GetOutputDir())
+    if os.path.isfile(GetOutputDir() + "/lib/libp3pystub.a"):
+        oscmd("cp -R -P %s/lib/libp3pystub.a dstroot/headers/Developer/Panda3D/lib/" % GetOutputDir())
 
     if os.path.isdir("samples"):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
