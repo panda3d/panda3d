@@ -538,6 +538,11 @@ storage_class:
 {
   $$ = 0;
 }
+        | storage_class KW_CONST
+{
+  // This isn't really a storage class, but it helps with parsing.
+  $$ = $1 | (int)CPPInstance::SC_const;
+}
         | storage_class KW_EXTERN
 {
   $$ = $1 | (int)CPPInstance::SC_extern;
@@ -592,9 +597,20 @@ storage_class:
         ;
 
 type_like_declaration:
-        multiple_var_declaration
+        storage_class type_decl
 {
-  /* multiple_var_declaration adds itself to the scope. */
+  // We don't need to push/pop type, because we can't nest
+  // multiple_var_declarations.
+  if ($2->as_type_declaration()) {
+    current_type = $2->as_type_declaration()->_type;
+  } else {
+    current_type = $2->as_type();
+  }
+  push_storage_class($1);
+}
+        multiple_instance_identifiers
+{
+  pop_storage_class();
 }
         | storage_class type_decl ';'
 {
@@ -613,36 +629,6 @@ type_like_declaration:
     $2->set_initializer($3);
   }
 }
-        ;
-
-multiple_var_declaration:
-        storage_class type_decl
-{
-  // We don't need to push/pop type, because we can't nest
-  // multiple_var_declarations.
-  if ($2->as_type_declaration()) {
-    current_type = $2->as_type_declaration()->_type;
-  } else {
-    current_type = $2->as_type();
-  }
-  push_storage_class($1);
-}
-        multiple_instance_identifiers
-{
-  pop_storage_class();
-}
-        | storage_class KW_CONST type
-{
-  // We don't need to push/pop type, because we can't nest
-  // multiple_var_declarations.
-  current_type = $3;
-  push_storage_class($1);
-}
-        multiple_const_instance_identifiers
-{
-  pop_storage_class();
-}
-
         /* We don't need to include a rule for variables that point to
            functions, because we get those from the function_prototype
            definition. */
@@ -651,6 +637,9 @@ multiple_var_declaration:
 multiple_instance_identifiers:
         instance_identifier maybe_initialize_or_function_body
 {
+  if (current_storage_class & CPPInstance::SC_const) {
+    $1->add_modifier(IIT_const);
+  }
   CPPInstance *inst = new CPPInstance(current_type, $1,
                                       current_storage_class,
                                       @1.file);
@@ -659,6 +648,9 @@ multiple_instance_identifiers:
 }
         | instance_identifier maybe_initialize ',' multiple_instance_identifiers
 {
+  if (current_storage_class & CPPInstance::SC_const) {
+    $1->add_modifier(IIT_const);
+  }
   CPPInstance *inst = new CPPInstance(current_type, $1,
                                       current_storage_class,
                                       @1.file);
@@ -666,28 +658,6 @@ multiple_instance_identifiers:
   current_scope->add_declaration(inst, global_scope, current_lexer, @1);
 }
         ;
-
-multiple_const_instance_identifiers:
-        instance_identifier maybe_initialize_or_function_body
-{
-  $1->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, $1,
-                                      current_storage_class,
-                                      @1.file);
-  inst->set_initializer($2);
-  current_scope->add_declaration(inst, global_scope, current_lexer, @1);
-}
-        | instance_identifier maybe_initialize ',' multiple_const_instance_identifiers
-{
-  $1->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, $1,
-                                      current_storage_class,
-                                      @1.file);
-  inst->set_initializer($2);
-  current_scope->add_declaration(inst, global_scope, current_lexer, @1);
-}
-        ;
-
 
 typedef_declaration:
         storage_class type_decl
@@ -702,17 +672,6 @@ typedef_declaration:
   push_storage_class($1);
 }
         typedef_instance_identifiers
-{
-  pop_storage_class();
-}
-        | storage_class KW_CONST type
-{
-  // We don't need to push/pop type, because we can't nest
-  // multiple_var_declarations.
-  current_type = $3;
-  push_storage_class($1);
-}
-        typedef_const_instance_identifiers
 {
   pop_storage_class();
 }
@@ -733,29 +692,18 @@ typedef_declaration:
 typedef_instance_identifiers:
         instance_identifier maybe_initialize_or_function_body
 {
+  if (current_storage_class & CPPInstance::SC_const) {
+    $1->add_modifier(IIT_const);
+  }
   CPPType *target_type = current_type;
   CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
   current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
 }
         | instance_identifier maybe_initialize ',' typedef_instance_identifiers
 {
-  CPPType *target_type = current_type;
-  CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
-  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
-}
-        ;
-
-typedef_const_instance_identifiers:
-        instance_identifier maybe_initialize_or_function_body
-{
-  $1->add_modifier(IIT_const);
-  CPPType *target_type = current_type;
-  CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
-  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
-}
-        | instance_identifier maybe_initialize ',' typedef_const_instance_identifiers
-{
-  $1->add_modifier(IIT_const);
+  if (current_storage_class & CPPInstance::SC_const) {
+    $1->add_modifier(IIT_const);
+  }
   CPPType *target_type = current_type;
   CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
   current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);

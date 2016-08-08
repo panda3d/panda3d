@@ -60,6 +60,10 @@ public:
     // And this is for methods tagged with __extension, which declares
     // extension methods defined separately from the source code.
     SC_extension    = 0x1000,
+
+    // This isn't really a storage class.  It's only used temporarily by the
+    // parser, to make parsing specifier sequences a bit easier.
+    SC_const        = 0x20000,
   };
 
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);
