@@ -11,6 +11,8 @@
  * @date 2015-12-11
  */
 
+#include "config_device.h"
+
 /**
  *
  */
@@ -249,8 +251,8 @@ get_button(size_t index) const {
   if (index >= 0 && index < (int)_buttons.size()) {
     return _buttons[index];
   } else {
-    /*device_cat.error()
-      << "Index " << index<< " was not found in the controls list\n";*/
+    device_cat.error()
+      << "Index " << index<< " was not found in the controls list\n";
     nassertr(false, ButtonState());
   }
 }
@@ -266,8 +268,8 @@ find_button(ButtonHandle handle) const {
       return _buttons[i];
     }
   }
-  /*device_cat.error()
-    << "Axis " << axis << " was not found in the controls list\n";*/
+  device_cat.error()
+    << "Handle " << handle.get_name() << " was not found in the controls list\n";
   nassertr(false, ButtonState());
 }
 
@@ -335,8 +337,8 @@ get_control(size_t index) const {
   if (index >= 0 && index < (int)_controls.size()) {
     return _controls[index];
   } else {
-    /*device_cat.error()
-      << "Index " << index<< " was not found in the controls list\n";*/
+    device_cat.error()
+      << "Index " << index<< " was not found in the controls list\n";
     nassertr(false, AnalogState());
   }
 }
@@ -352,8 +354,8 @@ find_control(ControlAxis axis) const {
       return _controls[i];
     }
   }
-  /*device_cat.error()
-    << "Axis " << axis << " was not found in the controls list\n";*/
+  device_cat.error()
+    << "Axis " << axis << " was not found in the controls list\n";
   nassertr(false, AnalogState());
 }
 
