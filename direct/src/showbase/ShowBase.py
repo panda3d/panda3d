@@ -1724,7 +1724,7 @@ class ShowBase(DirectObject.DirectObject):
             id+=1
         # Setup the button thrower for that device and register it's event prefix
         bt = idn.attachNewNode(ButtonThrower(prefix))
-        self.notify.debug("Registred event prefix {}{}-".format(prefix, id))
+        assert self.notify.debug("Registered event prefix {}{}-".format(prefix, id))
         bt.node().setPrefix("{}{}-".format(prefix, id))
         # append the new button thrower to the list of device button throwers
         self.deviceButtonThrowers.append(bt)
