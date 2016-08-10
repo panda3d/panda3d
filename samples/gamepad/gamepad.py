@@ -56,15 +56,18 @@ class App(ShowBase):
         # movements by ourself
         self.disableMouse()
 
+        # list of connected gamepad devices
+        gamepads = base.devices.getDevices(InputDevice.DC_gamepad)
+
         # set the center position of the control sticks
         # NOTE: here we assume, that the wheel is centered when the application get started.
         #       In real world applications, you should notice the user and give him enough time
         #       to center the wheel until you store the center position of the controler!
-        gamepads = base.devices.getDevices(InputDevice.DC_gamepad)
         self.lxcenter = gamepads[0].findControl(InputDevice.C_left_x).state
         self.lycenter = gamepads[0].findControl(InputDevice.C_left_y).state
         self.rxcenter = gamepads[0].findControl(InputDevice.C_right_x).state
         self.rycenter = gamepads[0].findControl(InputDevice.C_right_y).state
+
 
         self.taskMgr.add(self.moveTask, "movement update task")
 
@@ -106,13 +109,17 @@ class App(ShowBase):
 
         # we will use the first found gamepad
         # Move the camera left/right
-        movementVec.setX(gamepads[0].findControl(InputDevice.C_left_x).state - self.lxcenter)
+        left_x = gamepads[0].findControl(InputDevice.C_left_x)
+        movementVec.setX(left_x.state - self.lxcenter)
         # Move the camera forward/backward
-        movementVec.setY(gamepads[0].findControl(InputDevice.C_left_y).state - self.lycenter)
+        left_y = gamepads[0].findControl(InputDevice.C_left_y)
+        movementVec.setY(left_y.state - self.lycenter)
         # Control the cameras heading
-        base.camera.setH(base.camera, 100 * dt * (gamepads[0].findControl(InputDevice.C_right_x).state - self.rxcenter))
+        right_x = gamepads[0].findControl(InputDevice.C_right_x)
+        base.camera.setH(base.camera, 100 * dt * (right_x.state - self.rxcenter))
         # Control the cameras pitch
-        base.camera.setP(base.camera, 100 * dt * (gamepads[0].findControl(InputDevice.C_right_y).state - self.rycenter))
+        right_y = gamepads[0].findControl(InputDevice.C_right_y)
+        base.camera.setP(base.camera, 100 * dt * (right_y.state - self.rycenter))
 
         # calculate movement
         base.camera.setX(base.camera, 100 * dt * movementVec.getX())

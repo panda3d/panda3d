@@ -114,13 +114,15 @@ class App(ShowBase):
 
         # we will use the first found wheel
         # Acclerate
-        accleration = wheels[0].findControl(InputDevice.C_accelerator).state * self.maxAccleration
-        if self.currentMoveSpeed > wheels[0].findControl(InputDevice.C_accelerator).state * self.maxSpeed:
+        acclearatorPedal = wheels[0].findControl(InputDevice.C_accelerator).state
+        accleration = accleratorPedal * self.maxAccleration
+        if self.currentMoveSpeed > accleratorPedal * self.maxSpeed:
             self.currentMoveSpeed -= dt * self.deaccleration
         self.currentMoveSpeed += dt * accleration
 
         # Break
-        deacleration = wheels[0].findControl(InputDevice.C_brake).state * self.deaclerationBreak
+        breakPedal = wheels[0].findControl(InputDevice.C_brake).state
+        deacleration = breakPedal * self.deaclerationBreak
         self.currentMoveSpeed -= dt * deacleration
         if self.currentMoveSpeed < 0:
             self.currentMoveSpeed = 0
