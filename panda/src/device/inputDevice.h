@@ -287,7 +287,8 @@ PUBLISHED:
   INLINE AnalogState get_control(size_t index) const;
   INLINE AnalogState find_control(ControlAxis axis) const;
 
-  // Make device controls iterable
+  // Make device buttons and controls iterable
+  MAKE_SEQ_PROPERTY(buttons, get_num_buttons, get_button);
   MAKE_SEQ_PROPERTY(controls, get_num_controls, get_control);
 
 public:
@@ -313,8 +314,8 @@ INLINE ostream &operator << (ostream &out, const InputDevice &device) {
   return out;
 }
 
-ostream &operator << (ostream &out, InputDevice::DeviceClass dc);
-ostream &operator << (ostream &out, InputDevice::ControlAxis axis);
+EXPCL_PANDA_DEVICE ostream &operator << (ostream &out, InputDevice::DeviceClass dc);
+EXPCL_PANDA_DEVICE ostream &operator << (ostream &out, InputDevice::ControlAxis axis);
 
 #include "inputDevice.I"
 

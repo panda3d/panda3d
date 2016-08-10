@@ -290,7 +290,7 @@ get_num_controls() const {
  * the various controls by index number.
  */
 INLINE void InputDevice::
-set_control_map(int index, ControlAxis axis) {
+set_control_map(int index, InputDevice::ControlAxis axis) {
   LightMutexHolder holder(_lock);
   nassertv(index >= 0);
   if (index >= (int)_controls.size()) {
@@ -348,7 +348,7 @@ get_control(size_t index) const {
  * if the axis was not found in the list.
  */
 INLINE InputDevice::AnalogState InputDevice::
-find_control(ControlAxis axis) const {
+find_control(InputDevice::ControlAxis axis) const {
   for (int i; i < (int)_controls.size(); i++) {
     if (_controls[i].axis == axis) {
       return _controls[i];
