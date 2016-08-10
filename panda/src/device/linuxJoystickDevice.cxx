@@ -172,23 +172,17 @@ open_device() {
         break;
 
       case BTN_SELECT:
+      case KEY_PREVIOUS:
         handle = GamepadButton::back();
         break;
 
       case BTN_START:
+      case KEY_NEXT:
         handle = GamepadButton::start();
         break;
 
       case BTN_MODE:
         handle = GamepadButton::guide();
-        break;
-
-      case KEY_NEXT:
-        handle = GamepadButton::next();
-        break;
-
-      case KEY_PREVIOUS:
-        handle = GamepadButton::previous();
         break;
 
       case BTN_THUMBL:
