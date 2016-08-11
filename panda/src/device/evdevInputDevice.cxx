@@ -386,6 +386,10 @@ init_device() {
             _dpad_up_button = (int)_buttons.size();
             _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
             _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+          } else if (i == ABS_HAT0X) {
+            set_control_map(i, C_hat_x);
+          } else if (i == ABS_HAT0Y) {
+            set_control_map(i, C_hat_y);
           }
         } else {
           set_control_map(i, axis_map[i]);
