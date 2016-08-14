@@ -131,6 +131,39 @@ get_gl_version_minor() const {
 }
 
 /**
+ * Returns whether a core profile or a compatibility mode is considered.
+ */
+INLINE bool CLP(GraphicsStateGuardian)::
+has_core_profile() const {
+  return _core_profile;
+}
+
+/**
+ * Returns whether the fixed function pipeline is supported.
+ */
+INLINE bool CLP(GraphicsStateGuardian)::
+has_fixed_function_pipeline() const {
+#ifndef SUPPORT_FIXED_FUNCTION
+  return false;
+#else
+  // In OpenGL 3.1 the fixed function pipeline was declared deprecated, and
+  // theoretically all the pipeline should gone. However, some implementations
+  // kept them, "out of the law". After that, In OpenGL >= 3.2 the concept of
+  // core profile and compatibility mode where introduced. Therefore, since it
+  // is not possible to check whether those functions are implemented in GL 3.1
+  // or not, we should not try to use them.
+  if ((_gl_version_major == 3) && (_gl_version_minor == 1)) {
+    return false;
+  }
+  // Otherwise, we can just check whether we are using a core profile or a
+  // compatibility mode. The variable _core_profile is already taking into
+  // account if a GL <= 3.0 is considered (becoming false)
+  return !_core_profile;
+#endif
+}
+
+
+/**
  * Calls glFinish() if the config variable gl-finish is set True.
  */
 INLINE void CLP(GraphicsStateGuardian)::
@@ -363,7 +396,7 @@ enable_line_smooth(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
 #ifdef SUPPORT_FIXED_FUNCTION
-  if (_point_smooth_enabled != val) {
+  if (has_fixed_function_pipeline() && (_point_smooth_enabled != val)) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
     if (val) {
@@ -529,6 +562,9 @@ enable_depth_test(bool val) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_fog(bool val) {
+  if (!has_fixed_function_pipeline()){
+    return;
+  }
   if (_fog_enabled != val) {
     _fog_enabled = val;
     if (val) {
@@ -554,6 +590,9 @@ enable_fog(bool val) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_alpha_test(bool val) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
   if (_alpha_test_enabled != val) {
     _alpha_test_enabled = val;
     if (val) {
@@ -631,6 +670,9 @@ clear_color_write_mask() {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLoadMatrix(const LMatrix4 &mat) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
 #if defined(OPENGLES) && defined(STDFLOAT_DOUBLE)
   LMatrix4f matf = LCAST(float, mat);
   glLoadMatrixf(matf.get_data());
@@ -648,6 +690,9 @@ call_glLoadMatrix(const LMatrix4 &mat) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glFogfv(GLenum pname, const LColor &color) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
 #ifndef STDFLOAT_DOUBLE
   glFogfv(pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
@@ -663,6 +708,9 @@ call_glFogfv(GLenum pname, const LColor &color) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
 #ifndef STDFLOAT_DOUBLE
   glMaterialfv(face, pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
@@ -678,6 +726,9 @@ call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
 #ifndef STDFLOAT_DOUBLE
   glLightfv(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
@@ -693,6 +744,9 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
 #ifndef STDFLOAT_DOUBLE
   glLightfv(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
@@ -708,6 +762,9 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
 #ifndef STDFLOAT_DOUBLE
   glLightModelfv(pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
@@ -723,6 +780,9 @@ call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
  */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
 #ifndef STDFLOAT_DOUBLE
   glTexEnvfv(target, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
