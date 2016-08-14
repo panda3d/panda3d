@@ -315,7 +315,6 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // and extensions.  This also means creating a temporary window, so we have
   // something to bind the context to and make it current.
   init_temp_context();
-
   if (!_supports_fbconfig) {
     // We have a good OpenGL context, but it doesn't support the FBConfig
     // interface, so we'll stop there.
@@ -412,6 +411,12 @@ choose_pixel_format(const FrameBufferProperties &properties,
           attrib_list[n++] = GLX_CONTEXT_MINOR_VERSION_ARB;
           attrib_list[n++] = gl_version[1];
         }
+      }
+      else {
+        attrib_list[n++] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+        attrib_list[n++] = get_gl_version_major();
+        attrib_list[n++] = GLX_CONTEXT_MINOR_VERSION_ARB;
+        attrib_list[n++] = get_gl_version_minor();
       }
       if (gl_debug) {
         attrib_list[n++] = GLX_CONTEXT_FLAGS_ARB;
