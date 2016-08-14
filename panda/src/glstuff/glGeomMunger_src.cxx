@@ -47,9 +47,11 @@ CLP(GeomMunger)::
 ~CLP(GeomMunger)() {
   // We need to remove this pointer from all of the geom contexts that
   // reference this object.
-  GeomContexts::iterator gci;
-  for (gci = _geom_contexts.begin(); gci != _geom_contexts.end(); ++gci) {
-    (*gci)->remove_munger(this);
+  if (((CLP(GraphicsStateGuardian)*)get_gsg())->has_fixed_function_pipeline()) {
+    GeomContexts::iterator gci;
+    for (gci = _geom_contexts.begin(); gci != _geom_contexts.end(); ++gci) {
+      (*gci)->remove_munger(this);
+    }
   }
   _geom_contexts.clear();
 }
