@@ -1654,6 +1654,10 @@ write(ostream &out, int indent_level) const {
   case TT_buffer_texture:
     out << "buffer, " << cdata->_x_size;
     break;
+
+  case TT_1d_texture_array:
+    out << "1-d array, " << cdata->_x_size << " x " << cdata->_y_size;
+    break;
   }
 
   if (cdata->_num_views > 1) {
@@ -2053,6 +2057,8 @@ format_texture_type(TextureType tt) {
     return "cube_map_array";
   case TT_buffer_texture:
     return "buffer_texture";
+  case TT_1d_texture_array:
+    return "1d_texture_array";
   }
   return "**invalid**";
 }
@@ -6768,6 +6774,10 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type,
   case TT_buffer_texture:
     nassertv(y_size == 1 && z_size == 1);
     break;
+
+  case TT_1d_texture_array:
+    nassertv(z_size == 1);
+    break;
   }
 
   if (texture_type != TT_2d_texture) {
@@ -10032,6 +10042,7 @@ make_this_from_bam(const FactoryParams &params) {
       case TT_buffer_texture:
       case TT_1d_texture:
       case TT_2d_texture:
+      case TT_1d_texture_array:
         if (alpha_filename.empty()) {
           me = TexturePool::load_texture(filename, primary_file_num_channels,
                                          has_read_mipmaps, options);
