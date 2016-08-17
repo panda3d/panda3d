@@ -530,13 +530,6 @@ def posHprInterval(self, *args, **kw):
 Dtool_funcToMethod(posHprInterval, NodePath)
 del posHprInterval
 #####################################################################
-def posScaleInterval(self, *args, **kw):
-        from direct.interval import LerpInterval
-        return LerpInterval.LerpPosScaleInterval(self, *args, **kw)
-
-Dtool_funcToMethod(posScaleInterval, NodePath)
-del posScaleInterval
-#####################################################################
 def posQuatInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosQuatInterval(self, *args, **kw)

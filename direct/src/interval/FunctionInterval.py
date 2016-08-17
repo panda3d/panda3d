@@ -1,6 +1,6 @@
 """FunctionInterval module: contains the FunctionInterval class"""
 
-__all__ = ['FunctionInterval', 'EventInterval', 'AcceptInterval', 'IgnoreInterval', 'ParentInterval', 'WrtParentInterval', 'PosInterval', 'HprInterval', 'ScaleInterval', 'PosHprInterval', 'PosScaleInterval', 'HprScaleInterval', 'PosHprScaleInterval', 'Func', 'Wait']
+__all__ = ['FunctionInterval', 'EventInterval', 'AcceptInterval', 'IgnoreInterval', 'ParentInterval', 'WrtParentInterval', 'PosInterval', 'HprInterval', 'ScaleInterval', 'PosHprInterval', 'HprScaleInterval', 'PosHprScaleInterval', 'Func', 'Wait']
 
 from panda3d.core import *
 from panda3d.direct import *
@@ -249,27 +249,6 @@ class PosHprInterval(FunctionInterval):
             PosHprInterval.posHprIntervalNum += 1
         # Create function interval
         FunctionInterval.__init__(self, posHprFunc, name = name)
-
-class PosScaleInterval(FunctionInterval):
-    # PosScaleInterval counter
-    posScaleIntervalNum = 1
-    # Initialization
-    def __init__(self, nodePath, pos, scale, duration = 0.0,
-                 name = None, other = None):
-        """__init__(nodePath, pos, scale, duration, name)
-        """
-        # Create function
-        def posScaleFunc(np = nodePath, pos = pos, scale = scale, other = other):
-            if other:
-                np.setPosScale(other, pos, scale)
-            else:
-                np.setPosScale(pos, scale)
-        # Determine name
-        if (name == None):
-            name = 'PosScaleInterval-%d' % PosScaleInterval.posScaleIntervalNum
-            PosScaleInterval.posScaleIntervalNum += 1
-        # Create function interval
-        FunctionInterval.__init__(self, posScaleFunc, name = name)
 
 class HprScaleInterval(FunctionInterval):
     # HprScaleInterval counter
