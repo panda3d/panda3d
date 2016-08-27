@@ -892,9 +892,8 @@ class Loader(DirectObject):
         for model in modelList:
             request = ModelFlattenRequest(model.node())
             request.setDoneEvent(self.hook)
-            request.setPythonObject((cb, i))
             self.loader.loadAsync(request)
-            cb.requests[request] = True
+            cb.requests.add(request)
             self.__requests[request] = (cb, i)
             i += 1
         return cb
