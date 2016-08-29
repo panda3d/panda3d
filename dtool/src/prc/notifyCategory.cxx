@@ -74,10 +74,15 @@ out(NotifySeverity severity, bool prefix) const {
       if (get_notify_timestamp()) {
         // Format a timestamp to include as a prefix as well.
         time_t now = time(NULL) + _server_delta;
-        struct tm *ptm = localtime(&now);
+        struct tm atm;
+#ifdef _WIN32
+        localtime_s(&atm, &now);
+#else
+        localtime_r(&now, &atm);
+#endif
 
         char buffer[128];
-        strftime(buffer, 128, ":%m-%d-%Y %H:%M:%S ", ptm);
+        strftime(buffer, 128, ":%m-%d-%Y %H:%M:%S ", &atm);
         nout << buffer;
       }
 

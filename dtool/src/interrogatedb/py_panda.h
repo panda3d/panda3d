@@ -219,9 +219,10 @@ static PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyOb
 }
 
 // The following used to be in the above macro, but it doesn't seem to be
-// necessary as tp_alloc memsets the object to 0. ((Dtool_PyInstDef
-// *)self)->_ptr_to_object = NULL;\ ((Dtool_PyInstDef *)self)->_memory_rules =
-// false;\ ((Dtool_PyInstDef *)self)->_is_const = false;\
+// necessary as tp_alloc memsets the object to 0.
+//  ((Dtool_PyInstDef *)self)->_ptr_to_object = NULL;
+//  ((Dtool_PyInstDef *)self)->_memory_rules = false;
+//  ((Dtool_PyInstDef *)self)->_is_const = false;
 
 // Delete functions..
 #ifdef NDEBUG

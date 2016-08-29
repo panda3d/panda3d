@@ -40,7 +40,8 @@ get_context() const {
     context->AddReference();
     return py_context.ptr();
 
-  } catch (const python::error_already_set& e) {
+  } catch (const python::error_already_set &e) {
+    (void)e;
     // Return NULL, which will trigger the exception in Python
   }
   return NULL;

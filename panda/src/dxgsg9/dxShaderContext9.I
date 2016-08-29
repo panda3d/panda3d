@@ -17,7 +17,7 @@
  * shader, or if the current video card isn't shader-capable, or if no shader
  * languages are compiled into panda.
  */
-INLINE bool CLP(ShaderContext)::
+INLINE bool DXShaderContext9::
 valid(GSG *gsg) {
 #ifdef HAVE_CG
   return (_cg_program != 0);

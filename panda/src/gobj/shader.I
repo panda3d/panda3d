@@ -792,25 +792,3 @@ operator < (const Shader::ShaderFile &other) const {
   }
   return false;
 }
-
-/**
- * Returns the filename of the included shader with the given source file
- * index (as recorded in the #line statement in r_preprocess_source).  We use
- * this to associate error messages with included files.
- */
-INLINE Filename Shader::
-get_filename_from_index(int index, ShaderType type) const {
-  if (index == 0) {
-    Filename fn = get_filename(type);
-    if (!fn.empty()) {
-      return fn;
-    }
-  } else if (glsl_preprocess && index >= 2048 &&
-             (index - 2048) < (int)_included_files.size()) {
-    return _included_files[(size_t)index - 2048];
-  }
-  // Must be a mistake.  Quietly put back the integer.
-  char str[32];
-  sprintf(str, "%d", index);
-  return Filename(str);
-}

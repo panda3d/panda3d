@@ -255,7 +255,12 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
  */
 PT(CycleData) PipelineCyclerTrueImpl::
 cycle() {
-  PT(CycleData) last_val = _data[_num_stages - 1]._cdata.p();
+  // This trick moves an NPT into a PT without unnecessarily incrementing and
+  // subsequently decrementing the regular reference count.
+  PT(CycleData) last_val;
+  last_val.swap(_data[_num_stages - 1]._cdata);
+  last_val->node_unref_only();
+
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
 

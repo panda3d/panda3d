@@ -12,9 +12,6 @@
  */
 
 #include "mayaToEgg_client.h"
-#ifdef _WIN32
-  #include "pystub.h"
-#endif
 
 /**
  *
@@ -31,13 +28,6 @@ MayaToEggClient() :
 }
 
 int main(int argc, char *argv[]) {
-  // We don't want pystub on linux, since it gives problems with Maya's
-  // python.
-#ifdef _WIN32
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-#endif
-
   MayaToEggClient prog;
   // Open a connection to the server process
   PT(Connection) con = prog.qManager->open_TCP_client_connection(prog.server,0);

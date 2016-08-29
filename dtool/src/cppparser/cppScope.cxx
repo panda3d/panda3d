@@ -18,6 +18,7 @@
 #include "cppTypedefType.h"
 #include "cppTypeDeclaration.h"
 #include "cppExtensionType.h"
+#include "cppEnumType.h"
 #include "cppInstance.h"
 #include "cppInstanceIdentifier.h"
 #include "cppIdentifier.h"

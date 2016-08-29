@@ -521,11 +521,10 @@ INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
 add_hash(size_t hash) const {
   TAU_PROFILE("size_t LVecBase4::add_hash(size_t)", " ", TAU_USER);
 #ifdef FLOATTYPE_IS_INT
-  int_hash ihasher;
-  hash = ihasher.add_hash(hash, _v(0));
-  hash = ihasher.add_hash(hash, _v(1));
-  hash = ihasher.add_hash(hash, _v(2));
-  hash = ihasher.add_hash(hash, _v(3));
+  hash = int_hash::add_hash(hash, _v(0));
+  hash = int_hash::add_hash(hash, _v(1));
+  hash = int_hash::add_hash(hash, _v(2));
+  hash = int_hash::add_hash(hash, _v(3));
   return hash;
 #else
   return add_hash(hash, NEARLY_ZERO(FLOATTYPE));

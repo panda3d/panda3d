@@ -25,7 +25,7 @@ class DCParameter;
  * This represents a combination of two or more related atomic fields, that
  * will often be treated as a unit.
  */
-class EXPCL_DIRECT DCMolecularField : public DCField {
+class DCMolecularField : public DCField {
 public:
   DCMolecularField(const string &name, DCClass *dclass);
 

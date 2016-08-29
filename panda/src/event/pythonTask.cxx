@@ -18,12 +18,9 @@
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 
-TypeHandle PythonTask::_type_handle;
+#include "pythonThread.h"
 
-Configure(config_pythonTask);
-ConfigureFn(config_pythonTask) {
-  PythonTask::init_type();
-}
+TypeHandle PythonTask::_type_handle;
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
@@ -188,6 +185,19 @@ get_upon_death() {
  */
 void PythonTask::
 set_owner(PyObject *owner) {
+#ifndef NDEBUG
+  if (owner != Py_None) {
+    PyObject *add = PyObject_GetAttrString(owner, "_addTask");
+    PyObject *clear = PyObject_GetAttrString(owner, "_clearTask");
+
+    if (add == NULL || !PyCallable_Check(add) ||
+        clear == NULL || !PyCallable_Check(clear)) {
+      Dtool_Raise_TypeError("owner object should have _addTask and _clearTask methods");
+      return;
+    }
+  }
+#endif
+
   if (_owner != NULL && _owner != Py_None && _state != S_inactive) {
     unregister_from_owner();
   }
@@ -391,8 +401,7 @@ do_python_task() {
   if (_generator == (PyObject *)NULL) {
     // We are calling the function directly.
     PyObject *args = get_args();
-    result =
-      Thread::get_current_thread()->call_python_func(_function, args);
+    result = PythonThread::call_python_func(_function, args);
     Py_DECREF(args);
 
 #ifdef PyGen_Check
@@ -494,10 +503,16 @@ do_python_task() {
   ostringstream strm;
 #if PY_MAJOR_VERSION >= 3
   PyObject *str = PyObject_ASCII(result);
+  if (str == NULL) {
+    str = PyUnicode_FromString("<repr error>");
+  }
   strm
     << *this << " returned " << PyUnicode_AsUTF8(str);
 #else
   PyObject *str = PyObject_Repr(result);
+  if (str == NULL) {
+    str = PyString_FromString("<repr error>");
+  }
   strm
     << *this << " returned " << PyString_AsString(str);
 #endif
@@ -606,18 +621,9 @@ call_owner_method(const char *method_name) {
   if (_owner != Py_None) {
     PyObject *func = PyObject_GetAttrString(_owner, (char *)method_name);
     if (func == (PyObject *)NULL) {
-#if PY_MAJOR_VERSION >= 3
-      PyObject *str = PyObject_ASCII(_owner);
       task_cat.error()
-        << "Owner object " << PyUnicode_AsUTF8(str) << " added to "
-        << *this << " has no method " << method_name << "().\n";
-#else
-      PyObject *str = PyObject_Repr(_owner);
-      task_cat.error()
-        << "Owner object " << PyString_AsString(str) << " added to "
-        << *this << " has no method " << method_name << "().\n";
-#endif
-      Py_DECREF(str);
+        << "Owner object added to " << *this << " has no method "
+        << method_name << "().\n";
 
     } else {
       call_function(func);

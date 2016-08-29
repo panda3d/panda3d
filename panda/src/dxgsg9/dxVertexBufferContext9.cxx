@@ -26,10 +26,10 @@ TypeHandle DXVertexBufferContext9::_type_handle;
 /**
  *
  */
-CLP(VertexBufferContext)::
-CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
-                         PreparedGraphicsObjects *pgo,
-                         GeomVertexArrayData *data) :
+DXVertexBufferContext9::
+DXVertexBufferContext9(DXGraphicsStateGuardian9 *dxgsg,
+                       PreparedGraphicsObjects *pgo,
+                       GeomVertexArrayData *data) :
   VertexBufferContext(pgo, data),
   _vbuffer(NULL)
 {
@@ -170,7 +170,7 @@ CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
  * epoch), or requeue itself on the tail of the queue (in which case the
  * eviction will be requested again much later).
  */
-void CLP(VertexBufferContext)::
+void DXVertexBufferContext9::
 evict_lru() {
   dequeue_lru();
 

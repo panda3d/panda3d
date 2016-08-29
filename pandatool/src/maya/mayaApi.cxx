@@ -184,9 +184,10 @@ open_api(string program_name, bool view_license, bool revertdir) {
 
       size_t dot2 = runtime_version.find('.', dot1 + 1);
       if (dot2 == string::npos) {
-        rtver_b = 0;
+        string_to_int(runtime_version.substr(dot1 + 1), rtver_b);
+
       } else {
-        string_to_int(runtime_version.substr(dot1, dot2 - dot1), rtver_b);
+        string_to_int(runtime_version.substr(dot1 + 1, dot2 - dot1 - 1), rtver_b);
         simple_runtime_version = runtime_version.substr(0, dot2);
       }
     }

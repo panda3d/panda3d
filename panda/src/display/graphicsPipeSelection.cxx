@@ -105,6 +105,8 @@ get_pipe_type(int n) const {
     LightMutexHolder holder(_lock);
     if (n >= 0 && n < (int)_pipe_types.size()) {
       result = _pipe_types[n]._type;
+    } else {
+      result = TypeHandle::none();
     }
   }
   return result;

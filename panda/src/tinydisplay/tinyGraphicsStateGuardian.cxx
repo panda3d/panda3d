@@ -114,7 +114,8 @@ reset() {
     Geom::GR_point |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip |
-    Geom::GR_flat_last_vertex;
+    Geom::GR_flat_last_vertex |
+    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point;
 
   _max_texture_dimension = (1 << ZB_POINT_ST_FRAC_BITS);
   _max_texture_stages = MAX_TEXTURE_STAGES;

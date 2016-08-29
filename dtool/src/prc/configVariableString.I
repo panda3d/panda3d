@@ -127,8 +127,7 @@ INLINE const string &ConfigVariableString::
 get_value() const {
   TAU_PROFILE("const string &ConfigVariableString::get_value() const", " ", TAU_USER);
   if (!is_cache_valid(_local_modified)) {
-    mark_cache_valid(((ConfigVariableString *)this)->_local_modified);
-    ((ConfigVariableString *)this)->_cache = get_string_value();
+    ((ConfigVariableString *)this)->reload_cache();
   }
   return _cache;
 }

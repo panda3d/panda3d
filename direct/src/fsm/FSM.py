@@ -149,7 +149,7 @@ class FSM(DirectObject):
 
     def __init__(self, name):
         self.fsmLock = RLock()
-        self.name = name
+        self._name = name
         self.stateArray = []
         self._serialNum = FSM.SerialNum
         FSM.SerialNum += 1
@@ -185,7 +185,7 @@ class FSM(DirectObject):
         # the messenger on every state change. The new and old states are
         # accessible as self.oldState and self.newState, and the transition
         # functions will already have been called.
-        return 'FSM-%s-%s-stateChange' % (self._serialNum, self.name)
+        return 'FSM-%s-%s-stateChange' % (self._serialNum, self._name)
 
     def getCurrentFilter(self):
         if not self.state:
@@ -240,7 +240,7 @@ class FSM(DirectObject):
         try:
             assert isinstance(request, str)
             self.notify.debug("%s.forceTransition(%s, %s" % (
-                self.name, request, str(args)[1:]))
+                self._name, request, str(args)[1:]))
 
             if not self.state:
                 # Queue up the request.
@@ -268,7 +268,7 @@ class FSM(DirectObject):
         try:
             assert isinstance(request, str)
             self.notify.debug("%s.demand(%s, %s" % (
-                self.name, request, str(args)[1:]))
+                self._name, request, str(args)[1:]))
             if not self.state:
                 # Queue up the request.
                 self.__requestQueue.append(PythonUtil.Functor(
@@ -307,7 +307,7 @@ class FSM(DirectObject):
         try:
             assert isinstance(request, str)
             self.notify.debug("%s.request(%s, %s" % (
-                self.name, request, str(args)[1:]))
+                self._name, request, str(args)[1:]))
 
             filter = self.getCurrentFilter()
             result = filter(request, args)
@@ -385,7 +385,7 @@ class FSM(DirectObject):
 
         # In either case, we quietly ignore unhandled command
         # (lowercase) requests.
-        assert self.notify.debug("%s ignoring request %s from state %s." % (self.name, request, self.state))
+        assert self.notify.debug("%s ignoring request %s from state %s." % (self._name, request, self.state))
         return None
 
     def filterOff(self, request, args):
@@ -444,7 +444,7 @@ class FSM(DirectObject):
         # Internal function to change unconditionally to the indicated
         # state.
         assert self.state
-        assert self.notify.debug("%s to state %s." % (self.name, newState))
+        assert self.notify.debug("%s to state %s." % (self._name, newState))
 
         self.oldState = self.state
         self.newState = newState
@@ -476,7 +476,7 @@ class FSM(DirectObject):
 
         if self.__requestQueue:
             request = self.__requestQueue.pop(0)
-            assert self.notify.debug("%s continued queued request." % (self.name))
+            assert self.notify.debug("%s continued queued request." % (self._name))
             request()
 
     def __callEnterFunc(self, name, *args):
@@ -525,9 +525,9 @@ class FSM(DirectObject):
         try:
             className = self.__class__.__name__
             if self.state:
-                str = ('%s FSM:%s in state "%s"' % (className, self.name, self.state))
+                str = ('%s FSM:%s in state "%s"' % (className, self._name, self.state))
             else:
-                str = ('%s FSM:%s in transition from \'%s\' to \'%s\'' % (className, self.name, self.oldState, self.newState))
+                str = ('%s FSM:%s in transition from \'%s\' to \'%s\'' % (className, self._name, self.oldState, self.newState))
             return str
         finally:
             self.fsmLock.release()

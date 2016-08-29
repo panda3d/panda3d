@@ -107,7 +107,15 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(long long value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(unsigned long long value) {
+  // size_t is sometimes defined as unsigned long long, and we want to map
+  // that to int in Python 2 so it can be returned from a __len__.
+#if PY_MAJOR_VERSION >= 3
   return PyLong_FromUnsignedLongLong(value);
+#else
+  return (value > LONG_MAX)
+    ? PyLong_FromUnsignedLongLong(value)
+    : PyInt_FromLong((long)value);
+#endif
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(bool value) {

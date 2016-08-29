@@ -71,8 +71,12 @@ get_wireframe_color() const {
 INLINE int RenderModeAttrib::
 get_geom_rendering(int geom_rendering) const {
   if (_mode == M_point) {
-    geom_rendering |= Geom::GR_point;
+    geom_rendering |= Geom::GR_point | Geom::GR_render_mode_point;
+
+  } else if (_mode == M_wireframe) {
+    geom_rendering |= Geom::GR_render_mode_wireframe;
   }
+
   if ((geom_rendering & Geom::GR_point) != 0) {
     if (_perspective) {
       geom_rendering |= (Geom::GR_point_perspective | Geom::GR_point_uniform_size);

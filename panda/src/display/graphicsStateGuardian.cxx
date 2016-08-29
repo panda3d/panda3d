@@ -235,6 +235,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_basic_shaders = false;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
+  _supports_compute_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
 
@@ -2059,8 +2060,6 @@ flush_timer_queries() {
     }
 
     _last_num_queried = first;
-
-    int frame_index = ClockObject::get_global_clock()->get_frame_count();
 
     for (int i = 0; i < first; ++i) {
       CPT(TimerQueryContext) query = _pending_timer_queries[i];

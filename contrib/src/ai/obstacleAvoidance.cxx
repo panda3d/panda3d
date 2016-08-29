@@ -34,7 +34,7 @@ obstacle_detection() {
   CPT(BoundingSphere) np_sphere = np_bounds->as_bounding_sphere();
   LVecBase3 avoidance(0.0, 0.0, 0.0);
   double distance = 0x7fff ;
-  double expanded_radius;
+  double expanded_radius = 0;
   LVecBase3 to_obstacle;
   LVecBase3 prev_avoidance;
   for(unsigned int i = 0; i < _ai_char->_world->_obstacles.size(); ++i) {
@@ -89,8 +89,8 @@ do_obstacle_avoidance() {
   CPT(BoundingSphere) bsphere = bounds->as_bounding_sphere();
   PT(BoundingVolume) np_bounds = _ai_char->get_node_path().get_bounds();
   CPT(BoundingSphere) np_sphere = np_bounds->as_bounding_sphere();
-  double distance_needed = offset.length() - bsphere->get_radius() - np_sphere->get_radius();
-  if((obstacle_detection())) {
+
+  if (obstacle_detection()) {
     LVecBase3 direction = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
     direction.normalize();
     float forward_component = offset.dot(direction);

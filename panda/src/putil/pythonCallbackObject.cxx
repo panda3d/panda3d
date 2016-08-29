@@ -16,7 +16,7 @@
 #ifdef HAVE_PYTHON
 
 #include "py_panda.h"
-#include "thread.h"
+#include "pythonThread.h"
 #include "callbackData.h"
 #include "config_util.h"
 
@@ -121,8 +121,7 @@ do_python_callback(CallbackData *cbdata) {
   PyObject *args = Py_BuildValue("(O)", pycbdata);
   Py_DECREF(pycbdata);
 
-  PyObject *result =
-    Thread::get_current_thread()->call_python_func(_function, args);
+  PyObject *result = PythonThread::call_python_func(_function, args);
   Py_DECREF(args);
 
   if (result == (PyObject *)NULL) {

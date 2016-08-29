@@ -638,9 +638,6 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
 
   Region &region = cdata->_regions[i];
 
-  int old_w = region._pixels[1] - region._pixels[0];
-  int old_h = region._pixels[3] - region._pixels[2];
-
   region._pixels[0] = int((region._dimensions[0] * x_size) + 0.5);
   region._pixels[1] = int((region._dimensions[1] * x_size) + 0.5);
   region._pixels_i[0] = region._pixels[0];

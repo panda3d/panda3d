@@ -1,4 +1,5 @@
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from .MsgTypes import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal

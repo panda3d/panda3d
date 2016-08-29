@@ -35,9 +35,9 @@ class DistributedObjectGlobalUD(DistributedObjectUD):
     def __execMessage(self, message):
         if not self.ExecNamespace:
             # Import some useful variables into the ExecNamespace initially.
-            import pandac.PandaModules
+            import panda3d.core
 
-            for key, value in pandac.PandaModules.__dict__.items():
+            for key, value in panda3d.core.__dict__.items():
                 if not key.startswith('__'):
                     self.ExecNamespace[key] = value
             #self.importExecNamespace()

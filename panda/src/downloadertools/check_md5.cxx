@@ -10,7 +10,6 @@
  */
 
 #include "pandabase.h"
-#include "pystub.h"
 #include "hashVal.h"
 #include "filename.h"
 #include "panda_getopt.h"
@@ -65,9 +64,6 @@ output_hash(const string &filename, const HashVal &hash) {
 
 int
 main(int argc, char **argv) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   extern char *optarg;
   extern int optind;
   const char *optstr = "i:db:qh";

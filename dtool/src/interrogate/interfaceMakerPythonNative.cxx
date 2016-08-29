@@ -1259,9 +1259,16 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       if (is_cpp_type_legal(object->_itype._cpptype) &&
           isExportThisRun(object->_itype._cpptype)) {
         string class_name = make_safe_name(object->_itype.get_scoped_name());
-        bool is_typed = HasAGetClassTypeFunction(object->_itype._cpptype);
+        bool is_typed = has_get_class_type_function(object->_itype._cpptype);
 
         if (is_typed) {
+          if (has_init_type_function(object->_itype._cpptype)) {
+            // Call the init_type function.  This isn't necessary for all
+            // types as many of them are automatically initialized at static
+            // init type, but for some extension classes it's useful.
+            out << "  " << object->_itype._cpptype->get_local_name(&parser)
+                << "::init_type();\n";
+          }
           out << "  Dtool_" << class_name << "._type = "
               << object->_itype._cpptype->get_local_name(&parser)
               << "::get_class_type();\n"
@@ -1291,7 +1298,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
     string class_name = (*ii)->get_local_name(&parser);
     string safe_name = make_safe_name(class_name);
 
-    if (HasAGetClassTypeFunction(*ii)) {
+    if (has_get_class_type_function(*ii)) {
       out << "  Dtool_Ptr_" << safe_name << " = LookupRuntimeTypedClass(" << class_name << "::get_class_type());\n";
     } else {
       out << "  Dtool_Ptr_" << safe_name << " = LookupNamedClass(\"" << class_name << "\");\n";
@@ -1541,7 +1548,7 @@ write_module_class(ostream &out, Object *obj) {
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
 
   bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
-  if (!is_runtime_typed && HasAGetClassTypeFunction(obj->_itype._cpptype)) {
+  if (!is_runtime_typed && has_get_class_type_function(obj->_itype._cpptype)) {
     is_runtime_typed = true;
   }
 
@@ -4196,7 +4203,7 @@ write_function_forset(ostream &out,
     return;
   }
 
-  FunctionRemap *remap;
+  FunctionRemap *remap = NULL;
   std::set<FunctionRemap *>::iterator sii;
 
   bool all_nonconst = false;
@@ -7010,7 +7017,7 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
 
  */
 bool InterfaceMakerPythonNative::
-HasAGetClassTypeFunction(CPPType *type) {
+has_get_class_type_function(CPPType *type) {
   while (type->get_subtype() == CPPDeclaration::ST_typedef) {
     type = type->as_typedef_type()->_type;
   }
@@ -7023,6 +7030,43 @@ HasAGetClassTypeFunction(CPPType *type) {
   CPPScope *scope = struct_type->get_scope();
 
   return scope->_functions.find("get_class_type") != scope->_functions.end();
+}
+
+/**
+ *
+ */
+bool InterfaceMakerPythonNative::
+has_init_type_function(CPPType *type) {
+  while (type->get_subtype() == CPPDeclaration::ST_typedef) {
+    type = type->as_typedef_type()->_type;
+  }
+
+  CPPStructType *struct_type = type->as_struct_type();
+  if (struct_type == NULL) {
+    return false;
+  }
+
+  CPPScope *scope = struct_type->get_scope();
+  CPPScope::Functions::const_iterator it = scope->_functions.find("init_type");
+  if (it == scope->_functions.end()) {
+    return false;
+  }
+  const CPPFunctionGroup *group = it->second;
+
+  CPPFunctionGroup::Instances::const_iterator ii;
+  for (ii = group->_instances.begin(); ii != group->_instances.end(); ++ii) {
+    const CPPInstance *cppinst = *ii;
+    const CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
+
+    if (cppfunc != NULL &&
+        cppfunc->_parameters != NULL &&
+        cppfunc->_parameters->_parameters.size() == 0 &&
+        (cppinst->_storage_class & CPPInstance::SC_static) != 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**

@@ -12,7 +12,6 @@
  */
 
 #include "binToC.h"
-#include "pystub.h"
 
 // The number of bytes across the page to write.
 static const int col_width = 11;
@@ -144,9 +143,6 @@ handle_args(ProgramBase::Args &args) {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   BinToC prog;
   prog.parse_command_line(argc, argv);
   prog.run();

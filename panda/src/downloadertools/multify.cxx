@@ -10,7 +10,6 @@
  */
 
 #include "pandabase.h"
-#include "pystub.h"
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 #include "multifile.h"
@@ -758,9 +757,6 @@ tokenize_extensions(const string &str, pset<string> &extensions) {
 
 int
 main(int argc, char **argv) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   preprocess_argv(argc, argv);
   if (argc < 2) {
     usage();

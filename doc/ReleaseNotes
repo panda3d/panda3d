@@ -1,3 +1,35 @@
+------------------------  RELEASE 1.9.3  ------------------------
+
+This issue fixes several bugs that were still found in 1.9.2.
+
+* Fix crash when running in Steam on Linux when using OpenAL
+* Fix crash using wx/tkinter on Mac as long as want-wx/tk is set
+* Fix loading models from 'models' package with models/ prefix
+* Fix random crashes in task system
+* Fix memory leaks in BulletTriangleMesh
+* Fix loading old models with MovingPart<LMatrix4f>
+* Improve performance of CPU vertex animation somewhat
+* Show framebuffer properties when fbprop request fails
+* Show error instead of crash on use of object before __init__
+* Fix hang on exit when using Python task on threaded task chain
+* Fix inability to get RGBA renderbuffer in certain cases
+* Work around GLSL issue with #pragma and certain Intel drivers
+* Improve performance of texture load and store operations
+* Fix crashes with pbuffers on Intel cards on Windows
+* Support for Autodesk Maya 2016.5
+* Add shadow-depth-bits config var to control shadow map depth
+* Fix cull issue when rendering cube map (or any multi-lens setup)
+* Fix crash rendering with the same camera to different contexts
+* Fix compile error when making static build with DX9 renderer
+* Fix assertion when using aux render targets in DX9
+* Work around Cg bug generating invalid ASM for saturated tex loads
+* Fix issues with certain Cg shader inputs in DX9
+* Support uint8 index buffers in DX9
+* Fix occasional frame lag when loading a big model asynchronously
+* Fix race condition reading string config var
+* Fix interrogate parsing issue with "const static"
+* Add back missing libp3pystub.a to Mac OS X SDK
+
 ------------------------  RELEASE 1.9.2  ------------------------
 
 This is a minor bugfix release, fixing a few minor issues that

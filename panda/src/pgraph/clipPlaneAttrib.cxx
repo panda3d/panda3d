@@ -911,7 +911,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
   if (manager->get_file_minor_ver() >= 40) {
-    for (int i = 0; i < _off_planes.size(); ++i) {
+    for (size_t i = 0; i < _off_planes.size(); ++i) {
       pi += _off_planes[i].complete_pointers(p_list + pi, manager);
 
       int n = areg->find_node(_off_planes[i]);
@@ -921,7 +921,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       }
     }
 
-    for (int i = 0; i < _on_planes.size(); ++i) {
+    for (size_t i = 0; i < _on_planes.size(); ++i) {
       pi += _on_planes[i].complete_pointers(p_list + pi, manager);
 
       int n = areg->find_node(_on_planes[i]);

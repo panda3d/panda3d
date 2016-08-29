@@ -49,6 +49,16 @@ get_pstats_index() const {
 }
 
 /**
+ * Returns the Python index associated with this thread, or -1 if no index has
+ * yet been associated with this thread.  This is used internally by the
+ * direct.stdpy.thread module; you should not need to call this directly.
+ */
+INLINE int Thread::
+get_python_index() const {
+  return _python_index;
+}
+
+/**
  * Returns a string that is guaranteed to be unique to this thread, across all
  * processes on the machine, during at least the lifetime of this process.
  */
@@ -261,6 +271,15 @@ preempt() {
 INLINE AsyncTaskBase *Thread::
 get_current_task() const {
   return _current_task;
+}
+
+/**
+ * Stores a Python index to be associated with this thread.  This is used
+ * internally by the thread module; you should not need to call this directly.
+ */
+INLINE void Thread::
+set_python_index(int python_index) {
+  _python_index = python_index;
 }
 
 /**

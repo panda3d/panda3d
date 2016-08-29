@@ -47,6 +47,11 @@ public:
                               CycleDataLockedStageReader<CycleDataType> &take_from,
                               bool force_to_0);
 
+#if defined(USE_MOVE_SEMANTICS) && defined(DO_PIPELINING)
+  INLINE CycleDataStageWriter(CycleDataStageWriter<CycleDataType> &&from) NOEXCEPT;
+  INLINE void operator = (CycleDataStageWriter<CycleDataType> &&from) NOEXCEPT;
+#endif
+
   INLINE ~CycleDataStageWriter();
 
   INLINE CycleDataType *operator -> ();

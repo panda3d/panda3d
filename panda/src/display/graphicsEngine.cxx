@@ -118,6 +118,23 @@ PStatCollector GraphicsEngine::_occlusion_passed_pcollector("Occlusion results:V
 PStatCollector GraphicsEngine::_occlusion_failed_pcollector("Occlusion results:Occluded");
 PStatCollector GraphicsEngine::_occlusion_tests_pcollector("Occlusion tests");
 
+// This is used to keep track of which scenes we have already culled.
+struct CullKey {
+  GraphicsStateGuardian *_gsg;
+  NodePath _camera;
+  int _lens_index;
+};
+
+INLINE static bool operator < (const CullKey &a, const CullKey &b) {
+  if (a._gsg != b._gsg) {
+    return a._gsg < b._gsg;
+  }
+  if (a._camera != b._camera) {
+    return a._camera < b._camera;
+  }
+  return a._lens_index < b._lens_index;
+}
+
 /**
  * Creates a new GraphicsEngine object.  The Pipeline is normally left to
  * default to NULL, which indicates the global render pipeline, but it may be
@@ -597,6 +614,9 @@ remove_all_windows() {
   // And, hey, let's stop the vertex paging threads, if any.
   VertexDataPage::stop_threads();
 
+  // Stopping the tasks means we have to release the Python GIL while
+  // this method runs (hence it is marked BLOCKING), so that any
+  // Python tasks on other threads won't deadlock grabbing the GIL.
   AsyncTaskManager::get_global_ptr()->stop_threads();
 
 #ifdef DO_PSTATS
@@ -1372,7 +1392,6 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
   // Keep track of the cameras we have already used in this thread to render
   // DisplayRegions.
-  typedef pair<NodePath, int> CullKey;
   typedef pmap<CullKey, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
@@ -1387,10 +1406,13 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         if (dr != (DisplayRegion *)NULL) {
           DisplayRegionPipelineReader *dr_reader =
             new DisplayRegionPipelineReader(dr, current_thread);
-          NodePath camera = dr_reader->get_camera();
-          int lens_index = dr_reader->get_lens_index();
 
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(CullKey(camera, lens_index), (DisplayRegion *)NULL)).first;
+          CullKey key;
+          key._gsg = win->get_gsg();
+          key._camera = dr_reader->get_camera();
+          key._lens_index = dr_reader->get_lens_index();
+
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(key, (DisplayRegion *)NULL)).first;
           if ((*aci).second == NULL) {
             // We have not used this camera already in this thread.  Perform
             // the cull operation.
@@ -1505,7 +1527,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         // We have to place this collector inside begin_frame, because we need
         // a current context for PStatGPUTimer to work.
         {
-          PStatGPUTimer timer(win->get_gsg(), win->get_draw_window_pcollector(), current_thread);
+          PStatGPUTimer timer(gsg, win->get_draw_window_pcollector(), current_thread);
           win->clear(current_thread);
 
           if (display_cat.is_spam()) {
@@ -1525,8 +1547,8 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         if (_auto_flip) {
 #ifdef DO_PSTATS
           // This is a good time to perform a latency query.
-          if (win->get_gsg()->get_timer_queries_active()) {
-            win->get_gsg()->issue_timer_query(GraphicsStateGuardian::_command_latency_pcollector.get_index());
+          if (gsg->get_timer_queries_active()) {
+            gsg->issue_timer_query(GraphicsStateGuardian::_command_latency_pcollector.get_index());
           }
 #endif
 
@@ -1538,7 +1560,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
               win->begin_flip();
             }
             {
-              PStatGPUTimer timer(win->get_gsg(), GraphicsEngine::_flip_end_pcollector, current_thread);
+              PStatGPUTimer timer(gsg, GraphicsEngine::_flip_end_pcollector, current_thread);
               win->end_flip();
             }
           }

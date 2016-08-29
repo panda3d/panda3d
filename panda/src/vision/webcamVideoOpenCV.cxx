@@ -33,7 +33,7 @@ find_all_webcams_opencv() {
               "numbers that are assumed to be available via OpenCV to the "
               "WebcamVideo interface.  The default camera index is 0.  "
               "Specify empty string if there are no available cameras."));
-  for (int i = 0; i < wemcam_opencv_camera_index.get_num_words(); ++i) {
+  for (size_t i = 0; i < wemcam_opencv_camera_index.get_num_words(); ++i) {
     PT(WebcamVideo) wc = new WebcamVideoOpenCV(wemcam_opencv_camera_index[i]);
     WebcamVideoOpenCV::_all_webcams.push_back(wc);
   }

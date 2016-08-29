@@ -33,7 +33,7 @@ class FileSpec:
         if st is None:
             st = os.stat(pathname.toOsSpecific())
         self.size = st.st_size
-        self.timestamp = st.st_mtime
+        self.timestamp = int(st.st_mtime)
 
         self.readHash(pathname)
 
@@ -124,7 +124,7 @@ class FileSpec:
                 self.__correctHash(packageDir, pathname, st, notify)
             return False
 
-        if st.st_mtime == self.timestamp:
+        if int(st.st_mtime) == self.timestamp:
             # If the size is right and the timestamp is right, the
             # file passes.
             if notify:
@@ -198,7 +198,7 @@ class FileSpec:
         # The hash is OK.  If the timestamp is wrong, change it back
         # to what we expect it to be, so we can quick-verify it
         # successfully next time.
-        if st.st_mtime != self.timestamp:
+        if int(st.st_mtime) != self.timestamp:
             self.__updateTimestamp(pathname, st)
 
         return True
@@ -219,7 +219,7 @@ class FileSpec:
         if notify:
             notify.info("Correcting timestamp of %s to %d (%s)" % (
                 self.filename, st.st_mtime, time.asctime(time.localtime(st.st_mtime))))
-        self.timestamp = st.st_mtime
+        self.timestamp = int(st.st_mtime)
 
     def checkHash(self, packageDir, pathname, st):
         """ Returns true if the file has the expected md5 hash, false

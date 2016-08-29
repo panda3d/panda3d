@@ -16,7 +16,6 @@
 
 #include "pStatServer.h"
 #include "config_pstats.h"
-#include "pystub.h"
 
 #include <signal.h>
 
@@ -99,9 +98,6 @@ run() {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   TextStats prog;
   prog.parse_command_line(argc, argv);
   prog.run();

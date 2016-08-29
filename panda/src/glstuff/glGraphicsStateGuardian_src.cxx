@@ -628,6 +628,9 @@ reset() {
   }
 
   _supported_geom_rendering =
+#ifndef OPENGLES
+    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point |
+#endif
     Geom::GR_indexed_point |
     Geom::GR_point | Geom::GR_point_uniform_size |
     Geom::GR_indexed_other |
@@ -1050,6 +1053,24 @@ reset() {
       case GL_COMPRESSED_RGB_FXT1_3DFX:
       case GL_COMPRESSED_RGBA_FXT1_3DFX:
         _compressed_texture_formats.set_bit(Texture::CM_fxt1);
+        break;
+#endif
+
+      case GL_COMPRESSED_R11_EAC:
+      case GL_COMPRESSED_RG11_EAC:
+        _compressed_texture_formats.set_bit(Texture::CM_eac);
+        break;
+
+      case GL_COMPRESSED_RGB8_ETC2:
+      case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+      case GL_COMPRESSED_RGBA8_ETC2_EAC:
+        _compressed_texture_formats.set_bit(Texture::CM_etc1);
+        _compressed_texture_formats.set_bit(Texture::CM_etc2);
+        break;
+
+#ifdef OPENGLES
+      case GL_ETC1_RGB8_OES:
+        _compressed_texture_formats.set_bit(Texture::CM_etc1);
         break;
 #endif
 
@@ -7120,11 +7141,20 @@ do_issue_blending() {
     enable_multisample_alpha_mask(false);
     enable_blend(true);
     _glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (old_alpha_blend) {
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else {
+      _glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
 
     if (GLCAT.is_spam()) {
       GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
-      GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+      if (_supports_blend_equation_separate && !old_alpha_blend) {
+        GLCAT.spam() << "glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA)\n";
+      } else {
+        GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+      }
     }
     return;
 
@@ -8057,6 +8087,12 @@ get_texture_target(Texture::TextureType texture_type) const {
     return GL_TEXTURE_1D;
 #endif
 
+  case Texture::TT_1d_texture_array:
+    // There are no 1D array textures in OpenGL ES.  Fall back to 2D textures.
+#ifndef OPENGLES
+    return GL_TEXTURE_1D_ARRAY;
+#endif
+
   case Texture::TT_2d_texture:
     return GL_TEXTURE_2D;
 
@@ -8273,6 +8309,11 @@ get_component_type(Texture::ComponentType component_type) {
     return GL_HALF_FLOAT;
 #endif
 
+#ifndef OPENGLES_1
+  case Texture::T_unsigned_int:
+    return GL_UNSIGNED_INT;
+#endif
+
   default:
     GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
@@ -8435,9 +8476,9 @@ get_external_image_format(Texture *tex) const {
 
     case Texture::CM_rgtc:
 #ifndef OPENGLES
-      if (tex->get_format() == Texture::F_luminance) {
+      if (format == Texture::F_luminance) {
         return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
-      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+      } else if (format == Texture::F_luminance_alpha) {
         return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
       } else if (tex->get_num_components() == 1) {
         return GL_COMPRESSED_RED_RGTC1;
@@ -8445,6 +8486,41 @@ get_external_image_format(Texture *tex) const {
         return GL_COMPRESSED_RG_RGTC2;
       }
 #endif
+      break;
+
+    case Texture::CM_etc1:
+#ifdef OPENGLES
+      return GL_ETC1_RGB8_OES;
+#endif
+      // Fall through - ETC2 is backward compatible
+    case Texture::CM_etc2:
+      if (format == Texture::F_rgbm) {
+        return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+      } else if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB8_ETC2;
+      } else if (Texture::has_alpha(format)) {
+        return GL_COMPRESSED_RGBA8_ETC2_EAC;
+      } else {
+        return GL_COMPRESSED_RGB8_ETC2;
+      }
+      break;
+
+    case Texture::CM_eac:
+      if (Texture::is_unsigned(tex->get_component_type())) {
+        if (tex->get_num_components() == 1) {
+          return GL_COMPRESSED_R11_EAC;
+        } else {
+          return GL_COMPRESSED_RG11_EAC;
+        }
+      } else {
+        if (tex->get_num_components() == 1) {
+          return GL_COMPRESSED_SIGNED_R11_EAC;
+        } else {
+          return GL_COMPRESSED_SIGNED_RG11_EAC;
+        }
+      }
       break;
 
     case Texture::CM_default:
@@ -8556,7 +8632,7 @@ get_external_image_format(Texture *tex) const {
   }
   GLCAT.error()
     << "Invalid Texture::Format value in get_external_image_format(): "
-    << tex->get_format() << "\n";
+    << format << "\n";
   return GL_RGB;
 }
 
@@ -8606,9 +8682,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         break;
 
       case Texture::F_rgbm:
+      case Texture::F_rgba5:
       case Texture::F_rgb10_a2:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        }
+        if (get_supports_compressed_texture_format(Texture::CM_etc2) && !is_3d) {
+          return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
         }
 #ifndef OPENGLES
         if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
@@ -8624,6 +8704,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
           return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
         }
 #endif
+        if (get_supports_compressed_texture_format(Texture::CM_etc2) && !is_3d) {
+          return GL_COMPRESSED_RGBA8_ETC2_EAC;
+        }
 #ifndef OPENGLES
         if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
@@ -8642,6 +8725,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
           return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
         }
 #endif
+        if (get_supports_compressed_texture_format(Texture::CM_etc2) && !is_3d) {
+          return GL_COMPRESSED_RGBA8_ETC2_EAC;
+        }
 #ifndef OPENGLES
         if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
@@ -8652,7 +8738,6 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
       case Texture::F_rgb:
       case Texture::F_rgb5:
-      case Texture::F_rgba5:
       case Texture::F_rgb8:
       case Texture::F_rgb12:
       case Texture::F_rgb332:
@@ -8661,7 +8746,14 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
-#ifndef OPENGLES
+        if (get_supports_compressed_texture_format(Texture::CM_etc2) && !is_3d) {
+          return GL_COMPRESSED_RGB8_ETC2;
+        }
+#ifdef OPENGLES
+        if (get_supports_compressed_texture_format(Texture::CM_etc1) && !is_3d) {
+          return GL_ETC1_RGB8_OES;
+        }
+#else
         if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_FXT1_3DFX;
         }
@@ -8693,6 +8785,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
           return GL_COMPRESSED_RED_RGTC1;
         }
 #endif
+        if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
+          if (Texture::is_unsigned(tex->get_component_type())) {
+            return GL_COMPRESSED_R11_EAC;
+          } else {
+            return GL_COMPRESSED_SIGNED_R11_EAC;
+          }
+        }
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
@@ -8712,6 +8811,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
           return GL_COMPRESSED_RG_RGTC2;
         }
 #endif
+        if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
+          if (Texture::is_unsigned(tex->get_component_type())) {
+            return GL_COMPRESSED_RG11_EAC;
+          } else {
+            return GL_COMPRESSED_SIGNED_RG11_EAC;
+          }
+        }
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
@@ -8755,11 +8861,17 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
         }
+        if (get_supports_compressed_texture_format(Texture::CM_etc2) && !is_3d) {
+          return GL_COMPRESSED_SRGB8_ETC2;
+        }
         return GL_COMPRESSED_SRGB;
 
       case Texture::F_srgb_alpha:
         if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
           return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+        }
+        if (get_supports_compressed_texture_format(Texture::CM_etc2) && !is_3d) {
+          return GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
         }
         return GL_COMPRESSED_SRGB_ALPHA;
 
@@ -8846,9 +8958,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
     case Texture::CM_rgtc:
 #ifndef OPENGLES
-      if (tex->get_format() == Texture::F_luminance) {
+      if (format == Texture::F_luminance) {
         return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
-      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+      } else if (format == Texture::F_luminance_alpha) {
         return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
       } else if (tex->get_num_components() == 1) {
         return GL_COMPRESSED_RED_RGTC1;
@@ -8856,6 +8968,41 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return GL_COMPRESSED_RG_RGTC2;
       }
 #endif
+      break;
+
+    case Texture::CM_etc1:
+#ifdef OPENGLES
+      return GL_ETC1_RGB8_OES;
+#endif
+      // Fall through - ETC2 is backward compatible
+    case Texture::CM_etc2:
+      if (format == Texture::F_rgbm) {
+        return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+      } else if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB8_ETC2;
+      } else if (Texture::has_alpha(format)) {
+        return GL_COMPRESSED_RGBA8_ETC2_EAC;
+      } else {
+        return GL_COMPRESSED_RGB8_ETC2;
+      }
+      break;
+
+    case Texture::CM_eac:
+      if (Texture::is_unsigned(tex->get_component_type())) {
+        if (tex->get_num_components() == 1) {
+          return GL_COMPRESSED_R11_EAC;
+        } else {
+          return GL_COMPRESSED_RG11_EAC;
+        }
+      } else {
+        if (tex->get_num_components() == 1) {
+          return GL_COMPRESSED_SIGNED_R11_EAC;
+        } else {
+          return GL_COMPRESSED_SIGNED_RG11_EAC;
+        }
+      }
       break;
 
     case Texture::CM_default:
@@ -9188,7 +9335,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   default:
     GLCAT.error()
       << "Invalid image format in get_internal_image_format(): "
-      << (int)tex->get_format() << "\n";
+      << (int)format << "\n";
     return force_sized ? GL_RGB8 : GL_RGB;
   }
 }
@@ -10795,8 +10942,6 @@ do_issue_tex_matrix() {
  */
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
-  bool force_normal = false;
-
   nassertv(_num_active_texture_stages <= _max_texture_stages);
 
   // These are passed in for the four OBJECT_PLANE or EYE_PLANE values; they
@@ -10840,7 +10985,6 @@ do_issue_tex_gen() {
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
       glEnable(GL_TEXTURE_GEN_S);
       glEnable(GL_TEXTURE_GEN_T);
-      force_normal = true;
       break;
 
     case TexGenAttrib::M_eye_cube_map:
@@ -10863,7 +11007,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 
@@ -10891,7 +11034,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 
@@ -10915,7 +11057,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 
@@ -10943,7 +11084,6 @@ do_issue_tex_gen() {
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
-        force_normal = true;
       }
       break;
 
@@ -11659,6 +11799,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         break;
       case Texture::TT_2d_texture:
       case Texture::TT_cube_map:
+      case Texture::TT_1d_texture_array:
         _glTexStorage2D(target, num_levels, internal_format, width, height);
         break;
       case Texture::TT_3d_texture:
@@ -12117,6 +12258,14 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             // fill it in with the correct clear color, which we can then
             // upload.
             ptimage = tex->make_ram_mipmap_image(n);
+
+          } else if (image_compression != Texture::CM_off) {
+            // We can't upload a NULL compressed texture.
+            if (_supports_texture_max_level) {
+              // Tell the GL we have no more mipmaps for it to use.
+              glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
+            }
+            break;
           }
         }
         image_ptr = ptimage;

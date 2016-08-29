@@ -11,6 +11,8 @@
  * @date 2014-10-19
  */
 
+#include "pnotify.h"
+
 /**
  * Constructor that lets us set a port value
  */

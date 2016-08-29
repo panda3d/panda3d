@@ -36,8 +36,8 @@ PUBLISHED:
   INLINE PStatThread(const PStatThread &copy);
   INLINE void operator = (const PStatThread &copy);
 
-  INLINE void new_frame();
-  INLINE void add_frame(const PStatFrameData &frame_data);
+  void new_frame();
+  void add_frame(const PStatFrameData &frame_data);
 
   Thread *get_thread() const;
   INLINE int get_index() const;

@@ -64,6 +64,10 @@ public:
     SC_deleted      = 0x8000,
 
     SC_thread_local = 0x10000,
+
+    // This isn't really a storage class.  It's only used temporarily by the
+    // parser, to make parsing specifier sequences a bit easier.
+    SC_const        = 0x20000,
   };
 
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);

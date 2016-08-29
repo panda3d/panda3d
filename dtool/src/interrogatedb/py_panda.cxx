@@ -67,7 +67,7 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *c
  * was of the wrong type, raises an AttributeError.
  */
 bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer) {
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self)) {
+  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
@@ -87,7 +87,7 @@ bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef
 bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                             void **answer, const char *method_name) {
 
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self)) {
+  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
@@ -816,6 +816,7 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
   int cmpval = DTOOL_PyObject_Compare(v1, v2);
   bool result;
   switch (op) {
+  NODEFAULT
   case Py_LT:
     result = (cmpval < 0);
     break;
@@ -833,6 +834,7 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
     break;
   case Py_GE:
     result = (cmpval >= 0);
+    break;
   }
   return PyBool_FromLong(result);
 }

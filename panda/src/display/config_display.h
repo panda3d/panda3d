@@ -68,6 +68,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool default_stereo_camera;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool color_scale_via_lighting;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool alpha_scale_via_texture;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool allow_incomplete_render;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool old_alpha_blend;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_size;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_origin;

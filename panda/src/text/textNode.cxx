@@ -911,7 +911,7 @@ count_geoms(PandaNode *node) {
   }
 
   Children children = node->get_children();
-  for (int i = 0; i < children.get_num_children(); ++i) {
+  for (size_t i = 0; i < children.get_num_children(); ++i) {
     num_geoms += count_geoms(children.get_child(i));
   }
 

@@ -13,7 +13,6 @@
 
 #include "eggToDAE.h"
 #include "dcast.h"
-#include "pystub.h"
 #include "pandaVersion.h"
 
 #include "FCDocument/FCDocument.h"
@@ -165,9 +164,6 @@ void EggToDAE::apply_transform(FCDSceneNode* to, const PT(EggGroup) from) {
 }
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   EggToDAE prog;
   prog.parse_command_line(argc, argv);
   prog.run();
