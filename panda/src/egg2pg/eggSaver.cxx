@@ -92,7 +92,7 @@ add_node(PandaNode *node) {
   _data->add_child(_vpool);
 
   NodePath root(node);
-  convert_node(WorkingNodePath(root), _data, false);
+  convert_node(WorkingNodePath(root), _data, false, NULL);
 
   // Remove the vertex pool if it has no vertices.
   if (_vpool->empty()) {
@@ -107,22 +107,22 @@ add_node(PandaNode *node) {
  */
 void EggSaver::
 convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
-             bool has_decal) {
+             bool has_decal, CharacterJointMap *joint_map) {
   PandaNode *node = node_path.node();
   if (node->is_geom_node()) {
-    convert_geom_node(DCAST(GeomNode, node), node_path, egg_parent, has_decal);
+    convert_geom_node(DCAST(GeomNode, node), node_path, egg_parent, has_decal, joint_map);
 
   } else if (node->is_of_type(LODNode::get_class_type())) {
-    convert_lod_node(DCAST(LODNode, node), node_path, egg_parent, has_decal);
+    convert_lod_node(DCAST(LODNode, node), node_path, egg_parent, has_decal, joint_map);
 
   } else if (node->is_of_type(SequenceNode::get_class_type())) {
-    convert_sequence_node(DCAST(SequenceNode, node), node_path, egg_parent, has_decal);
+    convert_sequence_node(DCAST(SequenceNode, node), node_path, egg_parent, has_decal, joint_map);
 
   } else if (node->is_of_type(SwitchNode::get_class_type())) {
-    convert_switch_node(DCAST(SwitchNode, node), node_path, egg_parent, has_decal);
+    convert_switch_node(DCAST(SwitchNode, node), node_path, egg_parent, has_decal, joint_map);
 
   } else if (node->is_of_type(CollisionNode::get_class_type())) {
-    convert_collision_node(DCAST(CollisionNode, node), node_path, egg_parent, has_decal);
+    convert_collision_node(DCAST(CollisionNode, node), node_path, egg_parent, has_decal, joint_map);
 
   } else if (node->is_of_type(AnimBundleNode::get_class_type())) {
     convert_anim_node(DCAST(AnimBundleNode, node), node_path, egg_parent, has_decal);
@@ -136,7 +136,7 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
     egg_parent->add_child(egg_group);
     apply_node_properties(egg_group, node);
 
-    recurse_nodes(node_path, egg_group, has_decal);
+    recurse_nodes(node_path, egg_group, has_decal, joint_map);
   }
 }
 
@@ -145,7 +145,8 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
  */
 void EggSaver::
 convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
-                 EggGroupNode *egg_parent, bool has_decal) {
+                 EggGroupNode *egg_parent, bool has_decal,
+                 CharacterJointMap *joint_map) {
   // An LOD node gets converted to an ordinary EggGroup, but we apply the
   // appropriate switch conditions to each of our children.
   EggGroup *egg_group = new EggGroup(node->get_name());
@@ -162,7 +163,7 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
 
     // Convert just this one node to an EggGroup.
     PT(EggGroup) next_group = new EggGroup;
-    convert_node(WorkingNodePath(node_path, child), next_group, has_decal);
+    convert_node(WorkingNodePath(node_path, child), next_group, has_decal, joint_map);
 
     if (next_group->size() == 1) {
       // If we have exactly one child, and that child is an EggGroup,
@@ -190,7 +191,8 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
  */
 void EggSaver::
 convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
-                      EggGroupNode *egg_parent, bool has_decal) {
+                      EggGroupNode *egg_parent, bool has_decal,
+                      CharacterJointMap *joint_map) {
   // A sequence node gets converted to an ordinary EggGroup, we only apply the
   // appropriate switch attributes to turn it into a sequence
   EggGroup *egg_group = new EggGroup(node->get_name());
@@ -208,7 +210,7 @@ convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
 
     // Convert just this one node to an EggGroup.
     PT(EggGroup) next_group = new EggGroup;
-    convert_node(WorkingNodePath(node_path, child), next_group, has_decal);
+    convert_node(WorkingNodePath(node_path, child), next_group, has_decal, joint_map);
 
     egg_group->add_child(next_group.p());
   }
@@ -220,7 +222,8 @@ convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
  */
 void EggSaver::
 convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
-                    EggGroupNode *egg_parent, bool has_decal) {
+                    EggGroupNode *egg_parent, bool has_decal,
+                    CharacterJointMap *joint_map) {
   // A sequence node gets converted to an ordinary EggGroup, we only apply the
   // appropriate switch attributes to turn it into a sequence
   EggGroup *egg_group = new EggGroup(node->get_name());
@@ -237,7 +240,7 @@ convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
 
     // Convert just this one node to an EggGroup.
     PT(EggGroup) next_group = new EggGroup;
-    convert_node(WorkingNodePath(node_path, child), next_group, has_decal);
+    convert_node(WorkingNodePath(node_path, child), next_group, has_decal, joint_map);
 
     egg_group->add_child(next_group.p());
   }
@@ -314,7 +317,7 @@ convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
  * structure.
  */
 void EggSaver::
-convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *jointMap) {
+convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *joint_map) {
   int num_children = bundleNode->get_num_children();
 
   EggGroupNode *joint_group = egg_parent;
@@ -329,9 +332,9 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
     joint->set_group_type(EggGroup::GT_joint);
     joint_group = joint;
     egg_parent->add_child(joint_group);
-    if (jointMap!=NULL) {
-      CharacterJointMap::iterator mi = jointMap->find(character_joint);
-      if (mi != jointMap->end()) {
+    if (joint_map != NULL) {
+      CharacterJointMap::iterator mi = joint_map->find(character_joint);
+      if (mi != joint_map->end()) {
         pvector<pair<EggVertex*,PN_stdfloat> > &joint_vertices = (*mi).second;
         pvector<pair<EggVertex*,PN_stdfloat> >::const_iterator vi;
         for (vi = joint_vertices.begin(); vi != joint_vertices.end(); ++vi) {
@@ -343,7 +346,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
 
   for (int i = 0; i < num_children ; i++) {
     PartGroup *partGroup= bundleNode->get_child(i);
-    convert_character_bundle(partGroup, joint_group, jointMap);
+    convert_character_bundle(partGroup, joint_group, joint_map);
   }
 
 }
@@ -353,7 +356,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
  */
 void EggSaver::
 convert_character_node(Character *node, const WorkingNodePath &node_path,
-                    EggGroupNode *egg_parent, bool has_decal) {
+                       EggGroupNode *egg_parent, bool has_decal) {
 
   // A sequence node gets converted to an ordinary EggGroup, we only apply the
   // appropriate switch attributes to turn it into a sequence
@@ -362,26 +365,16 @@ convert_character_node(Character *node, const WorkingNodePath &node_path,
   egg_parent->add_child(egg_group);
   apply_node_properties(egg_group, node);
 
-  CharacterJointMap jointMap;
+  CharacterJointMap joint_map;
+  recurse_nodes(node_path, egg_group, has_decal, &joint_map);
 
   // turn it into a switch.. egg_group->set_switch_flag(true);
 
-  int num_children = node->get_num_children();
   int num_bundles = node->get_num_bundles();
-
-  for (int i = 0; i < num_children; i++) {
-    PandaNode *child = node->get_child(i);
-
-    if (child->is_geom_node()) {
-      convert_geom_node(DCAST(GeomNode, child), WorkingNodePath(node_path, child), egg_group, has_decal, &jointMap);
-    }
+  for (int i = 0; i < num_bundles; ++i) {
+    PartBundle *bundle = node->get_bundle(i);
+    convert_character_bundle(bundle, egg_group, &joint_map);
   }
-
-  for (int i = 0; i < num_bundles ; i++) {
-    PartBundle *bundle= node->get_bundle(i);
-    convert_character_bundle(bundle, egg_group, &jointMap);
-  }
-
 }
 
 
@@ -390,7 +383,8 @@ convert_character_node(Character *node, const WorkingNodePath &node_path,
  */
 void EggSaver::
 convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
-                       EggGroupNode *egg_parent, bool has_decal) {
+                       EggGroupNode *egg_parent, bool has_decal,
+                       CharacterJointMap *joint_map) {
   // A sequence node gets converted to an ordinary EggGroup, we only apply the
   // appropriate switch attributes to turn it into a sequence
   EggGroup *egg_group = new EggGroup(node->get_name());
@@ -510,7 +504,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
   }
 
   // recurse over children - hm.  do I need to do this?
-  recurse_nodes(node_path, egg_group, has_decal);
+  recurse_nodes(node_path, egg_group, has_decal, joint_map);
 }
 
 /**
@@ -518,7 +512,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
  */
 void EggSaver::
 convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
-                  EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap) {
+                  EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *joint_map) {
   PT(EggGroup) egg_group = new EggGroup(node->get_name());
   bool fancy_attributes = apply_node_properties(egg_group, node);
 
@@ -558,11 +552,11 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
       CPT(GeomVertexData) vdata = geom->get_vertex_data();
       // vdata = vdata->animate_vertices(true, Thread::get_current_thread());
       convert_primitive(vdata, simple, geom_state,
-                        net_mat, egg_parent, jointMap);
+                        net_mat, egg_parent, joint_map);
     }
   }
 
-  recurse_nodes(node_path, egg_parent, has_decal);
+  recurse_nodes(node_path, egg_parent, has_decal, joint_map);
 }
 
 /**
@@ -573,7 +567,7 @@ convert_primitive(const GeomVertexData *vertex_data,
                   const GeomPrimitive *primitive,
                   const RenderState *net_state,
                   const LMatrix4 &net_mat, EggGroupNode *egg_parent,
-                  CharacterJointMap *jointMap) {
+                  CharacterJointMap *joint_map) {
   GeomVertexReader reader(vertex_data);
 
   // Check for a color scale.
@@ -811,8 +805,8 @@ convert_primitive(const GeomVertexData *vertex_data,
 
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
 
-      if ((vertex_data->has_column(InternalName::get_transform_blend())) &&
-          (jointMap!=NULL) && (transformBlendTable!=NULL)) {
+      if (vertex_data->has_column(InternalName::get_transform_blend()) &&
+          joint_map != NULL && transformBlendTable != NULL) {
         reader.set_column(InternalName::get_transform_blend());
         int idx = reader.get_data1i();
         const TransformBlend &blend = transformBlendTable->get_blend(idx);
@@ -824,9 +818,9 @@ convert_primitive(const GeomVertexData *vertex_data,
             if (vertex_transform->is_of_type(JointVertexTransform::get_class_type())) {
               const JointVertexTransform *joint_vertex_transform = DCAST(const JointVertexTransform, vertex_transform);
 
-              CharacterJointMap::iterator mi = jointMap->find(joint_vertex_transform->get_joint());
-              if (mi == jointMap->end()) {
-                mi = jointMap->insert(CharacterJointMap::value_type(joint_vertex_transform->get_joint(), pvector<pair<EggVertex*,PN_stdfloat> >())).first;
+              CharacterJointMap::iterator mi = joint_map->find(joint_vertex_transform->get_joint());
+              if (mi == joint_map->end()) {
+                mi = joint_map->insert(CharacterJointMap::value_type(joint_vertex_transform->get_joint(), pvector<pair<EggVertex*,PN_stdfloat> >())).first;
               }
               pvector<pair<EggVertex*,PN_stdfloat> > &joint_vertices = (*mi).second;
               joint_vertices.push_back(pair<EggVertex*,PN_stdfloat>(new_egg_vert, weight));
@@ -845,13 +839,13 @@ convert_primitive(const GeomVertexData *vertex_data,
  */
 void EggSaver::
 recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
-              bool has_decal) {
+              bool has_decal, CharacterJointMap *joint_map) {
   PandaNode *node = node_path.node();
   int num_children = node->get_num_children();
 
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
-    convert_node(WorkingNodePath(node_path, child), egg_parent, has_decal);
+    convert_node(WorkingNodePath(node_path, child), egg_parent, has_decal, joint_map);
   }
 }
 
