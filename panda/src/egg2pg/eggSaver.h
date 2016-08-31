@@ -61,13 +61,16 @@ private:
   typedef pmap<const CharacterJoint*, pvector<pair<EggVertex*,PN_stdfloat> > > CharacterJointMap;
 
   void convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
-                    bool has_decal);
+                    bool has_decal, CharacterJointMap *joint_map);
   void convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
-                        EggGroupNode *egg_parent, bool has_decal);
+                        EggGroupNode *egg_parent, bool has_decal,
+                        CharacterJointMap *joint_map);
   void convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
-                        EggGroupNode *egg_parent, bool has_decal);
+                        EggGroupNode *egg_parent, bool has_decal,
+                        CharacterJointMap *joint_map);
   void convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
-                        EggGroupNode *egg_parent, bool has_decal);
+                        EggGroupNode *egg_parent, bool has_decal,
+                        CharacterJointMap *joint_map);
   EggGroupNode *convert_animGroup_node(AnimGroup *animGroup, double fps );
   void convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
                         EggGroupNode *egg_parent, bool has_decal);
@@ -75,7 +78,8 @@ private:
                         EggGroupNode *egg_parent, bool has_decal);
   void convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *jointMap);
   void convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
-                        EggGroupNode *egg_parent, bool has_decal);
+                              EggGroupNode *egg_parent, bool has_decal,
+                              CharacterJointMap *joint_map);
   void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
                          EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap=NULL);
   void convert_primitive(const GeomVertexData *vertex_data,
@@ -85,7 +89,7 @@ private:
                          CharacterJointMap *jointMap);
 
   void recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
-                     bool has_decal);
+                     bool has_decal, CharacterJointMap *joint_map);
   bool apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage = true);
   bool apply_tags(EggGroup *egg_group, PandaNode *node);
   bool apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag);
