@@ -1449,17 +1449,20 @@ apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale) {
 void PfmFile::
 merge(const PfmFile &other) {
   nassertv(is_valid() && other.is_valid());
-  nassertv(other._x_size == _x_size && other._y_size == _y_size);
+  nassertv(other._x_size == _x_size && other._y_size == _y_size && other._num_channels == _num_channels);
 
   if (!_has_no_data_value) {
     // Trivial no-op.
     return;
   }
 
-  for (int yi = 0; yi < _y_size; ++yi) {
-    for (int xi = 0; xi < _x_size; ++xi) {
-      if (!has_point(xi, yi) && other.has_point(xi, yi)) {
-        set_point(xi, yi, other.get_point(xi, yi));
+  size_t point_size = _num_channels * sizeof(PN_float32);
+  for (int y = 0; y < _y_size; ++y) {
+    for (int x = 0; x < _x_size; ++x) {
+      if (!has_point(x, y) && other.has_point(x, y)) {
+        memcpy(&_table[(y * _x_size + x) * _num_channels],
+               &other._table[(y * _x_size + x) * _num_channels],
+               point_size);
       }
     }
   }
