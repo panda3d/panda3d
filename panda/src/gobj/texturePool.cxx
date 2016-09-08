@@ -646,7 +646,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(filename_pattern);
   tex->set_fullpath(filename);
-  tex->_texture_pool_key = filename;
+  tex->_texture_pool_key = unique_filename;
 
   {
     MutexHolder holder(_lock);
@@ -745,7 +745,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(filename_pattern);
   tex->set_fullpath(filename);
-  tex->_texture_pool_key = unique_filename;
+  tex->_texture_pool_key = filename;
 
   {
     MutexHolder holder(_lock);
