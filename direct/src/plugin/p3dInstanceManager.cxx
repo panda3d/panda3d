@@ -1528,6 +1528,17 @@ create_runtime_environment() {
     }
   }
 
+#ifndef _WIN32
+  // If we're running from the console, make sure that terminating the parent
+  // process will cause the child process to terminate as well.
+  if (_console_environment) {
+    struct sigaction ignore;
+    memset(&ignore, 0, sizeof(ignore));
+    ignore.sa_handler = SIG_IGN;
+    sigaction(SIGINT, &ignore, NULL);
+  }
+#endif
+
   _created_runtime_environment = true;
 }
 
