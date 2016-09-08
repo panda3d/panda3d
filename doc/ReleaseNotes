@@ -29,6 +29,9 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix race condition reading string config var
 * Fix interrogate parsing issue with "const static"
 * Add back missing libp3pystub.a to Mac OS X SDK
+* Fix RAM caching of 2D texture arrays
+* Fix Ctrl+C interrupt propagation to runtime applications
+* Support for InvSphere, Box and Tube solids in bam2egg
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
