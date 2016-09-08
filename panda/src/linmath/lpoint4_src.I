@@ -217,6 +217,19 @@ operator / (FLOATTYPE scalar) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
+
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint4::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
+normalized() const {
+  return FLOATNAME(LVecBase4)::normalized();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::project
 //       Access: Published

@@ -94,6 +94,7 @@ PUBLISHED:
 #ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATTYPE length() const;
   INLINE_LINMATH bool normalize();
+  INLINE_LINMATH FLOATNAME(LVecBase2) normalized() const;
   INLINE_LINMATH FLOATNAME(LVecBase2) project(const FLOATNAME(LVecBase2) &onto) const;
 #endif
 

@@ -47,6 +47,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4) operator / (FLOATTYPE scalar) const;
 
 #ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATNAME(LVector4) normalized() const;
   INLINE_LINMATH FLOATNAME(LVector4) project(const FLOATNAME(LVecBase4) &onto) const;
 #endif
 

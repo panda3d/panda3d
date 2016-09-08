@@ -220,6 +220,19 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector3::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
+normalized() const {
+  return FLOATNAME(LVecBase3)::normalized();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::project
 //       Access: Published

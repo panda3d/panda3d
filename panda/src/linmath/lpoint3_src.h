@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint3) cross(const FLOATNAME(LVecBase3) &other) const;
 
 #ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATNAME(LPoint3) normalized() const;
   INLINE_LINMATH FLOATNAME(LPoint3) project(const FLOATNAME(LVecBase3) &onto) const;
 #endif
 

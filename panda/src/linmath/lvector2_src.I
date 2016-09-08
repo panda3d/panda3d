@@ -176,6 +176,18 @@ operator / (FLOATTYPE scalar) const {
 
 #ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector2::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector2)::
+normalized() const {
+  return FLOATNAME(LVecBase2)::normalized();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector2::project
 //       Access: Published
 //  Description: Returns a new vector representing the projection of

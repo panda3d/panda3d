@@ -32,6 +32,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix RAM caching of 2D texture arrays
 * Fix Ctrl+C interrupt propagation to runtime applications
 * Support for InvSphere, Box and Tube solids in bam2egg
+* Add normalized() method to vectors
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

@@ -510,6 +510,22 @@ normalize() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
+normalized() const {
+  FLOATTYPE l2 = length_squared();
+  if (l2 == (FLOATTYPE)0.0f) {
+    return FLOATNAME(LVecBase3)(0.0f);
+  }
+  return (*this) / csqrt(l2);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::project
 //       Access: Published
 //  Description: Returns a new vector representing the projection of
