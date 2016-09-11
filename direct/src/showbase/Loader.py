@@ -909,7 +909,7 @@ class Loader(DirectObject):
             orig = origModelList[i].node()
             flat = models[i].node()
             orig.copyAllProperties(flat)
-            orig.replaceNode(flat)
+            flat.replaceNode(orig)
 
         if callback:
             if gotList:
