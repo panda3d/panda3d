@@ -1853,7 +1853,7 @@ class Packager:
 
         def addEggFile(self, file):
             # Precompile egg files to bam's.
-            np = self.packager.loader.loadModel(file.filename)
+            np = self.packager.loader.loadModel(file.filename, self.packager.loaderOptions)
             if not np:
                 raise StandardError, 'Could not read egg file %s' % (file.filename)
 
@@ -1866,6 +1866,8 @@ class Packager:
             bamFile = BamFile()
             if not bamFile.openRead(file.filename):
                 raise StandardError, 'Could not read bam file %s' % (file.filename)
+
+            bamFile.getReader().setLoaderOptions(self.packager.loaderOptions)
 
             if not bamFile.resolve():
                 raise StandardError, 'Could not resolve bam file %s' % (file.filename)
@@ -2496,6 +2498,14 @@ class Packager:
         self.loader = Loader.Loader(self)
         self.sfxManagerList = None
         self.musicManager = None
+
+        # These options will be used when loading models and textures.  By
+        # default we don't load textures beyond the header and don't store
+        # models in the RAM cache in order to conserve on memory usage.
+        opts = LoaderOptions()
+        opts.setFlags(opts.getFlags() | LoaderOptions.LFNoRamCache)
+        opts.setTextureFlags(opts.getTextureFlags() & ~LoaderOptions.TFPreload)
+        self.loaderOptions = opts
 
         # This is filled in during readPackageDef().
         self.packageList = []
