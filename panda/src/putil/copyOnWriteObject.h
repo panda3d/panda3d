@@ -51,6 +51,7 @@ PUBLISHED:
 #ifdef COW_THREADED
   virtual bool unref() const;
   INLINE void cache_ref() const;
+  INLINE bool cache_unref() const;
 #endif  // COW_THREADED
 
 protected:

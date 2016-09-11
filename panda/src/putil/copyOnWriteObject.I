@@ -83,6 +83,17 @@ cache_ref() const {
   MutexHolder holder(_lock_mutex);
   CachedTypedWritableReferenceCount::cache_ref();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWriteObject::cache_unref
+//       Access: Published
+//  Description: See CachedTypedWritableReferenceCount::cache_unref().
+////////////////////////////////////////////////////////////////////
+INLINE bool CopyOnWriteObject::
+cache_unref() const {
+  MutexHolder holder(_lock_mutex);
+  return CachedTypedWritableReferenceCount::cache_unref();
+}
 #endif  // COW_THREADED
 
 ////////////////////////////////////////////////////////////////////
