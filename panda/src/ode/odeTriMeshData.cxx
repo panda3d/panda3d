@@ -55,25 +55,30 @@ print_data(const string &marker) {
 
 void OdeTriMeshData::
 remove_data(OdeTriMeshData *data) {
-  odetrimeshdata_cat.debug() << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
-  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)NULL);
+  if (odetrimeshdata_cat.is_debug()) {
+    odetrimeshdata_cat.debug()
+      << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
+  }
+  if (_tri_mesh_data_map == (TriMeshDataMap *)NULL) {
+    return;
+  }
+
   TriMeshDataMap::iterator iter;
-  
   for (iter = _tri_mesh_data_map->begin();
        iter != _tri_mesh_data_map->end();
        ++iter) {
-    if ( iter->second == data ) {
+    if (iter->second == data) {
       break;
     }
   }
-  
+
   while (iter != _tri_mesh_data_map->end()) {
     _tri_mesh_data_map->erase(iter);
-    
+
     for (iter = _tri_mesh_data_map->begin();
          iter != _tri_mesh_data_map->end();
          ++iter) {
-      if ( iter->second == data ) {
+      if (iter->second == data) {
         break;
       }
     }
@@ -154,8 +159,13 @@ operator = (const OdeTriMeshData &other) {
 void OdeTriMeshData::
 process_model(const NodePath& model, bool &use_normals) {
   // TODO: assert if _vertices is something other than 0.
-  ostream &out = odetrimeshdata_cat.debug();
-  out << "process_model(" << model << ")" << "\n";
+  if (odetrimeshdata_cat.is_debug()) {
+    odetrimeshdata_cat.debug()
+      << "process_model(" << model << ")" << "\n";
+  }
+  if (model.is_empty()) {
+    return;
+  }
 
   NodePathCollection geomNodePaths = model.find_all_matches("**/+GeomNode");
   if (model.node()->get_type() == GeomNode::get_class_type()) {
