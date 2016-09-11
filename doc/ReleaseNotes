@@ -6,6 +6,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix crash using wx/tkinter on Mac as long as want-wx/tk is set
 * Fix loading models from 'models' package with models/ prefix
 * Fix random crashes in task system
+* Fix various race conditions causing threading issues
 * Fix memory leaks in BulletTriangleMesh
 * Fix loading old models with MovingPart<LMatrix4f>
 * Improve performance of CPU vertex animation somewhat
@@ -26,13 +27,13 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix issues with certain Cg shader inputs in DX9
 * Support uint8 index buffers in DX9
 * Fix occasional frame lag when loading a big model asynchronously
-* Fix race condition reading string config var
 * Fix interrogate parsing issue with "const static"
 * Add back missing libp3pystub.a to Mac OS X SDK
 * Fix RAM caching of 2D texture arrays
 * Fix Ctrl+C interrupt propagation to runtime applications
 * Support for InvSphere, Box and Tube solids in bam2egg
 * Add normalized() method to vectors
+* asyncFlattenStrong with inPlace=True caused node to disappear
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
