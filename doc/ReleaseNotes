@@ -34,6 +34,8 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Support for InvSphere, Box and Tube solids in bam2egg
 * Add normalized() method to vectors
 * asyncFlattenStrong with inPlace=True caused node to disappear
+* Fix asyncFlattenStrong called on nodes without parent
+* Fix is_playing() check when playing an animation backwards
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
