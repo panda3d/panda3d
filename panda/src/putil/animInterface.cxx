@@ -415,7 +415,12 @@ is_playing() const {
     return false;
 
   case PM_play:
-    return get_f() < _play_frames;
+    if (_effective_frame_rate < 0.0) {
+      // If we're playing backwards, check if we're at the beginning.
+      return get_f() > 0;
+   } else {
+      return get_f() < _play_frames;
+    }
 
   case PM_loop:
   case PM_pingpong:
