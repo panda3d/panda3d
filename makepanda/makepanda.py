@@ -2750,8 +2750,14 @@ except ImportError as err:
     if "No module named %s" not in str(err):
         raise""" % (module, module)
 
+exthelpers_code = """
+"This module is deprecated.  Import from direct.extensions_native.extension_native_helpers instead."
+from direct.extensions_native.extension_native_helpers import *
+"""
+
 if not PkgSkip("PYTHON"):
     ConditionalWriteFile(GetOutputDir() + '/pandac/PandaModules.py', panda_modules_code)
+    ConditionalWriteFile(GetOutputDir() + '/pandac/extension_native_helpers.py', exthelpers_code)
     ConditionalWriteFile(GetOutputDir() + '/pandac/__init__.py', '')
 
 ##########################################################################################

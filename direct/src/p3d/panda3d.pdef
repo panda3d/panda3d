@@ -56,6 +56,9 @@ class panda3d(package):
            'direct.stdpy.*',
            'direct.task.*')
 
+    # Keep these modules for backward compatibility.
+    module('pandac.PandaModules', 'pandac.extension_native_helpers')
+
     module('panda3d.core',
            'panda3d.direct',
            'panda3d.fx',
