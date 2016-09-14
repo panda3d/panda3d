@@ -28,6 +28,8 @@ PUBLISHED:
   INLINE EggPatch(const EggPatch &copy);
   INLINE EggPatch &operator = (const EggPatch &copy);
 
+  virtual EggPatch *make_copy() const OVERRIDE;
+
   virtual void write(ostream &out, int indent_level) const;
 
 public:

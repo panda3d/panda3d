@@ -31,7 +31,13 @@ save_egg_file(const Filename &filename, PandaNode *node, CoordinateSystem cs) {
   data->set_coordinate_system(cs);
 
   EggSaver saver(data);
-  saver.add_node(node);
+  if (node->is_of_type(ModelRoot::get_class_type())) {
+    // If this is a ModelRoot, only write the nodes below it.  Otherwise we
+    // end up inserting a node when we do a bam2egg.
+    saver.add_subgraph(node);
+  } else {
+    saver.add_node(node);
+  }
 
   return data->write_egg(filename);
 }
@@ -43,6 +49,12 @@ save_egg_file(const Filename &filename, PandaNode *node, CoordinateSystem cs) {
 bool
 save_egg_data(EggData *data, PandaNode *node) {
   EggSaver saver(data);
-  saver.add_node(node);
+  if (node->is_of_type(ModelRoot::get_class_type())) {
+    // If this is a ModelRoot, only write the nodes below it.  Otherwise we
+    // end up inserting a node when we do a bam2egg.
+    saver.add_subgraph(node);
+  } else {
+    saver.add_node(node);
+  }
   return true;
 }

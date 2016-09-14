@@ -29,6 +29,8 @@ PUBLISHED:
   INLINE EggLine &operator = (const EggLine &copy);
   virtual ~EggLine();
 
+  virtual EggLine *make_copy() const OVERRIDE;
+
   virtual void write(ostream &out, int indent_level) const;
 
   INLINE bool has_thick() const;

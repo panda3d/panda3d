@@ -18,6 +18,14 @@
 TypeHandle EggNurbsCurve::_type_handle;
 
 /**
+ * Makes a copy of this object.
+ */
+EggNurbsCurve *EggNurbsCurve::
+make_copy() const {
+  return new EggNurbsCurve(*this);
+}
+
+/**
  * Prepares a new curve definition with the indicated order and number of
  * knots.  This also implies a particular number of vertices as well (the
  * number of knots minus the order), but it is up to the user to add the
