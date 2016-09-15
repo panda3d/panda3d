@@ -604,11 +604,7 @@ Section -post
     Call RemoveFromPath
     Push "$INSTDIR\bin"
     Call RemoveFromPath
-    Push "$INSTDIR\python"
-    Call AddToPath
-    Push "$INSTDIR\python\Scripts"
-    Call AddToPath
-    Push "$INSTDIR\bin"
+    Push "$INSTDIR\python;$INSTDIR\python\Scripts;$INSTDIR\bin"
     Call AddToPath
 
     # This is needed for the environment variable changes to take effect.
@@ -891,8 +887,10 @@ Function AddToPath
                 StrCmp $3 1 0 +2
                         ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
 
-                ; If the PATH string is empty, jump over the mangling routines.
-                StrCmp $1 "" AddToPath_NTdoIt
+                ; If the PATH string is empty, WATCH OUT.  This probably means
+                ; the PATH surpassed NSIS' string limit.  Don't overwrite it!
+                ; The only thing we can do is display an error message.
+                StrCmp $1 "" AddToPath_EmptyError
 
                 ; Pull off the last character of the PATH string.  If it's a semicolon,
                 ; we don't need to add another one, so jump to the section where we
@@ -900,6 +898,12 @@ Function AddToPath
                 StrCpy $2 $1 1 -1
                 StrCmp $2 ";" AddToPath_NTAddPath AddToPath_NTAddSemi
 
+                AddToPath_EmptyError:
+                        MessageBox MB_ABORTRETRYIGNORE|MB_ICONEXCLAMATION "Your PATH environment variable is too long! Please remove extraneous entries before proceeding. Panda3D needs to add the following the PATH so that the Panda3D utilities and libraries can be located correctly.$\n$\n$0$\n$\nIf you wish to add Panda3D to the path yourself, choose Ignore." IDIGNORE AddToPath_done IDRETRY AddToPath_NT
+                        SetDetailsPrint both
+                        DetailPrint "Cannot append to PATH - variable is likely too long."
+                        SetDetailsPrint listonly
+                        Abort
                 AddToPath_NTAddSemi:
                         StrCpy $1 "$1;"
                         Goto AddToPath_NTAddPath
