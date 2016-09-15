@@ -42,7 +42,7 @@ SetCompressor ${COMPRESSOR}
 !define MUI_FINISHPAGE_RUN_TEXT "Visit the Panda3D Manual"
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "../doc/LICENSE"
+!insertmacro MUI_PAGE_LICENSE "${SOURCE}/doc/LICENSE"
 !insertmacro MUI_PAGE_DIRECTORY
 
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE ConfirmPythonSelection
@@ -61,7 +61,7 @@ SetCompressor ${COMPRESSOR}
 ShowInstDetails hide
 ShowUninstDetails hide
 
-LicenseData "${LICENSE}"
+LicenseData "${SOURCE}/doc/LICENSE"
 
 InstType "Full (Recommended)"
 InstType "Minimal"
@@ -259,6 +259,26 @@ Section "Tools and utilities" SecTools
     File /nonfatal /r "${BUILT}\bin\*.p3d"
     SetOutPath "$INSTDIR\NSIS"
     File /r /x CVS "${NSISDIR}\*"
+
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model" "" "Panda3D model/animation"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\DefaultIcon" "" "$INSTDIR\bin\pview.exe"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\open\command" "" '"$INSTDIR\bin\pview.exe" -l "%1"'
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\compress" "" "Compress to .pz"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\compress\command" "" '"$INSTDIR\bin\pzip.exe" "%1"'
+
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed" "" "Compressed file"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\DefaultIcon" "" "$INSTDIR\bin\pzip.exe"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\open\command" "" '"$INSTDIR\bin\pview.exe" -l "%1"'
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\decompress" "" "Decompress"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\decompress\command" "" '"$INSTDIR\bin\punzip.exe" "%1"'
+
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile" "" "Panda3D Multifile"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon" "" "$INSTDIR\bin\multify.exe"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract" "" "Extract here"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract\command" "" '"$INSTDIR\bin\multify.exe" -xf "%1"'
 SectionEnd
 
 SectionGroup "Python support"
@@ -369,7 +389,7 @@ SectionGroup "Python support"
         File /nonfatal "${BUILT}\bin\python*.dll"
 
         SetOutPath "$INSTDIR\python"
-        File /r "${BUILT}\python\*"
+        File /r /x *.pdb "${BUILT}\python\*"
 
         SetDetailsPrint both
         DetailPrint "Adding registry keys for Python..."
@@ -594,6 +614,33 @@ Section -post
     CreateShortcut "$SMPROGRAMS\${TITLE}\Uninstall ${TITLE}.lnk" "$INSTDIR\uninst.exe" ""
 
     SetDetailsPrint both
+    DetailPrint "Registering file type associations..."
+    SetDetailsPrint listonly
+
+    ; Even though we need the runtime to run these, we might as well tell
+    ; Windows what this kind of file is.
+    WriteRegStr HKCU "Software\Classes\.p3d" "" "Panda3D applet"
+    WriteRegStr HKCU "Software\Classes\.p3d" "Content Type" "application/x-panda3d"
+    WriteRegStr HKCU "Software\Classes\.p3d" "PerceivedType" "application"
+
+    ; Register various model files
+    WriteRegStr HKCU "Software\Classes\.egg" "" "Panda3D.Model"
+    WriteRegStr HKCU "Software\Classes\.egg" "Content Type" "application/x-egg"
+    WriteRegStr HKCU "Software\Classes\.egg" "PerceivedType" "gamemedia"
+    WriteRegStr HKCU "Software\Classes\.bam" "" "Panda3D.Model"
+    WriteRegStr HKCU "Software\Classes\.bam" "Content Type" "application/x-bam"
+    WriteRegStr HKCU "Software\Classes\.bam" "PerceivedType" "gamemedia"
+    WriteRegStr HKCU "Software\Classes\.pz" "" "Panda3D.Compressed"
+    WriteRegStr HKCU "Software\Classes\.pz" "PerceivedType" "compressed"
+    WriteRegStr HKCU "Software\Classes\.mf" "" "Panda3D.Multifile"
+    WriteRegStr HKCU "Software\Classes\.mf" "PerceivedType" "compressed"
+
+    ; For convenience, if nobody registered .pyd, we will.
+    ReadRegStr $0 HKCR "Software\Classes\.pyd" ""
+    StrCmp $0 "" 0 +2
+    WriteRegStr HKCU "Software\Classes\.pyd" "" "dllfile"
+
+    SetDetailsPrint both
     DetailPrint "Adding directories to system PATH..."
     SetDetailsPrint listonly
 
@@ -628,15 +675,28 @@ Section Uninstall
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${TITLE}"
     DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${TITLE}"
 
+    ReadRegStr $0 HKCU "Software\Classes\Panda3D.Model\DefaultIcon" ""
+    StrCmp $0 "$INSTDIR\bin\pview.exe" 0 +3
+    DeleteRegKey HKCU "Software\Classes\Panda3D.Model\DefaultIcon"
+    DeleteRegKey HKCU "Software\Classes\Panda3D.Model\shell"
+
+    ReadRegStr $0 HKCU "Software\Classes\Panda3D.Compressed\DefaultIcon" ""
+    StrCmp $0 "$INSTDIR\bin\pzip.exe" 0 +3
+    DeleteRegKey HKCU "Software\Classes\Panda3D.Compressed\DefaultIcon"
+    DeleteRegKey HKCU "Software\Classes\Panda3D.Compressed\shell"
+
+    ReadRegStr $0 HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon" ""
+    StrCmp $0 "$INSTDIR\bin\multify.exe" 0 +3
+    DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon"
+    DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\shell"
+
     ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-    StrCmp $0 "$INSTDIR\python" 0 SkipUnRegHKLM
+    StrCmp $0 "$INSTDIR\python" 0 +2
     DeleteRegKey HKLM "Software\Python\PythonCore\${PYVER}"
-    SkipUnRegHKLM:
 
     ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-    StrCmp $0 "$INSTDIR\python" 0 SkipUnRegHKCU
+    StrCmp $0 "$INSTDIR\python" 0 +2
     DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}"
-    SkipUnRegHKCU:
 
     SetDetailsPrint both
     DetailPrint "Deleting files..."
@@ -702,9 +762,13 @@ SectionEnd
   !endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecTools} $(DESC_SecTools)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings} $(DESC_SecPyBindings)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecPython} $(DESC_SecPython)
+  !ifdef HAVE_PYTHON
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPython} $(DESC_SecPython)
+  !endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecHeadersLibs} $(DESC_SecHeadersLibs)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecSamples} $(DESC_SecSamples)
+  !ifdef HAVE_SAMPLES
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecSamples} $(DESC_SecSamples)
+  !endif
   !ifdef HAVE_MAX_PLUGINS
     !insertmacro MUI_DESCRIPTION_TEXT ${SecMaxPlugins} $(DESC_SecMaxPlugins)
   !endif

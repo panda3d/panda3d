@@ -6538,17 +6538,14 @@ def MakeInstallerNSIS(file, title, installdir):
     if (os.path.exists("nsis-output.exe")):
         os.remove("nsis-output.exe")
     WriteFile(GetOutputDir()+"/tmp/__init__.py", "")
-    psource = os.path.abspath(".")
-    panda = os.path.abspath(GetOutputDir())
 
     nsis_defs = {
         'COMPRESSOR'  : COMPRESSOR,
         'TITLE'       : title,
         'INSTALLDIR'  : installdir,
-        'OUTFILE'     : os.path.join(psource, 'nsis-output.exe'),
-        'LICENSE'     : os.path.join(panda, 'LICENSE'),
-        'BUILT'       : panda,
-        'SOURCE'      : psource,
+        'OUTFILE'     : '..\\' + file,
+        'BUILT'       : '..\\' + GetOutputDir(),
+        'SOURCE'      : '..',
         'PYVER'       : SDK["PYTHONVERSION"][6:9],
         'REGVIEW'     : regview,
     }
@@ -6562,10 +6559,29 @@ def MakeInstallerNSIS(file, title, installdir):
         for item in nsis_defs.items():
             cmd += ' -D%s="%s"' % item
 
-    cmd += ' "%s"' % (os.path.join(psource, 'makepanda', 'installer.nsi'))
+    cmd += ' "makepanda\installer.nsi"'
     oscmd(cmd)
-    os.rename("nsis-output.exe", file)
 
+def MakeDebugSymbolArchive(zipname, dirname):
+    import zipfile
+    zip = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'bin', '*.pdb')):
+        zip.write(fn, dirname + '/bin/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'panda3d', '*.pdb')):
+        zip.write(fn, dirname + '/panda3d/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'plugins', '*.pdb')):
+        zip.write(fn, dirname + '/plugins/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'python', '*.pdb')):
+        zip.write(fn, dirname + '/python/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'python', 'DLLs', '*.pdb')):
+        zip.write(fn, dirname + '/python/DLLs/' + os.path.basename(fn))
+
+    zip.close()
 
 INSTALLER_DEB_FILE="""
 Package: panda3dMAJOR
@@ -7135,7 +7151,7 @@ try:
         target = GetTarget()
         if target == 'windows':
             fn = "Panda3D-"
-            dir = "C:\\Panda3D-" + VERSION
+            dir = "Panda3D-" + VERSION
 
             if RUNTIME:
                 fn += "Runtime-"
@@ -7154,8 +7170,9 @@ try:
                 fn += '-x64'
                 dir += '-x64'
 
-            fn += '.exe'
-            MakeInstallerNSIS(fn, title, dir)
+            MakeInstallerNSIS(fn + '.exe', title, 'C:\\' + dir)
+            if not RUNTIME:
+                MakeDebugSymbolArchive(fn + '-pdb.zip', dir)
         elif (target == 'linux'):
             MakeInstallerLinux()
         elif (target == 'darwin'):
