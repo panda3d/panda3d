@@ -640,6 +640,15 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
     CPT(RenderState) geom_state = node->get_geom_state(i);
     CPT(RenderState) geom_net_state = net_state->compose(geom_state);
 
+    // If there is only one Geom, and the node has no state, apply the state
+    // attributes from the Geom to the group instead, so that we don't end up
+    // duplicating it for a lot of primitives.
+    if (num_geoms == 1 && node->get_num_children() == 0 && egg_parent == egg_group &&
+        !geom_state->is_empty() && node->get_state()->is_empty()) {
+      apply_state_properties(egg_group, geom_state);
+      geom_state = RenderState::make_empty();
+    }
+
     const Geom *geom = node->get_geom(i);
     int num_primitives = geom->get_num_primitives();
     for (int j = 0; j < num_primitives; ++j) {
