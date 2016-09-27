@@ -37,6 +37,9 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix asyncFlattenStrong called on nodes without parent
 * Fix is_playing() check when playing an animation backwards
 * Windows installer no longer clears %PATH% if longer than 1024 chars
+* Fix inoperative -tbn/-tbnall/-tbnauto options in egg-optchar
+* Fix tinydisplay texture errors on shutdown
+* Fix mipmap filtering issues in tinydisplay renderer
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

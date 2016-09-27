@@ -944,17 +944,16 @@ Function AddToPath
                 Goto AddToPath_done
 
         AddToPath_NT:
+                ClearErrors
                 ReadRegStr $1 HKCU "Environment" "PATH"
-                Call IsUserAdmin
-                Pop $3
-                ; If this is an Admin user, use the System env. variable instead of the user's env. variable
-                StrCmp $3 1 0 +2
-                        ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
 
-                ; If the PATH string is empty, WATCH OUT.  This probably means
-                ; the PATH surpassed NSIS' string limit.  Don't overwrite it!
-                ; The only thing we can do is display an error message.
-                StrCmp $1 "" AddToPath_EmptyError
+                ; If we reached an error, WATCH OUT.  Either this means that
+                ; the registry key did not exist, or that it didn't fit in
+                ; NSIS' string limit.  If the latter, we have to be very
+                ; careful not to overwrite the user's PATH.
+                IfErrors AddToPath_Error
+                DetailPrint "Current PATH value is set to $1"
+                StrCmp $1 "" AddToPath_NTAddPath
 
                 ; Pull off the last character of the PATH string.  If it's a semicolon,
                 ; we don't need to add another one, so jump to the section where we
@@ -962,7 +961,20 @@ Function AddToPath
                 StrCpy $2 $1 1 -1
                 StrCmp $2 ";" AddToPath_NTAddPath AddToPath_NTAddSemi
 
-                AddToPath_EmptyError:
+                AddToPath_Error:
+                        DetailPrint "Encountered error reading PATH variable."
+                        ; Does the variable exist?  If it doesn't, then the
+                        ; error happened because we need to create the
+                        ; variable.  If it does, then we failed to read it
+                        ; because we reached NSIS' string limit.
+                        StrCpy $3 0
+                        AddToPath_loop:
+                                EnumRegValue $4 HKCU "Environment" $3
+                                StrCmp $4 "PATH" AddToPath_ExceedLimit
+                                StrCmp $4 "" AddToPath_NTAddPath
+                                IntOp $3 $3 + 1
+                        Goto AddToPath_loop
+                AddToPath_ExceedLimit:
                         MessageBox MB_ABORTRETRYIGNORE|MB_ICONEXCLAMATION "Your PATH environment variable is too long! Please remove extraneous entries before proceeding. Panda3D needs to add the following the PATH so that the Panda3D utilities and libraries can be located correctly.$\n$\n$0$\n$\nIf you wish to add Panda3D to the path yourself, choose Ignore." IDIGNORE AddToPath_done IDRETRY AddToPath_NT
                         SetDetailsPrint both
                         DetailPrint "Cannot append to PATH - variable is likely too long."
@@ -973,16 +985,7 @@ Function AddToPath
                         Goto AddToPath_NTAddPath
                 AddToPath_NTAddPath:
                         StrCpy $0 "$1$0"
-                        Goto AddToPath_NTdoIt
-                AddToPath_NTdoIt:
-                        Call IsUserAdmin
-                        Pop $3
-                        StrCmp $3 1 0 NotAdmin
-                                WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" $0
-                                Goto AddToPath_done
-
-                        NotAdmin:
-                                WriteRegExpandStr HKCU "Environment" "PATH" $0
+                        WriteRegExpandStr HKCU "Environment" "PATH" $0
         AddToPath_done:
                 Pop $3
                 Pop $2
@@ -1033,42 +1036,40 @@ Function RemoveFromPath
                         Goto unRemoveFromPath_done
 
                 unRemoveFromPath_NT:
+                        Push $0
                         StrLen $2 $0
-                        Call IsUserAdmin
-                        Pop $5
-                        StrCmp $5 1 0 NotAdmin
-                                ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
-                                Push $1
-                                Push $0
-                                Call StrStr ; Find $0 in $1
-                                Pop $0 ; pos of our dir
-                                IntCmp $0 -1 unRemoveFromPath_done
-                                        ; else, it is in path
-                                        StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
-                                        IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
-                                        IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
-                                        StrLen $0 $1
-                                        StrCpy $1 $1 $0 $2
-                                        StrCpy $3 "$3$1"
-                                        WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" $3
-                                        Goto unRemoveFromPath_done
+                        ReadRegStr $1 HKCU "Environment" "PATH"
+                        Push $1
+                        Push $0
+                        Call StrStr ; Find $0 in $1
+                        Pop $0 ; pos of our dir
+                        IntCmp $0 -1 unRemoveFromPath_NT_System
+                                ; else, it is in path
+                                StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
+                                IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
+                                IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
+                                StrLen $0 $1
+                                StrCpy $1 $1 $0 $2
+                                StrCpy $3 "$3$1"
+                                WriteRegExpandStr HKCU "Environment" "PATH" $3
 
-
-                        NotAdmin:
-                                ReadRegStr $1 HKCU "Environment" "PATH"
-                                Push $1
-                                Push $0
-                                Call StrStr ; Find $0 in $1
-                                Pop $0 ; pos of our dir
-                                IntCmp $0 -1 unRemoveFromPath_done
-                                        ; else, it is in path
-                                        StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
-                                        IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
-                                        IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
-                                        StrLen $0 $1
-                                        StrCpy $1 $1 $0 $2
-                                        StrCpy $3 "$3$1"
-                                        WriteRegExpandStr HKCU "Environment" "PATH" $3
+                unRemoveFromPath_NT_System:
+                        Pop $0
+                        StrLen $2 $0
+                        ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
+                        Push $1
+                        Push $0
+                        Call StrStr ; Find $0 in $1
+                        Pop $0 ; pos of our dir
+                        IntCmp $0 -1 unRemoveFromPath_done
+                                ; else, it is in path
+                                StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
+                                IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
+                                IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
+                                StrLen $0 $1
+                                StrCpy $1 $1 $0 $2
+                                StrCpy $3 "$3$1"
+                                WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" $3
 
                 unRemoveFromPath_done:
                         Pop $5
@@ -1119,42 +1120,40 @@ Function un.RemoveFromPath
                         Goto unRemoveFromPath_done
 
                 unRemoveFromPath_NT:
+                        Push $0
                         StrLen $2 $0
-                        Call un.IsUserAdmin
-                        Pop $5
-                        StrCmp $5 1 0 NotAdmin
-                                ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
-                                Push $1
-                                Push $0
-                                Call un.StrStr ; Find $0 in $1
-                                Pop $0 ; pos of our dir
-                                IntCmp $0 -1 unRemoveFromPath_done
-                                        ; else, it is in path
-                                        StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
-                                        IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
-                                        IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
-                                        StrLen $0 $1
-                                        StrCpy $1 $1 $0 $2
-                                        StrCpy $3 "$3$1"
-                                        WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" $3
-                                        Goto unRemoveFromPath_done
+                        ReadRegStr $1 HKCU "Environment" "PATH"
+                        Push $1
+                        Push $0
+                        Call un.StrStr ; Find $0 in $1
+                        Pop $0 ; pos of our dir
+                        IntCmp $0 -1 unRemoveFromPath_NT_System
+                                ; else, it is in path
+                                StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
+                                IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
+                                IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
+                                StrLen $0 $1
+                                StrCpy $1 $1 $0 $2
+                                StrCpy $3 "$3$1"
+                                WriteRegExpandStr HKCU "Environment" "PATH" $3
 
-
-                        NotAdmin:
-                                ReadRegStr $1 HKCU "Environment" "PATH"
-                                Push $1
-                                Push $0
-                                Call un.StrStr ; Find $0 in $1
-                                Pop $0 ; pos of our dir
-                                IntCmp $0 -1 unRemoveFromPath_done
-                                        ; else, it is in path
-                                        StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
-                                        IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
-                                        IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
-                                        StrLen $0 $1
-                                        StrCpy $1 $1 $0 $2
-                                        StrCpy $3 "$3$1"
-                                        WriteRegExpandStr HKCU "Environment" "PATH" $3
+                unRemoveFromPath_NT_System:
+                        Pop $0
+                        StrLen $2 $0
+                        ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
+                        Push $1
+                        Push $0
+                        Call un.StrStr ; Find $0 in $1
+                        Pop $0 ; pos of our dir
+                        IntCmp $0 -1 unRemoveFromPath_done
+                                ; else, it is in path
+                                StrCpy $3 $1 $0 ; $3 now has the part of the path before our dir
+                                IntOp $2 $2 + $0 ; $2 now contains the pos after our dir in the path (';')
+                                IntOp $2 $2 + 1 ; $2 now containts the pos after our dir and the semicolon.
+                                StrLen $0 $1
+                                StrCpy $1 $1 $0 $2
+                                StrCpy $3 "$3$1"
+                                WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" $3
 
                 unRemoveFromPath_done:
                         Pop $5
@@ -1163,148 +1162,6 @@ Function un.RemoveFromPath
                         Pop $2
                         Pop $1
                         Pop $0
-FunctionEnd
-
-; From: http://nsis.sourceforge.net/archive/nsisweb.php?page=329&instances=0,11
-; Localized by Ben Johnson (bkj@andrew.cmu.edu)
-Function IsUserAdmin
-        Push $0
-        Push $1
-        Push $2
-        Push $3
-        Call IsNT
-        Pop $1
-
-        ClearErrors
-        UserInfo::GetName
-        ;IfErrors Win9x
-        Pop $2
-        UserInfo::GetAccountType
-        Pop $3
-
-        ; Compare results of IsNT with "1"
-        StrCmp $1 1 0 NotNT
-                ;This is NT
-
-
-                StrCmp $3 "Admin" 0 NotAdmin
-                        ; Observation: I get here when running Win98SE. (Lilla)
-                        ; The functions UserInfo.dll looks for are there on Win98 too,
-                        ; but just don't work. So UserInfo.dll, knowing that admin isn't required
-                        ; on Win98, returns admin anyway. (per kichik)
-                        ; MessageBox MB_OK 'User "$R1" is in the Administrators group'
-                        Pop $3
-                        Pop $2
-                        Pop $1
-                        Pop $0
-
-                        Push 1
-                        Return
-
-                NotAdmin:
-                        ; You should still check for an empty string because the functions
-                        ; UserInfo.dll looks for may not be present on Windows 95. (per kichik)
-
-                        #StrCmp $2 "" Win9x
-                        #StrCpy $0 0
-                        ;MessageBox MB_OK 'User "$2" is in the "$3" group'
-                        Pop $3
-                        Pop $2
-                        Pop $1
-                        Pop $0
-
-                        Push 0
-                        Return
-
-        ;Because we use IsNT, this is redundant.
-        #Win9x:
-        #       ; comment/message below is by UserInfo.nsi author:
-        #       ; This one means you don't need to care about admin or
-        #       ; not admin because Windows 9x doesn't either
-        #       ;MessageBox MB_OK "Error! This DLL can't run under Windows 9x!"
-        #       StrCpy $0 0
-
-        NotNT:
-                ;We are not NT
-                ;Win9x doesn't have "admin" users.
-                ;Let the user do whatever.
-                Pop $3
-                Pop $2
-                Pop $1
-                Pop $0
-
-                Push 1
-
-FunctionEnd
-
-Function un.IsUserAdmin
-        Push $0
-        Push $1
-        Push $2
-        Push $3
-        Call un.IsNT
-        Pop $1
-
-        ClearErrors
-        UserInfo::GetName
-        ;IfErrors Win9x
-        Pop $2
-        UserInfo::GetAccountType
-        Pop $3
-
-        ; Compare results of IsNT with "1"
-        StrCmp $1 1 0 NotNT
-                ;This is NT
-
-
-                StrCmp $3 "Admin" 0 NotAdmin
-                        ; Observation: I get here when running Win98SE. (Lilla)
-                        ; The functions UserInfo.dll looks for are there on Win98 too,
-                        ; but just don't work. So UserInfo.dll, knowing that admin isn't required
-                        ; on Win98, returns admin anyway. (per kichik)
-                        ; MessageBox MB_OK 'User "$R1" is in the Administrators group'
-                        Pop $3
-                        Pop $2
-                        Pop $1
-                        Pop $0
-
-                        Push 1
-                        Return
-
-                NotAdmin:
-                        ; You should still check for an empty string because the functions
-                        ; UserInfo.dll looks for may not be present on Windows 95. (per kichik)
-
-                        #StrCmp $2 "" Win9x
-                        #StrCpy $0 0
-                        ;MessageBox MB_OK 'User "$2" is in the "$3" group'
-                        Pop $3
-                        Pop $2
-                        Pop $1
-                        Pop $0
-
-                        Push 0
-                        Return
-
-        ;Because we use IsNT, this is redundant.
-        #Win9x:
-        #       ; comment/message below is by UserInfo.nsi author:
-        #       ; This one means you don't need to care about admin or
-        #       ; not admin because Windows 9x doesn't either
-        #       ;MessageBox MB_OK "Error! This DLL can't run under Windows 9x!"
-        #       StrCpy $0 0
-
-        NotNT:
-                ;We are not NT
-                ;Win9x doesn't have "admin" users.
-                ;Let the user do whatever.
-                Pop $3
-                Pop $2
-                Pop $1
-                Pop $0
-
-                Push 1
-
 FunctionEnd
 
 Function StrRep
