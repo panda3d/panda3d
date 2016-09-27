@@ -111,6 +111,33 @@ post_process_egg_files() {
     // Do nothing.
     break;
   }
+
+  if (_got_tbnall) {
+    for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+      if ((*ei)->recompute_tangent_binormal(GlobPattern("*"))) {
+        (*ei)->remove_unused_vertices(true);
+      }
+    }
+  } else {
+    if (_got_tbnauto) {
+      for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+        if ((*ei)->recompute_tangent_binormal_auto()) {
+          (*ei)->remove_unused_vertices(true);
+        }
+      }
+    }
+
+    for (vector_string::const_iterator si = _tbn_names.begin();
+         si != _tbn_names.end();
+         ++si) {
+      GlobPattern uv_name(*si);
+      nout << "Computing tangent and binormal for \"" << uv_name << "\"\n";
+      for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+        (*ei)->recompute_tangent_binormal(uv_name);
+        (*ei)->remove_unused_vertices(true);
+      }
+    }
+  }
 }
 
 
