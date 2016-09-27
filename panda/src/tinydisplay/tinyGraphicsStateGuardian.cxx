@@ -1800,24 +1800,9 @@ update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmap
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
-  TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
-
   _texturing_state = 0;  // just in case
 
-  GLTexture *gltex = &gtc->_gltex;
-  if (gltex->allocated_buffer != NULL) {
-    nassertv(gltex->num_levels != 0);
-    TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
-    PANDA_FREE_ARRAY(gltex->allocated_buffer);
-    gltex->allocated_buffer = NULL;
-    gltex->total_bytecount = 0;
-    gltex->num_levels = 0;
-  } else {
-    nassertv(gltex->num_levels == 0);
-  }
-
-  gtc->dequeue_lru();
-
+  TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
   delete gtc;
 }
 
