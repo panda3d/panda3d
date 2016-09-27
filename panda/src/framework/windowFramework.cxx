@@ -639,10 +639,13 @@ load_model(const NodePath &parent, Filename filename) {
     extension = Filename(filename.get_basename_wo_extension()).get_extension();
   }
 #endif  // HAVE_ZLIB
+  TexturePool *texture_pool = TexturePool::get_global_ptr();
+  LoaderFileType *model_type = NULL;
+
   if (!extension.empty()) {
     LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
-    LoaderFileType *model_type =
-      reg->get_type_from_extension(extension);
+    model_type = reg->get_type_from_extension(extension);
+
     if (model_type == (LoaderFileType *)NULL) {
       // The extension isn't a known model file type; is it a known
       // image file extension?
@@ -652,7 +655,6 @@ load_model(const NodePath &parent, Filename filename) {
         is_image = true;
 
       } else {
-        TexturePool *texture_pool = TexturePool::get_global_ptr();
         if (texture_pool->get_texture_type(extension) != NULL) {
           // It is a known image file extension.
           is_image = true;
@@ -674,6 +676,13 @@ load_model(const NodePath &parent, Filename filename) {
     node = load_image_as_model(filename);
   } else {
     node = loader.load_sync(filename, options);
+
+    // It failed to load.  Is it because the extension isn't recognised?  If
+    // so, then we just got done printing out the known scene types, and we
+    // should also print out the supported texture types.
+    if (node == (PandaNode *)NULL && !is_image && model_type == NULL) {
+      texture_pool->write_texture_types(nout, 2);
+    }
   }
 
   if (node == (PandaNode *)NULL) {
