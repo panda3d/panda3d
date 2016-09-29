@@ -40,6 +40,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix inoperative -tbn/-tbnall/-tbnauto options in egg-optchar
 * Fix tinydisplay texture errors on shutdown
 * Fix mipmap filtering issues in tinydisplay renderer
+* Fix exception when creating intervals before ShowBase is started
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
