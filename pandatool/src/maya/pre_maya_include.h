@@ -27,30 +27,6 @@
 #define _BOOL 1
 #endif
 
-#ifdef MAYA_PRE_5_0
-// Old versions of Maya, before version 5.0, used <iosteam.h> etc.  instead of
-// the new <iostream> headers.  This requires some workarounds to make this
-// work compatibly with Panda, which uses the new headers.
-
-// In windows, the antiquated headers define completely unrelated (and
-// incompatible) classes from those declared in the new headers.  On the other
-// hand, in gcc the antiquated headers seem to be references to the new
-// template classes, so under gcc we also have to declare typedefs to make
-// this work.
-#ifdef __GNUC__
-#ifndef PRE_MAYA_INCLUDE_H
-#define PRE_MAYA_INCLUDE_H
-#include <iostream.h>
-typedef ostream maya_ostream;
-typedef istream maya_istream;
-#endif
-#endif  // __GNUC__
-
-#define ostream maya_ostream
-#define istream maya_istream
-
-#else  // MAYA_PRE_5_0
-
 // In Maya 5.0, the headers seem to provide the manifest REQUIRE_IOSTREAM,
 // which forces it to use the new <iostream> headers instead of the old
 // <iostream.h> headers.  It also says this is for Linux only, but it seems to
@@ -68,5 +44,3 @@ typedef istream maya_istream;
 #include <maya/OpenMayaMac.h>
 #endif
 #endif
-
-#endif  // MAYA_PRE_5_0
