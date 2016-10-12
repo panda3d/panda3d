@@ -97,7 +97,7 @@ static int cb_read(void *user, char *data, int size) {
 
   if (in->eof()) {
     // Gracefully handle EOF.
-    in->clear();
+    in->clear(ios::eofbit);
   }
 
   return (int)in->gcount();
@@ -109,19 +109,10 @@ static void cb_skip(void *user, int n) {
 
   in->seekg(n, ios::cur);
 
-  if (in->fail()) {
+  // If we can't seek, move forward by ignoring bytes instead.
+  if (in->fail() && n > 0) {
     in->clear();
-
-    // Implement skip by just reading and discarding the result.
-    static const int size = 4096;
-    char data[size];
-    while (n > size) {
-      in->read(data, size);
-      n -= size;
-    }
-    if (n > 0) {
-      in->read(data, n);
-    }
+    in->ignore(n);
   }
 }
 
@@ -148,6 +139,7 @@ public:
 private:
   bool _is_float;
   stbi__context _context;
+  unsigned char _buffer[1024];
 };
 
 TypeHandle PNMFileTypeStbImage::_type_handle;
@@ -224,27 +216,39 @@ StbImageReader(PNMFileType *type, istream *file, bool owns_file, string magic_nu
   PNMReader(type, file, owns_file),
   _is_float(false)
 {
-  // Hope we can putback() more than one character.
-  for (string::reverse_iterator mi = magic_number.rbegin();
-       mi != magic_number.rend();
-       mi++) {
-    _file->putback(*mi);
-  }
-  if (_file->fail()) {
-    pnmimage_cat.error()
-      << "Unable to put back magic number.\n";
-    _is_valid = false;
-    return;
+  // Prepare the stb_image context.  See stbi__start_callbacks.
+  _context.io.read = cb_read;
+  _context.io.skip = cb_skip;
+  _context.io.eof = cb_eof;
+  _context.io_user_data = (void *)file;
+  _context.buflen = sizeof(_context.buffer_start);
+  _context.read_from_callbacks = 1;
+  _context.img_buffer = _buffer;
+  _context.img_buffer_original = _buffer;
+
+  // Prepopulate it with the magic number we already read, then fill it up.
+  // We need a big enough buffer so that we can read the image header.
+  // If stb_image runs out, it will switch to its own 128-byte buffer.
+  memcpy(_buffer, magic_number.data(), magic_number.size());
+  file->read((char *)_buffer + magic_number.size(), sizeof(_buffer) - magic_number.size());
+
+  if (file->eof()) {
+    file->clear(ios::eofbit);
   }
 
-  stbi__start_callbacks(&_context, &io_callbacks, (void *)file);
+  size_t length = file->gcount() + magic_number.size();
+  _context.img_buffer_end = _buffer + length;
+  _context.img_buffer_original_end = _context.img_buffer_end;
 
+  // Invoke stbi_info to read the image size and channel count.
   if (strncmp(magic_number.c_str(), "#?", 2) == 0 &&
       stbi__hdr_info(&_context, &_x_size, &_y_size, &_num_channels)) {
     _is_valid = true;
     _is_float = true;
+
   } else if (stbi__info_main(&_context, &_x_size, &_y_size, &_num_channels)) {
     _is_valid = true;
+
   } else {
     _is_valid = false;
     pnmimage_cat.error()
@@ -275,14 +279,21 @@ read_pfm(PfmFile &pfm) {
   }
 
   // Reposition the file at the beginning.
-  _file->seekg(0, ios::beg);
-  if (_file->tellg() != (streampos)0) {
-    pnmimage_cat.error()
-      << "Could not reposition file pointer to the beginning.\n";
-    return false;
-  }
+  if (_context.img_buffer_end == _context.img_buffer_original_end) {
+    // All we need to do is rewind the buffer.
+    stbi__rewind(&_context);
 
-  stbi__start_callbacks(&_context, &io_callbacks, (void *)_file);
+  } else {
+    // We need to reinitialize the context.
+    _file->seekg(0, ios::beg);
+    if (_file->tellg() != (streampos)0) {
+      pnmimage_cat.error()
+        << "Could not reposition file pointer to the beginning.\n";
+      return false;
+    }
+
+    stbi__start_callbacks(&_context, &io_callbacks, (void *)_file);
+  }
 
   nassertr(_num_channels == 3, false);
 
@@ -425,19 +436,31 @@ main_decode_loop:
  */
 int StbImageReader::
 read_data(xel *array, xelval *alpha) {
-  // Reposition the file at the beginning.
-  _file->seekg(0, ios::beg);
-  if (_file->tellg() != (streampos)0) {
-    pnmimage_cat.error()
-      << "Could not reposition file pointer to the beginning.\n";
+  if (!is_valid()) {
     return 0;
   }
 
-  stbi__start_callbacks(&_context, &io_callbacks, (void *)_file);
+  // Reposition the file at the beginning.
+  if (_context.img_buffer_end == _context.img_buffer_original_end) {
+    // All we need to do is rewind the buffer.
+    stbi__rewind(&_context);
+
+  } else {
+    // We need to reinitialize the context.
+    _file->seekg(0, ios::beg);
+    if (_file->tellg() != (streampos)0) {
+      pnmimage_cat.error()
+        << "Could not reposition file pointer to the beginning.\n";
+      return false;
+    }
+
+    stbi__start_callbacks(&_context, &io_callbacks, (void *)_file);
+  }
 
   int cols = 0;
   int rows = 0;
-  stbi_uc *data = stbi__load_main(&_context, &cols, &rows, NULL, _num_channels);
+  int comp = _num_channels;
+  stbi_uc *data = stbi__load_main(&_context, &cols, &rows, &comp, _num_channels);
 
   if (data == NULL) {
     pnmimage_cat.error()
@@ -446,6 +469,7 @@ read_data(xel *array, xelval *alpha) {
   }
 
   nassertr(cols == _x_size, 0);
+  nassertr(comp == _num_channels, 0);
 
   size_t pixels = (size_t)_x_size * (size_t)rows;
   stbi_uc *ptr = data;
