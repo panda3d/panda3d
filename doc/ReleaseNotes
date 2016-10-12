@@ -42,6 +42,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix mipmap filtering issues in tinydisplay renderer
 * Fix exception when creating intervals before ShowBase is started
 * Fix rare X11 .ico cursor bug; also now supports PNG-compressed icons
+* Add keyword argument support to make() methods such as Shader.make()
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

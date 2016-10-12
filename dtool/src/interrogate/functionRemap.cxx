@@ -810,6 +810,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         _flags |= F_coerce_constructor;
       }
 
+      if (_args_type == InterfaceMaker::AT_varargs) {
+        // Of course methods named "make" can still take kwargs.
+        _args_type = InterfaceMaker::AT_keyword_args;
+      }
+
     } else if (fname == "operator /") {
       if (_has_this && _parameters.size() == 2 &&
           TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
