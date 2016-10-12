@@ -28,6 +28,8 @@
 #include "nativeWindowHandle.h"
 #include "virtualFileSystem.h"
 #include "get_x11.h"
+#include "pnmImage.h"
+#include "pnmFileTypeRegistry.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -2303,109 +2305,144 @@ read_ico(istream &ico) {
   // Seek to the image in the ICO.
   ico.seekg(entries[entry].offset);
   if (!ico.good()) goto cleanup;
-  ico.read(reinterpret_cast<char *>(&infoHeader), sizeof(IcoInfoHeader));
-  if (!ico.good()) goto cleanup;
-  bitsPerPixel = infoHeader.bitsPerPixel;
 
-  // TODO: Support PNG compressed ICOs.
-  if (infoHeader.compression != 0) goto cleanup;
+  if (ico.peek() == 0x89) {
+    // Hang on, this is actually a PNG header.
+    PNMImage img;
+    PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_global_ptr();
+    if (!img.read(ico, "", reg->get_type_from_extension("png"))) {
+      goto cleanup;
+    }
+    img.set_maxval(255);
 
-  // Load the color palette, if one exists.
-  if (bitsPerPixel != 24 && bitsPerPixel != 32) {
-    colorCount = 1 << bitsPerPixel;
-    palette = new IcoColor[colorCount];
-    ico.read(reinterpret_cast<char *>(palette), colorCount * sizeof(IcoColor));
+    image = XcursorImageCreate(img.get_x_size(), img.get_y_size());
+
+    xel *ptr = img.get_array();
+    xelval *alpha = img.get_alpha_array();
+    size_t num_pixels = (size_t)img.get_x_size() * (size_t)img.get_y_size();
+    unsigned int *dest = image->pixels;
+
+    if (alpha != NULL) {
+      for (size_t p = 0; p < num_pixels; ++p) {
+        *dest++ = (*alpha << 24U) | (ptr->r << 16U) | (ptr->g << 8U) | (ptr->b);
+        ++ptr;
+        ++alpha;
+      }
+    } else {
+      for (size_t p = 0; p < num_pixels; ++p) {
+        *dest++ = 0xff000000U | (ptr->r << 16U) | (ptr->g << 8U) | (ptr->b);
+        ++ptr;
+      }
+    }
+
+  } else {
+    ico.read(reinterpret_cast<char *>(&infoHeader), sizeof(IcoInfoHeader));
     if (!ico.good()) goto cleanup;
+    bitsPerPixel = infoHeader.bitsPerPixel;
+
+    if (infoHeader.compression != 0) goto cleanup;
+
+    // Load the color palette, if one exists.
+    if (bitsPerPixel != 24 && bitsPerPixel != 32) {
+      colorCount = 1 << bitsPerPixel;
+      palette = new IcoColor[colorCount];
+      ico.read(reinterpret_cast<char *>(palette), colorCount * sizeof(IcoColor));
+      if (!ico.good()) goto cleanup;
+    }
+
+    // Read in the pixel data.
+    xorBmpSize = (infoHeader.width * (infoHeader.height / 2) * bitsPerPixel) / 8;
+    andBmpSize = (infoHeader.width * (infoHeader.height / 2)) / 8;
+    curXor = xorBmp = new char[xorBmpSize];
+    curAnd = andBmp = new char[andBmpSize];
+    ico.read(xorBmp, xorBmpSize);
+    if (!ico.good()) goto cleanup;
+    ico.read(andBmp, andBmpSize);
+    if (!ico.good()) goto cleanup;
+
+    image = XcursorImageCreate(infoHeader.width, infoHeader.height / 2);
+
+    // Support all the formats that GIMP supports.
+    switch (bitsPerPixel) {
+    case 1:
+    case 4:
+    case 8:
+      // For colors less that a byte wide, shift and mask the palette indices
+      // off each element of the xorBmp and append them to the image.
+      mask = ((1 << bitsPerPixel) - 1);
+      for (i = image->height - 1; i >= 0; i--) {
+        for (j = 0; j < image->width; j += 8 / bitsPerPixel) {
+          for (k = 0; k < 8 / bitsPerPixel; k++) {
+            shift = 8 - ((k + 1) * bitsPerPixel);
+            color = palette[(*curXor & (mask << shift)) >> shift];
+            image->pixels[(i * image->width) + j + k] = (color.red << 16) +
+                                                        (color.green << 8) +
+                                                        (color.blue);
+          }
+
+          curXor++;
+        }
+
+        // Set the alpha byte properly according to the andBmp.
+        for (j = 0; j < image->width; j += 8) {
+          for (k = 0; k < 8; k++) {
+            shift = 7 - k;
+            image->pixels[(i * image->width) + j + k] |=
+              ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
+          }
+
+          curAnd++;
+        }
+      }
+      break;
+
+    case 24:
+      // Pack each of the three bytes into a single color, BGR -> 0RGB
+      for (i = image->height - 1; i >= 0; i--) {
+        for (j = 0; j < image->width; j++) {
+          image->pixels[(i * image->width) + j] = (*(curXor + 2) << 16) +
+                                                  (*(curXor + 1) << 8) + (*curXor);
+          curXor += 3;
+        }
+
+        // Set the alpha byte properly according to the andBmp.
+        for (j = 0; j < image->width; j += 8) {
+          for (k = 0; k < 8; k++) {
+            shift = 7 - k;
+            image->pixels[(i * image->width) + j + k] |=
+              ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
+          }
+
+          curAnd++;
+        }
+      }
+      break;
+
+    case 32:
+      // Pack each of the four bytes into a single color, BGRA -> ARGB
+      for (i = image->height - 1; i >= 0; i--) {
+        for (j = 0; j < image->width; j++) {
+          image->pixels[(i * image->width) + j] = (*(curXor + 3) << 24) +
+                                                  (*(curXor + 2) << 16) +
+                                                  (*(curXor + 1) << 8) +
+                                                  (*curXor);
+          curXor += 4;
+        }
+      }
+      break;
+
+    default:
+      goto cleanup;
+    }
   }
 
-  // Read in the pixel data.
-  xorBmpSize = (infoHeader.width * (infoHeader.height / 2) * bitsPerPixel) / 8;
-  andBmpSize = (infoHeader.width * (infoHeader.height / 2)) / 8;
-  curXor = xorBmp = new char[xorBmpSize];
-  curAnd = andBmp = new char[andBmpSize];
-  ico.read(xorBmp, xorBmpSize);
-  if (!ico.good()) goto cleanup;
-  ico.read(andBmp, andBmpSize);
-  if (!ico.good()) goto cleanup;
-
   // If this is an actual CUR not an ICO set up the hotspot properly.
-  image = XcursorImageCreate(infoHeader.width, infoHeader.height / 2);
-  if (header.type == 2) { image->xhot = entries[entry].xhot; image->yhot = entries[entry].yhot; }
-
-  // Support all the formats that GIMP supports, minus PNG compressed ICOs.
-  // Would need to use libpng to decode the compressed ones.
-  switch (bitsPerPixel) {
-  case 1:
-  case 4:
-  case 8:
-    // For colors less that a byte wide, shift and mask the palette indices
-    // off each element of the xorBmp and append them to the image.
-    mask = ((1 << bitsPerPixel) - 1);
-    for (i = image->height - 1; i >= 0; i--) {
-      for (j = 0; j < image->width; j += 8 / bitsPerPixel) {
-        for (k = 0; k < 8 / bitsPerPixel; k++) {
-          shift = 8 - ((k + 1) * bitsPerPixel);
-          color = palette[(*curXor & (mask << shift)) >> shift];
-          image->pixels[(i * image->width) + j + k] = (color.red << 16) +
-                                                      (color.green << 8) +
-                                                      (color.blue);
-        }
-
-        curXor++;
-      }
-
-      // Set the alpha byte properly according to the andBmp.
-      for (j = 0; j < image->width; j += 8) {
-        for (k = 0; k < 8; k++) {
-          shift = 7 - k;
-          image->pixels[(i * image->width) + j + k] |=
-            ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
-        }
-
-        curAnd++;
-      }
-    }
-
-    break;
-  case 24:
-    // Pack each of the three bytes into a single color, BGR -> 0RGB
-    for (i = image->height - 1; i >= 0; i--) {
-      for (j = 0; j < image->width; j++) {
-        image->pixels[(i * image->width) + j] = (*(curXor + 2) << 16) +
-                                                (*(curXor + 1) << 8) + (*curXor);
-        curXor += 3;
-      }
-
-      // Set the alpha byte properly according to the andBmp.
-      for (j = 0; j < image->width; j += 8) {
-        for (k = 0; k < 8; k++) {
-          shift = 7 - k;
-          image->pixels[(i * image->width) + j + k] |=
-            ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
-        }
-
-        curAnd++;
-      }
-
-    }
-
-    break;
-  case 32:
-    // Pack each of the four bytes into a single color, BGRA -> ARGB
-    for (i = image->height - 1; i >= 0; i--) {
-      for (j = 0; j < image->width; j++) {
-        image->pixels[(i * image->width) + j] = (*(curXor + 3) << 24) +
-                                                (*(curXor + 2) << 16) +
-                                                (*(curXor + 1) << 8) +
-                                                (*curXor);
-        curXor += 4;
-      }
-    }
-
-    break;
-  default:
-    goto cleanup;
-    break;
+  if (header.type == 2) {
+    image->xhot = entries[entry].xhot;
+    image->yhot = entries[entry].yhot;
+  } else {
+    image->xhot = 0;
+    image->yhot = 0;
   }
 
   ret = XcursorImageLoadCursor(_display, image);
