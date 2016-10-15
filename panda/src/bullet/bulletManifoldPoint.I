@@ -29,8 +29,15 @@ INLINE BulletManifoldPoint::
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletManifoldPoint::
 set_lateral_friction_initialized(bool value) {
-
+#if BT_BULLET_VERSION >= 285
+  if (value) {
+    _pt.m_contactPointFlags |= BT_CONTACT_FLAG_LATERAL_FRICTION_INITIALIZED;
+  } else {
+    _pt.m_contactPointFlags &= ~BT_CONTACT_FLAG_LATERAL_FRICTION_INITIALIZED;
+  }
+#else
   _pt.m_lateralFrictionInitialized = value;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,8 +47,11 @@ set_lateral_friction_initialized(bool value) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BulletManifoldPoint::
 get_lateral_friction_initialized() const {
-
+#if BT_BULLET_VERSION >= 285
+  return (_pt.m_contactPointFlags & BT_CONTACT_FLAG_LATERAL_FRICTION_INITIALIZED) != 0;
+#else
   return _pt.m_lateralFrictionInitialized;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -238,8 +248,9 @@ get_applied_impulse_lateral2() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletManifoldPoint::
 set_contact_cfm1(PN_stdfloat value) {
-
+#if BT_BULLET_VERSION < 285
   _pt.m_contactCFM1 = (btScalar)value;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -249,8 +260,11 @@ set_contact_cfm1(PN_stdfloat value) {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BulletManifoldPoint::
 get_contact_cfm1() const {
-
+#if BT_BULLET_VERSION < 285
   return (PN_stdfloat)_pt.m_contactCFM1;
+#else
+  return 0;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -260,8 +274,9 @@ get_contact_cfm1() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletManifoldPoint::
 set_contact_cfm2(PN_stdfloat value) {
-
+#if BT_BULLET_VERSION < 285
   _pt.m_contactCFM2 = (btScalar)value;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -271,7 +286,10 @@ set_contact_cfm2(PN_stdfloat value) {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BulletManifoldPoint::
 get_contact_cfm2() const {
-
+#if BT_BULLET_VERSION < 285
   return (PN_stdfloat)_pt.m_contactCFM2;
+#else
+  return 0;
+#endif
 }
 
