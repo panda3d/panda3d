@@ -589,7 +589,14 @@ make_nurbs_curve(INode *max_node, NURBSCVCurve *curve,
         return false;
     }
 
+#ifdef _UNICODE
+    char mbname[1024];
+    mbname[1023] = 0;
+    wcstombs(mbname, max_node->GetName(), 1023);
+    string name(mbname);
+#else
     string name = max_node->GetName();
+#endif
 
     string vpool_name = name + ".cvs";
     EggVertexPool *vpool = new EggVertexPool(vpool_name);
@@ -652,7 +659,15 @@ make_polyset(INode *max_node, Mesh *mesh,
     // all the vertices up front, we'll start with an empty vpool, and
     // add vertices to it on the fly.
 
+#ifdef _UNICODE
+    char mbname[1024];
+    mbname[1023] = 0;
+    wcstombs(mbname, max_node->GetName(), 1023);
+    string node_name(mbname);
+#else
     string node_name = max_node->GetName();
+#endif
+
     string vpool_name = node_name + ".verts";
     EggVertexPool *vpool = new EggVertexPool(vpool_name);
     egg_group->add_child(vpool);
