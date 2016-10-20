@@ -449,8 +449,20 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
     // traverse solids
     for (int i = 0; i < num_solids; i++) {
       CPT(CollisionSolid) child = node->get_solid(i);
+      int flags = EggGroup::CF_descend;
+
+      if (!child->is_tangible()) {
+        flags |= EggGroup::CF_intangible;
+      }
+
+      if (child->has_effective_normal() &&
+          child->get_effective_normal() == LVector3::up()) {
+        flags |= EggGroup::CF_level;
+      }
+
       if (child->is_of_type(CollisionPolygon::get_class_type())) {
         egg_group->set_cs_type(EggGroup::CST_polyset);
+        egg_group->set_collide_flags(flags);
 
         EggPolygon *egg_poly = new EggPolygon;
         egg_group->add_child(egg_poly);
@@ -476,7 +488,6 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
           egg_sphere = egg_group;
         } else {
           egg_sphere = new EggGroup;
-          egg_sphere->set_collide_flags(EggGroup::CF_descend);
           egg_group->add_child(egg_sphere);
         }
 
@@ -485,6 +496,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         } else {
           egg_sphere->set_cs_type(EggGroup::CST_sphere);
         }
+        egg_sphere->set_collide_flags(flags);
 
         EggVertex ev1, ev2;
         ev1.set_pos(LCAST(double, (center + offset) * net_mat));
@@ -518,10 +530,10 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
           egg_plane = egg_group;
         } else {
           egg_plane = new EggGroup;
-          egg_plane->set_collide_flags(EggGroup::CF_descend);
           egg_group->add_child(egg_plane);
         }
         egg_plane->set_cs_type(EggGroup::CST_plane);
+        egg_plane->set_collide_flags(flags);
 
         EggVertex ev0, ev1, ev2;
         ev0.set_pos(LCAST(double, origin * net_mat));
@@ -545,10 +557,10 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
           egg_box = egg_group;
         } else {
           egg_box = new EggGroup;
-          egg_box->set_collide_flags(EggGroup::CF_descend);
           egg_group->add_child(egg_box);
         }
         egg_box->set_cs_type(EggGroup::CST_box);
+        egg_box->set_collide_flags(flags);
 
         // Just add the min and max points.
         EggVertex ev0, ev1;
@@ -584,10 +596,10 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
           egg_tube = egg_group;
         } else {
           egg_tube = new EggGroup;
-          egg_tube->set_collide_flags(EggGroup::CF_descend);
           egg_group->add_child(egg_tube);
         }
         egg_tube->set_cs_type(EggGroup::CST_tube);
+        egg_tube->set_collide_flags(flags);
 
         // Add two points for the endcaps, and then two points around the
         // centroid to indicate the radius.
