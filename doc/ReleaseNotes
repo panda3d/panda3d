@@ -32,6 +32,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix RAM caching of 2D texture arrays
 * Fix Ctrl+C interrupt propagation to runtime applications
 * Support for InvSphere, Box and Tube solids in bam2egg
+* Preserve "intangible" and "level" collide flags in bam2egg
 * Add normalized() method to vectors
 * asyncFlattenStrong with inPlace=True caused node to disappear
 * Fix asyncFlattenStrong called on nodes without parent
@@ -43,6 +44,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix exception when creating intervals before ShowBase is started
 * Fix rare X11 .ico cursor bug; also now supports PNG-compressed icons
 * Add keyword argument support to make() methods such as Shader.make()
+* Fix compilation errors with Bullet 2.84
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
