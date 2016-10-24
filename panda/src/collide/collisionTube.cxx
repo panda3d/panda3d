@@ -48,6 +48,14 @@ make_copy() {
 }
 
 /**
+ *
+ */
+PT(CollisionEntry) CollisionTube::
+test_intersection(const CollisionEntry &entry) const {
+  return entry.get_into()->test_intersection_from_tube(entry);
+}
+
+/**
  * Transforms the solid by the indicated matrix.
  */
 void CollisionTube::
