@@ -5080,7 +5080,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct.pyd', input='libp3direct.dll')
   TargetAdd('direct.pyd', input='libp3interrogatedb.dll')
   TargetAdd('direct.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('direct.pyd', opts=['PYTHON', 'OPENSSL', 'WINUSER', 'WINGDI'])
+  TargetAdd('direct.pyd', opts=['PYTHON', 'OPENSSL', 'WINUSER', 'WINGDI', 'WINSOCK2'])
 
 #
 # DIRECTORY: direct/src/dcparse/
