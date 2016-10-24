@@ -32,6 +32,7 @@
 #include "lodNode.h"
 #include "switchNode.h"
 #include "sequenceNode.h"
+#include "uvScrollNode.h"
 #include "collisionNode.h"
 #include "collisionPolygon.h"
 #include "collisionPlane.h"
@@ -416,6 +417,19 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
   EggGroup *egg_group = new EggGroup(node->get_name());
   egg_parent->add_child(egg_group);
   apply_node_properties(egg_group, node, false);
+
+  // Set the collision masks, if present.
+  CollideMask from_mask = node->get_from_collide_mask();
+  CollideMask into_mask = node->get_into_collide_mask();
+  if (from_mask != CollisionNode::get_default_collide_mask() ||
+      into_mask != CollisionNode::get_default_collide_mask()) {
+    if (from_mask == into_mask) {
+      egg_group->set_collide_mask(into_mask);
+    } else {
+      egg_group->set_from_collide_mask(from_mask);
+      egg_group->set_into_collide_mask(into_mask);
+    }
+  }
 
   // turn it into a collision node
   egg_group->set_collide_flags(EggGroup::CF_descend);
@@ -937,6 +951,14 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
       egg_group->set_dcs_type(EggGroup::DC_no_touch);
       break;
     }
+  }
+
+  if (node->is_of_type(UvScrollNode::get_class_type())) {
+    const UvScrollNode *scroll_node = (const UvScrollNode *)node;
+    egg_group->set_scroll_u(scroll_node->get_u_speed());
+    egg_group->set_scroll_v(scroll_node->get_v_speed());
+    egg_group->set_scroll_w(scroll_node->get_w_speed());
+    egg_group->set_scroll_r(scroll_node->get_r_speed());
   }
 
   const RenderEffects *effects = node->get_effects();
