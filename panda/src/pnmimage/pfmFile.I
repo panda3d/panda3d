@@ -82,7 +82,7 @@ get_point1(int x, int y) const {
  */
 INLINE void PfmFile::
 set_point1(int x, int y, PN_float32 point) {
-  nassertv(!cnan(point));
+  //nassertv(!cnan(point));
   nassertv(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size);
   _table[(y * _x_size + x) * _num_channels] = point;
@@ -105,7 +105,7 @@ get_point2(int x, int y) const {
  */
 INLINE void PfmFile::
 set_point2(int x, int y, const LVecBase2f &point) {
-  nassertv(!point.is_nan());
+  //nassertv(!point.is_nan());
   nassertv(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size);
   switch (_num_channels) {
@@ -202,7 +202,7 @@ get_point3(int x, int y) const {
  */
 INLINE void PfmFile::
 set_point3(int x, int y, const LVecBase3f &point) {
-  nassertv(!point.is_nan());
+  //nassertv(!point.is_nan());
   nassertv(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size);
   switch (_num_channels) {
@@ -264,7 +264,7 @@ get_point4(int x, int y) const {
  */
 INLINE void PfmFile::
 set_point4(int x, int y, const LVecBase4f &point) {
-  nassertv(!point.is_nan());
+  //nassertv(!point.is_nan());
   nassertv(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size);
   switch (_num_channels) {
