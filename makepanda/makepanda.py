@@ -2122,9 +2122,7 @@ DTOOL_CONFIG=[
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
     ("STDFLOAT_DOUBLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_MAYA",                      '1',                      '1'),
-    ("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
     ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
-    ("SSL_097",                        'UNDEF',                  'UNDEF'),
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
@@ -2132,7 +2130,6 @@ DTOOL_CONFIG=[
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
-    ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
     ("SIMPLE_THREADS",                 'UNDEF',                  'UNDEF'),
     ("OS_SIMPLE_THREADS",              '1',                      '1'),
@@ -2145,12 +2142,9 @@ DTOOL_CONFIG=[
     ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
     ("SUPPORT_IMMEDIATE_MODE",         'UNDEF',                  'UNDEF'),
     ("SUPPORT_FIXED_FUNCTION",         '1',                      '1'),
-    ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
     ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
     ("DO_PIPELINING",                  '1',                      '1'),
     ("EXPORT_TEMPLATES",               'yes',                    'yes'),
-    ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
-    ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
     ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
     ("HAVE_NAMESPACE",                 '1',                      '1'),
@@ -2212,7 +2206,6 @@ DTOOL_CONFIG=[
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("IS_FREEBSD",                     'UNDEF',                  'UNDEF'),
-    ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
     ("HAVE_EIGEN",                     'UNDEF',                  'UNDEF'),
     ("LINMATH_ALIGN",                  '1',                      '1'),
     ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
@@ -2230,11 +2223,12 @@ DTOOL_CONFIG=[
     ("HAVE_PNM",                       '1',                      '1'),
     ("HAVE_STB_IMAGE",                 '1',                      '1'),
     ("HAVE_VORBIS",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
     ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
+    ("WANT_NATIVE_NET",                '1',                      '1'),
+    ("SIMULATE_NETWORK_DELAY",         'UNDEF',                  'UNDEF'),
     ("HAVE_EGG",                       '1',                      '1'),
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
@@ -2246,12 +2240,12 @@ DTOOL_CONFIG=[
     ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
     ("HAVE_CARBON",                    'UNDEF',                  'UNDEF'),
     ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
     ("HAVE_ROCKET_DEBUGGER",           'UNDEF',                  'UNDEF'),
+    ("USE_TAU",                        'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
 #    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
@@ -2372,9 +2366,6 @@ def WriteConfigSettings():
 
     if (GetOptimize() <= 3):
         dtool_config["DO_COLLISION_RECORDING"] = '1'
-
-    #if (GetOptimize() <= 2):
-    #    dtool_config["TRACK_IN_INTERPRETER"] = '1'
 
     if (GetOptimize() <= 3):
         dtool_config["DO_MEMORY_USAGE"] = '1'
@@ -4425,8 +4416,17 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/framework', 'BUILDING:FRAMEWORK']
-  TargetAdd('p3framework_composite1.obj', opts=OPTS, input='p3framework_composite1.cxx')
+  deps = []
+  # Framework wants to link in a renderer when building statically, so tell it what is available.
+  if GetLinkAllStatic():
+    deps = ['dtool_have_gl.dat', 'dtool_have_tinydisplay.dat']
+    if not PkgSkip("GL"):
+      DefSymbol("FRAMEWORK", "HAVE_GL")
+    if not PkgSkip("TINYDISPLAY"):
+      DefSymbol("FRAMEWORK", "HAVE_TINYDISPLAY")
+
+  OPTS=['DIR:panda/src/framework', 'BUILDING:FRAMEWORK', 'FRAMEWORK']
+  TargetAdd('p3framework_composite1.obj', opts=OPTS, input='p3framework_composite1.cxx', dep=deps)
   TargetAdd('libp3framework.dll', input='p3framework_composite1.obj')
   TargetAdd('libp3framework.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3framework.dll', opts=['ADVAPI'])
@@ -6005,8 +6005,11 @@ if (PkgSkip("PANDATOOL")==0):
 #
 
 if (PkgSkip("PANDATOOL")==0):
+    if not PkgSkip("FCOLLADA"):
+        DefSymbol("FCOLLADA", "HAVE_FCOLLADA")
+
     OPTS=['DIR:pandatool/src/ptloader', 'DIR:pandatool/src/flt', 'DIR:pandatool/src/lwo', 'DIR:pandatool/src/xfile', 'DIR:pandatool/src/xfileegg', 'DIR:pandatool/src/daeegg', 'BUILDING:PTLOADER', 'FCOLLADA']
-    TargetAdd('p3ptloader_config_ptloader.obj', opts=OPTS, input='config_ptloader.cxx')
+    TargetAdd('p3ptloader_config_ptloader.obj', opts=OPTS, input='config_ptloader.cxx', dep='dtool_have_fcollada.dat')
     TargetAdd('p3ptloader_loaderFileTypePandatool.obj', opts=OPTS, input='loaderFileTypePandatool.cxx')
     TargetAdd('libp3ptloader.dll', input='p3ptloader_config_ptloader.obj')
     TargetAdd('libp3ptloader.dll', input='p3ptloader_loaderFileTypePandatool.obj')
