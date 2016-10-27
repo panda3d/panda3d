@@ -47,6 +47,31 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
 }
 
 /**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+BulletRigidBodyNode::
+BulletRigidBodyNode(const BulletRigidBodyNode &copy) :
+  BulletBodyNode(copy)
+{
+  _motion = new MotionState(*copy._motion);
+  _rigid = new btRigidBody(*copy._rigid);
+  _rigid->setUserPointer(this);
+  _rigid->setCollisionShape(_shape);
+  _rigid->setMotionState(_motion);
+}
+
+/**
+ * Returns a newly-allocated PandaNode that is a shallow copy of this one.  It
+ * will be a different pointer, but its internal data may or may not be shared
+ * with that of the original PandaNode.  No children will be copied.
+ */
+PandaNode *BulletRigidBodyNode::
+make_copy() const {
+  return new BulletRigidBodyNode(*this);
+}
+
+/**
  *
  */
 void BulletRigidBodyNode::
