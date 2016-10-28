@@ -616,6 +616,9 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   get_gravity().write_datagram(dg);
   get_linear_factor().write_datagram(dg);
   get_angular_factor().write_datagram(dg);
+  // dynamic state (?)
+  get_linear_velocity().write_datagram(dg);
+  get_angular_velocity().write_datagram(dg);
 }
 
 /**
@@ -657,4 +660,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   set_gravity(gravity);
   set_linear_factor(linear_factor);
   set_angular_factor(angular_factor);
+
+  // dynamic state (?)
+  LVector3 linear_velocity, angular_velocity;
+  linear_velocity.read_datagram(scan);
+  angular_velocity.read_datagram(scan);
+
+  set_linear_velocity(linear_velocity);
+  set_angular_velocity(angular_velocity);
 }

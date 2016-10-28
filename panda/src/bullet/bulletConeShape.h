@@ -24,6 +24,10 @@
  *
  */
 class EXPCL_PANDABULLET BulletConeShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletConeShape() : _shape(NULL), _radius(0.0), _height(0.0){}
+  PN_stdfloat _radius, _height;
 
 PUBLISHED:
   BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
@@ -39,6 +43,14 @@ public:
 
 private:
   btConeShape *_shape;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

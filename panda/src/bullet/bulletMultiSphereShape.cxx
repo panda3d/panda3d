@@ -50,3 +50,75 @@ ptr() const {
 
   return _shape;
 }
+
+/**
+ * Tells the BamReader how to create objects of type BulletShape.
+ */
+void BulletMultiSphereShape::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void BulletMultiSphereShape::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
+  // parameters to serialize: sphere count, points, radii
+  dg.add_int32(get_sphere_count());
+  for (int i = 0; i < get_sphere_count(); ++i){
+	  get_sphere_pos(i).write_datagram(dg);
+  }
+
+  for (int i = 0; i < get_sphere_count(); ++i){
+	  dg.add_stdfloat(get_sphere_radius(i));
+  }
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BulletShape is encountered in the Bam file.  It should create the
+ * BulletShape and extract its information from the file.
+ */
+TypedWritable *BulletMultiSphereShape::
+make_from_bam(const FactoryParams &params) {
+  // create a default BulletMultiSphereShape
+  BulletMultiSphereShape *param = new BulletMultiSphereShape;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletShape.
+ */
+void BulletMultiSphereShape::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
+
+  // parameters to serialize: sphere count, points, radii
+  int sphereCount = scan.get_int32();
+  btVector3 *btPos = new btVector3[sphereCount];
+  for (int i = 0; i < sphereCount; ++i){
+	  LVector3 pos;
+	  pos.read_datagram(scan);
+	  btPos[i] = LVecBase3_to_btVector3(pos);
+  }
+
+  btScalar *btRadii = new btScalar[sphereCount];
+  for (int i = 0; i < sphereCount; ++i){
+	  btRadii[i] = scan.get_stdfloat();
+  }
+
+  _shape = new btMultiSphereShape(btPos, btRadii, sphereCount);
+  _shape->setUserPointer(this);
+}

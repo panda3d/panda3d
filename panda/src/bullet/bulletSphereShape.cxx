@@ -57,6 +57,8 @@ register_with_read_factory() {
  */
 void BulletSphereShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
   dg.add_stdfloat(get_margin());
   dg.add_stdfloat(get_radius());
 }
@@ -85,6 +87,7 @@ make_from_bam(const FactoryParams &params) {
 void BulletSphereShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
   nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
 
   PN_stdfloat margin = scan.get_stdfloat();
 

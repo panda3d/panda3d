@@ -20,7 +20,7 @@ TypeHandle BulletBoxShape::_type_handle;
  *
  */
 BulletBoxShape::
-BulletBoxShape(const LVecBase3 &halfExtents) {
+BulletBoxShape(const LVecBase3 &halfExtents) : _half_extents(halfExtents) {
 
   btVector3 btHalfExtents = LVecBase3_to_btVector3(halfExtents);
 
@@ -85,8 +85,9 @@ register_with_read_factory() {
  */
 void BulletBoxShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  dg.add_stdfloat(get_margin());
-  get_half_extents_with_margin().write_datagram(dg);
+  BulletShape::write_datagram(manager, dg);
+
+  _half_extents.write_datagram(dg);
 }
 
 /**
@@ -113,13 +114,10 @@ make_from_bam(const FactoryParams &params) {
 void BulletBoxShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
   nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
 
-  PN_stdfloat margin = scan.get_stdfloat();
+  _half_extents.read_datagram(scan);
 
-  LVector3 half_extents;
-  half_extents.read_datagram(scan);
-
-  _shape = new btBoxShape(LVecBase3_to_btVector3(half_extents));
+  _shape = new btBoxShape(LVecBase3_to_btVector3(_half_extents));
   _shape->setUserPointer(this);
-  _shape->setMargin(margin);
 }

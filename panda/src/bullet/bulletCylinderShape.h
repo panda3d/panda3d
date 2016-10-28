@@ -24,6 +24,10 @@
  *
  */
 class EXPCL_PANDABULLET BulletCylinderShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletCylinderShape() : _shape(NULL), _half_extents(LVector3::zero()){}
+  LVector3 _half_extents;
 
 PUBLISHED:
   BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
@@ -41,6 +45,14 @@ public:
 
 private:
   btCylinderShape *_shape;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

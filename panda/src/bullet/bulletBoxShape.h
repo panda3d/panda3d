@@ -29,7 +29,8 @@
 class EXPCL_PANDABULLET BulletBoxShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletBoxShape() : _shape(NULL) {};
+  INLINE BulletBoxShape() : _shape(NULL), _half_extents(LVecBase3::zero()) {}
+  LVecBase3 _half_extents;
 
 PUBLISHED:
   BulletBoxShape(const LVecBase3 &halfExtents);

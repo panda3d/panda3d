@@ -28,7 +28,9 @@ INLINE BulletHeightfieldShape::
 BulletHeightfieldShape(const BulletHeightfieldShape &copy) :
   _shape(copy._shape),
   _num_rows(copy._num_rows),
-  _num_cols(copy._num_cols) {
+  _num_cols(copy._num_cols),
+  _max_height(copy._max_height),
+  _up(copy._up) {
 
   _data = new float[_num_rows * _num_cols];
   memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(float));
@@ -43,6 +45,8 @@ operator = (const BulletHeightfieldShape &copy) {
   _shape = copy._shape;
   _num_rows = copy._num_rows;
   _num_cols = copy._num_cols;
+  _max_height = copy._max_height;
+  _up = copy._up;
 
   _data = new float[_num_rows * _num_cols];
   memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(float));

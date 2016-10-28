@@ -26,6 +26,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletMinkowskiSumShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletMinkowskiSumShape(): _shape(NULL),_shape_a(NULL),_shape_b(NULL) {}
 
 PUBLISHED:
   BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b);
@@ -51,6 +54,17 @@ private:
 
   CPT(BulletShape) _shape_a;
   CPT(BulletShape) _shape_b;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist,
+                                BamReader *manager);
+  virtual bool require_fully_complete() const;
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

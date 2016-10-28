@@ -25,7 +25,7 @@ INLINE BulletConeShape::
  */
 INLINE BulletConeShape::
 BulletConeShape(const BulletConeShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape),_radius(copy._radius), _height(copy._height) {
 }
 
 /**
@@ -34,6 +34,8 @@ BulletConeShape(const BulletConeShape &copy) :
 INLINE void BulletConeShape::
 operator = (const BulletConeShape &copy) {
   _shape = copy._shape;
+  _radius = copy._radius;
+  _height = copy._height;
 }
 
 /**
