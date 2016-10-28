@@ -26,6 +26,10 @@
  *
  */
 class EXPCL_PANDABULLET BulletConvexPointCloudShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletConvexPointCloudShape();
+
 PUBLISHED:
   explicit BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale=LVecBase3(1.));
   explicit BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale=LVecBase3(1.));
@@ -42,6 +46,15 @@ public:
 
 private:
   btConvexPointCloudShape *_shape;
+  LVecBase3 _scale;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

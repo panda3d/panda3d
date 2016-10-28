@@ -53,6 +53,9 @@ private:
 
   PT(BulletTriangleMesh) _mesh;
 
+  // Stored temporarily during bam read.
+  PN_stdfloat _margin;
+
   bool _dynamic : 1;
   bool _compress : 1;
   bool _bvh : 1;

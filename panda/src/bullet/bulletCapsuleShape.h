@@ -24,6 +24,10 @@
  *
  */
 class EXPCL_PANDABULLET BulletCapsuleShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletCapsuleShape();
+
 PUBLISHED:
   explicit BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   INLINE BulletCapsuleShape(const BulletCapsuleShape &copy);
@@ -33,14 +37,27 @@ PUBLISHED:
   INLINE PN_stdfloat get_radius() const;
   INLINE PN_stdfloat get_half_height() const;
 
-  MAKE_PROPERTY(radius, get_radius);
-  MAKE_PROPERTY(half_height, get_half_height);
-
 public:
+  INLINE PN_stdfloat get_height() const;
+
   virtual btCollisionShape *ptr() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(radius, get_radius);
+  MAKE_PROPERTY(height, get_height);
 
 private:
   btCapsuleShape *_shape;
+  PN_stdfloat _radius;
+  PN_stdfloat _height;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

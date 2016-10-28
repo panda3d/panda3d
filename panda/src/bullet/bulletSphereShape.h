@@ -47,6 +47,7 @@ public:
 
 private:
   btSphereShape *_shape;
+  PN_stdfloat _radius;
 
 public:
   static void register_with_read_factory();

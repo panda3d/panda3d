@@ -29,7 +29,7 @@
 class EXPCL_PANDABULLET BulletBoxShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletBoxShape() : _shape(NULL) {};
+  INLINE BulletBoxShape();
 
 PUBLISHED:
   explicit BulletBoxShape(const LVecBase3 &halfExtents);
@@ -50,6 +50,7 @@ public:
 
 private:
   btBoxShape *_shape;
+  LVecBase3 _half_extents;
 
 public:
   static void register_with_read_factory();
