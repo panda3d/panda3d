@@ -179,9 +179,10 @@ static INT_PTR CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
     return FALSE;
   }
   return TRUE;
-}       
+}
 
-int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BOOL suppressPrompts) {
+int MaxEggImporter::
+DoImport(const TCHAR *name, ImpInterface *ii, Interface *i, BOOL suppressPrompts) {
   // Prompt the user with our dialogbox.
   if (!DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_IMPORT_DLG),
                       i->GetMAXHWnd(), ImportDlgProc, (LPARAM)this)) {
@@ -190,13 +191,23 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
 
   std::ostringstream log;
   Notify::ptr()->set_ostream_ptr(&log, false);
+
+#ifdef _UNICODE
+  char sname[2048];
+  sname[2047] = 0;
+  wcstombs(sname, name, 2047);
+  bool ok = MaxLoadEggFile(sname, _merge ? true:false, _importmodel ? true:false, _importanim ? true:false);
+#else
   bool ok = MaxLoadEggFile(name, _merge ? true:false, _importmodel ? true:false, _importanim ? true:false);
+#endif
+
   string txt = log.str();
   if (txt != "") {
-    MessageBox(NULL, txt.c_str(), "Panda3D Importer", MB_OK);
-  } else {
-    if (!ok) MessageBox(NULL, "Import Failed, unknown reason\n", "Panda3D Importer", MB_OK);
+    MessageBoxA(NULL, txt.c_str(), "Panda3D Importer", MB_OK);
+  } else if (!ok) {
+    MessageBoxA(NULL, "Import Failed, unknown reason\n", "Panda3D Importer", MB_OK);
   }
+
   Notify::ptr()->set_ostream_ptr(NULL, false);
   return 1;
 }
