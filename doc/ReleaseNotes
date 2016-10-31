@@ -45,6 +45,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix rare X11 .ico cursor bug; also now supports PNG-compressed icons
 * Add keyword argument support to make() methods such as Shader.make()
 * Fix compilation errors with Bullet 2.84
+* Fix exception when trying to pickle NodePathCollection objects
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
