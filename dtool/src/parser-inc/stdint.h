@@ -33,25 +33,25 @@ using uint16_t = unsigned short int;
 using uint32_t = unsigned int;
 using uint64_t = unsigned long long int;
 
-using int_least8_t = int_8_t;
-using int_least16_t = int_16_t;
-using int_least32_t = int_32_t;
-using int_least64_t = int_64_t;
+using int_least8_t = int8_t;
+using int_least16_t = int16_t;
+using int_least32_t = int32_t;
+using int_least64_t = int64_t;
 
-using uint_least8_t = uint_8_t;
-using uint_least16_t = uint_16_t;
-using uint_least32_t = uint_32_t;
-using uint_least64_t = uint_64_t;
+using uint_least8_t = uint8_t;
+using uint_least16_t = uint16_t;
+using uint_least32_t = uint32_t;
+using uint_least64_t = uint64_t;
 
-using int_fast8_t = int_8_t;
-using int_fast16_t = int_16_t;
-using int_fast32_t = int_32_t;
-using int_fast64_t = int_64_t;
+using int_fast8_t = int8_t;
+using int_fast16_t = int16_t;
+using int_fast32_t = int32_t;
+using int_fast64_t = int64_t;
 
-using uint_fast8_t = uint_8_t;
-using uint_fast16_t = uint_16_t;
-using uint_fast32_t = uint_32_t;
-using uint_fast64_t = uint_64_t;
+using uint_fast8_t = uint8_t;
+using uint_fast16_t = uint16_t;
+using uint_fast32_t = uint32_t;
+using uint_fast64_t = uint64_t;
 
 #if __WORDSIZE == 64
 using intptr_t = int64_t;
