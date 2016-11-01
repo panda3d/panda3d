@@ -20,6 +20,8 @@
 #include "py_panda.h"
 #include "texture.h"
 
+#ifdef HAVE_PYTHON
+
 /**
  * This class defines the extension methods for Texture, which are
  * called instead of any C++ methods with the same prototype.
@@ -31,6 +33,8 @@ public:
                      size_t page_size = 0);
   void set_ram_image_as(PyObject *image, const string &provided_format);
 };
+
+#endif  // HAVE_PYTHON
 
 #endif  // CPPPARSER
 

@@ -20,25 +20,45 @@
 #define __WORDSIZE 32
 #endif
 
-typedef signed char int8_t;
-typedef short int int16_t;
-typedef int int32_t;
-typedef long long int int64_t;
+using intmax_t = long long int;
+using uintmax_t = unsigned long long int;
 
-typedef unsigned char uint8_t;
-typedef unsigned short int uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned long long int uint64_t;
+using int8_t = signed char;
+using int16_t = short int;
+using int32_t = int;
+using int64_t = long long int;
 
-typedef long long int intmax_t;
-typedef unsigned long long int uintmax_t;
+using uint8_t = unsigned char;
+using uint16_t = unsigned short int;
+using uint32_t = unsigned int;
+using uint64_t = unsigned long long int;
+
+using int_least8_t = int8_t;
+using int_least16_t = int16_t;
+using int_least32_t = int32_t;
+using int_least64_t = int64_t;
+
+using uint_least8_t = uint8_t;
+using uint_least16_t = uint16_t;
+using uint_least32_t = uint32_t;
+using uint_least64_t = uint64_t;
+
+using int_fast8_t = int8_t;
+using int_fast16_t = int16_t;
+using int_fast32_t = int32_t;
+using int_fast64_t = int64_t;
+
+using uint_fast8_t = uint8_t;
+using uint_fast16_t = uint16_t;
+using uint_fast32_t = uint32_t;
+using uint_fast64_t = uint64_t;
 
 #if __WORDSIZE == 64
-typedef int64_t intptr_t;
-typedef uint64_t uintptr_t;
+using intptr_t = int64_t;
+using uintptr_t = uint64_t;
 #else
-typedef int32_t intptr_t;
-typedef uint32_t uintptr_t;
+using intptr_t = int32_t;
+using uintptr_t = uint32_t;
 #endif
 
 #endif
