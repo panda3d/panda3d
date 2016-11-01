@@ -13,6 +13,8 @@
 
 #include "texture_ext.h"
 
+#ifdef HAVE_PYTHON
+
 #ifndef CPPPARSER
 extern Dtool_PyTypedObject Dtool_PointerToArray_unsigned_char;
 extern Dtool_PyTypedObject Dtool_ConstPointerToArray_unsigned_char;
@@ -145,3 +147,5 @@ set_ram_image_as(PyObject *image, const string &provided_format) {
 
   Dtool_Raise_ArgTypeError(image, 0, "Texture.set_ram_image_as", "CPTA_uchar or buffer");
 }
+
+#endif  // HAVE_PYTHON
