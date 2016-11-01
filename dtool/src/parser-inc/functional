@@ -20,6 +20,7 @@
 #ifndef FUNCTIONAL_H
 #define FUNCTIONAL_H
 
+#include <stddef.h>
 
 namespace std {
 

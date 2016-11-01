@@ -45,10 +45,6 @@ inline namespace std {
 #define NULL ((void *)0)
 #endif
 
-struct nullptr_t {};
-#define nullptr NULL
-
-
 // One day, we might extend interrogate to be able to parse this,
 // but we currently don't need it.
 #define alignas(x)
