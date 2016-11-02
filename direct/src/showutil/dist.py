@@ -19,7 +19,8 @@ class build(distutils.command.build.build):
     def run(self):
         distutils.command.build.build.run(self)
         basename = os.path.abspath(os.path.join(self.build_base, self.distribution.get_fullname()))
-        startfile = self.distribution.mainfile
+        gamedir = self.distribution.game_dir
+        startfile = os.path.join(gamedir, self.distribution.mainfile)
 
         if not os.path.exists(self.build_base):
             os.makedirs(self.build_base)
@@ -30,7 +31,6 @@ class build(distutils.command.build.build):
         freezer.done(addStartupModules=True)
         freezer.generateRuntimeFromStub(basename)
 
-        gamedir = self.distribution.game_dir
         for item in os.listdir(gamedir):
             if item in ('__pycache__', startfile):
                 continue
