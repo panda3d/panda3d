@@ -55,7 +55,7 @@ public:
 
   Filename _filename;
   Filename _filename_as_referenced;
-  Source _source;
+  mutable Source _source;
   mutable bool _pragma_once;
 };
 
