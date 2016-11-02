@@ -6298,6 +6298,15 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   TargetAdd('ai.pyd', opts=['PYTHON'])
 
 #
+# DIRECTORY: pandatool/src/deploy-stub
+#
+if True: # TODO
+    OPTS=['DIR:pandatool/src/deploy-stub', 'BUILDING:DEPLOYSTUB', 'PYTHON']
+    TargetAdd('deploy-stub.obj', opts=OPTS, input='deploy-stub.c')
+    TargetAdd('deploy-stub.exe', input='deploy-stub.obj')
+    TargetAdd('deploy-stub.exe', opts=['PYTHON'])
+
+#
 # Generate the models directory and samples directory
 #
 
