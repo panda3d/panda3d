@@ -128,10 +128,10 @@ namespace std {
   public :
     // types
     typedef T type;
-    typedef /*Return type of T*/   result_type;      // not always defined
-    typedef /*Single argument of T*/ argument_type;    // not always defined
-    typedef /*1st argument of T*/  first_argument_type;  // not always defined
-    typedef /*2nd argument of T*/  second_argument_type; // not always defined
+    typedef void   result_type;      // not always defined
+    typedef void argument_type;    // not always defined
+    typedef void  first_argument_type;  // not always defined
+    typedef void  second_argument_type; // not always defined
   };
 
   template<class T> struct is_bind_expression {};
@@ -141,7 +141,7 @@ namespace std {
 
   // template<class> class function; // undefined
    
-  template<class R /* , class... ArgTypes */ >
+  template< class R, class... ArgTypes >
   class function {
   public:
     typedef R result_type;
