@@ -2401,7 +2401,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   cpptype = TypeManager::resolve_type(cpptype)->as_struct_type();
   assert(cpptype != (CPPStructType *)NULL);
-  bool has_virt_methods = cpptype->check_virtual();
+  bool has_virt_methods = cpptype->is_polymorphic();
 
   switch (cpptype->_type) {
   case CPPExtensionType::T_class:
@@ -2501,7 +2501,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           // (For many compilers, this does not require a pointer change.)
           generate_casts = true;
 
-        } else if (has_virt_methods && (base_type->as_struct_type() == (CPPStructType *)NULL || !base_type->as_struct_type()->check_virtual())) {
+        } else if (has_virt_methods && (base_type->as_struct_type() == (CPPStructType *)NULL || !base_type->as_struct_type()->is_polymorphic())) {
           // Finally, if this class has virtual methods, but its parent
           // doesn't, then we have to upcast (because this class will require
           // space for a virtual function table pointer, while the parent
@@ -2651,7 +2651,11 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     }
   }
 
-  if ((itype._flags & InterrogateType::F_inherited_destructor) != 0) {
+  if (!cpptype->is_destructible()) {
+    // There's no way to destruct the type.
+    itype._destructor = 0;
+
+  } else if ((itype._flags & InterrogateType::F_inherited_destructor) != 0) {
     // If we have inherited our virtual destructor from our base class, go
     // ahead and assign the same function index.
     assert(!itype._derivations.empty());

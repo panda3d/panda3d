@@ -18,6 +18,7 @@
 #include "cppIdentifier.h"
 #include "cppTemplateScope.h"
 #include "cppTemplateParameterList.h"
+#include "cppClassTemplateParameter.h"
 #include "cppConstType.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
@@ -416,7 +417,14 @@ get_next_token0() {
     int token_type = IDENTIFIER;
     CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope);
     if (decl != NULL && decl->as_type() != NULL) {
-      token_type = TYPENAME_IDENTIFIER;
+      // We need to see type pack template parameters as a different type of
+      // identifier to resolve a parser ambiguity.
+      CPPClassTemplateParameter *ctp = decl->as_class_template_parameter();
+      if (ctp && ctp->_packed) {
+        token_type = TYPEPACK_IDENTIFIER;
+      } else {
+        token_type = TYPENAME_IDENTIFIER;
+      }
     }
 
     _last_token_loc = loc;
@@ -2451,11 +2459,27 @@ check_keyword(const string &name) {
   if (name == "friend") return KW_FRIEND;
   if (name == "for") return KW_FOR;
   if (name == "goto") return KW_GOTO;
+  if (name == "__has_virtual_destructor") return KW_HAS_VIRTUAL_DESTRUCTOR;
   if (name == "if") return KW_IF;
   if (name == "inline") return KW_INLINE;
   if (name == "__inline") return KW_INLINE;
   if (name == "__inline__") return KW_INLINE;
   if (name == "int") return KW_INT;
+  if (name == "__is_abstract") return KW_IS_ABSTRACT;
+  if (name == "__is_base_of") return KW_IS_BASE_OF;
+  if (name == "__is_class") return KW_IS_CLASS;
+  if (name == "__is_constructible") return KW_IS_CONSTRUCTIBLE;
+  if (name == "__is_convertible_to") return KW_IS_CONVERTIBLE_TO;
+  if (name == "__is_destructible") return KW_IS_DESTRUCTIBLE;
+  if (name == "__is_empty") return KW_IS_EMPTY;
+  if (name == "__is_enum") return KW_IS_ENUM;
+  if (name == "__is_final") return KW_IS_FINAL;
+  if (name == "__is_fundamental") return KW_IS_FUNDAMENTAL;
+  if (name == "__is_pod") return KW_IS_POD;
+  if (name == "__is_polymorphic") return KW_IS_POLYMORPHIC;
+  if (name == "__is_standard_layout") return KW_IS_STANDARD_LAYOUT;
+  if (name == "__is_trivial") return KW_IS_TRIVIAL;
+  if (name == "__is_union") return KW_IS_UNION;
   if (name == "long") return KW_LONG;
   if (name == "__make_map_property") return KW_MAKE_MAP_PROPERTY;
   if (name == "__make_property") return KW_MAKE_PROPERTY;
@@ -2490,6 +2514,7 @@ check_keyword(const string &name) {
   if (name == "typedef") return KW_TYPEDEF;
   if (name == "typeid") return KW_TYPEID;
   if (name == "typename") return KW_TYPENAME;
+  if (name == "__underlying_type") return KW_UNDERLYING_TYPE;
   if (name == "union") return KW_UNION;
   if (name == "unsigned") return KW_UNSIGNED;
   if (name == "using") return KW_USING;
@@ -2751,7 +2776,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   _parsing_template_params = true;
 
   CPPToken token = internal_get_next_token();
-  if (token._token == '>') {
+  if (token._token == '>' || token._token == 0) {
     _parsing_template_params = false;
   } else {
     _saved_tokens.push_back(token);
@@ -2760,36 +2785,53 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   CPPTemplateParameterList *actual_params = new CPPTemplateParameterList;
 
   for (pi = formal_params._parameters.begin();
-       pi != formal_params._parameters.end() && _parsing_template_params;
-       ++pi) {
+       pi != formal_params._parameters.end() && _parsing_template_params;) {
     CPPToken token = peek_next_token();
     YYLTYPE loc = token._lloc;
 
     CPPDeclaration *decl = (*pi);
-    if (decl->as_type()) {
+    CPPClassTemplateParameter *param = decl->as_class_template_parameter();
+    CPPInstance *inst = decl->as_instance();
+    if (param) {
       // Parse a typename template parameter.
       _saved_tokens.push_back(CPPToken(START_TYPE));
       CPPType *type = ::parse_type(this, current_scope, global_scope);
       if (type == NULL) {
         loc.last_line = get_line_number();
         loc.last_column = get_col_number() - 1;
-        warning("Invalid type", loc);
+        warning("invalid type", loc);
         skip_to_end_nested();
         type = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
       }
       actual_params->_parameters.push_back(type);
-    } else {
+
+      // If this is a variadic template, keep reading using this parameter.
+      if (!param->_packed) {
+        ++pi;
+      }
+    } else if (inst) {
       // Parse a constant expression template parameter.
       _saved_tokens.push_back(CPPToken(START_CONST_EXPR));
       CPPExpression *expr = parse_const_expr(this, current_scope, global_scope);
       if (expr == NULL) {
         loc.last_line = get_line_number();
         loc.last_column = get_col_number() - 1;
-        warning("Invalid expression", loc);
+        warning("invalid expression", loc);
         skip_to_end_nested();
         expr = new CPPExpression(0);
       }
       actual_params->_parameters.push_back(expr);
+
+      // If this is a variadic template, keep reading using this parameter.
+      if ((inst->_storage_class & CPPInstance::SC_parameter_pack) == 0) {
+        ++pi;
+      }
+    } else {
+      loc.last_line = get_line_number();
+      loc.last_column = get_col_number() - 1;
+      warning("invalid template parameter", loc);
+      skip_to_end_nested();
+      ++pi;
     }
 
     _state = S_nested;
