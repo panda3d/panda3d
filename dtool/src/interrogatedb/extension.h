@@ -47,14 +47,6 @@ invoke_extension(T *ptr) {
   return ext;
 }
 
-template<class T>
-inline Extension<T>
-invoke_extension(T &ptr) {
-  Extension<T> ext;
-  ext._this = &ptr;
-  return ext;
-}
-
 /**
  * The const version of the above function.
  */
@@ -63,14 +55,6 @@ inline const Extension<T>
 invoke_extension(const T *ptr) {
   Extension<T> ext;
   ext._this = (T *) ptr;
-  return ext;
-}
-
-template<class T>
-inline const Extension<T>
-invoke_extension(const T &ptr) {
-  Extension<T> ext;
-  ext._this = (T *) &ptr;
   return ext;
 }
 
