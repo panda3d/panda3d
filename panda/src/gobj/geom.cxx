@@ -105,6 +105,24 @@ make_copy() const {
 }
 
 /**
+ * Returns the minimum (i.e.  most dynamic) usage_hint among all of the
+ * individual GeomPrimitives that have been added to the geom.
+ * @deprecated  This is no longer very useful.
+ */
+Geom::UsageHint Geom::
+get_usage_hint() const {
+  CDReader cdata(_cycler);
+  GeomEnums::UsageHint hint = UH_unspecified;
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin();
+       pi != cdata->_primitives.end();
+       ++pi) {
+    hint = min(hint, (*pi).get_read_pointer()->get_usage_hint());
+  }
+  return hint;
+}
+
+/**
  * Changes the UsageHint hint for all of the primitives on this Geom to the
  * same value.  See get_usage_hint().
  *
@@ -115,7 +133,6 @@ void Geom::
 set_usage_hint(Geom::UsageHint usage_hint) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  cdata->_usage_hint = usage_hint;
 
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
@@ -304,7 +321,6 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   }
 
   reset_geom_rendering(cdata);
-  cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
   mark_internal_bounds_stale(cdata);
@@ -346,7 +362,6 @@ add_primitive(const GeomPrimitive *primitive) {
   }
 
   reset_geom_rendering(cdata);
-  cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
   mark_internal_bounds_stale(cdata);
@@ -369,7 +384,6 @@ remove_primitive(int i) {
     cdata->_shade_model = SM_uniform;
   }
   reset_geom_rendering(cdata);
-  cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
   mark_internal_bounds_stale(cdata);
@@ -1154,8 +1168,6 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
      const GeomVertexData *vertex_data, bool force,
      Thread *current_thread) const {
   GeomPipelineReader geom_reader(this, current_thread);
-  geom_reader.check_usage_hint();
-
   GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
 
@@ -1378,22 +1390,6 @@ check_will_be_valid(const GeomVertexData *vertex_data) const {
   }
 
   return true;
-}
-
-/**
- * Recomputes the minimum usage_hint.
- */
-void Geom::
-reset_usage_hint(Geom::CData *cdata) {
-  cdata->_usage_hint = UH_unspecified;
-  Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin();
-       pi != cdata->_primitives.end();
-       ++pi) {
-    cdata->_usage_hint = min(cdata->_usage_hint,
-                             (*pi).get_read_pointer()->get_usage_hint());
-  }
-  cdata->_got_usage_hint = true;
 }
 
 /**
@@ -1670,46 +1666,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // instead, we rederive it in finalize().
   scan.get_uint16();
 
-  _got_usage_hint = false;
   _modified = Geom::get_next_modified();
 
   _bounds_type = BoundingVolume::BT_default;
   if (manager->get_file_minor_ver() >= 19) {
     _bounds_type = (BoundingVolume::BoundsType)scan.get_uint8();
   }
-}
-
-/**
- * Ensures that the Geom's usage_hint cache has been computed.
- */
-void GeomPipelineReader::
-check_usage_hint() const {
-  if (!_cdata->_got_usage_hint) {
-    // We'll need to get a fresh pointer, since another thread might already
-    // have modified the pointer on the object since we queried it.
-    {
-#ifdef DO_PIPELINING
-      unref_delete((CycleData *)_cdata);
-#endif
-      Geom::CDWriter fresh_cdata(((Geom *)_object)->_cycler,
-                                 false, _current_thread);
-      ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
-#ifdef DO_PIPELINING
-      _cdata->ref();
-#endif
-      if (!fresh_cdata->_got_usage_hint) {
-        // The cache is still stale.  We have to do the work of freshening it.
-        ((Geom *)_object)->reset_usage_hint(fresh_cdata);
-        nassertv(fresh_cdata->_got_usage_hint);
-      }
-
-      // When fresh_cdata goes out of scope, its write lock is released, and
-      // _cdata reverts to our usual convention of an unlocked copy of the
-      // data.
-    }
-  }
-
-  nassertv(_cdata->_got_usage_hint);
 }
 
 /**

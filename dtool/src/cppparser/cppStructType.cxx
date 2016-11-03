@@ -127,15 +127,153 @@ is_abstract() const {
 }
 
 /**
+ * Returns true if this struct declaration is a base class of the other given
+ * class, or the same class.
+ */
+bool CPPStructType::
+is_base_of(const CPPStructType *other) const {
+  if (this == other) {
+    return true;
+  }
+  Derivation::const_iterator di;
+  for (di = other->_derivation.begin(); di != other->_derivation.end(); ++di) {
+    const CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL && is_base_of(base)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Returns true if this struct declaration defines no non-static data members
+ * other than bit-fields of size 0, no virtual functions, no virtual base
+ * classes, and no non-empty base classes, and is not a union.
+ */
+bool CPPStructType::
+is_empty() const {
+  if (_type == T_union) {
+    return false;
+  }
+
+  if (check_virtual()) {
+    return false;
+  }
+
+  // Make sure all base classes are empty and non-virtual.
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if ((*di)._is_virtual || (base != NULL && !base->is_empty())) {
+      return false;
+    }
+  }
+
+  // Make sure there are no non-static data members.
+  CPPScope::Variables::const_iterator vi;
+  for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
+    CPPInstance *instance = (*vi).second;
+    assert(instance != NULL);
+
+    if (instance->_storage_class & CPPInstance::SC_static) {
+      // Static members don't count.
+      continue;
+    }
+
+    // Only members with a bit width of 0 are okay.
+    if (instance->_bit_width != 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Returns true if this class or any of its base classes have virtual methods.
+ */
+bool CPPStructType::
+is_polymorphic() const {
+  if (_type == T_union) {
+    return false;
+  }
+  return check_virtual();
+}
+
+/**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPStructType::
+is_standard_layout() const {
+  assert(_scope != NULL);
+
+  CPPVisibility member_vis = V_unknown;
+
+  // Make sure all data members have the same vis and are standard layout.
+  CPPScope::Variables::const_iterator vi;
+  for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
+    CPPInstance *instance = (*vi).second;
+    assert(instance != NULL);
+
+    if (instance->_storage_class & CPPInstance::SC_static) {
+      // Static members don't count.
+      continue;
+    }
+
+    // Finally, check if the data member itself is standard layout.
+    assert(instance->_type != NULL);
+    if (!instance->_type->is_standard_layout()) {
+      return false;
+    }
+
+    if (member_vis == V_unknown) {
+      // The first non-static data member may not be a base class.
+      CPPStructType *struct_type = instance->_type->remove_cv()->as_struct_type();
+      if (struct_type != NULL && struct_type->is_base_of(this)) {
+        return false;
+      }
+      member_vis = instance->_vis;
+
+    } else if (member_vis != instance->_vis) {
+      // All members need to have the same access control.
+      return false;
+    }
+  }
+
+  // Make sure all base classes are standard-layout and non-virtual.
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if ((*di)._is_virtual) {
+      return false;
+    }
+
+    // If this class had instance members, all base classes need to be empty.
+    if (member_vis != V_unknown) {
+      if (!base->is_empty()) {
+        return false;
+      }
+    } else {
+      if (!base->is_standard_layout()) {
+        return false;
+      }
+    }
+  }
+
+  // Make sure we have no virtual functions.
+  return !check_virtual();
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPStructType::
 is_trivial() const {
-  // Make sure all base classes are trivial.
+  // Make sure all base classes are trivial and non-virtual.
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL && !base->is_trivial()) {
+    if ((*di)._is_virtual || (base != NULL && !base->is_trivial())) {
       return false;
     }
   }
@@ -166,7 +304,7 @@ is_trivial() const {
     }
   }
 
-  // Now look for functions that are virtual or condestructors.
+  // Now look for functions that are virtual or con/destructors.
   bool is_default_constructible = true;
   CPPScope::Functions::const_iterator fi;
   for (fi = _scope->_functions.begin(); fi != _scope->_functions.end(); ++fi) {
@@ -193,8 +331,8 @@ is_trivial() const {
       if (ftype->_flags & (CPPFunctionType::F_destructor |
                            CPPFunctionType::F_move_constructor |
                            CPPFunctionType::F_copy_constructor)) {
-        // User-provided destructors and copymove constructors are not trivial
-        // unless they are defaulted (and not virtual).
+        // User-provided destructors and copy/move constructors are not
+        // trivial unless they are defaulted (and not virtual).
         return false;
       }
 
@@ -221,6 +359,62 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be constructed using the given argument.
+ * This implementation is rudimentary, as it does not attempt to follow all of
+ * the implicit type conversion rules, but it is still useful.
+ */
+bool CPPStructType::
+is_constructible(const CPPType *given_type) const {
+  // Does the type match the copy constructor or move constructor?
+  CPPType *base_type = ((CPPType *)given_type)->remove_reference();
+  if (is_equivalent(*base_type->remove_cv())) {
+    const CPPReferenceType *ref_type = given_type->as_reference_type();
+    if (ref_type == NULL ||
+        ref_type->_value_category == CPPReferenceType::VC_rvalue) {
+      return is_move_constructible(V_public);
+    } else {
+      return is_copy_constructible(V_public);
+    }
+  }
+
+  // Check for a different constructor.
+  CPPFunctionGroup *fgroup = get_constructor();
+  if (fgroup != (CPPFunctionGroup *)NULL) {
+    CPPFunctionGroup::Instances::const_iterator ii;
+    for (ii = fgroup->_instances.begin();
+        ii != fgroup->_instances.end();
+        ++ii) {
+      CPPInstance *inst = (*ii);
+      assert(inst->_type != (CPPType *)NULL);
+
+      CPPFunctionType *ftype = inst->_type->as_function_type();
+      assert(ftype != (CPPFunctionType *)NULL);
+
+      CPPParameterList *params = ftype->_parameters;
+      if (params->_parameters.size() == 1 && !params->_includes_ellipsis) {
+        CPPType *param_type = params->_parameters[0]->_type->remove_reference();
+
+        if (!param_type->is_const() && base_type->is_const()) {
+          // Can't pass a const object to a function taking a non-const.
+          continue;
+        }
+
+        // It's deleted, anyhow.
+        if ((inst->_storage_class & CPPInstance::SC_deleted) != 0) {
+          continue;
+        }
+
+        if (param_type->is_equivalent(*base_type)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
  * Returns true if the type is default-constructible.
  */
 bool CPPStructType::
@@ -234,6 +428,14 @@ is_default_constructible() const {
 bool CPPStructType::
 is_copy_constructible() const {
   return is_copy_constructible(V_public);
+}
+
+/**
+ * Returns true if the type is destructible.
+ */
+bool CPPStructType::
+is_destructible() const {
+  return is_destructible(V_public);
 }
 
 /**
@@ -400,6 +602,139 @@ is_copy_constructible(CPPVisibility min_vis) const {
 }
 
 /**
+ * Returns true if the type is move-constructible.
+ */
+bool CPPStructType::
+is_move_constructible(CPPVisibility min_vis) const {
+  CPPInstance *constructor = get_move_constructor();
+  if (constructor != (CPPInstance *)NULL) {
+    // It has a user-declared move constructor.
+    if (constructor->_vis > min_vis) {
+      // Inaccessible move constructor.
+      return false;
+    }
+
+    if (constructor->_storage_class & CPPInstance::SC_deleted) {
+      // It is deleted.
+      return false;
+    }
+
+    return true;
+  }
+
+  return is_copy_constructible(min_vis);
+}
+
+/**
+ * Returns true if the type is destructible.
+ */
+bool CPPStructType::
+is_destructible(CPPVisibility min_vis) const {
+  // Do we have an explicit destructor?
+  CPPInstance *destructor = get_destructor();
+  if (destructor != (CPPInstance *)NULL) {
+    if (destructor->_vis > min_vis) {
+      // Yes, but it's inaccessible.
+      return false;
+    }
+
+    if (destructor->_storage_class & CPPInstance::SC_deleted) {
+      // Yes, but it's explicitly been deleted.
+      return false;
+    }
+
+    return true;
+  }
+
+  // Make sure all base classes are destructible.
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL && !base->is_destructible(V_protected)) {
+      return false;
+    }
+  }
+
+  assert(_scope != NULL);
+
+  // Make sure all members are destructible.
+  CPPScope::Variables::const_iterator vi;
+  for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
+    CPPInstance *instance = (*vi).second;
+    assert(instance != NULL);
+
+    if (instance->_storage_class & CPPInstance::SC_static) {
+      // Static members don't count.
+      continue;
+    }
+
+    // If the data member is not destructible, no go.
+    assert(instance->_type != NULL);
+    if (!instance->_type->is_destructible()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Returns true if variables of this type may be implicitly converted to
+ * the other type.
+ */
+bool CPPStructType::
+is_convertible_to(const CPPType *other) const {
+  if (CPPType::is_convertible_to(other)) {
+    return true;
+  }
+
+  // Check all typecast operators to see whether we can cast to a type that is
+  // convertible to the other type.
+  CPPScope::Functions::const_iterator fi;
+  for (fi = _scope->_functions.begin(); fi != _scope->_functions.end(); ++fi) {
+    CPPFunctionGroup *fgroup = (*fi).second;
+
+    CPPFunctionGroup::Instances::const_iterator ii;
+    for (ii = fgroup->_instances.begin(); ii != fgroup->_instances.end(); ++ii) {
+      CPPInstance *inst = (*ii);
+
+      if (inst->_storage_class & (CPPInstance::SC_deleted | CPPInstance::SC_static | CPPInstance::SC_explicit)) {
+        // Exclude static/deleted/explicit methods.
+        continue;
+      }
+
+      // Also, the instance needs to be publicly visible.
+      if (inst->_vis > V_public) {
+        continue;
+      }
+
+      assert(inst->_type != (CPPType *)NULL);
+      CPPFunctionType *ftype = inst->_type->as_function_type();
+      assert(ftype != (CPPFunctionType *)NULL);
+
+      if (ftype->_return_type != NULL &&
+          (ftype->_flags & CPPFunctionType::F_operator_typecast) != 0) {
+        // Yes, this is a typecast operator.  Test using the return type.
+        if (ftype->_return_type->is_convertible_to(other)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // Check whether any of the base classes are convertible.
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL && (*di)._vis <= V_public && !base->is_convertible_to(other)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Ensures all functions are correctly marked with the "virtual" flag if they
  * are truly virtual by virtue of inheritance, rather than simply being
  * labeled virtual.
@@ -418,6 +753,30 @@ check_virtual() const {
   VFunctions funcs;
   get_virtual_funcs(funcs);
   return !funcs.empty();
+}
+
+/**
+ * Returns true if this class, or any of its base classes, has a virtual
+ * destructor.
+ */
+bool CPPStructType::
+has_virtual_destructor() const {
+  CPPInstance *destructor = get_destructor();
+  if (destructor != NULL) {
+    if (destructor->_storage_class & CPPInstance::SC_virtual) {
+      return true;
+    }
+  }
+
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL && base->has_virtual_destructor()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -459,7 +818,7 @@ get_constructor() const {
 
 /**
  * Returns the default constructor defined for the struct type, or NULL if
- * there is none.
+ * there is no user-declared constructor that takes 0 arguments.
  */
 CPPInstance *CPPStructType::
 get_default_constructor() const {
@@ -490,7 +849,7 @@ get_default_constructor() const {
 
 /**
  * Returns the copy constructor defined for the struct type, or NULL if no
- * copy constructor exists.
+ * user-declared copy constructor exists.
  */
 CPPInstance *CPPStructType::
 get_copy_constructor() const {
@@ -519,7 +878,7 @@ get_copy_constructor() const {
 
 /**
  * Returns the move constructor defined for the struct type, or NULL if no
- * move constructor exists.
+ * user-declared move constructor exists.
  */
 CPPInstance *CPPStructType::
 get_move_constructor() const {
@@ -548,7 +907,7 @@ get_move_constructor() const {
 
 /**
  * Returns the destructor defined for the struct type, if any, or NULL if no
- * destructor is found.
+ * user-declared destructor is found.
  */
 CPPInstance *CPPStructType::
 get_destructor() const {

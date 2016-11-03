@@ -3956,7 +3956,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 #endif
 
 #if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)  // Display lists not supported by OpenGL ES.
-  if (geom_reader->get_usage_hint() == Geom::UH_static &&
+  if (/*geom_reader->get_usage_hint() == Geom::UH_static &&*/
       _data_reader->get_usage_hint() == Geom::UH_static &&
       display_lists) {
     // If the geom claims to be totally static, try to build it into a display
