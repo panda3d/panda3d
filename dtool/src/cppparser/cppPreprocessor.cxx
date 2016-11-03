@@ -951,7 +951,7 @@ internal_get_next_token() {
     case ',':
       if (_paren_nesting <= 0) {
         _state = S_end_nested;
-        return CPPToken::eof();
+        return CPPToken(0, loc);
       }
       break;
 
@@ -959,7 +959,7 @@ internal_get_next_token() {
       if (_paren_nesting <= 0) {
         _parsing_template_params = false;
         _state = S_end_nested;
-        return CPPToken::eof();
+        return CPPToken(0, loc);
       }
     }
   }
@@ -1639,7 +1639,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
       _last_c = '\0';
 
       // If it was explicitly named on the command-line, mark it S_local.
-      filename.make_absolute();
+      filename.make_canonical();
       if (_explicit_files.count(filename)) {
         source = CPPFile::S_local;
       }
