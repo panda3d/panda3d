@@ -89,9 +89,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPFunctionType *rep = new CPPFunctionType(*this);
-  rep->_return_type =
-    _return_type->substitute_decl(subst, current_scope, global_scope)
-    ->as_type();
+  if (_return_type != NULL) {
+    rep->_return_type =
+      _return_type->substitute_decl(subst, current_scope, global_scope)
+      ->as_type();
+  }
 
   rep->_parameters =
     _parameters->substitute_decl(subst, current_scope, global_scope);
@@ -264,6 +266,9 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
 
   if (_flags & F_const_method) {
     out << " const";
+  }
+  if (_flags & F_volatile_method) {
+    out << " volatile";
   }
   if (_flags & F_noexcept) {
     out << " noexcept";

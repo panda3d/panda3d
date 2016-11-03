@@ -13,6 +13,7 @@
 
 #include "cppArrayType.h"
 #include "cppExpression.h"
+#include "cppPointerType.h"
 
 /**
  *
@@ -64,6 +65,14 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPArrayType::
+is_standard_layout() const {
+  return _element_type->is_standard_layout();
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPArrayType::
@@ -76,7 +85,7 @@ is_trivial() const {
  */
 bool CPPArrayType::
 is_default_constructible() const {
-  return _element_type->is_default_constructible();
+  return _bounds != NULL && _element_type->is_default_constructible();
 }
 
 /**

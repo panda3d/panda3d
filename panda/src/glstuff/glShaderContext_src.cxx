@@ -2413,16 +2413,24 @@ update_shader_texture_bindings(ShaderContext *prev) {
       Texture *tex;
 
       const ShaderInput *sinp = _glgsg->_target_shader->get_shader_input(input._name);
-      if (sinp->get_value_type() == ShaderInput::M_texture_image) {
+      switch (sinp->get_value_type()) {
+      case ShaderInput::M_texture_image:
         param = (const ParamTextureImage *)sinp->get_param();
         tex = param->get_texture();
+        break;
 
-      } else if (sinp->get_value_type() == ShaderInput::M_texture) {
+      case ShaderInput::M_texture:
         // People find it convenient to be able to pass a texture without
         // further ado.
         tex = sinp->get_texture();
+        break;
 
-      } else {
+      case ShaderInput::M_invalid:
+        GLCAT.error()
+          << "Missing texture image binding input " << *input._name << "\n";
+        continue;
+
+      default:
         GLCAT.error()
           << "Mismatching type for parameter " << *input._name << ", expected texture image binding\n";
         continue;

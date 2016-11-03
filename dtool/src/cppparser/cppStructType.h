@@ -44,14 +44,26 @@ public:
   CPPScope *get_scope() const;
 
   bool is_abstract() const;
+  bool is_base_of(const CPPStructType *other) const;
+  bool is_empty() const;
+  bool is_polymorphic() const;
   bool check_virtual() const;
+  bool has_virtual_destructor() const;
   virtual bool is_fully_specified() const;
   virtual bool is_incomplete() const;
+  virtual bool is_standard_layout() const;
   virtual bool is_trivial() const;
+  virtual bool is_constructible(const CPPType *arg_type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_destructible() const;
   bool is_default_constructible(CPPVisibility min_vis) const;
   bool is_copy_constructible(CPPVisibility min_vis) const;
+  bool is_move_constructible(CPPVisibility min_vis) const;
+  bool is_destructible(CPPVisibility min_vis) const;
+  virtual bool is_convertible_to(const CPPType *other) const;
+
+  inline bool is_final() const { return _final; }
 
   CPPFunctionGroup *get_constructor() const;
   CPPInstance *get_default_constructor() const;

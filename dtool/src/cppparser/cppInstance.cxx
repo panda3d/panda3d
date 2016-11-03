@@ -82,6 +82,10 @@ CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
     // anyway.
   }
 
+  if (ii->_packed) {
+    _storage_class |= SC_parameter_pack;
+  }
+
   delete ii;
 }
 
@@ -353,11 +357,7 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
           CPPReferenceType *ref_type = param_type->as_reference_type();
 
           if (ref_type != NULL) {
-            param_type = ref_type->_pointing_at;
-
-            if (param_type->get_subtype() == CPPDeclaration::ST_const) {
-              param_type = param_type->as_const_type()->_wrapped_around;
-            }
+            param_type = ref_type->_pointing_at->remove_cv();
 
             if (class_name == param_type->get_simple_name()) {
               if (ref_type->_value_category == CPPReferenceType::VC_rvalue) {
@@ -562,6 +562,9 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   string name;
   if (_ident != NULL) {
     name = _ident->get_local_name(scope);
+  }
+  if (_storage_class & SC_parameter_pack) {
+    name = "..." + name;
   }
 
   if (_type->as_function_type()) {
