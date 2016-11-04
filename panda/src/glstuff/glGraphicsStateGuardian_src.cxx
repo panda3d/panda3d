@@ -1265,6 +1265,7 @@ reset() {
   _supports_depth_stencil = has_extension("GL_OES_packed_depth_stencil");
   _supports_depth24 = has_extension("GL_OES_depth24");
   _supports_depth32 = has_extension("GL_OES_depth32");
+  _supports_luminance_texture = true;
 
 #elif defined(OPENGLES)
   if (is_at_least_gles_version(3, 0)) {
@@ -1285,12 +1286,15 @@ reset() {
     _supports_depth24 = has_extension("GL_OES_depth24");
     _supports_depth32 = has_extension("GL_OES_depth32");
   }
+  _supports_luminance_texture = true;
 #else
   _supports_depth_texture = (is_at_least_gl_version(1, 4) ||
                              has_extension("GL_ARB_depth_texture"));
   _supports_depth_stencil = (is_at_least_gl_version(3, 0) ||
                              has_extension("GL_ARB_framebuffer_object") ||
                              has_extension("GL_EXT_packed_depth_stencil"));
+  _supports_luminance_texture = (!is_at_least_gl_version(4, 0) ||
+                                 !core_profile);
 #endif
 
 #ifdef OPENGLES_2
@@ -12836,9 +12840,8 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
   }
 
   // OK, get the noncompressed size.
-  GLint red_size, green_size, blue_size, alpha_size,
-    luminance_size, intensity_size;
-  GLint depth_size = 0;
+  GLint red_size, green_size, blue_size, alpha_size;
+  GLint depth_size = 0, luminance_size = 0, intensity_size = 0;
   glGetTexLevelParameteriv(page_target, 0,
                            GL_TEXTURE_RED_SIZE, &red_size);
   glGetTexLevelParameteriv(page_target, 0,
@@ -12847,10 +12850,12 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
                            GL_TEXTURE_BLUE_SIZE, &blue_size);
   glGetTexLevelParameteriv(page_target, 0,
                            GL_TEXTURE_ALPHA_SIZE, &alpha_size);
-  glGetTexLevelParameteriv(page_target, 0,
-                           GL_TEXTURE_LUMINANCE_SIZE, &luminance_size);
-  glGetTexLevelParameteriv(page_target, 0,
-                           GL_TEXTURE_INTENSITY_SIZE, &intensity_size);
+  if (_supports_luminance_texture) {
+    glGetTexLevelParameteriv(page_target, 0,
+                             GL_TEXTURE_LUMINANCE_SIZE, &luminance_size);
+    glGetTexLevelParameteriv(page_target, 0,
+                             GL_TEXTURE_INTENSITY_SIZE, &intensity_size);
+  }
   if (_supports_depth_texture) {
     glGetTexLevelParameteriv(page_target, 0,
                              GL_TEXTURE_DEPTH_SIZE, &depth_size);
