@@ -42,14 +42,13 @@ is_fully_specified() const {
 void CPPClassTemplateParameter::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (complete) {
-    if (_ident != NULL) {
-      out << "class ";
-      _ident->output(out, scope);
-    } else {
-      out << "class";
-    }
+    out << "class";
     if (_packed) {
       out << "...";
+    }
+    if (_ident != NULL) {
+      out << " ";
+      _ident->output(out, scope);
     }
     if (_default_type) {
       out << " = ";

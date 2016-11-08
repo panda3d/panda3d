@@ -5426,7 +5426,16 @@ yyreduce:
   case 174:
 #line 1619 "dtool/src/cppparser/cppBison.yxx" /* yacc.c:1646  */
     {
-  push_scope((yyvsp[-1].u.inst_ident)->get_scope(current_scope, global_scope));
+  // Create a scope for this function (in case it is a function)
+  CPPScope *scope = new CPPScope((yyvsp[-1].u.inst_ident)->get_scope(current_scope, global_scope),
+                                 CPPNameComponent(""), V_private);
+
+  // It still needs to be able to pick up any template arguments, if this is
+  // a definition for a method template.  Add a fake "using" declaration to
+  // accomplish this.
+  scope->_using.insert(current_scope);
+
+  push_scope(scope);
 }
 #line 5432 "built/tmp/cppBison.yxx.c" /* yacc.c:1646  */
     break;
