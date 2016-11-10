@@ -1,12 +1,14 @@
 import os
-import shutil
 import sys
 
-import distutils.dist
 import distutils.command.build
 import distutils.core
+import distutils.dir_util
+import distutils.dist
+import distutils.file_util
 
 from direct.showutil import FreezeTool
+import panda3d.core as p3d
 
 class Distribution(distutils.dist.Distribution):
     def __init__(self, attrs):
@@ -18,40 +20,45 @@ class Distribution(distutils.dist.Distribution):
 class build(distutils.command.build.build):
     def run(self):
         distutils.command.build.build.run(self)
-        builddir = self.build_base
-        basename = os.path.abspath(os.path.join(builddir, self.distribution.get_fullname()))
-        gamedir = self.distribution.game_dir
-        startfile = os.path.join(gamedir, self.distribution.mainfile)
+        platforms = [p3d.PandaSystem.get_platform()]
 
-        if not os.path.exists(builddir):
-            os.makedirs(builddir)
+        for platform in platforms:
+            builddir = os.path.join(self.build_base, platform)
 
-        freezer = FreezeTool.Freezer()
-        freezer.addModule('__main__', filename=startfile)
-        freezer.excludeModule('panda3d')
-        freezer.done(addStartupModules=True)
-        freezer.generateRuntimeFromStub(basename)
+            if os.path.exists(builddir):
+                distutils.dir_util.remove_tree(builddir)
+            distutils.dir_util.mkpath(builddir)
 
-        ignore_copy_list = [
-            '__pycache__',
-            self.distribution.mainfile,
-            *freezer.getAllModuleNames(),
-        ]
+            basename = os.path.abspath(os.path.join(builddir, self.distribution.get_fullname()))
+            gamedir = self.distribution.game_dir
+            startfile = os.path.join(gamedir, self.distribution.mainfile)
 
-        for item in os.listdir(gamedir):
-            src = os.path.join(gamedir, item)
-            dst = os.path.join(builddir, item)
+            freezer = FreezeTool.Freezer()
+            freezer.addModule('__main__', filename=startfile)
+            freezer.excludeModule('panda3d')
+            freezer.done(addStartupModules=True)
+            freezer.generateRuntimeFromStub(basename)
 
-            if item in ignore_copy_list:
-                print("Skip", src)
-                continue
+            ignore_copy_list = [
+                '__pycache__',
+                self.distribution.mainfile,
+                *freezer.getAllModuleNames(),
+            ]
 
-            if os.path.isdir(src):
-                print("Copy dir", src, dst)
-                shutil.copytree(src, dst)
-            else:
-                print("Copy file", src, dst)
-                shutil.copy(src, dst)
+            for item in os.listdir(gamedir):
+                src = os.path.join(gamedir, item)
+                dst = os.path.join(builddir, item)
+
+                if item in ignore_copy_list:
+                    print("skipping", src)
+                    continue
+
+                if os.path.isdir(src):
+                    #print("Copy dir", src, dst)
+                    distutils.dir_util.copy_tree(src, dst)
+                else:
+                    #print("Copy file", src, dst)
+                    distutils.file_util.copy_file(src, dst)
 
 
 def setup(**attrs):
