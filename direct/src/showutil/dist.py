@@ -34,6 +34,7 @@ class build(distutils.command.build.build):
             gamedir = self.distribution.game_dir
             startfile = os.path.join(gamedir, self.distribution.mainfile)
 
+            # Create runtime
             freezer = FreezeTool.Freezer()
             freezer.addModule('__main__', filename=startfile)
             freezer.excludeModule('panda3d')
@@ -42,6 +43,23 @@ class build(distutils.command.build.build):
             freezer.done(addStartupModules=True)
             freezer.generateRuntimeFromStub(basename)
 
+            # Copy Panda3D libs
+            dtool_dir = os.path.dirname(p3d.ExecutionEnvironment.get_dtool_name())
+            libdir = os.path.join(dtool_dir, '..', 'lib')
+            src = os.path.join(libdir, '..', 'panda3d')
+            dst = os.path.join(builddir, 'panda3d')
+            distutils.dir_util.copy_tree(src, dst)
+
+            for item in os.listdir(libdir):
+                if '.so.' in item  or item.endswith('.dll') or 'libpandagl' in item:
+                    distutils.file_util.copy_file(os.path.join(libdir, item), os.path.join(builddir, item))
+
+            # Copy etc
+            src = os.path.join(dtool_dir, '..', 'etc')
+            dst = os.path.join(builddir, 'etc')
+            distutils.dir_util.copy_tree(src, dst)
+
+            # Copy Game Files
             ignore_copy_list = [
                 '__pycache__',
                 self.distribution.mainfile,
