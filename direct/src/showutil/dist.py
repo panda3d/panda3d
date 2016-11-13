@@ -15,6 +15,7 @@ class Distribution(distutils.dist.Distribution):
         self.mainfile = 'main.py'
         self.game_dir = 'game'
         self.exclude_modules = []
+        self.extras = []
         distutils.dist.Distribution.__init__(self, attrs)
 
 
@@ -80,6 +81,16 @@ class build(distutils.command.build.build):
                 else:
                     #print("Copy file", src, dst)
                     distutils.file_util.copy_file(src, dst)
+
+            # Copy extra files
+            for extra in self.distribution.extras:
+                if len(extra) == 2:
+                    src, dst = extra
+                    dst = os.path.join(builddir, dst)
+                else:
+                    src = extra
+                    dst = builddir
+                distutils.file_util.copy_file(src, dst)
 
 
 def setup(**attrs):
