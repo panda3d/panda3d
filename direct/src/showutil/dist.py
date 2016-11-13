@@ -14,6 +14,7 @@ class Distribution(distutils.dist.Distribution):
     def __init__(self, attrs):
         self.mainfile = 'main.py'
         self.game_dir = 'game'
+        self.exclude_modules = []
         distutils.dist.Distribution.__init__(self, attrs)
 
 
@@ -36,6 +37,8 @@ class build(distutils.command.build.build):
             freezer = FreezeTool.Freezer()
             freezer.addModule('__main__', filename=startfile)
             freezer.excludeModule('panda3d')
+            for exmod in self.distribution.exclude_modules:
+                freezer.excludeModule(exmod)
             freezer.done(addStartupModules=True)
             freezer.generateRuntimeFromStub(basename)
 
