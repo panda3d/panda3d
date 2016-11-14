@@ -87,7 +87,7 @@ private:
   void glsl_report_program_errors(GLuint program, bool fatal);
   bool glsl_compile_shader(Shader::ShaderType type);
   bool glsl_compile_and_link();
-  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);
+  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, Shader *s);
   void release_resources();
 
 public:

@@ -51,7 +51,7 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //               actually picked up and the appropriate ShaderMatSpec pushed onto _mat_spec.
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
-parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objShader) {
+parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, Shader *objShader) {
   Shader::ShaderArgInfo p;
   p._id = arg_id;
   p._cat = GLCAT;
@@ -166,6 +166,14 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objSha
     else if (pieces[0] == "col1")  bind._piece = Shader::SMP_col1;
     else if (pieces[0] == "col2")  bind._piece = Shader::SMP_col2;
     else if (pieces[0] == "col3")  bind._piece = Shader::SMP_col3;
+
+    if (param_type == GL_FLOAT_MAT3) {
+      if (bind._piece == Shader::SMP_whole) {
+        bind._piece = Shader::SMP_upper3x3;
+      } else if (bind._piece == Shader::SMP_transpose) {
+        bind._piece = Shader::SMP_transpose3x3;
+      }
+    }
 
     if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, true)) {
       return false;
@@ -614,7 +622,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         }
 
         //Tries to parse shorthand notations like mspos_XXX and trans_model_to_clip_of_XXX
-        if (parse_and_set_short_hand_shader_vars(arg_id, s)) {
+        if (parse_and_set_short_hand_shader_vars(arg_id, param_type, s)) {
           continue;
         }
 
