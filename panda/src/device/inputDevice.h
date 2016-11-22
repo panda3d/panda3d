@@ -77,6 +77,9 @@ PUBLISHED:
 
     // Head-mounted display.
     DC_hmd,
+
+    // Count of this enum, used for loops
+    DC_COUNT,
   };
 
 protected:
@@ -247,13 +250,15 @@ public:
     S_down
   };
 
+PUBLISHED:
   class ButtonState {
   public:
     INLINE ButtonState();
     INLINE ButtonState(ButtonHandle handle);
 
-    ButtonHandle _handle;
-    State _state;
+  PUBLISHED:
+    ButtonHandle handle;
+    State state;
   };
   typedef pvector<ButtonState> Buttons;
   Buttons _buttons;
@@ -262,9 +267,10 @@ public:
   public:
     INLINE AnalogState();
 
-    ControlAxis _axis;
-    double _state;
-    bool _known;
+  PUBLISHED:
+    ControlAxis axis;
+    double state;
+    bool known;
   };
   typedef pvector<AnalogState> Controls;
   Controls _controls;
@@ -273,6 +279,17 @@ public:
   short _max_battery_level;
 
   TrackerData _tracker_data;
+
+
+  INLINE ButtonState get_button(size_t index) const;
+  INLINE ButtonState find_button(ButtonHandle handle) const;
+
+  INLINE AnalogState get_control(size_t index) const;
+  INLINE AnalogState find_control(ControlAxis axis) const;
+
+  // Make device buttons and controls iterable
+  MAKE_SEQ_PROPERTY(buttons, get_num_buttons, get_button);
+  MAKE_SEQ_PROPERTY(controls, get_num_controls, get_control);
 
 public:
   static TypeHandle get_class_type() {
@@ -297,8 +314,8 @@ INLINE ostream &operator << (ostream &out, const InputDevice &device) {
   return out;
 }
 
-ostream &operator << (ostream &out, InputDevice::DeviceClass dc);
-ostream &operator << (ostream &out, InputDevice::ControlAxis axis);
+EXPCL_PANDA_DEVICE ostream &operator << (ostream &out, InputDevice::DeviceClass dc);
+EXPCL_PANDA_DEVICE ostream &operator << (ostream &out, InputDevice::ControlAxis axis);
 
 #include "inputDevice.I"
 

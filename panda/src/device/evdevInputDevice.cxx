@@ -227,6 +227,7 @@ init_device() {
   }
 
   _name.assign(name);
+  //cerr << "##### Now initializing device " << name << "\n";
 
   struct input_id id;
   if (ioctl(_fd, EVIOCGID, &id) >= 0) {
@@ -237,12 +238,106 @@ init_device() {
   bool all_values_zero = true;
   bool emulate_dpad = true;
 
+  bool has_keys = false;
+  bool has_axes = false;
+
+  uint8_t keys[(KEY_CNT + 7) >> 3];
   if (test_bit(EV_KEY, evtypes)) {
     // Check which buttons are on the device.
-    uint8_t keys[(KEY_CNT + 7) >> 3];
     memset(keys, 0, sizeof(keys));
     ioctl(_fd, EVIOCGBIT(EV_KEY, sizeof(keys)), keys);
+    has_keys = true;
 
+    if (test_bit(KEY_A, keys) && test_bit(KEY_Z, keys)) {
+      _flags |= IDF_has_keyboard;
+    }
+  }
+
+  int num_bits = 0;
+  uint8_t axes[(ABS_CNT + 7) >> 3];
+  if (test_bit(EV_ABS, evtypes)) {
+    // Check which axes are on the device.
+    memset(axes, 0, sizeof(axes));
+    num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
+    has_axes = true;
+  }
+
+
+  // Try to detect which type of device we have here
+  int device_scores[DC_COUNT];
+  memset(device_scores, 0, sizeof(device_scores));
+
+  // Test for specific keys
+  if (test_bit(BTN_GAMEPAD, keys)) {
+    device_scores[DC_gamepad] += 5;
+    device_scores[DC_steering_wheel] += 5;
+    device_scores[DC_flight_stick] += 5;
+  }
+
+  if (test_bit(ABS_WHEEL, axes) && test_bit(ABS_GAS, axes) && test_bit(ABS_BRAKE, axes)) {
+    device_scores[DC_steering_wheel] += 10;
+  }
+  if (test_bit(BTN_GEAR_DOWN, keys) && test_bit(BTN_GEAR_UP, keys)) {
+    device_scores[DC_steering_wheel] += 10;
+  }
+  if (test_bit(BTN_JOYSTICK, keys)) {
+    device_scores[DC_flight_stick] += 10;
+  }
+  if (test_bit(BTN_MOUSE, keys)) {
+    device_scores[DC_mouse] += 20;
+  }
+  uint8_t unknown_keys[] = {KEY_POWER};
+  for (int i = 0; i < 1; i++) {
+    if (test_bit(unknown_keys[i], keys)) {
+      if (unknown_keys[i] == KEY_POWER) {
+      }
+      device_scores[DC_unknown] += 20;
+    }
+  }
+  if (_flags & IDF_has_keyboard) {
+    device_scores[DC_keyboard] += 20;
+  }
+
+  // Test for specific name tags
+  string lowercase_name = _name;
+  for(int x=0; x<_name.length(); x++) {
+    lowercase_name[x]=tolower(lowercase_name[x]);
+  }
+  if (lowercase_name.find("gamepad") != string::npos) {
+    device_scores[DC_gamepad] += 10;
+  }
+  if (lowercase_name.find("wheel") != string::npos) {
+    device_scores[DC_steering_wheel] += 10;
+  }
+  if (lowercase_name.find("mouse") != string::npos || lowercase_name.find("touchpad") != string::npos) {
+    device_scores[DC_mouse] += 10;
+  }
+  if (lowercase_name.find("keyboard") != string::npos) {
+    device_scores[DC_keyboard] += 10;
+  }
+  // List of lowercase names that occur in unknown devices
+  string unknown_names[] = {"video bus", "power button", "sleep button"};
+  for(int i = 0; i < 3; i++) {
+    if (lowercase_name.find(unknown_names[i]) != string::npos) {
+      device_scores[DC_unknown] += 20;
+    }
+  }
+
+  // Check which device type got the most points
+  size_t highest_score = 0;
+  for (size_t i = 0; i < DC_COUNT; i++) {
+    if (device_scores[i] > highest_score) {
+      highest_score = device_scores[i];
+      _device_class = (DeviceClass)i;
+    }
+  }
+  //cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
+
+  if (_device_class != DC_gamepad) {
+    emulate_dpad = false;
+  }
+
+  if (has_keys) {
     // Also check whether the buttons are currently pressed.
     uint8_t states[(KEY_CNT + 7) >> 3];
     memset(states, 0, sizeof(states));
@@ -252,56 +347,28 @@ init_device() {
     for (int i = 0; i < KEY_CNT; ++i) {
       if (test_bit(i, keys)) {
         set_button_map(bi, map_button(i));
+        //cerr << "Button " << bi << " is mapped by the driver to " << i << "\n";
         if (test_bit(i, states)) {
-          _buttons[bi]._state = S_down;
+          _buttons[bi].state = S_down;
           all_values_zero = false;
         } else {
-          _buttons[bi]._state = S_up;
+          _buttons[bi].state = S_up;
         }
-        if (_buttons[bi]._handle == GamepadButton::dpad_left()) {
+        if (_buttons[bi].handle == GamepadButton::dpad_left()) {
           emulate_dpad = false;
         }
         ++bi;
       }
     }
-
-    if (test_bit(KEY_A, keys) && test_bit(KEY_Z, keys)) {
-      _flags |= IDF_has_keyboard;
-    }
-
-    // Check device type.
-    if (test_bit(BTN_GAMEPAD, keys)) {
-      _device_class = DC_gamepad;
-
-    } else if (test_bit(BTN_JOYSTICK, keys)) {
-      _device_class = DC_flight_stick;
-
-    } else if (test_bit(BTN_MOUSE, keys)) {
-      _device_class = DC_mouse;
-
-    } else if (test_bit(BTN_WHEEL, keys)) {
-      _device_class = DC_steering_wheel;
-
-    } else if (_flags & IDF_has_keyboard) {
-      _device_class = DC_keyboard;
-    }
   }
 
-  if (_device_class != DC_gamepad) {
-    emulate_dpad = false;
-  }
-
-  if (test_bit(EV_ABS, evtypes)) {
-    // Check which axes are on the device.
-    uint8_t axes[(ABS_CNT + 7) >> 3];
-    memset(axes, 0, sizeof(axes));
-
+  if (has_axes) {
     AxisRange range;
     range._scale = 1.0;
     range._bias = 0.0;
     _axis_ranges.resize(ABS_CNT, range);
 
-    int num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
+
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
         if (i >= ABS_HAT0X) {
@@ -319,9 +386,14 @@ init_device() {
             _dpad_up_button = (int)_buttons.size();
             _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
             _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+          } else if (i == ABS_HAT0X) {
+            set_control_map(i, C_hat_x);
+          } else if (i == ABS_HAT0Y) {
+            set_control_map(i, C_hat_y);
           }
         } else {
           set_control_map(i, axis_map[i]);
+          //cerr << "Axis " << axis_map[i] << " is mapped by the driver to " << i << "\n";
         }
 
         // Check the initial value and ranges.
@@ -346,7 +418,7 @@ init_device() {
 
           _axis_ranges[i]._scale = factor;
           _axis_ranges[i]._bias = bias;
-          _controls[i]._state = fma(absinfo.value, factor, bias);
+          _controls[i].state = fma(absinfo.value, factor, bias);
 
           if (absinfo.value != 0) {
             all_values_zero = false;
@@ -693,10 +765,18 @@ map_button(int code) {
   case BTN_TR2:
     return GamepadButton::rtrigger();
 
+  case BTN_1:
+    return GamepadButton::action_1();
+
+  case BTN_2:
+    return GamepadButton::action_2();
+
   case BTN_SELECT:
+  case KEY_PREVIOUS:
     return GamepadButton::back();
 
   case BTN_START:
+  case KEY_NEXT:
     return GamepadButton::start();
 
   case BTN_MODE:

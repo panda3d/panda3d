@@ -34,12 +34,18 @@ DEFINE_GAMEPAD_BUTTON_HANDLE(back)
 DEFINE_GAMEPAD_BUTTON_HANDLE(guide)
 DEFINE_GAMEPAD_BUTTON_HANDLE(start)
 
+DEFINE_GAMEPAD_BUTTON_HANDLE(next)
+DEFINE_GAMEPAD_BUTTON_HANDLE(previous)
+
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_a)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_b)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_c)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_x)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_y)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_z)
+
+DEFINE_GAMEPAD_BUTTON_HANDLE(action_1)
+DEFINE_GAMEPAD_BUTTON_HANDLE(action_2)
 
 /**
  * This is intended to be called only once, by the static initialization
@@ -63,10 +69,16 @@ init_gamepad_buttons() {
   ButtonRegistry::ptr()->register_button(_guide, "guide");
   ButtonRegistry::ptr()->register_button(_start, "start");
 
+  ButtonRegistry::ptr()->register_button(_next, "next");
+  ButtonRegistry::ptr()->register_button(_previous, "previous");
+
   ButtonRegistry::ptr()->register_button(_action_a, "action_a");
   ButtonRegistry::ptr()->register_button(_action_b, "action_b");
   ButtonRegistry::ptr()->register_button(_action_c, "action_c");
   ButtonRegistry::ptr()->register_button(_action_x, "action_x");
   ButtonRegistry::ptr()->register_button(_action_y, "action_y");
   ButtonRegistry::ptr()->register_button(_action_z, "action_z");
+
+  ButtonRegistry::ptr()->register_button(_action_1, "action_1");
+  ButtonRegistry::ptr()->register_button(_action_2, "action_2");
 }

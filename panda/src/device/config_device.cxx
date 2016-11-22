@@ -36,6 +36,9 @@ NotifyCategoryDef(device, "");
 ConfigVariableBool asynchronous_clients
 ("asynchronous-clients", true);
 
+ConfigVariableInt low_battery_level
+("low-battery-level", 15);
+
 ConfigureFn(config_device) {
   init_libdevice();
 }

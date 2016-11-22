@@ -40,12 +40,18 @@ PUBLISHED:
   static ButtonHandle guide();
   static ButtonHandle start();
 
+  static ButtonHandle next();
+  static ButtonHandle previous();
+
   static ButtonHandle action_a();
   static ButtonHandle action_b();
   static ButtonHandle action_c();
   static ButtonHandle action_x();
   static ButtonHandle action_y();
   static ButtonHandle action_z();
+
+  static ButtonHandle action_1();
+  static ButtonHandle action_2();
 
 public:
   static void init_gamepad_buttons();

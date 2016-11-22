@@ -163,11 +163,21 @@ open_device() {
         handle = GamepadButton::rtrigger();
         break;
 
+      case BTN_1:
+        handle = GamepadButton::action_1();
+        break;
+
+      case BTN_2:
+        handle = GamepadButton::action_2();
+        break;
+
       case BTN_SELECT:
+      case KEY_PREVIOUS:
         handle = GamepadButton::back();
         break;
 
       case BTN_START:
+      case KEY_NEXT:
         handle = GamepadButton::start();
         break;
 
@@ -209,7 +219,7 @@ open_device() {
         handle = ButtonHandle::none();
         break;
       }
-      _buttons[i]._handle = handle;
+      _buttons[i].handle = handle;
     }
   }
 
@@ -311,7 +321,7 @@ open_device() {
         axis = C_none;
         break;
       }
-      _controls[i]._axis = axis;
+      _controls[i].axis = axis;
     }
   }
 
@@ -373,7 +383,7 @@ open_device() {
   // this gamepad yet (which means it hasn't been plugged in for this session)
   if (strncmp(name, "Xbox 360 Wireless Receiver", 26) == 0) {
     for (int i = 0; i < _controls.size(); ++i) {
-      if (_controls[i]._state != 0.0) {
+      if (_controls[i].state != 0.0) {
         _is_connected = true;
         return true;
       }
@@ -437,7 +447,7 @@ process_events() {
         set_button_state(_dpad_up_button+1, events[i].value > 1000);
       }
 
-      ControlAxis axis = _controls[index]._axis;
+      ControlAxis axis = _controls[index].axis;
 
       if (axis == C_left_trigger || axis == C_right_trigger || axis == C_trigger) {
         // We'd like to use 0.0 to indicate the resting position.
