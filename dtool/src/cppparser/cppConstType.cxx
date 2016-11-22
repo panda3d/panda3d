@@ -87,6 +87,22 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a fundamental type.
+ */
+bool CPPConstType::
+is_fundamental() const {
+  return _wrapped_around->is_fundamental();
+}
+
+/**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPConstType::
+is_standard_layout() const {
+  return _wrapped_around->is_standard_layout();
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPConstType::
@@ -95,11 +111,19 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPConstType::
+is_constructible(const CPPType *given_type) const {
+  return _wrapped_around->is_constructible(given_type);
+}
+
+/**
  * Returns true if the type is default-constructible.
  */
 bool CPPConstType::
 is_default_constructible() const {
-  return false;
+  return _wrapped_around->is_default_constructible();
 }
 
 /**
@@ -108,6 +132,23 @@ is_default_constructible() const {
 bool CPPConstType::
 is_copy_constructible() const {
   return _wrapped_around->is_copy_constructible();
+}
+
+/**
+ * Returns true if the type is destructible.
+ */
+bool CPPConstType::
+is_destructible() const {
+  return _wrapped_around->is_destructible();
+}
+
+/**
+ * Returns true if variables of this type may be implicitly converted to
+ * the other type.
+ */
+bool CPPConstType::
+is_convertible_to(const CPPType *other) const {
+  return _wrapped_around->is_convertible_to(other);
 }
 
 /**

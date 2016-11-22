@@ -113,7 +113,7 @@ PUBLISHED:
   static void lru_epoch();
   INLINE static VertexDataBook &get_book();
 
-#if PY_VERSION_HEX >= 0x02060000
+#ifdef HAVE_PYTHON
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);

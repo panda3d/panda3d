@@ -17,7 +17,6 @@
 #include "eggPrimitive.h"
 #include "eggVertex.h"
 #include "dcast.h"
-#include "pystub.h"
 
 /**
  *
@@ -118,9 +117,6 @@ strip_prims(EggGroupNode *group) {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   EggCrop prog;
   prog.parse_command_line(argc, argv);
   prog.run();

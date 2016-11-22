@@ -14,6 +14,8 @@
 #include "cppTypedefType.h"
 #include "cppIdentifier.h"
 #include "cppInstanceIdentifier.h"
+#include "cppTemplateScope.h"
+#include "indent.h"
 
 /**
  *
@@ -156,11 +158,35 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a fundamental type.
+ */
+bool CPPTypedefType::
+is_fundamental() const {
+  return _type->is_fundamental();
+}
+
+/**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPTypedefType::
+is_standard_layout() const {
+  return _type->is_standard_layout();
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPTypedefType::
 is_trivial() const {
   return _type->is_trivial();
+}
+
+/**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPTypedefType::
+is_constructible(const CPPType *given_type) const {
+  return _type->is_constructible(given_type);
 }
 
 /**
@@ -177,6 +203,14 @@ is_default_constructible() const {
 bool CPPTypedefType::
 is_copy_constructible() const {
   return _type->is_copy_constructible();
+}
+
+/**
+ * Returns true if the type is destructible.
+ */
+bool CPPTypedefType::
+is_destructible() const {
+  return _type->is_destructible();
 }
 
 /**
@@ -296,6 +330,15 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   }
 
   return this;
+}
+
+/**
+ * Returns true if variables of this type may be implicitly converted to
+ * the other type.
+ */
+bool CPPTypedefType::
+is_convertible_to(const CPPType *other) const {
+  return _type->is_convertible_to(other);
 }
 
 /**

@@ -300,6 +300,15 @@ ConfigVariableBool allow_incomplete_render
           "geometry is always paged in immediately when needed, holding up "
           "the frame render if necessary."));
 
+ConfigVariableBool old_alpha_blend
+("old-alpha-blend", false,
+ PRC_DESC("Set this to true to enable the old alpha blending behavior from "
+          "Panda 1.9 in which the alpha value written out to the framebuffer "
+          "is squared.  The new behavior is more intuitive when compositing "
+          "an semitransparent image produced using render-to-texture.  You "
+          "should generally leave this false unless you have an effect that "
+          "relies on the old behavior, or you suspect an implementation bug."));
+
 ConfigVariableInt win_size
 ("win-size", "800 600",
  PRC_DESC("This is the default size at which to open a new window.  This "

@@ -905,15 +905,19 @@ PUBLISHED:
   NodePath find_net_tag(const string &key) const;
 
   EXTENSION(INLINE PyObject *get_tag_keys() const);
-  EXTENSION(INLINE void set_python_tag(const string &key, PyObject *value));
-  EXTENSION(INLINE PyObject *get_python_tag(const string &key) const);
-  EXTENSION(INLINE void get_python_tag_keys(vector_string &keys) const);
+
+  EXTENSION(PyObject *get_python_tags());
+  EXTENSION(INLINE void set_python_tag(PyObject *keys, PyObject *value));
+  EXTENSION(INLINE PyObject *get_python_tag(PyObject *keys) const);
   EXTENSION(INLINE PyObject *get_python_tag_keys() const);
-  EXTENSION(INLINE bool has_python_tag(const string &key) const);
-  EXTENSION(INLINE void clear_python_tag(const string &key));
-  EXTENSION(INLINE PyObject *get_net_python_tag(const string &key) const);
-  EXTENSION(INLINE bool has_net_python_tag(const string &key) const);
-  EXTENSION(NodePath find_net_python_tag(const string &key) const);
+  EXTENSION(INLINE bool has_python_tag(PyObject *keys) const);
+  EXTENSION(INLINE void clear_python_tag(PyObject *keys));
+  EXTENSION(INLINE PyObject *get_net_python_tag(PyObject *keys) const);
+  EXTENSION(INLINE bool has_net_python_tag(PyObject *keys) const);
+  EXTENSION(NodePath find_net_python_tag(PyObject *keys) const);
+  MAKE_PROPERTY(python_tags, get_python_tags);
+
+  EXTENSION(int __traverse__(visitproc visit, void *arg));
 
   INLINE void list_tags() const;
 

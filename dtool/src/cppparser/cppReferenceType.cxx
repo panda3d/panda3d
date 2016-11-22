@@ -12,6 +12,8 @@
  */
 
 #include "cppReferenceType.h"
+#include "cppTypedefType.h"
+#include "cppStructType.h"
 
 /**
  *
@@ -88,10 +90,79 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPReferenceType::
+is_standard_layout() const {
+  return false;
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPReferenceType::
 is_trivial() const {
+  return false;
+}
+
+/**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPReferenceType::
+is_constructible(const CPPType *given_type) const {
+  const CPPType *a;
+  const CPPType *b;
+
+  CPPReferenceType *ref_type = ((CPPType *)given_type)->as_reference_type();
+  if (ref_type != NULL) {
+    if (ref_type->_value_category == VC_rvalue) {
+      return is_constructible(ref_type->_pointing_at);
+    }
+
+    if (_value_category == VC_rvalue) {
+      // Can never initialize an rvalue ref from an lvalue ref.
+      return false;
+    }
+
+    if (!_pointing_at->is_const()) {
+      // Cannot initialize a non-const reference using a const one.
+      if (ref_type->_pointing_at->is_const()) {
+        return false;
+      }
+    }
+
+    a = _pointing_at->remove_cv();
+    b = ref_type->_pointing_at->remove_cv();
+
+  } else {
+    // Initializing using an rvalue.
+    if (!_pointing_at->is_const()) {
+      // Cannot initialize a non-const reference using a const one.
+      if (given_type->is_const()) {
+        return false;
+      }
+
+      // Cannot initalise a non-const lvalue reference with an rvalue ref.
+      if (_value_category == VC_lvalue) {
+        return false;
+      }
+    }
+
+    a = _pointing_at->remove_cv();
+    b = ((CPPType *)given_type)->remove_cv();
+  }
+
+  if (a == b || *a == *b) {
+    return true;
+  }
+
+  // Can initialize from derived class pointer.
+  const CPPStructType *a_struct = a->as_struct_type();
+  const CPPStructType *b_struct = b->as_struct_type();
+  if (a_struct != NULL && b_struct != NULL) {
+    return a_struct->is_base_of(b_struct);
+  }
+
   return false;
 }
 
@@ -109,6 +180,14 @@ is_default_constructible() const {
 bool CPPReferenceType::
 is_copy_constructible() const {
   return (_value_category == VC_lvalue);
+}
+
+/**
+ * Returns true if the type is destructible.
+ */
+bool CPPReferenceType::
+is_destructible() const {
+  return false;
 }
 
 /**

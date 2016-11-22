@@ -1765,6 +1765,69 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
     return false;
   }
 
+  // This is present to work around a bug in the Cg compiler for Direct3D 9.
+  // It generates "texld_sat" instructions that the result in an
+  // D3DXERR_INVALIDDATA error when trying to load the shader, since the _sat
+  // modifier may not be used on tex* instructions.
+  if (_cg_fprofile == CG_PROFILE_PS_2_0 ||
+      _cg_fprofile == CG_PROFILE_PS_2_X ||
+      _cg_fprofile == CG_PROFILE_PS_3_0) {
+    vector_string lines;
+    tokenize(cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM), lines, "\n");
+
+    ostringstream out;
+    int num_modified = 0;
+
+    for (size_t i = 0; i < lines.size(); ++i) {
+      const string &line = lines[i];
+
+      size_t space = line.find(' ');
+      if (space == string::npos) {
+        out << line << '\n';
+        continue;
+      }
+
+      string instr = line.substr(0, space);
+
+      // Look for a texld instruction with _sat modifier.
+      if (instr.compare(0, 5, "texld") == 0 &&
+          instr.compare(instr.size() - 4, 4, "_sat") == 0) {
+        // Which destination register are we operating on?
+        string reg = line.substr(space + 1, line.find(',', space) - space - 1);
+
+        // Move the saturation operation to a separate instruction.
+        instr.resize(instr.size() - 4);
+        out << instr << ' ' << line.substr(space + 1) << '\n';
+        out << "mov_sat " << reg << ", " << reg << '\n';
+        ++num_modified;
+      } else {
+        out << line << '\n';
+      }
+    }
+
+    if (num_modified > 0) {
+      string result = out.str();
+      CGprogram new_program;
+      new_program = cgCreateProgram(context, CG_OBJECT, result.c_str(),
+                                    (CGprofile)_cg_fprofile, "fshader",
+                                    (const char**)NULL);
+      if (new_program) {
+        cgDestroyProgram(_cg_fprogram);
+        _cg_fprogram = new_program;
+
+        if (shader_cat.is_debug()) {
+          shader_cat.debug()
+            << "Replaced " << num_modified << " invalid texld_sat instruction"
+            << ((num_modified == 1) ? "" : "s") << " in compiled shader\n";
+        }
+      } else {
+        shader_cat.warning()
+          << "Failed to load shader with fixed texld_sat instructions: "
+          << cgGetErrorString(cgGetError()) << "\n";
+      }
+    }
+  }
+
   // DEBUG: output the generated program
   if (shader_cat.is_debug()) {
     const char *vertex_program;
@@ -1881,59 +1944,95 @@ cg_analyze_shader(const ShaderCaps &caps) {
   // Assign sequence numbers to all parameters.  GLCgShaderContext relies on
   // the fact that the varyings start at seqno 0.
   int seqno = 0;
-  for (int i=0; i<(int)_var_spec.size(); i++) {
+  for (size_t i = 0; i < _var_spec.size(); ++i) {
     _var_spec[i]._id._seqno = seqno++;
   }
-  for (int i=0; i<(int)_mat_spec.size(); i++) {
+  for (size_t i = 0; i < _mat_spec.size(); ++i) {
     _mat_spec[i]._id._seqno = seqno++;
   }
-  for (int i=0; i<(int)_tex_spec.size(); i++) {
+  for (size_t i = 0; i < _tex_spec.size(); ++i) {
     _tex_spec[i]._id._seqno = seqno++;
   }
 
-  for (int i=0; i<(int)_ptr_spec.size(); i++) {
+  for (size_t i = 0; i < _ptr_spec.size(); ++i) {
     _ptr_spec[i]._id._seqno = seqno++;
     _ptr_spec[i]._info._id = _ptr_spec[i]._id;
   }
 
-/*
- * The following code is present to work around a bug in the Cg compiler.  It
- * does not generate correct code for shadow map lookups when using arbfp1.
- * This is a particularly onerous limitation, given that arbfp1 is the only Cg
- * target that works on radeons.  I suspect this is an intentional omission on
- * nvidia's part.  The following code fetches the output listing, detects the
- * error, repairs the code, and resumbits the repaired code to Cg.  if
- * ((_cg_fprofile == CG_PROFILE_ARBFP1) && (gsghint->_supports_shadow_filter))
- * { bool shadowunit[32]; bool anyshadow = false; memset(shadowunit, 0,
- * sizeof(shadowunit)); vector_string lines;
- * tokenize(cgGetProgramString(_cg_program[SHADER_type_frag],
- * CG_COMPILED_PROGRAM), lines, "\n"); figure out which texture units contain
- * shadow maps.  for (int lineno=0; lineno<(int)lines.size(); lineno++) { if
- * (lines[lineno].compare(0,21,"#var sampler2DSHADOW ")) { continue; }
- * vector_string fields; tokenize(lines[lineno], fields, ":"); if
- * (fields.size()!=5) { continue; } vector_string words;
- * tokenize(trim(fields[2]), words, " "); if (words.size()!=2) { continue; }
- * int unit = atoi(words[1].c_str()); if ((unit < 0)||(unit >= 32)) {
- * continue; } anyshadow = true; shadowunit[unit] = true; } modify all TEX
- * statements that use the relevant texture units.  if (anyshadow) { for (int
- * lineno=0; lineno<(int)lines.size(); lineno++) { if
- * (lines[lineno].compare(0,4,"TEX ")) { continue; } vector_string fields;
- * tokenize(lines[lineno], fields, ","); if
- * ((fields.size()!=4)||(trim(fields[3]) != "2D;")) { continue; }
- * vector_string texunitf; tokenize(trim(fields[2]), texunitf, "[]"); if
- * ((texunitf.size()!=3)||(texunitf[0] != "texture")||(texunitf[2]!="")) {
- * continue; } int unit = atoi(texunitf[1].c_str()); if ((unit < 0) || (unit
- * >= 32) || (shadowunit[unit]==false)) { continue; } lines[lineno] =
- * fields[0]+","+fields[1]+","+fields[2]+", SHADOW2D;"; } string result =
- * "!!ARBfp1.0\nOPTION ARB_fragment_program_shadow;\n"; for (int lineno=1;
- * lineno<(int)lines.size(); lineno++) { result += (lines[lineno] + "\n"); }
- * _cg_program[2] = _cg_program[SHADER_type_frag];
- * _cg_program[SHADER_type_frag] = cgCreateProgram(_cg_context, CG_OBJECT,
- * result.c_str(), _cg_profile[SHADER_type_frag], "fshader", (const
- * char**)NULL); cg_report_errors(s->get_name(), _cg_context); if
- * (_cg_program[SHADER_type_frag]==0) { release_resources(); return false; } }
- * }
- */
+  /*
+  // The following code is present to work around a bug in the Cg compiler.
+  // It does not generate correct code for shadow map lookups when using arbfp1.
+  // This is a particularly onerous limitation, given that arbfp1 is the only
+  // Cg target that works on radeons.  I suspect this is an intentional
+  // omission on nvidia's part.  The following code fetches the output listing,
+  // detects the error, repairs the code, and resumbits the repaired code to Cg.
+  if ((_cg_fprofile == CG_PROFILE_ARBFP1) && (gsghint->_supports_shadow_filter)) {
+    bool shadowunit[32];
+    bool anyshadow = false;
+    memset(shadowunit, 0, sizeof(shadowunit));
+    vector_string lines;
+    tokenize(cgGetProgramString(_cg_program[SHADER_type_frag],
+                                CG_COMPILED_PROGRAM), lines, "\n");
+    // figure out which texture units contain shadow maps.
+    for (int lineno=0; lineno<(int)lines.size(); lineno++) {
+      if (lines[lineno].compare(0,21,"#var sampler2DSHADOW ")) {
+        continue;
+      }
+      vector_string fields;
+      tokenize(lines[lineno], fields, ":");
+      if (fields.size()!=5) {
+        continue;
+      }
+      vector_string words;
+      tokenize(trim(fields[2]), words, " ");
+      if (words.size()!=2) {
+        continue;
+      }
+      int unit = atoi(words[1].c_str());
+      if ((unit < 0)||(unit >= 32)) {
+        continue;
+      }
+      anyshadow = true;
+      shadowunit[unit] = true;
+    }
+    // modify all TEX statements that use the relevant texture units.
+    if (anyshadow) {
+      for (int lineno=0; lineno<(int)lines.size(); lineno++) {
+        if (lines[lineno].compare(0,4,"TEX ")) {
+          continue;
+        }
+        vector_string fields;
+        tokenize(lines[lineno], fields, ",");
+        if ((fields.size()!=4)||(trim(fields[3]) != "2D;")) {
+          continue;
+        }
+        vector_string texunitf;
+        tokenize(trim(fields[2]), texunitf, "[]");
+        if ((texunitf.size()!=3)||(texunitf[0] != "texture")||(texunitf[2]!="")) {
+          continue;
+        }
+        int unit = atoi(texunitf[1].c_str());
+        if ((unit < 0) || (unit >= 32) || (shadowunit[unit]==false)) {
+          continue;
+        }
+        lines[lineno] = fields[0]+","+fields[1]+","+fields[2]+", SHADOW2D;";
+      }
+      string result = "!!ARBfp1.0\nOPTION ARB_fragment_program_shadow;\n";
+      for (int lineno=1; lineno<(int)lines.size(); lineno++) {
+        result += (lines[lineno] + "\n");
+      }
+      _cg_program[2] = _cg_program[SHADER_type_frag];
+      _cg_program[SHADER_type_frag] =
+        cgCreateProgram(_cg_context, CG_OBJECT, result.c_str(),
+                        _cg_profile[SHADER_type_frag], "fshader", (const char**)NULL);
+      cg_report_errors(s->get_name(), _cg_context);
+      if (_cg_program[SHADER_type_frag]==0) {
+        release_resources();
+        return false;
+      }
+    }
+  }
+  */
 
   cg_release_resources();
   return true;
@@ -2286,7 +2385,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
 
 /**
  * Loads a given GLSL file line by line, and processes any #pragma include and
- * once statements.
+ * once statements, as well as removes any comments.
  *
  * The set keeps track of which files we have already included, for checking
  * recursive includes.
@@ -2299,7 +2398,8 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
   if (depth > glsl_include_recursion_limit) {
     shader_cat.error()
-      << "#pragma include nested too deeply\n";
+      << "GLSL includes nested too deeply, raise glsl-include-recursion-limit"
+         " if necessary\n";
     return false;
   }
 
@@ -2360,56 +2460,226 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
   // Iterate over the lines for things we may need to preprocess.
   string line;
+  int ext_google_include = 0; // 1 = warn, 2 = enable
+  int ext_google_line = 0;
   bool had_include = false;
   int lineno = 0;
   while (getline(*source, line)) {
     ++lineno;
 
-    // Check if this line contains a #pragma.
-    char pragma[64];
-    if (line.size() < 8 ||
-        sscanf(line.c_str(), " # pragma %63s", pragma) != 1) {
-      // Just pass the line through unmodified.
-      out << line << "\n";
-
-      // One exception: check for an #endif after an include.  We have to
-      // restore the line number in case the include happened under an #if
-      // block.
-      int nread = 0;
-      if (had_include && sscanf(line.c_str(), " # endif %n", &nread) == 0 && nread >= 6) {
-        out << "#line " << (lineno + 1) << " " << fileno << "\n";
-      }
+    if (line.empty()) {
+      out.put('\n');
       continue;
     }
 
-    int nread = 0;
-    if (strcmp(pragma, "include") == 0) {
-      // Allow both double quotes and angle brackets.
-      Filename incfn, source_dir;
-      {
-        char incfile[2048];
-        if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %n", incfile, &nread) == 1
-            && nread == line.size()) {
-          // A regular include, with double quotes.  Probably a local file.
-          source_dir = full_fn.get_dirname();
-          incfn = incfile;
+    // If the line ends with a backslash, concatenate the following line.
+    // Preprocessor definitions may be broken up into multiple lines.
+    while (line[line.size() - 1] == '\\') {
+      line.resize(line.size() - 1);
+      string line2;
 
-        } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %n", incfile, &nread) == 1
-            && nread == line.size()) {
-          // Angled includes are also OK, but we don't search in the directory
-          // of the source file.
-          incfn = incfile;
+      if (getline(*source, line2)) {
+        line += line2;
+        out.put('\n');
+        ++lineno;
+      } else {
+        break;
+      }
+    }
 
+    // Look for comments to strip.  This is necessary because comments may
+    // appear in the middle of or around a preprocessor definition.
+    size_t line_comment = line.find("//");
+    size_t block_comment = line.find("/*");
+    if (line_comment < block_comment) {
+      // A line comment - strip off the rest of the line.
+      line.resize(line_comment);
+
+    } else if (block_comment < line_comment) {
+      // A block comment.  Search for closing block.
+      string line2 = line.substr(block_comment + 2);
+
+      // According to the GLSL specification, a block comment is replaced with
+      // a single whitespace character.
+      line.resize(block_comment);
+      line += ' ';
+
+      size_t block_end = line2.find("*/");
+      while (block_end == string::npos) {
+        // Didn't find it - look in the next line.
+        if (getline(*source, line2)) {
+          out.put('\n');
+          ++lineno;
+          block_end = line2.find("*/");
         } else {
-          // Couldn't parse it.
           shader_cat.error()
-            << "Malformed #pragma include at line " << lineno
-            << " of file " << fn << ":\n  " << line << "\n";
+            << "Expected */ before end of file " << fn << "\n";
           return false;
         }
       }
 
+      line += line2.substr(block_end + 2);
+    }
+
+    // Check if this line contains a #directive.
+    char directive[64];
+    if (line.size() < 8 || sscanf(line.c_str(), " # %63s", directive) != 1) {
+      // Nope.  Just pass the line through unmodified.
+      out << line << "\n";
+      continue;
+    }
+
+    char pragma[64];
+    int nread = 0;
+    // What kind of directive is it?
+    if (strcmp(directive, "pragma") == 0 &&
+        sscanf(line.c_str(), " # pragma %63s", pragma) == 1) {
+      if (strcmp(pragma, "include") == 0) {
+        // Allow both double quotes and angle brackets.
+        Filename incfn, source_dir;
+        {
+          char incfile[2048];
+          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %n", incfile, &nread) == 1
+              && nread == line.size()) {
+            // A regular include, with double quotes.  Probably a local file.
+            source_dir = full_fn.get_dirname();
+            incfn = incfile;
+
+          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %n", incfile, &nread) == 1
+              && nread == line.size()) {
+            // Angled includes are also OK, but we don't search in the directory
+            // of the source file.
+            incfn = incfile;
+
+          } else {
+            // Couldn't parse it.
+            shader_cat.error()
+              << "Malformed #pragma include at line " << lineno
+              << " of file " << fn << ":\n  " << line << "\n";
+            return false;
+          }
+        }
+
+        // OK, great.  Process the include.
+        if (!r_preprocess_source(out, incfn, source_dir, once_files, record, depth + 1)) {
+          // An error occurred.  Pass on the failure.
+          shader_cat.error(false) << "included at line "
+            << lineno << " of file " << fn << ":\n  " << line << "\n";
+          return false;
+        }
+
+        // Restore the line counter.
+        out << "#line " << (lineno + 1) << " " << fileno << " // " << fn << "\n";
+        had_include = true;
+
+      } else if (strcmp(pragma, "once") == 0) {
+        // Do a stricter syntax check, just to be extra safe.
+        if (sscanf(line.c_str(), " # pragma%*[ \t]once %n", &nread) != 0 ||
+            nread != line.size()) {
+          shader_cat.error()
+            << "Malformed #pragma once at line " << lineno
+            << " of file " << fn << ":\n  " << line << "\n";
+          return false;
+        }
+
+        once_files.insert(full_fn);
+
+      } else {
+        // Forward it, the driver will ignore it if it doesn't know it.
+        out << line << "\n";
+      }
+
+    } else if (strcmp(directive, "endif") == 0) {
+      // Check for an #endif after an include.  We have to restore the line
+      // number in case the include happened under an #if block.
+      out << line << "\n";
+      int nread = 0;
+      if (had_include) {
+        out << "#line " << (lineno + 1) << " " << fileno << "\n";
+      }
+
+    } else if (strcmp(directive, "extension") == 0) {
+      // Check for special preprocessing extensions.
+      char extension[256];
+      char behavior[9];
+      if (sscanf(line.c_str(), " # extension%*[ \t]%255s%*[ \t]:%*[ \t]%8s", extension, behavior) == 2) {
+        // Parse the behavior string.
+        int mode;
+        if (strcmp(behavior, "require") == 0 || strcmp(behavior, "enable") == 0) {
+          mode = 2;
+        } else if (strcmp(behavior, "warn") == 0) {
+          mode = 1;
+        } else if (strcmp(behavior, "disable") == 0) {
+          mode = 0;
+        } else {
+          shader_cat.error()
+            << "Extension directive specifies invalid behavior at line "
+            << lineno << " of file " << fn << ":\n  " << line << "\n";
+          return false;
+        }
+
+        if (strcmp(extension, "all") == 0) {
+          if (mode == 2) {
+            shader_cat.error()
+              << "Extension directive for 'all' may only specify 'warn' or "
+                 "'disable' at line " << lineno << " of file " << fn
+              << ":\n  " << line << "\n";
+            return false;
+          }
+          ext_google_include = mode;
+          ext_google_line = mode;
+          out << line << "\n";
+
+        } else if (strcmp(extension, "GL_GOOGLE_include_directive") == 0) {
+          // Enable the Google extension support for #include statements.
+          // This also implicitly enables GL_GOOGLE_cpp_style_line_directive.
+          // This matches the behavior of Khronos' glslang reference compiler.
+          ext_google_include = mode;
+          ext_google_line = mode;
+
+        } else if (strcmp(extension, "GL_GOOGLE_cpp_style_line_directive") == 0) {
+          // Enables strings in #line statements.
+          ext_google_line = mode;
+
+        } else {
+          // It's an extension the driver should worry about.
+          out << line << "\n";
+        }
+      } else {
+        shader_cat.error()
+          << "Failed to parse extension directive at line "
+          << lineno << " of file " << fn << ":\n  " << line << "\n";
+        return false;
+      }
+    } else if (ext_google_include > 0 && strcmp(directive, "include") == 0) {
+      // Warn about extension use if requested.
+      if (ext_google_include == 1) {
+        shader_cat.warning()
+          << "Extension GL_GOOGLE_include_directive is being used at line "
+          << lineno << " of file " << fn
+#ifndef NDEBUG
+          << ":\n  " << line
+#endif
+          << "\n";
+      }
+
+      // This syntax allows only double quotes, not angle brackets.
+      Filename incfn;
+      {
+        char incfile[2048];
+        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %n", incfile, &nread) != 1
+            || nread != line.size()) {
+          // Couldn't parse it.
+          shader_cat.error()
+            << "Malformed #include at line " << lineno
+            << " of file " << fn << ":\n  " << line << "\n";
+          return false;
+        }
+        incfn = incfile;
+      }
+
       // OK, great.  Process the include.
+      Filename source_dir = full_fn.get_dirname();
       if (!r_preprocess_source(out, incfn, source_dir, once_files, record, depth + 1)) {
         // An error occurred.  Pass on the failure.
         shader_cat.error(false) << "included at line "
@@ -2421,28 +2691,36 @@ r_preprocess_source(ostream &out, const Filename &fn,
       out << "#line " << (lineno + 1) << " " << fileno << " // " << fn << "\n";
       had_include = true;
 
-    } else if (strcmp(pragma, "once") == 0) {
-      // Do a stricter syntax check, just to be extra safe.
-      if (sscanf(line.c_str(), " # pragma%*[ \t]once %n", &nread) != 0 ||
-          nread != line.size()) {
-        shader_cat.error()
-          << "Malformed #pragma once at line " << lineno
-          << " of file " << fn << ":\n  " << line << "\n";
-        return false;
+    } else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
+      // It's a #line directive.  See if it uses a string instead of number.
+      char filestr[2048];
+      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %n", &lineno, filestr, &nread) == 2
+          && nread == line.size()) {
+        // Warn about extension use if requested.
+        if (ext_google_line == 1) {
+          shader_cat.warning()
+            << "Extension GL_GOOGLE_cpp_style_line_directive is being used at line "
+            << lineno << " of file " << fn
+#ifndef NDEBUG
+            << ":\n  " << line
+#endif
+            << "\n";
+        }
+
+        // Replace the string line number with an integer.  This is something
+        // we can substitute later when parsing the GLSL log from the driver.
+        fileno = 2048 + _included_files.size();
+        _included_files.push_back(Filename(filestr));
+
+        out << "#line " << lineno << " " << fileno << " // " << filestr << "\n";
+
+      } else {
+        // We couldn't parse the #line directive.  Pass it through unmodified.
+        out << line << "\n";
       }
-
-      once_files.insert(full_fn);
-
-    } else if (strcmp(pragma, "optionNV") == 0) {
-      // This is processed by NVIDIA drivers.  Don't touch it.
-      out << line << "\n";
-
     } else {
-      // Forward it, the driver will ignore it if it doesn't know it.
+      // Different directive (eg. #version).  Leave it untouched.
       out << line << "\n";
-      shader_cat.warning()
-        << "Ignoring unknown pragma directive \"" << pragma << "\" at line "
-        << lineno << " of file " << fn << ":\n  " << line << "\n";
     }
   }
 

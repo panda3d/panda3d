@@ -88,11 +88,31 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPExtensionType::
+is_standard_layout() const {
+  return (_type == T_enum || _type == T_enum_class || _type == T_enum_struct);
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPExtensionType::
 is_trivial() const {
-  return (_type == T_enum);
+  return (_type == T_enum || _type == T_enum_class || _type == T_enum_struct);
+}
+
+/**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPExtensionType::
+is_constructible(const CPPType *given_type) const {
+  if (_type == T_enum || _type == T_enum_class || _type == T_enum_struct) {
+    const CPPExtensionType *other = ((CPPType *)given_type)->remove_reference()->remove_const()->as_extension_type();
+    return other != NULL && is_equal(other);
+  }
+  return false;
 }
 
 /**
@@ -100,7 +120,7 @@ is_trivial() const {
  */
 bool CPPExtensionType::
 is_default_constructible() const {
-  return (_type == T_enum);
+  return (_type == T_enum || _type == T_enum_class || _type == T_enum_struct);
 }
 
 /**
@@ -108,7 +128,7 @@ is_default_constructible() const {
  */
 bool CPPExtensionType::
 is_copy_constructible() const {
-  return (_type == T_enum);
+  return (_type == T_enum || _type == T_enum_class || _type == T_enum_struct);
 }
 
 /**

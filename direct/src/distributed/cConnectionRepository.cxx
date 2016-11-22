@@ -402,8 +402,28 @@ send_datagram(const Datagram &dg) {
   }
 
 #ifdef WANT_NATIVE_NET
-  if(_native)
-    return _bdc.SendMessage(dg);
+  if (_native) {
+    bool result = _bdc.SendMessage(dg);
+    if (!result && _bdc.IsConnected()) {
+#ifdef HAVE_PYTHON
+      ostringstream s;
+
+#if PY_VERSION_HEX >= 0x03030000
+      PyObject *exc_type = PyExc_ConnectionError;
+#else
+      PyObject *exc_type = PyExc_OSError;
+#endif
+
+      s << endl << "Error sending message: " << endl;
+      dg.dump_hex(s);
+      s << "Message data: " << dg.get_data() << endl;
+
+      string message = s.str();
+      PyErr_SetString(exc_type, message.c_str());
+#endif
+    }
+    return result;
+  }
 #endif
 
 #ifdef HAVE_NET

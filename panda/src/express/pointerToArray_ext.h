@@ -35,10 +35,8 @@ public:
   INLINE const Element &__getitem__(size_t n) const;
   INLINE void __setitem__(size_t n, const Element &value);
 
-#if PY_VERSION_HEX >= 0x02060000
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
-#endif
 };
 
 /**
@@ -55,10 +53,8 @@ public:
 
   INLINE const Element &__getitem__(size_t n) const;
 
-#if PY_VERSION_HEX >= 0x02060000
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
-#endif
 };
 
 #ifdef _MSC_VER

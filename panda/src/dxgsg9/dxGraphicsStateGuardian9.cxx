@@ -403,10 +403,35 @@ extract_texture_data(Texture *tex) {
  */
 ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
+  PStatTimer timer(_prepare_shader_pcollector);
+
+  switch (se->get_language()) {
+  case Shader::SL_GLSL:
+    dxgsg9_cat.error()
+      << "Tried to load GLSL shader, but GLSL shaders not supported by Direct3D 9.\n";
+    return NULL;
+
+  case Shader::SL_Cg:
 #ifdef HAVE_CG
-  CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
-  return result;
+    if (_supports_basic_shaders) {
+      return new DXShaderContext9(se, this);
+    } else {
+      dxgsg9_cat.error()
+        << "Tried to load Cg shader, but basic shaders not supported.\n";
+      return NULL;
+    }
+#else
+    dxgsg9_cat.error()
+      << "Tried to load Cg shader, but Cg support not compiled in.\n";
+    return NULL;
 #endif
+
+  default:
+    dxgsg9_cat.error()
+      << "Tried to load shader with unsupported shader language!\n";
+    return NULL;
+  }
+
   return NULL;
 }
 
@@ -415,7 +440,7 @@ prepare_shader(Shader *se) {
  */
 void DXGraphicsStateGuardian9::
 release_shader(ShaderContext *sc) {
-  CLP(ShaderContext) *gsc = DCAST(CLP(ShaderContext), sc);
+  DXShaderContext9 *gsc = DCAST(DXShaderContext9, sc);
   delete gsc;
 }
 
@@ -429,9 +454,9 @@ release_shader(ShaderContext *sc) {
  * This function should not be called directly to prepare a buffer.  Instead,
  * call Geom::prepare().
  */
-VertexBufferContext *CLP(GraphicsStateGuardian)::
+VertexBufferContext *DXGraphicsStateGuardian9::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
-  CLP(VertexBufferContext) *dvbc = new CLP(VertexBufferContext)(this, _prepared_objects, data);
+  DXVertexBufferContext9 *dvbc = new DXVertexBufferContext9(this, _prepared_objects, data);
 
   DWORD usage;
   D3DPOOL pool;
@@ -458,7 +483,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 
   if (!FAILED(hr)) {
     #if 0
-    if (dxgsg9_cat.is_debug() && CLP(debug_buffers)) {
+    if (dxgsg9_cat.is_debug() && DXdebug_buffers9) {
       dxgsg9_cat.debug()
         << "creating vertex buffer " << dvbc->_vbuffer << ": "
         << data->get_num_rows() << " vertices "
@@ -481,16 +506,16 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
  * Updates the vertex buffer with the current data, and makes it the current
  * vertex buffer for rendering.
  */
-bool CLP(GraphicsStateGuardian)::
+bool DXGraphicsStateGuardian9::
 apply_vertex_buffer(VertexBufferContext *vbc,
                     const GeomVertexArrayDataHandle *reader, bool force ) {
 
-  CLP(VertexBufferContext) *dvbc = DCAST(CLP(VertexBufferContext), vbc);
+  DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
 
   if (dvbc->was_modified(reader)) {
     int num_bytes = reader->get_data_size_bytes();
     #if 0
-    if (dxgsg9_cat.is_debug() && CLP(debug_buffers)) {
+    if (dxgsg9_cat.is_debug() && DXdebug_buffers9) {
       dxgsg9_cat.debug()
         << "copying " << num_bytes
         << " bytes into vertex buffer " << dvbc->_vbuffer << "\n";
@@ -544,13 +569,13 @@ apply_vertex_buffer(VertexBufferContext *vbc,
  * should never be called directly; instead, call Data::release() (or simply
  * let the Data destruct).
  */
-void CLP(GraphicsStateGuardian)::
+void DXGraphicsStateGuardian9::
 release_vertex_buffer(VertexBufferContext *vbc) {
 
-  CLP(VertexBufferContext) *dvbc = DCAST(CLP(VertexBufferContext), vbc);
+  DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
 
   #if 0
-  if (dxgsg9_cat.is_debug() && CLP(debug_buffers)) {
+  if (dxgsg9_cat.is_debug() && DXdebug_buffers9) {
     dxgsg9_cat.debug()
       << "deleting vertex buffer " << dvbc->_vbuffer << "\n";
   }
@@ -575,8 +600,8 @@ release_vertex_buffer(VertexBufferContext *vbc) {
  * If force is not true, the function may return false indicating the data is
  * not currently available.
  */
-bool CLP(GraphicsStateGuardian)::
-setup_array_data(CLP(VertexBufferContext)*& dvbc,
+bool DXGraphicsStateGuardian9::
+setup_array_data(DXVertexBufferContext9*& dvbc,
                  const GeomVertexArrayDataHandle* array_reader,
                  bool force) {
 
@@ -587,7 +612,7 @@ setup_array_data(CLP(VertexBufferContext)*& dvbc,
     return false;
   }
 
-  dvbc = (CLP(VertexBufferContext)*)vbc;
+  dvbc = (DXVertexBufferContext9*)vbc;
   return true;
 }
 
@@ -1028,17 +1053,17 @@ end_scene() {
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays(this);
     _vertex_array_shader = (Shader *)NULL;
-    _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
+    _vertex_array_shader_context = (DXShaderContext9 *)NULL;
   }
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings(this);
     _texture_binding_shader = (Shader *)NULL;
-    _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
+    _texture_binding_shader_context = (DXShaderContext9 *)NULL;
   }
   if (_current_shader_context != 0) {
     _current_shader_context->unbind(this);
     _current_shader = (Shader *)NULL;
-    _current_shader_context = (CLP(ShaderContext) *)NULL;
+    _current_shader_context = (DXShaderContext9 *)NULL;
   }
 
   _dlights.clear();
@@ -1242,7 +1267,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
  * pipeline is about to be used - dxShaderContexts are responsible for setting
  * up their own vertex arrays.
  */
-bool CLP(GraphicsStateGuardian)::
+bool DXGraphicsStateGuardian9::
 update_standard_vertex_arrays(bool force) {
 
   int fvf = 0;
@@ -1257,7 +1282,7 @@ update_standard_vertex_arrays(bool force) {
     }
 
     // Get the vertex buffer for this array.
-    CLP(VertexBufferContext)* dvbc;
+    DXVertexBufferContext9* dvbc;
     if (!setup_array_data(dvbc, array_reader, force)) {
       dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << array_index << "\n";
       return false;
@@ -1290,7 +1315,7 @@ update_standard_vertex_arrays(bool force) {
  * so, the standard streams need to be disabled to get them "out of the way."
  * Called only from begin_draw_primitives.
  */
-void CLP(GraphicsStateGuardian)::
+void DXGraphicsStateGuardian9::
 disable_standard_vertex_arrays() {
   for ( int array_index = 0; array_index < _num_bound_streams; ++array_index )
   {
@@ -2184,7 +2209,8 @@ reset() {
     Geom::GR_point_perspective | Geom::GR_point_sprite |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
-    Geom::GR_flat_first_vertex;
+    Geom::GR_flat_first_vertex |
+    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point;
 
   // overwrite gsg defaults with these values
 
@@ -2383,7 +2409,7 @@ reset() {
   // OVERRIDE SUPPORT SINCE IT DOES NOT WORK WELL
   _screen->_supports_automatic_mipmap_generation = false;
 
-  this -> reset_render_states ( );
+  reset_render_states();
 
   _max_vertices_per_array = d3d_caps.MaxVertexIndex;
   _max_vertices_per_primitive = d3d_caps.MaxPrimitiveCount;
@@ -2646,11 +2672,11 @@ reset() {
   set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
   _current_shader = (Shader *)NULL;
-  _current_shader_context = (CLP(ShaderContext) *)NULL;
+  _current_shader_context = (DXShaderContext9 *)NULL;
   _vertex_array_shader = (Shader *)NULL;
-  _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
+  _vertex_array_shader_context = (DXShaderContext9 *)NULL;
   _texture_binding_shader = (Shader *)NULL;
-  _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
+  _texture_binding_shader_context = (DXShaderContext9 *)NULL;
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
 
@@ -2775,13 +2801,13 @@ do_issue_alpha_test() {
 void DXGraphicsStateGuardian9::
 do_issue_shader() {
 
-  CLP(ShaderContext) *context = 0;
+  DXShaderContext9 *context = 0;
   Shader *shader = 0;
   if (_target_shader) {
     shader = (Shader *)(_target_shader->get_shader());
   }
   if (shader) {
-    context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
+    context = (DXShaderContext9 *)(shader->prepare_now(get_prepared_objects(), this));
   }
 
   if (context == 0 || (context && context -> valid (this) == false)) {
@@ -2819,7 +2845,8 @@ do_issue_shader() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_render_mode() {
-  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
+  const RenderModeAttrib *target_render_mode;
+  _target_rs->get_attrib_def(target_render_mode);
   RenderModeAttrib::Mode mode = target_render_mode->get_mode();
 
   switch (mode) {
@@ -3395,6 +3422,8 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 D3DFORMAT DXGraphicsStateGuardian9::
 get_index_type(Geom::NumericType numeric_type) {
   switch (numeric_type) {
+  // NT_uint8 is automatically promoted to uint16.
+  case Geom::NT_uint8:
   case Geom::NT_uint16:
     return D3DFMT_INDEX16;
 
@@ -3798,7 +3827,14 @@ do_issue_blending() {
   case TransparencyAttrib::M_multisample_mask:
   case TransparencyAttrib::M_dual:
     set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-    set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
+    if (old_alpha_blend) {
+      set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
+    } else {
+      set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+      set_render_state(D3DRS_BLENDOPALPHA, D3DBLENDOP_ADD);
+      set_render_state(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+      set_render_state(D3DRS_DESTBLENDALPHA, D3DBLEND_INVSRCALPHA);
+    }
     set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
     set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
     set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -4532,7 +4568,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
       }
     }
 
-    this -> mark_new();
+    mark_new();
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr) && hr != D3DERR_DEVICELOST) {
       return hr;

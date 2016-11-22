@@ -17,6 +17,7 @@
 #include "pandabase.h"
 
 #include "lightLensNode.h"
+#include "pointLight.h"
 
 /**
  * A sphere light is like a point light, except that it represents a sphere

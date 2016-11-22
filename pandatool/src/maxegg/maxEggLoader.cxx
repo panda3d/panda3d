@@ -279,7 +279,7 @@ void MaxEggJoint::CreateMaxBone(void)
   _node->SetRenderable(FALSE);
 
 #ifdef _UNICODE
-  TCHAR *wname [1024];
+  TCHAR wname[1024];
   wname[1023] = 0;
   mbstowcs(wname, _egg_joint->get_name().c_str(), 1023);
   _node->SetName(wname);
@@ -452,7 +452,14 @@ MaxEggMesh *MaxEggLoader::GetMesh(EggVertexPool *pool)
     result->_tvert_count = 0;
     result->_cvert_count = 0;
     result->_face_count = 0;
-    result->_node->SetName(TSTR(name.c_str()));
+#ifdef _UNICODE
+    TCHAR wname[1024];
+    wname[1023] = 0;
+    mbstowcs(wname, name.c_str(), 1023);
+    result->_node->SetName(wname);
+#else
+    result->_node->SetName((char*) name.c_str());
+#endif
     _mesh_tab[pool] = result;
   }
   return result;

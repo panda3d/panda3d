@@ -228,7 +228,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
   // around this, we will force-recompute all of the bounding volumes of our
   // parent nodes immediately.
   Parents parents = get_parents();
-  for (int i = 0; i < parents.get_num_parents(); ++i) {
+  for (size_t i = 0; i < parents.get_num_parents(); ++i) {
     PandaNode *parent = parents.get_parent(i);
     parent->get_bounds();
   }

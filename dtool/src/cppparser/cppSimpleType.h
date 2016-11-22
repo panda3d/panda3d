@@ -19,7 +19,7 @@
 #include "cppType.h"
 
 /**
- *
+ * Represents a C++ fundamental type.
  */
 class CPPSimpleType : public CPPType {
 public:
@@ -40,12 +40,11 @@ public:
     // nullptr_t, which is a typedef of decltype(nullptr).
     T_nullptr,
 
-/*
- * T_parameter is a special type which is assigned to expressions that are
- * discovered where a formal parameter was expected.  This is a special case
- * for handling cases like this: int foo(0); which really means the same thing
- * as: int foo = 0; but it initially looks like a function prototype.
- */
+    // T_parameter is a special type which is assigned to expressions that are
+    // discovered where a formal parameter was expected.  This is a special
+    // case for handling cases like this: int foo(0); which really means the
+    // same thing as: int foo = 0; but it initially looks like a function
+    // prototype.
     T_parameter,
 
     // T_auto is also a special type that corresponds to the "auto" keyword
@@ -69,9 +68,14 @@ public:
   int _flags;
 
   virtual bool is_tbd() const;
+  bool is_arithmetic() const;
+  virtual bool is_fundamental() const;
+  virtual bool is_standard_layout() const;
   virtual bool is_trivial() const;
+  virtual bool is_constructible(const CPPType *type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_destructible() const;
   virtual bool is_parameter_expr() const;
 
   virtual string get_preferred_name() const;

@@ -14,6 +14,7 @@
 #include "matrixLens.h"
 #include "indent.h"
 #include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle MatrixLens::_type_handle;
 

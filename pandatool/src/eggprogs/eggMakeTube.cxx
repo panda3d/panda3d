@@ -18,7 +18,6 @@
 #include "eggPolygon.h"
 #include "pointerTo.h"
 #include "look_at.h"
-#include "pystub.h"
 
 /**
  *
@@ -264,9 +263,6 @@ add_polygon(EggVertex *a, EggVertex *b, EggVertex *c, EggVertex *d) {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   EggMakeTube prog;
   prog.parse_command_line(argc, argv);
   prog.run();

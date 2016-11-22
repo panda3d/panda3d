@@ -13,6 +13,7 @@
 
 #include "bamReader_ext.h"
 #include "config_util.h"
+#include "pythonThread.h"
 
 #ifdef HAVE_PYTHON
 
@@ -45,8 +46,7 @@ static TypedWritable *factory_callback(const FactoryParams &params){
   PyObject *args = PyTuple_Pack(2, py_scan, py_manager);
 
   // Now call the Python function.
-  Thread *current_thread = Thread::get_current_thread();
-  PyObject *result = current_thread->call_python_func(func, args);
+  PyObject *result = PythonThread::call_python_func(func, args);
   Py_DECREF(args);
   Py_DECREF(py_scan);
   Py_DECREF(py_manager);

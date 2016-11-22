@@ -10,7 +10,6 @@
 #include "pipelineCyclerTrueImpl.cxx"
 #include "pmutex.cxx"
 #include "psemaphore.cxx"
-#include "pythonThread.cxx"
 #include "reMutex.cxx"
 #include "reMutexDirect.cxx"
 #include "reMutexHolder.cxx"

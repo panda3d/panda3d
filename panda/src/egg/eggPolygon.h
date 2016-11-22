@@ -27,6 +27,8 @@ PUBLISHED:
   INLINE EggPolygon(const EggPolygon &copy);
   INLINE EggPolygon &operator = (const EggPolygon &copy);
 
+  virtual EggPolygon *make_copy() const OVERRIDE;
+
   virtual bool cleanup();
 
   bool calculate_normal(LNormald &result, CoordinateSystem cs = CS_default) const;

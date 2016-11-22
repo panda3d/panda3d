@@ -13,7 +13,6 @@
 
 #include "bamToEgg.h"
 #include "save_egg_file.h"
-#include "pystub.h"
 #include "string_utils.h"
 #include "bamFile.h"
 #include "bamCacheRecord.h"
@@ -98,9 +97,6 @@ run() {
 }
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   BamToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();

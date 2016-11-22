@@ -86,7 +86,8 @@ clear() {
 void PfmFile::
 clear(int x_size, int y_size, int num_channels) {
   nassertv(x_size >= 0 && y_size >= 0);
-  nassertv(num_channels > 0 && num_channels <= 4 || (x_size == 0 && y_size == 0 && num_channels == 0));
+  nassertv((num_channels > 0 && num_channels <= 4) ||
+           (x_size == 0 && y_size == 0 && num_channels == 0));
 
   _x_size = x_size;
   _y_size = y_size;
@@ -632,7 +633,6 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
         continue;
       }
 
-      const LPoint3f &p = get_point(xi, yi);
       int gi = (yi - min_y) * y_size + (xi - min_x);
       nassertr(gi >= 0 && gi < size, false);
       mini_grid[gi]._sxi = xi;
@@ -1449,17 +1449,20 @@ apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale) {
 void PfmFile::
 merge(const PfmFile &other) {
   nassertv(is_valid() && other.is_valid());
-  nassertv(other._x_size == _x_size && other._y_size == _y_size);
+  nassertv(other._x_size == _x_size && other._y_size == _y_size && other._num_channels == _num_channels);
 
   if (!_has_no_data_value) {
     // Trivial no-op.
     return;
   }
 
-  for (int yi = 0; yi < _y_size; ++yi) {
-    for (int xi = 0; xi < _x_size; ++xi) {
-      if (!has_point(xi, yi) && other.has_point(xi, yi)) {
-        set_point(xi, yi, other.get_point(xi, yi));
+  size_t point_size = _num_channels * sizeof(PN_float32);
+  for (int y = 0; y < _y_size; ++y) {
+    for (int x = 0; x < _x_size; ++x) {
+      if (!has_point(x, y) && other.has_point(x, y)) {
+        memcpy(&_table[(y * _x_size + x) * _num_channels],
+               &other._table[(y * _x_size + x) * _num_channels],
+               point_size);
       }
     }
   }
@@ -1541,7 +1544,7 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   int new_x_size = x_end - x_begin;
   int new_y_size = y_end - y_begin;
   Table new_table;
-  int new_size = new_x_size * new_y_size * _num_channels;
+  size_t new_size = (size_t)new_x_size * (size_t)new_y_size * (size_t)_num_channels;
 
   // We allocate a little bit bigger to allow safe overflow: you can call
   // get_point3() or get_point4() on the last point of a 1- or 3-channel

@@ -24,6 +24,7 @@
 #include "cppInstance.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
+#include "cppStructType.h"
 #include "cppBison.h"
 #include "pdtoa.h"
 
@@ -390,6 +391,19 @@ typeid_op(CPPExpression *op1, CPPType *std_type_info) {
 }
 
 /**
+ * Creates an expression that returns a particular type trait.
+ */
+CPPExpression CPPExpression::
+type_trait(int trait, CPPType *type, CPPType *arg) {
+  CPPExpression expr(0);
+  expr._type = T_type_trait;
+  expr._u._type_trait._trait = trait;
+  expr._u._type_trait._type = type;
+  expr._u._type_trait._arg = arg;
+  return expr;
+}
+
+/**
  *
  */
 CPPExpression CPPExpression::
@@ -398,6 +412,17 @@ sizeof_func(CPPType *type) {
   expr._type = T_sizeof;
   expr._u._typecast._to = type;
   expr._u._typecast._op1 = NULL;
+  return expr;
+}
+
+/**
+ *
+ */
+CPPExpression CPPExpression::
+sizeof_ellipsis_func(CPPIdentifier *ident) {
+  CPPExpression expr(0);
+  expr._type = T_sizeof_ellipsis;
+  expr._u._ident = ident;
   return expr;
 }
 
@@ -495,13 +520,6 @@ get_delete() {
 /**
  *
  */
-CPPExpression::
-~CPPExpression() {
-}
-
-/**
- *
- */
 CPPExpression::Result CPPExpression::
 evaluate() const {
   Result r1, r2;
@@ -579,6 +597,7 @@ evaluate() const {
   case T_new:
   case T_default_new:
   case T_sizeof:
+  case T_sizeof_ellipsis:
     return Result();
 
   case T_alignof:
@@ -801,6 +820,95 @@ evaluate() const {
   case T_typeid_expr:
     return Result();
 
+  case T_type_trait:
+    switch (_u._type_trait._trait) {
+    case KW_HAS_VIRTUAL_DESTRUCTOR:
+      {
+        CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
+        return Result(struct_type != NULL && struct_type->has_virtual_destructor());
+      }
+
+    case KW_IS_ABSTRACT:
+      {
+        CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
+        return Result(struct_type != NULL && struct_type->is_abstract());
+      }
+
+    case KW_IS_BASE_OF:
+      {
+        CPPStructType *struct_type1 = _u._type_trait._type->as_struct_type();
+        CPPStructType *struct_type2 = _u._type_trait._arg->as_struct_type();
+        return Result(struct_type1 != NULL && struct_type2 != NULL && struct_type1->is_base_of(struct_type2));
+      }
+
+    case KW_IS_CLASS:
+      {
+        CPPExtensionType *ext_type = _u._type_trait._type->as_extension_type();
+        return Result(ext_type != NULL && (
+          ext_type->_type == CPPExtensionType::T_class ||
+          ext_type->_type == CPPExtensionType::T_struct));
+      }
+
+    case KW_IS_CONSTRUCTIBLE:
+      if (_u._type_trait._arg == NULL) {
+        return Result(_u._type_trait._type->is_default_constructible());
+      } else {
+        return Result(_u._type_trait._type->is_constructible(_u._type_trait._arg));
+      }
+
+    case KW_IS_CONVERTIBLE_TO:
+      assert(_u._type_trait._arg != NULL);
+      return Result(_u._type_trait._type->is_convertible_to(_u._type_trait._arg));
+
+    case KW_IS_DESTRUCTIBLE:
+      return Result(_u._type_trait._type->is_destructible());
+
+    case KW_IS_EMPTY:
+      {
+        CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
+        return Result(struct_type != NULL && struct_type->is_empty());
+      }
+
+    case KW_IS_ENUM:
+      return Result(_u._type_trait._type->is_enum());
+
+    case KW_IS_FINAL:
+      {
+        CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
+        return Result(struct_type != NULL && struct_type->is_final());
+      }
+
+    case KW_IS_FUNDAMENTAL:
+      return Result(_u._type_trait._type->is_fundamental());
+
+    case KW_IS_POD:
+      return Result(_u._type_trait._type->is_trivial() &&
+                    _u._type_trait._type->is_standard_layout());
+
+    case KW_IS_POLYMORPHIC:
+      {
+        CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
+        return Result(struct_type != NULL && struct_type->is_polymorphic());
+      }
+
+    case KW_IS_STANDARD_LAYOUT:
+      return Result(_u._type_trait._type->is_standard_layout());
+
+    case KW_IS_TRIVIAL:
+      return Result(_u._type_trait._type->is_trivial());
+
+    case KW_IS_UNION:
+      {
+        CPPExtensionType *ext_type = _u._type_trait._type->as_extension_type();
+        return Result(ext_type != NULL &&
+          ext_type->_type == CPPExtensionType::T_union);
+      }
+
+    default:
+      cerr << "**unexpected type trait**\n";
+      abort();
+    }
+
   default:
     cerr << "**invalid operand**\n";
     abort();
@@ -916,6 +1024,7 @@ determine_type() const {
     return CPPType::new_type(new CPPPointerType(_u._typecast._to));
 
   case T_sizeof:
+  case T_sizeof_ellipsis:
   case T_alignof:
     // Note: this should actually be size_t, but that is defined as a typedef
     // in parser-inc.  We could try to resolve it, but that's hacky.  Eh, it's
@@ -1057,6 +1166,9 @@ determine_type() const {
   case T_typeid_expr:
     return _u._typeid._std_type_info;
 
+  case T_type_trait:
+    return bool_type;
+
   default:
     cerr << "**invalid operand**\n";
     abort();
@@ -1113,6 +1225,9 @@ is_fully_specified() const {
   case T_alignof:
     return _u._typecast._to->is_fully_specified();
 
+  case T_sizeof_ellipsis:
+    return _u._ident->is_fully_specified();
+
   case T_trinary_operation:
     if (!_u._op._op3->is_fully_specified()) {
       return false;
@@ -1140,6 +1255,9 @@ is_fully_specified() const {
 
   case T_typeid_expr:
     return _u._typeid._expr->is_fully_specified();
+
+  case T_type_trait:
+    return _u._type_trait._type->is_fully_specified();
 
   default:
     return true;
@@ -1276,6 +1394,13 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     any_changed = any_changed || (rep->_u._typeid._expr != _u._typeid._expr);
     break;
 
+  case T_type_trait:
+    rep->_u._type_trait._type =
+      _u._type_trait._type->substitute_decl(subst, current_scope, global_scope)
+      ->as_type();
+    any_changed = any_changed || (rep->_u._type_trait._type != _u._type_trait._type);
+    break;
+
   default:
     break;
   }
@@ -1349,6 +1474,9 @@ is_tbd() const {
 
   case T_typeid_expr:
     return _u._typeid._expr->is_tbd();
+
+  case T_type_trait:
+    return _u._type_trait._type->is_tbd();
 
   default:
     return false;
@@ -1538,6 +1666,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   case T_sizeof:
     out << "sizeof(";
     _u._typecast._to->output(out, indent_level, scope, false);
+    out << ")";
+    break;
+
+  case T_sizeof_ellipsis:
+    out << "sizeof...(";
+    _u._ident->output(out, scope);
     out << ")";
     break;
 
@@ -1753,6 +1887,65 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     out << "delete";
     break;
 
+  case T_type_trait:
+    switch (_u._type_trait._trait) {
+    case KW_HAS_VIRTUAL_DESTRUCTOR:
+      out << "__has_virtual_destructor";
+      break;
+    case KW_IS_ABSTRACT:
+      out << "__is_abstract";
+      break;
+    case KW_IS_BASE_OF:
+      out << "__is_base_of";
+      break;
+    case KW_IS_CLASS:
+      out << "__is_class";
+      break;
+    case KW_IS_CONSTRUCTIBLE:
+      out << "__is_constructible";
+      break;
+    case KW_IS_CONVERTIBLE_TO:
+      out << "__is_convertible_to";
+      break;
+    case KW_IS_DESTRUCTIBLE:
+      out << "__is_destructible";
+      break;
+    case KW_IS_EMPTY:
+      out << "__is_empty";
+      break;
+    case KW_IS_ENUM:
+      out << "__is_enum";
+      break;
+    case KW_IS_FINAL:
+      out << "__is_final";
+      break;
+    case KW_IS_FUNDAMENTAL:
+      out << "__is_fundamental";
+      break;
+    case KW_IS_POD:
+      out << "__is_pod";
+      break;
+    case KW_IS_POLYMORPHIC:
+      out << "__is_polymorphic";
+      break;
+    case KW_IS_STANDARD_LAYOUT:
+      out << "__is_standard_layout";
+      break;
+    case KW_IS_TRIVIAL:
+      out << "__is_trivial";
+      break;
+    case KW_IS_UNION:
+      out << "__is_union";
+      break;
+    default:
+      out << (evaluate().as_boolean() ? "true" : "false");
+      return;
+    }
+    out << '(';
+    _u._type_trait._type->output(out, indent_level, scope, false);
+    out << ')';
+    break;
+
   default:
     out << "(** invalid operand type " << (int)_type << " **)";
   }
@@ -1864,6 +2057,7 @@ is_equal(const CPPDeclaration *other) const {
     return _u._fgroup == ot->_u._fgroup;
 
   case T_unknown_ident:
+  case T_sizeof_ellipsis:
     return *_u._ident == *ot->_u._ident;
 
   case T_typecast:
@@ -1906,6 +2100,10 @@ is_equal(const CPPDeclaration *other) const {
 
   case T_typeid_expr:
     return _u._typeid._expr == ot->_u._typeid._expr;
+
+  case T_type_trait:
+    return _u._type_trait._trait == ot->_u._type_trait._trait &&
+           _u._type_trait._type == ot->_u._type_trait._type;
 
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";
@@ -1954,6 +2152,7 @@ is_less(const CPPDeclaration *other) const {
     return *_u._fgroup < *ot->_u._fgroup;
 
   case T_unknown_ident:
+  case T_sizeof_ellipsis:
     return *_u._ident < *ot->_u._ident;
 
   case T_typecast:
@@ -2006,6 +2205,12 @@ is_less(const CPPDeclaration *other) const {
 
   case T_typeid_expr:
     return *_u._typeid._expr < *ot->_u._typeid._expr;
+
+  case T_type_trait:
+    if (_u._type_trait._trait != ot->_u._type_trait._trait) {
+      return _u._type_trait._trait < ot->_u._type_trait._trait;
+    }
+    return *_u._type_trait._type < *ot->_u._type_trait._type;
 
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";

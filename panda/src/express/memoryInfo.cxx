@@ -108,7 +108,7 @@ determine_dynamic_type() {
         return;
       }
 
-      TypeHandle orig_type = _dynamic_type;
+      //TypeHandle orig_type = _dynamic_type;
       update_type_handle(_dynamic_type, got_type);
     }
   }

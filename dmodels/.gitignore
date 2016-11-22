@@ -1,7 +1,0 @@
-*.egg
-*.pt
-/built/
-Makefile
-bams/
-optchar/
-pal_egg/

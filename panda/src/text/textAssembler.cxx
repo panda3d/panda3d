@@ -544,32 +544,34 @@ assemble_text() {
       }
     }
 
-    if (properties->has_shadow()) {
+    if (!placement._glyph.is_null()) {
+      if (properties->has_shadow()) {
+        if (_dynamic_merge) {
+          if (placement._glyph->has_quad()) {
+            placement.assign_quad_to(quad_shadow_map, shadow_state, shadow);
+          } else {
+            placement.assign_append_to(geom_shadow_collector_map, shadow_state, shadow);
+          }
+        } else {
+          placement.assign_to(shadow_geom_node, shadow_state, shadow);
+        }
+
+        // Don't shadow the graphics.  That can result in duplication of button
+        // objects, plus it looks weird.  If you want a shadowed graphic, you
+        // can shadow it yourself before you add it.
+        // placement.copy_graphic_to(shadow_node, shadow_state, shadow);
+        any_shadow = true;
+      }
+
       if (_dynamic_merge) {
         if (placement._glyph->has_quad()) {
-          placement.assign_quad_to(quad_shadow_map, shadow_state, shadow);
+          placement.assign_quad_to(quad_map, text_state);
         } else {
-          placement.assign_append_to(geom_shadow_collector_map, shadow_state, shadow);
+          placement.assign_append_to(geom_collector_map, text_state);
         }
       } else {
-        placement.assign_to(shadow_geom_node, shadow_state, shadow);
+        placement.assign_to(text_geom_node, text_state);
       }
-
-      // Don't shadow the graphics.  That can result in duplication of button
-      // objects, plus it looks weird.  If you want a shadowed graphic, you
-      // can shadow it yourself before you add it.
-      // placement.copy_graphic_to(shadow_node, shadow_state, shadow);
-      any_shadow = true;
-    }
-
-    if (_dynamic_merge) {
-      if (placement._glyph->has_quad()) {
-        placement.assign_quad_to(quad_map, text_state);
-      } else {
-        placement.assign_append_to(geom_collector_map, text_state);
-      }
-    } else {
-      placement.assign_to(text_geom_node, text_state);
     }
     placement.copy_graphic_to(text_node, text_state);
   }
@@ -1327,10 +1329,9 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
     // width is defined by the wordwrap size with the upper left corner
     // starting from 0,0,0 if the wordwrap size is unspecified the alignment
     // could eventually result wrong.
-    PN_stdfloat xpos;
+    PN_stdfloat xpos = 0;
     switch (align) {
     case TextProperties::A_left:
-      xpos = 0.0f;
       _lr[0] = max(_lr[0], row_width);
       break;
 
@@ -1346,7 +1347,6 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
       break;
 
     case TextProperties::A_boxed_left:
-      xpos = 0.0f;
       _lr[0] = max(_lr[0], max(row_width, wordwrap));
       break;
 
@@ -1487,6 +1487,7 @@ assemble_row(TextAssembler::TextRow &row,
       placement._scale = properties->get_glyph_scale();
       placement._xpos = (xpos - frame[0]);
       placement._ypos = (properties->get_glyph_shift() - frame[2]);
+      placement._slant = properties->get_slant();
       placement._properties = properties;
 
       placed_glyphs.push_back(placement);

@@ -19,7 +19,6 @@
 #include "eggTexture.h"
 #include "eggPolygon.h"
 #include "pnmImageHeader.h"
-#include "pystub.h"
 
 #include <algorithm>
 
@@ -483,9 +482,6 @@ run() {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   EggTextureCards prog;
   prog.parse_command_line(argc, argv);
   prog.run();

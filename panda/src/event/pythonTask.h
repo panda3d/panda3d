@@ -50,9 +50,6 @@ PUBLISHED:
   int __traverse__(visitproc visit, void *arg);
   int __clear__();
 
-  INLINE void set_delay(PyObject *delay);
-  INLINE PyObject *get_delay() const;
-
 PUBLISHED:
   // The name of this task.
   MAKE_PROPERTY(name, get_name, set_name);
@@ -72,10 +69,10 @@ PUBLISHED:
   MAKE_PROPERTY(wakeTime, get_wake_time);
 
   // The delay value that has been set on this task, if any, or None.
-  MAKE_PROPERTY(delay_time, get_delay, set_delay);
+  MAKE_PROPERTY2(delay_time, has_delay, get_delay, set_delay, clear_delay);
 
   // Alias of delay_time.
-  MAKE_PROPERTY(delayTime, get_delay, set_delay);
+  MAKE_PROPERTY2(delayTime, has_delay, get_delay, set_delay, clear_delay);
 
   // The number of frames that have elapsed since the task was started,
   // according to the task manager's clock.

@@ -370,10 +370,8 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
 
       // Is this identifier one of our parameters?
       int pnum = -1;
-      bool va_args = false;
 
       if (ident == "__VA_ARGS__") {
-        va_args = true;
         // C99-style variadics, ie.  #define macro(...) __VA_ARGS__
         pnum = _variadic_param;
 

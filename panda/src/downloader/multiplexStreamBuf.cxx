@@ -12,7 +12,6 @@
  */
 
 #include "multiplexStreamBuf.h"
-#include "lightMutexHolder.h"
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 #define WINDOWS_LEAN_AND_MEAN
@@ -114,8 +113,6 @@ void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
            MultiplexStreamBuf::OutputType output_type,
            ostream *out, FILE *fout, bool owns_obj) {
-  // Ensure that we have the mutex while we fiddle with the list of outputs.
-  LightMutexHolder holder(_lock);
 
   Output o;
   o._buffer_type = buffer_type;
@@ -123,7 +120,11 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
   o._out = out;
   o._fout = fout;
   o._owns_obj = owns_obj;
+
+  // Ensure that we have the mutex while we fiddle with the list of outputs.
+  _lock.acquire();
   _outputs.push_back(o);
+  _lock.release();
 }
 
 
@@ -132,9 +133,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
  */
 void MultiplexStreamBuf::
 flush() {
-  LightMutexHolder holder(_lock);
-
+  _lock.acquire();
   write_chars("", 0, true);
+  _lock.release();
 }
 
 /**
@@ -143,7 +144,7 @@ flush() {
  */
 int MultiplexStreamBuf::
 overflow(int ch) {
-  LightMutexHolder holder(_lock);
+  _lock.acquire();
 
   streamsize n = pptr() - pbase();
 
@@ -158,6 +159,7 @@ overflow(int ch) {
     write_chars(&c, 1, false);
   }
 
+  _lock.release();
   return 0;
 }
 
@@ -167,7 +169,7 @@ overflow(int ch) {
  */
 int MultiplexStreamBuf::
 sync() {
-  LightMutexHolder holder(_lock);
+  _lock.acquire();
 
   streamsize n = pptr() - pbase();
 
@@ -179,6 +181,7 @@ sync() {
   write_chars(pbase(), n, false);
   pbump(-n);
 
+  _lock.release();
   return 0;  // Return 0 for success, EOF to indicate write full.
 }
 

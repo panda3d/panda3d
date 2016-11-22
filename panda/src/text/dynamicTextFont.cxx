@@ -220,7 +220,6 @@ write(ostream &out, int indent_level) const {
   Cache::const_iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
     int glyph_index = (*ci).first;
-    const TextGlyph *glyph = (*ci).second;
     indent(out, indent_level + 2)
       << glyph_index;
 
@@ -630,7 +629,7 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     // This is the easy case: we can memcpy the rendered glyph directly into
     // our texture image, one row at a time.
     unsigned char *buffer_row = bitmap.buffer;
-    for (int yi = 0; yi < bitmap.rows; yi++) {
+    for (int yi = 0; yi < (int)bitmap.rows; yi++) {
 
       unsigned char *texture_row = glyph->get_row(yi);
       nassertv(texture_row != (unsigned char *)NULL);
@@ -642,13 +641,13 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     // This is a little bit more work: we have to expand the one-bit-per-pixel
     // bitmap into a one-byte-per-pixel texture.
     unsigned char *buffer_row = bitmap.buffer;
-    for (int yi = 0; yi < bitmap.rows; yi++) {
+    for (int yi = 0; yi < (int)bitmap.rows; yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
       nassertv(texture_row != (unsigned char *)NULL);
 
       int bit = 0x80;
       unsigned char *b = buffer_row;
-      for (int xi = 0; xi < bitmap.width; xi++) {
+      for (int xi = 0; xi < (int)bitmap.width; xi++) {
         if (*b & bit) {
           texture_row[xi] = 0xff;
         } else {
@@ -669,10 +668,10 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     // Here we must expand a grayscale pixmap with n levels of gray into our
     // 256-level texture.
     unsigned char *buffer_row = bitmap.buffer;
-    for (int yi = 0; yi < bitmap.rows; yi++) {
+    for (int yi = 0; yi < (int)bitmap.rows; yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
       nassertv(texture_row != (unsigned char *)NULL);
-      for (int xi = 0; xi < bitmap.width; xi++) {
+      for (int xi = 0; xi < (int)bitmap.width; xi++) {
         texture_row[xi] = (int)(buffer_row[xi] * 255) / (bitmap.num_grays - 1);
       }
       buffer_row += bitmap.pitch;

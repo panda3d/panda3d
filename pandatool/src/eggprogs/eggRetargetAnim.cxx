@@ -21,7 +21,6 @@
 #include "eggJointPointer.h"
 #include "eggTable.h"
 #include "compose_matrix.h"
-#include "pystub.h"
 
 /**
  *
@@ -186,9 +185,6 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   EggRetargetAnim prog;
   prog.parse_command_line(argc, argv);
   prog.run();

@@ -17,13 +17,20 @@
 
 TypeHandle EggLine::_type_handle;
 
-
 /**
  *
  */
 EggLine::
 ~EggLine() {
   clear();
+}
+
+/**
+ * Makes a copy of this object.
+ */
+EggLine *EggLine::
+make_copy() const {
+  return new EggLine(*this);
 }
 
 /**

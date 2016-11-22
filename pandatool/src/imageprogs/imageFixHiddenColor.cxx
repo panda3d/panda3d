@@ -13,7 +13,6 @@
 
 #include "imageFixHiddenColor.h"
 #include "string_utils.h"
-#include "pystub.h"
 
 /**
  *
@@ -143,9 +142,6 @@ run() {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   ImageFixHiddenColor prog;
   prog.parse_command_line(argc, argv);
   prog.run();
