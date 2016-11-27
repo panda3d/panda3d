@@ -1684,8 +1684,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
         if (gtc != (TextureContext*)NULL) {
           _glsl_img_textures[i] = gtc;
 
-          gl_tex = gtc->_index;
           _glgsg->update_texture(gtc, true);
+          gl_tex = gtc->_index;
 
           if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
             barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
