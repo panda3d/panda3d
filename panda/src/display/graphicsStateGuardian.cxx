@@ -1363,8 +1363,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       }
     }
 
-    // TODO: dummy light
-    nassertr(false, &LMatrix4::ident_mat());
+    // No light for this uniform
+    // TODO: Use a default/dummy light object. For now we use an identity
+    // matrix to avoid an assertion.
+    return &LMatrix4::ident_mat();
   }
   default:
     nassertr(false /*should never get here*/, &LMatrix4::ident_mat());
