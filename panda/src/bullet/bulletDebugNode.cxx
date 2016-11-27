@@ -180,7 +180,7 @@ draw_mask_changed() {
 void BulletDebugNode::
 sync_b2p(btDynamicsWorld *world) {
 
-  if (is_overall_hidden()) return;
+  if (is_overall_hidden() || !is_under_scene_root()) return;
 
   nassertv(get_num_geoms() == 2);
 
