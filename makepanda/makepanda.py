@@ -6459,6 +6459,26 @@ def MakeInstallerNSIS(file, title, installdir):
     oscmd(cmd)
     os.rename("nsis-output.exe", file)
 
+def MakeDebugSymbolArchive(zipname, dirname):
+    import zipfile
+    zip = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'bin', '*.pdb')):
+        zip.write(fn, dirname + '/bin/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'panda3d', '*.pdb')):
+        zip.write(fn, dirname + '/panda3d/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'plugins', '*.pdb')):
+        zip.write(fn, dirname + '/plugins/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'python', '*.pdb')):
+        zip.write(fn, dirname + '/python/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'python', 'DLLs', '*.pdb')):
+        zip.write(fn, dirname + '/python/DLLs/' + os.path.basename(fn))
+
+    zip.close()
 
 INSTALLER_DEB_FILE="""
 Package: panda3dMAJOR
@@ -7012,11 +7032,13 @@ try:
                     MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
                 else:
                     MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
+                    MakeDebugSymbolArchive("Panda3D-"+VERSION+dbg+"-x64-pdb.zip", "Panda3D-"+VERSION+"-x64")
             else:
                 if (RUNTIME):
                     MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+".exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
                 else:
                     MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION)
+                    MakeDebugSymbolArchive("Panda3D-"+VERSION+dbg+"-pdb.zip", "Panda3D-"+VERSION)
         elif (target == 'linux'):
             MakeInstallerLinux()
         elif (target == 'darwin'):
