@@ -143,11 +143,21 @@ SectionGroup "Panda3D Libraries"
         SetOutPath "$INSTDIR"
         File "${BUILT}\LICENSE"
         File /r /x CVS "${BUILT}\ReleaseNotes"
-        SetOutPath $INSTDIR\bin
-        File /r /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
-        File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
+
         SetOutPath $INSTDIR\etc
         File /r "${BUILT}\etc\*"
+
+        SetOutPath $INSTDIR\bin
+        File /r /x api-ms-win-*.dll /x ucrtbase.dll /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
+        File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
+
+        ; Before Windows 10, we need these stubs for the UCRT as well.
+        ReadRegDWORD $0 HKLM "Software\Microsoft\Windows NT\CurrentVersion" "CurrentMajorVersionNumber"
+        ${If} $0 < 10
+            ClearErrors
+            File /nonfatal /r "${BUILT}\bin\api-ms-win-*.dll"
+            File /nonfatal "${BUILT}\bin\ucrtbase.dll"
+        ${Endif}
 
         SetDetailsPrint both
         DetailPrint "Installing models..."
