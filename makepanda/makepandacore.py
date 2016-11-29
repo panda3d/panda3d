@@ -966,7 +966,12 @@ def ReadBinaryFile(wfile):
         ex = sys.exc_info()[1]
         exit("Cannot read %s: %s" % (wfile, ex))
 
-def WriteFile(wfile, data):
+def WriteFile(wfile, data, newline=None):
+    if newline is not None:
+        data = data.replace('\r\n', '\n')
+        data = data.replace('\r', '\n')
+        data = data.replace('\n', newline)
+
     try:
         dsthandle = open(wfile, "w")
         dsthandle.write(data)
@@ -984,18 +989,24 @@ def WriteBinaryFile(wfile, data):
         ex = sys.exc_info()[1]
         exit("Cannot write to %s: %s" % (wfile, ex))
 
-def ConditionalWriteFile(dest, desiredcontents):
+def ConditionalWriteFile(dest, data, newline=None):
+    if newline is not None:
+        data = data.replace('\r\n', '\n')
+        data = data.replace('\r', '\n')
+        data = data.replace('\n', newline)
+
     try:
         rfile = open(dest, 'r')
         contents = rfile.read(-1)
         rfile.close()
     except:
         contents = 0
-    if contents != desiredcontents:
+
+    if contents != data:
         if VERBOSE:
             print("Writing %s" % (dest))
         sys.stdout.flush()
-        WriteFile(dest, desiredcontents)
+        WriteFile(dest, data)
 
 def DeleteVCS(dir):
     if dir == "": dir = "."

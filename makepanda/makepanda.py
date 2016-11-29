@@ -2781,8 +2781,13 @@ if (GetTarget() == 'darwin'):
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
 
-ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
-ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
+if GetTarget() == 'windows':
+    # Convert to Windows newlines.
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc, newline='\r\n')
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc, newline='\r\n')
+else:
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
 ##########################################################################################
 #
@@ -2902,8 +2907,14 @@ if tp_dir is not None:
 ##
 ########################################################################
 
-CopyFile(GetOutputDir()+"/", "doc/LICENSE")
-CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+if GetTarget() == 'windows':
+    # Convert to Windows newlines so they can be opened by notepad.
+    WriteFile(GetOutputDir() + "/LICENSE", ReadFile("doc/LICENSE"), newline='\r\n')
+    WriteFile(GetOutputDir() + "/ReleaseNotes", ReadFile("doc/ReleaseNotes"), newline='\r\n')
+else:
+    CopyFile(GetOutputDir()+"/", "doc/LICENSE")
+    CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+
 if (PkgSkip("PANDATOOL")==0):
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")

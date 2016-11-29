@@ -31,6 +31,7 @@ SetCompressor ${COMPRESSOR}
 !include "Sections.nsh"
 !include "WinMessages.nsh"
 !include "WordFunc.nsh"
+!include "x64.nsh"
 
 !define MUI_WELCOMEFINISHPAGE_BITMAP "panda-install.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "panda-install.bmp"
@@ -118,6 +119,14 @@ var MANPAGE
 
 Function runFunction
     ExecShell "open" "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk"
+FunctionEnd
+
+Function .onInit
+    ${If} ${REGVIEW} = 64
+    ${AndIfNot} ${RunningX64}
+        MessageBox MB_OK|MB_ICONEXCLAMATION "You are attempting to install the 64-bit version of Panda3D on a 32-bit version of Windows.  Please download and install the 32-bit version of Panda3D instead."
+        Abort
+    ${EndIf}
 FunctionEnd
 
 SectionGroup "Panda3D Libraries"
@@ -634,6 +643,9 @@ Section -post
     WriteRegStr HKCU "Software\Classes\.pz" "PerceivedType" "compressed"
     WriteRegStr HKCU "Software\Classes\.mf" "" "Panda3D.Multifile"
     WriteRegStr HKCU "Software\Classes\.mf" "PerceivedType" "compressed"
+    WriteRegStr HKCU "Software\Classes\.prc" "" "inifile"
+    WriteRegStr HKCU "Software\Classes\.prc" "Content Type" "text/plain"
+    WriteRegStr HKCU "Software\Classes\.prc" "PerceivedType" "text"
 
     ; For convenience, if nobody registered .pyd, we will.
     ReadRegStr $0 HKCR "Software\Classes\.pyd" ""
