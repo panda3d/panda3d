@@ -1060,6 +1060,10 @@ def CompileCxx(obj,src,opts):
                 cmd += "/DWINVER=0x601 "
             else:
                 cmd += "/DWINVER=0x501 "
+                # Work around a WinXP/2003 bug when using VS 2015+.
+                if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+                    cmd += "/Zc:threadSafeInit- "
+
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
                 cmd += " /arch:SSE2"
@@ -2781,8 +2785,13 @@ if (GetTarget() == 'darwin'):
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
 
-ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
-ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
+if GetTarget() == 'windows':
+    # Convert to Windows newlines.
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc, newline='\r\n')
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc, newline='\r\n')
+else:
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
 ##########################################################################################
 #
@@ -2879,22 +2888,75 @@ if tp_dir is not None:
 
     if GetTarget() == 'windows':
         CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
-        if not PkgSkip("PYTHON"):
-            pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
-            if (GetOptimize() <= 2): pydll += "_d.dll"
-            else: pydll += ".dll"
-            CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
-                CopyFile(GetOutputDir() + "/bin/", fn)
+        if not PkgSkip("PYTHON") and not RTDIST:
+            #XXX rdb I don't think we need to copy over the Python DLL, do we?
+            #pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
+            #if (GetOptimize() <= 2): pydll += "_d.dll"
+            #else: pydll += ".dll"
+            #CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            if not RTDIST:
-                CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
-                if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
-                    CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
-                if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
-                    CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
-                ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
+            #for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
+            #    CopyFile(GetOutputDir() + "/bin/", fn)
+
+            # Copy the whole Python directory.
+            CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
+
+            # NB: Python does not always ship with the correct manifest/dll.
+            # Figure out the correct one to ship, and grab it from WinSxS dir.
+            manifest = GetOutputDir() + '/tmp/python.manifest'
+            if os.path.isfile(manifest):
+                os.unlink(manifest)
+            oscmd('mt -inputresource:"%s\\python.exe";#1 -out:"%s" -nologo' % (SDK["PYTHON"], manifest), True)
+
+            if os.path.isfile(manifest):
+                import xml.etree.ElementTree as ET
+                tree = ET.parse(manifest)
+                idents = tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity')
+            else:
+                idents = ()
+
+            for ident in tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity'):
+                sxs_name = '_'.join([
+                    ident.get('processorArchitecture'),
+                    ident.get('name').lower(),
+                    ident.get('publicKeyToken'),
+                    ident.get('version'),
+                ])
+
+                # Find the manifest matching these parameters.
+                pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', 'Manifests', sxs_name + '_*.manifest')
+                manifests = glob.glob(pattern)
+                if not manifests:
+                    print("%sWARNING:%s Could not locate manifest %s.  You may need to reinstall the Visual C++ Redistributable." % (GetColor("red"), GetColor(), pattern))
+                    continue
+
+                CopyFile(GetOutputDir() + "/python/" + ident.get('name') + ".manifest", manifests[0])
+
+                # Also copy the corresponding msvcr dll.
+                pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', sxs_name + '_*', 'msvcr*.dll')
+                for file in glob.glob(pattern):
+                    CopyFile(GetOutputDir() + "/python/", file)
+
+            # Copy python.exe to ppython.exe.
+            if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
+                CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
+            if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
+                CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
+            ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
+
+# Copy over the MSVC runtime.
+if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
+    vcver = SDK["VISUALSTUDIO_VERSION"].replace('.', '')
+    crtname = "Microsoft.VC%s.CRT" % (vcver)
+    dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "redist", GetTargetArch(), crtname)
+
+    if os.path.isfile(os.path.join(dir, "msvcr" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcr" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "msvcp" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcp" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "vcruntime" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "vcruntime" + vcver + ".dll"))
 
 ########################################################################
 ##
@@ -2902,8 +2964,14 @@ if tp_dir is not None:
 ##
 ########################################################################
 
-CopyFile(GetOutputDir()+"/", "doc/LICENSE")
-CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+if GetTarget() == 'windows':
+    # Convert to Windows newlines so they can be opened by notepad.
+    WriteFile(GetOutputDir() + "/LICENSE", ReadFile("doc/LICENSE"), newline='\r\n')
+    WriteFile(GetOutputDir() + "/ReleaseNotes", ReadFile("doc/ReleaseNotes"), newline='\r\n')
+else:
+    CopyFile(GetOutputDir()+"/", "doc/LICENSE")
+    CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+
 if (PkgSkip("PANDATOOL")==0):
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
@@ -6779,9 +6847,9 @@ def MakeInstallerLinux():
         txt = txt.replace("VERSION", DEBVERSION).replace("ARCH", pkg_arch).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
         txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") / 1024))
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
-        oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
+        oscmd("cd targetroot && (find usr -type f -exec md5sum {} ;) > DEBIAN/md5sums")
         if (not RUNTIME):
-          oscmd("cd targetroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
+          oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
           WriteFile("targetroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("targetroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("cp targetroot/DEBIAN/postinst targetroot/DEBIAN/postrm")
@@ -6809,7 +6877,7 @@ def MakeInstallerLinux():
 
         if RUNTIME:
             # The runtime doesn't export any useful symbols, so just query the dependencies.
-            oscmd("cd targetroot; %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
+            oscmd("cd targetroot && %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
             depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
             recommends = ""
         else:
@@ -6817,12 +6885,12 @@ def MakeInstallerLinux():
             pkg_dir = "debian/panda3d" + MAJOR_VERSION
 
             # Generate a symbols file so that other packages can know which symbols we export.
-            oscmd("cd targetroot; dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
+            oscmd("cd targetroot && dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
 
             # Library dependencies are required, binary dependencies are recommended.
             # We explicitly exclude libphysx-extras since we don't want to depend on PhysX.
-            oscmd("cd targetroot; LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
-            oscmd("cd targetroot; LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
+            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
+            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
 
             # Parse the substvars files generated by dpkg-shlibdeps.
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()

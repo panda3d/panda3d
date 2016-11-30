@@ -124,7 +124,7 @@ private:
     bool _was_dirty;
   };
 
-  MotionState *_motion;
+  MotionState _motion;
   btRigidBody *_rigid;
 
 public:

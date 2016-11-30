@@ -21,16 +21,12 @@ TypeHandle BulletRigidBodyNode::_type_handle;
  */
 BulletRigidBodyNode::
 BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
-
-  // Motion state
-  _motion = new MotionState();
-
   // Mass properties
   btScalar mass(0.0);
   btVector3 inertia(0, 0, 0);
 
   // construction info
-  btRigidBody::btRigidBodyConstructionInfo ci(mass, _motion, _shape, inertia);
+  btRigidBody::btRigidBodyConstructionInfo ci(mass, &_motion, _shape, inertia);
 
   // Additional damping
   if (bullet_additional_damping) {
@@ -52,13 +48,13 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
  */
 BulletRigidBodyNode::
 BulletRigidBodyNode(const BulletRigidBodyNode &copy) :
-  BulletBodyNode(copy)
+  BulletBodyNode(copy),
+  _motion(copy._motion)
 {
-  _motion = new MotionState(*copy._motion);
   _rigid = new btRigidBody(*copy._rigid);
   _rigid->setUserPointer(this);
   _rigid->setCollisionShape(_shape);
-  _rigid->setMotionState(_motion);
+  _rigid->setMotionState(&_motion);
 }
 
 /**
@@ -280,7 +276,7 @@ apply_central_impulse(const LVector3 &impulse) {
 void BulletRigidBodyNode::
 transform_changed() {
 
-  if (_motion->sync_disabled()) return;
+  if (_motion.sync_disabled()) return;
 
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
@@ -290,7 +286,7 @@ transform_changed() {
   // transform within the motion state.  For dynamic bodies we need to store
   // the net scale within the motion state, since Bullet might update the
   // transform via MotionState::setWorldTransform.
-  _motion->set_net_transform(ts);
+  _motion.set_net_transform(ts);
 
   // For dynamic or static bodies we directly apply the new transform.
   if (!is_kinematic()) {
@@ -334,7 +330,7 @@ sync_p2b() {
 void BulletRigidBodyNode::
 sync_b2p() {
 
-  _motion->sync_b2p((PandaNode *)this);
+  _motion.sync_b2p((PandaNode *)this);
 }
 
 /**
@@ -589,7 +585,7 @@ pick_dirty_flag() {
 bool BulletRigidBodyNode::
 pick_dirty_flag() {
 
-  return _motion->pick_dirty_flag();
+  return _motion.pick_dirty_flag();
 }
 
 /**
