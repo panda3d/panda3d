@@ -149,16 +149,24 @@ has_fixed_function_pipeline() const {
   // In OpenGL 3.1 the fixed function pipeline was declared deprecated, and
   // theoretically all the pipeline should gone. However, some implementations
   // kept them, "out of the law". After that, In OpenGL >= 3.2 the concept of
-  // core profile and compatibility mode where introduced. Therefore, since it
-  // is not possible to check whether those functions are implemented in GL 3.1
-  // or not, we should not try to use them.
+  // core profile and compatibility mode were introduced, as well as a way to
+  // check if they are available. Along this line, the safest approach seems to
+  // be not considering the fixed pipeline at all. Unfortunately, the engine
+  // currently has a lot of things working "out of the box", based on the fixed
+  // pipeline.
+  // That's a quite undesirable situation. In one side we have the GL contexts
+  // with fixed pipeline, which may eventually loss functionality. On the other
+  // side, we have the GL contexts without fixed pipeline which will not work at
+  // all if we return true
+  // Since we have not found a single 3.1 GL context without the fixed pipeline,
+  // we finally decided to assume it is available
   if ((_gl_version_major == 3) && (_gl_version_minor == 1)) {
-    return false;
+    return true;
   }
   // Otherwise, we can just check whether we are using a core profile or a
   // compatibility mode. The variable _core_profile is already taking into
   // account if a GL <= 3.0 is considered (becoming false)
-  return !_core_profile;
+  return !has_core_profile();
 #endif
 }
 
