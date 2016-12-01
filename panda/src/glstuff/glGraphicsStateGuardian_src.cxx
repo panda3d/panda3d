@@ -12850,13 +12850,13 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
                            GL_TEXTURE_BLUE_SIZE, &blue_size);
   glGetTexLevelParameteriv(page_target, 0,
                            GL_TEXTURE_ALPHA_SIZE, &alpha_size);
-  if (_supports_luminance_texture) {
+  if (get_supports_luminance_texture()) {
     glGetTexLevelParameteriv(page_target, 0,
                              GL_TEXTURE_LUMINANCE_SIZE, &luminance_size);
     glGetTexLevelParameteriv(page_target, 0,
                              GL_TEXTURE_INTENSITY_SIZE, &intensity_size);
   }
-  if (_supports_depth_texture) {
+  if (get_supports_depth_texture()) {
     glGetTexLevelParameteriv(page_target, 0,
                              GL_TEXTURE_DEPTH_SIZE, &depth_size);
   }
