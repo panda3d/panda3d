@@ -167,18 +167,13 @@ function(interrogate_sources target output database module)
     endforeach(source)
 
     # Interrogate also needs the include paths, so we'll extract them from the
-    # target:
-    set(include_flags)
-    get_target_property(include_dirs "${target}" INTERFACE_INCLUDE_DIRECTORIES)
-    foreach(include_dir ${include_dirs})
-      # To keep the command-line small, also make this relative:
-      # Note that Interrogate does NOT handle -I paths relative to -srcdir, so
-      # we make them relative to the directory where it's invoked.
-      file(RELATIVE_PATH rel_include_dir "${CMAKE_CURRENT_BINARY_DIR}" "${include_dir}")
-      list(APPEND include_flags "-I${rel_include_dir}")
-    endforeach(include_dir)
+    # target using a generator expression.
+    # Note, the \t is a workaround for a CMake bug where using a plain space in
+    # a JOIN will cause it to be escaped. Tabs are not escaped and will
+    # separate correctly.
+    set(include_flags "-I$<JOIN:$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>,\t-I>")
     # The above must also be included when compiling the resulting _igate.cxx file:
-    include_directories(${include_dirs})
+    include_directories("$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
 
     # Get the compiler definition flags. These must be passed to Interrogate
     # in the same way that they are passed to the compiler so that Interrogate

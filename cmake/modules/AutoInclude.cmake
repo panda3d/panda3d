@@ -6,10 +6,7 @@
 
 # Emulate CMake 2.8.11's CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE behavior if
 # this version doesn't define CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE.
-# CFSworks's version of CMake (2.8.12) doesn't have
-# CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE even though it should be supported,
-# hence test if it's defined (as either ON or OFF) before trying to use it.
-if("${CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE}" STREQUAL "")
+if(CMAKE_VERSION VERSION_LESS 2.8.11)
   # Replace some built-in functions in order to extend their functionality.
   function(add_library target)
     _add_library(${target} ${ARGN})
@@ -26,10 +23,12 @@ if("${CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE}" STREQUAL "")
     get_target_property(target_interface_dirs "${target}" INTERFACE_INCLUDE_DIRECTORIES)
 
     foreach(lib ${ARGN})
-      get_target_property(lib_interface_dirs "${lib}" INTERFACE_INCLUDE_DIRECTORIES)
+      if(TARGET "${lib}")
+        get_target_property(lib_interface_dirs "${lib}" INTERFACE_INCLUDE_DIRECTORIES)
 
-      if(lib_interface_dirs)
-        list(APPEND interface_dirs ${lib_interface_dirs})
+        if(lib_interface_dirs)
+          list(APPEND interface_dirs ${lib_interface_dirs})
+        endif()
       endif()
     endforeach()
 
