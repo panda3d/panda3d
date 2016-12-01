@@ -489,11 +489,11 @@ lookup_texture_mipmap_linear(ZTextureDef *texture_def, int s, int t, unsigned in
   level = max((int)level - 1, 0);
   p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
 
-  unsigned int bitsize = level + ZB_POINT_ST_FRAC_BITS;
-  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p2), PIXEL_R(p1), level_dx, bitsize);
-  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p2), PIXEL_G(p1), level_dx, bitsize);
-  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p2), PIXEL_B(p1), level_dx, bitsize);
-  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p2), PIXEL_A(p1), level_dx, bitsize);
+  unsigned int f = level_dx >> (level - 1);
+  r = LINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), f);
+  g = LINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), f);
+  b = LINEAR_FILTER(PIXEL_B(p1), PIXEL_B(p2), f);
+  a = LINEAR_FILTER(PIXEL_A(p1), PIXEL_A(p2), f);
 
   return RGBA_TO_PIXEL(r, g, b, a);
 }
@@ -570,11 +570,11 @@ lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned
   }
 
   int r, g, b, a;
-  unsigned int bitsize = level + ZB_POINT_ST_FRAC_BITS;
-  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p2a), PIXEL_R(p1a), level_dx, bitsize);
-  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p2a), PIXEL_G(p1a), level_dx, bitsize);
-  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p2a), PIXEL_B(p1a), level_dx, bitsize);
-  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p2a), PIXEL_A(p1a), level_dx, bitsize);
+  unsigned int f = level_dx >> (level - 1);
+  r = LINEAR_FILTER(PIXEL_R(p1a), PIXEL_R(p2a), f);
+  g = LINEAR_FILTER(PIXEL_G(p1a), PIXEL_G(p2a), f);
+  b = LINEAR_FILTER(PIXEL_B(p1a), PIXEL_B(p2a), f);
+  a = LINEAR_FILTER(PIXEL_A(p1a), PIXEL_A(p2a), f);
 
   return RGBA_TO_PIXEL(r, g, b, a);
 }

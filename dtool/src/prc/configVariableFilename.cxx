@@ -19,16 +19,28 @@
  */
 void ConfigVariableFilename::
 reload_cache() {
-  nassertv(_core != (ConfigVariableCore *)NULL);
-  mark_cache_valid(_local_modified);
+  // NB. MSVC doesn't guarantee that this mutex is initialized in a
+  // thread-safe manner.  But chances are that the first time this is called
+  // is at static init time, when there is no risk of data races.
+  static MutexImpl lock;
+  lock.acquire();
 
-  const ConfigDeclaration *decl = _core->get_declaration(0);
-  const ConfigPage *page = decl->get_page();
+  // We check again for cache validity since another thread may have beaten
+  // us to the punch while we were waiting for the lock.
+  if (!is_cache_valid(_local_modified)) {
+    nassertv(_core != (ConfigVariableCore *)NULL);
 
-  Filename page_filename(page->get_name());
-  Filename page_dirname = page_filename.get_dirname();
-  ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
+    const ConfigDeclaration *decl = _core->get_declaration(0);
+    const ConfigPage *page = decl->get_page();
 
-  _cache = Filename::expand_from(decl->get_string_value());
-  ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
+    Filename page_filename(page->get_name());
+    Filename page_dirname = page_filename.get_dirname();
+    ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
+
+    _cache = Filename::expand_from(decl->get_string_value());
+    ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
+
+    mark_cache_valid(_local_modified);
+  }
+  lock.release();
 }

@@ -14,15 +14,19 @@
 #include "pandaNode_ext.h"
 
 /**
- * Fills the given vector up with the list of Python tags on this PandaNode.
- *
- * It is the user's responsibility to ensure that the keys vector is empty
- * before making this call; otherwise, the new files will be appended to it.
+ * Returns a dictionary of Python tags that is associated with the current
+ * node.  This is similar to the regular tags, except this can store any
+ * Python object instead of just a string.  However, the Python object is not
+ * recorded to a bam file.
  */
-INLINE void Extension<NodePath>::
-get_python_tag_keys(vector_string &keys) const {
-  nassertv_always(!_this->is_empty());
-  invoke_extension(_this->node()).get_python_tag_keys(keys);
+INLINE PyObject *Extension<NodePath>::
+get_python_tags() {
+  // An empty NodePath returns None
+  if (_this->is_empty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return invoke_extension(_this->node()).get_python_tags();
 }
 
 /**
@@ -63,7 +67,7 @@ get_python_tag_keys() const {
  * of any one key's object.
  */
 INLINE void Extension<NodePath>::
-set_python_tag(const string &key, PyObject *value) {
+set_python_tag(PyObject *key, PyObject *value) {
   nassertv_always(!_this->is_empty());
   invoke_extension(_this->node()).set_python_tag(key, value);
 }
@@ -74,7 +78,7 @@ set_python_tag(const string &key, PyObject *value) {
  * None.  See also get_net_python_tag().
  */
 INLINE PyObject *Extension<NodePath>::
-get_python_tag(const string &key) const {
+get_python_tag(PyObject *key) const {
   // An empty NodePath quietly returns no tags.  This makes
   // get_net_python_tag() easier to implement.
   if (_this->is_empty()) {
@@ -90,7 +94,7 @@ get_python_tag(const string &key) const {
  * value has been set.  See also has_net_python_tag().
  */
 INLINE bool Extension<NodePath>::
-has_python_tag(const string &key) const {
+has_python_tag(PyObject *key) const {
   // An empty NodePath quietly has no tags.  This makes has_net_python_tag()
   // easier to implement.
   if (_this->is_empty()) {
@@ -105,7 +109,7 @@ has_python_tag(const string &key) const {
  * the indicated key.
  */
 INLINE void Extension<NodePath>::
-clear_python_tag(const string &key) {
+clear_python_tag(PyObject *key) {
   nassertv_always(!_this->is_empty());
   invoke_extension(_this->node()).clear_python_tag(key);
 }
@@ -117,7 +121,7 @@ clear_python_tag(const string &key) {
  * get_python_tag().
  */
 INLINE PyObject *Extension<NodePath>::
-get_net_python_tag(const string &key) const {
+get_net_python_tag(PyObject *key) const {
   NodePath tag_np = find_net_python_tag(key);
   return invoke_extension(&tag_np).get_python_tag(key);
 }
@@ -127,6 +131,17 @@ get_net_python_tag(const string &key) const {
  * or on any ancestor node, or false otherwise.  See also has_python_tag().
  */
 INLINE bool Extension<NodePath>::
-has_net_python_tag(const string &key) const {
+has_net_python_tag(PyObject *key) const {
   return !find_net_python_tag(key).is_empty();
+}
+
+/**
+ * Called by Python to implement cycle detection.
+ */
+INLINE int Extension<NodePath>::
+__traverse__(visitproc visit, void *arg) {
+  if (_this->is_empty()) {
+    return 0;
+  }
+  return invoke_extension(_this->node()).__traverse__(visit, arg);
 }

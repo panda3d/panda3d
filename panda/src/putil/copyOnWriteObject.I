@@ -66,12 +66,21 @@ operator = (const CopyOnWriteObject &copy) {
 
 #ifdef COW_THREADED
 /**
- * See CachedTypedWritableReferenceCount::cache_ref().
+ * @see CachedTypedWritableReferenceCount::cache_ref()
  */
 INLINE void CopyOnWriteObject::
 cache_ref() const {
   MutexHolder holder(_lock_mutex);
   CachedTypedWritableReferenceCount::cache_ref();
+}
+
+/**
+ * @see CachedTypedWritableReferenceCount::cache_unref()
+ */
+INLINE bool CopyOnWriteObject::
+cache_unref() const {
+  MutexHolder holder(_lock_mutex);
+  return CachedTypedWritableReferenceCount::cache_unref();
 }
 #endif  // COW_THREADED
 

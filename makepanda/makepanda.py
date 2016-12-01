@@ -758,8 +758,8 @@ if (COMPILER=="GCC"):
         # 64-bits OS X doesn't have Carbon.
         PkgDisable("CARBON")
 
-    if (PkgSkip("PYTHON")==0):
-        IncDirectory("ALWAYS", SDK["PYTHON"])
+    #if (PkgSkip("PYTHON")==0):
+    #    IncDirectory("PYTHON", SDK["PYTHON"])
     if (GetHost() == "darwin"):
         if (PkgSkip("FREETYPE")==0 and not os.path.isdir(GetThirdpartyDir() + 'freetype')):
           IncDirectory("FREETYPE", "/usr/X11/include")
@@ -827,10 +827,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
         if not PkgSkip("PYTHON"):
-            if GetTarget() == "darwin" and not RTDIST and not PkgHasCustomLocation("PYTHON"):
-                LibName("PYTHON", "-framework Python")
-            else:
-                SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+            SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
@@ -1063,6 +1060,10 @@ def CompileCxx(obj,src,opts):
                 cmd += "/DWINVER=0x601 "
             else:
                 cmd += "/DWINVER=0x501 "
+                # Work around a WinXP/2003 bug when using VS 2015+.
+                if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+                    cmd += "/Zc:threadSafeInit- "
+
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
                 cmd += " /arch:SSE2"
@@ -1241,7 +1242,7 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__'
                 cmd += ' -fstack-protector -march=armv5te -mtune=xscale -msoft-float'
             elif arch == 'mips':
-                cmd += ' -fno-strict-aliasing -finline-functions -fmessage-length=0'
+                cmd += ' -finline-functions -fmessage-length=0'
                 cmd += ' -fno-inline-functions-called-once -fgcse-after-reload'
                 cmd += ' -frerun-cse-after-loop -frename-registers'
 
@@ -1251,17 +1252,13 @@ def CompileCxx(obj,src,opts):
             if optlevel >= 3:
                 cmd += " -fomit-frame-pointer"
                 if arch.startswith('arm'):
-                    cmd += ' -fno-strict-aliasing -finline-limit=64 -mthumb'
-                elif arch == 'x86':
-                    cmd += ' -fstrict-aliasing'
+                    cmd += ' -finline-limit=64 -mthumb'
                 elif arch == 'mips':
                     cmd += ' -funswitch-loops -finline-limit=300'
             else:
                 cmd += ' -fno-omit-frame-pointer'
                 if arch.startswith('arm'):
                     cmd += ' -marm'
-                elif arch == 'x86':
-                    cmd += ' -fno-strict-aliasing'
 
             # Enable SIMD instructions if requested
             if arch.startswith('arm') and PkgSkip("NEON") == 0:
@@ -1288,6 +1285,9 @@ def CompileCxx(obj,src,opts):
 
         if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm"):
             cmd += " -msse2"
+
+        # Needed by both Python, Panda, Eigen, all of which break aliasing rules.
+        cmd += " -fno-strict-aliasing"
 
         if optlevel >= 3:
             cmd += " -ffast-math"
@@ -2126,9 +2126,7 @@ DTOOL_CONFIG=[
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
     ("STDFLOAT_DOUBLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_MAYA",                      '1',                      '1'),
-    ("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
     ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
-    ("SSL_097",                        'UNDEF',                  'UNDEF'),
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
@@ -2136,7 +2134,6 @@ DTOOL_CONFIG=[
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
-    ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
     ("SIMPLE_THREADS",                 'UNDEF',                  'UNDEF'),
     ("OS_SIMPLE_THREADS",              '1',                      '1'),
@@ -2149,12 +2146,9 @@ DTOOL_CONFIG=[
     ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
     ("SUPPORT_IMMEDIATE_MODE",         'UNDEF',                  'UNDEF'),
     ("SUPPORT_FIXED_FUNCTION",         '1',                      '1'),
-    ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
     ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
     ("DO_PIPELINING",                  '1',                      '1'),
     ("EXPORT_TEMPLATES",               'yes',                    'yes'),
-    ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
-    ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
     ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
     ("HAVE_NAMESPACE",                 '1',                      '1'),
@@ -2216,7 +2210,6 @@ DTOOL_CONFIG=[
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("IS_FREEBSD",                     'UNDEF',                  'UNDEF'),
-    ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
     ("HAVE_EIGEN",                     'UNDEF',                  'UNDEF'),
     ("LINMATH_ALIGN",                  '1',                      '1'),
     ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
@@ -2234,11 +2227,12 @@ DTOOL_CONFIG=[
     ("HAVE_PNM",                       '1',                      '1'),
     ("HAVE_STB_IMAGE",                 '1',                      '1'),
     ("HAVE_VORBIS",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
     ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
+    ("WANT_NATIVE_NET",                '1',                      '1'),
+    ("SIMULATE_NETWORK_DELAY",         'UNDEF',                  'UNDEF'),
     ("HAVE_EGG",                       '1',                      '1'),
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
@@ -2250,12 +2244,12 @@ DTOOL_CONFIG=[
     ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
     ("HAVE_CARBON",                    'UNDEF',                  'UNDEF'),
     ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
     ("HAVE_ROCKET_DEBUGGER",           'UNDEF',                  'UNDEF'),
+    ("USE_TAU",                        'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
 #    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
@@ -2376,9 +2370,6 @@ def WriteConfigSettings():
 
     if (GetOptimize() <= 3):
         dtool_config["DO_COLLISION_RECORDING"] = '1'
-
-    #if (GetOptimize() <= 2):
-    #    dtool_config["TRACK_IN_INTERPRETER"] = '1'
 
     if (GetOptimize() <= 3):
         dtool_config["DO_MEMORY_USAGE"] = '1'
@@ -2754,8 +2745,14 @@ except ImportError as err:
     if "No module named %s" not in str(err):
         raise""" % (module, module)
 
+exthelpers_code = """
+"This module is deprecated.  Import from direct.extensions_native.extension_native_helpers instead."
+from direct.extensions_native.extension_native_helpers import *
+"""
+
 if not PkgSkip("PYTHON"):
     ConditionalWriteFile(GetOutputDir() + '/pandac/PandaModules.py', panda_modules_code)
+    ConditionalWriteFile(GetOutputDir() + '/pandac/extension_native_helpers.py', exthelpers_code)
     ConditionalWriteFile(GetOutputDir() + '/pandac/__init__.py', '')
 
 ##########################################################################################
@@ -2788,8 +2785,13 @@ if (GetTarget() == 'darwin'):
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
 
-ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
-ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
+if GetTarget() == 'windows':
+    # Convert to Windows newlines.
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc, newline='\r\n')
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc, newline='\r\n')
+else:
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
 ##########################################################################################
 #
@@ -2886,22 +2888,75 @@ if tp_dir is not None:
 
     if GetTarget() == 'windows':
         CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
-        if not PkgSkip("PYTHON"):
-            pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
-            if (GetOptimize() <= 2): pydll += "_d.dll"
-            else: pydll += ".dll"
-            CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
-                CopyFile(GetOutputDir() + "/bin/", fn)
+        if not PkgSkip("PYTHON") and not RTDIST:
+            #XXX rdb I don't think we need to copy over the Python DLL, do we?
+            #pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
+            #if (GetOptimize() <= 2): pydll += "_d.dll"
+            #else: pydll += ".dll"
+            #CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            if not RTDIST:
-                CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
-                if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
-                    CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
-                if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
-                    CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
-                ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
+            #for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
+            #    CopyFile(GetOutputDir() + "/bin/", fn)
+
+            # Copy the whole Python directory.
+            CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
+
+            # NB: Python does not always ship with the correct manifest/dll.
+            # Figure out the correct one to ship, and grab it from WinSxS dir.
+            manifest = GetOutputDir() + '/tmp/python.manifest'
+            if os.path.isfile(manifest):
+                os.unlink(manifest)
+            oscmd('mt -inputresource:"%s\\python.exe";#1 -out:"%s" -nologo' % (SDK["PYTHON"], manifest), True)
+
+            if os.path.isfile(manifest):
+                import xml.etree.ElementTree as ET
+                tree = ET.parse(manifest)
+                idents = tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity')
+            else:
+                idents = ()
+
+            for ident in tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity'):
+                sxs_name = '_'.join([
+                    ident.get('processorArchitecture'),
+                    ident.get('name').lower(),
+                    ident.get('publicKeyToken'),
+                    ident.get('version'),
+                ])
+
+                # Find the manifest matching these parameters.
+                pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', 'Manifests', sxs_name + '_*.manifest')
+                manifests = glob.glob(pattern)
+                if not manifests:
+                    print("%sWARNING:%s Could not locate manifest %s.  You may need to reinstall the Visual C++ Redistributable." % (GetColor("red"), GetColor(), pattern))
+                    continue
+
+                CopyFile(GetOutputDir() + "/python/" + ident.get('name') + ".manifest", manifests[0])
+
+                # Also copy the corresponding msvcr dll.
+                pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', sxs_name + '_*', 'msvcr*.dll')
+                for file in glob.glob(pattern):
+                    CopyFile(GetOutputDir() + "/python/", file)
+
+            # Copy python.exe to ppython.exe.
+            if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
+                CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
+            if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
+                CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
+            ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
+
+# Copy over the MSVC runtime.
+if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
+    vcver = SDK["VISUALSTUDIO_VERSION"].replace('.', '')
+    crtname = "Microsoft.VC%s.CRT" % (vcver)
+    dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "redist", GetTargetArch(), crtname)
+
+    if os.path.isfile(os.path.join(dir, "msvcr" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcr" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "msvcp" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcp" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "vcruntime" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "vcruntime" + vcver + ".dll"))
 
 ########################################################################
 ##
@@ -2909,8 +2964,14 @@ if tp_dir is not None:
 ##
 ########################################################################
 
-CopyFile(GetOutputDir()+"/", "doc/LICENSE")
-CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+if GetTarget() == 'windows':
+    # Convert to Windows newlines so they can be opened by notepad.
+    WriteFile(GetOutputDir() + "/LICENSE", ReadFile("doc/LICENSE"), newline='\r\n')
+    WriteFile(GetOutputDir() + "/ReleaseNotes", ReadFile("doc/ReleaseNotes"), newline='\r\n')
+else:
+    CopyFile(GetOutputDir()+"/", "doc/LICENSE")
+    CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+
 if (PkgSkip("PANDATOOL")==0):
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
@@ -3152,10 +3213,6 @@ COMMON_EGG2X_LIBS=[
     'libpandaegg.dll',
 ] + COMMON_PANDA_LIBS
 
-COMMON_DTOOL_LIBS_PYSTUB = COMMON_DTOOL_LIBS + ['libp3pystub.lib']
-COMMON_PANDA_LIBS_PYSTUB = COMMON_PANDA_LIBS + ['libp3pystub.lib']
-COMMON_EGG2X_LIBS_PYSTUB = COMMON_EGG2X_LIBS + ['libp3pystub.lib']
-
 ########################################################################
 #
 # This section contains a list of all the files that need to be compiled.
@@ -3259,7 +3316,7 @@ TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'
 # DIRECTORY: dtool/src/interrogatedb/
 #
 
-OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB']
+OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB', 'PYTHON']
 TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
 TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
 TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
@@ -3271,7 +3328,7 @@ TargetAdd('libp3interrogatedb.dll', opts=['PYTHON'])
 if not PkgSkip("PYTHON"):
   # This used to be called dtoolconfig.pyd, but it just contains the interrogatedb
   # stuff, so it has been renamed appropriately.
-  OPTS=['DIR:dtool/metalibs/dtoolconfig']
+  OPTS=['DIR:dtool/metalibs/dtoolconfig', 'PYTHON']
   TargetAdd('interrogatedb_pydtool.obj', opts=OPTS, input="pydtool.cxx")
   TargetAdd('interrogatedb.pyd', input='interrogatedb_pydtool.obj')
   TargetAdd('interrogatedb.pyd', input='libp3dtool.dll')
@@ -3283,11 +3340,12 @@ if not PkgSkip("PYTHON"):
 # DIRECTORY: dtool/src/pystub/
 #
 
-OPTS=['DIR:dtool/src/pystub']
-TargetAdd('p3pystub_pystub.obj', opts=OPTS, input='pystub.cxx')
-TargetAdd('libp3pystub.lib', input='p3pystub_pystub.obj')
-#TargetAdd('libp3pystub.lib', input='libp3dtool.dll')
-TargetAdd('libp3pystub.lib', opts=['ADVAPI'])
+if not RUNTIME and not RTDIST:
+  OPTS=['DIR:dtool/src/pystub']
+  TargetAdd('p3pystub_pystub.obj', opts=OPTS, input='pystub.cxx')
+  TargetAdd('libp3pystub.lib', input='p3pystub_pystub.obj')
+  #TargetAdd('libp3pystub.lib', input='libp3dtool.dll')
+  TargetAdd('libp3pystub.lib', opts=['ADVAPI'])
 
 #
 # DIRECTORY: dtool/src/interrogate/
@@ -3300,14 +3358,14 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='interrogate_composite1.obj')
   TargetAdd('interrogate.exe', input='interrogate_composite2.obj')
   TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
-  TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate.exe', input='libp3interrogatedb.dll')
   TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
   TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
   TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
-  TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')
   TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
@@ -3315,7 +3373,7 @@ if (not RUNTIME):
     TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
     TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
     TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
-    TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+    TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('parse_file.exe', input='libp3interrogatedb.dll')
     TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
@@ -3327,7 +3385,7 @@ if (PkgSkip("OPENSSL")==0 and not RUNTIME and not RTDIST):
   OPTS=['DIR:dtool/src/prckeys', 'OPENSSL']
   TargetAdd('make-prc-key_makePrcKey.obj', opts=OPTS, input='makePrcKey.cxx')
   TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
-  TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('make-prc-key.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -3339,7 +3397,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
   TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
-  TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -3357,7 +3415,7 @@ OPTS=['DIR:panda/src/express', 'BUILDING:PANDAEXPRESS', 'OPENSSL', 'ZLIB']
 TargetAdd('p3express_composite1.obj', opts=OPTS, input='p3express_composite1.cxx')
 TargetAdd('p3express_composite2.obj', opts=OPTS, input='p3express_composite2.cxx')
 
-OPTS=['DIR:panda/src/express', 'OPENSSL', 'ZLIB']
+OPTS=['DIR:panda/src/express', 'OPENSSL', 'ZLIB', 'PYTHON']
 IGATEFILES=GetDirectoryContents('panda/src/express', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3express.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3express.in', opts=['IMOD:panda3d.core', 'ILIB:libp3express', 'SRCDIR:panda/src/express'])
@@ -3372,7 +3430,7 @@ OPTS=['DIR:panda/src/downloader', 'BUILDING:PANDAEXPRESS', 'OPENSSL', 'ZLIB']
 TargetAdd('p3downloader_composite1.obj', opts=OPTS, input='p3downloader_composite1.cxx')
 TargetAdd('p3downloader_composite2.obj', opts=OPTS, input='p3downloader_composite2.cxx')
 
-OPTS=['DIR:panda/src/downloader', 'OPENSSL', 'ZLIB']
+OPTS=['DIR:panda/src/downloader', 'OPENSSL', 'ZLIB', 'PYTHON']
 IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3downloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3downloader.in', opts=['IMOD:panda3d.core', 'ILIB:libp3downloader', 'SRCDIR:panda/src/downloader'])
@@ -3404,11 +3462,12 @@ if (not RUNTIME):
   TargetAdd('p3pipeline_composite2.obj', opts=OPTS, input='p3pipeline_composite2.cxx')
   TargetAdd('p3pipeline_contextSwitch.obj', opts=OPTS, input='contextSwitch.c')
 
-  OPTS=['DIR:panda/src/pipeline']
+  OPTS=['DIR:panda/src/pipeline', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/pipeline', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pipeline.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pipeline.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pipeline', 'SRCDIR:panda/src/pipeline'])
   TargetAdd('libp3pipeline_igate.obj', input='libp3pipeline.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('p3pipeline_pythonThread.obj', opts=OPTS, input='pythonThread.cxx')
 
 #
 # DIRECTORY: panda/src/linmath/
@@ -3419,7 +3478,7 @@ if (not RUNTIME):
   TargetAdd('p3linmath_composite1.obj', opts=OPTS, input='p3linmath_composite1.cxx')
   TargetAdd('p3linmath_composite2.obj', opts=OPTS, input='p3linmath_composite2.cxx')
 
-  OPTS=['DIR:panda/src/linmath']
+  OPTS=['DIR:panda/src/linmath', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_composite*.cxx"])
   for ifile in IGATEFILES[:]:
       if "_src." in ifile:
@@ -3440,7 +3499,7 @@ if (not RUNTIME):
   TargetAdd('p3putil_composite1.obj', opts=OPTS, input='p3putil_composite1.cxx')
   TargetAdd('p3putil_composite2.obj', opts=OPTS, input='p3putil_composite2.cxx')
 
-  OPTS=['DIR:panda/src/putil', 'ZLIB']
+  OPTS=['DIR:panda/src/putil', 'ZLIB', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("test_bam.h")
   TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
@@ -3456,7 +3515,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/audio', 'BUILDING:PANDA']
   TargetAdd('p3audio_composite1.obj', opts=OPTS, input='p3audio_composite1.cxx')
 
-  OPTS=['DIR:panda/src/audio']
+  OPTS=['DIR:panda/src/audio', 'PYTHON']
   IGATEFILES=["audio.h"]
   TargetAdd('libp3audio.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3audio.in', opts=['IMOD:panda3d.core', 'ILIB:libp3audio', 'SRCDIR:panda/src/audio'])
@@ -3471,7 +3530,7 @@ if (not RUNTIME):
   TargetAdd('p3event_composite1.obj', opts=OPTS, input='p3event_composite1.cxx')
   TargetAdd('p3event_composite2.obj', opts=OPTS, input='p3event_composite2.cxx')
 
-  OPTS=['DIR:panda/src/event']
+  OPTS=['DIR:panda/src/event', 'PYTHON']
   TargetAdd('p3event_pythonTask.obj', opts=OPTS, input='pythonTask.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/event', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3event.in', opts=OPTS, input=IGATEFILES)
@@ -3487,7 +3546,7 @@ if (not RUNTIME):
   TargetAdd('p3mathutil_composite1.obj', opts=OPTS, input='p3mathutil_composite1.cxx')
   TargetAdd('p3mathutil_composite2.obj', opts=OPTS, input='p3mathutil_composite2.cxx')
 
-  OPTS=['DIR:panda/src/mathutil', 'FFTW']
+  OPTS=['DIR:panda/src/mathutil', 'FFTW', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/mathutil', ["*.h", "*_composite*.cxx"])
   for ifile in IGATEFILES[:]:
       if "_src." in ifile:
@@ -3504,7 +3563,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/gsgbase', 'BUILDING:PANDA']
   TargetAdd('p3gsgbase_composite1.obj', opts=OPTS, input='p3gsgbase_composite1.cxx')
 
-  OPTS=['DIR:panda/src/gsgbase']
+  OPTS=['DIR:panda/src/gsgbase', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/gsgbase', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3gsgbase.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3gsgbase.in', opts=['IMOD:panda3d.core', 'ILIB:libp3gsgbase', 'SRCDIR:panda/src/gsgbase'])
@@ -3520,7 +3579,7 @@ if (not RUNTIME):
   TargetAdd('p3pnmimage_composite2.obj', opts=OPTS, input='p3pnmimage_composite2.cxx')
   TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
 
-  OPTS=['DIR:panda/src/pnmimage', 'ZLIB']
+  OPTS=['DIR:panda/src/pnmimage', 'ZLIB', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pnmimage.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pnmimage.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pnmimage', 'SRCDIR:panda/src/pnmimage'])
@@ -3535,7 +3594,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/nativenet', 'OPENSSL', 'BUILDING:PANDA']
   TargetAdd('p3nativenet_composite1.obj', opts=OPTS, input='p3nativenet_composite1.cxx')
 
-  OPTS=['DIR:panda/src/nativenet', 'OPENSSL']
+  OPTS=['DIR:panda/src/nativenet', 'OPENSSL', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3nativenet.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3nativenet.in', opts=['IMOD:panda3d.core', 'ILIB:libp3nativenet', 'SRCDIR:panda/src/nativenet'])
@@ -3550,7 +3609,7 @@ if (not RUNTIME):
   TargetAdd('p3net_composite1.obj', opts=OPTS, input='p3net_composite1.cxx')
   TargetAdd('p3net_composite2.obj', opts=OPTS, input='p3net_composite2.cxx')
 
-  OPTS=['DIR:panda/src/net']
+  OPTS=['DIR:panda/src/net', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/net', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("datagram_ui.h")
   TargetAdd('libp3net.in', opts=OPTS, input=IGATEFILES)
@@ -3566,7 +3625,7 @@ if (not RUNTIME):
   TargetAdd('p3pstatclient_composite1.obj', opts=OPTS, input='p3pstatclient_composite1.cxx')
   TargetAdd('p3pstatclient_composite2.obj', opts=OPTS, input='p3pstatclient_composite2.cxx')
 
-  OPTS=['DIR:panda/src/pstatclient']
+  OPTS=['DIR:panda/src/pstatclient', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pstatclient.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pstatclient.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pstatclient', 'SRCDIR:panda/src/pstatclient'])
@@ -3581,7 +3640,7 @@ if (not RUNTIME):
   TargetAdd('p3gobj_composite1.obj', opts=OPTS, input='p3gobj_composite1.cxx')
   TargetAdd('p3gobj_composite2.obj', opts=OPTS, input='p3gobj_composite2.cxx')
 
-  OPTS=['DIR:panda/src/gobj', 'NVIDIACG', 'ZLIB', 'SQUISH']
+  OPTS=['DIR:panda/src/gobj', 'NVIDIACG', 'ZLIB', 'SQUISH', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite*.cxx"])
   if ("cgfx_states.h" in IGATEFILES): IGATEFILES.remove("cgfx_states.h")
   TargetAdd('libp3gobj.in', opts=OPTS, input=IGATEFILES)
@@ -3598,7 +3657,7 @@ if (not RUNTIME):
   TargetAdd('p3pgraphnodes_composite1.obj', opts=OPTS, input='p3pgraphnodes_composite1.cxx')
   TargetAdd('p3pgraphnodes_composite2.obj', opts=OPTS, input='p3pgraphnodes_composite2.cxx')
 
-  OPTS=['DIR:panda/src/pgraphnodes']
+  OPTS=['DIR:panda/src/pgraphnodes', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/pgraphnodes', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pgraphnodes.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgraphnodes.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pgraphnodes', 'SRCDIR:panda/src/pgraphnodes'])
@@ -3616,7 +3675,7 @@ if (not RUNTIME):
   TargetAdd('p3pgraph_composite3.obj', opts=OPTS, input='p3pgraph_composite3.cxx')
   TargetAdd('p3pgraph_composite4.obj', opts=OPTS, input='p3pgraph_composite4.cxx')
 
-  OPTS=['DIR:panda/src/pgraph']
+  OPTS=['DIR:panda/src/pgraph', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite*.cxx"])
   TargetAdd('libp3pgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgraph.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pgraph', 'SRCDIR:panda/src/pgraph'])
@@ -3632,7 +3691,7 @@ if (not RUNTIME):
   TargetAdd('p3cull_composite1.obj', opts=OPTS, input='p3cull_composite1.cxx')
   TargetAdd('p3cull_composite2.obj', opts=OPTS, input='p3cull_composite2.cxx')
 
-  OPTS=['DIR:panda/src/cull']
+  OPTS=['DIR:panda/src/cull', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/cull', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3cull.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3cull.in', opts=['IMOD:panda3d.core', 'ILIB:libp3cull', 'SRCDIR:panda/src/cull'])
@@ -3647,7 +3706,7 @@ if (not RUNTIME):
   TargetAdd('p3chan_composite1.obj', opts=OPTS, input='p3chan_composite1.cxx')
   TargetAdd('p3chan_composite2.obj', opts=OPTS, input='p3chan_composite2.cxx')
 
-  OPTS=['DIR:panda/src/chan']
+  OPTS=['DIR:panda/src/chan', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove('movingPart.h')
   IGATEFILES.remove('animChannelFixed.h')
@@ -3664,7 +3723,7 @@ if (not RUNTIME):
   TargetAdd('p3char_composite1.obj', opts=OPTS, input='p3char_composite1.cxx')
   TargetAdd('p3char_composite2.obj', opts=OPTS, input='p3char_composite2.cxx')
 
-  OPTS=['DIR:panda/src/char']
+  OPTS=['DIR:panda/src/char', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3char.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3char.in', opts=['IMOD:panda3d.core', 'ILIB:libp3char', 'SRCDIR:panda/src/char'])
@@ -3679,7 +3738,7 @@ if (not RUNTIME):
   TargetAdd('p3dgraph_composite1.obj', opts=OPTS, input='p3dgraph_composite1.cxx')
   TargetAdd('p3dgraph_composite2.obj', opts=OPTS, input='p3dgraph_composite2.cxx')
 
-  OPTS=['DIR:panda/src/dgraph']
+  OPTS=['DIR:panda/src/dgraph', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/dgraph', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3dgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3dgraph.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dgraph', 'SRCDIR:panda/src/dgraph'])
@@ -3694,7 +3753,7 @@ if (not RUNTIME):
   TargetAdd('p3display_composite1.obj', opts=OPTS, input='p3display_composite1.cxx')
   TargetAdd('p3display_composite2.obj', opts=OPTS, input='p3display_composite2.cxx')
 
-  OPTS=['DIR:panda/src/display']
+  OPTS=['DIR:panda/src/display', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("renderBuffer.h")
   TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
@@ -3718,7 +3777,7 @@ if (not RUNTIME):
   TargetAdd('p3device_composite1.obj', opts=OPTS, input='p3device_composite1.cxx')
   TargetAdd('p3device_composite2.obj', opts=OPTS, input='p3device_composite2.cxx')
 
-  OPTS=['DIR:panda/src/device']
+  OPTS=['DIR:panda/src/device', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3device.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3device.in', opts=['IMOD:panda3d.core', 'ILIB:libp3device', 'SRCDIR:panda/src/device'])
@@ -3732,7 +3791,7 @@ if (PkgSkip("FREETYPE")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/pnmtext', 'BUILDING:PANDA',  'FREETYPE']
   TargetAdd('p3pnmtext_composite1.obj', opts=OPTS, input='p3pnmtext_composite1.cxx')
 
-  OPTS=['DIR:panda/src/pnmtext', 'FREETYPE']
+  OPTS=['DIR:panda/src/pnmtext', 'FREETYPE', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/pnmtext', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pnmtext.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pnmtext.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pnmtext', 'SRCDIR:panda/src/pnmtext'])
@@ -3747,7 +3806,7 @@ if (not RUNTIME):
   TargetAdd('p3text_composite1.obj', opts=OPTS, input='p3text_composite1.cxx')
   TargetAdd('p3text_composite2.obj', opts=OPTS, input='p3text_composite2.cxx')
 
-  OPTS=['DIR:panda/src/text', 'ZLIB', 'FREETYPE']
+  OPTS=['DIR:panda/src/text', 'ZLIB', 'FREETYPE', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/text', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3text.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3text.in', opts=['IMOD:panda3d.core', 'ILIB:libp3text', 'SRCDIR:panda/src/text'])
@@ -3761,7 +3820,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'VORBIS']
   TargetAdd('p3movies_composite1.obj', opts=OPTS, input='p3movies_composite1.cxx')
 
-  OPTS=['DIR:panda/src/movies', 'VORBIS']
+  OPTS=['DIR:panda/src/movies', 'VORBIS', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3movies.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3movies.in', opts=['IMOD:panda3d.core', 'ILIB:libp3movies', 'SRCDIR:panda/src/movies'])
@@ -3777,7 +3836,7 @@ if (not RUNTIME):
   TargetAdd('p3grutil_composite1.obj', opts=OPTS, input='p3grutil_composite1.cxx')
   TargetAdd('p3grutil_composite2.obj', opts=OPTS, input='p3grutil_composite2.cxx')
 
-  OPTS=['DIR:panda/src/grutil']
+  OPTS=['DIR:panda/src/grutil', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite*.cxx"])
   if 'convexHull.h' in IGATEFILES: IGATEFILES.remove('convexHull.h')
   TargetAdd('libp3grutil.in', opts=OPTS, input=IGATEFILES)
@@ -3793,7 +3852,7 @@ if (not RUNTIME):
   TargetAdd('p3tform_composite1.obj', opts=OPTS, input='p3tform_composite1.cxx')
   TargetAdd('p3tform_composite2.obj', opts=OPTS, input='p3tform_composite2.cxx')
 
-  OPTS=['DIR:panda/src/tform']
+  OPTS=['DIR:panda/src/tform', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/tform', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3tform.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3tform.in', opts=['IMOD:panda3d.core', 'ILIB:libp3tform', 'SRCDIR:panda/src/tform'])
@@ -3808,7 +3867,7 @@ if (not RUNTIME):
   TargetAdd('p3collide_composite1.obj', opts=OPTS, input='p3collide_composite1.cxx')
   TargetAdd('p3collide_composite2.obj', opts=OPTS, input='p3collide_composite2.cxx')
 
-  OPTS=['DIR:panda/src/collide']
+  OPTS=['DIR:panda/src/collide', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3collide.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3collide.in', opts=['IMOD:panda3d.core', 'ILIB:libp3collide', 'SRCDIR:panda/src/collide'])
@@ -3823,7 +3882,7 @@ if (not RUNTIME):
   TargetAdd('p3parametrics_composite1.obj', opts=OPTS, input='p3parametrics_composite1.cxx')
   TargetAdd('p3parametrics_composite2.obj', opts=OPTS, input='p3parametrics_composite2.cxx')
 
-  OPTS=['DIR:panda/src/parametrics']
+  OPTS=['DIR:panda/src/parametrics', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/parametrics', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3parametrics.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3parametrics.in', opts=['IMOD:panda3d.core', 'ILIB:libp3parametrics', 'SRCDIR:panda/src/parametrics'])
@@ -3838,7 +3897,7 @@ if (not RUNTIME):
   TargetAdd('p3pgui_composite1.obj', opts=OPTS, input='p3pgui_composite1.cxx')
   TargetAdd('p3pgui_composite2.obj', opts=OPTS, input='p3pgui_composite2.cxx')
 
-  OPTS=['DIR:panda/src/pgui']
+  OPTS=['DIR:panda/src/pgui', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pgui.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgui.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pgui', 'SRCDIR:panda/src/pgui'])
@@ -3862,7 +3921,7 @@ if (not RUNTIME):
   TargetAdd('p3recorder_composite1.obj', opts=OPTS, input='p3recorder_composite1.cxx')
   TargetAdd('p3recorder_composite2.obj', opts=OPTS, input='p3recorder_composite2.cxx')
 
-  OPTS=['DIR:panda/src/recorder']
+  OPTS=['DIR:panda/src/recorder', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/recorder', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3recorder.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3recorder.in', opts=['IMOD:panda3d.core', 'ILIB:libp3recorder', 'SRCDIR:panda/src/recorder'])
@@ -3882,7 +3941,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/dxml', 'BUILDING:PANDA', 'TINYXML']
   TargetAdd('p3dxml_composite1.obj', opts=OPTS, input='p3dxml_composite1.cxx')
 
-  OPTS=['DIR:panda/src/dxml', 'TINYXML']
+  OPTS=['DIR:panda/src/dxml', 'TINYXML', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/dxml', ["*.h", "p3dxml_composite1.cxx"])
   TargetAdd('libp3dxml.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3dxml.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dxml', 'SRCDIR:panda/src/dxml'])
@@ -4008,6 +4067,7 @@ if (not RUNTIME):
   if PkgSkip("FREETYPE")==0:
     TargetAdd('core_module.obj', input='libp3pnmtext.in')
 
+  TargetAdd('core_module.obj', opts=['PYTHON'])
   TargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core'])
 
   TargetAdd('core.pyd', input='libp3downloader_igate.obj')
@@ -4047,6 +4107,7 @@ if (not RUNTIME):
   if PkgSkip("FREETYPE")==0:
     TargetAdd('core.pyd', input="libp3pnmtext_igate.obj")
 
+  TargetAdd('core.pyd', input='p3pipeline_pythonThread.obj')
   TargetAdd('core.pyd', input='p3putil_ext_composite.obj')
   TargetAdd('core.pyd', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('core.pyd', input='p3event_pythonTask.obj')
@@ -4075,7 +4136,7 @@ if (PkgSkip("VISION") == 0) and (not RUNTIME):
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3vision.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/vision', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
+  OPTS=['DIR:panda/src/vision', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3vision.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3vision.in', opts=['IMOD:panda3d.vision', 'ILIB:libp3vision', 'SRCDIR:panda/src/vision'])
@@ -4097,14 +4158,14 @@ if (PkgSkip("VISION") == 0) and (not RUNTIME):
 #
 
 if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
-  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET']
+  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET', 'PYTHON']
   TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
 
   TargetAdd('libp3rocket.dll', input='p3rocket_composite1.obj')
   TargetAdd('libp3rocket.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3rocket.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/rocket', 'ROCKET', 'RTTI', 'EXCEPTIONS']
+  OPTS=['DIR:panda/src/rocket', 'ROCKET', 'RTTI', 'EXCEPTIONS', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/rocket', ["rocketInputHandler.h",
     "rocketInputHandler.cxx", "rocketRegion.h", "rocketRegion.cxx", "rocketRegion_ext.h"])
   TargetAdd('libp3rocket.in', opts=OPTS, input=IGATEFILES)
@@ -4134,7 +4195,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
   TargetAdd('libp3awesomium.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3awesomium.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/awesomium', 'AWESOMIUM']
+  OPTS=['DIR:panda/src/awesomium', 'AWESOMIUM', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/awesomium', ["*.h", "*_composite1.cxx"])
   TargetAdd('libp3awesomium.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3awesomium.in', opts=['IMOD:panda3d.awesomium', 'ILIB:libp3awesomium', 'SRCDIR:panda/src/awesomium'])
@@ -4159,7 +4220,7 @@ if (PkgSkip('SKEL')==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/skel', 'BUILDING:PANDASKEL', 'ADVAPI']
   TargetAdd('p3skel_composite1.obj', opts=OPTS, input='p3skel_composite1.cxx')
 
-  OPTS=['DIR:panda/src/skel', 'ADVAPI']
+  OPTS=['DIR:panda/src/skel', 'ADVAPI', 'PYTHON']
   IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3skel.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3skel.in', opts=['IMOD:panda3d.skel', 'ILIB:libp3skel', 'SRCDIR:panda/src/skel'])
@@ -4175,7 +4236,9 @@ if (PkgSkip('SKEL')==0) and (not RUNTIME):
   TargetAdd('libpandaskel.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaskel.dll', opts=OPTS)
 
+  OPTS=['PYTHON']
   TargetAdd('skel_module.obj', input='libp3skel.in')
+  TargetAdd('skel_module.obj', opts=OPTS)
   TargetAdd('skel_module.obj', opts=['IMOD:panda3d.skel', 'ILIB:skel', 'IMPORT:panda3d.core'])
 
   TargetAdd('skel.pyd', input='skel_module.obj')
@@ -4193,7 +4256,7 @@ if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('p3distort_composite1.obj', opts=OPTS, input='p3distort_composite1.cxx')
 
-  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG']
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3distort.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3distort.in', opts=['IMOD:panda3d.fx', 'ILIB:libp3distort', 'SRCDIR:panda/src/distort'])
@@ -4212,7 +4275,7 @@ if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
   TargetAdd('libpandafx.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandafx.dll', opts=['ADVAPI',  'NVIDIACG'])
 
-  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG']
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG', 'PYTHON']
   TargetAdd('fx_module.obj', input='libp3distort.in')
   TargetAdd('fx_module.obj', opts=OPTS)
   TargetAdd('fx_module.obj', opts=['IMOD:panda3d.fx', 'ILIB:fx', 'IMPORT:panda3d.core'])
@@ -4235,7 +4298,7 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
   TargetAdd('libp3vrpn.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3vrpn.dll', opts=['VRPN'])
 
-  OPTS=['DIR:panda/src/vrpn', 'VRPN']
+  OPTS=['DIR:panda/src/vrpn', 'VRPN', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/vrpn', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3vrpn.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3vrpn.in', opts=['IMOD:panda3d.vrpn', 'ILIB:libp3vrpn', 'SRCDIR:panda/src/vrpn'])
@@ -4289,43 +4352,43 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOL
 
   TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
   TargetAdd('apply_patch.exe', input=['apply_patch_apply_patch.obj'])
-  TargetAdd('apply_patch.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('apply_patch.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('apply_patch.exe', opts=OPTS)
 
   TargetAdd('build_patch_build_patch.obj', opts=OPTS, input='build_patch.cxx')
   TargetAdd('build_patch.exe', input=['build_patch_build_patch.obj'])
-  TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('build_patch.exe', opts=OPTS)
 
   if not PkgSkip("ZLIB"):
     TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
     TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
-    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('check_adler.exe', opts=OPTS)
 
     TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
     TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
-    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('check_crc.exe', opts=OPTS)
 
   TargetAdd('check_md5_check_md5.obj', opts=OPTS, input='check_md5.cxx')
   TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj'])
-  TargetAdd('check_md5.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('check_md5.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('check_md5.exe', opts=OPTS)
 
   TargetAdd('pdecrypt_pdecrypt.obj', opts=OPTS, input='pdecrypt.cxx')
   TargetAdd('pdecrypt.exe', input=['pdecrypt_pdecrypt.obj'])
-  TargetAdd('pdecrypt.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('pdecrypt.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pdecrypt.exe', opts=OPTS)
 
   TargetAdd('pencrypt_pencrypt.obj', opts=OPTS, input='pencrypt.cxx')
   TargetAdd('pencrypt.exe', input=['pencrypt_pencrypt.obj'])
-  TargetAdd('pencrypt.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('pencrypt.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pencrypt.exe', opts=OPTS)
 
   TargetAdd('show_ddb_show_ddb.obj', opts=OPTS, input='show_ddb.cxx')
   TargetAdd('show_ddb.exe', input=['show_ddb_show_ddb.obj'])
-  TargetAdd('show_ddb.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('show_ddb.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('show_ddb.exe', opts=OPTS)
 
 #
@@ -4337,17 +4400,17 @@ if (PkgSkip("ZLIB")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")
 
   TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
   TargetAdd('multify.exe', input=['multify_multify.obj'])
-  TargetAdd('multify.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('multify.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('multify.exe', opts=OPTS)
 
   TargetAdd('pzip_pzip.obj', opts=OPTS, input='pzip.cxx')
   TargetAdd('pzip.exe', input=['pzip_pzip.obj'])
-  TargetAdd('pzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('pzip.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pzip.exe', opts=OPTS)
 
   TargetAdd('punzip_punzip.obj', opts=OPTS, input='punzip.cxx')
   TargetAdd('punzip.exe', input=['punzip_punzip.obj'])
-  TargetAdd('punzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('punzip.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('punzip.exe', opts=OPTS)
 
 #
@@ -4393,7 +4456,7 @@ if (not RUNTIME):
   TargetAdd('p3egg_composite1.obj', opts=OPTS, input='p3egg_composite1.cxx')
   TargetAdd('p3egg_composite2.obj', opts=OPTS, input='p3egg_composite2.cxx')
 
-  OPTS=['DIR:panda/src/egg', 'ZLIB']
+  OPTS=['DIR:panda/src/egg', 'ZLIB', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/egg', ["*.h", "*_composite*.cxx"])
   if "parser.h" in IGATEFILES: IGATEFILES.remove("parser.h")
   TargetAdd('libp3egg.in', opts=OPTS, input=IGATEFILES)
@@ -4410,7 +4473,7 @@ if (not RUNTIME):
   TargetAdd('p3egg2pg_composite1.obj', opts=OPTS, input='p3egg2pg_composite1.cxx')
   TargetAdd('p3egg2pg_composite2.obj', opts=OPTS, input='p3egg2pg_composite2.cxx')
 
-  OPTS=['DIR:panda/src/egg2pg']
+  OPTS=['DIR:panda/src/egg2pg', 'PYTHON']
   IGATEFILES=['load_egg_file.h']
   TargetAdd('libp3egg2pg.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3egg2pg.in', opts=['IMOD:panda3d.egg', 'ILIB:libp3egg2pg', 'SRCDIR:panda/src/egg2pg'])
@@ -4421,8 +4484,17 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/framework', 'BUILDING:FRAMEWORK']
-  TargetAdd('p3framework_composite1.obj', opts=OPTS, input='p3framework_composite1.cxx')
+  deps = []
+  # Framework wants to link in a renderer when building statically, so tell it what is available.
+  if GetLinkAllStatic():
+    deps = ['dtool_have_gl.dat', 'dtool_have_tinydisplay.dat']
+    if not PkgSkip("GL"):
+      DefSymbol("FRAMEWORK", "HAVE_GL")
+    if not PkgSkip("TINYDISPLAY"):
+      DefSymbol("FRAMEWORK", "HAVE_TINYDISPLAY")
+
+  OPTS=['DIR:panda/src/framework', 'BUILDING:FRAMEWORK', 'FRAMEWORK']
+  TargetAdd('p3framework_composite1.obj', opts=OPTS, input='p3framework_composite1.cxx', dep=deps)
   TargetAdd('libp3framework.dll', input='p3framework_composite1.obj')
   TargetAdd('libp3framework.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3framework.dll', opts=['ADVAPI'])
@@ -4472,7 +4544,7 @@ if (not RUNTIME):
   TargetAdd('libpandaegg.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaegg.dll', opts=['ADVAPI'])
 
-  OPTS=['DIR:panda/metalibs/pandaegg', 'DIR:panda/src/egg']
+  OPTS=['DIR:panda/metalibs/pandaegg', 'DIR:panda/src/egg', 'PYTHON']
   TargetAdd('egg_module.obj', input='libp3egg2pg.in')
   TargetAdd('egg_module.obj', input='libp3egg.in')
   TargetAdd('egg_module.obj', opts=OPTS)
@@ -4609,12 +4681,12 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
 # DIRECTORY: panda/src/ode/
 #
 if (PkgSkip("ODE")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/ode', 'BUILDING:PANDAODE', 'ODE']
+  OPTS=['DIR:panda/src/ode', 'BUILDING:PANDAODE', 'ODE', 'PYTHON']
   TargetAdd('p3ode_composite1.obj', opts=OPTS, input='p3ode_composite1.cxx')
   TargetAdd('p3ode_composite2.obj', opts=OPTS, input='p3ode_composite2.cxx')
   TargetAdd('p3ode_composite3.obj', opts=OPTS, input='p3ode_composite3.cxx')
 
-  OPTS=['DIR:panda/src/ode', 'ODE']
+  OPTS=['DIR:panda/src/ode', 'ODE', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/ode', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("odeConvexGeom.h")
   IGATEFILES.remove("odeHeightFieldGeom.h")
@@ -4638,7 +4710,7 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('libpandaode.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaode.dll', opts=['WINUSER', 'ODE'])
 
-  OPTS=['DIR:panda/metalibs/pandaode', 'ODE']
+  OPTS=['DIR:panda/metalibs/pandaode', 'ODE', 'PYTHON']
   TargetAdd('ode_module.obj', input='libpandaode.in')
   TargetAdd('ode_module.obj', opts=OPTS)
   TargetAdd('ode_module.obj', opts=['IMOD:panda3d.ode', 'ILIB:ode', 'IMPORT:panda3d.core'])
@@ -4658,7 +4730,7 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/bullet', 'BUILDING:PANDABULLET', 'BULLET']
   TargetAdd('p3bullet_composite.obj', opts=OPTS, input='p3bullet_composite.cxx')
 
-  OPTS=['DIR:panda/src/bullet', 'BULLET']
+  OPTS=['DIR:panda/src/bullet', 'BULLET', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/bullet', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandabullet.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandabullet.in', opts=['IMOD:panda3d.bullet', 'ILIB:libpandabullet', 'SRCDIR:panda/src/bullet'])
@@ -4676,7 +4748,7 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
   TargetAdd('libpandabullet.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandabullet.dll', opts=['WINUSER', 'BULLET'])
 
-  OPTS=['DIR:panda/metalibs/pandabullet', 'BULLET']
+  OPTS=['DIR:panda/metalibs/pandabullet', 'BULLET', 'PYTHON']
   TargetAdd('bullet_module.obj', input='libpandabullet.in')
   TargetAdd('bullet_module.obj', opts=OPTS)
   TargetAdd('bullet_module.obj', opts=['IMOD:panda3d.bullet', 'ILIB:bullet', 'IMPORT:panda3d.core'])
@@ -4696,7 +4768,7 @@ if (PkgSkip("PHYSX")==0):
   OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC']
   TargetAdd('p3physx_composite.obj', opts=OPTS, input='p3physx_composite.cxx')
 
-  OPTS=['DIR:panda/src/physx', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/src/physx', 'PHYSX', 'NOARCH:PPC', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaphysx.in', opts=['IMOD:panda3d.physx', 'ILIB:libpandaphysx', 'SRCDIR:panda/src/physx'])
@@ -4715,7 +4787,7 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC'])
 
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOARCH:PPC', 'PYTHON']
   TargetAdd('physx_module.obj', input='libpandaphysx.in')
   TargetAdd('physx_module.obj', opts=OPTS)
   TargetAdd('physx_module.obj', opts=['IMOD:panda3d.physx', 'ILIB:physx', 'IMPORT:panda3d.core'])
@@ -4736,7 +4808,7 @@ if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
   TargetAdd('p3physics_composite1.obj', opts=OPTS, input='p3physics_composite1.cxx')
   TargetAdd('p3physics_composite2.obj', opts=OPTS, input='p3physics_composite2.cxx')
 
-  OPTS=['DIR:panda/src/physics']
+  OPTS=['DIR:panda/src/physics', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/physics', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("forces.h")
   TargetAdd('libp3physics.in', opts=OPTS, input=IGATEFILES)
@@ -4752,7 +4824,7 @@ if (PkgSkip("PANDAPHYSICS")==0) and (PkgSkip("PANDAPARTICLESYSTEM")==0) and (not
   TargetAdd('p3particlesystem_composite1.obj', opts=OPTS, input='p3particlesystem_composite1.cxx')
   TargetAdd('p3particlesystem_composite2.obj', opts=OPTS, input='p3particlesystem_composite2.cxx')
 
-  OPTS=['DIR:panda/src/particlesystem']
+  OPTS=['DIR:panda/src/particlesystem', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/particlesystem', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove('orientedParticle.h')
   IGATEFILES.remove('orientedParticleFactory.h')
@@ -4779,7 +4851,7 @@ if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
   TargetAdd('libpandaphysics.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaphysics.dll', opts=['ADVAPI'])
 
-  OPTS=['DIR:panda/metalibs/pandaphysics']
+  OPTS=['DIR:panda/metalibs/pandaphysics', 'PYTHON']
   TargetAdd('physics_module.obj', input='libp3physics.in')
   if (PkgSkip("PANDAPARTICLESYSTEM")==0):
     TargetAdd('physics_module.obj', input='libp3particlesystem.in')
@@ -4800,7 +4872,7 @@ if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
 #
 
 if (PkgSkip("SPEEDTREE")==0):
-  OPTS=['DIR:panda/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
+  OPTS=['DIR:panda/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE', 'PYTHON']
   TargetAdd('pandaspeedtree_composite1.obj', opts=OPTS, input='pandaspeedtree_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/speedtree', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaspeedtree.in', opts=OPTS, input=IGATEFILES)
@@ -4829,7 +4901,7 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0 and GetTarget() != 'andro
   TargetAdd('pview.exe', input='pview_pview.obj')
   TargetAdd('pview.exe', input='libp3framework.dll')
   TargetAdd('pview.exe', input='libpandaegg.dll')
-  TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
 
 #
@@ -4856,7 +4928,7 @@ if (not RUNTIME and GetTarget() == 'android'):
     TargetAdd('pview.exe', input='libp3framework.dll')
     TargetAdd('pview.exe', input='libpandaegg.dll')
     TargetAdd('pview.exe', input='libp3android.dll')
-    TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('AndroidManifest.xml', opts=OPTS, input='pview_manifest.xml')
 
 #
@@ -4933,7 +5005,7 @@ if (PkgSkip("DIRECT")==0):
 #
 
 if (PkgSkip("DIRECT")==0):
-  OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'BISONPREFIX_dcyy']
+  OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BISONPREFIX_dcyy', 'PYTHON']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   TargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
   TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])
@@ -4941,7 +5013,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('p3dcparser_composite1.obj', opts=OPTS, input='p3dcparser_composite1.cxx')
   TargetAdd('p3dcparser_composite2.obj', opts=OPTS, input='p3dcparser_composite2.cxx')
 
-  OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA']
+  OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'PYTHON']
   IGATEFILES=GetDirectoryContents('direct/src/dcparser', ["*.h", "*_composite*.cxx"])
   if "dcParser.h" in IGATEFILES: IGATEFILES.remove("dcParser.h")
   if "dcmsgtypes.h" in IGATEFILES: IGATEFILES.remove('dcmsgtypes.h')
@@ -4957,7 +5029,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/deadrec', 'BUILDING:DIRECT']
   TargetAdd('p3deadrec_composite1.obj', opts=OPTS, input='p3deadrec_composite1.cxx')
 
-  OPTS=['DIR:direct/src/deadrec']
+  OPTS=['DIR:direct/src/deadrec', 'PYTHON']
   IGATEFILES=GetDirectoryContents('direct/src/deadrec', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3deadrec.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3deadrec.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3deadrec', 'SRCDIR:direct/src/deadrec'])
@@ -4968,12 +5040,12 @@ if (PkgSkip("DIRECT")==0):
 #
 
 if (PkgSkip("DIRECT")==0):
-  OPTS=['DIR:direct/src/distributed', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'OPENSSL']
+  OPTS=['DIR:direct/src/distributed', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'OPENSSL', 'PYTHON']
   TargetAdd('p3distributed_config_distributed.obj', opts=OPTS, input='config_distributed.cxx')
   TargetAdd('p3distributed_cConnectionRepository.obj', opts=OPTS, input='cConnectionRepository.cxx')
   TargetAdd('p3distributed_cDistributedSmoothNodeBase.obj', opts=OPTS, input='cDistributedSmoothNodeBase.cxx')
 
-  OPTS=['DIR:direct/src/distributed', 'WITHINPANDA', 'OPENSSL']
+  OPTS=['DIR:direct/src/distributed', 'WITHINPANDA', 'OPENSSL', 'PYTHON']
   IGATEFILES=GetDirectoryContents('direct/src/distributed', ["*.h", "*.cxx"])
   TargetAdd('libp3distributed.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3distributed.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3distributed', 'SRCDIR:direct/src/distributed'])
@@ -4987,7 +5059,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/interval', 'BUILDING:DIRECT']
   TargetAdd('p3interval_composite1.obj', opts=OPTS, input='p3interval_composite1.cxx')
 
-  OPTS=['DIR:direct/src/interval']
+  OPTS=['DIR:direct/src/interval', 'PYTHON']
   IGATEFILES=GetDirectoryContents('direct/src/interval', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3interval.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3interval.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3interval', 'SRCDIR:direct/src/interval'])
@@ -5003,7 +5075,7 @@ if (PkgSkip("DIRECT")==0):
   if GetTarget() == 'darwin':
     TargetAdd('p3showbase_showBase_assist.obj', opts=OPTS, input='showBase_assist.mm')
 
-  OPTS=['DIR:direct/src/showbase']
+  OPTS=['DIR:direct/src/showbase', 'PYTHON']
   IGATEFILES=GetDirectoryContents('direct/src/showbase', ["*.h", "showBase.cxx"])
   TargetAdd('libp3showbase.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3showbase.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3showbase', 'SRCDIR:direct/src/showbase'])
@@ -5018,7 +5090,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('p3motiontrail_cMotionTrail.obj', opts=OPTS, input='cMotionTrail.cxx')
   TargetAdd('p3motiontrail_config_motiontrail.obj', opts=OPTS, input='config_motiontrail.cxx')
 
-  OPTS=['DIR:direct/src/motiontrail']
+  OPTS=['DIR:direct/src/motiontrail', 'PYTHON']
   IGATEFILES=GetDirectoryContents('direct/src/motiontrail', ["*.h", "cMotionTrail.cxx"])
   TargetAdd('libp3motiontrail.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3motiontrail.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3motiontrail', 'SRCDIR:direct/src/motiontrail'])
@@ -5034,24 +5106,17 @@ if (PkgSkip("DIRECT")==0):
 
   TargetAdd('libp3direct.dll', input='p3direct_direct.obj')
   TargetAdd('libp3direct.dll', input='p3directbase_directbase.obj')
-  TargetAdd('libp3direct.dll', input='p3dcparser_composite1.obj')
-  TargetAdd('libp3direct.dll', input='p3dcparser_composite2.obj')
-  TargetAdd('libp3direct.dll', input='p3dcparser_dcParser.obj')
-  TargetAdd('libp3direct.dll', input='p3dcparser_dcLexer.obj')
   TargetAdd('libp3direct.dll', input='p3showbase_showBase.obj')
   if GetTarget() == 'darwin':
     TargetAdd('libp3direct.dll', input='p3showbase_showBase_assist.obj')
   TargetAdd('libp3direct.dll', input='p3deadrec_composite1.obj')
   TargetAdd('libp3direct.dll', input='p3interval_composite1.obj')
-  TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
-  TargetAdd('libp3direct.dll', input='p3distributed_cConnectionRepository.obj')
-  TargetAdd('libp3direct.dll', input='p3distributed_cDistributedSmoothNodeBase.obj')
   TargetAdd('libp3direct.dll', input='p3motiontrail_config_motiontrail.obj')
   TargetAdd('libp3direct.dll', input='p3motiontrail_cMotionTrail.obj')
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'WINGDI'])
 
-  OPTS=['DIR:direct/metalibs/direct']
+  OPTS=['DIR:direct/metalibs/direct', 'PYTHON']
   TargetAdd('direct_module.obj', input='libp3dcparser.in')
   TargetAdd('direct_module.obj', input='libp3showbase.in')
   TargetAdd('direct_module.obj', input='libp3deadrec.in')
@@ -5068,23 +5133,38 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct.pyd', input='libp3distributed_igate.obj')
   TargetAdd('direct.pyd', input='libp3motiontrail_igate.obj')
 
+  # These are part of direct.pyd, not libp3direct.dll, because they rely on
+  # the Python libraries.  If a C++ user needs these modules, we can move them
+  # back and filter out the Python-specific code.
+  TargetAdd('direct.pyd', input='p3dcparser_composite1.obj')
+  TargetAdd('direct.pyd', input='p3dcparser_composite2.obj')
+  TargetAdd('direct.pyd', input='p3dcparser_dcParser.obj')
+  TargetAdd('direct.pyd', input='p3dcparser_dcLexer.obj')
+  TargetAdd('direct.pyd', input='p3distributed_config_distributed.obj')
+  TargetAdd('direct.pyd', input='p3distributed_cConnectionRepository.obj')
+  TargetAdd('direct.pyd', input='p3distributed_cDistributedSmoothNodeBase.obj')
+
   TargetAdd('direct.pyd', input='direct_module.obj')
   TargetAdd('direct.pyd', input='libp3direct.dll')
   TargetAdd('direct.pyd', input='libp3interrogatedb.dll')
   TargetAdd('direct.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('direct.pyd', opts=['PYTHON', 'OPENSSL', 'WINUSER', 'WINGDI'])
+  TargetAdd('direct.pyd', opts=['PYTHON', 'OPENSSL', 'WINUSER', 'WINGDI', 'WINSOCK2'])
 
 #
 # DIRECTORY: direct/src/dcparse/
 #
 
 if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME):
-  OPTS=['DIR:direct/src/dcparse', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'ADVAPI']
+  OPTS=['DIR:direct/src/dcparse', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'ADVAPI', 'PYTHON']
   TargetAdd('dcparse_dcparse.obj', opts=OPTS, input='dcparse.cxx')
+  TargetAdd('p3dcparse.exe', input='p3dcparser_composite1.obj')
+  TargetAdd('p3dcparse.exe', input='p3dcparser_composite2.obj')
+  TargetAdd('p3dcparse.exe', input='p3dcparser_dcParser.obj')
+  TargetAdd('p3dcparse.exe', input='p3dcparser_dcLexer.obj')
   TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
   TargetAdd('p3dcparse.exe', input='libp3direct.dll')
-  TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-  TargetAdd('p3dcparse.exe', opts=['ADVAPI'])
+  TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('p3dcparse.exe', opts=['ADVAPI', 'PYTHON'])
 
 #
 # DIRECTORY: direct/src/plugin/
@@ -5133,9 +5213,10 @@ if (RTDIST or RUNTIME):
   if (PkgSkip("PYTHON")==0 and RTDIST):
     # Freeze VFSImporter and its dependency modules into p3dpython.
     # Mark panda3d.core as a dependency to make sure to build that first.
-    TargetAdd('p3dpython_frozen.obj', input='VFSImporter.py', opts=['DIR:direct/src/showbase', 'FREEZE_STARTUP'])
+    TargetAdd('p3dpython_frozen.obj', input='VFSImporter.py', opts=['DIR:direct/src/showbase', 'FREEZE_STARTUP', 'PYTHON'])
     TargetAdd('p3dpython_frozen.obj', dep='core.pyd')
 
+    OPTS += ['PYTHON']
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
     TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
@@ -5166,7 +5247,7 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dpythonw.exe', input='libp3interrogatedb.dll')
       TargetAdd('p3dpythonw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'WINUSER'])
 
-  if (PkgSkip("OPENSSL")==0 and RTDIST):
+  if (PkgSkip("OPENSSL")==0 and RTDIST and False):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL']
     if GetTarget() == 'darwin':
         OPTS += ['OPT:2']
@@ -5287,7 +5368,7 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='libpandaexpress.dll')
   TargetAdd('panda3d.exe', input='libp3dtoolconfig.dll')
   TargetAdd('panda3d.exe', input='libp3dtool.dll')
-  TargetAdd('panda3d.exe', input='libp3pystub.lib')
+  #TargetAdd('panda3d.exe', input='libp3pystub.lib')
   TargetAdd('panda3d.exe', input='libp3tinyxml.ilb')
   TargetAdd('panda3d.exe', opts=['NOICON', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
@@ -5301,7 +5382,7 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='libpandaexpress.dll')
     TargetAdd('Panda3D.app', input='libp3dtoolconfig.dll')
     TargetAdd('Panda3D.app', input='libp3dtool.dll')
-    TargetAdd('Panda3D.app', input='libp3pystub.lib')
+    #TargetAdd('Panda3D.app', input='libp3pystub.lib')
     TargetAdd('Panda3D.app', input='libp3tinyxml.ilb')
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
@@ -5316,7 +5397,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', input='libpandaexpress.dll')
     TargetAdd('panda3dw.exe', input='libp3dtoolconfig.dll')
     TargetAdd('panda3dw.exe', input='libp3dtool.dll')
-    TargetAdd('panda3dw.exe', input='libp3pystub.lib')
+    #TargetAdd('panda3dw.exe', input='libp3pystub.lib')
     TargetAdd('panda3dw.exe', input='libp3tinyxml.ilb')
     TargetAdd('panda3dw.exe', opts=['SUBSYSTEM:WINDOWS', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
@@ -5327,7 +5408,7 @@ if (RTDIST):
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
   TargetAdd('plugin_standalone_p3dEmbedMain.obj', opts=OPTS, input='p3dEmbedMain.cxx')
   TargetAdd('plugin_standalone_p3dEmbed.obj', opts=OPTS, input='p3dEmbed.cxx')
-  TargetAdd('plugin_standalone_pystub.obj', opts=OPTS, input='pystub.cxx')
+  #TargetAdd('plugin_standalone_pystub.obj', opts=OPTS, input='pystub.cxx')
   TargetAdd('plugin_standalone_dtoolbase_composite1.obj', opts=OPTS, input='p3dtoolbase_composite1.cxx')
   TargetAdd('plugin_standalone_dtoolbase_composite2.obj', opts=OPTS, input='p3dtoolbase_composite2.cxx')
   TargetAdd('plugin_standalone_lookup3.obj', opts=OPTS, input='lookup3.c')
@@ -5346,7 +5427,7 @@ if (RTDIST):
   TargetAdd('p3dembed.exe', input='plugin_standalone_panda3dBase.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_p3dEmbedMain.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_p3dEmbed.obj')
-  TargetAdd('p3dembed.exe', input='plugin_standalone_pystub.obj')
+  #TargetAdd('p3dembed.exe', input='plugin_standalone_pystub.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_dtoolbase_composite1.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_dtoolbase_composite2.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_lookup3.obj')
@@ -5377,7 +5458,7 @@ if (RTDIST):
     TargetAdd('p3dembedw.exe', input='plugin_standalone_panda3dBase.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_p3dEmbedWinMain.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_p3dEmbed.obj')
-    TargetAdd('p3dembedw.exe', input='plugin_standalone_pystub.obj')
+    #TargetAdd('p3dembedw.exe', input='plugin_standalone_pystub.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_dtoolbase_composite1.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_dtoolbase_composite2.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_lookup3.obj')
@@ -5445,17 +5526,17 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('bam-info.exe', input='libp3progbase.lib')
   TargetAdd('bam-info.exe', input='libp3pandatoolbase.lib')
   TargetAdd('bam-info.exe', input='libpandaegg.dll')
-  TargetAdd('bam-info.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('bam-info.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('bam-info.exe', opts=['ADVAPI', 'FFTW'])
 
   TargetAdd('bam2egg_bamToEgg.obj', opts=OPTS, input='bamToEgg.cxx')
   TargetAdd('bam2egg.exe', input='bam2egg_bamToEgg.obj')
-  TargetAdd('bam2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('bam2egg.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('bam2egg.exe', opts=['ADVAPI',  'FFTW'])
 
   TargetAdd('egg2bam_eggToBam.obj', opts=OPTS, input='eggToBam.cxx')
   TargetAdd('egg2bam.exe', input='egg2bam_eggToBam.obj')
-  TargetAdd('egg2bam.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg2bam.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg2bam.exe', opts=['ADVAPI',  'FFTW'])
 
 #
@@ -5494,7 +5575,7 @@ if (PkgSkip("PANDATOOL")==0 and PkgSkip("FCOLLADA")==0):
   TargetAdd('dae2egg_daeToEgg.obj', opts=OPTS, input='daeToEgg.cxx')
   TargetAdd('dae2egg.exe', input='dae2egg_daeToEgg.obj')
   TargetAdd('dae2egg.exe', input='libp3daeegg.lib')
-  TargetAdd('dae2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('dae2egg.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('dae2egg.exe', opts=['WINUSER', 'FCOLLADA', 'CARBON'])
 
 #
@@ -5528,14 +5609,14 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('dxf-points.exe', input='libp3progbase.lib')
   TargetAdd('dxf-points.exe', input='libp3dxf.lib')
   TargetAdd('dxf-points.exe', input='libp3pandatoolbase.lib')
-  TargetAdd('dxf-points.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('dxf-points.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('dxf-points.exe', opts=['ADVAPI',  'FFTW'])
 
   TargetAdd('dxf2egg_dxfToEgg.obj', opts=OPTS, input='dxfToEgg.cxx')
   TargetAdd('dxf2egg.exe', input='dxf2egg_dxfToEgg.obj')
   TargetAdd('dxf2egg.exe', input='libp3dxfegg.lib')
   TargetAdd('dxf2egg.exe', input='libp3dxf.lib')
-  TargetAdd('dxf2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('dxf2egg.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('dxf2egg.exe', opts=['ADVAPI',  'FFTW'])
 
   TargetAdd('egg2dxf_eggToDXF.obj', opts=OPTS, input='eggToDXF.cxx')
@@ -5543,7 +5624,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg2dxf.exe', input='egg2dxf_eggToDXF.obj')
   TargetAdd('egg2dxf.exe', input='egg2dxf_eggToDXFLayer.obj')
   TargetAdd('egg2dxf.exe', input='libp3dxf.lib')
-  TargetAdd('egg2dxf.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg2dxf.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg2dxf.exe', opts=['ADVAPI',  'FFTW'])
 
 #
@@ -5568,12 +5649,12 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('obj2egg_objToEgg.obj', opts=OPTS, input='objToEgg.cxx')
   TargetAdd('obj2egg.exe', input='obj2egg_objToEgg.obj')
   TargetAdd('obj2egg.exe', input='libp3objegg.lib')
-  TargetAdd('obj2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('obj2egg.exe', input=COMMON_EGG2X_LIBS)
 
   TargetAdd('egg2obj_eggToObj.obj', opts=OPTS, input='eggToObj.cxx')
   TargetAdd('egg2obj.exe', input='egg2obj_eggToObj.obj')
   TargetAdd('egg2obj.exe', input='libp3objegg.lib')
-  TargetAdd('egg2obj.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg2obj.exe', input=COMMON_EGG2X_LIBS)
 
 #
 # DIRECTORY: pandatool/src/palettizer/
@@ -5597,7 +5678,7 @@ if (PkgSkip("FREETYPE")==0) and (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg-mkfont.exe', input='egg-mkfont_rangeDescription.obj')
   TargetAdd('egg-mkfont.exe', input='egg-mkfont_rangeIterator.obj')
   TargetAdd('egg-mkfont.exe', input='libp3palettizer.lib')
-  TargetAdd('egg-mkfont.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-mkfont.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-mkfont.exe', opts=['ADVAPI', 'FREETYPE'])
 
 #
@@ -5624,7 +5705,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg-optchar.exe', input='egg-optchar_eggOptcharUserData.obj')
   TargetAdd('egg-optchar.exe', input='egg-optchar_vertexMembership.obj')
   TargetAdd('egg-optchar.exe', input='libp3eggcharbase.lib')
-  TargetAdd('egg-optchar.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-optchar.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-optchar.exe', opts=['ADVAPI', 'FREETYPE'])
 
 #
@@ -5636,7 +5717,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg-palettize_eggPalettize.obj', opts=OPTS, input='eggPalettize.cxx')
   TargetAdd('egg-palettize.exe', input='egg-palettize_eggPalettize.obj')
   TargetAdd('egg-palettize.exe', input='libp3palettizer.lib')
-  TargetAdd('egg-palettize.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-palettize.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-palettize.exe', opts=['ADVAPI'])
 
 #
@@ -5650,7 +5731,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg-qtess.exe', input='libp3eggbase.lib')
   TargetAdd('egg-qtess.exe', input='libp3progbase.lib')
   TargetAdd('egg-qtess.exe', input='libp3converter.lib')
-  TargetAdd('egg-qtess.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-qtess.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-qtess.exe', opts=['ADVAPI'])
 
 #
@@ -5661,49 +5742,49 @@ if (PkgSkip("PANDATOOL")==0):
   OPTS=['DIR:pandatool/src/eggprogs']
   TargetAdd('egg-crop_eggCrop.obj', opts=OPTS, input='eggCrop.cxx')
   TargetAdd('egg-crop.exe', input='egg-crop_eggCrop.obj')
-  TargetAdd('egg-crop.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-crop.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-crop.exe', opts=['ADVAPI'])
 
   TargetAdd('egg-make-tube_eggMakeTube.obj', opts=OPTS, input='eggMakeTube.cxx')
   TargetAdd('egg-make-tube.exe', input='egg-make-tube_eggMakeTube.obj')
-  TargetAdd('egg-make-tube.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-make-tube.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-make-tube.exe', opts=['ADVAPI'])
 
   TargetAdd('egg-texture-cards_eggTextureCards.obj', opts=OPTS, input='eggTextureCards.cxx')
   TargetAdd('egg-texture-cards.exe', input='egg-texture-cards_eggTextureCards.obj')
-  TargetAdd('egg-texture-cards.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-texture-cards.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-texture-cards.exe', opts=['ADVAPI'])
 
   TargetAdd('egg-topstrip_eggTopstrip.obj', opts=OPTS, input='eggTopstrip.cxx')
   TargetAdd('egg-topstrip.exe', input='egg-topstrip_eggTopstrip.obj')
   TargetAdd('egg-topstrip.exe', input='libp3eggcharbase.lib')
-  TargetAdd('egg-topstrip.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-topstrip.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-topstrip.exe', opts=['ADVAPI'])
 
   TargetAdd('egg-trans_eggTrans.obj', opts=OPTS, input='eggTrans.cxx')
   TargetAdd('egg-trans.exe', input='egg-trans_eggTrans.obj')
-  TargetAdd('egg-trans.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-trans.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-trans.exe', opts=['ADVAPI'])
 
   TargetAdd('egg2c_eggToC.obj', opts=OPTS, input='eggToC.cxx')
   TargetAdd('egg2c.exe', input='egg2c_eggToC.obj')
-  TargetAdd('egg2c.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg2c.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg2c.exe', opts=['ADVAPI'])
 
   TargetAdd('egg-rename_eggRename.obj', opts=OPTS, input='eggRename.cxx')
   TargetAdd('egg-rename.exe', input='egg-rename_eggRename.obj')
-  TargetAdd('egg-rename.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-rename.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-rename.exe', opts=['ADVAPI'])
 
   TargetAdd('egg-retarget-anim_eggRetargetAnim.obj', opts=OPTS, input='eggRetargetAnim.cxx')
   TargetAdd('egg-retarget-anim.exe', input='egg-retarget-anim_eggRetargetAnim.obj')
   TargetAdd('egg-retarget-anim.exe', input='libp3eggcharbase.lib')
-  TargetAdd('egg-retarget-anim.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-retarget-anim.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-retarget-anim.exe', opts=['ADVAPI'])
 
   TargetAdd('egg-list-textures_eggListTextures.obj', opts=OPTS, input='eggListTextures.cxx')
   TargetAdd('egg-list-textures.exe', input='egg-list-textures_eggListTextures.obj')
-  TargetAdd('egg-list-textures.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-list-textures.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg-list-textures.exe', opts=['ADVAPI'])
 
 #
@@ -5734,33 +5815,33 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg2flt_eggToFlt.obj', opts=OPTS, input='eggToFlt.cxx')
   TargetAdd('egg2flt.exe', input='egg2flt_eggToFlt.obj')
   TargetAdd('egg2flt.exe', input='libp3flt.lib')
-  TargetAdd('egg2flt.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg2flt.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('egg2flt.exe', opts=['ADVAPI'])
 
   TargetAdd('flt-info_fltInfo.obj', opts=OPTS, input='fltInfo.cxx')
   TargetAdd('flt-info.exe', input='flt-info_fltInfo.obj')
   TargetAdd('flt-info.exe', input='libp3flt.lib')
-  TargetAdd('flt-info.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('flt-info.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('flt-info.exe', opts=['ADVAPI'])
 
   TargetAdd('flt-trans_fltTrans.obj', opts=OPTS, input='fltTrans.cxx')
   TargetAdd('flt-trans.exe', input='flt-trans_fltTrans.obj')
   TargetAdd('flt-trans.exe', input='libp3flt.lib')
-  TargetAdd('flt-trans.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('flt-trans.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('flt-trans.exe', opts=['ADVAPI'])
 
   TargetAdd('flt2egg_fltToEgg.obj', opts=OPTS, input='fltToEgg.cxx')
   TargetAdd('flt2egg.exe', input='flt2egg_fltToEgg.obj')
   TargetAdd('flt2egg.exe', input='libp3flt.lib')
   TargetAdd('flt2egg.exe', input='libp3fltegg.lib')
-  TargetAdd('flt2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('flt2egg.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('flt2egg.exe', opts=['ADVAPI'])
 
   TargetAdd('fltcopy_fltCopy.obj', opts=OPTS, input='fltCopy.cxx')
   TargetAdd('fltcopy.exe', input='fltcopy_fltCopy.obj')
   TargetAdd('fltcopy.exe', input='libp3cvscopy.lib')
   TargetAdd('fltcopy.exe', input='libp3flt.lib')
-  TargetAdd('fltcopy.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('fltcopy.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('fltcopy.exe', opts=['ADVAPI'])
 
 
@@ -5786,7 +5867,6 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-info.exe', input='libp3pandatoolbase.lib')
   TargetAdd('image-info.exe', input='libpandaegg.dll')
   TargetAdd('image-info.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('image-info.exe', input='libp3pystub.lib')
   TargetAdd('image-info.exe', opts=['ADVAPI'])
 
   TargetAdd('image-resize_imageResize.obj', opts=OPTS, input='imageResize.cxx')
@@ -5796,7 +5876,6 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-resize.exe', input='libp3pandatoolbase.lib')
   TargetAdd('image-resize.exe', input='libpandaegg.dll')
   TargetAdd('image-resize.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('image-resize.exe', input='libp3pystub.lib')
   TargetAdd('image-resize.exe', opts=['ADVAPI'])
 
   TargetAdd('image-trans_imageTrans.obj', opts=OPTS, input='imageTrans.cxx')
@@ -5806,7 +5885,6 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-trans.exe', input='libp3pandatoolbase.lib')
   TargetAdd('image-trans.exe', input='libpandaegg.dll')
   TargetAdd('image-trans.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('image-trans.exe', input='libp3pystub.lib')
   TargetAdd('image-trans.exe', opts=['ADVAPI'])
 
 #
@@ -5820,7 +5898,6 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('pfm-trans.exe', input='libp3progbase.lib')
   TargetAdd('pfm-trans.exe', input='libp3pandatoolbase.lib')
   TargetAdd('pfm-trans.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('pfm-trans.exe', input='libp3pystub.lib')
   TargetAdd('pfm-trans.exe', opts=['ADVAPI'])
 
   TargetAdd('pfm-bba_pfmBba.obj', opts=OPTS, input='pfmBba.cxx')
@@ -5830,7 +5907,6 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('pfm-bba.exe', input='libp3progbase.lib')
   TargetAdd('pfm-bba.exe', input='libp3pandatoolbase.lib')
   TargetAdd('pfm-bba.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('pfm-bba.exe', input='libp3pystub.lib')
   TargetAdd('pfm-bba.exe', opts=['ADVAPI'])
 
 #
@@ -5864,14 +5940,13 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('lwo-scan.exe', input='libp3pandatoolbase.lib')
   TargetAdd('lwo-scan.exe', input='libpandaegg.dll')
   TargetAdd('lwo-scan.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('lwo-scan.exe', input='libp3pystub.lib')
   TargetAdd('lwo-scan.exe', opts=['ADVAPI'])
 
   TargetAdd('lwo2egg_lwoToEgg.obj', opts=OPTS, input='lwoToEgg.cxx')
   TargetAdd('lwo2egg.exe', input='lwo2egg_lwoToEgg.obj')
   TargetAdd('lwo2egg.exe', input='libp3lwo.lib')
   TargetAdd('lwo2egg.exe', input='libp3lwoegg.lib')
-  TargetAdd('lwo2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('lwo2egg.exe', input=COMMON_EGG2X_LIBS)
   TargetAdd('lwo2egg.exe', opts=['ADVAPI'])
 
 #
@@ -5912,7 +5987,7 @@ for VER in MAXVERSIONS:
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxegg'+VNUM+'_composite1.obj')
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg'+VNUM+'.res')
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.def', ipath=OPTS)
-    TargetAdd('maxegg'+VNUM+'.dlo', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('maxegg'+VNUM+'.dlo', input=COMMON_EGG2X_LIBS)
     TargetAdd('maxegg'+VNUM+'.dlo', opts=OPTS)
 
 #
@@ -5998,8 +6073,11 @@ if (PkgSkip("PANDATOOL")==0):
 #
 
 if (PkgSkip("PANDATOOL")==0):
+    if not PkgSkip("FCOLLADA"):
+        DefSymbol("FCOLLADA", "HAVE_FCOLLADA")
+
     OPTS=['DIR:pandatool/src/ptloader', 'DIR:pandatool/src/flt', 'DIR:pandatool/src/lwo', 'DIR:pandatool/src/xfile', 'DIR:pandatool/src/xfileegg', 'DIR:pandatool/src/daeegg', 'BUILDING:PTLOADER', 'FCOLLADA']
-    TargetAdd('p3ptloader_config_ptloader.obj', opts=OPTS, input='config_ptloader.cxx')
+    TargetAdd('p3ptloader_config_ptloader.obj', opts=OPTS, input='config_ptloader.cxx', dep='dtool_have_fcollada.dat')
     TargetAdd('p3ptloader_loaderFileTypePandatool.obj', opts=OPTS, input='loaderFileTypePandatool.cxx')
     TargetAdd('libp3ptloader.dll', input='p3ptloader_config_ptloader.obj')
     TargetAdd('libp3ptloader.dll', input='p3ptloader_loaderFileTypePandatool.obj')
@@ -6062,7 +6140,6 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('softcvs.exe', input='libp3pandatoolbase.lib')
     TargetAdd('softcvs.exe', input='libpandaegg.dll')
     TargetAdd('softcvs.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('softcvs.exe', input='libp3pystub.lib')
     TargetAdd('softcvs.exe', opts=['ADVAPI'])
 
 #
@@ -6080,7 +6157,6 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('text-stats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('text-stats.exe', input='libpandaegg.dll')
     TargetAdd('text-stats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('text-stats.exe', input='libp3pystub.lib')
     TargetAdd('text-stats.exe', opts=['ADVAPI'])
 
 #
@@ -6095,14 +6171,13 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('vrml-trans.exe', input='libp3progbase.lib')
     TargetAdd('vrml-trans.exe', input='libp3pandatoolbase.lib')
     TargetAdd('vrml-trans.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('vrml-trans.exe', input='libp3pystub.lib')
     TargetAdd('vrml-trans.exe', opts=['ADVAPI'])
 
     TargetAdd('vrml2egg_vrmlToEgg.obj', opts=OPTS, input='vrmlToEgg.cxx')
     TargetAdd('vrml2egg.exe', input='vrml2egg_vrmlToEgg.obj')
     TargetAdd('vrml2egg.exe', input='libp3vrmlegg.lib')
     TargetAdd('vrml2egg.exe', input='libp3vrml.lib')
-    TargetAdd('vrml2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('vrml2egg.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('vrml2egg.exe', opts=['ADVAPI'])
 
 #
@@ -6122,7 +6197,6 @@ if (PkgSkip("PANDATOOL")==0 and (GetTarget() == 'windows' or PkgSkip("GTK2")==0)
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', input='libp3pystub.lib')
     TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
 
 #
@@ -6135,7 +6209,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg2x.exe', input='egg2x_eggToX.obj')
     TargetAdd('egg2x.exe', input='libp3xfileegg.lib')
     TargetAdd('egg2x.exe', input='libp3xfile.lib')
-    TargetAdd('egg2x.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('egg2x.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('egg2x.exe', opts=['ADVAPI'])
 
     TargetAdd('x-trans_xFileTrans.obj', opts=OPTS, input='xFileTrans.cxx')
@@ -6144,14 +6218,13 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('x-trans.exe', input='libp3xfile.lib')
     TargetAdd('x-trans.exe', input='libp3pandatoolbase.lib')
     TargetAdd('x-trans.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('x-trans.exe', input='libp3pystub.lib')
     TargetAdd('x-trans.exe', opts=['ADVAPI'])
 
     TargetAdd('x2egg_xFileToEgg.obj', opts=OPTS, input='xFileToEgg.cxx')
     TargetAdd('x2egg.exe', input='x2egg_xFileToEgg.obj')
     TargetAdd('x2egg.exe', input='libp3xfileegg.lib')
     TargetAdd('x2egg.exe', input='libp3xfile.lib')
-    TargetAdd('x2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('x2egg.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('x2egg.exe', opts=['ADVAPI'])
 
 #
@@ -6176,8 +6249,8 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaeggimport'+VNUM+'_mayaeggimport.obj')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='libpandaegg.dll')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input=COMMON_PANDA_LIBS)
-    if GetTarget() == 'windows':
-      TargetAdd('mayaeggimport'+VNUM+'.mll', input='libp3pystub.lib')
+    #if GetTarget() == 'windows':
+    #  TargetAdd('mayaeggimport'+VNUM+'.mll', input='libp3pystub.lib')
     TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
 
     TargetAdd('mayaloader'+VNUM+'_config_mayaloader.obj', opts=OPTS, input='config_mayaloader.cxx')
@@ -6210,7 +6283,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('libmayapview'+VNUM+'.mll', input='libmaya'+VNUM+'.lib')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
     if GetTarget() == 'windows':
-      TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS_PYSTUB)
+      TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
     else:
       TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
     TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
@@ -6220,7 +6293,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
     if GetTarget() == 'windows':
-      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     else:
       TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
@@ -6230,7 +6303,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
     if GetTarget() == 'windows':
-      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     else:
       TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
@@ -6240,7 +6313,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayacopy'+VNUM+'_bin.exe', input='libp3cvscopy.lib')
     TargetAdd('mayacopy'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
     if GetTarget() == 'windows':
-      TargetAdd('mayacopy'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+      TargetAdd('mayacopy'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     else:
       TargetAdd('mayacopy'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('mayacopy'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
@@ -6253,17 +6326,17 @@ for VER in MAYAVERSIONS:
 
     TargetAdd('maya2egg'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
     TargetAdd('maya2egg'+VNUM+'.exe', input='libpandaexpress.dll')
-    TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+    TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
 
     TargetAdd('egg2maya'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
     TargetAdd('egg2maya'+VNUM+'.exe', input='libpandaexpress.dll')
-    TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+    TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
 
     TargetAdd('mayacopy'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
     TargetAdd('mayacopy'+VNUM+'.exe', input='libpandaexpress.dll')
-    TargetAdd('mayacopy'+VNUM+'.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+    TargetAdd('mayacopy'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
 
 #
@@ -6275,7 +6348,7 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   TargetAdd('libpandaai.dll', input='p3ai_composite1.obj')
   TargetAdd('libpandaai.dll', input=COMMON_PANDA_LIBS)
 
-  OPTS=['DIR:contrib/src/ai']
+  OPTS=['DIR:contrib/src/ai', 'PYTHON']
   IGATEFILES=GetDirectoryContents('contrib/src/ai', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaai.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaai.in', opts=['IMOD:panda3d.ai', 'ILIB:libpandaai', 'SRCDIR:contrib/src/ai'])
@@ -6536,17 +6609,14 @@ def MakeInstallerNSIS(file, title, installdir):
     if (os.path.exists("nsis-output.exe")):
         os.remove("nsis-output.exe")
     WriteFile(GetOutputDir()+"/tmp/__init__.py", "")
-    psource = os.path.abspath(".")
-    panda = os.path.abspath(GetOutputDir())
 
     nsis_defs = {
         'COMPRESSOR'  : COMPRESSOR,
         'TITLE'       : title,
         'INSTALLDIR'  : installdir,
-        'OUTFILE'     : os.path.join(psource, 'nsis-output.exe'),
-        'LICENSE'     : os.path.join(panda, 'LICENSE'),
-        'BUILT'       : panda,
-        'SOURCE'      : psource,
+        'OUTFILE'     : '..\\' + file,
+        'BUILT'       : '..\\' + GetOutputDir(),
+        'SOURCE'      : '..',
         'PYVER'       : SDK["PYTHONVERSION"][6:9],
         'REGVIEW'     : regview,
     }
@@ -6560,10 +6630,29 @@ def MakeInstallerNSIS(file, title, installdir):
         for item in nsis_defs.items():
             cmd += ' -D%s="%s"' % item
 
-    cmd += ' "%s"' % (os.path.join(psource, 'makepanda', 'installer.nsi'))
+    cmd += ' "makepanda\installer.nsi"'
     oscmd(cmd)
-    os.rename("nsis-output.exe", file)
 
+def MakeDebugSymbolArchive(zipname, dirname):
+    import zipfile
+    zip = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'bin', '*.pdb')):
+        zip.write(fn, dirname + '/bin/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'panda3d', '*.pdb')):
+        zip.write(fn, dirname + '/panda3d/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'plugins', '*.pdb')):
+        zip.write(fn, dirname + '/plugins/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'python', '*.pdb')):
+        zip.write(fn, dirname + '/python/' + os.path.basename(fn))
+
+    for fn in glob.glob(os.path.join(GetOutputDir(), 'python', 'DLLs', '*.pdb')):
+        zip.write(fn, dirname + '/python/DLLs/' + os.path.basename(fn))
+
+    zip.close()
 
 INSTALLER_DEB_FILE="""
 Package: panda3dMAJOR
@@ -6758,9 +6847,9 @@ def MakeInstallerLinux():
         txt = txt.replace("VERSION", DEBVERSION).replace("ARCH", pkg_arch).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
         txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") / 1024))
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
-        oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
+        oscmd("cd targetroot && (find usr -type f -exec md5sum {} ;) > DEBIAN/md5sums")
         if (not RUNTIME):
-          oscmd("cd targetroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
+          oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
           WriteFile("targetroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("targetroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("cp targetroot/DEBIAN/postinst targetroot/DEBIAN/postrm")
@@ -6788,7 +6877,7 @@ def MakeInstallerLinux():
 
         if RUNTIME:
             # The runtime doesn't export any useful symbols, so just query the dependencies.
-            oscmd("cd targetroot; %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
+            oscmd("cd targetroot && %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
             depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
             recommends = ""
         else:
@@ -6796,12 +6885,12 @@ def MakeInstallerLinux():
             pkg_dir = "debian/panda3d" + MAJOR_VERSION
 
             # Generate a symbols file so that other packages can know which symbols we export.
-            oscmd("cd targetroot; dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
+            oscmd("cd targetroot && dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
 
             # Library dependencies are required, binary dependencies are recommended.
             # We explicitly exclude libphysx-extras since we don't want to depend on PhysX.
-            oscmd("cd targetroot; LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
-            oscmd("cd targetroot; LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
+            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
+            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
 
             # Parse the substvars files generated by dpkg-shlibdeps.
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
@@ -6954,8 +7043,10 @@ def MakeInstallerOSX():
         oscmd("cp -R %s/lib/libp3fmod_audio.* dstroot/fmodex/Developer/Panda3D/lib/" % GetOutputDir())
         oscmd("cp -R %s/lib/libfmodex* dstroot/fmodex/Developer/Panda3D/lib/" % GetOutputDir())
 
-    oscmd("mkdir -p dstroot/headers/Developer/Panda3D")
+    oscmd("mkdir -p dstroot/headers/Developer/Panda3D/lib")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % GetOutputDir())
+    if os.path.isfile(GetOutputDir() + "/lib/libp3pystub.a"):
+        oscmd("cp -R -P %s/lib/libp3pystub.a dstroot/headers/Developer/Panda3D/lib/" % GetOutputDir())
 
     if os.path.isdir("samples"):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
@@ -7131,7 +7222,7 @@ try:
         target = GetTarget()
         if target == 'windows':
             fn = "Panda3D-"
-            dir = "C:\\Panda3D-" + VERSION
+            dir = "Panda3D-" + VERSION
 
             if RUNTIME:
                 fn += "Runtime-"
@@ -7150,8 +7241,9 @@ try:
                 fn += '-x64'
                 dir += '-x64'
 
-            fn += '.exe'
-            MakeInstallerNSIS(fn, title, dir)
+            MakeInstallerNSIS(fn + '.exe', title, 'C:\\' + dir)
+            if not RUNTIME:
+                MakeDebugSymbolArchive(fn + '-pdb.zip', dir)
         elif (target == 'linux'):
             MakeInstallerLinux()
         elif (target == 'darwin'):

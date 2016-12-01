@@ -15,7 +15,6 @@
 #include "config_pfm.h"
 #include "pfmFile.h"
 #include "pfmVizzer.h"
-#include "pystub.h"
 #include "texture.h"
 #include "texturePool.h"
 #include "pointerTo.h"
@@ -504,9 +503,6 @@ dispatch_translate(const string &opt, const string &arg, void *var) {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   PfmTrans prog;
   prog.parse_command_line(argc, argv);
   prog.run();

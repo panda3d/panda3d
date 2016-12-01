@@ -21,7 +21,6 @@
 #include "eggJointPointer.h"
 #include "eggTable.h"
 #include "compose_matrix.h"
-#include "pystub.h"
 
 /**
  *
@@ -343,9 +342,6 @@ adjust_transform(LMatrix4d &mat) const {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   EggTopstrip prog;
   prog.parse_command_line(argc, argv);
   prog.run();

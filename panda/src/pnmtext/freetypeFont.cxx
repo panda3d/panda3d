@@ -241,8 +241,8 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
     // This is the easy case: we can copy the rendered glyph directly into our
     // image, one pixel at a time.
     unsigned char *buffer_row = bitmap.buffer;
-    for (int yi = 0; yi < bitmap.rows; yi++) {
-      for (int xi = 0; xi < bitmap.width; xi++) {
+    for (int yi = 0; yi < (int)bitmap.rows; yi++) {
+      for (int xi = 0; xi < (int)bitmap.width; xi++) {
         image.set_gray_val(xi, yi, buffer_row[xi]);
       }
       buffer_row += bitmap.pitch;
@@ -252,11 +252,11 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
     // This is a little bit more work: we have to expand the one-bit-per-pixel
     // bitmap into a one-byte-per-pixel image.
     unsigned char *buffer_row = bitmap.buffer;
-    for (int yi = 0; yi < bitmap.rows; yi++) {
+    for (int yi = 0; yi < (int)bitmap.rows; yi++) {
       xelval maxval = image.get_maxval();
       int bit = 0x80;
       unsigned char *b = buffer_row;
-      for (int xi = 0; xi < bitmap.width; xi++) {
+      for (int xi = 0; xi < (int)bitmap.width; xi++) {
         if (*b & bit) {
           image.set_gray_val(xi, yi, maxval);
         } else {
@@ -277,8 +277,8 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
     // Here we must expand a grayscale pixmap with n levels of gray into our
     // 256-level texture.
     unsigned char *buffer_row = bitmap.buffer;
-    for (int yi = 0; yi < bitmap.rows; yi++) {
-      for (int xi = 0; xi < bitmap.width; xi++) {
+    for (int yi = 0; yi < (int)bitmap.rows; yi++) {
+      for (int xi = 0; xi < (int)bitmap.width; xi++) {
         image.set_gray(xi, yi, (PN_stdfloat)buffer_row[xi] / (bitmap.num_grays - 1));
       }
       buffer_row += bitmap.pitch;
@@ -691,7 +691,6 @@ outline_nurbs(NurbsCurveResult *ncr) {
 
     PN_stdfloat st0 = st, st1 = st;
     if (i > 0) {
-      PN_stdfloat last_t = ncr->get_sample_t(i - 1);
       st0 = ncr->get_sample_t(i - 1) * 0.1f + st * 0.9f;
     }
     if (i < num_samples - 1) {

@@ -29,6 +29,8 @@ PUBLISHED:
   INLINE EggTriangleStrip &operator = (const EggTriangleStrip &copy);
   virtual ~EggTriangleStrip();
 
+  virtual EggTriangleStrip *make_copy() const OVERRIDE;
+
   virtual void write(ostream &out, int indent_level) const;
 
 protected:

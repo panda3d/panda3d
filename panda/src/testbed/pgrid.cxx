@@ -12,7 +12,6 @@
  */
 
 #include "pandaFramework.h"
-#include "pystub.h"
 #include "pandaNode.h"
 #include "transformState.h"
 #include "clockObject.h"
@@ -385,9 +384,6 @@ load_gridded_models(WindowFramework *window,
 
 int
 main(int argc, char **argv) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   preprocess_argv(argc, argv);
   PandaFramework framework;
   framework.open_framework(argc, argv);

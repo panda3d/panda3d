@@ -81,10 +81,10 @@ get_texture_flags() const {
 /**
  * Specifies the expected number of views to load for the texture.  This is
  * ignored unless TF_multiview is included in texture_flags.  This must be
- * specified when loading a 3-d multiview texture, in which case it is used to
- * differentiate z levels from separate views; it may be zero in the case of
- * 2-d textures or cube maps, in which case the number of views can be
- * inferred from the number of images found on disk.
+ * specified when loading a 3-d multiview texture or 2-d texture array, in
+ * which case it is used to differentiate z levels from separate views; it
+ * may be zero in the case of 2-d textures or cube maps, in which case the
+ * number of views can be inferred from the number of images found on disk.
  */
 INLINE void LoaderOptions::
 set_texture_num_views(int texture_num_views) {

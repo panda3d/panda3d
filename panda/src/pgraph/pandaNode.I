@@ -380,7 +380,10 @@ has_tags() const {
     return true;
   }
 #ifdef HAVE_PYTHON
-  if (!cdata->_python_tag_data.empty()) {
+  // This is a bit awkward, since it doesn't catch cases where the Python tags
+  // are cleared.  Maybe we should make this behavior deprecated, so that
+  // has_tags will not consider the Python tags.
+  if (!_python_tag_data.is_null()) {
     return true;
   }
 #endif  // HAVE_PYTHON

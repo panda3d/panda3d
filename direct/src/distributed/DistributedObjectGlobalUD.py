@@ -26,18 +26,14 @@ class DistributedObjectGlobalUD(DistributedObjectUD):
 
     def execCommand(self, command, mwMgrId, avId, zoneId):
         text = str(self.__execMessage(command))[:config.GetInt("ai-debug-length",300)]
-
-        dclass = uber.air.dclassesByName.get("PiratesMagicWordManagerAI")
-        dg = dclass.aiFormatUpdate(
-            "setMagicWordResponse", mwMgrId, (1<<32)+avId, uber.air.ourChannel, [text])
-        uber.air.send(dg)
+        self.notify.info(text)
 
     def __execMessage(self, message):
         if not self.ExecNamespace:
             # Import some useful variables into the ExecNamespace initially.
-            import pandac.PandaModules
+            import panda3d.core
 
-            for key, value in pandac.PandaModules.__dict__.items():
+            for key, value in panda3d.core.__dict__.items():
                 if not key.startswith('__'):
                     self.ExecNamespace[key] = value
             #self.importExecNamespace()

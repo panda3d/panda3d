@@ -174,7 +174,6 @@ open_window() {
       << "No X visual: cannot open window.\n";
     return false;
   }
-  Visual *visual = _visual_info->visual;
 
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);

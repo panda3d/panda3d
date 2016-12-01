@@ -39,7 +39,7 @@
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
 
-#include "assimp/postprocess.h"
+#include "postprocess.h"
 
 struct BoneWeight {
   CPT(JointVertexTransform) joint_vertex_xform;

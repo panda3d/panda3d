@@ -12,15 +12,11 @@
  */
 
 #include "pandabase.h"
-#include "pystub.h"
 #include "downloadDb.h"
 #include "filename.h"
 
 int
 main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   if (argc != 3) {
     cerr << "Usage: show_ddb server.ddb client.ddb\n";
     return 1;

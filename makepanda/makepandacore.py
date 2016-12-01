@@ -512,6 +512,7 @@ def oscmd(cmd, ignoreError = False):
             exit("Cannot find "+exe+" on search path")
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
     else:
+        cmd = cmd.replace(';', '\\;')
         res = subprocess.call(cmd, shell=True)
         sig = res & 0x7F
         if (GetVerbose() and res != 0):
@@ -966,7 +967,12 @@ def ReadBinaryFile(wfile):
         ex = sys.exc_info()[1]
         exit("Cannot read %s: %s" % (wfile, ex))
 
-def WriteFile(wfile, data):
+def WriteFile(wfile, data, newline=None):
+    if newline is not None:
+        data = data.replace('\r\n', '\n')
+        data = data.replace('\r', '\n')
+        data = data.replace('\n', newline)
+
     try:
         dsthandle = open(wfile, "w")
         dsthandle.write(data)
@@ -984,18 +990,24 @@ def WriteBinaryFile(wfile, data):
         ex = sys.exc_info()[1]
         exit("Cannot write to %s: %s" % (wfile, ex))
 
-def ConditionalWriteFile(dest, desiredcontents):
+def ConditionalWriteFile(dest, data, newline=None):
+    if newline is not None:
+        data = data.replace('\r\n', '\n')
+        data = data.replace('\r', '\n')
+        data = data.replace('\n', newline)
+
     try:
         rfile = open(dest, 'r')
         contents = rfile.read(-1)
         rfile.close()
     except:
         contents = 0
-    if contents != desiredcontents:
+
+    if contents != data:
         if VERBOSE:
             print("Writing %s" % (dest))
         sys.stdout.flush()
-        WriteFile(dest, desiredcontents)
+        WriteFile(dest, data)
 
 def DeleteVCS(dir):
     if dir == "": dir = "."
@@ -2051,9 +2063,68 @@ def SdkLocateWindows(version = '7.1'):
     version = version.upper()
 
     if version == '10':
+        version = '10.0'
+
+    if version.startswith('10.') and version.count('.') == 1:
+        # Choose the latest version of the Windows 10 SDK.
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+
+        # Fallback in case we can't read the registry.
+        if not platsdk or not os.path.isdir(platsdk):
+            platsdk = "C:\\Program Files (x86)\\Windows Kits\\10\\"
+
+        if platsdk and os.path.isdir(platsdk):
+            incdirs = glob.glob(os.path.join(platsdk, 'Include', version + '.*.*'))
+            max_version = ()
+            for dir in incdirs:
+                verstring = os.path.basename(dir)
+
+                # Check that the important include directories exist.
+                if not os.path.isdir(os.path.join(dir, 'ucrt')):
+                    continue
+                if not os.path.isdir(os.path.join(dir, 'shared')):
+                    continue
+                if not os.path.isdir(os.path.join(dir, 'um')):
+                    continue
+                if not os.path.isdir(os.path.join(platsdk, 'Lib', verstring, 'ucrt')):
+                    continue
+                if not os.path.isdir(os.path.join(platsdk, 'Lib', verstring, 'um')):
+                    continue
+
+                print(verstring)
+                vertuple = tuple(map(int, verstring.split('.')))
+                if vertuple > max_version:
+                    version = verstring
+                    max_version = vertuple
+
+            if not max_version:
+                # No suitable version found.
+                platsdk = None
+
+    elif version.startswith('10.'):
+        # We chose a specific version of the Windows 10 SDK.  Verify it exists.
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+
+        # Fallback in case we can't read the registry.
+        if not platsdk or not os.path.isdir(platsdk):
+            platsdk = "C:\\Program Files (x86)\\Windows Kits\\10\\"
+
+        if version.count('.') == 2:
+            version += '.0'
+
+        if platsdk and not os.path.isdir(os.path.join(platsdk, 'Include', version)):
+            platsdk = None
+
+    elif version == '8.1':
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot81")
+
+        # Fallback in case we can't read the registry.
+        if not platsdk or not os.path.isdir(platsdk):
+            platsdk = "C:\\Program Files (x86)\\Windows Kits\\8.1\\"
+
     elif version == '8.0':
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot")
+
     else:
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v" + version, "InstallationFolder")
 
@@ -2320,12 +2391,13 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib\\" + libdir)
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib\\" + libdir)
 
-    if SDK["MSPLATFORM_VERSION"] == '10':
+    winsdk_ver = SDK["MSPLATFORM_VERSION"]
+    if winsdk_ver.startswith('10.'):
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
-        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10586.0\\"
-        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10586.0\\"
+        inc_dir = SDK["MSPLATFORM"] + "Include\\" + winsdk_ver + "\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\" + winsdk_ver + "\\"
         AddToPathEnv("INCLUDE", inc_dir + "shared")
         AddToPathEnv("INCLUDE", inc_dir + "ucrt")
         AddToPathEnv("INCLUDE", inc_dir + "um")
@@ -2353,10 +2425,20 @@ def SetupVisualStudioEnviron():
 
     # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
     # with Visual Studio 2015 requires use of the Universal CRT.
-    if SDK["MSPLATFORM_VERSION"] == '7.1' and SDK["VISUALSTUDIO_VERSION"] == '14.0':
+    if winsdk_ver == '7.1' and SDK["VISUALSTUDIO_VERSION"] == '14.0':
         win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+
+        # Fallback in case we can't read the registry.
+        if not win_kit or not os.path.isdir(win_kit):
+            win_kit = "C:\\Program Files (x86)\\Windows Kits\\10\\"
+        elif not win_kit.endswith('\\'):
+            win_kit += '\\'
+
         AddToPathEnv("LIB", win_kit + "Lib\\10.0.10150.0\\ucrt\\" + arch)
         AddToPathEnv("INCLUDE", win_kit + "Include\\10.0.10150.0\\ucrt")
+
+        # Copy the DLLs to the bin directory.
+        CopyAllFiles(GetOutputDir() + "/bin/", win_kit + "Redist\\ucrt\\DLLs\\" + arch + "\\")
 
 ########################################################################
 #

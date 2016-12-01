@@ -41,7 +41,7 @@ public:
   }
   static void init_type() {
     OcclusionQueryContext::init_type();
-    register_type(_type_handle, CLASSPREFIX_QUOTED "OcclusionQueryContext",
+    register_type(_type_handle, "DXOcclusionQueryContext9",
                   OcclusionQueryContext::get_class_type());
   }
   virtual TypeHandle get_type() const {

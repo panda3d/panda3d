@@ -41,7 +41,7 @@ resolve_type(CPPType *type, CPPScope *scope) {
     scope = &parser;
   }
 
-  CPPType *orig_type = type;
+  //CPPType *orig_type = type;
   type = type->resolve_type(scope, &parser);
   string name = type->get_local_name(&parser);
   if (name.empty()) {
@@ -1740,7 +1740,8 @@ is_Py_buffer(CPPType *type) {
 
   case CPPDeclaration::ST_extension:
   case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "Py_buffer");
+    return (type->get_local_name(&parser) == "Py_buffer" ||
+            type->get_local_name(&parser) == "bufferinfo");
 
   case CPPDeclaration::ST_typedef:
     return is_Py_buffer(type->as_typedef_type()->_type);

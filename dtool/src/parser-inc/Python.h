@@ -30,7 +30,7 @@ typedef struct {} PyUnicodeObject;
 
 class PyThreadState;
 typedef int Py_ssize_t;
-struct Py_buffer;
+typedef struct bufferinfo Py_buffer;
 
 // We need to define these accurately since interrogate may want to
 // write these out to default value assignments.

@@ -56,6 +56,9 @@ class panda3d(package):
            'direct.stdpy.*',
            'direct.task.*')
 
+    # Keep these modules for backward compatibility.
+    module('pandac.PandaModules', 'pandac.extension_native_helpers')
+
     module('panda3d.core',
            'panda3d.direct',
            'panda3d.fx',
@@ -462,6 +465,8 @@ class packp3d(p3d):
 
     mainModule('direct.p3d.packp3d')
 
+    file('packp3d.prc', extract = True, text = "preload-textures false")
+
 
 class ppackage(p3d):
     # As above, a packaging utility.  This is the fully-general ppackage
@@ -474,6 +479,8 @@ class ppackage(p3d):
     require('panda3d', 'egg')
 
     mainModule('direct.p3d.ppackage')
+
+    file('ppackage.prc', extract = True, text = "preload-textures false")
 
 
 class ppatcher(p3d):

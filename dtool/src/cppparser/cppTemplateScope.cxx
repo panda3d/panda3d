@@ -97,8 +97,10 @@ add_template_parameter(CPPDeclaration *param) {
   CPPClassTemplateParameter *cl = param->as_class_template_parameter();
   if (cl != NULL) {
     // Create an implicit typedef for this class parameter.
-    string name = cl->_ident->get_local_name();
-    _types[name] = cl;
+    if (cl->_ident != NULL) {
+      string name = cl->_ident->get_local_name();
+      _types[name] = cl;
+    }
   }
 
   CPPInstance *inst = param->as_instance();

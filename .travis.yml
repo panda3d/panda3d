@@ -3,7 +3,7 @@ sudo: false
 matrix:
   include:
     - compiler: gcc
-      env: PYTHONV=python2.7 FLAGS=
+      env: PYTHONV=python2.7 FLAGS=--optimize=4
     - compiler: clang
       env: PYTHONV=python3 FLAGS=--installer
     - compiler: clang

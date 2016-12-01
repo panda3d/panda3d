@@ -40,6 +40,9 @@ public:
     F_trailing_return_type = 0x800,
     F_final             = 0x1000,
     F_override          = 0x2000,
+    F_volatile_method   = 0x4000,
+    F_lvalue_method     = 0x8000,
+    F_rvalue_method     = 0x10000,
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,

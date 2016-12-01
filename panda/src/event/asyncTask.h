@@ -92,11 +92,6 @@ PUBLISHED:
   INLINE void set_done_event(const string &done_event);
   INLINE const string &get_done_event() const;
 
-#ifdef HAVE_PYTHON
-  void set_python_object(PyObject *python_object);
-  PyObject *get_python_object() const;
-#endif  // HAVE_PYTHON
-
   INLINE double get_dt() const;
   INLINE double get_max_dt() const;
   INLINE double get_average_dt() const;
@@ -139,11 +134,6 @@ protected:
 
   static PStatCollector _show_code_pcollector;
   PStatCollector _task_pcollector;
-
-private:
-#ifdef HAVE_PYTHON
-  PyObject *_python_object;
-#endif  // HAVE_PYTHON
 
 public:
   static TypeHandle get_class_type() {

@@ -553,7 +553,6 @@ expand_table() {
   nassertv(_num_entries == 0);
 
   // Now copy the entries from the old table into the new table.
-  int num_added = 0;
   for (size_t i = 0; i < old_table_size; ++i) {
     if (old_map.has_element(i)) {
       size_t new_index = get_hash(old_map._table[i]._key);

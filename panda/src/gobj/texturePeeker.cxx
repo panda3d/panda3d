@@ -176,7 +176,7 @@ lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
  *  coordinates are used.
  */
 void TexturePeeker::
-fetch_pixel(LColor& color, size_t x, size_t y) const {
+fetch_pixel(LColor& color, int x, int y) const {
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   const unsigned char *p = _image.p() + (y * _x_size + x) * _pixel_width;
   (*_get_texel)(color, p, _get_component);

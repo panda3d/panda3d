@@ -25,7 +25,6 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   // the image xelvals scaled in the A direction only.  This will hold the
   // adjusted xel data from our first pass.
 
-  typedef StoreType *StoreTypeP;
   StoreType **matrix = (StoreType **)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType *));
 
   int a, b;

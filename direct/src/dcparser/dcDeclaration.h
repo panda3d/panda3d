@@ -26,7 +26,7 @@ class DCSwitch;
  * only purpose is so that classes and typedefs can be stored in one list
  * together so they can be ordered correctly on output.
  */
-class EXPCL_DIRECT DCDeclaration {
+class DCDeclaration {
 public:
   virtual ~DCDeclaration();
 

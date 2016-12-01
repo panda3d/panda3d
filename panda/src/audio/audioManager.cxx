@@ -40,7 +40,7 @@ Create_AudioManager_proc *AudioManager::_create_AudioManager = NULL;
 
 void AudioManager::
 register_AudioManager_creator(Create_AudioManager_proc* proc) {
-  nassertv(_create_AudioManager == NULL);
+  nassertv(_create_AudioManager == NULL || _create_AudioManager == proc);
   _create_AudioManager = proc;
 }
 

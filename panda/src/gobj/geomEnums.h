@@ -128,6 +128,10 @@ PUBLISHED:
 
     // The union of the above shade model types.
     GR_shade_model_bits     = 0x06000,
+
+    // If a particular non-fill polygon mode is used.
+    GR_render_mode_wireframe= 0x40000,
+    GR_render_mode_point    = 0x80000,
   };
 
   // The shade model specifies whether the per-vertex colors and normals

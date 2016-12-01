@@ -17,7 +17,6 @@
 #include "lwoHeader.h"
 #include "lwoInputFile.h"
 #include "config_lwo.h"
-#include "pystub.h"
 
 /**
  *
@@ -80,9 +79,6 @@ run() {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   init_liblwo();
   LwoToEgg prog;
   prog.parse_command_line(argc, argv);

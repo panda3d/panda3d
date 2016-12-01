@@ -1,4 +1,52 @@
-/built_x64
-/built
-/thirdparty
-/targetroot
+# makepanda directories
+/built*/
+/thirdparty/
+/targetroot/
+/dstroot/
+
+# Core dumps
+core
+core.*
+vgcore.*
+
+# Editor files/directories
+*.save
+*.save.1
+*.sublime-workspace
+.vscode/
+
+# Temporary build files
+/_vfsimporter.*
+*.pdb
+*.obj
+*.o
+*.gch
+*.pch
+
+# Produced installer/executables
+/*.exe
+/*.deb
+/*.rpm
+/*.app
+/*.pkg
+/*.dmg
+/*.whl
+
+# CMake
+/build/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Python
+__pycache__
+*.pyc
+*.pyo

@@ -1,5 +1,6 @@
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task import Task
 from .DistributedNodeAI import DistributedNodeAI

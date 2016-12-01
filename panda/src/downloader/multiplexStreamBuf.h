@@ -17,7 +17,7 @@
 #include "pandabase.h"
 
 #include "pvector.h"
-#include "lightMutex.h"
+#include "mutexImpl.h"
 #include <stdio.h>
 
 /**
@@ -70,7 +70,7 @@ private:
   typedef pvector<Output> Outputs;
   Outputs _outputs;
 
-  LightMutex _lock;
+  MutexImpl _lock;
   string _line_buffer;
 };
 

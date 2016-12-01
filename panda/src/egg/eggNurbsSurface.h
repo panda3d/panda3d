@@ -36,6 +36,8 @@ PUBLISHED:
   INLINE EggNurbsSurface(const EggNurbsSurface &copy);
   INLINE EggNurbsSurface &operator = (const EggNurbsSurface &copy);
 
+  virtual EggNurbsSurface *make_copy() const OVERRIDE;
+
   void setup(int u_order, int v_order,
              int num_u_knots, int num_v_knots);
 

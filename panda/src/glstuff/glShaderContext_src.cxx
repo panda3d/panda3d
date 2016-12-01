@@ -901,7 +901,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_attr_material;
       bind._arg[0] = NULL;
-      bind._dep[0] = Shader::SSD_general | Shader::SSD_material;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_material | Shader::SSD_frame;
       bind._part[1] = Shader::SMO_identity;
       bind._arg[1] = NULL;
       bind._dep[1] = Shader::SSD_NONE;
@@ -1296,12 +1296,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_SAMPLER_2D_ARRAY_SHADOW:
 #ifndef OPENGLES
       case GL_INT_SAMPLER_1D:
+      case GL_INT_SAMPLER_1D_ARRAY:
       case GL_INT_SAMPLER_BUFFER:
       case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_1D:
+      case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_BUFFER:
       case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_SAMPLER_1D:
+      case GL_SAMPLER_1D_ARRAY:
       case GL_SAMPLER_1D_SHADOW:
       case GL_SAMPLER_BUFFER:
       case GL_SAMPLER_CUBE_MAP_ARRAY:
@@ -1596,6 +1599,12 @@ get_sampler_texture_type(int &out, GLenum param_type) {
   case GL_UNSIGNED_INT_SAMPLER_1D:
   case GL_SAMPLER_1D:
     out = Texture::TT_1d_texture;
+    return true;
+
+  case GL_INT_SAMPLER_1D_ARRAY:
+  case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+  case GL_SAMPLER_1D_ARRAY:
+    out = Texture::TT_1d_texture_array;
     return true;
 #endif
 
@@ -2145,7 +2154,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
       // Bind the vertex buffer to the binding index.
       if (ai >= _glgsg->_current_vertex_buffers.size()) {
-        _glgsg->_current_vertex_buffers.resize(ai + 1, 0);
+        GLuint zero = 0;
+        _glgsg->_current_vertex_buffers.resize(ai + 1, zero);
       }
       if (_glgsg->_current_vertex_buffers[ai] != gvbc->_index) {
         _glgsg->_glBindVertexBuffer(ai, gvbc->_index, 0, stride);
@@ -2403,16 +2413,24 @@ update_shader_texture_bindings(ShaderContext *prev) {
       Texture *tex;
 
       const ShaderInput *sinp = _glgsg->_target_shader->get_shader_input(input._name);
-      if (sinp->get_value_type() == ShaderInput::M_texture_image) {
+      switch (sinp->get_value_type()) {
+      case ShaderInput::M_texture_image:
         param = (const ParamTextureImage *)sinp->get_param();
         tex = param->get_texture();
+        break;
 
-      } else if (sinp->get_value_type() == ShaderInput::M_texture) {
+      case ShaderInput::M_texture:
         // People find it convenient to be able to pass a texture without
         // further ado.
         tex = sinp->get_texture();
+        break;
 
-      } else {
+      case ShaderInput::M_invalid:
+        GLCAT.error()
+          << "Missing texture image binding input " << *input._name << "\n";
+        continue;
+
+      default:
         GLCAT.error()
           << "Mismatching type for parameter " << *input._name << ", expected texture image binding\n";
         continue;
@@ -2428,8 +2446,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
         if (gtc != (TextureContext*)NULL) {
           input._gtc = gtc;
 
-          gl_tex = gtc->_index;
           _glgsg->update_texture(gtc, true);
+          gl_tex = gtc->_index;
 
           if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
             barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;

@@ -39,6 +39,8 @@ inline namespace std {
 #endif
 }
 
+struct timeval;
+
 #ifdef __cplusplus
 #define NULL 0L
 #else
