@@ -944,32 +944,30 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           }
         } else {
 #ifdef SUPPORT_FIXED_FUNCTION
-          if(_glgsg->has_fixed_function_pipeline()) {
-            switch (p) {
-            case CA_unknown:
-              break;
-            case CA_vertex:
-              glDisableClientState(GL_VERTEX_ARRAY);
-              break;
-            case CA_normal:
-              glDisableClientState(GL_NORMAL_ARRAY);
-              break;
-            case CA_color:
-              glDisableClientState(GL_COLOR_ARRAY);
+          switch (p) {
+          case CA_unknown:
+            break;
+          case CA_vertex:
+            glDisableClientState(GL_VERTEX_ARRAY);
+            break;
+          case CA_normal:
+            glDisableClientState(GL_NORMAL_ARRAY);
+            break;
+          case CA_color:
+            glDisableClientState(GL_COLOR_ARRAY);
 #ifdef STDFLOAT_DOUBLE
-              glColor4dv(_glgsg->_scene_graph_color.get_data());
+            glColor4dv(_glgsg->_scene_graph_color.get_data());
 #else
-              glColor4fv(_glgsg->_scene_graph_color.get_data());
+            glColor4fv(_glgsg->_scene_graph_color.get_data());
 #endif
-              break;
-            case CA_secondary_color:
-              glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
-              break;
-            default:
-              _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
-              glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-              break;
-            }
+            break;
+          case CA_secondary_color:
+            glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
+            break;
+          default:
+            _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            break;
           }
 #endif  // SUPPORT_FIXED_FUNCTION
         }
