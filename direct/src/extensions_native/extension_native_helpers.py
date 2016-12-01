@@ -50,9 +50,18 @@ if sys.platform == "win32":
     filename = "libpandaexpress%s%s" % (dll_suffix, dll_ext)
     for dir in sys.path + [sys.prefix]:
         lib = os.path.join(dir, filename)
-        if (os.path.exists(lib)):
+        if os.path.exists(lib):
             target = dir
-    if target == None:
+
+    # Perhaps it is in the same directory as panda3d/core.pyd ?
+    if target is None:
+        for dir in sys.path:
+            lib = os.path.join(dir, 'panda3d', filename)
+            if os.path.exists(lib):
+                target = os.path.join(dir, 'panda3d')
+                break
+
+    if target is None:
         message = "Cannot find %s" % (filename)
         raise ImportError(message)
 
