@@ -16,6 +16,7 @@
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
 #include "cppStructType.h"
+#include "cppTypedefType.h"
 #include "cppExtensionType.h"
 #include <algorithm>
 

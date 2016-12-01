@@ -13,6 +13,7 @@
 
 #include "cppStructType.h"
 #include "cppTypedefType.h"
+#include "cppReferenceType.h"
 #include "cppScope.h"
 #include "cppTypeProxy.h"
 #include "cppTemplateScope.h"
