@@ -14,6 +14,7 @@
 #include "save_egg_file.h"
 #include "eggSaver.h"
 #include "config_egg2pg.h"
+#include "modelRoot.h"
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
 #include "config_util.h"
