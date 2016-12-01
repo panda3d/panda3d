@@ -3,6 +3,7 @@ set(P3CHAN_HEADERS
   animBundleNode.I animBundleNode.h
   animChannel.I animChannel.h animChannelBase.I
   animChannelBase.h
+  animChannelFixed.I animChannelFixed.h
   animChannelMatrixDynamic.I animChannelMatrixDynamic.h
   animChannelMatrixFixed.I animChannelMatrixFixed.h
   animChannelMatrixXfmTable.I animChannelMatrixXfmTable.h
@@ -31,6 +32,7 @@ set(P3CHAN_SOURCES
   animBundleNode.cxx
   animChannel.cxx
   animChannelBase.cxx
+  animChannelFixed.cxx
   animChannelMatrixDynamic.cxx
   animChannelMatrixFixed.cxx
   animChannelMatrixXfmTable.cxx

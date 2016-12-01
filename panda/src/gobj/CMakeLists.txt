@@ -151,6 +151,8 @@ set(P3GOBJ_IGATEEXT
   internalName_ext.h
   geomVertexArrayData_ext.cxx
   geomVertexArrayData_ext.h
+  texture_ext.cxx
+  texture_ext.h
   textureCollection_ext.cxx
   textureCollection_ext.h
 )
