@@ -3,11 +3,15 @@ sudo: false
 matrix:
   include:
     - compiler: gcc
-      env: PYTHONV=python2.7 FLAGS=--optimize=4
+      env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--optimize=4
     - compiler: clang
-      env: PYTHONV=python3 FLAGS=--installer
+      env: BUILDSYSTEM=makepanda PYTHONV=python3 FLAGS=--installer
     - compiler: clang
-      env: PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
+      env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
+    - compiler: gcc
+      env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+    - compiler: clang
+      env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
 addons:
   apt:
     packages:
@@ -28,7 +32,9 @@ addons:
     - python-dev
     - python3-dev
     - zlib1g-dev
-script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
+script:
+- '[[ "$BUILDSYSTEM" != "makepanda" ]] || ( $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py )'
+- '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir build && cd build && cmake $FLAGS .. && make -j4 && make install DESTDIR=installdir && LD_LIBRARY_PATH=installdir/usr/local/lib PYTHONPATH=installdir/usr/lib*/python*/site-packages python ../makepanda/test_imports.py )'
 notifications:
   irc:
     channels:
