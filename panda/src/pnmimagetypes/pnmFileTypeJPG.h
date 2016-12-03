@@ -37,11 +37,17 @@
 #endif
 
 
+// jpeglib sometimes redefines the INLINE macro and breaks inlining
+// (on e.g. Ubuntu 12.04) so we need to preserve it somehow - this uses the
+// MSVC push_macro/pop_macro pragmas, which are also supported on GCC and
+// Clang, but may not be cross-compiler enough to merge up to master. Hrm. :/
+#pragma push_macro("INLINE")
 extern "C" {
 #include <stdio.h>  // jpeglib requires this to be included first.
 #include <jpeglib.h>
 #include <setjmp.h>
 }
+#pragma pop_macro("INLINE")
 
 /**
  * For reading and writing Jpeg files.
