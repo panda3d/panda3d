@@ -8271,6 +8271,14 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     cdata->_simple_image_date_generated = scan.get_int32();
 
     size_t u_size = scan.get_uint32();
+
+    // Protect against large allocation.
+    if (u_size > scan.get_remaining_size()) {
+      gobj_cat.error()
+        << "simple RAM image extends past end of datagram, is texture corrupt?\n";
+      return;
+    }
+
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
     scan.extract_bytes(image.p(), u_size);
 
@@ -8327,6 +8335,14 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
     // fill the cdata->_image buffer with image data
     size_t u_size = scan.get_uint32();
+
+    // Protect against large allocation.
+    if (u_size > scan.get_remaining_size()) {
+      gobj_cat.error()
+        << "RAM image " << n << " extends past end of datagram, is texture corrupt?\n";
+      return;
+    }
+
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
     scan.extract_bytes(image.p(), u_size);
 
