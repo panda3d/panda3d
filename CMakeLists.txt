@@ -63,7 +63,7 @@ if(HAVE_PYTHON)
 print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core instead\")\n")
 
   foreach(module ${ALL_INTERROGATE_MODULES})
-    file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/PandaModules.py" "
+    file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/pandac/PandaModules.py" "
 try:
     from panda3d.${module} import *
 except ImportError as err:
