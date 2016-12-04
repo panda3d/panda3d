@@ -816,6 +816,9 @@ option(HAVE_AUDIO
 option(DO_PSTATS
   "Enable the pstats client?" ON)
 
+option(USE_PANDAFILESTREAM
+  "Enable the PandaFileStream implementation of pfstream etc.?" ON)
+
 # These image formats don't require the assistance of a third-party
 # library to read and write, so there's normally no reason to disable
 # them int he build, unless you are looking to reduce the memory footprint.
