@@ -9,8 +9,16 @@ matrix:
     - compiler: clang
       env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
     - compiler: gcc
+      dist: precise
       env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
     - compiler: clang
+      dist: precise
+      env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+    - compiler: gcc
+      dist: trusty
+      env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+    - compiler: clang
+      dist: trusty
       env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
 addons:
   apt:
