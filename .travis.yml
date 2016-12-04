@@ -34,7 +34,7 @@ addons:
     - zlib1g-dev
 script:
 - '[[ "$BUILDSYSTEM" != "makepanda" ]] || ( $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py )'
-- '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir build && cd build && cmake -DHAVE_GTK2=NO $FLAGS .. && make -j4 && make install DESTDIR=installdir && LD_LIBRARY_PATH=installdir/usr/local/lib PYTHONPATH=installdir/usr/lib*/python*/site-packages python ../makepanda/test_imports.py )'
+- '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir build && cd build && cmake -DHAVE_GTK2=NO -DPYTHON_ARCH_INSTALL_DIR=/pypath -DPYTHON_LIB_INSTALL_DIR=/pypath $FLAGS .. && make -j4 && make install DESTDIR=installdir && LD_LIBRARY_PATH=installdir/usr/local/lib PYTHONPATH=installdir/pypath python ../makepanda/test_imports.py )'
 notifications:
   irc:
     channels:
