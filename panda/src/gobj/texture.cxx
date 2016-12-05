@@ -7411,6 +7411,9 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
  */
 int Texture::
 do_get_expected_num_mipmap_levels(const CData *cdata) const {
+  if (cdata->_texture_type == Texture::TT_buffer_texture) {
+    return 1;
+  }
   int size = max(cdata->_x_size, cdata->_y_size);
   if (cdata->_texture_type == Texture::TT_3d_texture) {
     size = max(size, cdata->_z_size);
@@ -10126,6 +10129,14 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     cdata->_simple_image_date_generated = scan.get_int32();
 
     size_t u_size = scan.get_uint32();
+
+    // Protect against large allocation.
+    if (u_size > scan.get_remaining_size()) {
+      gobj_cat.error()
+        << "simple RAM image extends past end of datagram, is texture corrupt?\n";
+      return;
+    }
+
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
     scan.extract_bytes(image.p(), u_size);
 
@@ -10180,6 +10191,14 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
     // fill the cdata->_image buffer with image data
     size_t u_size = scan.get_uint32();
+
+    // Protect against large allocation.
+    if (u_size > scan.get_remaining_size()) {
+      gobj_cat.error()
+        << "RAM image " << n << " extends past end of datagram, is texture corrupt?\n";
+      return;
+    }
+
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
     scan.extract_bytes(image.p(), u_size);
 

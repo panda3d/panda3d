@@ -247,6 +247,7 @@ typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64VPROC) (GLuint index, const GLuin
 typedef void (APIENTRYP PFNGLGETVERTEXATTRIBLUI64VPROC) (GLuint index, GLenum pname, GLuint64EXT *params);
 typedef void *(APIENTRYP PFNGLMAPBUFFERPROC) (GLenum target, GLenum access);
 typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
+typedef void (APIENTRYP PFNGLGETBUFFERSUBDATAPROC) (GLenum target, GLintptr offset, GLsizeiptr size, void *data);
 #endif  // OPENGLES
 #endif  // __EDG__
 
@@ -801,6 +802,7 @@ public:
 #ifndef OPENGLES
   PFNGLMAPBUFFERPROC _glMapBuffer;
   PFNGLUNMAPBUFFERPROC _glUnmapBuffer;
+  PFNGLGETBUFFERSUBDATAPROC _glGetBufferSubData;
 #endif
 
 #ifdef OPENGLES

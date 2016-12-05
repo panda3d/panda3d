@@ -28,6 +28,7 @@
 #include "cppTemplateScope.h"
 #include "cppClassTemplateParameter.h"
 #include "cppFunctionType.h"
+#include "cppConstType.h"
 #include "cppUsing.h"
 #include "cppBisonDefs.h"
 #include "indent.h"

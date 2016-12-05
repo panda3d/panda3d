@@ -50,9 +50,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _packet_data(0),
   _format_ctx(0),
   _audio_ctx(0),
-#ifdef HAVE_SWRESAMPLE
   _resample_ctx(0),
-#endif
   _buffer(0),
   _buffer_alloc(0),
   _frame(0)

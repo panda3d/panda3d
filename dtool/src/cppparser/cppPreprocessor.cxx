@@ -1461,7 +1461,6 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
       CPPManifest *other = result.first->second;
       warning("redefinition of macro '" + manifest->_name + "'", loc);
       warning("previous definition is here", other->_loc);
-      delete other;
       result.first->second = manifest;
     }
   }
@@ -1678,6 +1677,38 @@ handle_pragma_directive(const string &args, const YYLTYPE &loc) {
     ParsedFiles::iterator it = _parsed_files.find(loc.file);
     assert(it != _parsed_files.end());
     it->_pragma_once = true;
+  }
+
+  char macro[64];
+  if (sscanf(args.c_str(), "push_macro ( \"%63[^\"]\" )", macro) == 1) {
+    // We just mark it as pushed for now, so that the next time someone tries
+    // to override it, we save the old value.
+    Manifests::iterator mi = _manifests.find(macro);
+    if (mi != _manifests.end()) {
+      _manifest_stack[macro].push_back(mi->second);
+    } else {
+      _manifest_stack[macro].push_back(NULL);
+    }
+
+  } else if (sscanf(args.c_str(), "pop_macro ( \"%63[^\"]\" )", macro) == 1) {
+    ManifestStack &stack = _manifest_stack[macro];
+    if (stack.size() > 0) {
+      CPPManifest *manifest = stack.back();
+      stack.pop_back();
+      Manifests::iterator mi = _manifests.find(macro);
+      if (manifest == NULL) {
+        // It was undefined when it was pushed, so make it undefined again.
+        if (mi != _manifests.end()) {
+          _manifests.erase(mi);
+        }
+      } else if (mi != _manifests.end()) {
+        mi->second = manifest;
+      } else {
+        _manifests.insert(Manifests::value_type(macro, manifest));
+      }
+    } else {
+      warning("pop_macro without matching push_macro", loc);
+    }
   }
 }
 

@@ -1356,6 +1356,8 @@ reset() {
       get_extension_func("glMapBuffer");
     _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
       get_extension_func("glUnmapBuffer");
+    _glGetBufferSubData = (PFNGLGETBUFFERSUBDATAPROC)
+      get_extension_func("glGetBufferSubData");
 #endif
   }
 #ifndef OPENGLES_1
@@ -1376,6 +1378,8 @@ reset() {
       get_extension_func("glMapBufferARB");
     _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
       get_extension_func("glUnmapBufferARB");
+    _glGetBufferSubData = (PFNGLGETBUFFERSUBDATAPROC)
+      get_extension_func("glGetBufferSubDataARB");
   }
 #endif  // OPENGLES_1
 
@@ -12644,20 +12648,26 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   GLint minfilter, magfilter;
   GLfloat border_color[4];
 
-  glGetTexParameteriv(target, GL_TEXTURE_WRAP_S, &wrap_u);
-  glGetTexParameteriv(target, GL_TEXTURE_WRAP_T, &wrap_v);
-  wrap_w = GL_REPEAT;
-#ifndef OPENGLES_1
-  if (_supports_3d_texture) {
-    glGetTexParameteriv(target, GL_TEXTURE_WRAP_R, &wrap_w);
-  }
+#ifdef OPENGLES
+  if (true) {
+#else
+  if (target != GL_TEXTURE_BUFFER) {
 #endif
-  glGetTexParameteriv(target, GL_TEXTURE_MIN_FILTER, &minfilter);
-  glGetTexParameteriv(target, GL_TEXTURE_MAG_FILTER, &magfilter);
+    glGetTexParameteriv(target, GL_TEXTURE_WRAP_S, &wrap_u);
+    glGetTexParameteriv(target, GL_TEXTURE_WRAP_T, &wrap_v);
+    wrap_w = GL_REPEAT;
+#ifndef OPENGLES_1
+    if (_supports_3d_texture) {
+      glGetTexParameteriv(target, GL_TEXTURE_WRAP_R, &wrap_w);
+    }
+#endif
+    glGetTexParameteriv(target, GL_TEXTURE_MIN_FILTER, &minfilter);
+    glGetTexParameteriv(target, GL_TEXTURE_MAG_FILTER, &magfilter);
 
 #ifndef OPENGLES
-  glGetTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, border_color);
+    glGetTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, border_color);
 #endif
+  }
 
   GLenum page_target = target;
   if (target == GL_TEXTURE_CUBE_MAP) {
@@ -13122,14 +13132,20 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   tex->set_component_type(type);
   tex->set_format(format);
 
-  tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
-  tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
-  tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-  tex->set_border_color(LColor(border_color[0], border_color[1],
-                               border_color[2], border_color[3]));
+#ifdef OPENGLES
+  if (true) {
+#else
+  if (target != GL_TEXTURE_BUFFER) {
+#endif
+    tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
+    tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
+    tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
+    tex->set_border_color(LColor(border_color[0], border_color[1],
+                                 border_color[2], border_color[3]));
 
-  tex->set_minfilter(get_panda_filter_type(minfilter));
-  // tex->set_magfilter(get_panda_filter_type(magfilter));
+    tex->set_minfilter(get_panda_filter_type(minfilter));
+    //tex->set_magfilter(get_panda_filter_type(magfilter));
+  }
 
   PTA_uchar image;
   size_t page_size = 0;
@@ -13215,6 +13231,13 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
         _glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
       }
     }
+
+#ifndef OPENGLES
+  } else if (target == GL_TEXTURE_BUFFER) {
+    // In the case of a buffer texture, we need to get it from the buffer.
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    _glGetBufferSubData(target, 0, image.size(), image.p());
+#endif
 
   } else if (compression == Texture::CM_off) {
     // An uncompressed 1-d, 2-d, or 3-d texture.

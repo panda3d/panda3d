@@ -31,6 +31,7 @@ SetCompressor ${COMPRESSOR}
 !include "Sections.nsh"
 !include "WinMessages.nsh"
 !include "WordFunc.nsh"
+!include "x64.nsh"
 
 !define MUI_WELCOMEFINISHPAGE_BITMAP "panda-install.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "panda-install.bmp"
@@ -120,6 +121,14 @@ Function runFunction
     ExecShell "open" "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk"
 FunctionEnd
 
+Function .onInit
+    ${If} ${REGVIEW} = 64
+    ${AndIfNot} ${RunningX64}
+        MessageBox MB_OK|MB_ICONEXCLAMATION "You are attempting to install the 64-bit version of Panda3D on a 32-bit version of Windows.  Please download and install the 32-bit version of Panda3D instead."
+        Abort
+    ${EndIf}
+FunctionEnd
+
 SectionGroup "Panda3D Libraries"
     Section "Core Libraries" SecCore
         SectionIn 1 2 RO
@@ -134,11 +143,21 @@ SectionGroup "Panda3D Libraries"
         SetOutPath "$INSTDIR"
         File "${BUILT}\LICENSE"
         File /r /x CVS "${BUILT}\ReleaseNotes"
-        SetOutPath $INSTDIR\bin
-        File /r /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
-        File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
+
         SetOutPath $INSTDIR\etc
         File /r "${BUILT}\etc\*"
+
+        SetOutPath $INSTDIR\bin
+        File /r /x api-ms-win-*.dll /x ucrtbase.dll /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
+        File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
+
+        ; Before Windows 10, we need these stubs for the UCRT as well.
+        ReadRegDWORD $0 HKLM "Software\Microsoft\Windows NT\CurrentVersion" "CurrentMajorVersionNumber"
+        ${If} $0 < 10
+            ClearErrors
+            File /nonfatal /r "${BUILT}\bin\api-ms-win-*.dll"
+            File /nonfatal "${BUILT}\bin\ucrtbase.dll"
+        ${Endif}
 
         SetDetailsPrint both
         DetailPrint "Installing models..."
@@ -634,6 +653,9 @@ Section -post
     WriteRegStr HKCU "Software\Classes\.pz" "PerceivedType" "compressed"
     WriteRegStr HKCU "Software\Classes\.mf" "" "Panda3D.Multifile"
     WriteRegStr HKCU "Software\Classes\.mf" "PerceivedType" "compressed"
+    WriteRegStr HKCU "Software\Classes\.prc" "" "inifile"
+    WriteRegStr HKCU "Software\Classes\.prc" "Content Type" "text/plain"
+    WriteRegStr HKCU "Software\Classes\.prc" "PerceivedType" "text"
 
     ; For convenience, if nobody registered .pyd, we will.
     ReadRegStr $0 HKCR "Software\Classes\.pyd" ""
