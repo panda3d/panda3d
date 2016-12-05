@@ -11,6 +11,7 @@ set(P3DXML_SOURCES
 )
 
 composite_sources(p3dxml P3DXML_SOURCES)
+add_definitions(-DTIXML_USE_STL)
 add_library(p3dxml ${P3DXML_HEADERS} ${P3DXML_SOURCES})
 target_link_libraries(p3dxml p3express)
 target_interrogate(p3dxml ALL)
