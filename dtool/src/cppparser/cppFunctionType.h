@@ -84,7 +84,7 @@ public:
 
   virtual CPPFunctionType *as_function_type();
 
-  bool is_equivalent_function(const CPPFunctionType &other) const;
+  bool match_virtual_override(const CPPFunctionType &other) const;
 
   CPPIdentifier *_class_owner;
 
