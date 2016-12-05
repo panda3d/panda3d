@@ -2236,11 +2236,7 @@ DTOOL_CONFIG=[
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
-    ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_SWSCALE",                   'UNDEF',                  'UNDEF'),
-    ("HAVE_SWRESAMPLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
-    ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_CARBON",                    'UNDEF',                  'UNDEF'),
@@ -2294,9 +2290,6 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = '1'
             else:
                 dtool_config["HAVE_"+x] = 'UNDEF'
-
-    if not PkgSkip("OPENCV"):
-        dtool_config["OPENCV_VER_23"] = '1' if OPENCV_VER_23 else 'UNDEF'
 
     dtool_config["HAVE_NET"] = '1'
 
@@ -4128,8 +4121,20 @@ if (not RUNTIME):
 #
 
 if (PkgSkip("VISION") == 0) and (not RUNTIME):
+  # We want to know whether we have ffmpeg so that we can override the .avi association.
+  if not PkgSkip("FFMPEG"):
+    DefSymbol("OPENCV", "HAVE_FFMPEG")
+  if not PkgSkip("OPENCV"):
+    DefSymbol("OPENCV", "HAVE_OPENCV")
+    if OPENCV_VER_23:
+        DefSymbol("OPENCV", "OPENCV_VER_23")
+
   OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
-  TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
+  TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx', dep=[
+    'dtool_have_ffmpeg.dat',
+    'dtool_have_opencv.dat',
+    'dtool_have_directcam.dat',
+  ])
 
   TargetAdd('libp3vision.dll', input='p3vision_composite1.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
@@ -4318,8 +4323,15 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
 # DIRECTORY: panda/src/ffmpeg
 #
 if PkgSkip("FFMPEG") == 0 and not RUNTIME:
+  if not PkgSkip("SWSCALE"):
+    DefSymbol("FFMPEG", "HAVE_SWSCALE")
+  if not PkgSkip("SWRESAMPLE"):
+    DefSymbol("FFMPEG", "HAVE_SWRESAMPLE")
+
   OPTS=['DIR:panda/src/ffmpeg', 'BUILDING:FFMPEG', 'FFMPEG', 'SWSCALE', 'SWRESAMPLE']
-  TargetAdd('p3ffmpeg_composite1.obj', opts=OPTS, input='p3ffmpeg_composite1.cxx')
+  TargetAdd('p3ffmpeg_composite1.obj', opts=OPTS, input='p3ffmpeg_composite1.cxx', dep=[
+    'dtool_have_swscale.dat', 'dtool_have_swresample.dat'])
+
   TargetAdd('libp3ffmpeg.dll', input='p3ffmpeg_composite1.obj')
   TargetAdd('libp3ffmpeg.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3ffmpeg.dll', opts=OPTS)
