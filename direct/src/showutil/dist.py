@@ -52,8 +52,11 @@ class build(distutils.command.build.build):
             distutils.dir_util.copy_tree(src, dst)
 
             for item in os.listdir(libdir):
-                if '.so.' in item  or item.endswith('.dll') or 'libpandagl' in item:
-                    distutils.file_util.copy_file(os.path.join(libdir, item), os.path.join(builddir, item))
+                if '.so.' in item or item.endswith('.dll') or item.endswith('.dylib') or 'libpandagl' in item:
+                    source_path = os.path.join(libdir, item)
+                    target_path = os.path.join(builddir, item)
+                    if not os.path.islink(source_path):
+                        distutils.file_util.copy_file(source_path, target_path)
 
             # Copy etc
             src = os.path.join(dtool_dir, '..', 'etc')
@@ -64,8 +67,7 @@ class build(distutils.command.build.build):
             ignore_copy_list = [
                 '__pycache__',
                 self.distribution.mainfile,
-                *freezer.getAllModuleNames(),
-            ]
+            ] + freezer.getAllModuleNames()
 
             for item in os.listdir(gamedir):
                 src = os.path.join(gamedir, item)

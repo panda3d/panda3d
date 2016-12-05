@@ -122,11 +122,13 @@ Py_FrozenMain(int argc, char **argv)
     else
         sts = 0;
 
+#if PY_MAJOR_VERSION >= 3
     n = PyImport_ImportFrozenModule("_frozen_importlib");
     if (n == 0)
         Py_FatalError("_frozen_importlib not frozen");
     if (n < 0)
         PyErr_Print();
+#endif
 
     if (inspect && isatty((int)fileno(stdin)))
         sts = PyRun_AnyFile(stdin, "<stdin>") != 0;
@@ -153,7 +155,7 @@ error:
 int
 main(int argc, char *argv[]) {
   struct _frozen *_PyImport_FrozenModules;
-  unsigned int listoff, modsoff, fsize, modsize, listsize, nummods;
+  unsigned int listoff, modsoff, fsize, modsize, listsize, nummods, modidx;
   FILE *runtime = fopen(argv[0], "rb");
 
   // Get offsets
@@ -173,7 +175,7 @@ main(int argc, char *argv[]) {
   // Read module list
   _PyImport_FrozenModules = calloc(nummods + 1, sizeof(struct _frozen));
   fseek(runtime, listoff, SEEK_SET);
-  for (unsigned int modidx = 0; modidx < nummods; ++modidx) {
+  for (modidx = 0; modidx < nummods; ++modidx) {
     struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
     char *name = NULL, namebuf[256] = {0};
     unsigned int nsize, codeptr;
