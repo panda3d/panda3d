@@ -72,6 +72,9 @@ public:
   typedef map<string, CPPManifest *> Manifests;
   Manifests _manifests;
 
+  typedef pvector<CPPManifest *> ManifestStack;
+  map<string, ManifestStack> _manifest_stack;
+
   pvector<CPPFile::Source> _quote_include_kind;
   DSearchPath _quote_include_path;
   DSearchPath _angle_include_path;
