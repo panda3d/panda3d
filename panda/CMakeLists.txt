@@ -22,6 +22,7 @@ endif()
 add_subdirectory(src/configfiles)
 add_subdirectory(src/pandabase)
 add_subdirectory(src/express)
+add_subdirectory(src/dxml)
 add_subdirectory(src/pipeline)
 add_subdirectory(src/downloader)
 add_subdirectory(src/downloadertools)
@@ -84,7 +85,7 @@ add_subdirectory(metalibs/pandaphysics)
 
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
-    p3chan p3char p3collide p3cull p3device p3dgraph p3display p3downloader
+    p3chan p3char p3collide p3cull p3device p3dgraph p3display p3downloader p3dxml
     p3event p3express p3gobj p3grutil p3gsgbase p3linmath p3mathutil p3nativenet
     p3net p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui p3pipeline
     p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform)
