@@ -94,7 +94,6 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
-  "TOUCHINPUT",                                        # Touchinput interface (requires Windows 7)
 ])
 
 CheckPandaSourceTree()
@@ -170,7 +169,8 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "universal", "target=", "arch=", "git-commit="]
+        "universal", "target=", "arch=", "git-commit=",
+        "use-touchinput", "no-touchinput"]
     anything = 0
     optimize = ""
     target = None
@@ -315,18 +315,6 @@ def parseopts(args):
         if not WINDOWS_SDK:
             print("No Windows SDK version specified. Defaulting to '7.1'.")
             WINDOWS_SDK = '7.1'
-
-        is_win7 = False
-        if sys.platform == 'win32':
-            # Note: not available in cygwin.
-            winver = sys.getwindowsversion()
-            if winver[0] >= 6 and winver[1] >= 1:
-                is_win7 = True
-
-        if RUNTIME or not is_win7:
-            PkgDisable("TOUCHINPUT")
-    else:
-        PkgDisable("TOUCHINPUT")
 
     if clean_build and os.path.isdir(GetOutputDir()):
         print("Deleting %s" % (GetOutputDir()))
@@ -1055,14 +1043,11 @@ def CompileCxx(obj,src,opts):
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4273 "
 
-            # Enable Windows 7 interfaces if we need Touchinput.
-            if PkgSkip("TOUCHINPUT") == 0:
-                cmd += "/DWINVER=0x601 "
-            else:
-                cmd += "/DWINVER=0x501 "
-                # Work around a WinXP/2003 bug when using VS 2015+.
-                if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
-                    cmd += "/Zc:threadSafeInit- "
+            # We still target Windows XP.
+            cmd += "/DWINVER=0x501 "
+            # Work around a WinXP/2003 bug when using VS 2015+.
+            if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+                cmd += "/Zc:threadSafeInit- "
 
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
@@ -1113,12 +1098,7 @@ def CompileCxx(obj,src,opts):
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
-
-            # Enable Windows 7 interfaces if we need Touchinput.
-            if PkgSkip("TOUCHINPUT") == 0:
-                cmd += "/DWINVER=0x601 "
-            else:
-                cmd += "/DWINVER=0x501 "
+            cmd += "/DWINVER=0x501 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -2129,7 +2109,6 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
-    ("HAVE_WIN_TOUCHINPUT",            'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
@@ -2346,9 +2325,6 @@ def WriteConfigSettings():
     # on whether the libRocket Python modules are available.
     if (PkgSkip("PYTHON") != 0):
         dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
-
-    if (PkgSkip("TOUCHINPUT") == 0 and GetTarget() == "windows"):
-        dtool_config["HAVE_WIN_TOUCHINPUT"] = '1'
 
     if (GetOptimize() <= 3):
         dtool_config["HAVE_ROCKET_DEBUGGER"] = '1'
