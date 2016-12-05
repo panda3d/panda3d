@@ -1686,17 +1686,16 @@ def CompileLink(dll, obj, opts):
                 if 'NOARCH:' + arch.upper() not in opts:
                     cmd += " -arch %s" % arch
 
-        if "SYSROOT" in SDK:
-            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
-
-        # Android-specific flags.
-        if GetTarget() == 'android':
+        elif GetTarget() == 'android':
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             if GetTargetArch() == 'armv7a':
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             cmd += ' -lc -lm'
         else:
             cmd += " -pthread"
+
+        if "SYSROOT" in SDK:
+            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
 
         if LDFLAGS != "":
             cmd += " " + LDFLAGS

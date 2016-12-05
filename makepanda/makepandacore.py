@@ -396,10 +396,16 @@ def CrossCompiling():
     return GetTarget() != GetHost()
 
 def GetCC():
-    return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
+    if TARGET == 'darwin':
+        return os.environ.get('CC', TOOLCHAIN_PREFIX + 'clang')
+    else:
+        return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
 
 def GetCXX():
-    return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
+    if TARGET == 'darwin':
+        return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'clang++')
+    else:
+        return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
 
 def GetStrip():
     # Hack
