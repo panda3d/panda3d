@@ -9,6 +9,10 @@
 
 #if PY_MAJOR_VERSION >= 3
 #include <locale.h>
+
+#if PY_MINOR_VERSION < 5
+#define Py_DecodeLocale _Py_char2wchar
+#endif
 #endif
 
 #ifdef MS_WINDOWS
