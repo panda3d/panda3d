@@ -2486,18 +2486,23 @@ update_shader_texture_bindings(ShaderContext *prev) {
           bool has_write = param->has_write_access();
           input._writable = has_write;
 
-          if (has_read && has_write) {
-            access = GL_READ_WRITE;
-
-          } else if (has_read) {
-            access = GL_READ_ONLY;
-
-          } else if (has_write) {
-            access = GL_WRITE_ONLY;
+          if (gl_force_image_bindings_writeonly) {
+              access = GL_WRITE_ONLY;
 
           } else {
-            access = GL_READ_ONLY;
-            gl_tex = 0;
+            if (has_read && has_write) {
+              access = GL_READ_WRITE;
+
+            } else if (has_read) {
+              access = GL_READ_ONLY;
+
+            } else if (has_write) {
+              access = GL_WRITE_ONLY;
+
+            } else {
+              access = GL_READ_ONLY;
+              gl_tex = 0;
+            }
           }
         }
         _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered, bind_layer,
