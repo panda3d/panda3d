@@ -299,6 +299,11 @@ ConfigVariableBool gl_support_shadow_filter
             "cards suffered from a broken implementation of the "
             "shadow map filtering features."));
 
+ConfigVariableBool gl_force_image_bindings_writeonly
+  ("gl-force-image-bindings-writeonly", true,
+   PRC_DESC("Forces all image inputs (not textures!) to be bound as writeonly, "
+            "to read from an image, rebind it as sampler."));
+
 ConfigVariableEnum<CoordinateSystem> gl_coordinate_system
   ("gl-coordinate-system", CS_yup_right,
    PRC_DESC("Which coordinate system to use as the internal "
