@@ -38,7 +38,6 @@ import os
 import sys
 import random
 import time
-import importlib
 
 __report_indent = 3
 
@@ -60,6 +59,42 @@ def Functor(function, *args, **kArgs):
         return function(*(argsCopy + cArgs), **kArgs)
     return functor
 """
+
+try:
+    import importlib
+except ImportError:
+    # Backward compatibility for Python 2.6.
+    def _resolve_name(name, package, level):
+        if not hasattr(package, 'rindex'):
+            raise ValueError("'package' not set to a string")
+        dot = len(package)
+        for x in xrange(level, 1, -1):
+            try:
+                dot = package.rindex('.', 0, dot)
+            except ValueError:
+                raise ValueError("attempted relative import beyond top-level "
+                                  "package")
+        return "%s.%s" % (package[:dot], name)
+
+    def import_module(name, package=None):
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("relative imports require the 'package' argument")
+            level = 0
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+            name = _resolve_name(name[level:], package, level)
+        __import__(name)
+        return sys.modules[name]
+
+    imp = import_module('imp')
+    importlib = imp.new_module("importlib")
+    importlib._resolve_name = _resolve_name
+    importlib.import_module = import_module
+    sys.modules['importlib'] = importlib
+
 
 class Functor:
     def __init__(self, function, *args, **kargs):

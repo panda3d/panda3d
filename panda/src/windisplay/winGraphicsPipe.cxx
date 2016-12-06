@@ -47,15 +47,12 @@ typedef struct _PROCESSOR_POWER_INFORMATION {
 } PROCESSOR_POWER_INFORMATION, *PPROCESSOR_POWER_INFORMATION;
 
 typedef BOOL (WINAPI *GetProcessMemoryInfoType) (HANDLE Process, PROCESS_MEMORY_COUNTERS *ppsmemCounters, DWORD cb);
-typedef BOOL (WINAPI *GlobalMemoryStatusExType) (LPMEMORYSTATUSEX lpBuffer);
 typedef long (__stdcall *CallNtPowerInformationType) (POWER_INFORMATION_LEVEL information_level, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength);
 
 static int initialize = false;
 static HMODULE psapi_dll = 0;
-static HMODULE kernel32_dll = 0;
 static HMODULE power_dll = 0;
 static GetProcessMemoryInfoType GetProcessMemoryInfoFunction = 0;
-static GlobalMemoryStatusExType GlobalMemoryStatusExFunction = 0;
 static CallNtPowerInformationType CallNtPowerInformationFunction = 0;
 
 void get_memory_information (DisplayInformation *display_information) {
@@ -65,39 +62,19 @@ void get_memory_information (DisplayInformation *display_information) {
       GetProcessMemoryInfoFunction = (GetProcessMemoryInfoType) GetProcAddress(psapi_dll, "GetProcessMemoryInfo");
     }
 
-    kernel32_dll = LoadLibrary("kernel32.dll");
-    if (kernel32_dll) {
-      GlobalMemoryStatusExFunction = (GlobalMemoryStatusExType) GetProcAddress(kernel32_dll, "GlobalMemoryStatusEx");
-    }
-
     initialize = true;
   }
 
-  if (GlobalMemoryStatusExFunction) {
-    MEMORYSTATUSEX memory_status;
+  MEMORYSTATUSEX memory_status;
 
-    memory_status.dwLength = sizeof(MEMORYSTATUSEX);
-    if (GlobalMemoryStatusExFunction(&memory_status)) {
-      display_information->_physical_memory = memory_status.ullTotalPhys;
-      display_information->_available_physical_memory = memory_status.ullAvailPhys;
-      display_information->_page_file_size = memory_status.ullTotalPageFile;
-      display_information->_available_page_file_size = memory_status.ullAvailPageFile;
-      display_information->_process_virtual_memory = memory_status.ullTotalVirtual;
-      display_information->_available_process_virtual_memory = memory_status.ullAvailVirtual;
-      display_information->_memory_load = memory_status.dwMemoryLoad;
-    }
-  } else {
-    MEMORYSTATUS memory_status;
-
-    memory_status.dwLength = sizeof(MEMORYSTATUS);
-    GlobalMemoryStatus (&memory_status);
-
-    display_information->_physical_memory = memory_status.dwTotalPhys;
-    display_information->_available_physical_memory = memory_status.dwAvailPhys;
-    display_information->_page_file_size = memory_status.dwTotalPageFile;
-    display_information->_available_page_file_size = memory_status.dwAvailPageFile;
-    display_information->_process_virtual_memory = memory_status.dwTotalVirtual;
-    display_information->_available_process_virtual_memory = memory_status.dwAvailVirtual;
+  memory_status.dwLength = sizeof(MEMORYSTATUSEX);
+  if (GlobalMemoryStatusEx(&memory_status)) {
+    display_information->_physical_memory = memory_status.ullTotalPhys;
+    display_information->_available_physical_memory = memory_status.ullAvailPhys;
+    display_information->_page_file_size = memory_status.ullTotalPageFile;
+    display_information->_available_page_file_size = memory_status.ullAvailPageFile;
+    display_information->_process_virtual_memory = memory_status.ullTotalVirtual;
+    display_information->_available_process_virtual_memory = memory_status.ullAvailVirtual;
     display_information->_memory_load = memory_status.dwMemoryLoad;
   }
 
@@ -687,19 +664,12 @@ WinGraphicsPipe() {
 
   _supported_types = OT_window | OT_fullscreen_window;
 
-  // these fns arent defined on win95, so get dynamic ptrs to them to avoid
-  // ugly DLL loader failures on w95
-  _pfnTrackMouseEvent = NULL;
-
-  _hUser32 = (HINSTANCE)LoadLibrary("user32.dll");
-  if (_hUser32 != NULL) {
-    _pfnTrackMouseEvent =
-      (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
-
+  HMODULE user32 = GetModuleHandleA("user32.dll");
+  if (user32 != NULL) {
     if (dpi_aware) {
       typedef HRESULT (WINAPI *PFN_SETPROCESSDPIAWARENESS)(Process_DPI_Awareness);
       PFN_SETPROCESSDPIAWARENESS pfnSetProcessDpiAwareness =
-        (PFN_SETPROCESSDPIAWARENESS)GetProcAddress(_hUser32, "SetProcessDpiAwarenessInternal");
+        (PFN_SETPROCESSDPIAWARENESS)GetProcAddress(user32, "SetProcessDpiAwarenessInternal");
 
       if (pfnSetProcessDpiAwareness == NULL) {
         if (windisplay_cat.is_debug()) {
@@ -908,26 +878,4 @@ lookup_cpu_data() {
  */
 WinGraphicsPipe::
 ~WinGraphicsPipe() {
-  if (_hUser32 != NULL) {
-    FreeLibrary(_hUser32);
-    _hUser32 = NULL;
-  }
-}
-
-bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName) {
-  *pFn = (FARPROC) GetProcAddress(hDLL, szExportedFnName);
-  if (*pFn == NULL) {
-    windisplay_cat.error() << "GetProcAddr failed for " << szExportedFnName << ", error=" << GetLastError() <<endl;
-    return false;
-  }
-  return true;
-}
-
-bool MyLoadLib(HINSTANCE &hDLL, const char *DLLname) {
-  hDLL = LoadLibrary(DLLname);
-  if(hDLL == NULL) {
-    windisplay_cat.error() << "LoadLibrary failed for " << DLLname << ", error=" << GetLastError() <<endl;
-    return false;
-  }
-  return true;
 }
