@@ -2486,7 +2486,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
           bool has_write = param->has_write_access();
           input._writable = has_write;
 
-          if (has_read && has_write) {
+          if (gl_force_image_bindings_writeonly) {
+            access = GL_WRITE_ONLY;
+
+          } else if (has_read && has_write) {
             access = GL_READ_WRITE;
 
           } else if (has_read) {
