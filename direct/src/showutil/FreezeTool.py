@@ -251,6 +251,10 @@ frozenMainCode = """
 
 #if PY_MAJOR_VERSION >= 3
 #include <locale.h>
+
+#if PY_MINOR_VERSION < 5
+#define Py_DecodeLocale _Py_char2wchar
+#endif
 #endif
 
 #ifdef MS_WINDOWS
@@ -272,18 +276,14 @@ Py_FrozenMain(int argc, char **argv)
 
 #if PY_MAJOR_VERSION >= 3
     int i;
-    char *oldloc = NULL;
+    char *oldloc;
     wchar_t **argv_copy = NULL;
     /* We need a second copies, as Python might modify the first one. */
     wchar_t **argv_copy2 = NULL;
 
     if (argc > 0) {
-        argv_copy = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
-        argv_copy2 = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
-        if (!argv_copy || !argv_copy2) {
-            fprintf(stderr, \"out of memory\\n\");
-            goto error;
-        }
+        argv_copy = (wchar_t **)alloca(sizeof(wchar_t *) * argc);
+        argv_copy2 = (wchar_t **)alloca(sizeof(wchar_t *) * argc);
     }
 #endif
 
@@ -303,12 +303,7 @@ Py_FrozenMain(int argc, char **argv)
     }
 
 #if PY_MAJOR_VERSION >= 3
-    oldloc = _PyMem_RawStrdup(setlocale(LC_ALL, NULL));
-    if (!oldloc) {
-        fprintf(stderr, \"out of memory\\n\");
-        goto error;
-    }
-
+    oldloc = setlocale(LC_ALL, NULL);
     setlocale(LC_ALL, \"\");
     for (i = 0; i < argc; i++) {
         argv_copy[i] = Py_DecodeLocale(argv[i], NULL);
@@ -321,8 +316,6 @@ Py_FrozenMain(int argc, char **argv)
         }
     }
     setlocale(LC_ALL, oldloc);
-    PyMem_RawFree(oldloc);
-    oldloc = NULL;
 #endif
 
 #ifdef MS_WINDOWS
@@ -372,13 +365,15 @@ Py_FrozenMain(int argc, char **argv)
 
 #if PY_MAJOR_VERSION >= 3
 error:
-    PyMem_RawFree(argv_copy);
     if (argv_copy2) {
-        for (i = 0; i < argc; i++)
+        for (i = 0; i < argc; i++) {
+#if PY_MINOR_VERSION >= 4
             PyMem_RawFree(argv_copy2[i]);
-        PyMem_RawFree(argv_copy2);
+#else
+            PyMem_Free(argv_copy2[i]);
+#endif
+        }
     }
-    PyMem_RawFree(oldloc);
 #endif
     return sts;
 }
