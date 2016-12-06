@@ -300,7 +300,7 @@ ConfigVariableBool gl_support_shadow_filter
             "shadow map filtering features."));
 
 ConfigVariableBool gl_force_image_bindings_writeonly
-  ("gl-force-image-bindings-writeonly", true,
+  ("gl-force-image-bindings-writeonly", false,
    PRC_DESC("Forces all image inputs (not textures!) to be bound as writeonly, "
             "to read from an image, rebind it as sampler."));
 
