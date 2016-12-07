@@ -14,6 +14,115 @@
 #include "filename_ext.h"
 
 #ifdef HAVE_PYTHON
+
+#ifndef CPPPARSER
+extern Dtool_PyTypedObject Dtool_Filename;
+#endif  // CPPPARSER
+
+/**
+ * Constructs a Filename object from a str, bytes object, or os.PathLike.
+ */
+void Extension<Filename>::
+__init__(PyObject *path) {
+  nassertv(path != NULL);
+  nassertv(_this != NULL);
+
+  Py_ssize_t length;
+
+  if (PyUnicode_CheckExact(path)) {
+    wchar_t *data;
+#if PY_VERSION_HEX >= 0x03020000
+    data = PyUnicode_AsWideCharString(path, &length);
+#else
+    length = PyUnicode_GET_SIZE(path);
+    data = (wchar_t *)alloca(sizeof(wchar_t) * (length + 1));
+    PyUnicode_AsWideChar((PyUnicodeObject *)path, data, length);
+#endif
+    (*_this) = wstring(data, length);
+
+#if PY_VERSION_HEX >= 0x03020000
+    PyMem_Free(data);
+#endif
+    return;
+  }
+
+  if (PyBytes_CheckExact(path)) {
+    char *data;
+    PyBytes_AsStringAndSize(path, &data, &length);
+    (*_this) = string(data, length);
+    return;
+  }
+
+  if (Py_TYPE(path) == &Dtool_Filename._PyType) {
+    // Copy constructor.
+    (*_this) = *((Filename *)((Dtool_PyInstDef *)path)->_ptr_to_object);
+    return;
+  }
+
+  PyObject *path_str;
+
+#if PY_VERSION_HEX >= 0x03060000
+  // It must be an os.PathLike object.  Check for an __fspath__ method.
+  PyObject *fspath = PyObject_GetAttrString((PyObject *)Py_TYPE(path), "__fspath__");
+  if (fspath == NULL) {
+    PyErr_Format(PyExc_TypeError, "expected str, bytes or os.PathLike object, not %s", Py_TYPE(path)->tp_name);
+    return;
+  }
+
+  path_str = PyObject_CallFunctionObjArgs(fspath, path, NULL);
+  Py_DECREF(fspath);
+#else
+  // There is no standard path protocol before Python 3.6, but let's try and
+  // support taking pathlib paths anyway.  We don't version check this to
+  // allow people to use backports of the pathlib module.
+  if (PyObject_HasAttrString(path, "_format_parsed_parts")) {
+    path_str = PyObject_Str(path);
+  } else {
+#if PY_VERSION_HEX >= 0x03040000
+    PyErr_Format(PyExc_TypeError, "expected str, bytes, Path or Filename object, not %s", Py_TYPE(path)->tp_name);
+#elif PY_MAJOR_VERSION >= 3
+    PyErr_Format(PyExc_TypeError, "expected str, bytes or Filename object, not %s", Py_TYPE(path)->tp_name);
+#else
+    PyErr_Format(PyExc_TypeError, "expected str or unicode object, not %s", Py_TYPE(path)->tp_name);
+#endif
+    return;
+  }
+#endif
+
+  if (path_str == NULL) {
+    return;
+  }
+
+  if (PyUnicode_CheckExact(path_str)) {
+    wchar_t *data;
+#if PY_VERSION_HEX >= 0x03020000
+    data = PyUnicode_AsWideCharString(path_str, &length);
+#else
+    length = PyUnicode_GET_SIZE(path_str);
+    data = (wchar_t *)alloca(sizeof(wchar_t) * (length + 1));
+    PyUnicode_AsWideChar((PyUnicodeObject *)path_str, data, length);
+#endif
+    (*_this) = Filename::from_os_specific_w(wstring(data, length));
+
+#if PY_VERSION_HEX >= 0x03020000
+    PyMem_Free(data);
+#endif
+
+  } else if (PyBytes_CheckExact(path_str)) {
+    char *data;
+    PyBytes_AsStringAndSize(path_str, &data, &length);
+    (*_this) = Filename::from_os_specific(string(data, length));
+
+  } else {
+#if PY_MAJOR_VERSION >= 3
+    PyErr_Format(PyExc_TypeError, "expected str or bytes object, not %s", Py_TYPE(path_str)->tp_name);
+#else
+    PyErr_Format(PyExc_TypeError, "expected str or unicode object, not %s", Py_TYPE(path_str)->tp_name);
+#endif
+  }
+  Py_DECREF(path_str);
+}
+
 /**
  * This special Python method is implement to provide support for the pickle
  * module.
@@ -60,6 +169,16 @@ __repr__() const {
 
   Py_DECREF(str);
   return result;
+}
+
+/**
+ * Allows a Filename object to be passed to any Python function that accepts
+ * an os.PathLike object.
+ */
+PyObject *Extension<Filename>::
+__fspath__() const {
+  wstring filename = _this->to_os_specific_w();
+  return PyUnicode_FromWideChar(filename.data(), (Py_ssize_t)filename.size());
 }
 
 /**
