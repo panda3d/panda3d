@@ -2357,7 +2357,15 @@ hide_or_show_cursor(bool hide_cursor) {
 bool WinGraphicsWindow::
 find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
                              DEVMODE &dm) {
+
+  // Get the current mode.  We'll try to match the refresh rate.
+  DEVMODE cur_dm;
+  ZeroMemory(&cur_dm, sizeof(cur_dm));
+  cur_dm.dmSize = sizeof(cur_dm);
+  EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &cur_dm);
+
   int modenum = 0;
+  int saved_modenum = -1;
 
   while (1) {
     ZeroMemory(&dm, sizeof(dm));
@@ -2369,9 +2377,26 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
 
     if ((dm.dmPelsWidth == dwWidth) && (dm.dmPelsHeight == dwHeight) &&
         (dm.dmBitsPerPel == bpp)) {
-      return true;
+      // If this also matches in refresh rate, we're done here.  Otherwise,
+      // save this as a second choice for later.
+      if (dm.dmDisplayFrequency == cur_dm.dmDisplayFrequency) {
+        return true;
+      } else if (saved_modenum == -1) {
+        saved_modenum = modenum;
+      }
     }
     modenum++;
+  }
+
+  // Failed to find an exact match, but we do have a match that didn't match
+  // the refresh rate.
+  if (saved_modenum != -1) {
+    ZeroMemory(&dm, sizeof(dm));
+    dm.dmSize = sizeof(dm);
+
+    if (EnumDisplaySettings(NULL, saved_modenum, &dm)) {
+      return true;
+    }
   }
 
   return false;

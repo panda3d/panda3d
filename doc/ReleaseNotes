@@ -48,6 +48,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix exception when trying to pickle NodePathCollection objects
 * Fix error when trying to raise vectors to a power
 * GLSL: fix error when legacy matrix generator inputs are mat3
+* Now tries to preserve refresh rate when switching fullscreen on Windows
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
