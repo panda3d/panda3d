@@ -6188,7 +6188,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
     }
   }
 
@@ -11365,7 +11365,7 @@ apply_texture(CLP(TextureContext) *gtc) {
   glBindTexture(target, gtc->_index);
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *gtc->get_texture() << "\n";
   }
 
   report_my_gl_errors();
@@ -11663,7 +11663,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
     }
   }
 
@@ -12636,13 +12636,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   }
 #endif
 
+  Texture *tex = gtc->get_texture();
+
   glBindTexture(target, gtc->_index);
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
   }
-
-  Texture *tex = gtc->get_texture();
 
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
