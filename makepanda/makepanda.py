@@ -94,7 +94,6 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
-  "TOUCHINPUT",                                        # Touchinput interface (requires Windows 7)
 ])
 
 CheckPandaSourceTree()
@@ -170,7 +169,8 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "universal", "target=", "arch=", "git-commit="]
+        "universal", "target=", "arch=", "git-commit=",
+        "use-touchinput", "no-touchinput"]
     anything = 0
     optimize = ""
     target = None
@@ -315,18 +315,6 @@ def parseopts(args):
         if not WINDOWS_SDK:
             print("No Windows SDK version specified. Defaulting to '7.1'.")
             WINDOWS_SDK = '7.1'
-
-        is_win7 = False
-        if sys.platform == 'win32':
-            # Note: not available in cygwin.
-            winver = sys.getwindowsversion()
-            if winver[0] >= 6 and winver[1] >= 1:
-                is_win7 = True
-
-        if RUNTIME or not is_win7:
-            PkgDisable("TOUCHINPUT")
-    else:
-        PkgDisable("TOUCHINPUT")
 
     if clean_build and os.path.isdir(GetOutputDir()):
         print("Deleting %s" % (GetOutputDir()))
@@ -1055,14 +1043,11 @@ def CompileCxx(obj,src,opts):
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4273 "
 
-            # Enable Windows 7 interfaces if we need Touchinput.
-            if PkgSkip("TOUCHINPUT") == 0:
-                cmd += "/DWINVER=0x601 "
-            else:
-                cmd += "/DWINVER=0x501 "
-                # Work around a WinXP/2003 bug when using VS 2015+.
-                if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
-                    cmd += "/Zc:threadSafeInit- "
+            # We still target Windows XP.
+            cmd += "/DWINVER=0x501 "
+            # Work around a WinXP/2003 bug when using VS 2015+.
+            if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+                cmd += "/Zc:threadSafeInit- "
 
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
@@ -1113,12 +1098,7 @@ def CompileCxx(obj,src,opts):
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
-
-            # Enable Windows 7 interfaces if we need Touchinput.
-            if PkgSkip("TOUCHINPUT") == 0:
-                cmd += "/DWINVER=0x601 "
-            else:
-                cmd += "/DWINVER=0x501 "
+            cmd += "/DWINVER=0x501 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1686,17 +1666,16 @@ def CompileLink(dll, obj, opts):
                 if 'NOARCH:' + arch.upper() not in opts:
                     cmd += " -arch %s" % arch
 
-        if "SYSROOT" in SDK:
-            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
-
-        # Android-specific flags.
-        if GetTarget() == 'android':
+        elif GetTarget() == 'android':
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             if GetTargetArch() == 'armv7a':
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             cmd += ' -lc -lm'
         else:
             cmd += " -pthread"
+
+        if "SYSROOT" in SDK:
+            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
 
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
@@ -2130,7 +2109,6 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
-    ("HAVE_WIN_TOUCHINPUT",            'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
@@ -2237,11 +2215,7 @@ DTOOL_CONFIG=[
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
-    ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_SWSCALE",                   'UNDEF',                  'UNDEF'),
-    ("HAVE_SWRESAMPLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
-    ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_CARBON",                    'UNDEF',                  'UNDEF'),
@@ -2295,9 +2269,6 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = '1'
             else:
                 dtool_config["HAVE_"+x] = 'UNDEF'
-
-    if not PkgSkip("OPENCV"):
-        dtool_config["OPENCV_VER_23"] = '1' if OPENCV_VER_23 else 'UNDEF'
 
     dtool_config["HAVE_NET"] = '1'
 
@@ -2354,9 +2325,6 @@ def WriteConfigSettings():
     # on whether the libRocket Python modules are available.
     if (PkgSkip("PYTHON") != 0):
         dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
-
-    if (PkgSkip("TOUCHINPUT") == 0 and GetTarget() == "windows"):
-        dtool_config["HAVE_WIN_TOUCHINPUT"] = '1'
 
     if (GetOptimize() <= 3):
         dtool_config["HAVE_ROCKET_DEBUGGER"] = '1'
@@ -4129,8 +4097,20 @@ if (not RUNTIME):
 #
 
 if (PkgSkip("VISION") == 0) and (not RUNTIME):
+  # We want to know whether we have ffmpeg so that we can override the .avi association.
+  if not PkgSkip("FFMPEG"):
+    DefSymbol("OPENCV", "HAVE_FFMPEG")
+  if not PkgSkip("OPENCV"):
+    DefSymbol("OPENCV", "HAVE_OPENCV")
+    if OPENCV_VER_23:
+        DefSymbol("OPENCV", "OPENCV_VER_23")
+
   OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
-  TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
+  TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx', dep=[
+    'dtool_have_ffmpeg.dat',
+    'dtool_have_opencv.dat',
+    'dtool_have_directcam.dat',
+  ])
 
   TargetAdd('libp3vision.dll', input='p3vision_composite1.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
@@ -4319,8 +4299,15 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
 # DIRECTORY: panda/src/ffmpeg
 #
 if PkgSkip("FFMPEG") == 0 and not RUNTIME:
+  if not PkgSkip("SWSCALE"):
+    DefSymbol("FFMPEG", "HAVE_SWSCALE")
+  if not PkgSkip("SWRESAMPLE"):
+    DefSymbol("FFMPEG", "HAVE_SWRESAMPLE")
+
   OPTS=['DIR:panda/src/ffmpeg', 'BUILDING:FFMPEG', 'FFMPEG', 'SWSCALE', 'SWRESAMPLE']
-  TargetAdd('p3ffmpeg_composite1.obj', opts=OPTS, input='p3ffmpeg_composite1.cxx')
+  TargetAdd('p3ffmpeg_composite1.obj', opts=OPTS, input='p3ffmpeg_composite1.cxx', dep=[
+    'dtool_have_swscale.dat', 'dtool_have_swresample.dat'])
+
   TargetAdd('libp3ffmpeg.dll', input='p3ffmpeg_composite1.obj')
   TargetAdd('libp3ffmpeg.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3ffmpeg.dll', opts=OPTS)
@@ -4600,7 +4587,7 @@ if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0 and not
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/

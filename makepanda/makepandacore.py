@@ -396,10 +396,16 @@ def CrossCompiling():
     return GetTarget() != GetHost()
 
 def GetCC():
-    return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
+    if TARGET == 'darwin':
+        return os.environ.get('CC', TOOLCHAIN_PREFIX + 'clang')
+    else:
+        return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
 
 def GetCXX():
-    return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
+    if TARGET == 'darwin':
+        return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'clang++')
+    else:
+        return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
 
 def GetStrip():
     # Hack
@@ -1995,6 +2001,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
          SDK["PYTHON"] = py_fwx + "/Headers"
          SDK["PYTHONVERSION"] = "python" + ver
          SDK["PYTHONEXEC"] = "/System/Library/Frameworks/Python.framework/Versions/" + ver + "/bin/python" + ver
+
+         # Avoid choosing the one in the thirdparty package dir.
+         PkgSetCustomLocation("PYTHON")
+         IncDirectory("PYTHON", py_fwx + "/include")
+         LibDirectory("PYTHON", "%s/usr/lib" % (SDK.get("MACOSX", "")))
 
          if sys.version[:3] != ver:
              print("Warning: building with Python %s instead of %s since you targeted a specific Mac OS X version." % (ver, sys.version[:3]))

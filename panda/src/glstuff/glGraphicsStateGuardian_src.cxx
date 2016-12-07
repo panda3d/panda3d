@@ -6025,16 +6025,6 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 }
 
 /**
- * This function will compute the distance to the indicated point, assumed to
- * be in eye coordinates, from the camera plane.  The point is assumed to be
- * in the GSG's internal coordinate system.
- */
-PN_stdfloat CLP(GraphicsStateGuardian)::
-compute_distance_to(const LPoint3 &point) const {
-  return -point[2];
-}
-
-/**
  * Copy the pixels within the indicated display region from the framebuffer
  * into texture memory.
  *
@@ -6188,7 +6178,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
     }
   }
 
@@ -11365,7 +11355,7 @@ apply_texture(CLP(TextureContext) *gtc) {
   glBindTexture(target, gtc->_index);
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *gtc->get_texture() << "\n";
   }
 
   report_my_gl_errors();
@@ -11663,7 +11653,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
     }
   }
 
@@ -12636,13 +12626,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   }
 #endif
 
+  Texture *tex = gtc->get_texture();
+
   glBindTexture(target, gtc->_index);
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
   }
-
-  Texture *tex = gtc->get_texture();
 
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;

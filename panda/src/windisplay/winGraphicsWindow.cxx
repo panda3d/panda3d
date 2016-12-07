@@ -29,6 +29,17 @@
 #define WM_DPICHANGED 0x02E0
 #endif
 
+#ifndef WM_TOUCH
+#define WM_TOUCH 0x0240
+#endif
+
+#if WINVER < 0x0601
+// Not used on Windows XP, but we still need to define it.
+#define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
+
+DECLARE_HANDLE(HTOUCHINPUT);
+#endif
+
 TypeHandle WinGraphicsWindow::_type_handle;
 TypeHandle WinGraphicsWindow::WinWindowHandle::_type_handle;
 
@@ -56,22 +67,15 @@ int WinGraphicsWindow::_window_class_index = 0;
 
 static const char * const errorbox_title = "Panda3D Error";
 
-// These static variables contain pointers to the Raw Input functions, which
+// These static variables contain pointers to the touch input functions, which
 // are dynamically extracted from USER32.DLL
+typedef WINUSERAPI BOOL (WINAPI *PFN_REGISTERTOUCHWINDOW)(IN HWND hWnd, IN ULONG ulFlags);
+typedef WINUSERAPI BOOL (WINAPI *PFN_GETTOUCHINPUTINFO)(IN HTOUCHINPUT hTouchInput, IN UINT cInputs, OUT PTOUCHINPUT pInputs, IN int cbSize);
+typedef WINUSERAPI BOOL (WINAPI *PFN_CLOSETOUCHINPUTHANDLE)(IN HTOUCHINPUT hTouchInput);
 
-typedef WINUSERAPI UINT (WINAPI *tGetRawInputDeviceList)
-  (OUT PRAWINPUTDEVICELIST pRawInputDeviceList, IN OUT PUINT puiNumDevices, IN UINT cbSize);
-typedef WINUSERAPI UINT(WINAPI *tGetRawInputData)
-  (IN HRAWINPUT hRawInput, IN UINT uiCommand, OUT LPVOID pData, IN OUT PUINT pcbSize, IN UINT cbSizeHeader);
-typedef WINUSERAPI UINT(WINAPI *tGetRawInputDeviceInfoA)
-  (IN HANDLE hDevice, IN UINT uiCommand, OUT LPVOID pData, IN OUT PUINT pcbSize);
-typedef WINUSERAPI BOOL (WINAPI *tRegisterRawInputDevices)
-  (IN PCRAWINPUTDEVICE pRawInputDevices, IN UINT uiNumDevices, IN UINT cbSize);
-
-static tGetRawInputDeviceList    pGetRawInputDeviceList;
-static tGetRawInputData          pGetRawInputData;
-static tGetRawInputDeviceInfoA   pGetRawInputDeviceInfoA;
-static tRegisterRawInputDevices  pRegisterRawInputDevices;
+static PFN_REGISTERTOUCHWINDOW pRegisterTouchWindow = 0;
+static PFN_GETTOUCHINPUTINFO pGetTouchInputInfo = 0;
+static PFN_CLOSETOUCHINPUTHANDLE pCloseTouchInputHandle = 0;
 
 /**
  *
@@ -100,9 +104,7 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _lalt_down = false;
   _ralt_down = false;
   _hparent = NULL;
-#ifdef HAVE_WIN_TOUCHINPUT
-  _numTouches = 0;
-#endif
+  _num_touches = 0;
 }
 
 /**
@@ -512,13 +514,13 @@ open_window() {
   }
 
   // Registers to receive the WM_INPUT messages
-  if ((pRegisterRawInputDevices)&&(_input_devices.size() > 1)) {
+  if (_input_devices.size() > 1) {
     RAWINPUTDEVICE Rid;
     Rid.usUsagePage = 0x01;
     Rid.usUsage = 0x02;
     Rid.dwFlags = 0;// RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
     Rid.hwndTarget = _hWnd;
-    pRegisterRawInputDevices(&Rid, 1, sizeof (Rid));
+    RegisterRawInputDevices(&Rid, 1, sizeof (Rid));
   }
 
   // Create a WindowHandle for ourselves
@@ -535,10 +537,23 @@ open_window() {
   // set us as the focus window for keyboard input
   set_focus();
 
+  // Try initializing the touch function pointers.
+  static bool initialized = false;
+  if (!initialized) {
+    initialized = true;
+    HMODULE user32 = GetModuleHandleA("user32.dll");
+    if (user32) {
+      // Introduced in Windows 7.
+      pRegisterTouchWindow = (PFN_REGISTERTOUCHWINDOW)GetProcAddress(user32, "RegisterTouchWindow");
+      pGetTouchInputInfo = (PFN_GETTOUCHINPUTINFO)GetProcAddress(user32, "GetTouchInputInfo");
+      pCloseTouchInputHandle = (PFN_CLOSETOUCHINPUTHANDLE)GetProcAddress(user32, "CloseTouchInputHandle");
+    }
+  }
+
   // Register for Win7 touch events.
-#ifdef HAVE_WIN_TOUCHINPUT
-  RegisterTouchWindow(_hWnd, 0);
-#endif
+  if (pRegisterTouchWindow != NULL) {
+    pRegisterTouchWindow(_hWnd, 0);
+  }
 
   return true;
 }
@@ -563,45 +578,35 @@ initialize_input_devices() {
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
 
-  // Try initializing the Raw Input function pointers.
-  if (pRegisterRawInputDevices==0) {
-    HMODULE user32 = LoadLibrary("user32.dll");
-    if (user32) {
-      pRegisterRawInputDevices = (tRegisterRawInputDevices)GetProcAddress(user32,"RegisterRawInputDevices");
-      pGetRawInputDeviceList   = (tGetRawInputDeviceList)  GetProcAddress(user32,"GetRawInputDeviceList");
-      pGetRawInputDeviceInfoA  = (tGetRawInputDeviceInfoA) GetProcAddress(user32,"GetRawInputDeviceInfoA");
-      pGetRawInputData         = (tGetRawInputData)        GetProcAddress(user32,"GetRawInputData");
-    }
-  }
-
-  if (pRegisterRawInputDevices==0) return;
-  if (pGetRawInputDeviceList==0) return;
-  if (pGetRawInputDeviceInfoA==0) return;
-  if (pGetRawInputData==0) return;
-
   // Get the number of devices.
-  if (pGetRawInputDeviceList(NULL, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) != 0)
+  if (GetRawInputDeviceList(NULL, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) != 0) {
     return;
+  }
 
   // Allocate the array to hold the DeviceList
   pRawInputDeviceList = (PRAWINPUTDEVICELIST)alloca(sizeof(RAWINPUTDEVICELIST) * nInputDevices);
-  if (pRawInputDeviceList==0) return;
+  if (pRawInputDeviceList==0) {
+    return;
+  }
 
   // Fill the Array
-  if (pGetRawInputDeviceList(pRawInputDeviceList, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) == -1)
+  if (GetRawInputDeviceList(pRawInputDeviceList, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) == -1) {
     return;
+  }
 
   // Loop through all raw devices and find the raw mice
   for (int i = 0; i < (int)nInputDevices; i++) {
     if (pRawInputDeviceList[i].dwType == RIM_TYPEMOUSE) {
       // Fetch information about specified mouse device.
       UINT nSize;
-      if (pGetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)0, &nSize) != 0)
+      if (GetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)0, &nSize) != 0) {
         return;
+      }
       char *psName = (char*)alloca(sizeof(TCHAR) * nSize);
       if (psName == 0) return;
-      if (pGetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)psName, &nSize) < 0)
+      if (GetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)psName, &nSize) < 0) {
         return;
+      }
 
       // If it's not an RDP mouse, add it to the list of raw mice.
       if (strncmp(psName,"\\??\\Root#RDP_MOU#0000#",22)!=0) {
@@ -1215,31 +1220,25 @@ adjust_z_order(WindowProperties::ZOrder last_z_order,
  */
 void WinGraphicsWindow::
 track_mouse_leaving(HWND hwnd) {
-  // Note: could use _TrackMouseEvent in comctrl32.dll (part of IE 3.0+) which
-  // emulates TrackMouseEvent on w95, but that requires another 500K of memory
-  // to hold that DLL, which is lame just to support w95, which probably has
-  // other issues anyway
   WinGraphicsPipe *winpipe;
   DCAST_INTO_V(winpipe, _pipe);
 
-  if (winpipe->_pfnTrackMouseEvent != NULL) {
-    TRACKMOUSEEVENT tme = {
-      sizeof(TRACKMOUSEEVENT),
-      TME_LEAVE,
-      hwnd,
-      0
-    };
+  TRACKMOUSEEVENT tme = {
+    sizeof(TRACKMOUSEEVENT),
+    TME_LEAVE,
+    hwnd,
+    0
+  };
 
-    // tell win32 to post WM_MOUSELEAVE msgs
-    BOOL bSucceeded = winpipe->_pfnTrackMouseEvent(&tme);
+  // tell win32 to post WM_MOUSELEAVE msgs
+  BOOL bSucceeded = TrackMouseEvent(&tme);
 
-    if ((!bSucceeded) && windisplay_cat.is_debug()) {
-      windisplay_cat.debug()
-        << "TrackMouseEvent failed!, LastError=" << GetLastError() << endl;
-    }
-
-    _tracking_mouse_leaving = true;
+  if (!bSucceeded && windisplay_cat.is_debug()) {
+    windisplay_cat.debug()
+      << "TrackMouseEvent failed!, LastError=" << GetLastError() << endl;
   }
+
+  _tracking_mouse_leaving = true;
 }
 
 /**
@@ -2067,15 +2066,16 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
-#ifdef HAVE_WIN_TOUCHINPUT
   case WM_TOUCH:
-        _numTouches = LOWORD(wparam);
-        if(_numTouches > MAX_TOUCHES)
-            _numTouches = MAX_TOUCHES;
-        GetTouchInputInfo((HTOUCHINPUT)lparam, _numTouches, _touches, sizeof(TOUCHINPUT));
-        CloseTouchInputHandle((HTOUCHINPUT)lparam);
+    _num_touches = LOWORD(wparam);
+    if (_num_touches > MAX_TOUCHES) {
+      _num_touches = MAX_TOUCHES;
+    }
+    if (pGetTouchInputInfo != 0) {
+      pGetTouchInputInfo((HTOUCHINPUT)lparam, _num_touches, _touches, sizeof(TOUCHINPUT));
+      pCloseTouchInputHandle((HTOUCHINPUT)lparam);
+    }
     break;
-#endif
   }
 
   // do custom messages processing if any has been set
@@ -2229,7 +2229,15 @@ hide_or_show_cursor(bool hide_cursor) {
 bool WinGraphicsWindow::
 find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
                              DEVMODE &dm) {
+
+  // Get the current mode.  We'll try to match the refresh rate.
+  DEVMODE cur_dm;
+  ZeroMemory(&cur_dm, sizeof(cur_dm));
+  cur_dm.dmSize = sizeof(cur_dm);
+  EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &cur_dm);
+
   int modenum = 0;
+  int saved_modenum = -1;
 
   while (1) {
     ZeroMemory(&dm, sizeof(dm));
@@ -2241,9 +2249,26 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
 
     if ((dm.dmPelsWidth == dwWidth) && (dm.dmPelsHeight == dwHeight) &&
         (dm.dmBitsPerPel == bpp)) {
-      return true;
+      // If this also matches in refresh rate, we're done here.  Otherwise,
+      // save this as a second choice for later.
+      if (dm.dmDisplayFrequency == cur_dm.dmDisplayFrequency) {
+        return true;
+      } else if (saved_modenum == -1) {
+        saved_modenum = modenum;
+      }
     }
     modenum++;
+  }
+
+  // Failed to find an exact match, but we do have a match that didn't match
+  // the refresh rate.
+  if (saved_modenum != -1) {
+    ZeroMemory(&dm, sizeof(dm));
+    dm.dmSize = sizeof(dm);
+
+    if (EnumDisplaySettings(NULL, saved_modenum, &dm)) {
+      return true;
+    }
   }
 
   return false;
@@ -2607,7 +2632,7 @@ handle_raw_input(HRAWINPUT hraw) {
   if (hraw == 0) {
     return;
   }
-  if (pGetRawInputData(hraw, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == -1) {
+  if (GetRawInputData(hraw, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == -1) {
     return;
   }
 
@@ -2616,7 +2641,7 @@ handle_raw_input(HRAWINPUT hraw) {
     return;
   }
 
-  if (pGetRawInputData(hraw, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
+  if (GetRawInputData(hraw, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
     return;
   }
 
@@ -2973,12 +2998,8 @@ bool WinGraphicsWindow::supports_window_procs() const{
  *
  */
 bool WinGraphicsWindow::
-is_touch_event(GraphicsWindowProcCallbackData* callbackData){
-#ifdef HAVE_WIN_TOUCHINPUT
+is_touch_event(GraphicsWindowProcCallbackData *callbackData) {
   return callbackData->get_msg() == WM_TOUCH;
-#else
-  return false;
-#endif
 }
 
 /**
@@ -2987,11 +3008,7 @@ is_touch_event(GraphicsWindowProcCallbackData* callbackData){
  */
 int WinGraphicsWindow::
 get_num_touches(){
-#ifdef HAVE_WIN_TOUCHINPUT
-  return _numTouches;
-#else
-  return 0;
-#endif
+  return _num_touches;
 }
 
 /**
@@ -2999,8 +3016,9 @@ get_num_touches(){
  *
  */
 TouchInfo WinGraphicsWindow::
-get_touch_info(int index){
-#ifdef HAVE_WIN_TOUCHINPUT
+get_touch_info(int index) {
+  nassertr(index >= 0 && index < MAX_TOUCHES, TouchInfo());
+
   TOUCHINPUT ti = _touches[index];
   POINT point;
   point.x = TOUCH_COORD_TO_PIXEL(ti.x);
@@ -3013,7 +3031,4 @@ get_touch_info(int index){
   ret.set_id(ti.dwID);
   ret.set_flags(ti.dwFlags);
   return ret;
-#else
-  return TouchInfo();
-#endif
 }
