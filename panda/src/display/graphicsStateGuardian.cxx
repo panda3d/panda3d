@@ -147,6 +147,10 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _coordinate_system = CS_invalid;
   _internal_transform = TransformState::make_identity();
 
+  if (_internal_coordinate_system == CS_default) {
+    _internal_coordinate_system = get_default_coordinate_system();
+  }
+
   set_coordinate_system(get_default_coordinate_system());
 
   _data_reader = (GeomVertexDataPipelineReader *)NULL;

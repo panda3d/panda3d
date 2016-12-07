@@ -6025,16 +6025,6 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 }
 
 /**
- * This function will compute the distance to the indicated point, assumed to
- * be in eye coordinates, from the camera plane.  The point is assumed to be
- * in the GSG's internal coordinate system.
- */
-PN_stdfloat CLP(GraphicsStateGuardian)::
-compute_distance_to(const LPoint3 &point) const {
-  return -point[2];
-}
-
-/**
  * Copy the pixels within the indicated display region from the framebuffer
  * into texture memory.
  *
