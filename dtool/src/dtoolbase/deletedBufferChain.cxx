@@ -39,7 +39,7 @@ allocate(size_t size, TypeHandle type_handle) {
   assert(size <= _buffer_size);
 
   // Determine how much space to allocate.
-  const size_t alloc_size = _buffer_size + flag_reserved_bytes;
+  const size_t alloc_size = _buffer_size + flag_reserved_bytes + MemoryHook::get_memory_alignment() - 1;
 
   ObjectNode *obj;
 
@@ -69,13 +69,20 @@ allocate(size_t size, TypeHandle type_handle) {
   // If we get here, the deleted_chain is empty; we have to allocate a new
   // object from the system pool.
 
-  obj = (ObjectNode *)NeverFreeMemory::alloc(alloc_size);
+  // Allocate memory, and make sure the object starts at the proper alignment.
+  void *mem = NeverFreeMemory::alloc(alloc_size);
+  intptr_t pad = ((intptr_t)flag_reserved_bytes - (intptr_t)mem) % MemoryHook::get_memory_alignment();
+  obj = (ObjectNode *)((uintptr_t)mem + pad);
 
 #ifdef USE_DELETEDCHAINFLAG
   obj->_flag = DCF_alive;
 #endif  // USE_DELETEDCHAINFLAG
 
   void *ptr = node_to_buffer(obj);
+
+#ifdef _DEBUG
+  assert(((uintptr_t)ptr % MemoryHook::get_memory_alignment()) == 0);
+#endif
 
 #ifdef DO_MEMORY_USAGE
   type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
