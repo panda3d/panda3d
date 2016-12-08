@@ -6358,12 +6358,17 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
 if True: # TODO
     OPTS=['DIR:pandatool/src/deploy-stub', 'BUILDING:DEPLOYSTUB', 'PYTHON']
     TargetAdd('deploy-stub.obj', opts=OPTS, input='deploy-stub.c')
+    if GetTarget() == 'windows':
+        TargetAdd('frozen_dllmain.obj', opts=OPTS, input='frozen_dllmain.c')
+
     if GetTarget() == 'linux':
         # Setup rpath so libs can be found in the same directory as the deployed game
         LibName('DEPLOYSTUB', "-Wl,-rpath,\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
     TargetAdd('deploy-stub.exe', input='deploy-stub.obj')
-    TargetAdd('deploy-stub.exe', opts=['PYTHON', 'DEPLOYSTUB'])
+    if GetTarget() == 'windows':
+        TargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
+    TargetAdd('deploy-stub.exe', opts=['PYTHON', 'DEPLOYSTUB', 'NOICON'])
 
 #
 # Generate the models directory and samples directory

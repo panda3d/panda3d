@@ -20,6 +20,10 @@ extern void PyWinFreeze_ExeInit(void);
 extern void PyWinFreeze_ExeTerm(void);
 
 extern DL_IMPORT(int) PyImport_ExtendInittab(struct _inittab *newtab);
+
+static struct _inittab extensions[] = {
+    {0, 0},
+};
 #endif
 
 static unsigned char *modblob = NULL;
@@ -165,7 +169,8 @@ main(int argc, char *argv[]) {
   for (modidx = 0; modidx < nummods; ++modidx) {
     struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
     char *name = NULL, namebuf[256] = {0};
-    unsigned int nsize, codeptr;
+    size_t nsize;
+    unsigned int codeptr;
     int codesize;
 
     // Name

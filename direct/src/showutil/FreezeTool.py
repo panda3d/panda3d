@@ -1616,7 +1616,10 @@ class Freezer:
                       '-x %s to exclude the entire package.' % (moduleName, moduleName.split('.')[0]))
 
         # Build from pre-built binary stub
-        stub_path = os.path.join(os.path.dirname(ExecutionEnvironment.get_dtool_name()), '..', 'bin', 'deploy-stub')
+        dtool_path = Filename(ExecutionEnvironment.get_dtool_name()).to_os_specific()
+        stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', 'deploy-stub')
+        if sys.platform in ('win32', 'cygwin'):
+            stub_path += '.exe'
         with open(stub_path, 'rb') as f:
             stubbin = f.read()
 

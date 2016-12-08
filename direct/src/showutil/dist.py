@@ -45,9 +45,9 @@ class build(distutils.command.build.build):
             freezer.generateRuntimeFromStub(basename)
 
             # Copy Panda3D libs
-            dtool_dir = os.path.dirname(p3d.ExecutionEnvironment.get_dtool_name())
-            libdir = os.path.join(dtool_dir, '..', 'lib')
-            src = os.path.join(libdir, '..', 'panda3d')
+            dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
+            libdir = os.path.dirname(dtool_fn.to_os_specific())
+            src = os.path.normpath(os.path.join(libdir, '..', 'panda3d'))
             dst = os.path.join(builddir, 'panda3d')
             distutils.dir_util.copy_tree(src, dst)
 
@@ -59,7 +59,7 @@ class build(distutils.command.build.build):
                         distutils.file_util.copy_file(source_path, target_path)
 
             # Copy etc
-            src = os.path.join(dtool_dir, '..', 'etc')
+            src = os.path.join(libdir, '..', 'etc')
             dst = os.path.join(builddir, 'etc')
             distutils.dir_util.copy_tree(src, dst)
 
