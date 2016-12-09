@@ -45,8 +45,9 @@ get_memory_alignment() {
   // don't strictly have to align *everything*, but it's just easier to do so.
   const size_t alignment_size = 16;
 #else
-  // Otherwise, use word alignment.
-  const size_t alignment_size = sizeof(void *);
+  // Otherwise, align to two words.  This seems to be pretty standard to the
+  // point where some code may rely on this being the case.
+  const size_t alignment_size = sizeof(void *) * 2;
 #endif
   return alignment_size;
 }
@@ -72,8 +73,9 @@ get_header_reserved_bytes() {
   static const size_t header_reserved_bytes = sizeof(size_t) + sizeof(size_t);
 
 #else
-  // If we're not aligning, we just need space for the word itself.
-  static const size_t header_reserved_bytes = sizeof(size_t);
+  // Virtually all allocators align to two words, so we make sure we preserve
+  // that alignment for the benefit of anyone who relies upon that.
+  static const size_t header_reserved_bytes = sizeof(void *) * 2;
 #endif
 
   return header_reserved_bytes;
