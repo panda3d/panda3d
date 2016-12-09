@@ -7729,10 +7729,11 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
     // Most common case: one byte per pixel, and the source image shows a
     // maxval of 255.  No scaling is necessary.  Because this is such a common
     // case, we break it out per component for best performance.
+    const xel *array = pnmimage.get_array();
     switch (num_components) {
     case 1:
       for (int j = y_size-1; j >= 0; j--) {
-        xel *row = pnmimage.row(j);
+        const xel *row = array + j * x_size;
         for (int i = 0; i < x_size; i++) {
           *p++ = (uchar)PPM_GETB(row[i]);
         }
@@ -7742,9 +7743,10 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
     case 2:
       if (img_has_alpha) {
+        const xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          const xel *row = array + j * x_size;
+          const xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)alpha_row[i];
@@ -7753,7 +7755,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          const xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)255;
@@ -7765,7 +7767,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
     case 3:
       for (int j = y_size-1; j >= 0; j--) {
-        xel *row = pnmimage.row(j);
+        const xel *row = array + j * x_size;
         for (int i = 0; i < x_size; i++) {
           *p++ = (uchar)PPM_GETB(row[i]);
           *p++ = (uchar)PPM_GETG(row[i]);
@@ -7777,9 +7779,10 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
     case 4:
       if (img_has_alpha) {
+        const xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          const xel *row = array + j * x_size;
+          const xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)PPM_GETG(row[i]);
@@ -7790,7 +7793,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          const xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)PPM_GETG(row[i]);
@@ -7813,7 +7816,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
     for (int j = y_size-1; j >= 0; j--) {
       for (int i = 0; i < x_size; i++) {
         if (is_grayscale) {
-           store_unscaled_short(p, pnmimage.get_gray_val(i, j));
+          store_unscaled_short(p, pnmimage.get_gray_val(i, j));
         } else {
           store_unscaled_short(p, pnmimage.get_blue_val(i, j));
           store_unscaled_short(p, pnmimage.get_green_val(i, j));
@@ -7979,11 +7982,13 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
   const unsigned char *p = &image[idx];
 
   if (component_width == 1) {
+    xel *array = pnmimage.get_array();
     if (is_grayscale) {
       if (has_alpha) {
+        xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          xel *row = array + j * x_size;
+          xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
             alpha_row[i] = *p++;
@@ -7991,7 +7996,7 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
           }
@@ -7999,9 +8004,10 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
       }
     } else {
       if (has_alpha) {
+        xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          xel *row = array + j * x_size;
+          xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
             PPM_PUTG(row[i], *p++);
@@ -8011,7 +8017,7 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
             PPM_PUTG(row[i], *p++);
@@ -8932,13 +8938,20 @@ compare_images(const PNMImage &a, const PNMImage &b) {
   nassertr(a.get_x_size() == b.get_x_size() &&
            a.get_y_size() == b.get_y_size(), false);
 
+  const xel *a_array = a.get_array();
+  const xel *b_array = b.get_array();
+  const xelval *a_alpha = a.get_alpha_array();
+  const xelval *b_alpha = b.get_alpha_array();
+
+  int x_size = a.get_x_size();
+
   int delta = 0;
   for (int yi = 0; yi < a.get_y_size(); ++yi) {
-    xel *a_row = a.row(yi);
-    xel *b_row = b.row(yi);
-    xelval *a_alpha_row = a.alpha_row(yi);
-    xelval *b_alpha_row = b.alpha_row(yi);
-    for (int xi = 0; xi < a.get_x_size(); ++xi) {
+    const xel *a_row = a_array + yi * x_size;
+    const xel *b_row = b_array + yi * x_size;
+    const xelval *a_alpha_row = a_alpha + yi * x_size;
+    const xelval *b_alpha_row = b_alpha + yi * x_size;
+    for (int xi = 0; xi < x_size; ++xi) {
       delta += abs(PPM_GETR(a_row[xi]) - PPM_GETR(b_row[xi]));
       delta += abs(PPM_GETG(a_row[xi]) - PPM_GETG(b_row[xi]));
       delta += abs(PPM_GETB(a_row[xi]) - PPM_GETB(b_row[xi]));
