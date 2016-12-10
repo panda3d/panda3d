@@ -249,6 +249,9 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_geometry_instancing = false;
   _supports_indirect_draw = false;
 
+  // We are safe assuming it has luminance support
+  _supports_luminance_texture = true;
+
   // Assume a maximum of 1 render target in absence of MRT.
   _max_color_targets = 1;
   _supports_dual_source_blending = false;

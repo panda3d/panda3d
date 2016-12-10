@@ -393,6 +393,8 @@ public:
   INLINE const string &get_gl_version() const;
   INLINE int get_gl_version_major() const;
   INLINE int get_gl_version_minor() const;
+  INLINE bool has_core_profile() const;
+  INLINE bool has_fixed_function_pipeline() const;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -534,8 +536,8 @@ protected:
   GLint get_internal_image_format(Texture *tex, bool force_sized=false) const;
   static bool is_mipmap_filter(GLenum min_filter);
   static bool is_compressed_format(GLenum format);
-  static GLint get_texture_apply_mode_type(TextureStage::Mode am);
-  static GLint get_texture_combine_type(TextureStage::CombineMode cm);
+  GLint get_texture_apply_mode_type(TextureStage::Mode am);
+  GLint get_texture_combine_type(TextureStage::CombineMode cm);
   GLint get_texture_src_type(TextureStage::CombineSource cs,
                              int last_stage, int last_saved_result,
                              int this_stage) const;
@@ -709,6 +711,8 @@ protected:
   int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
 
   pset<string> _extensions;
+  // Core profile storage
+  bool _core_profile;
 
 public:
   bool _supports_point_parameters;

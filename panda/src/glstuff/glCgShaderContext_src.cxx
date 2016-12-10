@@ -762,25 +762,27 @@ disable_shader_vertex_arrays() {
       _glgsg->disable_vertex_attrib_array(p);
     } else {
 #ifdef SUPPORT_FIXED_FUNCTION
-      switch (p) {
-      case CA_unknown:
-        break;
-      case CA_vertex:
-        glDisableClientState(GL_VERTEX_ARRAY);
-        break;
-      case CA_normal:
-        glDisableClientState(GL_NORMAL_ARRAY);
-        break;
-      case CA_color:
-        glDisableClientState(GL_COLOR_ARRAY);
-        break;
-      case CA_secondary_color:
-        glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
-        break;
-      default:
-        _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        break;
+      if(_glgsg->has_fixed_function_pipeline()) {
+        switch (p) {
+        case CA_unknown:
+          break;
+        case CA_vertex:
+          glDisableClientState(GL_VERTEX_ARRAY);
+          break;
+        case CA_normal:
+          glDisableClientState(GL_NORMAL_ARRAY);
+          break;
+        case CA_color:
+          glDisableClientState(GL_COLOR_ARRAY);
+          break;
+        case CA_secondary_color:
+          glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
+          break;
+        default:
+          _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
+          glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+          break;
+        }
       }
 #endif  // SUPPORT_FIXED_FUNCTION
     }
@@ -876,40 +878,42 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         } else {
           // It's a conventional vertex attribute.  Ugh.
 #ifdef SUPPORT_FIXED_FUNCTION
-          switch (p) {
-          case CA_unknown:
-            break;
+          if(_glgsg->has_fixed_function_pipeline()) {
+            switch (p) {
+            case CA_unknown:
+              break;
 
-          case CA_vertex:
-            glVertexPointer(num_values, type, stride, client_pointer);
-            glEnableClientState(GL_VERTEX_ARRAY);
-            break;
+            case CA_vertex:
+              glVertexPointer(num_values, type, stride, client_pointer);
+              glEnableClientState(GL_VERTEX_ARRAY);
+              break;
 
-          case CA_normal:
-            glNormalPointer(type, stride, client_pointer);
-            glEnableClientState(GL_NORMAL_ARRAY);
-            break;
+            case CA_normal:
+              glNormalPointer(type, stride, client_pointer);
+              glEnableClientState(GL_NORMAL_ARRAY);
+              break;
 
-          case CA_color:
-            if (numeric_type == GeomEnums::NT_packed_dabc) {
-              glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, stride, client_pointer);
-            } else {
-              glColorPointer(num_values, type, stride, client_pointer);
+            case CA_color:
+              if (numeric_type == GeomEnums::NT_packed_dabc) {
+                glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, stride, client_pointer);
+              } else {
+                glColorPointer(num_values, type, stride, client_pointer);
+              }
+              glEnableClientState(GL_COLOR_ARRAY);
+              break;
+
+            case CA_secondary_color:
+              _glgsg->_glSecondaryColorPointer(num_values, type,
+                                               stride, client_pointer);
+              glEnableClientState(GL_SECONDARY_COLOR_ARRAY);
+              break;
+
+            default:
+              _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
+              glTexCoordPointer(num_values, type, stride, client_pointer);
+              glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+              break;
             }
-            glEnableClientState(GL_COLOR_ARRAY);
-            break;
-
-          case CA_secondary_color:
-            _glgsg->_glSecondaryColorPointer(num_values, type,
-                                             stride, client_pointer);
-            glEnableClientState(GL_SECONDARY_COLOR_ARRAY);
-            break;
-
-          default:
-            _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
-            glTexCoordPointer(num_values, type, stride, client_pointer);
-            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            break;
           }
 #endif  // SUPPORT_FIXED_FUNCTION
         }
@@ -917,7 +921,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         // There is no vertex column with this name; disable the attribute
         // array.
 #ifdef SUPPORT_FIXED_FUNCTION
-        if (p == 0) {
+        if (_glgsg->has_fixed_function_pipeline() && (p == 0)) {
           // NOTE: if we disable attribute 0 in compatibility profile, the
           // object will disappear.  In GLSL we fix this by forcing the vertex
           // column to be at 0, but we don't have control over that with Cg.
@@ -944,30 +948,32 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           }
         } else {
 #ifdef SUPPORT_FIXED_FUNCTION
-          switch (p) {
-          case CA_unknown:
-            break;
-          case CA_vertex:
-            glDisableClientState(GL_VERTEX_ARRAY);
-            break;
-          case CA_normal:
-            glDisableClientState(GL_NORMAL_ARRAY);
-            break;
-          case CA_color:
-            glDisableClientState(GL_COLOR_ARRAY);
+          if(_glgsg->has_fixed_function_pipeline()) {
+            switch (p) {
+            case CA_unknown:
+              break;
+            case CA_vertex:
+              glDisableClientState(GL_VERTEX_ARRAY);
+              break;
+            case CA_normal:
+              glDisableClientState(GL_NORMAL_ARRAY);
+              break;
+            case CA_color:
+              glDisableClientState(GL_COLOR_ARRAY);
 #ifdef STDFLOAT_DOUBLE
-            glColor4dv(_glgsg->_scene_graph_color.get_data());
+              glColor4dv(_glgsg->_scene_graph_color.get_data());
 #else
-            glColor4fv(_glgsg->_scene_graph_color.get_data());
+              glColor4fv(_glgsg->_scene_graph_color.get_data());
 #endif
-            break;
-          case CA_secondary_color:
-            glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
-            break;
-          default:
-            _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-            break;
+              break;
+            case CA_secondary_color:
+              glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
+              break;
+            default:
+              _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
+              glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+              break;
+            }
           }
 #endif  // SUPPORT_FIXED_FUNCTION
         }
