@@ -47,11 +47,12 @@ PUBLISHED:
   MAKE_PROPERTY(cache_ref_count, get_cache_ref_count);
 
 protected:
+  INLINE void cache_ref_only() const;
   INLINE void cache_unref_only() const;
   bool do_test_ref_count_integrity() const;
 
 private:
-  AtomicAdjust::Integer _cache_ref_count;
+  mutable AtomicAdjust::Integer _cache_ref_count;
 
 public:
   static TypeHandle get_class_type() {
