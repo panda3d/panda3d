@@ -126,7 +126,7 @@ cache_ref() const {
 #endif
 
   ref();
-  AtomicAdjust::inc(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
+  AtomicAdjust::inc(_cache_ref_count);
 }
 
 /**
@@ -147,7 +147,7 @@ cache_unref() const {
   // you can't use PointerTo's?
   nassertr(_cache_ref_count > 0, 0);
 
-  AtomicAdjust::dec(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
+  AtomicAdjust::dec(_cache_ref_count);
   return ReferenceCount::unref();
 }
 
@@ -166,6 +166,19 @@ test_ref_count_integrity() const {
 
 /**
  * Decrements the cache reference count without affecting the normal reference
+ * count.  Don't use this.
+ */
+INLINE void CachedTypedWritableReferenceCount::
+cache_ref_only() const {
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
+
+  AtomicAdjust::inc(_cache_ref_count);
+}
+
+/**
+ * Decrements the cache reference count without affecting the normal reference
  * count.  Intended to be called by derived classes only, presumably to
  * reimplement cache_unref().
  */
@@ -180,7 +193,7 @@ cache_unref_only() const {
   // you can't use PointerTo's?
   nassertv(_cache_ref_count > 0);
 
-  AtomicAdjust::dec(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
+  AtomicAdjust::dec(_cache_ref_count);
 }
 
 /**
