@@ -38,18 +38,28 @@ class build(distutils.command.build.build):
             # Create runtime
             freezer = FreezeTool.Freezer()
             freezer.addModule('__main__', filename=startfile)
-            freezer.excludeModule('panda3d')
             for exmod in self.distribution.exclude_modules:
                 freezer.excludeModule(exmod)
             freezer.done(addStartupModules=True)
             freezer.generateRuntimeFromStub(basename)
 
+            # Copy extension modules
+            for module, source_path in freezer.extras:
+                if source_path is None:
+                    # Built-in module.
+                    continue
+
+                # Rename panda3d/core.pyd to panda3d.core.pyd
+                basename = os.path.basename(source_path)
+                if '.' in module:
+                    basename = module.rsplit('.', 1)[0] + '.' + basename
+
+                target_path = os.path.join(builddir, basename)
+                distutils.file_util.copy_file(source_path, target_path)
+
             # Copy Panda3D libs
             dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
             libdir = os.path.dirname(dtool_fn.to_os_specific())
-            src = os.path.normpath(os.path.join(libdir, '..', 'panda3d'))
-            dst = os.path.join(builddir, 'panda3d')
-            distutils.dir_util.copy_tree(src, dst)
 
             for item in os.listdir(libdir):
                 if '.so.' in item or item.endswith('.dll') or item.endswith('.dylib') or 'libpandagl' in item:

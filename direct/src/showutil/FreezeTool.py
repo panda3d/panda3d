@@ -1563,9 +1563,10 @@ class Freezer:
 
         if self.platform.startswith('win'):
             target = basename + '.exe'
+            modext = '.pyd'
         else:
             target = basename
-
+            modext = '.so'
 
         # Generate export table.
         moduleBlob = bytes()
@@ -1595,25 +1596,18 @@ class Freezer:
             # it is the former.
             extensionFilename = getattr(module, '__file__', None)
 
-            if extensionFilename or self.linkExtensionModules:
+            if extensionFilename:
                 self.extras.append((moduleName, extensionFilename))
 
             # If it is a submodule of a frozen module, Python will have
             # trouble importing it as a builtin module.  Synthesize a frozen
-            # module that loads it as builtin.
-            if '.' in moduleName and self.linkExtensionModules:
-                code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec')
+            # module that loads it dynamically.
+            if '.' in moduleName:
+                code = compile('import sys;del sys.modules["%s"];import imp;imp.load_dynamic("%s", "%s%s")' % (moduleName, moduleName, moduleName, modext), moduleName, 'exec')
                 code = marshal.dumps(code)
                 moduleList.append(make_module_list_entry(code, codeOffset, moduleName, module))
                 moduleBlob += code
                 codeOffset += len(code)
-            elif '.' in moduleName:
-                # Nothing we can do about this case except warn the user they
-                # are in for some trouble.
-                print('WARNING: Python cannot import extension modules under '
-                      'frozen Python packages; %s will be inaccessible.  '
-                      'passing either -l to link in extension modules or use '
-                      '-x %s to exclude the entire package.' % (moduleName, moduleName.split('.')[0]))
 
         # Build from pre-built binary stub
         dtool_path = Filename(ExecutionEnvironment.get_dtool_name()).to_os_specific()
