@@ -801,6 +801,7 @@ public:
 #ifndef OPENGLES
   PFNGLMAPBUFFERPROC _glMapBuffer;
   PFNGLUNMAPBUFFERPROC _glUnmapBuffer;
+  PFNGLGETBUFFERSUBDATAPROC _glGetBufferSubData;
 #endif
 
 #ifdef OPENGLES

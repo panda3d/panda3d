@@ -280,7 +280,6 @@ TYPENAME ordered_vector<Key, Compare, Vector>::SIZE_TYPE ordered_vector<Key, Com
 r_count(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
         TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
         const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
-  typedef pair<TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> pair_type;
 
   if (first == last) {
     // The list is empty; the key is not on the list.

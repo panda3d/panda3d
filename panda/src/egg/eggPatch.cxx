@@ -21,6 +21,13 @@
 
 TypeHandle EggPatch::_type_handle;
 
+/**
+ * Makes a copy of this object.
+ */
+EggPatch *EggPatch::
+make_copy() const {
+  return new EggPatch(*this);
+}
 
 /**
  * Writes the patch to the indicated output stream in Egg format.

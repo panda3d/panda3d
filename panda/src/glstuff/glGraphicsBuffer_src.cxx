@@ -514,7 +514,8 @@ rebuild_bitplanes() {
   if (num_fbos > _fbo.size()) {
     // Generate more FBO handles.
     int start = _fbo.size();
-    _fbo.resize(num_fbos, 0);
+    GLuint zero = 0;
+    _fbo.resize(num_fbos, zero);
     glgsg->_glGenFramebuffers(num_fbos - start, &_fbo[start]);
   }
 
@@ -1752,7 +1753,7 @@ resolve_multisamples() {
   if (_rbm[RTP_depth_stencil] != 0 || _rbm[RTP_depth] != 0) {
     if (_shared_depth_buffer) {
       CLP(GraphicsBuffer) *graphics_buffer = NULL;
-      CLP(GraphicsBuffer) *highest_sort_graphics_buffer = NULL;
+      //CLP(GraphicsBuffer) *highest_sort_graphics_buffer = NULL;
       list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
 
       int max_sort_order = 0;
@@ -1764,7 +1765,7 @@ resolve_multisamples() {
           // this call removes the entry from the list
           if (graphics_buffer->get_sort() >= max_sort_order) {
             max_sort_order = graphics_buffer->get_sort();
-            highest_sort_graphics_buffer = graphics_buffer;
+            //highest_sort_graphics_buffer = graphics_buffer;
           }
         }
       }

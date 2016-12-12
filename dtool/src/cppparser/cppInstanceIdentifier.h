@@ -88,7 +88,11 @@ public:
   typedef vector<Modifier> Modifiers;
   Modifiers _modifiers;
 
+  // If not -1, indicates a bitfield
   int _bit_width;
+
+  // Indicates a parameter pack
+  bool _packed;
 
 private:
   CPPType *

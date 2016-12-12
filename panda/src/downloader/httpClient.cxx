@@ -1110,7 +1110,7 @@ get_ssl_ctx() {
 
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
-#if defined(SSL_097) && !defined(NDEBUG)
+#ifndef NDEBUG
   // If we have debugging enabled, set a callback that allows us to report the
   // SSL messages as they are sent and received.
   if (downloader_cat.is_debug()) {
@@ -1554,7 +1554,7 @@ split_whitespace(string &a, string &b, const string &c) {
   b = c.substr(p);
 }
 
-#if defined(SSL_097) && !defined(NDEBUG)
+#ifndef NDEBUG
 /**
  * This method is attached as a callback for SSL messages only when debug
  * output is enabled.
@@ -1614,7 +1614,7 @@ ssl_msg_callback(int write_p, int version, int content_type,
 
   downloader_cat.debug() << describe.str();
 }
-#endif  // defined(SSL_097) && !defined(NDEBUG)
+#endif  // !defined(NDEBUG)
 
 /**
  *

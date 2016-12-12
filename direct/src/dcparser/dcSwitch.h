@@ -27,7 +27,7 @@ class DCField;
  * and represents two or more alternative unpacking schemes based on the first
  * field read.
  */
-class EXPCL_DIRECT DCSwitch : public DCDeclaration {
+class DCSwitch : public DCDeclaration {
 public:
   DCSwitch(const string &name, DCField *key_parameter);
   virtual ~DCSwitch();

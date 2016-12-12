@@ -132,6 +132,231 @@ struct DDSHeader {
   DDSCaps2 caps;
 };
 
+// Stuff to read KTX files.
+enum KTXType {
+  KTX_BYTE = 0x1400,
+  KTX_UNSIGNED_BYTE = 0x1401,
+  KTX_SHORT = 0x1402,
+  KTX_UNSIGNED_SHORT = 0x1403,
+  KTX_INT = 0x1404,
+  KTX_UNSIGNED_INT = 0x1405,
+  KTX_FLOAT = 0x1406,
+  KTX_HALF_FLOAT = 0x140B,
+  KTX_UNSIGNED_BYTE_3_3_2 = 0x8032,
+  KTX_UNSIGNED_SHORT_4_4_4_4 = 0x8033,
+  KTX_UNSIGNED_SHORT_5_5_5_1 = 0x8034,
+  KTX_UNSIGNED_INT_8_8_8_8 = 0x8035,
+  KTX_UNSIGNED_INT_10_10_10_2 = 0x8036,
+  KTX_UNSIGNED_BYTE_2_3_3_REV = 0x8362,
+  KTX_UNSIGNED_SHORT_5_6_5 = 0x8363,
+  KTX_UNSIGNED_SHORT_5_6_5_REV = 0x8364,
+  KTX_UNSIGNED_SHORT_4_4_4_4_REV = 0x8365,
+  KTX_UNSIGNED_SHORT_1_5_5_5_REV = 0x8366,
+  KTX_UNSIGNED_INT_8_8_8_8_REV = 0x8367,
+  KTX_UNSIGNED_INT_2_10_10_10_REV = 0x8368,
+  KTX_UNSIGNED_INT_24_8 = 0x84FA,
+  KTX_UNSIGNED_INT_10F_11F_11F_REV = 0x8C3B,
+  KTX_UNSIGNED_INT_5_9_9_9_REV = 0x8C3E,
+  KTX_FLOAT_32_UNSIGNED_INT_24_8_REV = 0x8DAD,
+};
+
+enum KTXFormat {
+  KTX_ALPHA = 0x1906,
+  KTX_ALPHA12 = 0x803D,
+  KTX_ALPHA16 = 0x803E,
+  KTX_ALPHA16_SNORM = 0x9018,
+  KTX_ALPHA4 = 0x803B,
+  KTX_ALPHA8 = 0x803C,
+  KTX_ALPHA8_SNORM = 0x9014,
+  KTX_ALPHA_SNORM = 0x9010,
+  KTX_BGR = 0x80E0,
+  KTX_BGR_INTEGER = 0x8D9A,
+  KTX_BGRA = 0x80E1,
+  KTX_BGRA_INTEGER = 0x8D9B,
+  KTX_BLUE = 0x1905,
+  KTX_BLUE_INTEGER = 0x8D96,
+  KTX_COLOR_INDEX = 0x1900,
+  KTX_DEPTH24_STENCIL8 = 0x88F0,
+  KTX_DEPTH32F_STENCIL8 = 0x8CAD,
+  KTX_DEPTH_COMPONENT = 0x1902,
+  KTX_DEPTH_COMPONENT16 = 0x81A5,
+  KTX_DEPTH_COMPONENT24 = 0x81A6,
+  KTX_DEPTH_COMPONENT32 = 0x81A7,
+  KTX_DEPTH_COMPONENT32F = 0x8CAC,
+  KTX_DEPTH_STENCIL = 0x84F9,
+  KTX_GREEN = 0x1904,
+  KTX_GREEN_INTEGER = 0x8D95,
+  KTX_INTENSITY = 0x8049,
+  KTX_INTENSITY12 = 0x804C,
+  KTX_INTENSITY16 = 0x804D,
+  KTX_INTENSITY16_SNORM = 0x901B,
+  KTX_INTENSITY4 = 0x804A,
+  KTX_INTENSITY8 = 0x804B,
+  KTX_INTENSITY8_SNORM = 0x9017,
+  KTX_INTENSITY_SNORM = 0x9013,
+  KTX_LUMINANCE = 0x1909,
+  KTX_LUMINANCE12 = 0x8041,
+  KTX_LUMINANCE12_ALPHA12 = 0x8047,
+  KTX_LUMINANCE12_ALPHA4 = 0x8046,
+  KTX_LUMINANCE16 = 0x8042,
+  KTX_LUMINANCE16_ALPHA16 = 0x8048,
+  KTX_LUMINANCE16_ALPHA16_SNORM = 0x901A,
+  KTX_LUMINANCE16_SNORM = 0x9019,
+  KTX_LUMINANCE4 = 0x803F,
+  KTX_LUMINANCE4_ALPHA4 = 0x8043,
+  KTX_LUMINANCE6_ALPHA2 = 0x8044,
+  KTX_LUMINANCE8 = 0x8040,
+  KTX_LUMINANCE8_ALPHA8 = 0x8045,
+  KTX_LUMINANCE8_ALPHA8_SNORM = 0x9016,
+  KTX_LUMINANCE8_SNORM = 0x9015,
+  KTX_LUMINANCE_ALPHA = 0x190A,
+  KTX_LUMINANCE_ALPHA_SNORM = 0x9012,
+  KTX_LUMINANCE_SNORM = 0x9011,
+  KTX_R11F_G11F_B10F = 0x8C3A,
+  KTX_R16 = 0x822A,
+  KTX_R16_SNORM = 0x8F98,
+  KTX_R16F = 0x822D,
+  KTX_R16I = 0x8233,
+  KTX_R16UI = 0x8234,
+  KTX_R32F = 0x822E,
+  KTX_R32I = 0x8235,
+  KTX_R32UI = 0x8236,
+  KTX_R3_G3_B2 = 0x2A10,
+  KTX_R8 = 0x8229,
+  KTX_R8_SNORM = 0x8F94,
+  KTX_R8I = 0x8231,
+  KTX_R8UI = 0x8232,
+  KTX_RED = 0x1903,
+  KTX_RED_INTEGER = 0x8D94,
+  KTX_RED_SNORM = 0x8F90,
+  KTX_RG = 0x8227,
+  KTX_RG16 = 0x822C,
+  KTX_RG16_SNORM = 0x8F99,
+  KTX_RG16F = 0x822F,
+  KTX_RG16I = 0x8239,
+  KTX_RG16UI = 0x823A,
+  KTX_RG32F = 0x8230,
+  KTX_RG32I = 0x823B,
+  KTX_RG32UI = 0x823C,
+  KTX_RG8 = 0x822B,
+  KTX_RG8_SNORM = 0x8F95,
+  KTX_RG8I = 0x8237,
+  KTX_RG8UI = 0x8238,
+  KTX_RG_INTEGER = 0x8228,
+  KTX_RG_SNORM = 0x8F91,
+  KTX_RGB = 0x1907,
+  KTX_RGB10 = 0x8052,
+  KTX_RGB10_A2 = 0x8059,
+  KTX_RGB12 = 0x8053,
+  KTX_RGB16 = 0x8054,
+  KTX_RGB16_SNORM = 0x8F9A,
+  KTX_RGB16F = 0x881B,
+  KTX_RGB16I = 0x8D89,
+  KTX_RGB16UI = 0x8D77,
+  KTX_RGB2 = 0x804E,
+  KTX_RGB32F = 0x8815,
+  KTX_RGB32I = 0x8D83,
+  KTX_RGB32UI = 0x8D71,
+  KTX_RGB4 = 0x804F,
+  KTX_RGB5 = 0x8050,
+  KTX_RGB5_A1 = 0x8057,
+  KTX_RGB8 = 0x8051,
+  KTX_RGB8_SNORM = 0x8F96,
+  KTX_RGB8I = 0x8D8F,
+  KTX_RGB8UI = 0x8D7D,
+  KTX_RGB9_E5 = 0x8C3D,
+  KTX_RGB_INTEGER = 0x8D98,
+  KTX_RGB_SNORM = 0x8F92,
+  KTX_RGBA = 0x1908,
+  KTX_RGBA12 = 0x805A,
+  KTX_RGBA16 = 0x805B,
+  KTX_RGBA16_SNORM = 0x8F9B,
+  KTX_RGBA16F = 0x881A,
+  KTX_RGBA16I = 0x8D88,
+  KTX_RGBA16UI = 0x8D76,
+  KTX_RGBA2 = 0x8055,
+  KTX_RGBA32F = 0x8814,
+  KTX_RGBA32I = 0x8D82,
+  KTX_RGBA32UI = 0x8D70,
+  KTX_RGBA4 = 0x8056,
+  KTX_RGBA8 = 0x8058,
+  KTX_RGBA8_SNORM = 0x8F97,
+  KTX_RGBA8I = 0x8D8E,
+  KTX_RGBA8UI = 0x8D7C,
+  KTX_RGBA_INTEGER = 0x8D99,
+  KTX_RGBA_SNORM = 0x8F93,
+  KTX_SLUMINANCE = 0x8C46,
+  KTX_SLUMINANCE8 = 0x8C47,
+  KTX_SLUMINANCE8_ALPHA8 = 0x8C45,
+  KTX_SLUMINANCE_ALPHA = 0x8C44,
+  KTX_SRGB = 0x8C40,
+  KTX_SRGB8 = 0x8C41,
+  KTX_SRGB8_ALPHA8 = 0x8C43,
+  KTX_SRGB_ALPHA = 0x8C42,
+  KTX_STENCIL_INDEX = 0x1901,
+  KTX_STENCIL_INDEX1 = 0x8D46,
+  KTX_STENCIL_INDEX16 = 0x8D49,
+  KTX_STENCIL_INDEX4 = 0x8D47,
+  KTX_STENCIL_INDEX8 = 0x8D48,
+};
+
+enum KTXCompressedFormat {
+  KTX_COMPRESSED_LUMINANCE_ALPHA_LATC2 = 0x8C72,
+  KTX_COMPRESSED_LUMINANCE_LATC1 = 0x8C70,
+  KTX_COMPRESSED_R11_EAC = 0x9270,
+  KTX_COMPRESSED_RED = 0x8225,
+  KTX_COMPRESSED_RED_RGTC1 = 0x8DBB,
+  KTX_COMPRESSED_RG = 0x8226,
+  KTX_COMPRESSED_RG11_EAC = 0x9272,
+  KTX_COMPRESSED_RG_RGTC2 = 0x8DBD,
+  KTX_COMPRESSED_RGB = 0x84ED,
+  KTX_COMPRESSED_RGB8_ETC2 = 0x9274,
+  KTX_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 0x9276,
+  KTX_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 0x8E8E,
+  KTX_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 0x8E8F,
+  KTX_COMPRESSED_RGB_FXT1_3DFX = 0x86B0,
+  KTX_COMPRESSED_RGB_PVRTC_2BPPV1_IMG = 0x8C01,
+  KTX_COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00,
+  KTX_COMPRESSED_RGB_S3TC_DXT1 = 0x83F0,
+  KTX_COMPRESSED_RGBA = 0x84EE,
+  KTX_COMPRESSED_RGBA8_ETC2_EAC = 0x9278,
+  KTX_COMPRESSED_RGBA_BPTC_UNORM = 0x8E8C,
+  KTX_COMPRESSED_RGBA_FXT1_3DFX = 0x86B1,
+  KTX_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG = 0x8C03,
+  KTX_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG = 0x9137,
+  KTX_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02,
+  KTX_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG = 0x9138,
+  KTX_COMPRESSED_RGBA_S3TC_DXT1 = 0x83F1,
+  KTX_COMPRESSED_RGBA_S3TC_DXT3 = 0x83F2,
+  KTX_COMPRESSED_RGBA_S3TC_DXT5 = 0x83F3,
+  KTX_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2 = 0x8C73,
+  KTX_COMPRESSED_SIGNED_LUMINANCE_LATC1 = 0x8C71,
+  KTX_COMPRESSED_SIGNED_R11_EAC = 0x9271,
+  KTX_COMPRESSED_SIGNED_RED_RGTC1 = 0x8DBC,
+  KTX_COMPRESSED_SIGNED_RG11_EAC = 0x9273,
+  KTX_COMPRESSED_SIGNED_RG_RGTC2 = 0x8DBE,
+  KTX_COMPRESSED_SLUMINANCE = 0x8C4A,
+  KTX_COMPRESSED_SLUMINANCE_ALPHA = 0x8C4B,
+  KTX_COMPRESSED_SRGB = 0x8C48,
+  KTX_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 0x9279,
+  KTX_COMPRESSED_SRGB8_ETC2 = 0x9275,
+  KTX_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 0x9277,
+  KTX_COMPRESSED_SRGB_ALPHA = 0x8C49,
+  KTX_COMPRESSED_SRGB_ALPHA_BPTC_UNORM = 0x8E8D,
+  KTX_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1 = 0x8A56,
+  KTX_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2 = 0x93F0,
+  KTX_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1 = 0x8A57,
+  KTX_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2 = 0x93F1,
+  KTX_COMPRESSED_SRGB_ALPHA_S3TC_DXT1 = 0x8C4D,
+  KTX_COMPRESSED_SRGB_ALPHA_S3TC_DXT3 = 0x8C4E,
+  KTX_COMPRESSED_SRGB_ALPHA_S3TC_DXT5 = 0x8C4F,
+  KTX_COMPRESSED_SRGB_PVRTC_2BPPV1 = 0x8A54,
+  KTX_COMPRESSED_SRGB_PVRTC_4BPPV1 = 0x8A55,
+  KTX_COMPRESSED_SRGB_S3TC_DXT1 = 0x8C4C,
+  KTX_ETC1_RGB8 = 0x8D64,
+  KTX_ETC1_SRGB8 = 0x88EE,
+};
+
 /**
  * Constructs an empty texture.  The default is to set up the texture as an
  * empty 2-d texture; follow up with one of the variants of setup_texture() if
@@ -707,6 +932,23 @@ read_dds(istream &in, const string &filename, bool header_only) {
   cdata->inc_properties_modified();
   cdata->inc_image_modified();
   return do_read_dds(cdata, in, filename, header_only);
+}
+
+/**
+ * Reads the texture from a KTX file object.  This is a Khronos-defined file
+ * format; it is similar in principle to a dds object, in that it is designed
+ * to contain the texture image in a form as similar as possible to its
+ * runtime image, and it can contain mipmaps, pre-compressed textures, and so
+ * on.
+ *
+ * As with read_dds, the filename is just for reference.
+ */
+bool Texture::
+read_ktx(istream &in, const string &filename, bool header_only) {
+  CDWriter cdata(_cycler, true);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
+  return do_read_ktx(cdata, in, filename, header_only);
 }
 
 /**
@@ -1412,6 +1654,10 @@ write(ostream &out, int indent_level) const {
   case TT_buffer_texture:
     out << "buffer, " << cdata->_x_size;
     break;
+
+  case TT_1d_texture_array:
+    out << "1-d array, " << cdata->_x_size << " x " << cdata->_y_size;
+    break;
   }
 
   if (cdata->_num_views > 1) {
@@ -1439,6 +1685,7 @@ write(ostream &out, int indent_level) const {
 
   case T_unsigned_int_24_8:
   case T_int:
+  case T_unsigned_int:
     out << " ints";
     break;
 
@@ -1810,6 +2057,8 @@ format_texture_type(TextureType tt) {
     return "cube_map_array";
   case TT_buffer_texture:
     return "buffer_texture";
+  case TT_1d_texture_array:
+    return "1d_texture_array";
   }
   return "**invalid**";
 }
@@ -1862,6 +2111,8 @@ format_component_type(ComponentType ct) {
     return "short";
   case T_half_float:
     return "half_float";
+  case T_unsigned_int:
+    return "unsigned_int";
   }
 
   return "**invalid**";
@@ -1888,6 +2139,8 @@ string_component_type(const string &str) {
     return T_short;
   } else if (cmp_nocase(str, "half_float") == 0) {
     return T_half_float;
+  } else if (cmp_nocase(str, "unsigned_int") == 0) {
+    return T_unsigned_int;
   }
 
   gobj_cat->error()
@@ -1956,7 +2209,7 @@ format_format(Format format) {
   case F_r16:
     return "r16";
   case F_r16i:
-    return "r16i";  
+    return "r16i";
   case F_rg16:
     return "rg16";
   case F_rgb16:
@@ -2123,6 +2376,12 @@ format_compression_mode(CompressionMode cm) {
     return "pvr1_4bpp";
   case CM_rgtc:
     return "rgtc";
+  case CM_etc1:
+    return "etc1";
+  case CM_etc2:
+    return "etc2";
+  case CM_eac:
+    return "eac";
   }
 
   return "**invalid**";
@@ -2158,6 +2417,12 @@ string_compression_mode(const string &str) {
     return CM_pvr1_4bpp;
   } else if (cmp_nocase_uh(str, "rgtc") == 0) {
     return CM_rgtc;
+  } else if (cmp_nocase_uh(str, "etc1") == 0) {
+    return CM_etc1;
+  } else if (cmp_nocase_uh(str, "etc2") == 0) {
+    return CM_etc2;
+  } else if (cmp_nocase_uh(str, "eac") == 0) {
+    return CM_eac;
   }
 
   gobj_cat->error()
@@ -2272,7 +2537,8 @@ bool Texture::
 is_unsigned(Texture::ComponentType ctype) {
   return (ctype == T_unsigned_byte ||
           ctype == T_unsigned_short ||
-          ctype == T_unsigned_int_24_8);
+          ctype == T_unsigned_int_24_8 ||
+          ctype == T_unsigned_int);
 }
 
 /**
@@ -2533,6 +2799,13 @@ do_read(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
       record->add_dependent_file(fullpath);
     }
     return do_read_dds_file(cdata, fullpath, header_only);
+  }
+
+  if (is_ktx_filename(fullpath)) {
+    if (record != (BamCacheRecord *)NULL) {
+      record->add_dependent_file(fullpath);
+    }
+    return do_read_ktx_file(cdata, fullpath, header_only);
   }
 
   // If read_pages or read_mipmaps is specified, then z and n actually
@@ -3374,7 +3647,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
     unsigned int dimension = dds.get_uint32();
     unsigned int misc_flag = dds.get_uint32();
     unsigned int array_size = dds.get_uint32();
-    unsigned int alpha_mode = dds.get_uint32();
+    /*unsigned int alpha_mode = */dds.get_uint32();
 
     switch (format) {
     case 2:    // DXGI_FORMAT_R32G32B32A32_FLOAT
@@ -3811,6 +4084,770 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
   if (in.fail() || in.eof()) {
     gobj_cat.error()
       << filename << ": truncated DDS file.\n";
+    return false;
+  }
+
+  cdata->_loaded_from_image = true;
+  cdata->_loaded_from_txo = true;
+
+  return true;
+}
+
+/**
+ * Called internally when read() detects a KTX file.  Assumes the lock is
+ * already held.
+ */
+bool Texture::
+do_read_ktx_file(CData *cdata, const Filename &fullpath, bool header_only) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  Filename filename = Filename::binary_filename(fullpath);
+  PT(VirtualFile) file = vfs->get_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    // No such file.
+    gobj_cat.error()
+      << "Could not find " << fullpath << "\n";
+    return false;
+  }
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Reading KTX file " << filename << "\n";
+  }
+
+  istream *in = file->open_read_file(true);
+  bool success = do_read_ktx(cdata, *in, fullpath, header_only);
+  vfs->close_read_file(in);
+
+  if (!has_name()) {
+    set_name(fullpath.get_basename_wo_extension());
+  }
+
+  cdata->_fullpath = fullpath;
+  cdata->_alpha_fullpath = Filename();
+  cdata->_keep_ram_image = false;
+
+  return success;
+}
+
+/**
+ *
+ */
+bool Texture::
+do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only) {
+  StreamReader ktx(in);
+
+  if (ktx.extract_bytes(12) != "\xABKTX 11\xBB\r\n\x1A\n") {
+    gobj_cat.error()
+      << filename << " is not a KTX file.\n";
+    return false;
+  }
+
+  // See: https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+  uint32_t gl_type, type_size, gl_format, internal_format, gl_base_format,
+    width, height, depth, num_array_elements, num_faces, num_mipmap_levels,
+    kvdata_size;
+
+  bool big_endian;
+  if (ktx.get_uint32() == 0x04030201) {
+    big_endian = false;
+    gl_type = ktx.get_uint32();
+    type_size = ktx.get_uint32();
+    gl_format = ktx.get_uint32();
+    internal_format = ktx.get_uint32();
+    gl_base_format = ktx.get_uint32();
+    width = ktx.get_uint32();
+    height = ktx.get_uint32();
+    depth = ktx.get_uint32();
+    num_array_elements = ktx.get_uint32();
+    num_faces = ktx.get_uint32();
+    num_mipmap_levels = ktx.get_uint32();
+    kvdata_size = ktx.get_uint32();
+  } else {
+    big_endian = true;
+    gl_type = ktx.get_be_uint32();
+    type_size = ktx.get_be_uint32();
+    gl_format = ktx.get_be_uint32();
+    internal_format = ktx.get_be_uint32();
+    gl_base_format = ktx.get_be_uint32();
+    width = ktx.get_be_uint32();
+    height = ktx.get_be_uint32();
+    depth = ktx.get_be_uint32();
+    num_array_elements = ktx.get_be_uint32();
+    num_faces = ktx.get_be_uint32();
+    num_mipmap_levels = ktx.get_be_uint32();
+    kvdata_size = ktx.get_be_uint32();
+  }
+
+  // Skip metadata section.
+  ktx.skip_bytes(kvdata_size);
+
+  ComponentType type;
+  CompressionMode compression;
+  Format format;
+  bool swap_bgr = false;
+
+  if (gl_type == 0 || gl_format == 0) {
+    // Compressed texture.
+    if (gl_type > 0 || gl_format > 0) {
+      gobj_cat.error()
+        << "Compressed textures must have both type and format set to 0.\n";
+      return false;
+    }
+    type = T_unsigned_byte;
+    compression = CM_on;
+
+    KTXFormat base_format;
+    switch ((KTXCompressedFormat)internal_format) {
+    case KTX_COMPRESSED_RED:
+      format = F_red;
+      base_format = KTX_RED;
+      break;
+    case KTX_COMPRESSED_RG:
+      format = F_rg;
+      base_format = KTX_RG;
+      break;
+    case KTX_COMPRESSED_RGB:
+      format = F_rgb;
+      base_format = KTX_RGB;
+      break;
+    case KTX_COMPRESSED_RGBA:
+      format = F_rgba;
+      base_format = KTX_RGBA;
+      break;
+    case KTX_COMPRESSED_SRGB:
+      format = F_srgb;
+      base_format = KTX_SRGB;
+      break;
+    case KTX_COMPRESSED_SRGB_ALPHA:
+      format = F_srgb_alpha;
+      base_format = KTX_SRGB_ALPHA;
+      break;
+    case KTX_COMPRESSED_RGB_FXT1_3DFX:
+      format = F_rgb;
+      base_format = KTX_RGB;
+      compression = CM_fxt1;
+      break;
+    case KTX_COMPRESSED_RGBA_FXT1_3DFX:
+      format = F_rgba;
+      base_format = KTX_RGBA;
+      compression = CM_fxt1;
+      break;
+    case KTX_COMPRESSED_RGB_S3TC_DXT1:
+      format = F_rgb;
+      base_format = KTX_RGB;
+      compression = CM_dxt1;
+      break;
+    case KTX_COMPRESSED_RGBA_S3TC_DXT1:
+      format = F_rgbm;
+      base_format = KTX_RGB;
+      compression = CM_dxt1;
+      break;
+    case KTX_COMPRESSED_RGBA_S3TC_DXT3:
+      format = F_rgba;
+      base_format = KTX_RGBA;
+      compression = CM_dxt3;
+      break;
+    case KTX_COMPRESSED_RGBA_S3TC_DXT5:
+      format = F_rgba;
+      base_format = KTX_RGBA;
+      compression = CM_dxt5;
+      break;
+    case KTX_COMPRESSED_SRGB_ALPHA_S3TC_DXT1:
+      format = F_srgb_alpha;
+      base_format = KTX_SRGB_ALPHA;
+      compression = CM_dxt1;
+      break;
+    case KTX_COMPRESSED_SRGB_ALPHA_S3TC_DXT3:
+      format = F_srgb_alpha;
+      base_format = KTX_SRGB_ALPHA;
+      compression = CM_dxt3;
+      break;
+    case KTX_COMPRESSED_SRGB_ALPHA_S3TC_DXT5:
+      format = F_srgb_alpha;
+      base_format = KTX_SRGB_ALPHA;
+      compression = CM_dxt5;
+      break;
+    case KTX_COMPRESSED_SRGB_S3TC_DXT1:
+      format = F_srgb;
+      base_format = KTX_SRGB;
+      compression = CM_dxt1;
+      break;
+    case KTX_COMPRESSED_RED_RGTC1:
+    case KTX_COMPRESSED_SIGNED_RED_RGTC1:
+      format = F_red;
+      base_format = KTX_RED;
+      compression = CM_rgtc;
+      break;
+    case KTX_COMPRESSED_RG_RGTC2:
+    case KTX_COMPRESSED_SIGNED_RG_RGTC2:
+      format = F_rg;
+      base_format = KTX_RG;
+      compression = CM_rgtc;
+      break;
+    case KTX_ETC1_RGB8:
+      format = F_rgb;
+      base_format = KTX_RGB;
+      compression = CM_etc1;
+      break;
+    case KTX_ETC1_SRGB8:
+      format = F_srgb;
+      base_format = KTX_SRGB;
+      compression = CM_etc1;
+      break;
+    case KTX_COMPRESSED_RGB8_ETC2:
+      format = F_rgb;
+      base_format = KTX_RGB;
+      compression = CM_etc2;
+      break;
+    case KTX_COMPRESSED_SRGB8_ETC2:
+      format = F_srgb;
+      base_format = KTX_SRGB;
+      compression = CM_etc2;
+      break;
+    case KTX_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+      format = F_rgbm;
+      base_format = KTX_RGBA;
+      compression = CM_etc2;
+      break;
+    case KTX_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+      format = F_rgbm;
+      base_format = KTX_SRGB8_ALPHA8;
+      compression = CM_etc2;
+      break;
+    case KTX_COMPRESSED_RGBA8_ETC2_EAC:
+      format = F_rgba;
+      base_format = KTX_RGBA;
+      compression = CM_etc2;
+      break;
+    case KTX_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+      format = F_srgb_alpha;
+      base_format = KTX_SRGB8_ALPHA8;
+      compression = CM_etc2;
+      break;
+    case KTX_COMPRESSED_R11_EAC:
+    case KTX_COMPRESSED_SIGNED_R11_EAC:
+      format = F_red;
+      base_format = KTX_RED;
+      compression = CM_eac;
+      break;
+    case KTX_COMPRESSED_RG11_EAC:
+    case KTX_COMPRESSED_SIGNED_RG11_EAC:
+      format = F_rg;
+      base_format = KTX_RG;
+      compression = CM_eac;
+      break;
+    case KTX_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1:
+      format = F_srgb_alpha;
+      base_format = KTX_SRGB_ALPHA;
+      compression = CM_pvr1_2bpp;
+      break;
+    case KTX_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1:
+      format = F_srgb_alpha;
+      base_format = KTX_SRGB_ALPHA;
+      compression = CM_pvr1_4bpp;
+      break;
+    case KTX_COMPRESSED_RGBA_BPTC_UNORM:
+    case KTX_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
+    case KTX_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+    case KTX_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
+    default:
+      gobj_cat.error()
+        << filename << " has unsupported compressed internal format " << internal_format << "\n";
+      return false;
+    }
+
+    if (base_format != gl_base_format) {
+      gobj_cat.error()
+        << filename << " has internal format that is incompatible with base "
+           "format (0x" << hex << gl_base_format << ", expected 0x"
+        << base_format << dec << ")\n";
+      return false;
+    }
+
+  } else {
+    // Uncompressed texture.
+    compression = CM_off;
+    switch ((KTXType)gl_type) {
+    case KTX_BYTE:
+      type = T_byte;
+      break;
+    case KTX_UNSIGNED_BYTE:
+      type = T_unsigned_byte;
+      break;
+    case KTX_SHORT:
+      type = T_short;
+      break;
+    case KTX_UNSIGNED_SHORT:
+      type = T_unsigned_short;
+      break;
+    case KTX_INT:
+      type = T_int;
+      break;
+    case KTX_UNSIGNED_INT:
+      type = T_unsigned_int;
+      break;
+    case KTX_FLOAT:
+      type = T_float;
+      break;
+    case KTX_HALF_FLOAT:
+      type = T_half_float;
+      break;
+    case KTX_UNSIGNED_INT_24_8:
+      type = T_unsigned_int_24_8;
+      break;
+    default:
+      gobj_cat.error()
+        << filename << " has unsupported component type " << gl_type << "\n";
+      return false;
+    }
+
+    if (gl_format != gl_base_format) {
+      gobj_cat.error()
+        << filename << " has mismatched formats: " << gl_format << " != "
+        << gl_base_format << "\n";
+    }
+
+    switch (gl_format) {
+    case KTX_DEPTH_COMPONENT:
+      switch (internal_format) {
+      case KTX_DEPTH_COMPONENT:
+        format = F_depth_component;
+        break;
+      case KTX_DEPTH_COMPONENT16:
+        format = F_depth_component16;
+        break;
+      case KTX_DEPTH_COMPONENT24:
+        format = F_depth_component24;
+        break;
+      case KTX_DEPTH_COMPONENT32:
+      case KTX_DEPTH_COMPONENT32F:
+        format = F_depth_component32;
+        break;
+      default:
+        format = F_depth_component;
+        gobj_cat.warning()
+          << filename << " has unsupported depth component format " << internal_format << "\n";
+      }
+      break;
+
+    case KTX_DEPTH_STENCIL:
+      format = F_depth_stencil;
+      if (internal_format != KTX_DEPTH_STENCIL &&
+          internal_format != KTX_DEPTH24_STENCIL8) {
+        gobj_cat.warning()
+          << filename << " has unsupported depth stencil format " << internal_format << "\n";
+      }
+      break;
+
+    case KTX_RED:
+      switch (internal_format) {
+      case KTX_RED:
+      case KTX_RED_SNORM:
+      case KTX_R8:
+      case KTX_R8_SNORM:
+        format = F_red;
+        break;
+      case KTX_R16:
+      case KTX_R16_SNORM:
+      case KTX_R16F:
+        format = F_r16;
+        break;
+      case KTX_R32F:
+        format = F_r32;
+        break;
+      default:
+        format = F_red;
+        gobj_cat.warning()
+          << filename << " has unsupported red format " << internal_format << "\n";
+      }
+      break;
+
+    case KTX_RED_INTEGER:
+      switch (internal_format) {
+      case KTX_R8I:
+      case KTX_R8UI:
+        format = F_r8i;
+        break;
+      case KTX_R16I:
+      case KTX_R16UI:
+        format = F_r16i;
+        break;
+      case KTX_R32I:
+      case KTX_R32UI:
+        format = F_r32i;
+        break;
+      default:
+        gobj_cat.error()
+          << filename << " has unsupported red integer format " << internal_format << "\n";
+        return false;
+      }
+      break;
+
+    case KTX_GREEN:
+      format = F_green;
+      if (internal_format != KTX_GREEN) {
+        gobj_cat.warning()
+          << filename << " has unsupported green format " << internal_format << "\n";
+      }
+      break;
+
+    case KTX_BLUE:
+      format = F_blue;
+      if (internal_format != KTX_BLUE) {
+        gobj_cat.warning()
+          << filename << " has unsupported blue format " << internal_format << "\n";
+      }
+      break;
+
+    case KTX_RG:
+      switch (internal_format) {
+      case KTX_RG:
+      case KTX_RG_SNORM:
+      case KTX_RG8:
+      case KTX_RG8_SNORM:
+        format = F_rg;
+        break;
+      case KTX_RG16:
+      case KTX_RG16_SNORM:
+      case KTX_RG16F:
+        format = F_rg16;
+        break;
+      case KTX_RG32F:
+        format = F_rg32;
+        break;
+      default:
+        format = F_rg;
+        gobj_cat.warning()
+          << filename << " has unsupported RG format " << internal_format << "\n";
+      }
+      break;
+
+    case KTX_RG_INTEGER:
+      switch (internal_format) {
+      case KTX_RG8I:
+      case KTX_RG8UI:
+        format = F_rg8i;
+        break;
+      case KTX_RG16I:
+      case KTX_RG16UI:
+      case KTX_RG32I:
+      case KTX_RG32UI:
+      default:
+        gobj_cat.error()
+          << filename << " has unsupported RG integer format " << internal_format << "\n";
+        return false;
+      }
+      break;
+
+    case KTX_RGB:
+      swap_bgr = true;
+    case KTX_BGR:
+      switch (internal_format) {
+      case KTX_RGB:
+      case KTX_RGB_SNORM:
+        format = F_rgb;
+        break;
+      case KTX_RGB5:
+        format = F_rgb5;
+        break;
+      case KTX_RGB12:
+        format = F_rgb12;
+        break;
+      case KTX_R3_G3_B2:
+        format = F_rgb332;
+        break;
+      case KTX_RGB9_E5:
+        format = F_rgb9_e5;
+        break;
+      case KTX_R11F_G11F_B10F:
+        format = F_r11_g11_b10;
+        break;
+      case KTX_RGB8:
+      case KTX_RGB8_SNORM:
+        format = F_rgb8;
+        break;
+      case KTX_RGB16:
+      case KTX_RGB16_SNORM:
+      case KTX_RGB16F:
+        format = F_rgb16;
+        break;
+      case KTX_RGB32F:
+        format = F_rgb32;
+        break;
+      case KTX_SRGB:
+      case KTX_SRGB8:
+        format = F_srgb;
+        break;
+      default:
+        format = F_rgb;
+        gobj_cat.warning()
+          << filename << " has unsupported RGB format " << internal_format << "\n";
+      }
+      break;
+
+    case KTX_RGB_INTEGER:
+      swap_bgr = true;
+    case KTX_BGR_INTEGER:
+      switch (internal_format) {
+      case KTX_RGB8I:
+      case KTX_RGB8UI:
+        format = F_rgb8i;
+        break;
+      case KTX_RGB16I:
+      case KTX_RGB16UI:
+      case KTX_RGB32I:
+      case KTX_RGB32UI:
+      default:
+        gobj_cat.error()
+          << filename << " has unsupported RGB integer format " << internal_format << "\n";
+        return false;
+      }
+      break;
+
+    case KTX_RGBA:
+      swap_bgr = true;
+    case KTX_BGRA:
+      switch (internal_format) {
+      case KTX_RGBA:
+      case KTX_RGBA_SNORM:
+        format = F_rgba;
+        break;
+      case KTX_RGBA4:
+        format = F_rgba4;
+        break;
+      case KTX_RGB5_A1:
+        format = F_rgba5;
+        break;
+      case KTX_RGBA12:
+        format = F_rgba12;
+        break;
+      case KTX_RGB10_A2:
+        format = F_rgb10_a2;
+        break;
+      case KTX_RGBA8:
+      case KTX_RGBA8_SNORM:
+        format = F_rgba8;
+        break;
+      case KTX_RGBA16:
+      case KTX_RGBA16_SNORM:
+      case KTX_RGBA16F:
+        format = F_rgba16;
+        break;
+      case KTX_RGBA32F:
+        format = F_rgba32;
+        break;
+      case KTX_SRGB_ALPHA:
+      case KTX_SRGB8_ALPHA8:
+        format = F_srgb_alpha;
+        break;
+      default:
+        format = F_rgba;
+        gobj_cat.warning()
+          << filename << " has unsupported RGBA format " << internal_format << "\n";
+      }
+      break;
+      break;
+
+    case KTX_RGBA_INTEGER:
+      swap_bgr = true;
+    case KTX_BGRA_INTEGER:
+      switch (internal_format) {
+      case KTX_RGBA8I:
+      case KTX_RGBA8UI:
+        format = F_rgba8i;
+        break;
+      case KTX_RGBA16I:
+      case KTX_RGBA16UI:
+      case KTX_RGBA32I:
+      case KTX_RGBA32UI:
+      default:
+        gobj_cat.error()
+          << filename << " has unsupported RGBA integer format " << internal_format << "\n";
+        return false;
+      }
+      break;
+
+    case KTX_LUMINANCE:
+      format = F_luminance;
+      break;
+
+    case KTX_LUMINANCE_ALPHA:
+      format = F_luminance_alpha;
+      break;
+
+    case KTX_ALPHA:
+      format = F_alpha;
+      break;
+
+    case KTX_STENCIL_INDEX:
+    default:
+      gobj_cat.error()
+        << filename << " has unsupported format " << gl_format << "\n";
+      return false;
+    }
+  }
+
+  TextureType texture_type;
+  if (depth > 0) {
+    texture_type = TT_3d_texture;
+
+  } else if (num_faces > 1) {
+    if (num_faces != 6) {
+      gobj_cat.error()
+        << filename << " has " << num_faces << " cube map faces, expected 6\n";
+      return false;
+    }
+    if (width != height) {
+      gobj_cat.error()
+        << filename << " is cube map, but does not have square dimensions\n";
+      return false;
+    }
+    if (num_array_elements > 0) {
+      depth = num_array_elements * 6;
+      texture_type = TT_cube_map_array;
+    } else {
+      depth = 6;
+      texture_type = TT_cube_map;
+    }
+
+  } else if (height > 0) {
+    if (num_array_elements > 0) {
+      depth = num_array_elements;
+      texture_type = TT_2d_texture_array;
+    } else {
+      depth = 1;
+      texture_type = TT_2d_texture;
+    }
+
+  } else if (width > 0) {
+    depth = 1;
+    if (num_array_elements > 0) {
+      height = num_array_elements;
+      texture_type = TT_1d_texture_array;
+    } else {
+      height = 1;
+      texture_type = TT_1d_texture;
+    }
+
+  } else {
+    gobj_cat.error()
+      << filename << " has zero size\n";
+    return false;
+  }
+
+  do_setup_texture(cdata, texture_type, width, height, depth, type, format);
+
+  cdata->_orig_file_x_size = cdata->_x_size;
+  cdata->_orig_file_y_size = cdata->_y_size;
+  cdata->_compression = compression;
+  cdata->_ram_image_compression = compression;
+
+  if (!header_only) {
+    bool generate_mipmaps = false;
+    if (num_mipmap_levels == 0) {
+      generate_mipmaps = true;
+      num_mipmap_levels = 1;
+    }
+
+    for (uint32_t n = 0; n < num_mipmap_levels; ++n) {
+      uint32_t image_size;
+      if (big_endian) {
+        image_size = ktx.get_be_uint32();
+      } else {
+        image_size = ktx.get_uint32();
+      }
+      PTA_uchar image;
+
+      if (compression == CM_off) {
+        uint32_t row_size = do_get_expected_mipmap_x_size(cdata, (int)n) * cdata->_num_components * cdata->_component_width;
+        uint32_t num_rows = do_get_expected_mipmap_y_size(cdata, (int)n) * do_get_expected_mipmap_z_size(cdata, (int)n);
+        uint32_t row_padded = (row_size + 3) & ~3;
+
+        if (image_size == row_size * num_rows) {
+          if (row_padded != row_size) {
+            // Someone tightly packed the image.  This is invalid, but because
+            // we like it tightly packed too, we'll read it anyway.
+            gobj_cat.warning()
+              << filename << " does not have proper row padding for mipmap "
+                             "level " << n << "\n";
+          }
+          image = PTA_uchar::empty_array(image_size);
+          ktx.extract_bytes(image.p(), image_size);
+
+        } else if (image_size != row_padded * num_rows) {
+          gobj_cat.error()
+            << filename << " has invalid image size " << image_size
+            << " for mipmap level " << n << " (expected "
+            << row_padded * num_rows << ")\n";
+          return false;
+
+        } else {
+          // Read it row by row.
+          image = PTA_uchar::empty_array(row_size * num_rows);
+          uint32_t skip = row_padded - row_size;
+          unsigned char *p = image.p();
+          for (uint32_t row = 0; row < num_rows; ++row) {
+            ktx.extract_bytes(p, row_size);
+            ktx.skip_bytes(skip);
+            p += row_size;
+          }
+        }
+
+        // Swap red and blue channels if necessary to match Panda conventions.
+        if (swap_bgr) {
+          unsigned char *begin = image.p();
+          const unsigned char *end = image.p() + image.size();
+          size_t skip = cdata->_num_components;
+          nassertr(skip == 3 || skip == 4, false);
+
+          switch (cdata->_component_width) {
+          case 1:
+            for (unsigned char *p = begin; p < end; p += skip) {
+              swap(p[0], p[2]);
+            }
+            break;
+          case 2:
+            for (short *p = (short *)begin; p < (short *)end; p += skip) {
+              swap(p[0], p[2]);
+            }
+            break;
+          case 4:
+            for (int *p = (int *)begin; p < (int *)end; p += skip) {
+              swap(p[0], p[2]);
+            }
+            break;
+          default:
+            nassertr(false, false);
+            break;
+          }
+        }
+
+        do_set_ram_mipmap_image(cdata, (int)n, MOVE(image),
+          row_size * do_get_expected_mipmap_y_size(cdata, (int)n));
+
+      } else {
+        // Compressed image.  We'll trust that the file has the right size.
+        image = PTA_uchar::empty_array(image_size);
+        ktx.extract_bytes(image.p(), image_size);
+        do_set_ram_mipmap_image(cdata, (int)n, MOVE(image), image_size / depth);
+      }
+
+      ktx.skip_bytes(3 - ((image_size + 3) & 3));
+    }
+
+    cdata->_has_read_pages = true;
+    cdata->_has_read_mipmaps = true;
+    cdata->_num_mipmap_levels_read = cdata->_ram_images.size();
+
+    if (generate_mipmaps) {
+      do_generate_ram_mipmap_images(cdata, false);
+    }
+  }
+
+  if (in.fail() || in.eof()) {
+    gobj_cat.error()
+      << filename << ": truncated KTX file.\n";
     return false;
   }
 
@@ -4607,6 +5644,27 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
       }
       break;
     }
+
+  case T_unsigned_int:
+    {
+      // Note: there are no 32-bit UNORM textures.  Therefore, we don't do any
+      // normalization here, either.
+      switch (cdata->_num_components) {
+      case 2:
+        ((unsigned int *)into)[1] = (unsigned int)cdata->_clear_color[1];
+      case 1:
+        ((unsigned int *)into)[0] = (unsigned int)cdata->_clear_color[0];
+        break;
+      case 4:
+        ((unsigned int *)into)[3] = (unsigned int)cdata->_clear_color[3];
+      case 3: // BGR <-> RGB
+        ((unsigned int *)into)[0] = (unsigned int)cdata->_clear_color[2];
+        ((unsigned int *)into)[1] = (unsigned int)cdata->_clear_color[1];
+        ((unsigned int *)into)[2] = (unsigned int)cdata->_clear_color[0];
+        break;
+      }
+      break;
+    }
   }
 
   return cdata->_num_components * cdata->_component_width;
@@ -4692,18 +5750,24 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     case Texture::F_rgb10_a2:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt1)) {
         compression = CM_dxt1;
-      } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt3)) {
+      } else if (gsg->get_supports_compressed_texture_format(CM_dxt3)) {
         compression = CM_dxt3;
-      } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt5)) {
+      } else if (gsg->get_supports_compressed_texture_format(CM_dxt5)) {
         compression = CM_dxt5;
+      } else if (gsg->get_supports_compressed_texture_format(CM_etc2)) {
+        compression = CM_etc2;
+      } else if (gsg->get_supports_compressed_texture_format(CM_etc1)) {
+        compression = CM_etc1;
       }
       break;
 
     case Texture::F_rgba4:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt3)) {
         compression = CM_dxt3;
-      } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt5)) {
+      } else if (gsg->get_supports_compressed_texture_format(CM_dxt5)) {
         compression = CM_dxt5;
+      } else if (gsg->get_supports_compressed_texture_format(CM_etc2)) {
+        compression = CM_etc2;
       }
       break;
 
@@ -4714,6 +5778,8 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     case Texture::F_rgba32:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt5)) {
         compression = CM_dxt5;
+      } else if (gsg->get_supports_compressed_texture_format(CM_etc2)) {
+        compression = CM_etc2;
       }
       break;
 
@@ -4721,6 +5787,8 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     case Texture::F_rg:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_rgtc)) {
         compression = CM_rgtc;
+      } else if (gsg->get_supports_compressed_texture_format(CM_eac)) {
+        compression = CM_eac;
       }
       break;
 
@@ -4947,8 +6015,8 @@ do_compress_ram_image_bc4(const RamImage &uncompressed_image,
   // of the secondary interpolation mode supported by BC4.  This is not
   // important for most textures, but it may be added in the future.
 
-  nassertv(x_blocks * y_blocks * 4 * 4 <= uncompressed_image._page_size);
-  nassertv(x_size * y_size == uncompressed_image._page_size);
+  nassertv((size_t)x_blocks * (size_t)y_blocks * 4 * 4 <= uncompressed_image._page_size);
+  nassertv((size_t)x_size * (size_t)y_size == uncompressed_image._page_size);
 
   static const int remap[] = {1, 7, 6, 5, 4, 3, 2, 0};
 
@@ -5046,8 +6114,8 @@ do_compress_ram_image_bc5(const RamImage &uncompressed_image,
   // BC5 uses the same compression algorithm as BC4, except repeated for two
   // channels.
 
-  nassertv(x_blocks * y_blocks * 4 * 4 * 2 <= uncompressed_image._page_size);
-  nassertv(stride * y_size == uncompressed_image._page_size);
+  nassertv((size_t)x_blocks * (size_t)y_blocks * 4 * 4 * 2 <= uncompressed_image._page_size);
+  nassertv((size_t)stride * (size_t)y_size == uncompressed_image._page_size);
 
   static const int remap[] = {1, 7, 6, 5, 4, 3, 2, 0};
 
@@ -5706,6 +6774,10 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type,
   case TT_buffer_texture:
     nassertv(y_size == 1 && z_size == 1);
     break;
+
+  case TT_1d_texture_array:
+    nassertv(z_size == 1);
+    break;
   }
 
   if (texture_type != TT_2d_texture) {
@@ -5822,14 +6894,9 @@ do_set_component_type(CData *cdata, Texture::ComponentType component_type) {
     break;
 
   case T_float:
-    cdata->_component_width = 4;
-    break;
-
   case T_unsigned_int_24_8:
-    cdata->_component_width = 4;
-    break;
-
   case T_int:
+  case T_unsigned_int:
     cdata->_component_width = 4;
     break;
   }
@@ -6344,6 +7411,9 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
  */
 int Texture::
 do_get_expected_num_mipmap_levels(const CData *cdata) const {
+  if (cdata->_texture_type == Texture::TT_buffer_texture) {
+    return 1;
+  }
   int size = max(cdata->_x_size, cdata->_y_size);
   if (cdata->_texture_type == Texture::TT_3d_texture) {
     size = max(size, cdata->_z_size);
@@ -6472,7 +7542,12 @@ do_generate_ram_mipmap_images(CData *cdata, bool allow_recompress) {
     // Now try to get the uncompressed source image.
     do_get_uncompressed_ram_image(cdata);
 
-    nassertv(cdata->_ram_image_compression == CM_off);
+    if (cdata->_ram_image_compression != CM_off) {
+      gobj_cat.error()
+        << "Cannot generate mipmap levels for image with compression "
+        << cdata->_ram_image_compression << "\n";
+      return;
+    }
   }
 
   do_clear_ram_mipmap_images(cdata);
@@ -8970,6 +10045,7 @@ make_this_from_bam(const FactoryParams &params) {
       case TT_buffer_texture:
       case TT_1d_texture:
       case TT_2d_texture:
+      case TT_1d_texture_array:
         if (alpha_filename.empty()) {
           me = TexturePool::load_texture(filename, primary_file_num_channels,
                                          has_read_mipmaps, options);

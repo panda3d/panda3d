@@ -278,6 +278,15 @@ class BufferViewer(DirectObject):
         self.analyzeTextureSet(self.exclude, exclude)
         self.analyzeTextureSet(self.include, include)
 
+        # Use a custom sampler when applying the textures.  This fixes
+        # wrap issues and prevents depth compare on shadow maps.
+        sampler = SamplerState()
+        sampler.setWrapU(SamplerState.WM_clamp)
+        sampler.setWrapV(SamplerState.WM_clamp)
+        sampler.setWrapW(SamplerState.WM_clamp)
+        sampler.setMinfilter(SamplerState.FT_linear)
+        sampler.setMagfilter(SamplerState.FT_nearest)
+
         # Generate a list of cards and the corresponding windows.
         cards = []
         wins = []
@@ -290,7 +299,7 @@ class BufferViewer(DirectObject):
                         for face in range(6):
                             self.cardmaker.setUvRangeCube(face)
                             card = NodePath(self.cardmaker.generate())
-                            card.setTexture(tex)
+                            card.setTexture(tex, sampler)
                             cards.append(card)
                     elif (tex.getTextureType() == Texture.TT2dTextureArray):
                         for layer in range(tex.getZSize()):
@@ -301,11 +310,11 @@ class BufferViewer(DirectObject):
                             # the fixed-function pipeline, so we need to
                             # enable the shader generator to view them.
                             card.setShaderAuto()
-                            card.setTexture(tex)
+                            card.setTexture(tex, sampler)
                             cards.append(card)
                     else:
                         card = win.getTextureCard()
-                        card.setTexture(tex)
+                        card.setTexture(tex, sampler)
                         cards.append(card)
                     wins.append(win)
                     exclude[tex] = 1

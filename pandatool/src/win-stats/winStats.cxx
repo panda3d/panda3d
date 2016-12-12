@@ -15,7 +15,6 @@
 
 #include "winStatsServer.h"
 #include "config_pstats.h"
-#include "pystub.h"
 
 #include <windows.h>
 

@@ -235,6 +235,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_basic_shaders = false;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
+  _supports_compute_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
 
@@ -1362,8 +1363,18 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       }
     }
 
-    // TODO: dummy light
-    nassertr(false, &LMatrix4::ident_mat());
+    // Apply the default OpenGL lights otherwise.
+    // Special exception for light 0, which defaults to white.
+    if (index == 0) {
+      string basename = name->get_basename();
+      if (basename == "color" || basename == "diffuse") {
+        t.set_row(3, _light_color_scale);
+        return &t;
+      } else if (basename == "specular") {
+        return &LMatrix4::ones_mat();
+      }
+    }
+    return fetch_specified_member(NodePath(), name, t);
   }
   default:
     nassertr(false /*should never get here*/, &LMatrix4::ident_mat());
@@ -1394,8 +1405,16 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   static const CPT_InternalName IN_quadraticAttenuation("quadraticAttenuation");
   static const CPT_InternalName IN_shadowMatrix("shadowMatrix");
 
+  PandaNode *node = NULL;
+  if (!np.is_empty()) {
+    node = np.node();
+  }
+
   if (attrib == IN_color) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::ident_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
     LColor c = light->get_color();
     c.componentwise_mult(_light_color_scale);
@@ -1403,9 +1422,12 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     return &t;
 
   } else if (attrib == IN_ambient) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::ident_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
-    if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+    if (node->is_of_type(AmbientLight::get_class_type())) {
       LColor c = light->get_color();
       c.componentwise_mult(_light_color_scale);
       t.set_row(3, c);
@@ -1416,9 +1438,12 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     return &t;
 
   } else if (attrib == IN_diffuse) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::ident_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
-    if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+    if (node->is_of_type(AmbientLight::get_class_type())) {
       // Ambient light has no diffuse color.
       t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
     } else {
@@ -1429,19 +1454,25 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     return &t;
 
   } else if (attrib == IN_specular) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::ident_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
     t.set_row(3, light->get_specular_color());
     return &t;
 
   } else if (attrib == IN_position) {
-    if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+    if (np.is_empty()) {
+      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0);
+      return &t;
+    } else if (node->is_of_type(AmbientLight::get_class_type())) {
       // Ambient light has no position.
       t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
       return &t;
-    } else if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+    } else if (node->is_of_type(DirectionalLight::get_class_type())) {
       DirectionalLight *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      DCAST_INTO_R(light, node, &LMatrix4::ident_mat());
 
       CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
       LVector3 dir = -(light->get_direction() * transform->get_mat());
@@ -1450,7 +1481,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       return &t;
     } else {
       LightLensNode *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      DCAST_INTO_R(light, node, &LMatrix4::ident_mat());
       Lens *lens = light->get_lens();
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
@@ -1465,13 +1496,16 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     }
 
   } else if (attrib == IN_halfVector) {
-    if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+    if (np.is_empty()) {
+      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0);
+      return &t;
+    } else if (node->is_of_type(AmbientLight::get_class_type())) {
       // Ambient light has no half-vector.
       t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
       return &t;
-    } else if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+    } else if (node->is_of_type(DirectionalLight::get_class_type())) {
       DirectionalLight *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      DCAST_INTO_R(light, node, &LMatrix4::ident_mat());
 
       CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
       LVector3 dir = -(light->get_direction() * transform->get_mat());
@@ -1483,7 +1517,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       return &t;
     } else {
       LightLensNode *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      DCAST_INTO_R(light, node, &LMatrix4::ident_mat());
       Lens *lens = light->get_lens();
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
@@ -1501,13 +1535,16 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     }
 
   } else if (attrib == IN_spotDirection) {
-    if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+    if (node == (PandaNode *)NULL) {
+      t.set_row(3, LVector3(0.0f, 0.0f, -1.0f));
+      return &t;
+    } else if (node->is_of_type(AmbientLight::get_class_type())) {
       // Ambient light has no spot direction.
       t.set_row(3, LVector3(0.0f, 0.0f, 0.0f));
       return &t;
     } else {
       LightLensNode *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      DCAST_INTO_R(light, node, &LMatrix4::ident_mat());
       Lens *lens = light->get_lens();
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
@@ -1522,9 +1559,10 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     }
 
   } else if (attrib == IN_spotCutoff) {
-    if (np.node()->is_of_type(Spotlight::get_class_type())) {
+    if (node != (PandaNode *)NULL &&
+        node->is_of_type(Spotlight::get_class_type())) {
       LightLensNode *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      DCAST_INTO_R(light, node, &LMatrix4::ident_mat());
       Lens *lens = light->get_lens();
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
@@ -1538,9 +1576,10 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     }
 
   } else if (attrib == IN_spotCosCutoff) {
-    if (np.node()->is_of_type(Spotlight::get_class_type())) {
+    if (node != (PandaNode *)NULL &&
+        node->is_of_type(Spotlight::get_class_type())) {
       LightLensNode *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      DCAST_INTO_R(light, node, &LMatrix4::ident_mat());
       Lens *lens = light->get_lens();
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
@@ -1552,50 +1591,71 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       t.set_row(3, LVecBase4(-1));
       return &t;
     }
+
   } else if (attrib == IN_spotExponent) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::zeros_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
 
     t.set_row(3, LVecBase4(light->get_exponent()));
     return &t;
 
   } else if (attrib == IN_attenuation) {
-    Light *light = np.node()->as_light();
-    nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
+    if (node != (PandaNode *)NULL) {
+      Light *light = node->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
 
-    t.set_row(3, LVecBase4(light->get_attenuation(), 0));
+      t.set_row(3, LVecBase4(light->get_attenuation(), 0));
+    } else {
+      t.set_row(3, LVecBase4(1, 0, 0, 0));
+    }
     return &t;
 
   } else if (attrib == IN_constantAttenuation) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::ones_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
 
     t.set_row(3, LVecBase4(light->get_attenuation()[0]));
     return &t;
 
   } else if (attrib == IN_linearAttenuation) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::zeros_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
 
     t.set_row(3, LVecBase4(light->get_attenuation()[1]));
     return &t;
 
   } else if (attrib == IN_quadraticAttenuation) {
-    Light *light = np.node()->as_light();
+    if (node == (PandaNode *)NULL) {
+      return &LMatrix4::zeros_mat();
+    }
+    Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
 
     t.set_row(3, LVecBase4(light->get_attenuation()[2]));
     return &t;
 
   } else if (attrib == IN_shadowMatrix) {
-    LensNode *lnode;
-    DCAST_INTO_R(lnode, np.node(), &LMatrix4::ident_mat());
-    Lens *lens = lnode->get_lens();
-
     static const LMatrix4 biasmat(0.5f, 0.0f, 0.0f, 0.0f,
                                   0.0f, 0.5f, 0.0f, 0.0f,
                                   0.0f, 0.0f, 0.5f, 0.0f,
                                   0.5f, 0.5f, 0.5f, 1.0f);
+
+    if (node == (PandaNode *)NULL) {
+      return &biasmat;
+    }
+
+    LensNode *lnode;
+    DCAST_INTO_R(lnode, node, &LMatrix4::ident_mat());
+    Lens *lens = lnode->get_lens();
 
     t = get_external_transform()->get_mat() *
       get_scene()->get_camera_transform()->get_mat() *
@@ -2059,8 +2119,6 @@ flush_timer_queries() {
     }
 
     _last_num_queried = first;
-
-    int frame_index = ClockObject::get_global_clock()->get_frame_count();
 
     for (int i = 0; i < first; ++i) {
       CPT(TimerQueryContext) query = _pending_timer_queries[i];

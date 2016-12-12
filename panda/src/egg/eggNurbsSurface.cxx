@@ -18,6 +18,14 @@
 TypeHandle EggNurbsSurface::_type_handle;
 
 /**
+ * Makes a copy of this object.
+ */
+EggNurbsSurface *EggNurbsSurface::
+make_copy() const {
+  return new EggNurbsSurface(*this);
+}
+
+/**
  * Prepares a new surface definition with the indicated order and number of
  * knots in each dimension.  This also implies a particular number of vertices
  * in each dimension as well (the number of knots minus the order), but it is

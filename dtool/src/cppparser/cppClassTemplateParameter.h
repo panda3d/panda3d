@@ -37,6 +37,7 @@ public:
 
   CPPIdentifier *_ident;
   CPPType *_default_type;
+  bool _packed;
 
 protected:
   virtual bool is_equal(const CPPDeclaration *other) const;

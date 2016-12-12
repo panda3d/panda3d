@@ -175,7 +175,6 @@ __getitem__(size_t n) const {
   return (*this->_this)[n];
 }
 
-#if PY_VERSION_HEX >= 0x02060000
 /**
  * This is used to implement the buffer protocol, in order to allow efficient
  * access to the array data through a Python multiview object.
@@ -183,7 +182,7 @@ __getitem__(size_t n) const {
 template<class Element>
 INLINE int Extension<PointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-
+#if PY_VERSION_HEX >= 0x02060000
   const char *format = get_format_code(Element);
   if (format == NULL) {
     // Not supported.
@@ -222,6 +221,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->internal = (void*) this->_this;
 
   return 0;
+#else
+  return -1;
+#endif
 }
 
 /**
@@ -230,13 +232,14 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
+#if PY_VERSION_HEX >= 0x02060000
   // Note: PyBuffer_Release automatically decrements view->obj.
-
   if (view->internal != NULL) {
     // Oh, right, let's not forget to unref this.
     unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = NULL;
   }
+#endif
 }
 
 /**
@@ -246,7 +249,7 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
 template<class Element>
 INLINE int Extension<ConstPointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-
+#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
     PyErr_SetString(PyExc_BufferError,
                     "Object is not writable.");
@@ -291,6 +294,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->internal = (void*) this->_this;
 
   return 0;
+#else
+  return -1;
+#endif
 }
 
 /**
@@ -299,12 +305,12 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 template<class Element>
 INLINE void Extension<ConstPointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
+#if PY_VERSION_HEX >= 0x02060000
   // Note: PyBuffer_Release automatically decrements obj->view.
-
   if (view->internal != NULL) {
     // Oh, right, let's not forget to unref this.
     unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = NULL;
   }
+#endif
 }
-#endif  // PY_VERSION_HEX

@@ -29,11 +29,9 @@
 template<>
 class Extension<GeomVertexArrayData> : public ExtensionBase<GeomVertexArrayData> {
 public:
-#if PY_VERSION_HEX >= 0x02060000
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   void __releasebuffer__(PyObject *self, Py_buffer *view) const;
-#endif
 };
 
 /**

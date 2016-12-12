@@ -81,7 +81,7 @@ FNAME(smooth_untextured) (ZBuffer *zb,
 
 #define EARLY_OUT()                                     \
   {                                                     \
-    int c0, c1, c2;                                     \
+    unsigned int c0, c1, c2;                            \
     c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);     \
     c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);     \
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
@@ -223,7 +223,7 @@ FNAME(smooth_textured) (ZBuffer *zb,
 
 #define EARLY_OUT()                                     \
   {                                                     \
-    int c0, c1, c2;                                     \
+    unsigned int c0, c1, c2;                            \
     c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);     \
     c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);     \
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \

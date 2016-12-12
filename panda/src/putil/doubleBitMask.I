@@ -700,7 +700,7 @@ operator ^= (const DoubleBitMask<BMType> &other) {
 template<class BMType>
 INLINE void DoubleBitMask<BMType>::
 operator <<= (int shift) {
-  _hi = (_hi << shift) | ((_lo >> half_bits - shift) & BitMaskType::lower_on(shift));
+  _hi = (_hi << shift) | ((_lo >> (half_bits - shift)) & BitMaskType::lower_on(shift));
   _lo <<= shift;
 }
 
@@ -710,7 +710,7 @@ operator <<= (int shift) {
 template<class BMType>
 INLINE void DoubleBitMask<BMType>::
 operator >>= (int shift) {
-  _lo = (_lo >> shift) | ((_hi & BitMaskType::lower_on(shift)) << half_bits - shift);
+  _lo = (_lo >> shift) | ((_hi & BitMaskType::lower_on(shift)) << (half_bits - shift));
   _hi >>= shift;
 }
 

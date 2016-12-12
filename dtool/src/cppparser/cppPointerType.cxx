@@ -14,6 +14,9 @@
 #include "cppPointerType.h"
 #include "cppFunctionType.h"
 #include "cppIdentifier.h"
+#include "cppArrayType.h"
+#include "cppStructType.h"
+#include "cppSimpleType.h"
 
 /**
  *
@@ -89,11 +92,73 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPPointerType::
+is_standard_layout() const {
+  return true;
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPPointerType::
 is_trivial() const {
   return true;
+}
+
+/**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPPointerType::
+is_constructible(const CPPType *given_type) const {
+  given_type = ((CPPType *)given_type)->remove_reference()->remove_cv();
+
+  // Can convert from compatible pointer or array type.
+  CPPType *other_target;
+  switch (given_type->get_subtype()) {
+  case ST_array:
+    other_target = given_type->as_array_type()->_element_type;
+    break;
+
+  case ST_pointer:
+    other_target = given_type->as_pointer_type()->_pointing_at;
+    break;
+
+  case ST_simple:
+    // Can initialize from nullptr.
+    return given_type->as_simple_type()->_type == CPPSimpleType::T_nullptr;
+
+  default:
+    return false;
+  }
+
+  // Can't convert const to non-const pointer.
+  if (other_target->is_const() && !_pointing_at->is_const()) {
+    return false;
+  }
+
+  // Are we pointing to the same type?  That's always OK.
+  const CPPType *a = _pointing_at->remove_cv();
+  const CPPType *b = other_target->remove_cv();
+  if (a == b || *a == *b) {
+    return true;
+  }
+
+  // Can initialize void pointer with any pointer.
+  const CPPSimpleType *simple_type = a->as_simple_type();
+  if (simple_type != NULL) {
+    return simple_type->_type == CPPSimpleType::T_void;
+  }
+
+  // Can initialize from derived class pointer.
+  const CPPStructType *a_struct = a->as_struct_type();
+  const CPPStructType *b_struct = b->as_struct_type();
+  if (a_struct != NULL && b_struct != NULL) {
+    return a_struct->is_base_of(b_struct);
+  }
+
+  return false;
 }
 
 /**

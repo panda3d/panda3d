@@ -155,7 +155,7 @@ private:
 
   static void split_whitespace(string &a, string &b, const string &c);
 
-#if defined(SSL_097) && !defined(NDEBUG)
+#ifndef NDEBUG
   static void ssl_msg_callback(int write_p, int version, int content_type,
                                const void *buf, size_t len, SSL *ssl,
                                void *arg);

@@ -673,8 +673,6 @@ show_results(int num_fragments, const Geom *geom,
      TransparencyAttrib::make(TransparencyAttrib::M_alpha),
      ColorAttrib::make_flat(color));
 
-  GraphicsStateGuardian *gsg = _buffer->get_gsg();
-
   CullableObject *internal_viz =
     new CullableObject(geom, state, internal_transform);
   _internal_cull_handler->record_object(internal_viz, _internal_trav);

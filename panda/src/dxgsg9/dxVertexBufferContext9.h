@@ -19,17 +19,17 @@
 #include "vertexBufferContext.h"
 #include "deletedChain.h"
 
-class CLP(GraphicsStateGuardian);
+class DXGraphicsStateGuardian9;
 
 /**
  * Caches a GeomVertexArrayData in the DirectX device as a vertex buffer.
  */
-class EXPCL_PANDADX CLP(VertexBufferContext) : public VertexBufferContext {
+class EXPCL_PANDADX DXVertexBufferContext9 : public VertexBufferContext {
 public:
-  CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
+  DXVertexBufferContext9(DXGraphicsStateGuardian9 *dxgsg,
                            PreparedGraphicsObjects *pgo,
                            GeomVertexArrayData *data);
-  ALLOC_DELETED_CHAIN(CLP(VertexBufferContext));
+  ALLOC_DELETED_CHAIN(DXVertexBufferContext9);
 
   virtual void evict_lru();
 

@@ -984,7 +984,10 @@ class Freezer:
             try:
                 self.__loadModule(mdef)
             except ImportError as ex:
-                print("Unknown module: %s (%s)" % (mdef.moduleName, str(ex)))
+                message = "Unknown module: %s" % (mdef.moduleName)
+                if str(ex) != "No module named " + str(mdef.moduleName):
+                    message += " (%s)" % (ex)
+                print(message)
 
         # Also attempt to import any implicit modules.  If any of
         # these fail to import, we don't really care.

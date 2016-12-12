@@ -70,23 +70,25 @@
 #else
 // #pragma message("VC 6.0")
 #endif
+#endif  /* WIN32_VC */
+
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
 
 // Use NODEFAULT to optimize a switch() stmt to tell MSVC to automatically go
 // to the final untested case after it has failed all the other cases (i.e.
 // 'assume at least one of the cases is always true')
 #ifdef _DEBUG
-# define NODEFAULT  default: assert(0);
+#define NODEFAULT  default: assert(0); break;
+#elif defined(_MSC_VER)
+#define NODEFAULT  default: __assume(0);   // special VC keyword
+#elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) || __has_builtin(__builtin_unreachable)
+#define NODEFAULT  default: __builtin_unreachable();
 #else
-# define NODEFAULT  default: __assume(0);   // special VC keyword
+#define NODEFAULT
 #endif
 
-#else /* if !WIN32_VC */
-#ifdef _DEBUG
-# define NODEFAULT   default: assert(0);
-#else
-# define NODEFAULT
-#endif
-#endif  /* WIN32_VC */
 
 /*
   include win32 defns for everything up to WinServer2003, and assume

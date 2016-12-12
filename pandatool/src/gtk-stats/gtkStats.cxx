@@ -15,7 +15,6 @@
 #include "gtkStats.h"
 #include "gtkStatsServer.h"
 #include "config_pstats.h"
-#include "pystub.h"
 
 GtkWidget *main_window;
 static GtkStatsServer *server = NULL;
@@ -53,9 +52,6 @@ timer(gpointer data) {
 
 int
 main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   gtk_init(&argc, &argv);
 
   main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);

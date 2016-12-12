@@ -129,7 +129,7 @@ node_ref() const {
 #endif
 
   ref();
-  AtomicAdjust::inc(((NodeReferenceCount *)this)->_node_ref_count);
+  AtomicAdjust::inc(_node_ref_count);
 }
 
 /**
@@ -174,7 +174,7 @@ node_unref_only() const {
   // you can't use PointerTo's?
   nassertv(_node_ref_count > 0);
 
-  AtomicAdjust::dec(((NodeReferenceCount *)this)->_node_ref_count);
+  AtomicAdjust::dec(_node_ref_count);
 }
 
 /**

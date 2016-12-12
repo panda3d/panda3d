@@ -10,13 +10,9 @@
  */
 
 #include "download_utils.h"
-#include "pystub.h"
 
 int
 main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   if (argc < 2) {
     cerr << "Usage: check_crc <file>" << endl;
     return 1;

@@ -34,12 +34,26 @@ public:
 
   PyObject *get_tag_keys() const;
 
-  void set_python_tag(const string &key, PyObject *value);
-  PyObject *get_python_tag(const string &key) const;
-  bool has_python_tag(const string &key) const;
-  void clear_python_tag(const string &key);
-  void get_python_tag_keys(vector_string &keys) const;
+  PyObject *get_python_tags();
+  int set_python_tag(PyObject *keys, PyObject *value);
+  PyObject *get_python_tag(PyObject *keys) const;
+  bool has_python_tag(PyObject *keys) const;
+  void clear_python_tag(PyObject *keys);
   PyObject *get_python_tag_keys() const;
+
+  // This is defined to implement cycle detection in Python tags.
+  int __traverse__(visitproc visit, void *arg);
+
+private:
+  // This is what actually stores the Python tags.
+  class PythonTagDataImpl : public PandaNode::PythonTagData {
+  public:
+    PythonTagDataImpl() : _dict(PyDict_New()) {};
+    PythonTagDataImpl(const PythonTagDataImpl &copy) : _dict(PyDict_Copy(copy._dict)) {};
+    virtual ~PythonTagDataImpl();
+
+    PyObject *_dict;
+  };
 };
 
 #endif  // HAVE_PYTHON

@@ -17,7 +17,6 @@
 #include "externalThread.h"
 #include "genericThread.h"
 #include "thread.h"
-#include "pythonThread.h"
 #include "pandaSystem.h"
 
 #include "dconfig.h"
@@ -73,9 +72,6 @@ init_libpipeline() {
   ExternalThread::init_type();
   GenericThread::init_type();
   Thread::init_type();
-#ifdef HAVE_PYTHON
-  PythonThread::init_type();
-#endif  // HAVE_PYTHON
 
 #ifdef HAVE_THREADS
  {

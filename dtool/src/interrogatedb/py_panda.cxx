@@ -816,6 +816,7 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
   int cmpval = DTOOL_PyObject_Compare(v1, v2);
   bool result;
   switch (op) {
+  NODEFAULT
   case Py_LT:
     result = (cmpval < 0);
     break;
@@ -833,6 +834,7 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
     break;
   case Py_GE:
     result = (cmpval >= 0);
+    break;
   }
   return PyBool_FromLong(result);
 }

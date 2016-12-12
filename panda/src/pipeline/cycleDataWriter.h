@@ -49,6 +49,11 @@ public:
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataLockedReader<CycleDataType> &take_from);
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataLockedReader<CycleDataType> &take_from, bool force_to_0);
 
+#if defined(USE_MOVE_SEMANTICS) && defined(DO_PIPELINING)
+  INLINE CycleDataWriter(CycleDataWriter<CycleDataType> &&from) NOEXCEPT;
+  INLINE void operator = (CycleDataWriter<CycleDataType> &&from) NOEXCEPT;
+#endif
+
   INLINE ~CycleDataWriter();
 
   INLINE CycleDataType *operator -> ();

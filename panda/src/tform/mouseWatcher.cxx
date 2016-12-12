@@ -1474,10 +1474,10 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         << " seconds of inactivity; releasing held buttons.\n";
     }
     {
-      for (int i = 0; i < _current_buttons_down.get_num_bits(); ++i) {
+      for (size_t i = 0; i < _current_buttons_down.get_num_bits(); ++i) {
         if (_current_buttons_down.get_bit(i)) {
-          release(ButtonHandle(i));
-          new_button_events.add_event(ButtonEvent(ButtonHandle(i), ButtonEvent::T_up));
+          release(ButtonHandle((int)i));
+          new_button_events.add_event(ButtonEvent(ButtonHandle((int)i), ButtonEvent::T_up));
         }
       }
     }
@@ -1488,10 +1488,10 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   case IS_inactive_to_active:
     // "Press" all of the buttons we "released" before.
     {
-      for (int i = 0; i < _current_buttons_down.get_num_bits(); ++i) {
+      for (size_t i = 0; i < _current_buttons_down.get_num_bits(); ++i) {
         if (_current_buttons_down.get_bit(i)) {
-          press(ButtonHandle(i), false);
-          new_button_events.add_event(ButtonEvent(ButtonHandle(i), ButtonEvent::T_down));
+          press(ButtonHandle((int)i), false);
+          new_button_events.add_event(ButtonEvent(ButtonHandle((int)i), ButtonEvent::T_down));
         }
       }
     }

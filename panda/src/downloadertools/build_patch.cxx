@@ -10,7 +10,6 @@
  */
 
 #include "pandabase.h"
-#include "pystub.h"
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 #include "patchfile.h"
@@ -51,9 +50,6 @@ help() {
 
 int
 main(int argc, char **argv) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   Filename patch_file;
   bool complete_file = false;
   int footprint_length = 0;

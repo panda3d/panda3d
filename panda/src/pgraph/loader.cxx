@@ -431,8 +431,6 @@ save_file(const Filename &filename, const LoaderOptions &options,
     return false;
   }
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
   bool result = try_save_file(this_filename, this_options, node, requested_type);
   if (!result) {
     if (report_errors) {
@@ -451,10 +449,7 @@ save_file(const Filename &filename, const LoaderOptions &options,
 bool Loader::
 try_save_file(const Filename &pathname, const LoaderOptions &options,
               PandaNode *node, LoaderFileType *requested_type) const {
-  bool report_errors = ((options.get_flags() & LoaderOptions::LF_report_errors) != 0 || loader_cat.is_debug());
-
-  bool result = requested_type->save_file(pathname, options, node);
-  return result;
+  return requested_type->save_file(pathname, options, node);
 }
 
 /**

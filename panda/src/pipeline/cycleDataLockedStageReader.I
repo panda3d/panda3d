@@ -64,6 +64,38 @@ operator = (const CycleDataLockedStageReader<CycleDataType> &copy) {
   _cycler->increment_read(_pointer);
 }
 
+#ifdef USE_MOVE_SEMANTICS
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE CycleDataLockedStageReader<CycleDataType>::
+CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) NOEXCEPT :
+  _cycler(from._cycler),
+  _current_thread(from._current_thread),
+  _pointer(from._pointer),
+  _stage(from._stage)
+{
+  from._pointer = NULL;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE void CycleDataLockedStageReader<CycleDataType>::
+operator = (CycleDataLockedStageReader<CycleDataType> &&from) NOEXCEPT {
+  nassertv(_pointer == (CycleDataType *)NULL);
+  nassertv(_current_thread == from._current_thread);
+
+  _cycler = from._cycler;
+  _pointer = from._pointer;
+  _stage = from._stage;
+
+  from._pointer = NULL;
+}
+#endif  // USE_MOVE_SEMANTICS
+
 /**
  *
  */

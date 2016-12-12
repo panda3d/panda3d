@@ -33,6 +33,7 @@ class BulletShape;
 class EXPCL_PANDABULLET BulletBodyNode : public PandaNode {
 protected:
   BulletBodyNode(const char *name);
+  BulletBodyNode(const BulletBodyNode &copy);
 
 PUBLISHED:
   INLINE ~BulletBodyNode();

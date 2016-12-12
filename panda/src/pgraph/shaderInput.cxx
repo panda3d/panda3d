@@ -100,9 +100,15 @@ get_texture() const {
  */
 const SamplerState &ShaderInput::
 get_sampler() const {
-  return (_type == M_texture_sampler)
-    ? DCAST(ParamTextureSampler, _value)->get_sampler()
-    : get_texture()->get_default_sampler();
+  if (_type == M_texture_sampler) {
+    return DCAST(ParamTextureSampler, _value)->get_sampler();
+
+  } else if (!_value.is_null()) {
+    return get_texture()->get_default_sampler();
+
+  } else {
+    return SamplerState::get_default();
+  }
 }
 
 /**

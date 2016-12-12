@@ -15,7 +15,6 @@
 
 #include "pnotify.h"
 #include "multifile.h"
-#include "pystub.h"
 
 #include <algorithm>
 
@@ -580,9 +579,6 @@ cvs_add_or_remove(const string &cvs_command, const vector_string &paths) {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   SoftCVS prog;
   prog.parse_command_line(argc, argv);
   prog.run();

@@ -72,6 +72,8 @@ PUBLISHED:
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
   INLINE ~EggPrimitive();
 
+  virtual EggPrimitive *make_copy() const=0;
+
   virtual EggRenderMode *determine_alpha_mode();
   virtual EggRenderMode *determine_depth_write_mode();
   virtual EggRenderMode *determine_depth_test_mode();

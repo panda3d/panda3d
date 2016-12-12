@@ -21,7 +21,8 @@ CPPClassTemplateParameter::
 CPPClassTemplateParameter(CPPIdentifier *ident, CPPType *default_type) :
   CPPType(CPPFile()),
   _ident(ident),
-  _default_type(default_type)
+  _default_type(default_type),
+  _packed(false)
 {
 }
 
@@ -41,8 +42,14 @@ is_fully_specified() const {
 void CPPClassTemplateParameter::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (complete) {
-    out << "class ";
-    _ident->output(out, scope);
+    out << "class";
+    if (_packed) {
+      out << "...";
+    }
+    if (_ident != NULL) {
+      out << " ";
+      _ident->output(out, scope);
+    }
     if (_default_type) {
       out << " = ";
       _default_type->output(out, indent_level, scope, false);
@@ -82,6 +89,14 @@ is_equal(const CPPDeclaration *other) const {
     return false;
   }
 
+  if (_packed != ot->_packed) {
+    return false;
+  }
+
+  if (_ident == NULL || ot->_ident == NULL) {
+    return _ident == ot->_ident;
+  }
+
   return *_ident == *ot->_ident;
 }
 
@@ -97,6 +112,14 @@ is_less(const CPPDeclaration *other) const {
 
   if (_default_type != ot->_default_type) {
     return _default_type < ot->_default_type;
+  }
+
+  if (_packed != ot->_packed) {
+    return _packed < ot->_packed;
+  }
+
+  if (_ident == NULL || ot->_ident == NULL) {
+    return _ident < ot->_ident;
   }
 
   return *_ident < *ot->_ident;

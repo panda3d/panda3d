@@ -28,13 +28,13 @@
 
 #define DEBUG_SHADER 0
 
-TypeHandle CLP(ShaderContext)::_type_handle;
+TypeHandle DXShaderContext9::_type_handle;
 
 /**
  * xyz
  */
-CLP(ShaderContext)::
-CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
+DXShaderContext9::
+DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
   _vertex_element_array = NULL;
   _vertex_declaration = NULL;
 
@@ -46,7 +46,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   CGcontext context = DCAST(DXGraphicsStateGuardian9, gsg)->_cg_context;
 
   if (s->get_language() == Shader::SL_Cg) {
-
     // Ask the shader to compile itself for us and to give us the resulting Cg
     // program objects.
     if (!s->cg_compile_for(gsg->_shader_caps, context,
@@ -63,7 +62,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
     HRESULT hr;
     bool success = true;
     hr = cgD3D9LoadProgram(_cg_program, FALSE, assembly_flags);
-    if (FAILED (hr)) {
+    if (FAILED(hr)) {
       dxgsg9_cat.error()
         << "cgD3D9LoadProgram failed " << D3DERRORSTRING(hr);
 
@@ -80,46 +79,26 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 /**
  * xyz
  */
-CLP(ShaderContext)::
-~CLP(ShaderContext)() {
+DXShaderContext9::
+~DXShaderContext9() {
   release_resources();
 
-  if ( _vertex_declaration != NULL ) {
+  if (_vertex_declaration != NULL) {
     _vertex_declaration->Release();
     _vertex_declaration = NULL;
   }
 
-  if ( _vertex_element_array != NULL ) {
+  if (_vertex_element_array != NULL) {
     delete _vertex_element_array;
     _vertex_element_array = NULL;
   }
 }
 
-/*
- * int save_file (int size, void *data, char *file_path) { int state; int
- * file_handle; state = false; file_handle = _open (file_path, _O_CREAT |
- * _O_RDWR | _O_TRUNC, _S_IREAD | _S_IWRITE); if (file_handle != -1) { if
- * (_write (file_handle, data, size) == size) { state = true; } _close
- * (file_handle); } return state; } if (dxgsg9_cat.is_debug()) { DEBUG: output
- * the generated program const char *vertex_program; const char
- * *pixel_program; vertex_program = cgGetProgramString (_cg_program[0],
- * CG_COMPILED_PROGRAM); pixel_program = cgGetProgramString (_cg_program[1],
- * CG_COMPILED_PROGRAM); dxgsg9_cat.debug() << vertex_program << "\n";
- * dxgsg9_cat.debug() << pixel_program << "\n"; save the generated program to
- * a file int size; char file_path [512]; char drive[_MAX_DRIVE]; char
- * dir[_MAX_DIR]; char fname[_MAX_FNAME]; char ext[_MAX_EXT]; _splitpath
- * (_name.c_str ( ), drive, dir, fname, ext); size = strlen (vertex_program);
- * sprintf (file_path, "%s.vasm", fname); save_file (size, (void *)
- * vertex_program, file_path); size = strlen (pixel_program); sprintf
- * (file_path, "%s.pasm", fname); save_file (size, (void *) pixel_program,
- * file_path); }
- */
-
 /**
  * Should deallocate all system resources (such as vertex program handles or
  * Cg contexts).
  */
-void CLP(ShaderContext)::
+void DXShaderContext9::
 release_resources() {
 #ifdef HAVE_CG
   if (_cg_program) {
@@ -139,9 +118,8 @@ release_resources() {
  * This function is to be called to enable a new shader.  It also initializes
  * all of the shader's input parameters.
  */
-bool CLP(ShaderContext)::
+bool DXShaderContext9::
 bind(GSG *gsg) {
-
   bool bind_state = false;
 
 #ifdef HAVE_CG
@@ -149,7 +127,7 @@ bind(GSG *gsg) {
     // clear the last cached FVF to make sure the next SetFVF call goes
     // through
 
-    gsg -> _last_fvf = 0;
+    gsg->_last_fvf = 0;
 
     // Pass in k-parameters and transform-parameters
     issue_parameters(gsg, Shader::SSD_general);
@@ -159,7 +137,7 @@ bind(GSG *gsg) {
     // Bind the shaders.
     bind_state = true;
     hr = cgD3D9BindProgram(_cg_program);
-    if (FAILED (hr)) {
+    if (FAILED(hr)) {
       dxgsg9_cat.error() << "cgD3D9BindProgram failed " << D3DERRORSTRING(hr);
 
       CGerror error = cgGetError();
@@ -178,9 +156,8 @@ bind(GSG *gsg) {
 /**
  * This function disables a currently-bound shader.
  */
-void CLP(ShaderContext)::
+void DXShaderContext9::
 unbind(GSG *gsg) {
-
 #ifdef HAVE_CG
   if (_cg_program) {
     HRESULT hr;
@@ -211,48 +188,59 @@ InternalName *global_internal_name_0 = 0;
 InternalName *global_internal_name_1 = 0;
 #endif
 
-void CLP(ShaderContext)::
+void DXShaderContext9::
 issue_parameters(GSG *gsg, int altered) {
 #ifdef HAVE_CG
   if (_cg_program) {
 
-  // Iterate through _ptr parameters
-    for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
-      if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])){
-#ifdef HAVE_CG
-        const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
-        Shader::ShaderPtrData* _ptr_data =
-          const_cast< Shader::ShaderPtrData*>(gsg->fetch_ptr_parameter(_ptr));
+    // Iterate through _ptr parameters
+    for (size_t i = 0; i < _shader->_ptr_spec.size(); ++i) {
+      const Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
-        if (_ptr_data == NULL){ //the input is not contained in ShaderPtrData
+      if (altered & (spec._dep[0] | spec._dep[1])) {
+        const Shader::ShaderPtrData *ptr_data = gsg->fetch_ptr_parameter(spec);
+
+        if (ptr_data == NULL) { //the input is not contained in ShaderPtrData
           release_resources();
           return;
         }
 
-        CGparameter p = _cg_parameter_map[_ptr._id._seqno];
+        // Calculate how many elements to transfer; no more than it expects,
+        // but certainly no more than we have.
+        int input_size = min(abs(spec._dim[0] * spec._dim[1] * spec._dim[2]), ptr_data->_size);
 
-        switch(_ptr_data->_type) {
+        CGparameter p = _cg_parameter_map[spec._id._seqno];
+        switch (ptr_data->_type) {
+        case Shader::SPT_int:
+          cgSetParameterValueic(p, input_size, (int *)ptr_data->_ptr);
+          break;
+
+        case Shader::SPT_double:
+          cgSetParameterValuedc(p, input_size, (double *)ptr_data->_ptr);
+          break;
+
         case Shader::SPT_float:
-          cgD3D9SetUniform(p, (PN_stdfloat*)_ptr_data->_ptr);
+          cgSetParameterValuefc(p, input_size, (float *)ptr_data->_ptr);
           break;
 
         default:
           dxgsg9_cat.error()
-            << _ptr._id._name << ":" << "unrecognized parameter type\n";
+            << spec._id._name << ": unrecognized parameter type\n";
           release_resources();
           return;
         }
       }
-#endif
     }
 
-    for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
-      if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
-        CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
+    for (size_t i = 0; i < _shader->_mat_spec.size(); ++i) {
+      Shader::ShaderMatSpec &spec = _shader->_mat_spec[i];
+
+      if (altered & (spec._dep[0] | spec._dep[1])) {
+        CGparameter p = _cg_parameter_map[spec._id._seqno];
         if (p == NULL) {
           continue;
         }
-        const LMatrix4 *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
+        const LMatrix4 *val = gsg->fetch_specified_value(spec, altered);
         if (val) {
           HRESULT hr;
           PN_stdfloat v [4];
@@ -263,83 +251,79 @@ issue_parameters(GSG *gsg, int altered) {
           const float *data;
           data = temp_matrix.get_data();
 
-          #if DEBUG_SHADER
+#if DEBUG_SHADER
           // DEBUG
-          global_data = (PN_stdfloat *) data;
-          global_shader_mat_spec = &_shader->_mat_spec[i];
-          global_internal_name_0 = global_shader_mat_spec -> _arg [0];
-          global_internal_name_1 = global_shader_mat_spec -> _arg [1];
-          #endif
+          global_data = (PN_stdfloat *)data;
+          global_shader_mat_spec = &spec;
+          global_internal_name_0 = global_shader_mat_spec->_arg[0];
+          global_internal_name_1 = global_shader_mat_spec->_arg[1];
+#endif
 
-          switch (_shader->_mat_spec[i]._piece) {
+          switch (spec._piece) {
           case Shader::SMP_whole:
             // TRANSPOSE REQUIRED
             temp_matrix.transpose_in_place();
             data = temp_matrix.get_data();
 
-            hr = cgD3D9SetUniform (p, data);
+            hr = cgD3D9SetUniform(p, data);
             break;
 
           case Shader::SMP_transpose:
             // NO TRANSPOSE REQUIRED
-            hr = cgD3D9SetUniform (p, data);
+            hr = cgD3D9SetUniform(p, data);
             break;
 
           case Shader::SMP_row0:
-            hr = cgD3D9SetUniform (p, data + 0);
+            hr = cgD3D9SetUniform(p, data + 0);
             break;
           case Shader::SMP_row1:
-            hr = cgD3D9SetUniform (p, data + 4);
+            hr = cgD3D9SetUniform(p, data + 4);
             break;
           case Shader::SMP_row2:
-            hr = cgD3D9SetUniform (p, data + 8);
+            hr = cgD3D9SetUniform(p, data + 8);
             break;
           case Shader::SMP_row3x1:
           case Shader::SMP_row3x2:
           case Shader::SMP_row3x3:
           case Shader::SMP_row3:
-            hr = cgD3D9SetUniform (p, data + 12);
+            hr = cgD3D9SetUniform(p, data + 12);
             break;
 
           case Shader::SMP_col0:
             v[0] = data[0]; v[1] = data[4]; v[2] = data[8]; v[3] = data[12];
-            hr = cgD3D9SetUniform (p, v);
+            hr = cgD3D9SetUniform(p, v);
             break;
           case Shader::SMP_col1:
             v[0] = data[1]; v[1] = data[5]; v[2] = data[9]; v[3] = data[13];
-            hr = cgD3D9SetUniform (p, v);
+            hr = cgD3D9SetUniform(p, v);
             break;
           case Shader::SMP_col2:
             v[0] = data[2]; v[1] = data[6]; v[2] = data[10]; v[3] = data[14];
-            hr = cgD3D9SetUniform (p, v);
+            hr = cgD3D9SetUniform(p, v);
             break;
           case Shader::SMP_col3:
             v[0] = data[3]; v[1] = data[7]; v[2] = data[11]; v[3] = data[15];
-            hr = cgD3D9SetUniform (p, v);
+            hr = cgD3D9SetUniform(p, v);
             break;
 
           default:
             dxgsg9_cat.error()
-              << "issue_parameters ( ) SMP parameter type not implemented " << _shader->_mat_spec[i]._piece << "\n";
+              << "issue_parameters () SMP parameter type not implemented " << spec._piece << "\n";
             break;
           }
 
-          if (FAILED (hr)) {
-
+          if (FAILED(hr)) {
             string name = "unnamed";
 
-            if (_shader->_mat_spec[i]._arg [0]) {
-              name = _shader->_mat_spec[i]._arg [0] -> get_basename ( );
+            if (spec._arg[0]) {
+              name = spec._arg[0]->get_basename();
             }
 
             dxgsg9_cat.error()
-              << "NAME  " << name << "\n"
-              << "MAT TYPE  "
-              << _shader->_mat_spec[i]._piece
-              << " cgD3D9SetUniform failed "
-              << D3DERRORSTRING(hr);
+              << "NAME  " << name << "\n" << "MAT TYPE  " << spec._piece
+              << " cgD3D9SetUniform failed " << D3DERRORSTRING(hr);
 
-            CGerror error = cgGetError ();
+            CGerror error = cgGetError();
             if (error != CG_NO_ERROR) {
               dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
             }
@@ -354,13 +338,12 @@ issue_parameters(GSG *gsg, int altered) {
 /**
  * Disable all the vertex arrays used by this shader.
  */
-void CLP(ShaderContext)::
+void DXShaderContext9::
 disable_shader_vertex_arrays(GSG *gsg) {
   LPDIRECT3DDEVICE9 device = gsg->_screen->_d3d_device;
 
-  for ( int array_index = 0; array_index < _num_bound_streams; ++array_index )
-  {
-    device->SetStreamSource( array_index, NULL, 0, 0 );
+  for (int array_index = 0; array_index < _num_bound_streams; ++array_index) {
+    device->SetStreamSource(array_index, NULL, 0, 0);
   }
   _num_bound_streams = 0;
 }
@@ -372,8 +355,8 @@ disable_shader_vertex_arrays(GSG *gsg) {
  * because it may unnecessarily disable arrays then immediately reenable them.
  * We may optimize this someday.
  */
-bool CLP(ShaderContext)::
-update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
+bool DXShaderContext9::
+update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
 #ifdef HAVE_CG
   if (!_cg_program) {
@@ -394,7 +377,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
 
     // Discard and recreate the VertexElementArray.  This thrashes pretty
     // bad....
-    if ( _vertex_element_array != NULL ) {
+    if (_vertex_element_array != NULL) {
       delete _vertex_element_array;
     }
     _vertex_element_array = new VertexElementArray(nvarying + 2);
@@ -408,17 +391,17 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
     // out only those for a single stream.
 
     int number_of_arrays = gsg->_data_reader->get_num_arrays();
-    for ( int array_index = 0; array_index < number_of_arrays; ++array_index ) {
+    for (int array_index = 0; array_index < number_of_arrays; ++array_index) {
       const GeomVertexArrayDataHandle* array_reader =
-        gsg->_data_reader->get_array_reader( array_index );
-      if ( array_reader == NULL ) {
+        gsg->_data_reader->get_array_reader(array_index);
+      if (array_reader == NULL) {
         dxgsg9_cat.error() << "Unable to get reader for array " << array_index << "\n";
         continue;
       }
 
-      for ( int var_index = 0; var_index < nvarying; ++var_index ) {
+      for (int var_index = 0; var_index < nvarying; ++var_index) {
         CGparameter p = _cg_parameter_map[_shader->_var_spec[var_index]._id._seqno];
-        if ( p == NULL ) {
+        if (p == NULL) {
           dxgsg9_cat.info() <<
             "No parameter in map for parameter " << var_index <<
             " (probably optimized away)\n";
@@ -440,14 +423,12 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
           }
         }
 
-        const GeomVertexArrayDataHandle* param_array_reader;
+        const GeomVertexArrayDataHandle *param_array_reader;
         Geom::NumericType numeric_type;
-        int num_values;
-        int start;
-        int stride;
-        if ( gsg->_data_reader->get_array_info( name,
-                                                param_array_reader, num_values, numeric_type,
-                                                start, stride ) == false ) {
+        int num_values, start, stride;
+        if (!gsg->_data_reader->get_array_info(name, param_array_reader,
+                                               num_values, numeric_type,
+                                               start, stride)) {
           // This is apparently not an error (actually I think it is, just not
           // a fatal one). The GL implementation fails silently in this case,
           // but the net result is that we end up not supplying input for a
@@ -458,105 +439,105 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
         }
 
         // If not associated with the array we're working on, move on.
-        if ( param_array_reader != array_reader ) {
+        if (param_array_reader != array_reader) {
           continue;
         }
 
-        const char* semantic = cgGetParameterSemantic( p );
-        if ( semantic == NULL ) {
+        const char *semantic = cgGetParameterSemantic(p);
+        if (semantic == NULL) {
           dxgsg9_cat.error() << "Unable to retrieve semantic for parameter " << var_index << "\n";
           continue;
         }
 
-        if ( strncmp( semantic, "POSITION", strlen( "POSITION" ) ) == 0 ) {
+        if (strncmp(semantic, "POSITION", strlen("POSITION")) == 0) {
           if (numeric_type == Geom::NT_float32) {
             switch (num_values) {
-              case 3:
-                vertex_element_array->add_position_xyz_vertex_element(array_index, start);
-                break;
-              case 4:
-                vertex_element_array->add_position_xyzw_vertex_element(array_index, start);
-                break;
-              default:
-                dxgsg9_cat.error() << "VE ERROR: invalid number of vertex coordinate elements " << num_values << "\n";
-                break;
+            case 3:
+              vertex_element_array->add_position_xyz_vertex_element(array_index, start);
+              break;
+            case 4:
+              vertex_element_array->add_position_xyzw_vertex_element(array_index, start);
+              break;
+            default:
+              dxgsg9_cat.error() << "VE ERROR: invalid number of vertex coordinate elements " << num_values << "\n";
+              break;
             }
           } else {
             dxgsg9_cat.error() << "VE ERROR: invalid vertex type " << numeric_type << "\n";
           }
-        } else if ( strncmp( semantic, "TEXCOORD", strlen( "TEXCOORD" ) ) == 0 ) {
-          int slot = atoi( semantic + strlen( "TEXCOORD" ) );
+        } else if (strncmp(semantic, "TEXCOORD", strlen("TEXCOORD")) == 0) {
+          int slot = atoi(semantic + strlen("TEXCOORD"));
           if (numeric_type == Geom::NT_float32) {
             switch (num_values) {
-              case 1:
-                vertex_element_array->add_u_vertex_element(array_index, start, slot);
-                break;
-              case 2:
-                vertex_element_array->add_uv_vertex_element(array_index, start, slot);
-                break;
-              case 3:
-                vertex_element_array->add_uvw_vertex_element(array_index, start, slot);
-                break;
-              case 4:
-                vertex_element_array->add_xyzw_vertex_element(array_index, start, slot);
-                break;
-              default:
-                dxgsg9_cat.error() << "VE ERROR: invalid number of vertex texture coordinate elements " << num_values <<  "\n";
-                break;
+            case 1:
+              vertex_element_array->add_u_vertex_element(array_index, start, slot);
+              break;
+            case 2:
+              vertex_element_array->add_uv_vertex_element(array_index, start, slot);
+              break;
+            case 3:
+              vertex_element_array->add_uvw_vertex_element(array_index, start, slot);
+              break;
+            case 4:
+              vertex_element_array->add_xyzw_vertex_element(array_index, start, slot);
+              break;
+            default:
+              dxgsg9_cat.error() << "VE ERROR: invalid number of vertex texture coordinate elements " << num_values <<  "\n";
+              break;
             }
           } else {
             dxgsg9_cat.error() << "VE ERROR: invalid texture coordinate type " << numeric_type << "\n";
           }
-        } else if ( strncmp( semantic, "COLOR", strlen( "COLOR" ) ) == 0 ) {
+        } else if (strncmp(semantic, "COLOR", strlen("COLOR")) == 0) {
           if (numeric_type == Geom::NT_packed_dcba ||
               numeric_type == Geom::NT_packed_dabc ||
               numeric_type == Geom::NT_uint8) {
             switch (num_values) {
-              case 4:
-                vertex_element_array->add_diffuse_color_vertex_element(array_index, start);
-                break;
-              default:
-                dxgsg9_cat.error() << "VE ERROR: invalid color coordinates " << num_values << "\n";
-                break;
+            case 4:
+              vertex_element_array->add_diffuse_color_vertex_element(array_index, start);
+              break;
+            default:
+              dxgsg9_cat.error() << "VE ERROR: invalid color coordinates " << num_values << "\n";
+              break;
             }
           } else {
             dxgsg9_cat.error() << "VE ERROR: invalid color type " << numeric_type << "\n";
           }
-        } else if ( strncmp( semantic, "NORMAL", strlen( "NORMAL" ) ) == 0 ) {
+        } else if (strncmp(semantic, "NORMAL", strlen("NORMAL")) == 0) {
           if (numeric_type == Geom::NT_float32) {
             switch (num_values) {
-              case 3:
-                vertex_element_array->add_normal_vertex_element(array_index, start);
-                break;
-              default:
-                dxgsg9_cat.error() << "VE ERROR: invalid number of normal coordinate elements " << num_values << "\n";
-                break;
+            case 3:
+              vertex_element_array->add_normal_vertex_element(array_index, start);
+              break;
+            default:
+              dxgsg9_cat.error() << "VE ERROR: invalid number of normal coordinate elements " << num_values << "\n";
+              break;
             }
           } else {
             dxgsg9_cat.error() << "VE ERROR: invalid normal type " << numeric_type << "\n";
           }
-        } else if ( strncmp( semantic, "BINORMAL", strlen( "BINORMAL" ) ) == 0 ) {
+        } else if (strncmp(semantic, "BINORMAL", strlen("BINORMAL")) == 0) {
           if (numeric_type == Geom::NT_float32) {
             switch (num_values) {
-              case 3:
-                vertex_element_array->add_binormal_vertex_element(array_index, start);
-                break;
-              default:
-                dxgsg9_cat.error() << "VE ERROR: invalid number of binormal coordinate elements " << num_values << "\n";
-                break;
+            case 3:
+              vertex_element_array->add_binormal_vertex_element(array_index, start);
+              break;
+            default:
+              dxgsg9_cat.error() << "VE ERROR: invalid number of binormal coordinate elements " << num_values << "\n";
+              break;
             }
           } else {
             dxgsg9_cat.error() << "VE ERROR: invalid binormal type " << numeric_type << "\n";
           }
-        } else if ( strncmp( semantic, "TANGENT", strlen( "TANGENT" ) ) == 0 ) {
+        } else if (strncmp(semantic, "TANGENT", strlen("TANGENT")) == 0) {
           if (numeric_type == Geom::NT_float32) {
             switch (num_values) {
-              case 3:
-                vertex_element_array->add_tangent_vertex_element(array_index, start);
-                break;
-              default:
-                dxgsg9_cat.error() << "VE ERROR: invalid number of tangent coordinate elements " << num_values << "\n";
-                break;
+            case 3:
+              vertex_element_array->add_tangent_vertex_element(array_index, start);
+              break;
+            default:
+              dxgsg9_cat.error() << "VE ERROR: invalid number of tangent coordinate elements " << num_values << "\n";
+              break;
             }
           } else {
             dxgsg9_cat.error() << "VE ERROR: invalid tangent type " << numeric_type << "\n";
@@ -567,15 +548,15 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
       }
 
       // Get the vertex buffer for this array.
-      CLP(VertexBufferContext)* dvbc;
+      DXVertexBufferContext9 *dvbc;
       if (!gsg->setup_array_data(dvbc, array_reader, force)) {
         dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << array_index << "\n";
         continue;
       }
 
       // Bind this array as the data source for the corresponding stream.
-      const GeomVertexArrayFormat* array_format = array_reader->get_array_format();
-      hr = device->SetStreamSource( array_index, dvbc->_vbuffer, 0, array_format->get_stride() );
+      const GeomVertexArrayFormat *array_format = array_reader->get_array_format();
+      hr = device->SetStreamSource(array_index, dvbc->_vbuffer, 0, array_format->get_stride());
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
       }
@@ -583,8 +564,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
 
     _num_bound_streams = number_of_arrays;
 
-    if (( _vertex_element_array != NULL ) &&
-        ( _vertex_element_array->add_end_vertex_element() != false )) {
+    if (_vertex_element_array != NULL &&
+        _vertex_element_array->add_end_vertex_element()) {
       if (dxgsg9_cat.is_debug()) {
         // Note that the currently generated vertex declaration works but
         // never validates.  My theory is that this is due to the shader
@@ -599,17 +580,17 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
       }
 
       // Discard the old VertexDeclaration.  This thrashes pretty bad....
-      if ( _vertex_declaration != NULL ) {
+      if (_vertex_declaration != NULL) {
         _vertex_declaration->Release();
         _vertex_declaration = NULL;
       }
 
-      hr = device->CreateVertexDeclaration( _vertex_element_array->_vertex_element_array,
-                                            &_vertex_declaration );
-      if (FAILED (hr)) {
+      hr = device->CreateVertexDeclaration(_vertex_element_array->_vertex_element_array,
+                                           &_vertex_declaration);
+      if (FAILED(hr)) {
         dxgsg9_cat.error() << "CreateVertexDeclaration failed" << D3DERRORSTRING(hr);
       } else {
-        hr = device->SetVertexDeclaration( _vertex_declaration );
+        hr = device->SetVertexDeclaration(_vertex_declaration);
         if (FAILED(hr)) {
           dxgsg9_cat.error() << "SetVertexDeclaration failed" << D3DERRORSTRING(hr);
         }
@@ -626,12 +607,11 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
 /**
  * Disable all the texture bindings used by this shader.
  */
-void CLP(ShaderContext)::
-disable_shader_texture_bindings(GSG *gsg)
-{
+void DXShaderContext9::
+disable_shader_texture_bindings(GSG *gsg) {
 #ifdef HAVE_CG
   if (_cg_program) {
-    for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
+    for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
       CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
       if (p == NULL) {
         continue;
@@ -640,12 +620,10 @@ disable_shader_texture_bindings(GSG *gsg)
 
       HRESULT hr;
 
-      hr = gsg -> _d3d_device -> SetTexture (texunit, NULL);
-      if (FAILED (hr)) {
+      hr = gsg->_d3d_device->SetTexture(texunit, NULL);
+      if (FAILED(hr)) {
         dxgsg9_cat.error()
-          << "SetTexture ("
-          << texunit
-          << ", NULL) failed "
+          << "SetTexture(" << texunit << ", NULL) failed "
           << D3DERRORSTRING(hr);
       }
     }
@@ -660,60 +638,44 @@ disable_shader_texture_bindings(GSG *gsg)
  * because it may unnecessarily disable textures then immediately reenable
  * them.  We may optimize this someday.
  */
-void CLP(ShaderContext)::
-update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
-{
-  if (prev) prev->disable_shader_texture_bindings(gsg);
+void DXShaderContext9::
+update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
+  if (prev) {
+    prev->disable_shader_texture_bindings(gsg);
+  }
 
 #ifdef HAVE_CG
   if (_cg_program) {
-
-    for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
-      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+    for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
+      Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
+      CGparameter p = _cg_parameter_map[spec._id._seqno];
       if (p == NULL) {
         continue;
       }
-      Texture *tex = NULL;
+
       int view = gsg->get_current_tex_view_offset();
-      InternalName *id = _shader->_tex_spec[i]._name;
       SamplerState sampler;
 
-      if (id != NULL) {
-        const ShaderInput *input = gsg->_target_shader->get_shader_input(id);
-        tex = input->get_texture();
-        sampler = input->get_sampler();
-
-      } else {
-        // We get the TextureAttrib directly from the _target_rs, not the
-        // filtered TextureAttrib in _target_texture.
-        const TextureAttrib *texattrib = DCAST(TextureAttrib, gsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
-        nassertv(texattrib != (TextureAttrib *)NULL);
-
-        if (_shader->_tex_spec[i]._stage >= texattrib->get_num_on_stages()) {
-          continue;
-        }
-        TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
-        tex = texattrib->get_on_texture(stage);
-        sampler = texattrib->get_on_sampler(stage);
-        view += stage->get_tex_view_offset();
-      }
-      if (_shader->_tex_spec[i]._suffix != 0) {
-        // The suffix feature is inefficient.  It is a temporary hack.
-        if (tex == 0) {
-          continue;
-        }
-        tex = tex->load_related(_shader->_tex_spec[i]._suffix);
-      }
-      if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
+      PT(Texture) tex = gsg->fetch_specified_texture(spec, sampler, view);
+      if (tex.is_null()) {
         continue;
       }
+
+      if (spec._suffix != 0) {
+        // The suffix feature is inefficient.  It is a temporary hack.
+        tex = tex->load_related(spec._suffix);
+      }
+
+      if (tex->get_texture_type() != spec._desired_type) {
+        continue;
+      }
+
       TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
       if (tc == (TextureContext*)NULL) {
         continue;
       }
 
       int texunit = cgGetParameterResourceIndex(p);
-
       gsg->apply_texture(texunit, tc, sampler);
     }
   }
@@ -721,8 +683,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 }
 
 // DEBUG CODE TO TEST ASM CODE GENERATED BY Cg
-void assemble_shader_test(char *file_path)
-{
+void assemble_shader_test(char *file_path) {
   int flags;
   D3DXMACRO *defines;
   LPD3DXINCLUDE include;
@@ -735,17 +696,15 @@ void assemble_shader_test(char *file_path)
   shader = 0;
   error_messages = 0;
 
-  D3DXAssembleShaderFromFile (file_path, defines, include, flags, &shader, &error_messages);
-  if (error_messages)
-  {
+  D3DXAssembleShaderFromFile(file_path, defines, include, flags, &shader, &error_messages);
+  if (error_messages) {
     char *error_message;
 
-    error_message = (char *) (error_messages -> GetBufferPointer ( ));
-    if (error_message)
-    {
+    error_message = (char *)error_messages->GetBufferPointer();
+    if (error_message) {
       dxgsg9_cat.error() << error_message;
     }
 
-    error_messages -> Release ( );
+    error_messages->Release();
   }
 }

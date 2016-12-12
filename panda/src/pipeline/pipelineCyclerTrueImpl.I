@@ -368,7 +368,13 @@ get_write_count() const {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_2() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_2()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[1]._cdata.p();
+
+  // This trick moves an NPT into a PT without unnecessarily incrementing and
+  // subsequently decrementing the regular reference count.
+  PT(CycleData) last_val;
+  last_val.swap(_data[1]._cdata);
+  last_val->node_unref_only();
+
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 2, last_val);
@@ -389,7 +395,13 @@ cycle_2() {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_3() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_3()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[2]._cdata.p();
+
+  // This trick moves an NPT into a PT without unnecessarily incrementing and
+  // subsequently decrementing the regular reference count.
+  PT(CycleData) last_val;
+  last_val.swap(_data[2]._cdata);
+  last_val->node_unref_only();
+
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 3, last_val);

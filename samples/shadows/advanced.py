@@ -50,6 +50,7 @@ class World(DirectObject):
             props, winprops,
             GraphicsPipe.BFRefuseWindow,
             base.win.getGsg(), base.win)
+        self.buffer = LBuffer
 
         if not LBuffer:
             self.t = addTitle(
@@ -73,9 +74,10 @@ class World(DirectObject):
         self.inst_w = addInstructions(0.12, 'W : stop/start the Walk Cycle')
         self.inst_t = addInstructions(0.18, 'T : stop/start the Teapot')
         self.inst_l = addInstructions(0.24, 'L : move light source far or close')
-        self.inst_v = addInstructions(0.30, 'V: View the Depth-Texture results')
-        self.inst_x = addInstructions(0.36, 'Left/Right Arrow : switch camera angles')
-        self.inst_a = addInstructions(0.42, 'Something about A/Z and push bias')
+        self.inst_v = addInstructions(0.30, 'V : View the Depth-Texture results')
+        self.inst_u = addInstructions(0.36, 'U : toggle updating the shadow map')
+        self.inst_x = addInstructions(0.42, 'Left/Right Arrow : switch camera angles')
+        self.inst_a = addInstructions(0.48, 'Something about A/Z and push bias')
 
         base.setBackgroundColor(0, 0, 0.2, 1)
 
@@ -120,20 +122,14 @@ class World(DirectObject):
         self.accept("arrow_left", self.incrementCameraPosition, [-1])
         self.accept("arrow_right", self.incrementCameraPosition, [1])
         self.accept("p", self.toggleInterval, [self.pandaMovement])
-        self.accept("P", self.toggleInterval, [self.pandaMovement])
         self.accept("t", self.toggleInterval, [self.teapotMovement])
-        self.accept("T", self.toggleInterval, [self.teapotMovement])
         self.accept("w", self.toggleInterval, [self.pandaWalk])
-        self.accept("W", self.toggleInterval, [self.pandaWalk])
         self.accept("v", base.bufferViewer.toggleEnable)
-        self.accept("V", base.bufferViewer.toggleEnable)
+        self.accept("u", self.toggleUpdateShadowMap)
         self.accept("l", self.incrementLightPosition, [1])
-        self.accept("L", self.incrementLightPosition, [1])
         self.accept("o", base.oobe)
         self.accept('a', self.adjustPushBias, [1.1])
-        self.accept('A', self.adjustPushBias, [1.1])
         self.accept('z', self.adjustPushBias, [0.9])
-        self.accept('Z', self.adjustPushBias, [0.9])
 
         self.LCam = base.makeCamera(LBuffer)
         self.LCam.node().setScene(render)
@@ -179,6 +175,9 @@ class World(DirectObject):
             ival.pause()
         else:
             ival.resume()
+
+    def toggleUpdateShadowMap(self):
+        self.buffer.active = not self.buffer.active
 
     def incrementCameraPosition(self, n):
         self.cameraSelection = (self.cameraSelection + n) % 6

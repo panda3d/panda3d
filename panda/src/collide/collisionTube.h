@@ -40,6 +40,9 @@ public:
   INLINE CollisionTube(const CollisionTube &copy);
   virtual CollisionSolid *make_copy();
 
+  virtual PT(CollisionEntry)
+  test_intersection(const CollisionEntry &entry) const;
+
   virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();

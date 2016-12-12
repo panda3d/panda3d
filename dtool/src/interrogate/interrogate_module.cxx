@@ -19,7 +19,6 @@
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
 #include "load_dso.h"
-#include "pystub.h"
 #include "pnotify.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
@@ -379,9 +378,6 @@ int main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   int flag;
-
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
 
   preprocess_argv(argc, argv);
   flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
