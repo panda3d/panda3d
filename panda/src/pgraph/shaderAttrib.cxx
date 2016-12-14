@@ -25,6 +25,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "nodePath.h"
+#include "shaderBuffer.h"
 
 TypeHandle ShaderAttrib::_type_handle;
 int ShaderAttrib::_attrib_slot;
@@ -458,6 +459,34 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
     strm << "Shader input " << id->get_name() << " is not a NodePath or LMatrix4.\n";
     nassert_raise(strm.str());
     return LMatrix4::ident_mat();
+  }
+}
+
+/**
+ * Returns the ShaderInput as a ShaderBuffer.  Assertion fails if there is
+ * none, or if it is not a ShaderBuffer.
+ */
+ShaderBuffer *ShaderAttrib::
+get_shader_input_buffer(const InternalName *id) const {
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i == _inputs.end()) {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return NULL;
+  } else {
+    const ShaderInput *p = (*i).second;
+
+    if (p->get_value_type() == ShaderInput::M_buffer) {
+      ShaderBuffer *value;
+      DCAST_INTO_R(value, p->_value, NULL);
+      return value;
+    }
+
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not a ShaderBuffer.\n";
+    nassert_raise(strm.str());
+    return NULL;
   }
 }
 

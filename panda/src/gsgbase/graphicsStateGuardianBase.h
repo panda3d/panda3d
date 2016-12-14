@@ -31,6 +31,7 @@ class GraphicsOutputBase;
 
 class VertexBufferContext;
 class IndexBufferContext;
+class BufferContext;
 class GeomContext;
 class GeomNode;
 class Geom;
@@ -57,6 +58,7 @@ class SamplerContext;
 class SamplerState;
 class Shader;
 class ShaderContext;
+class ShaderBuffer;
 class RenderState;
 class TransformState;
 class Material;
@@ -161,6 +163,9 @@ public:
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
+
+  virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data)=0;
+  virtual void release_shader_buffer(BufferContext *ibc)=0;
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z)=0;
 

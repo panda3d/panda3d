@@ -41,6 +41,7 @@ PreparedGraphicsObjects() :
   _texture_residency(_name, "texture"),
   _vbuffer_residency(_name, "vbuffer"),
   _ibuffer_residency(_name, "ibuffer"),
+  _sbuffer_residency(_name, "sbuffer"),
   _graphics_memory_lru("graphics_memory_lru", graphics_memory_limit),
   _sampler_object_lru("sampler_object_lru", sampler_object_limit)
 {
@@ -121,6 +122,16 @@ PreparedGraphicsObjects::
     delete ibc;
   }
   _released_index_buffers.clear();
+
+  release_all_shader_buffers();
+  Buffers::iterator bci;
+  for (bci = _released_shader_buffers.begin();
+       bci != _released_shader_buffers.end();
+       ++bci) {
+    BufferContext *bc = (BufferContext *)(*bci);
+    delete bc;
+  }
+  _released_shader_buffers.clear();
 }
 
 /**
@@ -167,6 +178,9 @@ show_residency_trackers(ostream &out) const {
 
   out << "\nIndex buffers:\n";
   _ibuffer_residency.write(out, 2);
+
+  out << "\nShader buffers:\n";
+  _sbuffer_residency.write(out, 2);
 }
 
 /**
@@ -1196,6 +1210,155 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
 }
 
 /**
+ * Indicates that a buffer would like to be put on the list to be prepared
+ * when the GSG is next ready to do this (presumably at the next frame).
+ */
+void PreparedGraphicsObjects::
+enqueue_shader_buffer(ShaderBuffer *data) {
+  ReMutexHolder holder(_lock);
+
+  _enqueued_shader_buffers.insert(data);
+}
+
+/**
+ * Returns true if the index buffer has been queued on this GSG, false
+ * otherwise.
+ */
+bool PreparedGraphicsObjects::
+is_shader_buffer_queued(const ShaderBuffer *data) const {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedShaderBuffers::const_iterator qi = _enqueued_shader_buffers.find((ShaderBuffer *)data);
+  return (qi != _enqueued_shader_buffers.end());
+}
+
+/**
+ * Removes a buffer from the queued list of data arrays to be prepared.
+ * Normally it is not necessary to call this, unless you change your mind
+ * about preparing it at the last minute, since the data will automatically be
+ * dequeued and prepared at the next frame.
+ *
+ * The return value is true if the buffer is successfully dequeued, false if
+ * it had not been queued.
+ */
+bool PreparedGraphicsObjects::
+dequeue_shader_buffer(ShaderBuffer *data) {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedShaderBuffers::iterator qi = _enqueued_shader_buffers.find(data);
+  if (qi != _enqueued_shader_buffers.end()) {
+    _enqueued_shader_buffers.erase(qi);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Returns true if the index buffer has been prepared on this GSG, false
+ * otherwise.
+ */
+bool PreparedGraphicsObjects::
+is_shader_buffer_prepared(const ShaderBuffer *data) const {
+  return data->is_prepared((PreparedGraphicsObjects *)this);
+}
+
+/**
+ * Indicates that a data context, created by a previous call to
+ * prepare_shader_buffer(), is no longer needed.  The driver resources will not
+ * be freed until some GSG calls update(), indicating it is at a stage where
+ * it is ready to release datas--this prevents conflicts from threading or
+ * multiple GSG's sharing datas (we have no way of knowing which graphics
+ * context is currently active, or what state it's in, at the time
+ * release_shader_buffer is called).
+ */
+void PreparedGraphicsObjects::
+release_shader_buffer(BufferContext *bc) {
+  ReMutexHolder holder(_lock);
+
+  bool removed = (_prepared_shader_buffers.erase(bc) != 0);
+  nassertv(removed);
+
+  _released_shader_buffers.insert(bc);
+}
+
+/**
+ * Releases all datas at once.  This will force them to be reloaded into data
+ * memory for all GSG's that share this object.  Returns the number of datas
+ * released.
+ */
+int PreparedGraphicsObjects::
+release_all_shader_buffers() {
+  ReMutexHolder holder(_lock);
+
+  int num_shader_buffers = (int)_prepared_shader_buffers.size() + (int)_enqueued_shader_buffers.size();
+
+  Buffers::iterator bci;
+  for (bci = _prepared_shader_buffers.begin();
+       bci != _prepared_shader_buffers.end();
+       ++bci) {
+
+    BufferContext *bc = (BufferContext *)(*bci);
+    _released_shader_buffers.insert(bc);
+  }
+
+  _prepared_shader_buffers.clear();
+  _enqueued_shader_buffers.clear();
+
+  return num_shader_buffers;
+}
+
+/**
+ * Returns the number of index buffers that have been enqueued to be prepared
+ * on this GSG.
+ */
+int PreparedGraphicsObjects::
+get_num_queued_shader_buffers() const {
+  return _enqueued_shader_buffers.size();
+}
+
+/**
+ * Returns the number of index buffers that have already been prepared on this
+ * GSG.
+ */
+int PreparedGraphicsObjects::
+get_num_prepared_shader_buffers() const {
+  return _prepared_shader_buffers.size();
+}
+
+/**
+ * Immediately creates a new BufferContext for the indicated data and
+ * returns it.  This assumes that the GraphicsStateGuardian is the currently
+ * active rendering context and that it is ready to accept new datas.  If this
+ * is not necessarily the case, you should use enqueue_shader_buffer() instead.
+ *
+ * Normally, this function is not called directly.  Call Data::prepare_now()
+ * instead.
+ *
+ * The BufferContext contains all of the pertinent information needed by
+ * the GSG to keep track of this one particular data, and will exist as long
+ * as the data is ready to be rendered.
+ *
+ * When either the Data or the PreparedGraphicsObjects object destructs, the
+ * BufferContext will be deleted.
+ */
+BufferContext *PreparedGraphicsObjects::
+prepare_shader_buffer_now(ShaderBuffer *data, GraphicsStateGuardianBase *gsg) {
+  ReMutexHolder holder(_lock);
+
+  // Ask the GSG to create a brand new BufferContext.  There might be
+  // several GSG's sharing the same set of datas; if so, it doesn't matter
+  // which of them creates the context (since they're all shared anyway).
+  BufferContext *bc = gsg->prepare_shader_buffer(data);
+
+  if (bc != (BufferContext *)NULL) {
+    bool prepared = _prepared_shader_buffers.insert(bc).second;
+    nassertr(prepared, bc);
+  }
+
+  return bc;
+}
+
+/**
  * This is called by the GraphicsStateGuardian to indicate that it is about to
  * begin processing of the frame.
  *
@@ -1276,6 +1439,7 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   _texture_residency.begin_frame(current_thread);
   _vbuffer_residency.begin_frame(current_thread);
   _ibuffer_residency.begin_frame(current_thread);
+  _sbuffer_residency.begin_frame(current_thread);
 
   // Now prepare all the textures, geoms, and buffers awaiting preparation.
   EnqueuedTextures::iterator qti;
@@ -1359,6 +1523,7 @@ end_frame(Thread *current_thread) {
   _texture_residency.end_frame(current_thread);
   _vbuffer_residency.end_frame(current_thread);
   _ibuffer_residency.end_frame(current_thread);
+  _sbuffer_residency.end_frame(current_thread);
 }
 
 /**
