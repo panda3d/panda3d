@@ -101,8 +101,11 @@ int main(int argc, char *argv[]) { return 0; }
 set(HAVE_IOS_TYPEDEFS 1)
 
 # Define if the C++ iostream library defines ios::binary.
-#TODO make test case
-#$[cdefine HAVE_IOS_BINARY]
+check_cxx_source_compiles("
+#include <ios>
+std::ios::openmode binary = std::ios::binary;
+int main(int argc, char *argv[]) { return 0; }
+" HAVE_IOS_BINARY)
 
 # Can we safely call getenv() at static init time?
 #TODO make test case? can we make a reliable one?
