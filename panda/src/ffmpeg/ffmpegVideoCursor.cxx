@@ -22,6 +22,7 @@
 extern "C" {
   #include "libavcodec/avcodec.h"
   #include "libavformat/avformat.h"
+  #include "libavutil/pixdesc.h"
 #ifdef HAVE_SWSCALE
   #include "libswscale/swscale.h"
 #endif
@@ -35,9 +36,14 @@ PStatCollector FfmpegVideoCursor::_fetch_buffer_pcollector("*:FFMPEG Video Decod
 PStatCollector FfmpegVideoCursor::_seek_pcollector("*:FFMPEG Video Decoding:Seek");
 PStatCollector FfmpegVideoCursor::_export_frame_pcollector("*:FFMPEG Convert Video to BGR");
 
-
 #if LIBAVFORMAT_VERSION_MAJOR < 53
   #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
+#endif
+
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 74, 100)
+#define AV_PIX_FMT_NONE PIX_FMT_NONE
+#define AV_PIX_FMT_BGR24 PIX_FMT_BGR24
+#define AV_PIX_FMT_BGRA PIX_FMT_BGRA
 #endif
 
 /**
@@ -55,6 +61,7 @@ FfmpegVideoCursor() :
   _format_ctx(NULL),
   _video_ctx(NULL),
   _convert_ctx(NULL),
+  _pixel_format(AV_PIX_FMT_NONE),
   _video_index(-1),
   _frame(NULL),
   _frame_out(NULL),
@@ -80,17 +87,6 @@ init_from(FfmpegVideo *source) {
 
   ReMutexHolder av_holder(_av_lock);
 
-#ifdef HAVE_SWSCALE
-  nassertv(_convert_ctx == NULL);
-  _convert_ctx = sws_getContext(_size_x, _size_y, _video_ctx->pix_fmt,
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51, 74, 100)
-                                _size_x, _size_y, AV_PIX_FMT_BGR24,
-#else
-                                _size_x, _size_y, PIX_FMT_BGR24,
-#endif
-                                SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
-#endif  // HAVE_SWSCALE
-
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
   _frame = av_frame_alloc();
   _frame_out = av_frame_alloc();
@@ -114,6 +110,25 @@ init_from(FfmpegVideo *source) {
   _current_frame = -1;
   _eof_known = false;
   _eof_frame = 0;
+
+  // Check if we got an alpha format.  Please note that some video codecs
+  // (eg. libvpx) change the pix_fmt after decoding the first frame, which is
+  // why we didn't do this earlier.
+  const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(_video_ctx->pix_fmt);
+  if (desc && (desc->flags & AV_PIX_FMT_FLAG_ALPHA) != 0) {
+    _num_components = 4;
+    _pixel_format = AV_PIX_FMT_BGRA;
+  } else {
+    _num_components = 3;
+    _pixel_format = AV_PIX_FMT_BGR24;
+  }
+
+#ifdef HAVE_SWSCALE
+  nassertv(_convert_ctx == NULL);
+  _convert_ctx = sws_getContext(_size_x, _size_y, _video_ctx->pix_fmt,
+                                _size_x, _size_y, _pixel_format,
+                                SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
+#endif  // HAVE_SWSCALE
 
 #ifdef HAVE_THREADS
   set_max_readahead_frames(ffmpeg_max_readahead_frames);
@@ -495,7 +510,17 @@ open_stream() {
     return false;
   }
 
-  AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+  AVCodec *pVideoCodec = NULL;
+  if (ffmpeg_prefer_libvpx) {
+    if (_video_ctx->codec_id == AV_CODEC_ID_VP9) {
+      pVideoCodec = avcodec_find_decoder_by_name("libvpx-vp9");
+    } else if (_video_ctx->codec_id == AV_CODEC_ID_VP8) {
+      pVideoCodec = avcodec_find_decoder_by_name("libvpx");
+    }
+  }
+  if (pVideoCodec == NULL) {
+    pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+  }
   if (pVideoCodec == NULL) {
     ffmpeg_cat.info()
       << "Couldn't find codec\n";
@@ -515,7 +540,7 @@ open_stream() {
 
   _size_x = _video_ctx->width;
   _size_y = _video_ctx->height;
-  _num_components = 3; // Don't know how to implement RGBA movies yet.
+  _num_components = 3;
   _length = (double)_format_ctx->duration / (double)AV_TIME_BASE;
   _can_seek = true;
   _can_seek_fast = true;
@@ -1075,8 +1100,8 @@ export_frame(FfmpegBuffer *buffer) {
     return;
   }
 
-  _frame_out->data[0] = buffer->_block + ((_size_y - 1) * _size_x * 3);
-  _frame_out->linesize[0] = _size_x * -3;
+  _frame_out->data[0] = buffer->_block + ((_size_y - 1) * _size_x * _num_components);
+  _frame_out->linesize[0] = _size_x * -_num_components;
   buffer->_begin_frame = _begin_frame;
   buffer->_end_frame = _end_frame;
 
@@ -1086,7 +1111,7 @@ export_frame(FfmpegBuffer *buffer) {
     nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
-    img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24,
+    img_convert((AVPicture *)_frame_out, _pixel_format,
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
 #endif
   } else {
@@ -1094,7 +1119,7 @@ export_frame(FfmpegBuffer *buffer) {
     nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
-    img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24,
+    img_convert((AVPicture *)_frame_out, _pixel_format,
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
 #endif
   }
