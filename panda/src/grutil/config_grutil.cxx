@@ -131,6 +131,6 @@ init_libgrutil() {
   MovieTexture::register_with_read_factory();
 
   TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(MovieTexture::make_texture, "avi m2v mov mpg mpeg mp4 wmv asf flv nut ogm mkv ogv");
+  ts->register_texture_type(MovieTexture::make_texture, "avi m2v mov mpg mpeg mp4 wmv asf flv nut ogm mkv ogv webm");
 #endif
 }
