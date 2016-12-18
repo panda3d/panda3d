@@ -6355,7 +6355,7 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
 #
 # DIRECTORY: pandatool/src/deploy-stub
 #
-if True: # TODO
+if PkgSkip("PYTHON") == 0:
     OPTS=['DIR:pandatool/src/deploy-stub', 'BUILDING:DEPLOYSTUB', 'PYTHON']
     TargetAdd('deploy-stub.obj', opts=OPTS, input='deploy-stub.c')
     if GetTarget() == 'windows':
