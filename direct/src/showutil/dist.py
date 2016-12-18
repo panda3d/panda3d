@@ -57,6 +57,9 @@ class build(distutils.command.build.build):
                 if '.' in module:
                     basename = module.rsplit('.', 1)[0] + '.' + basename
 
+                # Remove python version string
+                basename = '.'.join([i for i in basename.split('.') if not i.startswith('cpython-')])
+
                 target_path = os.path.join(builddir, basename)
                 distutils.file_util.copy_file(source_path, target_path)
 
