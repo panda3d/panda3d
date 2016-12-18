@@ -1,3 +1,4 @@
+import collections
 import os
 import sys
 
@@ -10,9 +11,13 @@ import distutils.file_util
 from direct.showutil import FreezeTool
 import panda3d.core as p3d
 
+
+Application = collections.namedtuple('Application', 'scriptname runtimename')
+
+
 class Distribution(distutils.dist.Distribution):
     def __init__(self, attrs):
-        self.startfile = ''
+        self.applications = []
         self.directories = []
         self.files = []
         self.exclude_paths = []
@@ -32,15 +37,14 @@ class build(distutils.command.build.build):
                 distutils.dir_util.remove_tree(builddir)
             distutils.dir_util.mkpath(builddir)
 
-            basename = os.path.abspath(os.path.join(builddir, self.distribution.get_fullname()))
-
             # Create runtime
-            freezer = FreezeTool.Freezer()
-            freezer.addModule('__main__', filename=self.distribution.startfile)
-            for exmod in self.distribution.exclude_modules:
-                freezer.excludeModule(exmod)
-            freezer.done(addStartupModules=True)
-            freezer.generateRuntimeFromStub(basename)
+            for app in self.distribution.applications:
+                freezer = FreezeTool.Freezer()
+                freezer.addModule('__main__', filename=app.scriptname)
+                for exmod in self.distribution.exclude_modules:
+                    freezer.excludeModule(exmod)
+                freezer.done(addStartupModules=True)
+                freezer.generateRuntimeFromStub(app.runtimename)
 
             # Copy extension modules
             for module, source_path in freezer.extras:
@@ -75,8 +79,7 @@ class build(distutils.command.build.build):
             # Copy Game Files
             ignore_copy_list = [
                 '__pycache__',
-                self.distribution.startfile,
-            ] + freezer.getAllModuleNames() + self.distribution.exclude_paths
+            ] + freezer.getAllModuleNames() + self.distribution.exclude_paths + [i.scriptname for i  in self.distribution.applications]
 
             for copydir in self.distribution.directories:
                 for item in os.listdir(copydir):
