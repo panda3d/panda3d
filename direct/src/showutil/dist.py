@@ -108,8 +108,40 @@ class build(distutils.command.build.build):
                 distutils.file_util.copy_file(src, dst)
 
 
+class bdist_panda3d(distutils.core.Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        platforms = [p3d.PandaSystem.get_platform()]
+        build_base = os.path.join(os.getcwd(), 'build')
+
+        self.run_command("build")
+        os.chdir(build_base)
+
+        for platform in platforms:
+            build_dir = os.path.join(build_base, platform)
+            base_dir = self.distribution.get_name()
+            temp_dir = os.path.join(build_base, base_dir)
+            archive_format = 'gztar' if platform.startswith('linux') else 'zip'
+            basename = '{}_{}'.format(self.distribution.get_fullname(), platform)
+
+            if (os.path.exists(temp_dir)):
+                distutils.dir_util.remove_tree(temp_dir)
+            distutils.dir_util.copy_tree(build_dir, temp_dir)
+
+            distutils.archive_util.make_archive(basename, archive_format, root_dir=build_base, base_dir=base_dir)
+
+            distutils.dir_util.remove_tree(temp_dir)
+
 def setup(**attrs):
     attrs.setdefault("distclass", Distribution)
     commandClasses = attrs.setdefault("cmdclass", {})
     commandClasses['build'] = build
+    commandClasses['bdist_panda3d'] = bdist_panda3d
     distutils.core.setup(**attrs)
