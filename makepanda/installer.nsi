@@ -166,6 +166,10 @@ SectionGroup "Panda3D Libraries"
         SetOutPath $INSTDIR\models
         File /r /x CVS "${BUILT}\models\*"
 
+        SetDetailsPrint both
+        DetailPrint "Installing optional components..."
+        SetDetailsPrint listonly
+
         RMDir /r "$SMPROGRAMS\${TITLE}"
         CreateDirectory "$SMPROGRAMS\${TITLE}"
     SectionEnd
