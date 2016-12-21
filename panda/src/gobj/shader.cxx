@@ -2382,7 +2382,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
   }
 
   // Strip trailing whitespace.
-  while (isspace(into[into.size() - 1])) {
+  while (!into.empty() && isspace(into[into.size() - 1])) {
     into.resize(into.size() - 1);
   }
 
@@ -2528,7 +2528,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
     }
 
     // Strip trailing whitespace.
-    while (isspace(line[line.size() - 1])) {
+    while (!line.empty() && isspace(line[line.size() - 1])) {
       line.resize(line.size() - 1);
     }
 
