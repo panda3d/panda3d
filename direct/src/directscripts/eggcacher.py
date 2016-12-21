@@ -88,3 +88,7 @@ class EggCacher:
             progress += size
 
 cacher = EggCacher(sys.argv[1:])
+
+# Dummy main function so this can be added to console_scripts.
+def main():
+    return 0

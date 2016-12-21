@@ -74,6 +74,7 @@ STRDXSDKVERSION = 'default'
 STRMSPLATFORMVERSION = 'default'
 BOOUSEINTELCOMPILER = False
 OPENCV_VER_23 = False
+DIRECTSCRIPTS = True
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -169,7 +170,7 @@ def usage(problem):
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
-    global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX
+    global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,DIRECTSCRIPTS
     global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
@@ -177,7 +178,7 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
         "directx-sdk=", "platform-sdk=", "use-icl", "clean",
-        "universal", "target=", "arch=", "git-commit="]
+        "universal", "target=", "arch=", "git-commit=", "no-directscripts"]
     anything = 0
     optimize = ""
     target = None
@@ -223,6 +224,7 @@ def parseopts(args):
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
+            elif (option=="--no-directscripts"): DIRECTSCRIPTS=False
             elif (option=="--directx-sdk"):
                 STRDXSDKVERSION = value.strip().lower()
                 if STRDXSDKVERSION == '':
@@ -799,7 +801,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'darwin':
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if not PkgSkip("NVIDIACG") and not RUNTIME:
-            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
+            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         if not RUNTIME:
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
             SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
@@ -1645,6 +1647,11 @@ def CompileLink(dll, obj, opts):
 
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
+
+        # Don't link libraries with Python.
+        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST:
+            opts = opts[:]
+            opts.remove("PYTHON")
 
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
@@ -4822,7 +4829,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('p3directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
-  if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME):
+  if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME and DIRECTSCRIPTS):
     DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
     TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
     TargetAdd('packpanda.exe', input='packpanda.obj')

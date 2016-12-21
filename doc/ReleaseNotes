@@ -2,6 +2,7 @@
 
 This issue fixes several bugs that were still found in 1.9.2.
 
+* Fix crash when using homebrew Python on Mac OS X
 * Fix crash when running in Steam on Linux when using OpenAL
 * Fix crash using wx/tkinter on Mac as long as want-wx/tk is set
 * Fix loading models from 'models' package with models/ prefix

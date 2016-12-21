@@ -419,3 +419,6 @@ else:
     if not(os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
 
+# Dummy main function so this can be added to console_scripts.
+def main():
+    return 0
