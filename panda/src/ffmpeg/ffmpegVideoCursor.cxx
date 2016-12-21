@@ -46,6 +46,10 @@ PStatCollector FfmpegVideoCursor::_export_frame_pcollector("*:FFMPEG Convert Vid
 #define AV_PIX_FMT_BGRA PIX_FMT_BGRA
 #endif
 
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 32, 100)
+#define AV_PIX_FMT_FLAG_ALPHA PIX_FMT_FLAG_ALPHA
+#endif
+
 /**
  * This constructor is only used when reading from a bam file.
  */
@@ -512,7 +516,7 @@ open_stream() {
 
   AVCodec *pVideoCodec = NULL;
   if (ffmpeg_prefer_libvpx) {
-    if (_video_ctx->codec_id == AV_CODEC_ID_VP9) {
+    if ((int)_video_ctx->codec_id == 168) { // AV_CODEC_ID_VP9
       pVideoCodec = avcodec_find_decoder_by_name("libvpx-vp9");
     } else if (_video_ctx->codec_id == AV_CODEC_ID_VP8) {
       pVideoCodec = avcodec_find_decoder_by_name("libvpx");
