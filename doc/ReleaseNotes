@@ -50,6 +50,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * GLSL: fix error when legacy matrix generator inputs are mat3
 * Now tries to preserve refresh rate when switching fullscreen on Windows
 * Fix back-to-front sorting when gl-coordinate-system is changed
+* Now also compiles on older Linux distros (eg. CentOS 5 / manylinux1)
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
