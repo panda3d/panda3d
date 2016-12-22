@@ -50,6 +50,13 @@ PythonThread(PyObject *function, PyObject *args,
       nassert_raise("Invalid args passed to PythonThread constructor");
     }
   }
+
+#ifndef SIMPLE_THREADS
+  // Ensure that the Python threading system is initialized and ready to go.
+#ifdef WITH_THREAD  // This symbol defined within Python.h
+  PyEval_InitThreads();
+#endif
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,9 +66,20 @@ PythonThread(PyObject *function, PyObject *args,
 ////////////////////////////////////////////////////////////////////
 PythonThread::
 ~PythonThread() {
+  // Unfortunately, we need to grab the GIL to release these things,
+  // since the destructor could be called from any thread.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+#endif
+
   Py_DECREF(_function);
   Py_XDECREF(_args);
   Py_XDECREF(_result);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_Release(gstate);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
