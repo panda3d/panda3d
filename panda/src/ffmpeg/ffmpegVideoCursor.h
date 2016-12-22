@@ -105,11 +105,7 @@ private:
   ThreadPriority _thread_priority;
   PT(GenericThread) _thread;
 
-#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 74, 100)
-  PixelFormat _pixel_format;
-#else
-  AVPixelFormat _pixel_format;
-#endif
+  int _pixel_format;
 
   // This global Mutex protects calls to avcodec_opencloseetc.
   static ReMutex _av_lock;

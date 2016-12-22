@@ -46,8 +46,10 @@ PUBLISHED:
 
   MAKE_PROPERTY(cache_ref_count, get_cache_ref_count);
 
-protected:
+public:
   INLINE void cache_ref_only() const;
+
+protected:
   INLINE void cache_unref_only() const;
   bool do_test_ref_count_integrity() const;
 
