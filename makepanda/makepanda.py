@@ -561,6 +561,10 @@ if (COMPILER == "MSVC"):
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
             #LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
+
+    if not PkgSkip("FREETYPE") and os.path.isdir(GetThirdpartyDir() + "freetype/include/freetype2"):
+        IncDirectory("FREETYPE", GetThirdpartyDir() + "freetype/include/freetype2")
+
     IncDirectory("ALWAYS", GetThirdpartyDir() + "extras/include")
     LibName("WINSOCK", "wsock32.lib")
     LibName("WINSOCK2", "wsock32.lib")
@@ -766,9 +770,13 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
-        if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
-            LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
-            LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+        if not PkgSkip("FFMPEG"):
+            if GetTarget() == "darwin":
+                LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+                LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+            elif os.path.isfile(GetThirdpartyDir() + "ffmpeg/lib/libavcodec.a"):
+                # Needed when linking ffmpeg statically on Linux.
+                LibName("FFMPEG", "-Wl,-Bsymbolic")
 
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":

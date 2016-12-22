@@ -1491,6 +1491,11 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         if os.path.isdir(os.path.join(pkg_dir, "include")):
             IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
 
+            # Handle cases like freetype2 where the include dir is a subdir under "include"
+            for i in incs:
+                if os.path.isdir(os.path.join(pkg_dir, "include", i)):
+                    IncDirectory(target_pkg, os.path.join(pkg_dir, "include", i))
+
         if os.path.isdir(os.path.join(pkg_dir, "lib")):
             LibDirectory(target_pkg, os.path.join(pkg_dir, "lib"))
 
@@ -2748,6 +2753,13 @@ def GetOrigExt(x):
 
 def SetOrigExt(x, v):
     ORIG_EXT[x] = v
+
+def GetExtensionSuffix():
+    target = GetTarget()
+    if target == 'windows':
+        return '.pyd'
+    else:
+        return '.so'
 
 def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
