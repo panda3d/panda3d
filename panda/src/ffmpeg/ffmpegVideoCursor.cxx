@@ -44,10 +44,11 @@ PStatCollector FfmpegVideoCursor::_export_frame_pcollector("*:FFMPEG Convert Vid
 #define AV_PIX_FMT_NONE PIX_FMT_NONE
 #define AV_PIX_FMT_BGR24 PIX_FMT_BGR24
 #define AV_PIX_FMT_BGRA PIX_FMT_BGRA
+typedef PixelFormat AVPixelFormat;
 #endif
 
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 32, 100)
-#define AV_PIX_FMT_FLAG_ALPHA PIX_FMT_FLAG_ALPHA
+#define AV_PIX_FMT_FLAG_ALPHA PIX_FMT_ALPHA
 #endif
 
 /**
@@ -65,7 +66,7 @@ FfmpegVideoCursor() :
   _format_ctx(NULL),
   _video_ctx(NULL),
   _convert_ctx(NULL),
-  _pixel_format(AV_PIX_FMT_NONE),
+  _pixel_format((int)AV_PIX_FMT_NONE),
   _video_index(-1),
   _frame(NULL),
   _frame_out(NULL),
@@ -121,16 +122,16 @@ init_from(FfmpegVideo *source) {
   const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(_video_ctx->pix_fmt);
   if (desc && (desc->flags & AV_PIX_FMT_FLAG_ALPHA) != 0) {
     _num_components = 4;
-    _pixel_format = AV_PIX_FMT_BGRA;
+    _pixel_format = (int)AV_PIX_FMT_BGRA;
   } else {
     _num_components = 3;
-    _pixel_format = AV_PIX_FMT_BGR24;
+    _pixel_format = (int)AV_PIX_FMT_BGR24;
   }
 
 #ifdef HAVE_SWSCALE
   nassertv(_convert_ctx == NULL);
   _convert_ctx = sws_getContext(_size_x, _size_y, _video_ctx->pix_fmt,
-                                _size_x, _size_y, _pixel_format,
+                                _size_x, _size_y, (AVPixelFormat)_pixel_format,
                                 SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
 #endif  // HAVE_SWSCALE
 
@@ -1115,7 +1116,7 @@ export_frame(FfmpegBuffer *buffer) {
     nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
-    img_convert((AVPicture *)_frame_out, _pixel_format,
+    img_convert((AVPicture *)_frame_out, (AVPixelFormat)_pixel_format,
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
 #endif
   } else {
@@ -1123,7 +1124,7 @@ export_frame(FfmpegBuffer *buffer) {
     nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
-    img_convert((AVPicture *)_frame_out, _pixel_format,
+    img_convert((AVPicture *)_frame_out, (AVPixelFormat)_pixel_format,
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
 #endif
   }
