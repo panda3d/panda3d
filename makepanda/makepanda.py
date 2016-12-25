@@ -89,7 +89,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ROCKET", "AWESOMIUM",                               # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
   "X11",                                               # Unix platform support
-  "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
+  "PANDATOOL", "PVIEW", "DEPLOYTOOLS", "DIRECTSCRIPTS",# Toolchain
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses
   "PANDAPARTICLESYSTEM",                               # Built in particle system
@@ -805,9 +805,13 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
-        if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
-            LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
-            LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+        if not PkgSkip("FFMPEG"):
+            if GetTarget() == "darwin":
+                LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+                LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+            elif os.path.isfile(GetThirdpartyDir() + "ffmpeg/lib/libavcodec.a"):
+                # Needed when linking ffmpeg statically on Linux.
+                LibName("FFMPEG", "-Wl,-Bsymbolic")
 
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":
@@ -837,7 +841,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'darwin':
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if not PkgSkip("NVIDIACG") and not RUNTIME:
-            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
+            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         if not RUNTIME:
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
 
@@ -1685,6 +1689,11 @@ def CompileLink(dll, obj, opts):
 
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
+
+        # Don't link libraries with Python.
+        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST:
+            opts = opts[:]
+            opts.remove("PYTHON")
 
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
@@ -4976,7 +4985,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('p3directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
-  if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME):
+  if not PkgSkip("PYTHON") and not RTDIST and not RUNTIME and not PkgSkip("DIRECTSCRIPTS"):
     DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
     TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
     TargetAdd('packpanda.exe', input='packpanda.obj')

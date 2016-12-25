@@ -22,6 +22,72 @@
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 
+#ifndef CPPPARSER
+#ifndef VIDIOC_ENUM_FRAMESIZES
+enum v4l2_frmsizetypes {
+  V4L2_FRMSIZE_TYPE_DISCRETE = 1,
+  V4L2_FRMSIZE_TYPE_CONTINUOUS = 2,
+  V4L2_FRMSIZE_TYPE_STEPWISE = 3,
+};
+
+struct v4l2_frmsize_discrete {
+  __u32 width;
+  __u32 height;
+};
+
+struct v4l2_frmsize_stepwise {
+  __u32 min_width;
+  __u32 max_width;
+  __u32 step_width;
+  __u32 min_height;
+  __u32 max_height;
+  __u32 step_height;
+};
+
+struct v4l2_frmsizeenum {
+  __u32 index;
+  __u32 pixel_format;
+  __u32 type;
+  union {
+    struct v4l2_frmsize_discrete discrete;
+    struct v4l2_frmsize_stepwise stepwise;
+  };
+  __u32 reserved[2];
+};
+
+#define VIDIOC_ENUM_FRAMESIZES _IOWR('V', 74, struct v4l2_frmsizeenum)
+#endif
+
+#ifndef VIDIOC_ENUM_FRAMEINTERVALS
+enum v4l2_frmivaltypes {
+  V4L2_FRMIVAL_TYPE_DISCRETE = 1,
+  V4L2_FRMIVAL_TYPE_CONTINUOUS = 2,
+  V4L2_FRMIVAL_TYPE_STEPWISE = 3,
+};
+
+struct v4l2_frmival_stepwise {
+  struct v4l2_fract min;
+  struct v4l2_fract max;
+  struct v4l2_fract step;
+};
+
+struct v4l2_frmivalenum {
+  __u32 index;
+  __u32 pixel_format;
+  __u32 width;
+  __u32 height;
+  __u32 type;
+  union {
+    struct v4l2_fract               discrete;
+    struct v4l2_frmival_stepwise    stepwise;
+  };
+  __u32 reserved[2];
+};
+
+#define VIDIOC_ENUM_FRAMEINTERVALS _IOWR('V', 75, struct v4l2_frmivalenum)
+#endif
+#endif
+
 TypeHandle WebcamVideoV4L::_type_handle;
 
 /**

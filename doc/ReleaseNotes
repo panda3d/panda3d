@@ -2,6 +2,7 @@
 
 This issue fixes several bugs that were still found in 1.9.2.
 
+* Fix crash when using homebrew Python on Mac OS X
 * Fix crash when running in Steam on Linux when using OpenAL
 * Fix crash using wx/tkinter on Mac as long as want-wx/tk is set
 * Fix loading models from 'models' package with models/ prefix
@@ -50,6 +51,9 @@ This issue fixes several bugs that were still found in 1.9.2.
 * GLSL: fix error when legacy matrix generator inputs are mat3
 * Now tries to preserve refresh rate when switching fullscreen on Windows
 * Fix back-to-front sorting when gl-coordinate-system is changed
+* Now also compiles on older Linux distros (eg. CentOS 5 / manylinux1)
+* get_keyboard_map now includes keys on layouts with special characters
+* Fix crash due to incorrect alignment when compiling Eigen with AVX
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
@@ -74,6 +78,7 @@ remained in the 1.9.1 release, including:
 * Fix constant reloading of texture when gl-ignore-mipmaps is set
 * BamReader now releases the GIL (so it can be used threaded)
 * Fix AttributeError in direct.stdpy.threading module
+* Fix crash when writing 16-bit .tif file (now silently downsamples)
 
 ------------------------  RELEASE 1.9.1  ------------------------
 
