@@ -3337,6 +3337,7 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate.exe', input='libp3interrogatedb.dll')
+  TargetAdd('interrogate.exe', input='libp3pystub.lib')
   TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
@@ -3344,6 +3345,7 @@ if (not RUNTIME):
   TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')
+  TargetAdd('interrogate_module.exe', input='libp3pystub.lib')
   TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   if (not RTDIST):
@@ -3352,6 +3354,7 @@ if (not RUNTIME):
     TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
     TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('parse_file.exe', input='libp3interrogatedb.dll')
+    TargetAdd('parse_file.exe', input='libp3pystub.lib')
     TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -3375,6 +3378,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
   TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
   TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS)
+  TargetAdd('test_interrogate.exe', input='libp3pystub.lib')
   TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -5160,6 +5164,7 @@ if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME
   TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
   TargetAdd('p3dcparse.exe', input='libp3direct.dll')
   TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('p3dcparse.exe', input='libp3pystub.lib')
   TargetAdd('p3dcparse.exe', opts=['ADVAPI', 'PYTHON'])
 
 #
