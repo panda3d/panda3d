@@ -111,6 +111,11 @@ open_read(istream *source, bool owns_source, const string &password) {
   _source = source;
   _owns_source = owns_source;
 
+  if (_read_ctx != NULL) {
+    EVP_CIPHER_CTX_free(_read_ctx);
+    _read_ctx = NULL;
+  }
+
   // Now read the header information.
   StreamReader sr(_source, false);
   int nid = sr.get_uint16();
@@ -122,11 +127,6 @@ open_read(istream *source, bool owns_source, const string &password) {
   if (cipher == NULL) {
     prc_cat.error()
       << "Unknown encryption algorithm in stream.\n";
-
-    if (_read_ctx != NULL) {
-      EVP_CIPHER_CTX_free(_read_ctx);
-      _read_ctx = NULL;
-    }
     return;
   }
 
@@ -147,11 +147,7 @@ open_read(istream *source, bool owns_source, const string &password) {
 
   string iv = sr.extract_bytes(iv_length);
 
-  if (_read_ctx != NULL) {
-    EVP_CIPHER_CTX_reset(_read_ctx);
-  } else {
-    _read_ctx = EVP_CIPHER_CTX_new();
-  }
+  _read_ctx = EVP_CIPHER_CTX_new();
   nassertv(_read_ctx != NULL);
 
   // Initialize the context
@@ -228,11 +224,6 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   if (cipher == NULL) {
     prc_cat.error()
       << "Unknown encryption algorithm: " << _algorithm << "\n";
-
-    if (_write_ctx != NULL) {
-      EVP_CIPHER_CTX_free(_write_ctx);
-      _write_ctx = NULL;
-    }
     return;
   }
 
@@ -246,11 +237,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   unsigned char *iv = (unsigned char *)alloca(iv_length);
   RAND_pseudo_bytes(iv, iv_length);
 
-  if (_read_ctx != NULL) {
-    EVP_CIPHER_CTX_reset(_write_ctx);
-  } else {
-    _write_ctx = EVP_CIPHER_CTX_new();
-  }
+  _write_ctx = EVP_CIPHER_CTX_new();
   nassertv(_write_ctx != NULL);
 
   int result;
