@@ -148,11 +148,14 @@ load_display_information() {
   //_display_information->_device_id = CGDisplaySerialNumber(_display);
 
   // Display modes
+  size_t num_modes = 0;
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
-  size_t num_modes = CFArrayGetCount(modes);
-  _display_information->_total_display_modes = num_modes;
-  _display_information->_display_mode_array = new DisplayMode[num_modes];
+  if (modes != NULL) {
+    num_modes = CFArrayGetCount(modes);
+    _display_information->_total_display_modes = num_modes;
+    _display_information->_display_mode_array = new DisplayMode[num_modes];
+  }
 
   for (size_t i = 0; i < num_modes; ++i) {
     CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
@@ -189,13 +192,17 @@ load_display_information() {
     }
     CFRelease(encoding);
   }
-  CFRelease(modes);
+  if (modes != NULL) {
+    CFRelease(modes);
+  }
 
 #else
   CFArrayRef modes = CGDisplayAvailableModes(_display);
-  size_t num_modes = CFArrayGetCount(modes);
-  _display_information->_total_display_modes = num_modes;
-  _display_information->_display_mode_array = new DisplayMode[num_modes];
+  if (modes != NULL) {
+    num_modes = CFArrayGetCount(modes);
+    _display_information->_total_display_modes = num_modes;
+    _display_information->_display_mode_array = new DisplayMode[num_modes];
+  }
 
   for (size_t i = 0; i < num_modes; ++i) {
     CFDictionaryRef mode = (CFDictionaryRef) CFArrayGetValueAtIndex(modes, i);
