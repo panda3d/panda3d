@@ -105,7 +105,11 @@ private:
 
 #elif defined(LINMATH_ALIGN)
   // With SSE2 alignment, we need all 16 bytes to preserve alignment.
+#ifdef __AVX__
+  static const size_t flag_reserved_bytes = 32;
+#else
   static const size_t flag_reserved_bytes = 16;
+#endif
 
 #else
   // Otherwise, we only need enough space for the Integer itself.

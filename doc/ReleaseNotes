@@ -53,6 +53,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix back-to-front sorting when gl-coordinate-system is changed
 * Now also compiles on older Linux distros (eg. CentOS 5 / manylinux1)
 * get_keyboard_map now includes keys on layouts with special characters
+* Fix crash due to incorrect alignment when compiling Eigen with AVX
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
