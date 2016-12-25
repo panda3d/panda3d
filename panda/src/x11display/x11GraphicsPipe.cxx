@@ -17,6 +17,8 @@
 #include "frameBufferProperties.h"
 #include "displayInformation.h"
 
+#include <dlfcn.h>
+
 TypeHandle x11GraphicsPipe::_type_handle;
 
 bool x11GraphicsPipe::_error_handlers_installed = false;
@@ -31,7 +33,11 @@ LightReMutex x11GraphicsPipe::_x_mutex;
  *
  */
 x11GraphicsPipe::
-x11GraphicsPipe(const string &display) {
+x11GraphicsPipe(const string &display) :
+  _have_xrandr(false),
+  _xcursor_size(-1),
+  _XF86DGADirectVideo(NULL) {
+
   string display_spec = display;
   if (display_spec.empty()) {
     display_spec = display_cfg;
@@ -86,34 +92,116 @@ x11GraphicsPipe(const string &display) {
   _display_height = DisplayHeight(_display, _screen);
   _is_valid = true;
 
-#ifdef HAVE_XRANDR
-  // Use Xrandr to fill in the supported resolution list.
-  int num_sizes, num_rates;
-  XRRScreenSize *xrrs;
-  xrrs = XRRSizes(_display, 0, &num_sizes);
-  _display_information->_total_display_modes = 0;
-  for (int i = 0; i < num_sizes; ++i) {
-    XRRRates(_display, 0, i, &num_rates);
-    _display_information->_total_display_modes += num_rates;
-  }
+  // Dynamically load the xf86dga extension.
+  void *xf86dga = dlopen("libXxf86dga.so.1", RTLD_NOW | RTLD_LOCAL);
+  if (xf86dga != NULL) {
+    pfn_XF86DGAQueryVersion _XF86DGAQueryVersion = (pfn_XF86DGAQueryVersion)dlsym(xf86dga, "XF86DGAQueryVersion");
+    _XF86DGADirectVideo = (pfn_XF86DGADirectVideo)dlsym(xf86dga, "XF86DGADirectVideo");
 
-  short *rates;
-  short counter = 0;
-  _display_information->_display_mode_array = new DisplayMode[_display_information->_total_display_modes];
-  for (int i = 0; i < num_sizes; ++i) {
-    int num_rates;
-    rates = XRRRates(_display, 0, i, &num_rates);
-    for (int j = 0; j < num_rates; ++j) {
-      DisplayMode* dm = _display_information->_display_mode_array + counter;
-      dm->width = xrrs[i].width;
-      dm->height = xrrs[i].height;
-      dm->refresh_rate = rates[j];
-      dm->bits_per_pixel = -1;
-      dm->fullscreen_only = false;
-      ++counter;
+    int major_ver, minor_ver;
+    if (_XF86DGAQueryVersion == NULL || _XF86DGADirectVideo == NULL) {
+      x11display_cat.warning()
+        << "libXxf86dga.so.1 does not provide required functions; relative mouse mode will not work.\n";
+
+    } else if (!_XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
+      _XF86DGADirectVideo = NULL;
+    }
+  } else {
+    _XF86DGADirectVideo = NULL;
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "cannot dlopen libXxf86dga.so.1; cursor changing will not work.\n";
     }
   }
-#endif
+
+  // Dynamically load the XCursor extension.
+  void *xcursor = dlopen("libXcursor.so.1", RTLD_NOW | RTLD_LOCAL);
+  if (xcursor != NULL) {
+    pfn_XcursorGetDefaultSize _XcursorGetDefaultSize = (pfn_XcursorGetDefaultSize)dlsym(xcursor, "XcursorGetDefaultSize");
+    _XcursorXcFileLoadImages = (pfn_XcursorXcFileLoadImages)dlsym(xcursor, "XcursorXcFileLoadImages");
+    _XcursorImagesLoadCursor = (pfn_XcursorImagesLoadCursor)dlsym(xcursor, "XcursorImagesLoadCursor");
+    _XcursorImagesDestroy = (pfn_XcursorImagesDestroy)dlsym(xcursor, "XcursorImagesDestroy");
+    _XcursorImageCreate = (pfn_XcursorImageCreate)dlsym(xcursor, "XcursorImageCreate");
+    _XcursorImageLoadCursor = (pfn_XcursorImageLoadCursor)dlsym(xcursor, "XcursorImageLoadCursor");
+    _XcursorImageDestroy = (pfn_XcursorImageDestroy)dlsym(xcursor, "XcursorImageDestroy");
+
+    if (_XcursorGetDefaultSize == NULL || _XcursorXcFileLoadImages == NULL ||
+        _XcursorImagesLoadCursor == NULL || _XcursorImagesDestroy == NULL ||
+        _XcursorImageCreate == NULL || _XcursorImageLoadCursor == NULL ||
+        _XcursorImageDestroy == NULL) {
+      _xcursor_size = -1;
+      x11display_cat.warning()
+        << "libXcursor.so.1 does not provide required functions; cursor changing will not work.\n";
+
+    } else if (x_cursor_size.get_value() >= 0) {
+      _xcursor_size = x_cursor_size;
+    } else {
+      _xcursor_size = _XcursorGetDefaultSize(_display);
+    }
+  } else {
+    _xcursor_size = -1;
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "cannot dlopen libXcursor.so.1; cursor changing will not work.\n";
+    }
+  }
+
+  // Dynamically load the XRandr extension.
+  void *xrandr = dlopen("libXrandr.so.2", RTLD_NOW | RTLD_LOCAL);
+  if (xrandr != NULL) {
+    pfn_XRRQueryExtension _XRRQueryExtension = (pfn_XRRQueryExtension)dlsym(xrandr, "XRRQueryExtension");
+    _XRRSizes = (pfn_XRRSizes)dlsym(xrandr, "XRRSizes");
+    _XRRRates = (pfn_XRRRates)dlsym(xrandr, "XRRRates");
+    _XRRGetScreenInfo = (pfn_XRRGetScreenInfo)dlsym(xrandr, "XRRGetScreenInfo");
+    _XRRConfigCurrentConfiguration = (pfn_XRRConfigCurrentConfiguration)dlsym(xrandr, "XRRConfigCurrentConfiguration");
+    _XRRSetScreenConfig = (pfn_XRRSetScreenConfig)dlsym(xrandr, "XRRSetScreenConfig");
+
+    if (_XRRQueryExtension == NULL || _XRRSizes == NULL || _XRRRates == NULL ||
+        _XRRGetScreenInfo == NULL || _XRRConfigCurrentConfiguration == NULL ||
+        _XRRSetScreenConfig == NULL) {
+      _have_xrandr = false;
+      x11display_cat.warning()
+        << "libXrandr.so.2 does not provide required functions; resolution setting will not work.\n";
+    } else {
+      int event, error;
+      _have_xrandr = _XRRQueryExtension(_display, &event, &error);
+    }
+  } else {
+    _have_xrandr = false;
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "cannot dlopen libXrandr.so.2; resolution setting will not work.\n";
+    }
+  }
+
+  // Use Xrandr to fill in the supported resolution list.
+  if (_have_xrandr) {
+    int num_sizes, num_rates;
+    XRRScreenSize *xrrs;
+    xrrs = _XRRSizes(_display, 0, &num_sizes);
+    _display_information->_total_display_modes = 0;
+    for (int i = 0; i < num_sizes; ++i) {
+      _XRRRates(_display, 0, i, &num_rates);
+      _display_information->_total_display_modes += num_rates;
+    }
+
+    short *rates;
+    short counter = 0;
+    _display_information->_display_mode_array = new DisplayMode[_display_information->_total_display_modes];
+    for (int i = 0; i < num_sizes; ++i) {
+      int num_rates;
+      rates = _XRRRates(_display, 0, i, &num_rates);
+      for (int j = 0; j < num_rates; ++j) {
+        DisplayMode* dm = _display_information->_display_mode_array + counter;
+        dm->width = xrrs[i].width;
+        dm->height = xrrs[i].height;
+        dm->refresh_rate = rates[j];
+        dm->bits_per_pixel = -1;
+        dm->fullscreen_only = false;
+        ++counter;
+      }
+    }
+  }
 
   // Connect to an input method for supporting international text entry.
   _im = XOpenIM(_display, NULL, NULL, NULL);

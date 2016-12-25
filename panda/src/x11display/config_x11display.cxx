@@ -60,6 +60,11 @@ ConfigVariableInt x_wheel_right_button
           "mouse button number does the system report when one scrolls "
           "to the right?"));
 
+ConfigVariableInt x_cursor_size
+("x-cursor-size", -1,
+ PRC_DESC("This sets the cursor size when using XCursor to change the mouse "
+          "cursor.  The default is to use the default size for the display."));
+
 ConfigVariableString x_wm_class_name
 ("x-wm-class-name", "",
  PRC_DESC("Specify the value to use for the res_name field of the window's "

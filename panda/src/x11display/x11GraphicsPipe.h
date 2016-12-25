@@ -21,6 +21,22 @@
 #include "lightReMutex.h"
 #include "windowHandle.h"
 #include "get_x11.h"
+#include "config_x11display.h"
+
+// Excerpt the few definitions we need for the extensions.
+#define XF86DGADirectMouse 0x0004
+
+typedef struct _XcursorFile XcursorFile;
+typedef struct _XcursorImage XcursorImage;
+typedef struct _XcursorImages XcursorImages;
+
+typedef unsigned short Rotation;
+typedef unsigned short SizeID;
+typedef struct _XRRScreenConfiguration XRRScreenConfiguration;
+typedef struct {
+  int width, height;
+  int mwidth, mheight;
+} XRRScreenSize;
 
 class FrameBufferProperties;
 
@@ -39,6 +55,10 @@ public:
   INLINE XIM get_im() const;
 
   INLINE X11_Cursor get_hidden_cursor();
+
+  INLINE bool supports_relative_mouse() const;
+  INLINE bool enable_relative_mouse();
+  INLINE void disable_relative_mouse();
 
   static INLINE int disable_x_error_messages();
   static INLINE int enable_x_error_messages();
@@ -61,6 +81,38 @@ public:
   Atom _net_wm_state_add;
   Atom _net_wm_state_remove;
 
+  // Extension functions.
+  typedef int (*pfn_XcursorGetDefaultSize)(X11_Display *);
+  typedef XcursorImages *(*pfn_XcursorXcFileLoadImages)(XcursorFile *, int);
+  typedef X11_Cursor (*pfn_XcursorImagesLoadCursor)(X11_Display *, const XcursorImages *);
+  typedef void (*pfn_XcursorImagesDestroy)(XcursorImages *);
+  typedef XcursorImage *(*pfn_XcursorImageCreate)(int, int);
+  typedef X11_Cursor (*pfn_XcursorImageLoadCursor)(X11_Display *, const XcursorImage *);
+  typedef void (*pfn_XcursorImageDestroy)(XcursorImage *);
+
+  int _xcursor_size;
+  pfn_XcursorXcFileLoadImages _XcursorXcFileLoadImages;
+  pfn_XcursorImagesLoadCursor _XcursorImagesLoadCursor;
+  pfn_XcursorImagesDestroy _XcursorImagesDestroy;
+  pfn_XcursorImageCreate _XcursorImageCreate;
+  pfn_XcursorImageLoadCursor _XcursorImageLoadCursor;
+  pfn_XcursorImageDestroy _XcursorImageDestroy;
+
+  typedef Bool (*pfn_XRRQueryExtension)(X11_Display *, int*, int*);
+  typedef XRRScreenSize *(*pfn_XRRSizes)(X11_Display*, int, int*);
+  typedef short *(*pfn_XRRRates)(X11_Display*, int, int, int*);
+  typedef XRRScreenConfiguration *(*pfn_XRRGetScreenInfo)(X11_Display*, X11_Window);
+  typedef SizeID (*pfn_XRRConfigCurrentConfiguration)(XRRScreenConfiguration*, Rotation*);
+  typedef Status (*pfn_XRRSetScreenConfig)(X11_Display*, XRRScreenConfiguration *,
+                                        Drawable, int, Rotation, Time);
+
+  bool _have_xrandr;
+  pfn_XRRSizes _XRRSizes;
+  pfn_XRRRates _XRRRates;
+  pfn_XRRGetScreenInfo _XRRGetScreenInfo;
+  pfn_XRRConfigCurrentConfiguration _XRRConfigCurrentConfiguration;
+  pfn_XRRSetScreenConfig _XRRSetScreenConfig;
+
 protected:
   X11_Display *_display;
   int _screen;
@@ -68,6 +120,10 @@ protected:
   XIM _im;
 
   X11_Cursor _hidden_cursor;
+
+  typedef Bool (*pfn_XF86DGAQueryVersion)(X11_Display *, int*, int*);
+  typedef Status (*pfn_XF86DGADirectVideo)(X11_Display *, int, int);
+  pfn_XF86DGADirectVideo _XF86DGADirectVideo;
 
 private:
   void make_hidden_cursor();

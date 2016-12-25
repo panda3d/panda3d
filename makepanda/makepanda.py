@@ -88,7 +88,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "ROCKET", "AWESOMIUM",                               # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
-  "X11", "XF86DGA", "XRANDR", "XCURSOR",               # Unix platform support
+  "X11",                                               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses
@@ -516,9 +516,6 @@ IncDirectory("ALWAYS", GetOutputDir()+"/include")
 
 if (COMPILER == "MSVC"):
     PkgDisable("X11")
-    PkgDisable("XRANDR")
-    PkgDisable("XF86DGA")
-    PkgDisable("XCURSOR")
     PkgDisable("GLES")
     PkgDisable("GLES2")
     PkgDisable("EGL")
@@ -843,9 +840,6 @@ if (COMPILER=="GCC"):
             SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
         if not RUNTIME:
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
-            SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
-            SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
-            SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
 
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
@@ -2194,9 +2188,6 @@ DTOOL_CONFIG=[
     ("PHAVE_STDINT_H",                 '1',                      '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
-    ("HAVE_XRANDR",                    'UNDEF',                  '1'),
-    ("HAVE_XF86DGA",                   'UNDEF',                  '1'),
-    ("HAVE_XCURSOR",                   'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("IS_FREEBSD",                     'UNDEF',                  'UNDEF'),
@@ -2301,9 +2292,6 @@ def WriteConfigSettings():
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
-        dtool_config["HAVE_XRANDR"] = 'UNDEF'
-        dtool_config["HAVE_XF86DGA"] = 'UNDEF'
-        dtool_config["HAVE_XCURSOR"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -4581,7 +4569,7 @@ if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("GL")==0 and PkgSkip("X
   TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='p3glxdisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/cocoadisplay/
@@ -4656,7 +4644,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='pandagles_egldisplay_composite1.obj')
   TargetAdd('libpandagles.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -4674,7 +4662,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
   TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -4970,7 +4958,7 @@ if (not RUNTIME and (GetTarget() in ('windows', 'darwin') or PkgSkip("X11")==0) 
     TargetAdd('libp3tinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
   else:
     TargetAdd('libp3tinydisplay.dll', input='p3x11display_composite1.obj')
-    TargetAdd('libp3tinydisplay.dll', opts=['X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+    TargetAdd('libp3tinydisplay.dll', opts=['X11'])
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite1.obj')
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite2.obj')
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_ztriangle_1.obj')
