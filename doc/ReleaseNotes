@@ -54,6 +54,7 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Now also compiles on older Linux distros (eg. CentOS 5 / manylinux1)
 * get_keyboard_map now includes keys on layouts with special characters
 * Fix crash due to incorrect alignment when compiling Eigen with AVX
+* Fix crash when writing 16-bit .tif file (now silently downsamples)
 
 ------------------------  RELEASE 1.9.2  ------------------------
 
@@ -78,7 +79,6 @@ remained in the 1.9.1 release, including:
 * Fix constant reloading of texture when gl-ignore-mipmaps is set
 * BamReader now releases the GIL (so it can be used threaded)
 * Fix AttributeError in direct.stdpy.threading module
-* Fix crash when writing 16-bit .tif file (now silently downsamples)
 
 ------------------------  RELEASE 1.9.1  ------------------------
 

@@ -70,12 +70,11 @@ get_header_reserved_bytes() {
 #ifdef LINMATH_ALIGN
   // If we're doing SSE2 alignment, we must reserve a full 16-byte block,
   // since anything less than that will spoil the alignment.
-  static const size_t header_reserved_bytes = 16;
 #ifdef __AVX__
   // Eigen requires 32-byte alignment when using AVX instructions.
-  const size_t header_reserved_bytes = 32;
+  static const size_t header_reserved_bytes = 32;
 #else
-  const size_t header_reserved_bytes = 16;
+  static const size_t header_reserved_bytes = 16;
 #endif
 
 #elif defined(MEMORY_HOOK_DO_ALIGN)
