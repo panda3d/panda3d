@@ -19,6 +19,10 @@ add_subdirectory(src/showbase)
 if(HAVE_PYTHON)
   add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase)
   target_link_libraries(direct core)
+
+  # Make an __init__.py pointing at the source directory so users can run
+  # Panda3D code straight from their build path:
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" "__path__.insert(0,r\"${CMAKE_CURRENT_SOURCE_DIR}/src\")")
 endif()
 
 # Installation:
@@ -37,8 +41,8 @@ if(HAVE_PYTHON)
   endforeach()
 
   # We also need an __init__.py file, which we have to generate:
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" "")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/src/__init__.py" "")
   install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/__init__.py"
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/src/__init__.py"
     DESTINATION "${PYTHON_LIB_INSTALL_DIR}/direct")
 endif()
