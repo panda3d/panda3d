@@ -34,5 +34,5 @@ for project in projects:
     for path, dirs, files in os.walk(os.path.join(root, project)):
         # Get rid of _composite#.cxx files
         for filename in files:
-            if re.match(r'.*_composite[0-9]+\.cxx', filename):
+            if re.match(r'.*_composite[0-9]*\.(cxx|h|mm)', filename):
                 os.unlink(os.path.join(path, filename))
