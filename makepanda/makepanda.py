@@ -2708,17 +2708,17 @@ ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
 tp_dir = GetThirdpartyDir()
 if tp_dir is not None:
-    dylibs = set()
+    dylibs = {}
 
     if GetTarget() == 'darwin':
         # Make a list of all the dylibs we ship, to figure out whether we should use
         # install_name_tool to correct the library reference to point to our copy.
         for lib in glob.glob(tp_dir + "/*/lib/*.dylib"):
-            dylibs.add(os.path.basename(lib))
+            dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
 
         if not PkgSkip("PYTHON"):
             for lib in glob.glob(tp_dir + "/*/lib/" + SDK["PYTHONVERSION"] + "/*.dylib"):
-                dylibs.add(os.path.basename(lib))
+                dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
 
     for pkg in PkgListGet():
         if PkgSkip(pkg):
@@ -2773,7 +2773,8 @@ if tp_dir is not None:
                     libdep = line.split(" ", 1)[0]
                     dep_basename = os.path.basename(libdep)
                     if dep_basename in dylibs:
-                        oscmd("install_name_tool -change %s %s%s %s" % (libdep, dep_prefix, dep_basename, target), True)
+                        dep_target = dylibs[dep_basename]
+                        oscmd("install_name_tool -change %s %s%s %s" % (libdep, dep_prefix, dep_target, target), True)
 
                 JustBuilt([target], [tp_lib])
 
