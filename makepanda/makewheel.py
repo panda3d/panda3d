@@ -29,7 +29,7 @@ default_platform = get_platform()
 if default_platform.startswith("linux-"):
     # Is this manylinux1?
     if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
-        default_platform = platform.replace("linux", "manylinux1")
+        default_platform = default_platform.replace("linux", "manylinux1")
 
 
 def get_abi_tag():
@@ -74,6 +74,10 @@ def is_mach_o_file(path):
            open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA',
                                         b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
                                         b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE')
+
+def is_fat_file(path):
+    return os.path.isfile(path) and \
+           open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA')
 
 
 if sys.platform in ('win32', 'cygwin'):
@@ -262,6 +266,7 @@ class WheelFile(object):
     def __init__(self, name, version, platform):
         self.name = name
         self.version = version
+        self.platform = platform
 
         wheel_name = "{0}-{1}-{2}-{3}-{4}.whl".format(
             name, version, PY_VERSION, ABI_TAG, platform)
@@ -285,7 +290,7 @@ class WheelFile(object):
 
         self.dep_paths[dep] = None
 
-        if dep.lower().startswith("python"):
+        if dep.lower().startswith("python") or os.path.basename(dep).startswith("libpython"):
             # Don't include the Python library.
             return
 
@@ -339,6 +344,18 @@ class WheelFile(object):
                 suffix = '.dylib'
 
             temp = tempfile.NamedTemporaryFile(suffix=suffix, prefix='whl', delete=False)
+
+            # On macOS, if no fat wheel was requested, extract the right architecture.
+            if sys.platform == "darwin" and is_fat_file(source_path) and not self.platform.endswith("_intel"):
+                if self.platform.endswith("_x86_64"):
+                    arch = 'x86_64'
+                else:
+                    arch = self.platform.split('_')[-1]
+                subprocess.call(['lipo', source_path, '-extract', arch, '-output', temp.name])
+            else:
+                # Otherwise, just copy it over.
+                temp.write(open(source_path, 'rb').read())
+
             temp.write(open(source_path, 'rb').read())
             os.fchmod(temp.fileno(), os.fstat(temp.fileno()).st_mode | 0o111)
             temp.close()
@@ -578,4 +595,4 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     SetVerbose(options.verbose)
-    makewheel(options.version, options.outputdir)
+    makewheel(options.version, options.outputdir, options.platform)
