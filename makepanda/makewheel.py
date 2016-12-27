@@ -3,9 +3,11 @@ Generates a wheel (.whl) file from the output of makepanda.
 
 Since the wheel requires special linking, this will only work if compiled with
 the `--wheel` parameter.
+
+Please keep this file work with Panda3D 1.9 until that reaches EOL.
 """
 from __future__ import print_function, unicode_literals
-from distutils.util import get_platform as get_dist
+from distutils.util import get_platform
 import json
 
 import sys
@@ -16,20 +18,18 @@ import zipfile
 import hashlib
 import tempfile
 import subprocess
-from sysconfig import get_config_var
+from distutils.sysconfig import get_config_var
 from optparse import OptionParser
 from makepandacore import ColorText, LocateBinary, ParsePandaVersion, GetExtensionSuffix, SetVerbose, GetVerbose
 from base64 import urlsafe_b64encode
 
 
-def get_platform():
-    p = get_dist().replace('-', '_').replace('.', '_')
-    #if "linux" in p:
-    #    print(ColorText("red", "WARNING:") +
-    #          " Linux-specific wheel files are not supported."
-    #          " We will generate this wheel as a generic package instead.")
-    #    return "any"
-    return p
+default_platform = get_platform()
+
+if default_platform.startswith("linux-"):
+    # Is this manylinux1?
+    if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+        default_platform = default_platform.replace("linux", "manylinux1")
 
 
 def get_abi_tag():
@@ -71,7 +71,13 @@ def is_elf_file(path):
 def is_mach_o_file(path):
     base = os.path.basename(path)
     return os.path.isfile(path) and '.' not in base and \
-           open(path, 'rb').read(4) == b'\xCA\xFE\xBA\xBE'
+           open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA',
+                                        b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
+                                        b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE')
+
+def is_fat_file(path):
+    return os.path.isfile(path) and \
+           open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA')
 
 
 if sys.platform in ('win32', 'cygwin'):
@@ -83,18 +89,17 @@ else:
 
 
 # Other global parameters
-PY_VERSION = "cp{}{}".format(sys.version_info.major, sys.version_info.minor)
+PY_VERSION = "cp{0}{1}".format(*sys.version_info)
 ABI_TAG = get_abi_tag()
-PLATFORM_TAG = get_platform()
 EXCLUDE_EXT = [".pyc", ".pyo", ".N", ".prebuilt", ".xcf", ".plist", ".vcproj", ".sln"]
 
 # Plug-ins to install.
-PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio"]
+PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio"]
 
 WHEEL_DATA = """Wheel-Version: 1.0
 Generator: makepanda
 Root-Is-Purelib: false
-Tag: {}-{}-{}
+Tag: {0}-{1}-{2}
 """
 
 METADATA = {
@@ -234,7 +239,11 @@ def scan_dependencies(pathname):
     else:
         command = ['ldd', pathname]
 
-    output = subprocess.check_output(command, universal_newlines=True)
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, universal_newlines=True)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        raise subprocess.CalledProcessError(retcode, command[0], output=output)
     filenames = None
 
     if sys.platform in ("win32", "cygwin"):
@@ -245,16 +254,22 @@ def scan_dependencies(pathname):
     if filenames is None:
         sys.exit("Unable to determine dependencies from %s" % (pathname))
 
+    if sys.platform == "darwin" and len(filenames) > 0:
+        # Filter out the library ID.
+        if os.path.basename(filenames[0]).split('.', 1)[0] == os.path.basename(pathname).split('.', 1)[0]:
+            del filenames[0]
+
     return filenames
 
 
 class WheelFile(object):
-    def __init__(self, name, version):
+    def __init__(self, name, version, platform):
         self.name = name
         self.version = version
+        self.platform = platform
 
-        wheel_name = "{}-{}-{}-{}-{}.whl".format(
-            name, version, PY_VERSION, ABI_TAG, PLATFORM_TAG)
+        wheel_name = "{0}-{1}-{2}-{3}-{4}.whl".format(
+            name, version, PY_VERSION, ABI_TAG, platform)
 
         print("Writing %s" % (wheel_name))
         self.zip_file = zipfile.ZipFile(wheel_name, 'w', zipfile.ZIP_DEFLATED)
@@ -275,8 +290,12 @@ class WheelFile(object):
 
         self.dep_paths[dep] = None
 
-        if dep.lower().startswith("python"):
+        if dep.lower().startswith("python") or os.path.basename(dep).startswith("libpython"):
             # Don't include the Python library.
+            return
+
+        if sys.platform == "darwin" and dep.endswith(".so"):
+            # Temporary hack for 1.9, which had link deps on modules.
             return
 
         source_path = None
@@ -325,6 +344,18 @@ class WheelFile(object):
                 suffix = '.dylib'
 
             temp = tempfile.NamedTemporaryFile(suffix=suffix, prefix='whl', delete=False)
+
+            # On macOS, if no fat wheel was requested, extract the right architecture.
+            if sys.platform == "darwin" and is_fat_file(source_path) and not self.platform.endswith("_intel"):
+                if self.platform.endswith("_x86_64"):
+                    arch = 'x86_64'
+                else:
+                    arch = self.platform.split('_')[-1]
+                subprocess.call(['lipo', source_path, '-extract', arch, '-output', temp.name])
+            else:
+                # Otherwise, just copy it over.
+                temp.write(open(source_path, 'rb').read())
+
             temp.write(open(source_path, 'rb').read())
             os.fchmod(temp.fileno(), os.fstat(temp.fileno()).st_mode | 0o111)
             temp.close()
@@ -372,7 +403,7 @@ class WheelFile(object):
         # Save it in PEP-0376 format for writing out later.
         digest = str(urlsafe_b64encode(sha.digest()))
         digest = digest.rstrip('=')
-        self.records.append("{},sha256={},{}\n".format(target_path, digest, size))
+        self.records.append("{0},sha256={1},{2}\n".format(target_path, digest, size))
 
         if GetVerbose():
             print("Adding %s from %s" % (target_path, source_path))
@@ -388,7 +419,7 @@ class WheelFile(object):
         sha.update(source_data.encode())
         digest = str(urlsafe_b64encode(sha.digest()))
         digest = digest.rstrip('=')
-        self.records.append("{},sha256={},{}\n".format(target_path, digest, len(source_data)))
+        self.records.append("{0},sha256={1},{2}\n".format(target_path, digest, len(source_data)))
 
         if GetVerbose():
             print("Adding %s from data" % target_path)
@@ -409,17 +440,19 @@ class WheelFile(object):
 
     def close(self):
         # Write the RECORD file.
-        record_file = "{}-{}.dist-info/RECORD".format(self.name, self.version)
+        record_file = "{0}-{1}.dist-info/RECORD".format(self.name, self.version)
         self.records.append(record_file + ",,\n")
 
         self.zip_file.writestr(record_file, "".join(self.records))
         self.zip_file.close()
 
 
-def makewheel(version, output_dir):
+def makewheel(version, output_dir, platform=default_platform):
     if sys.platform not in ("win32", "darwin") and not sys.platform.startswith("cygwin"):
         if not LocateBinary("patchelf"):
             raise Exception("patchelf is required when building a Linux wheel.")
+
+    platform = platform.replace('-', '_').replace('.', '_')
 
     # Global filepaths
     panda3d_dir = join(output_dir, "panda3d")
@@ -438,8 +471,8 @@ def makewheel(version, output_dir):
     # Update relevant METADATA entries
     METADATA['version'] = version
     version_classifiers = [
-        "Programming Language :: Python :: {}".format(*sys.version_info),
-        "Programming Language :: Python :: {}.{}".format(*sys.version_info),
+        "Programming Language :: Python :: {0}".format(*sys.version_info),
+        "Programming Language :: Python :: {0}.{1}".format(*sys.version_info),
     ]
     METADATA['classifiers'].extend(version_classifiers)
 
@@ -454,14 +487,14 @@ def makewheel(version, output_dir):
         "Version: {version}\n" \
         "Summary: {summary}\n" \
         "License: {license}\n".format(**METADATA),
-        "Home-page: {}\n".format(homepage),
-        "Author: {}\n".format(author),
-        "Author-email: {}\n".format(email),
-        "Platform: {}\n".format(PLATFORM_TAG),
-    ] + ["Classifier: {}\n".format(c) for c in METADATA['classifiers']])
+        "Home-page: {0}\n".format(homepage),
+        "Author: {0}\n".format(author),
+        "Author-email: {0}\n".format(email),
+        "Platform: {0}\n".format(platform),
+    ] + ["Classifier: {0}\n".format(c) for c in METADATA['classifiers']])
 
     # Zip it up and name it the right thing
-    whl = WheelFile('panda3d', version)
+    whl = WheelFile('panda3d', version, platform)
     whl.lib_path = [libs_dir]
 
     # Add the trees with Python modules.
@@ -479,11 +512,12 @@ def makewheel(version, output_dir):
         elif file.endswith(ext_suffix) or file.endswith('.py'):
             source_path = os.path.join(panda3d_dir, file)
 
-            if file.endswith('.pyd') and PLATFORM_TAG.startswith('cygwin'):
+            if file.endswith('.pyd') and platform.startswith('cygwin'):
                 # Rename it to .dll for cygwin Python to be able to load it.
                 target_path = 'panda3d/' + os.path.splitext(file)[0] + '.dll'
             else:
                 target_path = 'panda3d/' + file
+
             whl.write_file(target_path, source_path)
 
     # Add plug-ins.
@@ -499,31 +533,8 @@ def makewheel(version, output_dir):
         if os.path.isfile(plugin_path):
             whl.write_file('panda3d/' + plugin_name, plugin_path)
 
-    # Add the pandac tree for backward compatibility.
-    for file in os.listdir(pandac_dir):
-        if file.endswith('.py'):
-            whl.write_file('pandac/' + file, os.path.join(pandac_dir, file))
-
-    # Add a panda3d-tools directory containing the executables.
-    entry_points = '[console_scripts]\n'
-    tools_init = ''
-    for file in os.listdir(bin_dir):
-        source_path = os.path.join(bin_dir, file)
-
-        if is_executable(source_path):
-            # Put the .exe files inside the panda3d-tools directory.
-            whl.write_file('panda3d_tools/' + file, source_path)
-
-            # Tell pip to create a wrapper script.
-            basename = os.path.splitext(file)[0]
-            funcname = basename.replace('-', '_')
-            entry_points += '{0} = panda3d_tools:{1}\n'.format(basename, funcname)
-            tools_init += '{0} = lambda: _exec_tool({1!r})\n'.format(funcname, file)
-
-    whl.write_file_data('panda3d_tools/__init__.py', PANDA3D_TOOLS_INIT.format(tools_init))
-
     # Add the .data directory, containing additional files.
-    data_dir = 'panda3d-{}.data'.format(version)
+    data_dir = 'panda3d-{0}.data'.format(version)
     #whl.write_directory(data_dir + '/data/etc', etc_dir)
     #whl.write_directory(data_dir + '/data/models', models_dir)
 
@@ -532,12 +543,40 @@ def makewheel(version, output_dir):
     whl.write_directory('panda3d/etc', etc_dir)
     whl.write_directory('panda3d/models', models_dir)
 
+    # Add the pandac tree for backward compatibility.
+    for file in os.listdir(pandac_dir):
+        if file.endswith('.py'):
+            whl.write_file('pandac/' + file, os.path.join(pandac_dir, file))
+
+    # Add a panda3d-tools directory containing the executables.
+    entry_points = '[console_scripts]\n'
+    entry_points += 'eggcacher = direct.directscripts.eggcacher:main\n'
+    entry_points += 'packpanda = direct.directscripts.packpanda:main\n'
+    tools_init = ''
+    for file in os.listdir(bin_dir):
+        basename = os.path.splitext(file)[0]
+        if basename in ('eggcacher', 'packpanda'):
+            continue
+
+        source_path = os.path.join(bin_dir, file)
+
+        if is_executable(source_path):
+            # Put the .exe files inside the panda3d-tools directory.
+            whl.write_file('panda3d_tools/' + file, source_path)
+
+            # Tell pip to create a wrapper script.
+            funcname = basename.replace('-', '_')
+            entry_points += '{0} = panda3d_tools:{1}\n'.format(basename, funcname)
+            tools_init += '{0} = lambda: _exec_tool({1!r})\n'.format(funcname, file)
+
+    whl.write_file_data('panda3d_tools/__init__.py', PANDA3D_TOOLS_INIT.format(tools_init))
+
     # Add the dist-info directory last.
-    info_dir = 'panda3d-{}.dist-info'.format(version)
+    info_dir = 'panda3d-{0}.dist-info'.format(version)
     whl.write_file_data(info_dir + '/entry_points.txt', entry_points)
     whl.write_file_data(info_dir + '/metadata.json', json.dumps(METADATA, indent=4, separators=(',', ': ')))
     whl.write_file_data(info_dir + '/METADATA', metadata)
-    whl.write_file_data(info_dir + '/WHEEL', WHEEL_DATA.format(PY_VERSION, ABI_TAG, PLATFORM_TAG))
+    whl.write_file_data(info_dir + '/WHEEL', WHEEL_DATA.format(PY_VERSION, ABI_TAG, platform))
     whl.write_file(info_dir + '/LICENSE.txt', license_src)
     whl.write_file(info_dir + '/README.md', readme_src)
     whl.write_file_data(info_dir + '/top_level.txt', 'direct\npanda3d\npandac\npanda3d_tools\n')
@@ -552,7 +591,8 @@ if __name__ == "__main__":
     parser.add_option('', '--version', dest = 'version', help = 'Panda3D version number (default: %s)' % (version), default = version)
     parser.add_option('', '--outputdir', dest = 'outputdir', help = 'Makepanda\'s output directory (default: built)', default = 'built')
     parser.add_option('', '--verbose', dest = 'verbose', help = 'Enable verbose output', action = 'store_true', default = False)
+    parser.add_option('', '--platform', dest = 'platform', help = 'Override platform tag (default: %s)' % (default_platform), default = get_platform())
     (options, args) = parser.parse_args()
 
     SetVerbose(options.verbose)
-    makewheel(options.version, options.outputdir)
+    makewheel(options.version, options.outputdir, options.platform)

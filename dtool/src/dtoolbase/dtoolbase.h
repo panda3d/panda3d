@@ -374,7 +374,7 @@ typedef struct _object PyObject;
 // externally.
 #define MEMORY_HOOK_DO_ALIGN 1
 
-#elif defined(IS_OSX) || defined(_WIN64)
+#elif (defined(IS_OSX) || defined(_WIN64)) && !defined(__AVX__)
 // The OS-provided malloc implementation will do the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 

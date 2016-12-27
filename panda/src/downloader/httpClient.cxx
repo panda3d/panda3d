@@ -232,6 +232,12 @@ operator = (const HTTPClient &copy) {
 HTTPClient::
 ~HTTPClient() {
   if (_ssl_ctx != (SSL_CTX *)NULL) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    // Before we can free the context, we must remove the X509_STORE pointer
+    // from it, so it won't be destroyed along with it (this object is shared
+    // among all contexts).
+    _ssl_ctx->cert_store = NULL;
+#endif
     SSL_CTX_free(_ssl_ctx);
   }
 
@@ -1119,9 +1125,11 @@ get_ssl_ctx() {
   sslw->notify_ssl_errors();
 
   X509_STORE *store = sslw->get_x509_store();
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
   if (store != NULL) {
     X509_STORE_up_ref(store);
   }
+#endif
   SSL_CTX_set_cert_store(_ssl_ctx, store);
 
   return _ssl_ctx;
