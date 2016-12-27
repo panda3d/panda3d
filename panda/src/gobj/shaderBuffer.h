@@ -15,8 +15,11 @@
 #define SHADERBUFFER_H
 
 #include "pandabase.h"
+#include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "geomEnums.h"
+#include "graphicsStateGuardianBase.h"
+#include "factoryParams.h"
 
 class BufferContext;
 class PreparedGraphicsObjects;
