@@ -43,10 +43,16 @@ get_memory_alignment() {
 #ifdef LINMATH_ALIGN
   // We require 16-byte alignment of certain structures, to support SSE2.  We
   // don't strictly have to align *everything*, but it's just easier to do so.
-  const size_t alignment_size = 16;
+#ifdef __AVX__
+  // Eigen requires 32-byte alignment when using AVX instructions.
+  const size_t alignment_size = 32;
 #else
-  // Otherwise, use word alignment.
-  const size_t alignment_size = sizeof(void *);
+  const size_t alignment_size = 16;
+#endif
+#else
+  // Otherwise, align to two words.  This seems to be pretty standard to the
+  // point where some code may rely on this being the case.
+  const size_t alignment_size = sizeof(void *) * 2;
 #endif
   return alignment_size;
 }
@@ -64,7 +70,12 @@ get_header_reserved_bytes() {
 #ifdef LINMATH_ALIGN
   // If we're doing SSE2 alignment, we must reserve a full 16-byte block,
   // since anything less than that will spoil the alignment.
+#ifdef __AVX__
+  // Eigen requires 32-byte alignment when using AVX instructions.
+  static const size_t header_reserved_bytes = 32;
+#else
   static const size_t header_reserved_bytes = 16;
+#endif
 
 #elif defined(MEMORY_HOOK_DO_ALIGN)
   // If we're just aligning to words, we reserve a block as big as two words,
@@ -72,8 +83,9 @@ get_header_reserved_bytes() {
   static const size_t header_reserved_bytes = sizeof(size_t) + sizeof(size_t);
 
 #else
-  // If we're not aligning, we just need space for the word itself.
-  static const size_t header_reserved_bytes = sizeof(size_t);
+  // Virtually all allocators align to two words, so we make sure we preserve
+  // that alignment for the benefit of anyone who relies upon that.
+  static const size_t header_reserved_bytes = sizeof(void *) * 2;
 #endif
 
   return header_reserved_bytes;

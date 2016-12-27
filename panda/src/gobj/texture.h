@@ -817,6 +817,8 @@ private:
                                          int n, istream &in);
   static PTA_uchar read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header,
                                          int n, istream &in);
+  static PTA_uchar read_dds_level_raw(Texture *tex, CData *cdata, const DDSHeader &header,
+                                      int n, istream &in);
   static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata,
                                                        const DDSHeader &header,
                                                        int n, istream &in);

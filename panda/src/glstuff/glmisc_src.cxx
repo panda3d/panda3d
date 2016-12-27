@@ -331,6 +331,7 @@ void CLP(init_classes)() {
   CLP(SamplerContext)::init_type();
 #endif
   CLP(VertexBufferContext)::init_type();
+  CLP(BufferContext)::init_type();
   CLP(GraphicsBuffer)::init_type();
 
 #ifndef OPENGLES

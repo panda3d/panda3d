@@ -3643,13 +3643,13 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       header.pf.four_cc == 0x30315844) {   // 'DX10'
     // A DirectX 10 style texture, which has an additional header.
     func = read_dds_level_generic_uncompressed;
-    unsigned int format = dds.get_uint32();
+    unsigned int dxgi_format = dds.get_uint32();
     unsigned int dimension = dds.get_uint32();
     unsigned int misc_flag = dds.get_uint32();
     unsigned int array_size = dds.get_uint32();
     /*unsigned int alpha_mode = */dds.get_uint32();
 
-    switch (format) {
+    switch (dxgi_format) {
     case 2:    // DXGI_FORMAT_R32G32B32A32_FLOAT
       format = F_rgba32;
       component_type = T_float;
@@ -3664,6 +3664,11 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       format = F_rgba16;
       component_type = T_unsigned_short;
       func = read_dds_level_abgr16;
+      break;
+    case 16:   // DXGI_FORMAT_R32G32_FLOAT
+      format = F_rg32;
+      component_type = T_float;
+      func = read_dds_level_raw;
       break;
     case 27:   // DXGI_FORMAT_R8G8B8A8_TYPELESS
     case 28:   // DXGI_FORMAT_R8G8B8A8_UNORM
@@ -3688,6 +3693,41 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       component_type = T_byte;
       func = read_dds_level_abgr8;
       break;
+    case 34:   // DXGI_FORMAT_R16G16_FLOAT:
+      format = F_rg16;
+      component_type = T_half_float;
+      func = read_dds_level_raw;
+      break;
+    case 35:   // DXGI_FORMAT_R16G16_UNORM:
+      format = F_rg16;
+      component_type = T_unsigned_short;
+      func = read_dds_level_raw;
+      break;
+    case 37:   // DXGI_FORMAT_R16G16_SNORM:
+      format = F_rg16;
+      component_type = T_short;
+      func = read_dds_level_raw;
+      break;
+    case 40:   // DXGI_FORMAT_D32_FLOAT
+      format = F_depth_component32;
+      component_type = T_float;
+      func = read_dds_level_raw;
+      break;
+    case 41:   // DXGI_FORMAT_R32_FLOAT
+      format = F_r32;
+      component_type = T_float;
+      func = read_dds_level_raw;
+      break;
+    case 42:   // DXGI_FORMAT_R32_UINT
+      format = F_r32i;
+      component_type = T_unsigned_int;
+      func = read_dds_level_raw;
+      break;
+    case 43:   // DXGI_FORMAT_R32_SINT
+      format = F_r32i;
+      component_type = T_int;
+      func = read_dds_level_raw;
+      break;
     case 48:   // DXGI_FORMAT_R8G8_TYPELESS
     case 49:   // DXGI_FORMAT_R8G8_UNORM
       format = F_rg;
@@ -3702,6 +3742,36 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
     case 52:   // DXGI_FORMAT_R8G8_SINT
       format = F_rg8i;
       component_type = T_byte;
+      break;
+    case 54:   // DXGI_FORMAT_R16_FLOAT:
+      format = F_r16;
+      component_type = T_half_float;
+      func = read_dds_level_raw;
+      break;
+    case 55:   // DXGI_FORMAT_D16_UNORM:
+      format = F_depth_component16;
+      component_type = T_unsigned_short;
+      func = read_dds_level_raw;
+      break;
+    case 56:   // DXGI_FORMAT_R16_UNORM:
+      format = F_r16;
+      component_type = T_unsigned_short;
+      func = read_dds_level_raw;
+      break;
+    case 57:   // DXGI_FORMAT_R16_UINT:
+      format = F_r16i;
+      component_type = T_unsigned_short;
+      func = read_dds_level_raw;
+      break;
+    case 58:   // DXGI_FORMAT_R16_SNORM:
+      format = F_r16;
+      component_type = T_short;
+      func = read_dds_level_raw;
+      break;
+    case 59:   // DXGI_FORMAT_R16_SINT:
+      format = F_r16i;
+      component_type = T_short;
+      func = read_dds_level_raw;
       break;
     case 60:   // DXGI_FORMAT_R8_TYPELESS
     case 61:   // DXGI_FORMAT_R8_UNORM
@@ -3760,7 +3830,6 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       compression = CM_rgtc;
       func = read_dds_level_bc4;
       break;
-      break;
     case 82:   // DXGI_FORMAT_BC5_TYPELESS
     case 83:   // DXGI_FORMAT_BC5_UNORM
       format = F_rg;
@@ -3786,7 +3855,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       break;
     default:
       gobj_cat.error()
-        << filename << ": unsupported DXGI format " << format << ".\n";
+        << filename << ": unsupported DXGI format " << dxgi_format << ".\n";
       return false;
     }
 
@@ -7729,10 +7798,11 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
     // Most common case: one byte per pixel, and the source image shows a
     // maxval of 255.  No scaling is necessary.  Because this is such a common
     // case, we break it out per component for best performance.
+    const xel *array = pnmimage.get_array();
     switch (num_components) {
     case 1:
       for (int j = y_size-1; j >= 0; j--) {
-        xel *row = pnmimage.row(j);
+        const xel *row = array + j * x_size;
         for (int i = 0; i < x_size; i++) {
           *p++ = (uchar)PPM_GETB(row[i]);
         }
@@ -7742,9 +7812,10 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
     case 2:
       if (img_has_alpha) {
+        const xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          const xel *row = array + j * x_size;
+          const xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)alpha_row[i];
@@ -7753,7 +7824,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          const xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)255;
@@ -7765,7 +7836,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
     case 3:
       for (int j = y_size-1; j >= 0; j--) {
-        xel *row = pnmimage.row(j);
+        const xel *row = array + j * x_size;
         for (int i = 0; i < x_size; i++) {
           *p++ = (uchar)PPM_GETB(row[i]);
           *p++ = (uchar)PPM_GETG(row[i]);
@@ -7777,9 +7848,10 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
 
     case 4:
       if (img_has_alpha) {
+        const xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          const xel *row = array + j * x_size;
+          const xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)PPM_GETG(row[i]);
@@ -7790,7 +7862,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          const xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             *p++ = (uchar)PPM_GETB(row[i]);
             *p++ = (uchar)PPM_GETG(row[i]);
@@ -7813,7 +7885,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
     for (int j = y_size-1; j >= 0; j--) {
       for (int i = 0; i < x_size; i++) {
         if (is_grayscale) {
-           store_unscaled_short(p, pnmimage.get_gray_val(i, j));
+          store_unscaled_short(p, pnmimage.get_gray_val(i, j));
         } else {
           store_unscaled_short(p, pnmimage.get_blue_val(i, j));
           store_unscaled_short(p, pnmimage.get_green_val(i, j));
@@ -7979,11 +8051,13 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
   const unsigned char *p = &image[idx];
 
   if (component_width == 1) {
+    xel *array = pnmimage.get_array();
     if (is_grayscale) {
       if (has_alpha) {
+        xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          xel *row = array + j * x_size;
+          xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
             alpha_row[i] = *p++;
@@ -7991,7 +8065,7 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
           }
@@ -7999,9 +8073,10 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
       }
     } else {
       if (has_alpha) {
+        xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
-          xelval *alpha_row = pnmimage.alpha_row(j);
+          xel *row = array + j * x_size;
+          xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
             PPM_PUTG(row[i], *p++);
@@ -8011,7 +8086,7 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
         }
       } else {
         for (int j = y_size-1; j >= 0; j--) {
-          xel *row = pnmimage.row(j);
+          xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
             PPM_PUTB(row[i], *p++);
             PPM_PUTG(row[i], *p++);
@@ -8258,6 +8333,7 @@ read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header, int n
 
   size_t size = tex->do_get_expected_ram_mipmap_page_size(cdata, n);
   size_t row_bytes = x_size * 16;
+  nassertr(row_bytes * y_size == size, PTA_uchar());
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
@@ -8269,6 +8345,26 @@ read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header, int n
       pw += 4;
     }
     nassertr((unsigned char *)pw <= image.p() + size, PTA_uchar());
+  }
+
+  return image;
+}
+
+/**
+ * Called by read_dds for a DDS file that needs no transformations applied.
+ */
+PTA_uchar Texture::
+read_dds_level_raw(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+  int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
+  int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
+
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(cdata, n);
+  size_t row_bytes = x_size * cdata->_num_components * cdata->_component_width;
+  nassertr(row_bytes * y_size == size, PTA_uchar());
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    in.read((char *)p, row_bytes);
   }
 
   return image;
@@ -8932,13 +9028,20 @@ compare_images(const PNMImage &a, const PNMImage &b) {
   nassertr(a.get_x_size() == b.get_x_size() &&
            a.get_y_size() == b.get_y_size(), false);
 
+  const xel *a_array = a.get_array();
+  const xel *b_array = b.get_array();
+  const xelval *a_alpha = a.get_alpha_array();
+  const xelval *b_alpha = b.get_alpha_array();
+
+  int x_size = a.get_x_size();
+
   int delta = 0;
   for (int yi = 0; yi < a.get_y_size(); ++yi) {
-    xel *a_row = a.row(yi);
-    xel *b_row = b.row(yi);
-    xelval *a_alpha_row = a.alpha_row(yi);
-    xelval *b_alpha_row = b.alpha_row(yi);
-    for (int xi = 0; xi < a.get_x_size(); ++xi) {
+    const xel *a_row = a_array + yi * x_size;
+    const xel *b_row = b_array + yi * x_size;
+    const xelval *a_alpha_row = a_alpha + yi * x_size;
+    const xelval *b_alpha_row = b_alpha + yi * x_size;
+    for (int xi = 0; xi < x_size; ++xi) {
       delta += abs(PPM_GETR(a_row[xi]) - PPM_GETR(b_row[xi]));
       delta += abs(PPM_GETG(a_row[xi]) - PPM_GETG(b_row[xi]));
       delta += abs(PPM_GETB(a_row[xi]) - PPM_GETB(b_row[xi]));

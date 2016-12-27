@@ -59,6 +59,18 @@ ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority) :
  *
  */
 INLINE ShaderInput::
+ShaderInput(CPT_InternalName name, ShaderBuffer *buf, int priority) :
+  _name(MOVE(name)),
+  _type(M_buffer),
+  _priority(priority),
+  _value(buf)
+{
+}
+
+/**
+ *
+ */
+INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_float &ptr, int priority) :
   _name(MOVE(name)),
   _type(M_numeric),

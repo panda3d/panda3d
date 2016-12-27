@@ -2570,7 +2570,7 @@ ButtonMap *WinGraphicsWindow::
 get_keyboard_map() const {
   ButtonMap *map = new ButtonMap;
 
-  char text[256];
+  wchar_t text[256];
   UINT vsc = 0;
   unsigned short ex_vsc[] = {0x57, 0x58,
     0x011c, 0x011d, 0x0135, 0x0137, 0x0138, 0x0145, 0x0147, 0x0148, 0x0149, 0x014b, 0x014d, 0x014f, 0x0150, 0x0151, 0x0152, 0x0153, 0x015b, 0x015c, 0x015d};
@@ -2608,14 +2608,15 @@ get_keyboard_map() const {
 
       UINT vk = MapVirtualKeyA(vsc, MAPVK_VSC_TO_VK_EX);
       button = lookup_key(vk);
-      if (button == ButtonHandle::none()) {
-        continue;
-      }
+      //if (button == ButtonHandle::none()) {
+      //  continue;
+      //}
     }
 
-    int len = GetKeyNameTextA(lparam, text, 256);
-    string label (text, len);
-    map->map_button(raw_button, button, label);
+    int len = GetKeyNameTextW(lparam, text, 256);
+    TextEncoder enc;
+    enc.set_wtext(wstring(text, len));
+    map->map_button(raw_button, button, enc.get_text());
   }
 
   return map;

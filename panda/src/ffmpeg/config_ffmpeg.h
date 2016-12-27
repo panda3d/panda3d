@@ -31,6 +31,7 @@ extern ConfigVariableBool ffmpeg_support_seek;
 extern ConfigVariableBool ffmpeg_global_lock;
 extern ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority;
 extern ConfigVariableInt ffmpeg_read_buffer_size;
+extern ConfigVariableBool ffmpeg_prefer_libvpx;
 
 extern EXPCL_FFMPEG void init_libffmpeg();
 

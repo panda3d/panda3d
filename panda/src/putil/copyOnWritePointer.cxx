@@ -90,18 +90,16 @@ get_write_pointer() {
     }
 
     PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
+    _cow_object->CachedTypedWritableReferenceCount::cache_unref();
+    _cow_object->_lock_mutex.release();
 
-    // We can't call cache_unref_delete, because we hold the lock.
-    if (!_cow_object->CachedTypedWritableReferenceCount::cache_unref()) {
-      _cow_object->_lock_mutex.release();
-      delete _cow_object;
-    } else {
-      _cow_object->_lock_mutex.release();
-    }
+    MutexHolder holder(new_object->_lock_mutex);
     _cow_object = new_object;
-    _cow_object->cache_ref();
+    _cow_object->CachedTypedWritableReferenceCount::cache_ref();
     _cow_object->_lock_status = CopyOnWriteObject::LS_locked_write;
     _cow_object->_locking_thread = current_thread;
+
+    return new_object;
 
   } else if (_cow_object->get_cache_ref_count() > 1) {
     // No one else has it specifically read-locked, but there are other
@@ -115,18 +113,16 @@ get_write_pointer() {
     }
 
     PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
+    _cow_object->CachedTypedWritableReferenceCount::cache_unref();
+    _cow_object->_lock_mutex.release();
 
-    // We can't call cache_unref_delete, because we hold the lock.
-    if (!_cow_object->CachedTypedWritableReferenceCount::cache_unref()) {
-      _cow_object->_lock_mutex.release();
-      delete _cow_object;
-    } else {
-      _cow_object->_lock_mutex.release();
-    }
+    MutexHolder holder(new_object->_lock_mutex);
     _cow_object = new_object;
-    _cow_object->cache_ref();
+    _cow_object->CachedTypedWritableReferenceCount::cache_ref();
     _cow_object->_lock_status = CopyOnWriteObject::LS_locked_write;
     _cow_object->_locking_thread = current_thread;
+
+    return new_object;
 
   } else {
     // No other thread has the pointer locked, and we're the only

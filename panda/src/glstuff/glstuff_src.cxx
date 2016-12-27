@@ -21,6 +21,7 @@
 #include "glSamplerContext_src.cxx"
 #include "glVertexBufferContext_src.cxx"
 #include "glIndexBufferContext_src.cxx"
+#include "glBufferContext_src.cxx"
 #include "glOcclusionQueryContext_src.cxx"
 #include "glTimerQueryContext_src.cxx"
 #include "glLatencyQueryContext_src.cxx"

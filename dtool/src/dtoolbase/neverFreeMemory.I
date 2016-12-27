@@ -14,6 +14,8 @@
 /**
  * Returns a pointer to a newly-allocated block of memory of the indicated
  * size.
+ *
+ * Please note that the resulting pointer is not aligned to any boundary.
  */
 INLINE void *NeverFreeMemory::
 alloc(size_t size) {

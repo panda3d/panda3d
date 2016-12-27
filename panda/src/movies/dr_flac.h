@@ -534,7 +534,9 @@ static DRFLAC_INLINE uint64_t drflac__swap_endian_uint64(uint64_t n)
 
 static DRFLAC_INLINE uint32_t drflac__be2host_32(uint32_t n)
 {
-#ifdef __linux__
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER == __ORDER_LITTLE_ENDIAN__)
+    return drflac__swap_endian_uint32(n);
+#elif defined(__linux__)
     return be32toh(n);
 #else
     if (drflac__is_little_endian()) {
@@ -547,7 +549,9 @@ static DRFLAC_INLINE uint32_t drflac__be2host_32(uint32_t n)
 
 static DRFLAC_INLINE uint64_t drflac__be2host_64(uint64_t n)
 {
-#ifdef __linux__
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER == __ORDER_LITTLE_ENDIAN__)
+    return drflac__swap_endian_uint64(n);
+#elif defined(__linux__)
     return be64toh(n);
 #else
     if (drflac__is_little_endian()) {
