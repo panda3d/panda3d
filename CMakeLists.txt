@@ -1,6 +1,8 @@
 # We require 2.8.4 because earlier releases had a bug
 # with invalid HEADER_FILE_ONLY behavior in MSVC 2010.
 cmake_minimum_required(VERSION 2.8.4)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON) # Must go before project() below
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
 project(Panda3D)
 enable_testing()
 
