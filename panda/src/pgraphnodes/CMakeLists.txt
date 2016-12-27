@@ -10,6 +10,7 @@ set(P3PGRAPHNODES_HEADERS
     lodNode.I lodNode.h lodNodeType.h
     nodeCullCallbackData.h nodeCullCallbackData.I
     pointLight.h pointLight.I
+    rectangleLight.h rectangleLight.I
     sceneGraphAnalyzer.h sceneGraphAnalyzer.I
     selectiveChildNode.h selectiveChildNode.I
     sequenceNode.h sequenceNode.I
@@ -32,6 +33,7 @@ set(P3PGRAPHNODES_SOURCES
     lodNode.cxx lodNodeType.cxx
     nodeCullCallbackData.cxx
     pointLight.cxx
+    rectangleLight.cxx
     sceneGraphAnalyzer.cxx
     selectiveChildNode.cxx
     sequenceNode.cxx

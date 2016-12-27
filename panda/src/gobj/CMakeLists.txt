@@ -41,6 +41,7 @@ set(P3GOBJ_HEADERS
   queryContext.I queryContext.h
   savedContext.I savedContext.h
   shader.I shader.h
+  shaderBuffer.h shaderBuffer.I
   shaderContext.h shaderContext.I
   simpleAllocator.h simpleAllocator.I
   simpleLru.h simpleLru.I
@@ -116,6 +117,7 @@ set(P3GOBJ_SOURCES
   samplerState.cxx
   savedContext.cxx
   shader.cxx
+  shaderBuffer.cxx
   shaderContext.cxx
   simpleAllocator.cxx
   simpleLru.cxx
