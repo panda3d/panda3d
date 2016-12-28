@@ -212,8 +212,8 @@ set_control_state(int index, double state) {
     device_cat.spam()
       << "Changed control " << index;
 
-    if (_controls[index].known != C_none) {
-      device_cat.spam(false) << " (" << _controls[index].known << ")";
+    if (_controls[index].axis != C_none) {
+      device_cat.spam(false) << " (" << _controls[index].axis << ")";
     }
 
     device_cat.spam(false) << " to " << state << "\n";
@@ -438,6 +438,14 @@ operator << (ostream &out, InputDevice::DeviceClass dc) {
   case InputDevice::DC_steering_wheel:
     out << "steering_wheel";
     break;
+
+  case InputDevice::DC_dance_pad:
+    out << "dance_pad";
+    break;
+
+  case InputDevice::DC_hmd:
+    out << "hmd";
+    break;
   }
   return out;
 }
@@ -487,6 +495,30 @@ operator << (ostream &out, InputDevice::ControlAxis axis) {
 
   case InputDevice::C_throttle:
     out << "throttle";
+    break;
+
+  case InputDevice::C_rudder:
+    out << "rudder";
+    break;
+
+  case InputDevice::C_hat_x:
+    out << "hat_x";
+    break;
+
+  case InputDevice::C_hat_y:
+    out << "hat_y";
+    break;
+
+  case InputDevice::C_wheel:
+    out << "wheel";
+    break;
+
+  case InputDevice::C_accelerator:
+    out << "accelerator";
+    break;
+
+  case InputDevice::C_brake:
+    out << "brake";
     break;
   }
 

@@ -346,8 +346,16 @@ init_device() {
     int bi = 0;
     for (int i = 0; i < KEY_CNT; ++i) {
       if (test_bit(i, keys)) {
-        set_button_map(bi, map_button(i));
-        //cerr << "Button " << bi << " is mapped by the driver to " << i << "\n";
+        ButtonHandle mapped = map_button(i);
+        set_button_map(bi, mapped);
+
+        if (mapped == ButtonHandle::none()) {
+          if (device_cat.is_debug()) {
+            device_cat.debug() << "Unmapped /dev/input/event" << _index
+              << " button " << bi << ": 0x" << hex << i << dec << "\n";
+          }
+        }
+
         if (test_bit(i, states)) {
           _buttons[bi].state = S_down;
           all_values_zero = false;
@@ -735,6 +743,9 @@ map_button(int code) {
   }
 
   switch (code) {
+  case BTN_TRIGGER:
+    return GamepadButton::trigger();
+
   case BTN_A:
     return GamepadButton::action_a();
 

@@ -28,8 +28,7 @@ TypeHandle GraphicsWindowInputDevice::_type_handle;
  */
 GraphicsWindowInputDevice::
 GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags) :
-  InputDevice(name, DC_virtual, flags),
-  _host(host)
+  InputDevice(name, DC_virtual, flags)
 {
 }
 
@@ -74,7 +73,6 @@ GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) {
  */
 void GraphicsWindowInputDevice::
 operator = (const GraphicsWindowInputDevice &copy) {
-  _host = copy._host;
   InputDevice::operator = (copy);
 }
 

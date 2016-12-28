@@ -690,11 +690,6 @@ add_input_device(InputDevice *device) {
   LightMutexHolder holder(_input_lock);
   int index = (int)_input_devices.size();
   _input_devices.push_back(device);
-
-  if (device->is_of_type(GraphicsWindowInputDevice::get_class_type())) {
-    ((GraphicsWindowInputDevice *)device)->set_device_index(index);
-  }
-
   return index;
 }
 

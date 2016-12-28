@@ -15,17 +15,7 @@
  *
  */
 INLINE GraphicsWindowInputDevice::
-GraphicsWindowInputDevice() : _host(NULL) {
-}
-
-/**
- * Set the device index.  This is reported in pointer events.  The device
- * index will be equal to the position of the GraphicsWindowInputDevice in the
- * window's list.
- */
-INLINE void GraphicsWindowInputDevice::
-set_device_index(int index) {
-  _device_index = index;
+GraphicsWindowInputDevice() {
 }
 
 /**

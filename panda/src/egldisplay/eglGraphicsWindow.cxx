@@ -56,44 +56,6 @@ eglGraphicsWindow::
 }
 
 /**
- * Forces the pointer to the indicated position within the window, if
- * possible.
- *
- * Returns true if successful, false on failure.  This may fail if the mouse
- * is not currently within the window, or if the API doesn't support this
- * operation.
- */
-bool eglGraphicsWindow::
-move_pointer(int device, int x, int y) {
-  // Note: this is not thread-safe; it should be called only from App.
-  // Probably not an issue.
-  if (device == 0) {
-    // Move the system mouse pointer.
-    if (!_properties.get_foreground() ||
-        !_input_devices[0].get_pointer().get_in_window()) {
-      // If the window doesn't have input focus, or the mouse isn't currently
-      // within the window, forget it.
-      return false;
-    }
-
-    const MouseData &md = _input_devices[0].get_pointer();
-    if (!md.get_in_window() || md.get_x() != x || md.get_y() != y) {
-      XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
-      _input_devices[0].set_pointer_in_window(x, y);
-    }
-    return true;
-  } else {
-    // Move a raw mouse.
-    if ((device < 1)||(device >= _input_devices.size())) {
-      return false;
-    }
-    _input_devices[device].set_pointer_in_window(x, y);
-    return true;
-  }
-}
-
-
-/**
  * This function will be called within the draw thread before beginning
  * rendering for a given frame.  It should do whatever setup is required, and
  * return true if the frame should be rendered, or false if it should be

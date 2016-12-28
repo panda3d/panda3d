@@ -47,6 +47,8 @@ DEFINE_GAMEPAD_BUTTON_HANDLE(action_z)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_1)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_2)
 
+DEFINE_GAMEPAD_BUTTON_HANDLE(trigger)
+
 /**
  * This is intended to be called only once, by the static initialization
  * performed in config_util.cxx.
@@ -81,4 +83,6 @@ init_gamepad_buttons() {
 
   ButtonRegistry::ptr()->register_button(_action_1, "action_1");
   ButtonRegistry::ptr()->register_button(_action_2, "action_2");
+
+  ButtonRegistry::ptr()->register_button(_trigger, "trigger");
 }

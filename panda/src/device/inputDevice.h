@@ -156,17 +156,17 @@ PUBLISHED:
   INLINE short get_battery_level() const;
   INLINE short get_max_battery_level() const;
 
-  INLINE int get_num_buttons() const;
-  INLINE void set_button_map(int index, ButtonHandle button);
-  INLINE ButtonHandle get_button_map(int index) const;
-  INLINE bool get_button_state(int index) const;
-  INLINE bool is_button_known(int index) const;
+  INLINE size_t get_num_buttons() const;
+  INLINE void set_button_map(size_t index, ButtonHandle button);
+  INLINE ButtonHandle get_button_map(size_t index) const;
+  INLINE bool get_button_state(size_t index) const;
+  INLINE bool is_button_known(size_t index) const;
 
-  INLINE int get_num_controls() const;
-  INLINE void set_control_map(int index, ControlAxis axis);
-  INLINE ControlAxis get_control_map(int index) const;
-  INLINE double get_control_state(int index) const;
-  INLINE bool is_control_known(int index) const;
+  INLINE size_t get_num_controls() const;
+  INLINE void set_control_map(size_t index, ControlAxis axis);
+  INLINE ControlAxis get_control_map(size_t index) const;
+  INLINE double get_control_state(size_t index) const;
+  INLINE bool is_control_known(size_t index) const;
 
   INLINE void set_vibration(double strong, double weak);
 

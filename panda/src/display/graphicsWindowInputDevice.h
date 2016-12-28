@@ -39,8 +39,6 @@ public:
   void operator = (const GraphicsWindowInputDevice &copy);
   ~GraphicsWindowInputDevice();
 
-  INLINE void set_device_index(int index);
-
 PUBLISHED:
   // The following interface is for the various kinds of GraphicsWindows to
   // record the data incoming on the device.
@@ -61,9 +59,6 @@ PUBLISHED:
   INLINE void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
 
 private:
-  GraphicsWindow *_host;
-  int _device_index;
-
   typedef pset<ButtonHandle> ButtonsHeld;
   ButtonsHeld _buttons_held;
 

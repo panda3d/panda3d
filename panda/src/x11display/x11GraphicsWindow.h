@@ -102,13 +102,6 @@ protected:
   Bool _override_redirect;
   Atom _wm_delete_window;
 
-  struct MouseDeviceInfo {
-    int    _fd;
-    int    _input_device_index;
-    string _io_buffer;
-  };
-  pvector<MouseDeviceInfo> _mouse_device_info;
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -175,7 +175,7 @@ get_max_battery_level() const {
  * associated with a ButtonHandle even if their state is unknown.  This number
  * may change as more buttons are discovered.
  */
-INLINE int InputDevice::
+INLINE size_t InputDevice::
 get_num_buttons() const {
   LightMutexHolder holder(_lock);
   return _buttons.size();
@@ -192,10 +192,9 @@ get_num_buttons() const {
  * generate ButtonEvents when the buttons change state.
  */
 INLINE void InputDevice::
-set_button_map(int index, ButtonHandle button) {
+set_button_map(size_t index, ButtonHandle button) {
   LightMutexHolder holder(_lock);
-  nassertv(index >= 0);
-  if (index >= (int)_buttons.size()) {
+  if (index >= _buttons.size()) {
     _buttons.resize(index + 1, ButtonState());
   }
 
@@ -208,8 +207,8 @@ set_button_map(int index, ButtonHandle button) {
  * was associated.
  */
 INLINE ButtonHandle InputDevice::
-get_button_map(int index) const {
-  if (index >= 0 && index < (int)_buttons.size()) {
+get_button_map(size_t index) const {
+  if (index < _buttons.size()) {
     return _buttons[index].handle;
   } else {
     return ButtonHandle::none();
@@ -221,8 +220,8 @@ get_button_map(int index) const {
  * currently known to be down, or false if it is up or unknown.
  */
 INLINE bool InputDevice::
-get_button_state(int index) const {
-  if (index >= 0 && index < (int)_buttons.size()) {
+get_button_state(size_t index) const {
+  if (index < _buttons.size()) {
     return (_buttons[index].state == S_down);
   } else {
     return false;
@@ -234,8 +233,8 @@ get_button_state(int index) const {
  * have never heard anything about this particular button.
  */
 INLINE bool InputDevice::
-is_button_known(int index) const {
-  if (index >= 0 && index < (int)_buttons.size()) {
+is_button_known(size_t index) const {
+  if (index < _buttons.size()) {
     return _buttons[index].state != S_unknown;
   } else {
     return false;
@@ -248,12 +247,12 @@ is_button_known(int index) const {
  */
 INLINE InputDevice::ButtonState InputDevice::
 get_button(size_t index) const {
-  if (index >= 0 && index < (int)_buttons.size()) {
+  if (index < _buttons.size()) {
     return _buttons[index];
   } else {
     device_cat.error()
-      << "Index " << index<< " was not found in the controls list\n";
-    nassertr(false, ButtonState());
+      << "Index " << index << " was not found in the controls list\n";
+    return ButtonState();
   }
 }
 
@@ -263,21 +262,21 @@ get_button(size_t index) const {
  */
 INLINE InputDevice::ButtonState InputDevice::
 find_button(ButtonHandle handle) const {
-  for (int i; i < (int)_buttons.size(); i++) {
+  for (size_t i = 0; i < _buttons.size(); ++i) {
     if (_buttons[i].handle == handle) {
       return _buttons[i];
     }
   }
   device_cat.error()
     << "Handle " << handle.get_name() << " was not found in the controls list\n";
-  nassertr(false, ButtonState());
+  return ButtonState();
 }
 
 /**
  * Returns the number of analog controls known to the InputDevice.  This number
  * may change as more controls are discovered.
  */
-INLINE int InputDevice::
+INLINE size_t InputDevice::
 get_num_controls() const {
   return _controls.size();
 }
@@ -290,10 +289,9 @@ get_num_controls() const {
  * the various controls by index number.
  */
 INLINE void InputDevice::
-set_control_map(int index, InputDevice::ControlAxis axis) {
+set_control_map(size_t index, InputDevice::ControlAxis axis) {
   LightMutexHolder holder(_lock);
-  nassertv(index >= 0);
-  if (index >= (int)_controls.size()) {
+  if (index >= _controls.size()) {
     _controls.resize(index + 1, AnalogState());
   }
 
@@ -306,8 +304,8 @@ set_control_map(int index, InputDevice::ControlAxis axis) {
  * associated.
  */
 INLINE InputDevice::ControlAxis InputDevice::
-get_control_map(int index) const {
-  if (index >= 0 && index < (int)_controls.size()) {
+get_control_map(size_t index) const {
+  if (index < _controls.size()) {
     return _controls[index].axis;
   } else {
     return C_none;
@@ -320,8 +318,8 @@ get_control_map(int index) const {
  * single control is -1.0 to 1.0.
  */
 INLINE double InputDevice::
-get_control_state(int index) const {
-  if (index >= 0 && index < (int)_controls.size()) {
+get_control_state(size_t index) const {
+  if (index < _controls.size()) {
     return _controls[index].state;
   } else {
     return 0.0;
@@ -334,12 +332,12 @@ get_control_state(int index) const {
  */
 INLINE InputDevice::AnalogState InputDevice::
 get_control(size_t index) const {
-  if (index >= 0 && index < (int)_controls.size()) {
+  if (index < _controls.size()) {
     return _controls[index];
   } else {
     device_cat.error()
       << "Index " << index<< " was not found in the controls list\n";
-    nassertr(false, AnalogState());
+    return AnalogState();
   }
 }
 
@@ -349,14 +347,14 @@ get_control(size_t index) const {
  */
 INLINE InputDevice::AnalogState InputDevice::
 find_control(InputDevice::ControlAxis axis) const {
-  for (int i; i < (int)_controls.size(); i++) {
+  for (size_t i = 0; i < _controls.size(); ++i) {
     if (_controls[i].axis == axis) {
       return _controls[i];
     }
   }
   device_cat.error()
     << "Axis " << axis << " was not found in the controls list\n";
-  nassertr(false, AnalogState());
+  return AnalogState();
 }
 
 /**
@@ -364,8 +362,8 @@ find_control(InputDevice::ControlAxis axis) const {
  * if we have never heard anything about this particular control.
  */
 INLINE bool InputDevice::
-is_control_known(int index) const {
-  if (index >= 0 && index < (int)_controls.size()) {
+is_control_known(size_t index) const {
+  if (index < _controls.size()) {
     return _controls[index].known;
   } else {
     return false;

@@ -131,14 +131,13 @@ move_pointer(int device, int x, int y) {
   // Probably not an issue.
   if (device == 0) {
     // Move the system mouse pointer.
-    if (!_properties.get_foreground() ||
-        !_input->get_pointer().get_in_window()) {
+    PointerData md = _input->get_pointer();
+    if (!_properties.get_foreground() || !md.get_in_window()) {
       // If the window doesn't have input focus, or the mouse isn't currently
       // within the window, forget it.
       return false;
     }
 
-    const MouseData &md = _input->get_pointer();
     if (!md.get_in_window() || md.get_x() != x || md.get_y() != y) {
       if (!_dga_mouse_enabled) {
         XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
@@ -147,12 +146,8 @@ move_pointer(int device, int x, int y) {
     }
     return true;
   } else {
-    // Move a raw mouse.
-    if (device < 1 || device >= _input_devices.size()) {
-      return false;
-    }
-    //_input_devices[device]->set_pointer_in_window(x, y);
-    return true;
+    // Can't move a raw mouse.
+    return false;
   }
 }
 
@@ -1236,6 +1231,7 @@ setup_colormap(XVisualInfo *visual) {
 
 /**
  * Adds raw mice to the _input_devices list.
+ * @deprecated obtain raw devices via the device manager instead.
  */
 void x11GraphicsWindow::
 open_raw_mice() {

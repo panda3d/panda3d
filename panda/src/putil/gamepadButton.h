@@ -53,6 +53,8 @@ PUBLISHED:
   static ButtonHandle action_1();
   static ButtonHandle action_2();
 
+  static ButtonHandle trigger();
+
 public:
   static void init_gamepad_buttons();
 };
