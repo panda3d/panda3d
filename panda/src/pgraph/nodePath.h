@@ -61,6 +61,7 @@ class GlobPattern;
 class PreparedGraphicsObjects;
 class SamplerState;
 class Shader;
+class ShaderBuffer;
 class ShaderInput;
 
 //
@@ -632,6 +633,7 @@ PUBLISHED:
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, ShaderBuffer *buf, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const PTA_double &v, int priority=0);

@@ -49,19 +49,6 @@ struct XVisualInfo;
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
-
-#ifdef HAVE_XRANDR
-#include <X11/extensions/Xrandr.h>
-#endif  // HAVE_XRANDR
-
-#ifdef HAVE_XCURSOR
-#include <X11/Xcursor/Xcursor.h>
-#endif
-
-#ifdef HAVE_XF86DGA
-#include <X11/extensions/Xxf86dga.h>
-#endif
-
 #include "post_x11_include.h"
 
 #endif  // CPPPARSER

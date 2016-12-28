@@ -2229,7 +2229,15 @@ hide_or_show_cursor(bool hide_cursor) {
 bool WinGraphicsWindow::
 find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
                              DEVMODE &dm) {
+
+  // Get the current mode.  We'll try to match the refresh rate.
+  DEVMODE cur_dm;
+  ZeroMemory(&cur_dm, sizeof(cur_dm));
+  cur_dm.dmSize = sizeof(cur_dm);
+  EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &cur_dm);
+
   int modenum = 0;
+  int saved_modenum = -1;
 
   while (1) {
     ZeroMemory(&dm, sizeof(dm));
@@ -2241,9 +2249,26 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
 
     if ((dm.dmPelsWidth == dwWidth) && (dm.dmPelsHeight == dwHeight) &&
         (dm.dmBitsPerPel == bpp)) {
-      return true;
+      // If this also matches in refresh rate, we're done here.  Otherwise,
+      // save this as a second choice for later.
+      if (dm.dmDisplayFrequency == cur_dm.dmDisplayFrequency) {
+        return true;
+      } else if (saved_modenum == -1) {
+        saved_modenum = modenum;
+      }
     }
     modenum++;
+  }
+
+  // Failed to find an exact match, but we do have a match that didn't match
+  // the refresh rate.
+  if (saved_modenum != -1) {
+    ZeroMemory(&dm, sizeof(dm));
+    dm.dmSize = sizeof(dm);
+
+    if (EnumDisplaySettings(NULL, saved_modenum, &dm)) {
+      return true;
+    }
   }
 
   return false;
@@ -2545,7 +2570,7 @@ ButtonMap *WinGraphicsWindow::
 get_keyboard_map() const {
   ButtonMap *map = new ButtonMap;
 
-  char text[256];
+  wchar_t text[256];
   UINT vsc = 0;
   unsigned short ex_vsc[] = {0x57, 0x58,
     0x011c, 0x011d, 0x0135, 0x0137, 0x0138, 0x0145, 0x0147, 0x0148, 0x0149, 0x014b, 0x014d, 0x014f, 0x0150, 0x0151, 0x0152, 0x0153, 0x015b, 0x015c, 0x015d};
@@ -2583,14 +2608,15 @@ get_keyboard_map() const {
 
       UINT vk = MapVirtualKeyA(vsc, MAPVK_VSC_TO_VK_EX);
       button = lookup_key(vk);
-      if (button == ButtonHandle::none()) {
-        continue;
-      }
+      //if (button == ButtonHandle::none()) {
+      //  continue;
+      //}
     }
 
-    int len = GetKeyNameTextA(lparam, text, 256);
-    string label (text, len);
-    map->map_button(raw_button, button, label);
+    int len = GetKeyNameTextW(lparam, text, 256);
+    TextEncoder enc;
+    enc.set_wtext(wstring(text, len));
+    map->map_button(raw_button, button, enc.get_text());
   }
 
   return map;

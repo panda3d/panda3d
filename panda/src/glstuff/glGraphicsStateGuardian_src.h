@@ -345,6 +345,12 @@ public:
                        bool force);
 
 #ifndef OPENGLES
+  virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
+  void apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
+  virtual void release_shader_buffer(BufferContext *bc);
+#endif
+
+#ifndef OPENGLES
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 #endif
@@ -357,8 +363,6 @@ public:
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
-
-  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
   virtual void clear(DrawableRegion *region);
 
@@ -687,6 +691,9 @@ protected:
   bool _use_vertex_attrib_binding;
   CPT(GeomVertexFormat) _current_vertex_format;
   const GeomVertexColumn *_vertex_attrib_columns[32];
+
+  GLuint _current_sbuffer_index;
+  pvector<GLuint> _current_sbuffer_base;
 #endif
 
   int _active_texture_stage;
@@ -813,6 +820,7 @@ public:
 
 #ifndef OPENGLES_1
   bool _supports_uniform_buffers;
+  bool _supports_shader_buffers;
   PFNGLBINDBUFFERBASEPROC _glBindBufferBase;
 
   bool _supports_buffer_storage;
@@ -997,6 +1005,9 @@ public:
   PFNGLMAKETEXTUREHANDLENONRESIDENTPROC _glMakeTextureHandleNonResident;
   PFNGLUNIFORMHANDLEUI64PROC _glUniformHandleui64;
   PFNGLUNIFORMHANDLEUI64VPROC _glUniformHandleui64v;
+  PFNGLGETPROGRAMINTERFACEIVPROC _glGetProgramInterfaceiv;
+  PFNGLGETPROGRAMRESOURCENAMEPROC _glGetProgramResourceName;
+  PFNGLGETPROGRAMRESOURCEIVPROC _glGetProgramResourceiv;
 #endif  // !OPENGLES
 
   GLenum _edge_clamp;
@@ -1092,6 +1103,7 @@ private:
 
   friend class CLP(VertexBufferContext);
   friend class CLP(IndexBufferContext);
+  friend class CLP(BufferContext);
   friend class CLP(ShaderContext);
   friend class CLP(CgShaderContext);
   friend class CLP(GraphicsBuffer);

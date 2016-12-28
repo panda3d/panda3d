@@ -39,6 +39,7 @@ import sys
 
 COMPILER=0
 INSTALLER=0
+WHEEL=0
 GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
@@ -87,8 +88,8 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "ROCKET", "AWESOMIUM",                               # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
-  "X11", "XF86DGA", "XRANDR", "XCURSOR",               # Unix platform support
-  "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
+  "X11",                                               # Unix platform support
+  "PANDATOOL", "PVIEW", "DEPLOYTOOLS", "DIRECTSCRIPTS",# Toolchain
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses
   "PANDAPARTICLESYSTEM",                               # Built in particle system
@@ -124,6 +125,7 @@ def usage(problem):
     print("  --verbose         (print out more information)")
     print("  --runtime         (build a runtime build instead of an SDK build)")
     print("  --installer       (build an installer)")
+    print("  --wheel           (build a pip-installable .whl)")
     print("  --optimize X      (optimization level can be 1,2,3,4)")
     print("  --version X       (set the panda version number)")
     print("  --lzma            (use lzma compression when building Windows installer)")
@@ -159,13 +161,13 @@ def usage(problem):
     os._exit(1)
 
 def parseopts(args):
-    global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
+    global INSTALLER,WHEEL,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
-        "optimize=","everything","nothing","installer","rtdist","nocolor",
+        "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
@@ -188,6 +190,7 @@ def parseopts(args):
             if (option=="--help"): raise Exception
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--wheel"): WHEEL=1
             elif (option=="--verbose"): SetVerbose(True)
             elif (option=="--distributor"): DISTRIBUTOR=value
             elif (option=="--rtdist"): RTDIST=1
@@ -416,8 +419,17 @@ if (RUNTIME):
 if (INSTALLER and RTDIST):
     exit("Cannot build an installer for the rtdist build!")
 
+if (WHEEL and RUNTIME):
+    exit("Cannot build a wheel for the runtime build!")
+
+if (WHEEL and RTDIST):
+    exit("Cannot build a wheel for the rtdist build!")
+
 if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME) and GetTarget() == 'windows':
     exit("Cannot build installer on Windows without python")
+
+if WHEEL and PkgSkip("PYTHON"):
+    exit("Cannot build wheel without Python")
 
 if (RTDIST) and (PkgSkip("WX") and PkgSkip("FLTK")):
     exit("Cannot build rtdist without wx or fltk")
@@ -504,9 +516,6 @@ IncDirectory("ALWAYS", GetOutputDir()+"/include")
 
 if (COMPILER == "MSVC"):
     PkgDisable("X11")
-    PkgDisable("XRANDR")
-    PkgDisable("XF86DGA")
-    PkgDisable("XCURSOR")
     PkgDisable("GLES")
     PkgDisable("GLES2")
     PkgDisable("EGL")
@@ -796,9 +805,13 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
-        if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
-            LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
-            LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+        if not PkgSkip("FFMPEG"):
+            if GetTarget() == "darwin":
+                LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+                LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+            elif os.path.isfile(GetThirdpartyDir() + "ffmpeg/lib/libavcodec.a"):
+                # Needed when linking ffmpeg statically on Linux.
+                LibName("FFMPEG", "-Wl,-Bsymbolic")
 
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":
@@ -828,12 +841,9 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'darwin':
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if not PkgSkip("NVIDIACG") and not RUNTIME:
-            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
+            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         if not RUNTIME:
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
-            SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
-            SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
-            SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
 
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
@@ -1680,6 +1690,11 @@ def CompileLink(dll, obj, opts):
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
 
+        # Don't link libraries with Python.
+        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST:
+            opts = opts[:]
+            opts.remove("PYTHON")
+
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' -L' + BracketNameWithQuotes(dir)
@@ -2182,9 +2197,6 @@ DTOOL_CONFIG=[
     ("PHAVE_STDINT_H",                 '1',                      '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
-    ("HAVE_XRANDR",                    'UNDEF',                  '1'),
-    ("HAVE_XF86DGA",                   'UNDEF',                  '1'),
-    ("HAVE_XCURSOR",                   'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("IS_FREEBSD",                     'UNDEF',                  'UNDEF'),
@@ -2289,9 +2301,6 @@ def WriteConfigSettings():
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
-        dtool_config["HAVE_XRANDR"] = 'UNDEF'
-        dtool_config["HAVE_XF86DGA"] = 'UNDEF'
-        dtool_config["HAVE_XCURSOR"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -3328,6 +3337,7 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate.exe', input='libp3interrogatedb.dll')
+  TargetAdd('interrogate.exe', input='libp3pystub.lib')
   TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
@@ -3335,6 +3345,7 @@ if (not RUNTIME):
   TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')
+  TargetAdd('interrogate_module.exe', input='libp3pystub.lib')
   TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   if (not RTDIST):
@@ -3343,6 +3354,7 @@ if (not RUNTIME):
     TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
     TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('parse_file.exe', input='libp3interrogatedb.dll')
+    TargetAdd('parse_file.exe', input='libp3pystub.lib')
     TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -3366,6 +3378,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
   TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
   TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS)
+  TargetAdd('test_interrogate.exe', input='libp3pystub.lib')
   TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -4569,7 +4582,7 @@ if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("GL")==0 and PkgSkip("X
   TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='p3glxdisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/cocoadisplay/
@@ -4644,7 +4657,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='pandagles_egldisplay_composite1.obj')
   TargetAdd('libpandagles.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -4662,7 +4675,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
   TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -4958,7 +4971,7 @@ if (not RUNTIME and (GetTarget() in ('windows', 'darwin') or PkgSkip("X11")==0) 
     TargetAdd('libp3tinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
   else:
     TargetAdd('libp3tinydisplay.dll', input='p3x11display_composite1.obj')
-    TargetAdd('libp3tinydisplay.dll', opts=['X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+    TargetAdd('libp3tinydisplay.dll', opts=['X11'])
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite1.obj')
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite2.obj')
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_ztriangle_1.obj')
@@ -4976,7 +4989,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('p3directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
-  if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME):
+  if not PkgSkip("PYTHON") and not RTDIST and not RUNTIME and not PkgSkip("DIRECTSCRIPTS"):
     DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
     TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
     TargetAdd('packpanda.exe', input='packpanda.obj')
@@ -5151,6 +5164,7 @@ if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME
   TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
   TargetAdd('p3dcparse.exe', input='libp3direct.dll')
   TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('p3dcparse.exe', input='libp3pystub.lib')
   TargetAdd('p3dcparse.exe', opts=['ADVAPI', 'PYTHON'])
 
 #
@@ -7257,6 +7271,11 @@ try:
             MakeInstallerFreeBSD()
         else:
             exit("Do not know how to make an installer for this platform")
+
+    if WHEEL:
+        ProgressOutput(100.0, "Building wheel")
+        from makewheel import makewheel
+        makewheel(VERSION, GetOutputDir())
 finally:
     SaveDependencyCache()
 

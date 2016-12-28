@@ -22,6 +22,7 @@
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
 #include "shader.h"
+#include "shaderBuffer.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
 #include "pset.h"
@@ -35,6 +36,7 @@ class GeomContext;
 class ShaderContext;
 class VertexBufferContext;
 class IndexBufferContext;
+class BufferContext;
 class GraphicsStateGuardianBase;
 
 /**
@@ -142,6 +144,19 @@ PUBLISHED:
   prepare_index_buffer_now(GeomPrimitive *data,
                            GraphicsStateGuardianBase *gsg);
 
+  void enqueue_shader_buffer(ShaderBuffer *data);
+  bool is_shader_buffer_queued(const ShaderBuffer *data) const;
+  bool dequeue_shader_buffer(ShaderBuffer *data);
+  bool is_shader_buffer_prepared(const ShaderBuffer *data) const;
+  void release_shader_buffer(BufferContext *bc);
+  int release_all_shader_buffers();
+  int get_num_queued_shader_buffers() const;
+  int get_num_prepared_shader_buffers() const;
+
+  BufferContext *
+  prepare_shader_buffer_now(ShaderBuffer *data,
+                            GraphicsStateGuardianBase *gsg);
+
 public:
   void begin_frame(GraphicsStateGuardianBase *gsg,
                    Thread *current_thread);
@@ -160,6 +175,7 @@ private:
   typedef phash_set<BufferContext *, pointer_hash> Buffers;
   typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;
+  typedef phash_set< PT(ShaderBuffer) > EnqueuedShaderBuffers;
 
   // Sampler states are stored a little bit differently, as they are mapped by
   // value and can't store the list of prepared samplers.
@@ -207,6 +223,8 @@ private:
   EnqueuedVertexBuffers _enqueued_vertex_buffers;
   Buffers _prepared_index_buffers, _released_index_buffers;
   EnqueuedIndexBuffers _enqueued_index_buffers;
+  Buffers _prepared_shader_buffers, _released_shader_buffers;
+  EnqueuedShaderBuffers _enqueued_shader_buffers;
 
   BufferCache _vertex_buffer_cache;
   BufferCacheLRU _vertex_buffer_cache_lru;
@@ -220,6 +238,7 @@ public:
   BufferResidencyTracker _texture_residency;
   BufferResidencyTracker _vbuffer_residency;
   BufferResidencyTracker _ibuffer_residency;
+  BufferResidencyTracker _sbuffer_residency;
 
   AdaptiveLru _graphics_memory_lru;
   SimpleLru _sampler_object_lru;
