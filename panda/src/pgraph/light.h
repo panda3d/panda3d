@@ -90,6 +90,7 @@ protected:
     CP_point_priority,
     CP_directional_priority,
     CP_spot_priority,
+    CP_area_priority,
   };
 
 private:

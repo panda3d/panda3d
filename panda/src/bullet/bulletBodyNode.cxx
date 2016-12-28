@@ -45,7 +45,16 @@ BulletBodyNode(const BulletBodyNode &copy) :
   _shapes(copy._shapes)
 {
   if (copy._shape && copy._shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
-    _shape = new btCompoundShape(copy._shape);
+    // btCompoundShape does not define a copy constructor.  Manually copy.
+    btCompoundShape *shape = new btCompoundShape;
+    _shape = shape;
+
+    btCompoundShape *copy_shape = (btCompoundShape *)copy._shape;
+    int num_children = copy_shape->getNumChildShapes();
+    for (int i = 0; i < num_children; ++i) {
+      shape->addChildShape(copy_shape->getChildTransform(i),
+                           copy_shape->getChildShape(i));
+    }
   }
   else if (copy._shape && copy._shape->getShapeType() == EMPTY_SHAPE_PROXYTYPE) {
     _shape = new btEmptyShape();

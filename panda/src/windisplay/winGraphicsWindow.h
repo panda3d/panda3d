@@ -34,8 +34,23 @@ typedef struct {
   int y;
   int width;
   int height;
-}
-WINDOW_METRICS;
+} WINDOW_METRICS;
+
+#if WINVER < 0x0601
+// Not used on Windows XP, but we still need to define it.
+typedef struct tagTOUCHINPUT {
+  LONG x;
+  LONG y;
+  HANDLE hSource;
+  DWORD dwID;
+  DWORD dwFlags;
+  DWORD dwMask;
+  DWORD dwTime;
+  ULONG_PTR dwExtraInfo;
+  DWORD cxContact;
+  DWORD cyContact;
+} TOUCHINPUT, *PTOUCHINPUT;
+#endif
 
 /**
  * An abstract base class for glGraphicsWindow and dxGraphicsWindow (and, in
@@ -179,10 +194,8 @@ private:
   typedef pset<GraphicsWindowProc*> WinProcClasses;
   WinProcClasses _window_proc_classes;
 
-#ifdef HAVE_WIN_TOUCHINPUT
-  UINT _numTouches;
+  UINT _num_touches;
   TOUCHINPUT _touches[MAX_TOUCHES];
-#endif
 
 private:
   // We need this map to support per-window calls to window_proc().

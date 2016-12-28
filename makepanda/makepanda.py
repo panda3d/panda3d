@@ -39,6 +39,7 @@ import sys
 
 COMPILER=0
 INSTALLER=0
+WHEEL=0
 GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
@@ -87,14 +88,13 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "ROCKET", "AWESOMIUM",                               # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
-  "X11", "XF86DGA", "XRANDR", "XCURSOR",               # Unix platform support
-  "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
+  "X11",                                               # Unix platform support
+  "PANDATOOL", "PVIEW", "DEPLOYTOOLS", "DIRECTSCRIPTS",# Toolchain
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
-  "TOUCHINPUT",                                        # Touchinput interface (requires Windows 7)
 ])
 
 CheckPandaSourceTree()
@@ -125,6 +125,7 @@ def usage(problem):
     print("  --verbose         (print out more information)")
     print("  --runtime         (build a runtime build instead of an SDK build)")
     print("  --installer       (build an installer)")
+    print("  --wheel           (build a pip-installable .whl)")
     print("  --optimize X      (optimization level can be 1,2,3,4)")
     print("  --version X       (set the panda version number)")
     print("  --lzma            (use lzma compression when building Windows installer)")
@@ -160,17 +161,18 @@ def usage(problem):
     os._exit(1)
 
 def parseopts(args):
-    global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
+    global INSTALLER,WHEEL,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
-        "optimize=","everything","nothing","installer","rtdist","nocolor",
+        "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "universal", "target=", "arch=", "git-commit="]
+        "universal", "target=", "arch=", "git-commit=",
+        "use-touchinput", "no-touchinput"]
     anything = 0
     optimize = ""
     target = None
@@ -188,6 +190,7 @@ def parseopts(args):
             if (option=="--help"): raise Exception
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--wheel"): WHEEL=1
             elif (option=="--verbose"): SetVerbose(True)
             elif (option=="--distributor"): DISTRIBUTOR=value
             elif (option=="--rtdist"): RTDIST=1
@@ -316,18 +319,6 @@ def parseopts(args):
             print("No Windows SDK version specified. Defaulting to '7.1'.")
             WINDOWS_SDK = '7.1'
 
-        is_win7 = False
-        if sys.platform == 'win32':
-            # Note: not available in cygwin.
-            winver = sys.getwindowsversion()
-            if winver[0] >= 6 and winver[1] >= 1:
-                is_win7 = True
-
-        if RUNTIME or not is_win7:
-            PkgDisable("TOUCHINPUT")
-    else:
-        PkgDisable("TOUCHINPUT")
-
     if clean_build and os.path.isdir(GetOutputDir()):
         print("Deleting %s" % (GetOutputDir()))
         shutil.rmtree(GetOutputDir())
@@ -428,8 +419,17 @@ if (RUNTIME):
 if (INSTALLER and RTDIST):
     exit("Cannot build an installer for the rtdist build!")
 
+if (WHEEL and RUNTIME):
+    exit("Cannot build a wheel for the runtime build!")
+
+if (WHEEL and RTDIST):
+    exit("Cannot build a wheel for the rtdist build!")
+
 if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME) and GetTarget() == 'windows':
     exit("Cannot build installer on Windows without python")
+
+if WHEEL and PkgSkip("PYTHON"):
+    exit("Cannot build wheel without Python")
 
 if (RTDIST) and (PkgSkip("WX") and PkgSkip("FLTK")):
     exit("Cannot build rtdist without wx or fltk")
@@ -516,9 +516,6 @@ IncDirectory("ALWAYS", GetOutputDir()+"/include")
 
 if (COMPILER == "MSVC"):
     PkgDisable("X11")
-    PkgDisable("XRANDR")
-    PkgDisable("XF86DGA")
-    PkgDisable("XCURSOR")
     PkgDisable("GLES")
     PkgDisable("GLES2")
     PkgDisable("EGL")
@@ -809,9 +806,13 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
-        if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
-            LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
-            LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+        if not PkgSkip("FFMPEG"):
+            if GetTarget() == "darwin":
+                LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+                LibName("FFMPEG", "-framework VideoDecodeAcceleration")
+            elif os.path.isfile(GetThirdpartyDir() + "ffmpeg/lib/libavcodec.a"):
+                # Needed when linking ffmpeg statically on Linux.
+                LibName("FFMPEG", "-Wl,-Bsymbolic")
 
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":
@@ -841,12 +842,9 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'darwin':
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if not PkgSkip("NVIDIACG") and not RUNTIME:
-            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
+            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         if not RUNTIME:
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
-            SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
-            SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
-            SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
 
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
@@ -1056,11 +1054,12 @@ def CompileCxx(obj,src,opts):
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4273 "
 
-            # Enable Windows 7 interfaces if we need Touchinput.
-            if PkgSkip("TOUCHINPUT") == 0:
-                cmd += "/DWINVER=0x601 "
-            else:
-                cmd += "/DWINVER=0x501 "
+            # We still target Windows XP.
+            cmd += "/DWINVER=0x501 "
+            # Work around a WinXP/2003 bug when using VS 2015+.
+            if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+                cmd += "/Zc:threadSafeInit- "
+
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
                 cmd += " /arch:SSE2"
@@ -1110,12 +1109,7 @@ def CompileCxx(obj,src,opts):
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
-
-            # Enable Windows 7 interfaces if we need Touchinput.
-            if PkgSkip("TOUCHINPUT") == 0:
-                cmd += "/DWINVER=0x601 "
-            else:
-                cmd += "/DWINVER=0x501 "
+            cmd += "/DWINVER=0x501 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1683,11 +1677,7 @@ def CompileLink(dll, obj, opts):
                 if 'NOARCH:' + arch.upper() not in opts:
                     cmd += " -arch %s" % arch
 
-        if "SYSROOT" in SDK:
-            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
-
-        # Android-specific flags.
-        if GetTarget() == 'android':
+        elif GetTarget() == 'android':
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             if GetTargetArch() == 'armv7a':
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
@@ -1695,8 +1685,16 @@ def CompileLink(dll, obj, opts):
         else:
             cmd += " -pthread"
 
+        if "SYSROOT" in SDK:
+            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
+
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
+
+        # Don't link libraries with Python.
+        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST:
+            opts = opts[:]
+            opts.remove("PYTHON")
 
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
@@ -2127,7 +2125,6 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
-    ("HAVE_WIN_TOUCHINPUT",            'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
@@ -2201,9 +2198,6 @@ DTOOL_CONFIG=[
     ("PHAVE_STDINT_H",                 '1',                      '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
-    ("HAVE_XRANDR",                    'UNDEF',                  '1'),
-    ("HAVE_XF86DGA",                   'UNDEF',                  '1'),
-    ("HAVE_XCURSOR",                   'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("IS_FREEBSD",                     'UNDEF',                  'UNDEF'),
@@ -2234,11 +2228,7 @@ DTOOL_CONFIG=[
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
-    ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_SWSCALE",                   'UNDEF',                  'UNDEF'),
-    ("HAVE_SWRESAMPLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
-    ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_CARBON",                    'UNDEF',                  'UNDEF'),
@@ -2293,9 +2283,6 @@ def WriteConfigSettings():
             else:
                 dtool_config["HAVE_"+x] = 'UNDEF'
 
-    if not PkgSkip("OPENCV"):
-        dtool_config["OPENCV_VER_23"] = '1' if OPENCV_VER_23 else 'UNDEF'
-
     dtool_config["HAVE_NET"] = '1'
 
     if (PkgSkip("NVIDIACG")==0):
@@ -2315,9 +2302,6 @@ def WriteConfigSettings():
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
-        dtool_config["HAVE_XRANDR"] = 'UNDEF'
-        dtool_config["HAVE_XF86DGA"] = 'UNDEF'
-        dtool_config["HAVE_XCURSOR"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -2351,9 +2335,6 @@ def WriteConfigSettings():
     # on whether the libRocket Python modules are available.
     if (PkgSkip("PYTHON") != 0):
         dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
-
-    if (PkgSkip("TOUCHINPUT") == 0 and GetTarget() == "windows"):
-        dtool_config["HAVE_WIN_TOUCHINPUT"] = '1'
 
     if (GetOptimize() <= 3):
         dtool_config["HAVE_ROCKET_DEBUGGER"] = '1'
@@ -2782,8 +2763,13 @@ if (GetTarget() == 'darwin'):
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
 
-ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
-ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
+if GetTarget() == 'windows':
+    # Convert to Windows newlines.
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc, newline='\r\n')
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc, newline='\r\n')
+else:
+    ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
+    ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
 ##########################################################################################
 #
@@ -2880,22 +2866,75 @@ if tp_dir is not None:
 
     if GetTarget() == 'windows':
         CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
-        if not PkgSkip("PYTHON"):
-            pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
-            if (GetOptimize() <= 2): pydll += "_d.dll"
-            else: pydll += ".dll"
-            CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
-                CopyFile(GetOutputDir() + "/bin/", fn)
+        if not PkgSkip("PYTHON") and not RTDIST:
+            #XXX rdb I don't think we need to copy over the Python DLL, do we?
+            #pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
+            #if (GetOptimize() <= 2): pydll += "_d.dll"
+            #else: pydll += ".dll"
+            #CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            if not RTDIST:
-                CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
-                if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
-                    CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
-                if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
-                    CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
-                ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
+            #for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
+            #    CopyFile(GetOutputDir() + "/bin/", fn)
+
+            # Copy the whole Python directory.
+            CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
+
+            # NB: Python does not always ship with the correct manifest/dll.
+            # Figure out the correct one to ship, and grab it from WinSxS dir.
+            manifest = GetOutputDir() + '/tmp/python.manifest'
+            if os.path.isfile(manifest):
+                os.unlink(manifest)
+            oscmd('mt -inputresource:"%s\\python.exe";#1 -out:"%s" -nologo' % (SDK["PYTHON"], manifest), True)
+
+            if os.path.isfile(manifest):
+                import xml.etree.ElementTree as ET
+                tree = ET.parse(manifest)
+                idents = tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity')
+            else:
+                idents = ()
+
+            for ident in tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity'):
+                sxs_name = '_'.join([
+                    ident.get('processorArchitecture'),
+                    ident.get('name').lower(),
+                    ident.get('publicKeyToken'),
+                    ident.get('version'),
+                ])
+
+                # Find the manifest matching these parameters.
+                pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', 'Manifests', sxs_name + '_*.manifest')
+                manifests = glob.glob(pattern)
+                if not manifests:
+                    print("%sWARNING:%s Could not locate manifest %s.  You may need to reinstall the Visual C++ Redistributable." % (GetColor("red"), GetColor(), pattern))
+                    continue
+
+                CopyFile(GetOutputDir() + "/python/" + ident.get('name') + ".manifest", manifests[0])
+
+                # Also copy the corresponding msvcr dll.
+                pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', sxs_name + '_*', 'msvcr*.dll')
+                for file in glob.glob(pattern):
+                    CopyFile(GetOutputDir() + "/python/", file)
+
+            # Copy python.exe to ppython.exe.
+            if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
+                CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
+            if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
+                CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
+            ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
+
+# Copy over the MSVC runtime.
+if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
+    vcver = SDK["VISUALSTUDIO_VERSION"].replace('.', '')
+    crtname = "Microsoft.VC%s.CRT" % (vcver)
+    dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "redist", GetTargetArch(), crtname)
+
+    if os.path.isfile(os.path.join(dir, "msvcr" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcr" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "msvcp" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcp" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "vcruntime" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "vcruntime" + vcver + ".dll"))
 
 ########################################################################
 ##
@@ -2903,8 +2942,14 @@ if tp_dir is not None:
 ##
 ########################################################################
 
-CopyFile(GetOutputDir()+"/", "doc/LICENSE")
-CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+if GetTarget() == 'windows':
+    # Convert to Windows newlines so they can be opened by notepad.
+    WriteFile(GetOutputDir() + "/LICENSE", ReadFile("doc/LICENSE"), newline='\r\n')
+    WriteFile(GetOutputDir() + "/ReleaseNotes", ReadFile("doc/ReleaseNotes"), newline='\r\n')
+else:
+    CopyFile(GetOutputDir()+"/", "doc/LICENSE")
+    CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+
 if (PkgSkip("PANDATOOL")==0):
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
@@ -3293,6 +3338,7 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate.exe', input='libp3interrogatedb.dll')
+  TargetAdd('interrogate.exe', input='libp3pystub.lib')
   TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
@@ -3300,6 +3346,7 @@ if (not RUNTIME):
   TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')
+  TargetAdd('interrogate_module.exe', input='libp3pystub.lib')
   TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   if (not RTDIST):
@@ -3308,6 +3355,7 @@ if (not RUNTIME):
     TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
     TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('parse_file.exe', input='libp3interrogatedb.dll')
+    TargetAdd('parse_file.exe', input='libp3pystub.lib')
     TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -3331,6 +3379,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
   TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
   TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS)
+  TargetAdd('test_interrogate.exe', input='libp3pystub.lib')
   TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -4062,8 +4111,20 @@ if (not RUNTIME):
 #
 
 if (PkgSkip("VISION") == 0) and (not RUNTIME):
+  # We want to know whether we have ffmpeg so that we can override the .avi association.
+  if not PkgSkip("FFMPEG"):
+    DefSymbol("OPENCV", "HAVE_FFMPEG")
+  if not PkgSkip("OPENCV"):
+    DefSymbol("OPENCV", "HAVE_OPENCV")
+    if OPENCV_VER_23:
+        DefSymbol("OPENCV", "OPENCV_VER_23")
+
   OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
-  TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
+  TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx', dep=[
+    'dtool_have_ffmpeg.dat',
+    'dtool_have_opencv.dat',
+    'dtool_have_directcam.dat',
+  ])
 
   TargetAdd('libp3vision.dll', input='p3vision_composite1.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
@@ -4252,8 +4313,15 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
 # DIRECTORY: panda/src/ffmpeg
 #
 if PkgSkip("FFMPEG") == 0 and not RUNTIME:
+  if not PkgSkip("SWSCALE"):
+    DefSymbol("FFMPEG", "HAVE_SWSCALE")
+  if not PkgSkip("SWRESAMPLE"):
+    DefSymbol("FFMPEG", "HAVE_SWRESAMPLE")
+
   OPTS=['DIR:panda/src/ffmpeg', 'BUILDING:FFMPEG', 'FFMPEG', 'SWSCALE', 'SWRESAMPLE']
-  TargetAdd('p3ffmpeg_composite1.obj', opts=OPTS, input='p3ffmpeg_composite1.cxx')
+  TargetAdd('p3ffmpeg_composite1.obj', opts=OPTS, input='p3ffmpeg_composite1.cxx', dep=[
+    'dtool_have_swscale.dat', 'dtool_have_swresample.dat'])
+
   TargetAdd('libp3ffmpeg.dll', input='p3ffmpeg_composite1.obj')
   TargetAdd('libp3ffmpeg.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3ffmpeg.dll', opts=OPTS)
@@ -4515,7 +4583,7 @@ if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("GL")==0 and PkgSkip("X
   TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='p3glxdisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/cocoadisplay/
@@ -4533,7 +4601,7 @@ if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0 and not
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
@@ -4590,7 +4658,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='pandagles_egldisplay_composite1.obj')
   TargetAdd('libpandagles.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -4608,7 +4676,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
   TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -4904,7 +4972,7 @@ if (not RUNTIME and (GetTarget() in ('windows', 'darwin') or PkgSkip("X11")==0) 
     TargetAdd('libp3tinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
   else:
     TargetAdd('libp3tinydisplay.dll', input='p3x11display_composite1.obj')
-    TargetAdd('libp3tinydisplay.dll', opts=['X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+    TargetAdd('libp3tinydisplay.dll', opts=['X11'])
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite1.obj')
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite2.obj')
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_ztriangle_1.obj')
@@ -4922,7 +4990,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('p3directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
-  if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME):
+  if not PkgSkip("PYTHON") and not RTDIST and not RUNTIME and not PkgSkip("DIRECTSCRIPTS"):
     DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
     TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
     TargetAdd('packpanda.exe', input='packpanda.obj')
@@ -5097,6 +5165,7 @@ if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME
   TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
   TargetAdd('p3dcparse.exe', input='libp3direct.dll')
   TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('p3dcparse.exe', input='libp3pystub.lib')
   TargetAdd('p3dcparse.exe', opts=['ADVAPI', 'PYTHON'])
 
 #
@@ -6780,9 +6849,9 @@ def MakeInstallerLinux():
         txt = txt.replace("VERSION", DEBVERSION).replace("ARCH", pkg_arch).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
         txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") / 1024))
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
-        oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
+        oscmd("cd targetroot && (find usr -type f -exec md5sum {} ;) > DEBIAN/md5sums")
         if (not RUNTIME):
-          oscmd("cd targetroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
+          oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
           WriteFile("targetroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("targetroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("cp targetroot/DEBIAN/postinst targetroot/DEBIAN/postrm")
@@ -6810,7 +6879,7 @@ def MakeInstallerLinux():
 
         if RUNTIME:
             # The runtime doesn't export any useful symbols, so just query the dependencies.
-            oscmd("cd targetroot; %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
+            oscmd("cd targetroot && %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
             depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
             recommends = ""
         else:
@@ -6818,12 +6887,12 @@ def MakeInstallerLinux():
             pkg_dir = "debian/panda3d" + MAJOR_VERSION
 
             # Generate a symbols file so that other packages can know which symbols we export.
-            oscmd("cd targetroot; dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
+            oscmd("cd targetroot && dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
 
             # Library dependencies are required, binary dependencies are recommended.
             # We explicitly exclude libphysx-extras since we don't want to depend on PhysX.
-            oscmd("cd targetroot; LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
-            oscmd("cd targetroot; LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
+            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
+            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
 
             # Parse the substvars files generated by dpkg-shlibdeps.
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
@@ -7185,6 +7254,11 @@ try:
             MakeInstallerFreeBSD()
         else:
             exit("Do not know how to make an installer for this platform")
+
+    if WHEEL:
+        ProgressOutput(100.0, "Building wheel")
+        from makewheel import makewheel
+        makewheel(VERSION, GetOutputDir())
 finally:
     SaveDependencyCache()
 

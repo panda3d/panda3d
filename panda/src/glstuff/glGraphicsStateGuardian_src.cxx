@@ -1356,6 +1356,8 @@ reset() {
       get_extension_func("glMapBuffer");
     _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
       get_extension_func("glUnmapBuffer");
+    _glGetBufferSubData = (PFNGLGETBUFFERSUBDATAPROC)
+      get_extension_func("glGetBufferSubData");
 #endif
   }
 #ifndef OPENGLES_1
@@ -1376,6 +1378,8 @@ reset() {
       get_extension_func("glMapBufferARB");
     _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
       get_extension_func("glUnmapBufferARB");
+    _glGetBufferSubData = (PFNGLGETBUFFERSUBDATAPROC)
+      get_extension_func("glGetBufferSubDataARB");
   }
 #endif  // OPENGLES_1
 
@@ -1792,7 +1796,7 @@ reset() {
   }
 #endif
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   // Check for uniform buffers.
 #ifdef OPENGLES
   if (is_at_least_gl_version(3, 1) || has_extension("GL_ARB_uniform_buffer_object")) {
@@ -1806,11 +1810,29 @@ reset() {
        get_extension_func("glGetActiveUniformBlockiv");
     _glGetActiveUniformBlockName = (PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC)
        get_extension_func("glGetActiveUniformBlockName");
-
-    _glBindBufferBase = (PFNGLBINDBUFFERBASEPROC)
-      get_extension_func("glBindBufferBase");
   } else {
     _supports_uniform_buffers = false;
+  }
+
+#ifndef OPENGLES
+  // Check for SSBOs.
+  if (is_at_least_gl_version(4, 3) || has_extension("ARB_shader_storage_buffer_object")) {
+    _supports_shader_buffers = true;
+    _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
+       get_extension_func("glGetProgramInterfaceiv");
+    _glGetProgramResourceName = (PFNGLGETPROGRAMRESOURCENAMEPROC)
+       get_extension_func("glGetProgramResourceName");
+    _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
+       get_extension_func("glGetProgramResourceiv");
+  } else
+#endif
+  {
+    _supports_shader_buffers = false;
+  }
+
+  if (_supports_uniform_buffers || _supports_shader_buffers) {
+    _glBindBufferBase = (PFNGLBINDBUFFERBASEPROC)
+      get_extension_func("glBindBufferBase");
   }
 #endif
 
@@ -3027,6 +3049,9 @@ reset() {
   _current_vertex_buffers.clear();
   _current_vertex_format.clear();
   memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
+
+  _current_sbuffer_index = 0;
+  _current_sbuffer_base.clear();
 #endif
 
   report_my_gl_errors();
@@ -5871,6 +5896,122 @@ setup_primitive(const unsigned char *&client_pointer,
 
 #ifndef OPENGLES
 /**
+ * Creates a new retained-mode representation of the given data, and returns a
+ * newly-allocated BufferContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_shader_buffer()
+ * with this same pointer (which will also delete the pointer).
+ *
+ * This function should not be called directly to prepare a buffer.  Instead,
+ * call ShaderBuffer::prepare().
+ */
+BufferContext *CLP(GraphicsStateGuardian)::
+prepare_shader_buffer(ShaderBuffer *data) {
+  if (_supports_shader_buffers) {
+    PStatGPUTimer timer(this, _prepare_shader_buffer_pcollector);
+
+    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects);
+    _glGenBuffers(1, &gbc->_index);
+
+    if (GLCAT.is_debug() && gl_debug_buffers) {
+      GLCAT.debug()
+        << "creating shader buffer " << (int)gbc->_index << ": "<< *data << "\n";
+    }
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+    _current_sbuffer_index = gbc->_index;
+
+    if (_use_object_labels) {
+      string name = data->get_name();
+      _glObjectLabel(GL_SHADER_STORAGE_BUFFER, gbc->_index, name.size(), name.data());
+    }
+
+    uint64_t num_bytes = data->get_data_size_bytes();
+    if (_supports_buffer_storage) {
+      _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
+    } else {
+      _glBufferData(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), get_usage(data->get_usage_hint()));
+    }
+
+    gbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+
+    report_my_gl_errors();
+    return gbc;
+  }
+
+  return NULL;
+}
+
+/**
+ * Binds the given shader buffer to the given binding slot.
+ */
+void CLP(GraphicsStateGuardian)::
+apply_shader_buffer(GLuint base, ShaderBuffer *buffer) {
+  GLuint index = 0;
+  if (buffer != NULL) {
+    BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
+    if (bc != NULL) {
+      CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+      index = gbc->_index;
+      gbc->set_active(true);
+    }
+  }
+
+  if (base >= _current_sbuffer_base.size()) {
+    _current_sbuffer_base.resize(base + 1, 0);
+  }
+
+  if (_current_sbuffer_base[base] != index) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "binding shader buffer " << (int)index
+        << " to index " << base << "\n";
+    }
+    _glBindBufferBase(GL_SHADER_STORAGE_BUFFER, base, index);
+    _current_sbuffer_base[base] = index;
+    _current_sbuffer_index = index;
+
+    report_my_gl_errors();
+  }
+}
+
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_shader_buffer(BufferContext *bc) {
+  nassertv(_supports_buffers);
+
+  CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+  if (GLCAT.is_debug() && gl_debug_buffers) {
+    GLCAT.debug()
+      << "deleting shader buffer " << (int)gbc->_index << "\n";
+  }
+
+  // Make sure the buffer is unbound before we delete it.  Not strictly
+  // necessary according to the OpenGL spec, but it might help out a flaky
+  // driver, and we need to keep our internal state consistent anyway.
+  if (_current_sbuffer_index == gbc->_index) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "unbinding shader buffer\n";
+    }
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
+
+  _glDeleteBuffers(1, &gbc->_index);
+  report_my_gl_errors();
+
+  gbc->_index = 0;
+
+  delete gbc;
+}
+#endif
+
+#ifndef OPENGLES
+/**
  * Begins a new occlusion query.  After this call, you may call
  * begin_draw_primitives() and draw_triangles()/draw_whatever() repeatedly.
  * Eventually, you should call end_occlusion_query() before the end of the
@@ -6018,16 +6159,6 @@ PT(GeomMunger) CLP(GraphicsStateGuardian)::
 make_geom_munger(const RenderState *state, Thread *current_thread) {
   PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
   return GeomMunger::register_munger(munger, current_thread);
-}
-
-/**
- * This function will compute the distance to the indicated point, assumed to
- * be in eye coordinates, from the camera plane.  The point is assumed to be
- * in the GSG's internal coordinate system.
- */
-PN_stdfloat CLP(GraphicsStateGuardian)::
-compute_distance_to(const LPoint3 &point) const {
-  return -point[2];
 }
 
 /**
@@ -6184,7 +6315,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
     }
   }
 
@@ -6505,7 +6636,7 @@ do_issue_shade_model() {
 
 #ifndef OPENGLES_1
 /**
- *
+ * Called when the current ShaderAttrib state has changed.
  */
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
@@ -6518,21 +6649,30 @@ do_issue_shader() {
     shader = _default_shader;
     nassertv(shader != NULL);
   }
-
 #endif
+
   if (shader) {
-    context = shader->prepare_now(get_prepared_objects(), this);
+    if (_current_shader != shader) {
+      context = shader->prepare_now(get_prepared_objects(), this);
+    } else {
+      context = _current_shader_context;
+    }
   }
+
 #ifndef SUPPORT_FIXED_FUNCTION
   // If it failed, try applying the default shader.
   if (shader != _default_shader && (context == 0 || !context->valid())) {
     shader = _default_shader;
     nassertv(shader != NULL);
-    context = shader->prepare_now(get_prepared_objects(), this);
+    if (_current_shader != shader) {
+      context = shader->prepare_now(get_prepared_objects(), this);
+    } else {
+      context = _current_shader_context;
+    }
   }
 #endif
 
-  if (context == 0 || (context->valid() == false)) {
+  if (context == 0 || !context->valid()) {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind();
       _current_shader = 0;
@@ -6544,12 +6684,16 @@ do_issue_shader() {
       // bind the new one.
       if (_current_shader_context != NULL &&
           _current_shader->get_language() != shader->get_language()) {
+        // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
       context->bind();
       _current_shader = shader;
-      _current_shader_context = context;
     }
+
+    // Bind the shader storage buffers.
+    context->update_shader_buffer_bindings(_current_shader_context);
+    _current_shader_context = context;
   }
 
 #ifndef OPENGLES
@@ -10122,6 +10266,7 @@ set_state_and_transform(const RenderState *target,
   }
 #endif
 
+  // Update all of the state that is bound to the shader program.
   if (_current_shader_context != NULL) {
     _current_shader_context->set_state_and_transform(target, transform, _projection_mat);
   }
@@ -11361,7 +11506,7 @@ apply_texture(CLP(TextureContext) *gtc) {
   glBindTexture(target, gtc->_index);
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *gtc->get_texture() << "\n";
   }
 
   report_my_gl_errors();
@@ -11659,7 +11804,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
     }
   }
 
@@ -12632,32 +12777,38 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   }
 #endif
 
+  Texture *tex = gtc->get_texture();
+
   glBindTexture(target, gtc->_index);
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
   }
-
-  Texture *tex = gtc->get_texture();
 
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
   GLfloat border_color[4];
 
-  glGetTexParameteriv(target, GL_TEXTURE_WRAP_S, &wrap_u);
-  glGetTexParameteriv(target, GL_TEXTURE_WRAP_T, &wrap_v);
-  wrap_w = GL_REPEAT;
-#ifndef OPENGLES_1
-  if (_supports_3d_texture) {
-    glGetTexParameteriv(target, GL_TEXTURE_WRAP_R, &wrap_w);
-  }
+#ifdef OPENGLES
+  if (true) {
+#else
+  if (target != GL_TEXTURE_BUFFER) {
 #endif
-  glGetTexParameteriv(target, GL_TEXTURE_MIN_FILTER, &minfilter);
-  glGetTexParameteriv(target, GL_TEXTURE_MAG_FILTER, &magfilter);
+    glGetTexParameteriv(target, GL_TEXTURE_WRAP_S, &wrap_u);
+    glGetTexParameteriv(target, GL_TEXTURE_WRAP_T, &wrap_v);
+    wrap_w = GL_REPEAT;
+#ifndef OPENGLES_1
+    if (_supports_3d_texture) {
+      glGetTexParameteriv(target, GL_TEXTURE_WRAP_R, &wrap_w);
+    }
+#endif
+    glGetTexParameteriv(target, GL_TEXTURE_MIN_FILTER, &minfilter);
+    glGetTexParameteriv(target, GL_TEXTURE_MAG_FILTER, &magfilter);
 
 #ifndef OPENGLES
-  glGetTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, border_color);
+    glGetTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, border_color);
 #endif
+  }
 
   GLenum page_target = target;
   if (target == GL_TEXTURE_CUBE_MAP) {
@@ -13122,14 +13273,20 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   tex->set_component_type(type);
   tex->set_format(format);
 
-  tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
-  tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
-  tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-  tex->set_border_color(LColor(border_color[0], border_color[1],
-                               border_color[2], border_color[3]));
+#ifdef OPENGLES
+  if (true) {
+#else
+  if (target != GL_TEXTURE_BUFFER) {
+#endif
+    tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
+    tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
+    tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
+    tex->set_border_color(LColor(border_color[0], border_color[1],
+                                 border_color[2], border_color[3]));
 
-  tex->set_minfilter(get_panda_filter_type(minfilter));
-  // tex->set_magfilter(get_panda_filter_type(magfilter));
+    tex->set_minfilter(get_panda_filter_type(minfilter));
+    //tex->set_magfilter(get_panda_filter_type(magfilter));
+  }
 
   PTA_uchar image;
   size_t page_size = 0;
@@ -13215,6 +13372,13 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
         _glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
       }
     }
+
+#ifndef OPENGLES
+  } else if (target == GL_TEXTURE_BUFFER) {
+    // In the case of a buffer texture, we need to get it from the buffer.
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    _glGetBufferSubData(target, 0, image.size(), image.p());
+#endif
 
   } else if (compression == Texture::CM_off) {
     // An uncompressed 1-d, 2-d, or 3-d texture.

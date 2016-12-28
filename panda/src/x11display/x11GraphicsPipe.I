@@ -58,6 +58,38 @@ get_hidden_cursor() {
 }
 
 /**
+ * Returns true if relative mouse mode is supported on this display.
+ */
+INLINE bool x11GraphicsPipe::
+supports_relative_mouse() const {
+  return (_XF86DGADirectVideo != NULL);
+}
+
+/**
+ * Enables relative mouse mode for this display.  Returns false if unsupported.
+ */
+INLINE bool x11GraphicsPipe::
+enable_relative_mouse() {
+  if (_XF86DGADirectVideo != NULL) {
+    x11display_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
+    _XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Disables relative mouse mode for this display.
+ */
+INLINE void x11GraphicsPipe::
+disable_relative_mouse() {
+  if (_XF86DGADirectVideo != NULL) {
+    x11display_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
+    _XF86DGADirectVideo(_display, _screen, 0);
+  }
+}
+
+/**
  * Globally disables the printing of error messages that are raised by the X11
  * system, for instance in order to test whether a particular X11 operation
  * will succeed.  Reenable error messages with a later call to

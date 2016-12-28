@@ -105,6 +105,8 @@ private:
   ThreadPriority _thread_priority;
   PT(GenericThread) _thread;
 
+  int _pixel_format;
+
   // This global Mutex protects calls to avcodec_opencloseetc.
   static ReMutex _av_lock;
 

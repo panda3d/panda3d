@@ -231,11 +231,13 @@ operator = (const HTTPClient &copy) {
  */
 HTTPClient::
 ~HTTPClient() {
-  // Before we can free the context, we must remove the X509_STORE pointer
-  // from it, so it won't be destroyed along with it (this object is shared
-  // among all contexts).
   if (_ssl_ctx != (SSL_CTX *)NULL) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    // Before we can free the context, we must remove the X509_STORE pointer
+    // from it, so it won't be destroyed along with it (this object is shared
+    // among all contexts).
     _ssl_ctx->cert_store = NULL;
+#endif
     SSL_CTX_free(_ssl_ctx);
   }
 
@@ -1122,7 +1124,13 @@ get_ssl_ctx() {
   OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
   sslw->notify_ssl_errors();
 
-  SSL_CTX_set_cert_store(_ssl_ctx, sslw->get_x509_store());
+  X509_STORE *store = sslw->get_x509_store();
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
+  if (store != NULL) {
+    X509_STORE_up_ref(store);
+  }
+#endif
+  SSL_CTX_set_cert_store(_ssl_ctx, store);
 
   return _ssl_ctx;
 }
@@ -1511,15 +1519,17 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
   for (int ai = 0; ai < count_a; ai++) {
     X509_NAME_ENTRY *na = X509_NAME_get_entry(name_a, ai);
 
-    int bi = X509_NAME_get_index_by_OBJ(name_b, na->object, -1);
+    int bi = X509_NAME_get_index_by_OBJ(name_b, X509_NAME_ENTRY_get_object(na), -1);
     if (bi < 0) {
       // This entry in name_a is not defined in name_b.
       return false;
     }
 
     X509_NAME_ENTRY *nb = X509_NAME_get_entry(name_b, bi);
-    if (na->value->length != nb->value->length ||
-        memcmp(na->value->data, nb->value->data, na->value->length) != 0) {
+    ASN1_STRING *na_value = X509_NAME_ENTRY_get_data(na);
+    ASN1_STRING *nb_value = X509_NAME_ENTRY_get_data(nb);
+    if (na_value->length != nb_value->length ||
+        memcmp(na_value->data, nb_value->data, na_value->length) != 0) {
       // This entry in name_a doesn't match that of name_b.
       return false;
     }
