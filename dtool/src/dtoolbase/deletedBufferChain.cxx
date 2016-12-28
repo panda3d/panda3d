@@ -71,7 +71,7 @@ allocate(size_t size, TypeHandle type_handle) {
 
   // Allocate memory, and make sure the object starts at the proper alignment.
   void *mem = NeverFreeMemory::alloc(alloc_size);
-  intptr_t pad = ((intptr_t)flag_reserved_bytes - (intptr_t)mem) % MemoryHook::get_memory_alignment();
+  intptr_t pad = (-(intptr_t)flag_reserved_bytes - (intptr_t)mem) % MemoryHook::get_memory_alignment();
   obj = (ObjectNode *)((uintptr_t)mem + pad);
 
 #ifdef USE_DELETEDCHAINFLAG
@@ -80,7 +80,7 @@ allocate(size_t size, TypeHandle type_handle) {
 
   void *ptr = node_to_buffer(obj);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
   assert(((uintptr_t)ptr % MemoryHook::get_memory_alignment()) == 0);
 #endif
 
