@@ -339,21 +339,26 @@ typedef struct _object PyObject;
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
 #define ALIGN_16BYTE
+#define ALIGN_32BYTE
 #define ALIGN_64BYTE
 #elif defined(_MSC_VER)
 #define ALIGN_4BYTE __declspec(align(4))
 #define ALIGN_8BYTE __declspec(align(8))
 #define ALIGN_16BYTE __declspec(align(16))
+#define ALIGN_32BYTE __declspec(align(32))
 #define ALIGN_64BYTE __declspec(align(64))
 #elif defined(__GNUC__)
 #define ALIGN_4BYTE __attribute__ ((aligned (4)))
 #define ALIGN_8BYTE __attribute__ ((aligned (8)))
 #define ALIGN_16BYTE __attribute__ ((aligned (16)))
+#define ALIGN_32BYTE __attribute__ ((aligned (32)))
 #define ALIGN_64BYTE __attribute__ ((aligned (64)))
 #else
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
 #define ALIGN_16BYTE
+#define ALIGN_32BYTE
+#define ALIGN_64BYTE
 #endif
 
 // Do we need to implement memory-alignment enforcement within the MemoryHook
