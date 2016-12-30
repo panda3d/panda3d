@@ -44,7 +44,7 @@ class build(distutils.command.build.build):
                 for exmod in self.distribution.exclude_modules:
                     freezer.excludeModule(exmod)
                 freezer.done(addStartupModules=True)
-                freezer.generateRuntimeFromStub(app.runtimename)
+                freezer.generateRuntimeFromStub(os.path.join(builddir, app.runtimename))
 
             # Copy extension modules
             for module, source_path in freezer.extras:
