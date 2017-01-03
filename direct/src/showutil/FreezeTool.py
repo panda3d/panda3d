@@ -1545,7 +1545,7 @@ class Freezer:
 
         return target
 
-    def generateRuntimeFromStub(self, basename):
+    def generateRuntimeFromStub(self, basename, stub_file):
         def make_module_list_entry(code, offset, modulename, module):
             size = len(code)
             if getattr(module, "__path__", None):
@@ -1610,15 +1610,8 @@ class Freezer:
                 codeOffset += len(code)
 
         # Build from pre-built binary stub
-        dtool_path = Filename(ExecutionEnvironment.get_dtool_name()).to_os_specific()
-        stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', 'deploy-stub')
-        if sys.platform in ('win32', 'cygwin'):
-            stub_path += '.exe'
-        with open(stub_path, 'rb') as f:
-            stubbin = f.read()
-
         with open(target, 'wb') as f:
-            f.write(stubbin)
+            f.write(stub_file.read())
             listoffset = f.tell()
             for mod in moduleList:
                 f.write(mod)

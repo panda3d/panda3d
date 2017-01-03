@@ -1,6 +1,7 @@
 import collections
 import os
 import sys
+import zipfile
 
 import distutils.command.build
 import distutils.core
@@ -22,20 +23,53 @@ class Distribution(distutils.dist.Distribution):
         self.files = []
         self.exclude_paths = []
         self.exclude_modules = []
+        self.wheels = []
         distutils.dist.Distribution.__init__(self, attrs)
+
+
+# TODO replace with Packager
+def find_packages(whlfile):
+    if whlfile is None:
+        dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
+        libdir = os.path.dirname(dtool_fn.to_os_specific())
+        filelist = [os.path.join(libdir, i) for i in os.listdir(libdir)]
+    else:
+        filelist = whlfile.namelist()
+
+    return [i for i in filelist if '.so.' in i or i.endswith('.dll') or i.endswith('.dylib') or 'libpandagl' in i]
 
 
 class build(distutils.command.build.build):
     def run(self):
         distutils.command.build.build.run(self)
-        platforms = [p3d.PandaSystem.get_platform()]
+        if not self.distribution.wheels:
+            platforms = {p3d.PandaSystem.get_platform(): None}
+        else:
+            platforms = {
+                whl.split('-')[-1].replace('.whl', ''): whl
+                for whl in self.distribution.wheels
+            }
 
-        for platform in platforms:
+        for platform, whl in platforms.items():
             builddir = os.path.join(self.build_base, platform)
 
             if os.path.exists(builddir):
                 distutils.dir_util.remove_tree(builddir)
             distutils.dir_util.mkpath(builddir)
+
+            if whl is not None:
+                whlfile = zipfile.ZipFile(whl)
+                stub_path = 'panda3d_tools/deploy-stub'
+                if platform.startswith('win'):
+                    stub_path += '.exe'
+                stub_file = whlfile.open(stub_path)
+            else:
+                dtool_path = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name()).to_os_specific()
+                stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', 'deploy-stub')
+                if platform.startswith('win'):
+                    stub_path += '.exe'
+                stub_file = open(stub_path, 'rb')
+
 
             # Create runtime
             for app in self.distribution.applications:
@@ -44,7 +78,8 @@ class build(distutils.command.build.build):
                 for exmod in self.distribution.exclude_modules:
                     freezer.excludeModule(exmod)
                 freezer.done(addStartupModules=True)
-                freezer.generateRuntimeFromStub(os.path.join(builddir, app.runtimename))
+                freezer.generateRuntimeFromStub(os.path.join(builddir, app.runtimename), stub_file)
+                stub_file.close()
 
             # Copy extension modules
             for module, source_path in freezer.extras:
@@ -63,21 +98,34 @@ class build(distutils.command.build.build):
                 target_path = os.path.join(builddir, basename)
                 distutils.file_util.copy_file(source_path, target_path)
 
-            # Copy Panda3D libs
-            dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
-            libdir = os.path.dirname(dtool_fn.to_os_specific())
+            # Find Panda3D libs
+            libs = find_packages(whlfile if whl is not None else None)
 
-            for item in os.listdir(libdir):
-                if '.so.' in item or item.endswith('.dll') or item.endswith('.dylib') or 'libpandagl' in item:
-                    source_path = os.path.join(libdir, item)
-                    target_path = os.path.join(builddir, item)
+            # Copy Panda3D files
+            etcdir = os.path.join(builddir, 'etc')
+            if whl is None:
+                # Libs
+                for lib in libs:
+                    target_path = os.path.join(builddir, os.path.basename(lib))
                     if not os.path.islink(source_path):
-                        distutils.file_util.copy_file(source_path, target_path)
+                        distutils.file_util.copy_file(lib, target_path)
 
-            # Copy etc
-            src = os.path.join(libdir, '..', 'etc')
-            dst = os.path.join(builddir, 'etc')
-            distutils.dir_util.copy_tree(src, dst)
+                # etc
+                dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
+                libdir = os.path.dirname(dtool_fn.to_os_specific())
+                src = os.path.join(libdir, '..', 'etc')
+                distutils.dir_util.copy_tree(src, etcdir)
+            else:
+                distutils.dir_util.mkpath(etcdir)
+
+                # Combine prc files with libs and copy the whole list
+                panda_files = libs + [i for i in whlfile.namelist() if i.endswith('.prc')]
+                for pf in panda_files:
+                    dstdir = etcdir if pf.endswith('.prc') else builddir
+                    target_path = os.path.join(dstdir, os.path.basename(pf))
+                    print("copying {} -> {}".format(os.path.join(whl, pf), target_path))
+                    with open(target_path, 'wb') as f:
+                        f.write(whlfile.read(pf))
 
             # Copy Game Files
             ignore_copy_list = [
