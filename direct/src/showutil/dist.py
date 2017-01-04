@@ -57,12 +57,20 @@ class build(distutils.command.build.build):
                 distutils.dir_util.remove_tree(builddir)
             distutils.dir_util.mkpath(builddir)
 
+            whldir = os.path.join(self.build_base, '__whl_cache__')
+            if os.path.exists(whldir):
+                distutils.dir_util.remove_tree(whldir)
+
             if whl is not None:
                 whlfile = zipfile.ZipFile(whl)
                 stub_path = 'panda3d_tools/deploy-stub'
                 if platform.startswith('win'):
                     stub_path += '.exe'
                 stub_file = whlfile.open(stub_path)
+
+                # Add whl files to the path so they are picked up by modulefinder
+                whlfile.extractall(whldir)
+                sys.path.insert(0, whldir)
             else:
                 dtool_path = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name()).to_os_specific()
                 stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', 'deploy-stub')
@@ -157,6 +165,10 @@ class build(distutils.command.build.build):
                     src = extra
                     dst = builddir
                 distutils.file_util.copy_file(src, dst)
+
+            # Cleanup whl directory
+            if os.path.exists(whldir):
+                distutils.dir_util.remove_tree(whldir)
 
 
 class bdist_panda3d(distutils.core.Command):
