@@ -8,7 +8,7 @@ import marshal
 import imp
 import platform
 import struct
-from io import StringIO
+from io import StringIO, TextIOWrapper
 import distutils.sysconfig as sysconf
 import zipfile
 
