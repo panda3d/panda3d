@@ -10,6 +10,7 @@ import platform
 import struct
 from io import StringIO
 import distutils.sysconfig as sysconf
+import zipfile
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -1661,51 +1662,128 @@ class Freezer:
         return True
 
 class PandaModuleFinder(modulefinder.ModuleFinder):
-    """ We subclass ModuleFinder here, to add functionality for
-    finding the libpandaexpress etc. modules that interrogate
-    produces. """
 
     def __init__(self, *args, **kw):
+        """
+        :param path: search path to look on, defaults to sys.path
+        :param suffixes: defaults to imp.get_suffixes()
+        :param excludes: a list of modules to exclude
+        :param debug: an integer indicating the level of verbosity
+        """
+
+        self.suffixes = kw.pop('suffixes', imp.get_suffixes())
+
         modulefinder.ModuleFinder.__init__(self, *args, **kw)
 
-    def find_module(self, name, path, *args, **kwargs):
+        # Make sure we don't open a .whl/.zip file more than once.
+        self._zip_files = {}
+
+    def _open_file(self, path, mode):
+        """ Opens a module at the given path, which may contain a zip file.
+        Returns None if the module could not be found. """
+
+        if os.path.isfile(path):
+            return open(path, mode)
+
+        # Is there a zip file along the path?
+        dir, dirname = os.path.split(path)
+        fn = dirname
+        while dirname:
+            if os.path.isfile(dir):
+                # Okay, this is actually a file.  Is it a zip file?
+                if dir in self._zip_files:
+                    # Yes, and we've previously opened this.
+                    zip = self._zip_files[dir]
+                elif zipfile.is_zipfile(dir):
+                    zip = zipfile.ZipFile(dir)
+                    self._zip_files[dir] = zip
+                else:
+                    # It's a different kind of file.  Stop looking.
+                    return None
+
+                try:
+                    fp = zip.open(fn, 'r')
+                except KeyError:
+                    return None
+
+                if sys.version_info >= (3, 0) and 'b' not in mode:
+                    return TextIOWrapper(fp)
+                return fp
+
+            # Look at the parent directory.
+            dir, dirname = os.path.split(dir)
+            fn = os.path.join(dirname, fn)
+
+        return None
+
+    def find_module(self, name, path=None, parent=None):
+        """ Finds a module with the indicated name on the given search path
+        (or self.path if None).  Returns a tuple like (fp, path, stuff), where
+        stuff is a tuple like (suffix, mode, type). """
+
         if imp.is_frozen(name):
             # Don't pick up modules that are frozen into p3dpython.
             raise ImportError("'%s' is a frozen module" % (name))
 
-        try:
-            return modulefinder.ModuleFinder.find_module(self, name, path, *args, **kwargs)
-        except ImportError:
-            # It wasn't found through the normal channels.  Maybe it's
-            # one of ours, or maybe it's frozen?
-            if path:
-                # Only if we're not looking on a particular path,
-                # though.
-                raise
+        if parent is not None:
+            fullname = parent.__name__+'.'+name
+        else:
+            fullname = name
+        if fullname in self.excludes:
+            raise ImportError(name)
 
+        # If no search path is given, look for a built-in module.
+        if path is None:
+            if name in sys.builtin_module_names:
+                return (None, None, ('', '', imp.C_BUILTIN))
+
+            path = self.path
+
+        # Look for the module on the search path.
+        for dir_path in path:
+            basename = os.path.join(dir_path, name.split('.')[-1])
+
+            # Look for recognized extensions.
+            for stuff in self.suffixes:
+                suffix, mode, type = stuff
+                fp = self._open_file(basename + suffix, mode)
+                if fp:
+                    return (fp, basename + suffix, stuff)
+
+            # Consider a package, i.e. a directory containing __init__.py.
+            for suffix, mode, type in self.suffixes:
+                init = os.path.join(basename, '__init__' + suffix)
+                if self._open_file(init, mode):
+                    return (None, basename, ('', '', imp.PKG_DIRECTORY))
+
+        # It wasn't found through the normal channels.  Maybe it's one of
+        # ours, or maybe it's frozen?
+        if not path:
+            # Only if we're not looking on a particular path, though.
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
 
-        message = "DLL loader cannot find %s." % (name)
-        raise ImportError(message)
+        raise ImportError(name)
 
-    def load_module(self, fqname, fp, pathname, file_info):
-        suffix, mode, type = file_info
-
-        if type == imp.PY_FROZEN:
-            # It's a frozen module.
-            co, isPackage = p3extend_frozen.get_frozen_module_code(pathname)
-            m = self.add_module(fqname)
-            m.__file__ = '<frozen>'
-            if isPackage:
-                m.__path__ = [pathname]
-            co = marshal.loads(co)
-            if self.replace_paths:
-                co = self.replace_paths_in_code(co)
-            m.__code__ = co
-            self.scan_code(co, m)
-            self.msgout(2, "load_module ->", m)
-            return m
-
-        return modulefinder.ModuleFinder.load_module(self, fqname, fp, pathname, (suffix, mode, type))
+    def find_all_submodules(self, m):
+        # Overridden so that we can define our own suffixes.
+        if not m.__path__:
+            return
+        modules = {}
+        for dir in m.__path__:
+            try:
+                names = os.listdir(dir)
+            except OSError:
+                self.msg(2, "can't list directory", dir)
+                continue
+            for name in names:
+                mod = None
+                for suff in self.suffixes:
+                    n = len(suff)
+                    if name[-n:] == suff:
+                        mod = name[:-n]
+                        break
+                if mod and mod != "__init__":
+                    modules[mod] = mod
+        return modules.keys()
