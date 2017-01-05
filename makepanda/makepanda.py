@@ -52,6 +52,7 @@ RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
 DEBVERSION=None
+WHLVERSION=None
 RPMRELEASE="1"
 GIT_COMMIT=None
 P3DSUFFIX=None
@@ -163,7 +164,7 @@ def usage(problem):
 def parseopts(args):
     global INSTALLER,WHEEL,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
-    global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
+    global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
@@ -206,8 +207,11 @@ def parseopts(args):
             elif (option=="--arch"): target_arch = value.strip()
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
-                VERSION=value
-                if (len(VERSION.split(".")) != 3): raise Exception
+                match = re.match(r'^\d+\.\d+\.\d+', value)
+                if not match:
+                    usage("version requires three digits")
+                WHLVERSION = value
+                VERSION = match.group()
             elif (option=="--lzma"): COMPRESSOR="lzma"
             elif (option=="--override"): AddOverride(value.strip())
             elif (option=="--static"): SetLinkAllStatic(True)
@@ -1190,7 +1194,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++0x -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -7257,7 +7261,7 @@ try:
     if WHEEL:
         ProgressOutput(100.0, "Building wheel")
         from makewheel import makewheel
-        makewheel(VERSION, GetOutputDir())
+        makewheel(WHLVERSION, GetOutputDir())
 finally:
     SaveDependencyCache()
 
