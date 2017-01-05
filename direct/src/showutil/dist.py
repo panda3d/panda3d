@@ -43,7 +43,6 @@ def find_packages(whlfile):
 class build(distutils.command.build.build):
     def run(self):
         distutils.command.build.build.run(self)
-        print(self.distribution.deploy_platforms)
         if not self.distribution.deploy_platforms:
             platforms = [p3d.PandaSystem.get_platform()]
             use_wheels = False
@@ -126,7 +125,6 @@ class build(distutils.command.build.build):
                     # This was found in a wheel, extract it
                     whl, wf = source_path.split('.whl/')
                     whl += '.whl'
-                    print(whl, source_path)
                     whlfile = whlfiles[whl]
                     print("copying {} -> {}".format(os.path.join(whl, wf), target_path))
                     with open(target_path, 'wb') as f:
