@@ -1,5 +1,6 @@
 import collections
 import os
+import pip
 import sys
 import zipfile
 
@@ -23,7 +24,7 @@ class Distribution(distutils.dist.Distribution):
         self.files = []
         self.exclude_paths = []
         self.exclude_modules = []
-        self.wheels = []
+        self.deploy_platforms = []
         distutils.dist.Distribution.__init__(self, attrs)
 
 
@@ -42,34 +43,52 @@ def find_packages(whlfile):
 class build(distutils.command.build.build):
     def run(self):
         distutils.command.build.build.run(self)
-        if not self.distribution.wheels:
-            platforms = {p3d.PandaSystem.get_platform(): None}
+        print(self.distribution.deploy_platforms)
+        if not self.distribution.deploy_platforms:
+            platforms = [p3d.PandaSystem.get_platform()]
+            use_wheels = False
         else:
-            platforms = {
-                whl.split('-')[-1].replace('.whl', ''): whl
-                for whl in self.distribution.wheels
-            }
+            platforms = self.distribution.deploy_platforms
+            use_wheels = True
+        print("Building platforms: {}".format(','.join(platforms)))
 
-        for platform, whl in platforms.items():
+        for platform in platforms:
             builddir = os.path.join(self.build_base, platform)
 
-            if os.path.exists(builddir):
-                distutils.dir_util.remove_tree(builddir)
-            distutils.dir_util.mkpath(builddir)
+            if not os.path.exists(builddir):
+                distutils.dir_util.mkpath(builddir)
 
-            whldir = os.path.join(self.build_base, '__whl_cache__')
-            if os.path.exists(whldir):
-                distutils.dir_util.remove_tree(whldir)
+            if use_wheels:
+                whldir = os.path.join(self.build_base, '__whl_cache__')
 
-            if whl is not None:
-                whlfile = zipfile.ZipFile(whl)
+                pip.main(args=[
+                    'download',
+                    '-d', whldir,
+                    '-r', 'requirements.txt',
+                    '--only-binary', ':all:',
+                    '--platform', platform,
+                ])
+
+                wheelpaths = [os.path.join(whldir,i) for i in os.listdir(whldir) if platform in i]
+
+                p3dwhl = None
+                for whl in wheelpaths:
+                    if 'panda3d-' in whl:
+                        p3dwhlfn = whl
+                        p3dwhl = zipfile.ZipFile(p3dwhlfn)
+                        break
+                else:
+                    raise RuntimeError("Missing panda3d wheel")
+
+                whlfiles = {whl: zipfile.ZipFile(whl) for whl in wheelpaths}
                 stub_path = 'panda3d_tools/deploy-stub'
                 if platform.startswith('win'):
                     stub_path += '.exe'
-                stub_file = whlfile.open(stub_path)
+                stub_file = p3dwhl.open(stub_path)
 
                 # Add whl files to the path so they are picked up by modulefinder
-                sys.path.insert(0, whl)
+                for whl in wheelpaths:
+                    sys.path.insert(0, whl)
             else:
                 dtool_path = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name()).to_os_specific()
                 stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', 'deploy-stub')
@@ -105,7 +124,10 @@ class build(distutils.command.build.build):
                 target_path = os.path.join(builddir, basename)
                 if '.whl/' in source_path:
                     # This was found in a wheel, extract it
-                    wf = source_path.split('.whl/')[-1]
+                    whl, wf = source_path.split('.whl/')
+                    whl += '.whl'
+                    print(whl, source_path)
+                    whlfile = whlfiles[whl]
                     print("copying {} -> {}".format(os.path.join(whl, wf), target_path))
                     with open(target_path, 'wb') as f:
                         f.write(whlfile.read(wf))
@@ -114,11 +136,11 @@ class build(distutils.command.build.build):
                     distutils.file_util.copy_file(source_path, target_path)
 
             # Find Panda3D libs
-            libs = find_packages(whlfile if whl is not None else None)
+            libs = find_packages(p3dwhl if use_wheels else None)
 
             # Copy Panda3D files
             etcdir = os.path.join(builddir, 'etc')
-            if whl is None:
+            if not use_wheels:
                 # Libs
                 for lib in libs:
                     target_path = os.path.join(builddir, os.path.basename(lib))
@@ -134,13 +156,13 @@ class build(distutils.command.build.build):
                 distutils.dir_util.mkpath(etcdir)
 
                 # Combine prc files with libs and copy the whole list
-                panda_files = libs + [i for i in whlfile.namelist() if i.endswith('.prc')]
+                panda_files = libs + [i for i in p3dwhl.namelist() if i.endswith('.prc')]
                 for pf in panda_files:
                     dstdir = etcdir if pf.endswith('.prc') else builddir
                     target_path = os.path.join(dstdir, os.path.basename(pf))
-                    print("copying {} -> {}".format(os.path.join(whl, pf), target_path))
+                    print("copying {} -> {}".format(os.path.join(p3dwhlfn, pf), target_path))
                     with open(target_path, 'wb') as f:
-                        f.write(whlfile.read(pf))
+                        f.write(p3dwhl.read(pf))
 
             # Copy Game Files
             ignore_copy_list = [
@@ -172,10 +194,6 @@ class build(distutils.command.build.build):
                     src = extra
                     dst = builddir
                 distutils.file_util.copy_file(src, dst)
-
-            # Cleanup whl directory
-            if os.path.exists(whldir):
-                distutils.dir_util.remove_tree(whldir)
 
 
 class bdist_panda3d(distutils.core.Command):

@@ -1,0 +1,2 @@
+-f ./wheels
+panda3d

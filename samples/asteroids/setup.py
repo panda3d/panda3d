@@ -5,4 +5,5 @@ setup(
     directories=['.'],
     exclude_paths=['build', 'setup.py'],
     applications=[Application('main.py', 'asteroids')],
+    deploy_platforms=['linux_x86_64'],
 )
