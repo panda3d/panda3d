@@ -69,8 +69,7 @@ class build(distutils.command.build.build):
                 stub_file = whlfile.open(stub_path)
 
                 # Add whl files to the path so they are picked up by modulefinder
-                whlfile.extractall(whldir)
-                sys.path.insert(0, whldir)
+                sys.path.insert(0, whl)
             else:
                 dtool_path = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name()).to_os_specific()
                 stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', 'deploy-stub')
@@ -104,7 +103,15 @@ class build(distutils.command.build.build):
                 basename = '.'.join([i for i in basename.split('.') if not i.startswith('cpython-')])
 
                 target_path = os.path.join(builddir, basename)
-                distutils.file_util.copy_file(source_path, target_path)
+                if '.whl/' in source_path:
+                    # This was found in a wheel, extract it
+                    wf = source_path.split('.whl/')[-1]
+                    print("copying {} -> {}".format(os.path.join(whl, wf), target_path))
+                    with open(target_path, 'wb') as f:
+                        f.write(whlfile.read(wf))
+                else:
+                    # Regular file, copy it
+                    distutils.file_util.copy_file(source_path, target_path)
 
             # Find Panda3D libs
             libs = find_packages(whlfile if whl is not None else None)
