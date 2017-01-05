@@ -2871,11 +2871,13 @@ if tp_dir is not None:
         CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
 
         if not PkgSkip("PYTHON") and not RTDIST:
-            #XXX rdb I don't think we need to copy over the Python DLL, do we?
-            #pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
-            #if (GetOptimize() <= 2): pydll += "_d.dll"
-            #else: pydll += ".dll"
-            #CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
+            # We need to copy the Python DLL to the bin directory for now.
+            pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
+            if GetOptimize() <= 2:
+                pydll += "_d.dll"
+            else:
+                pydll += ".dll"
+            CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
             #for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
             #    CopyFile(GetOutputDir() + "/bin/", fn)
@@ -2949,6 +2951,7 @@ if GetTarget() == 'windows':
     # Convert to Windows newlines so they can be opened by notepad.
     WriteFile(GetOutputDir() + "/LICENSE", ReadFile("doc/LICENSE"), newline='\r\n')
     WriteFile(GetOutputDir() + "/ReleaseNotes", ReadFile("doc/ReleaseNotes"), newline='\r\n')
+    CopyFile(GetOutputDir() + "/pandaIcon.ico", "panda/src/configfiles/pandaIcon.ico")
 else:
     CopyFile(GetOutputDir()+"/", "doc/LICENSE")
     CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
@@ -6596,7 +6599,7 @@ def MakeInstallerNSIS(file, title, installdir):
         AddToPathEnv("PATH", GetOutputDir() + "\\bin")
         AddToPathEnv("PATH", GetOutputDir() + "\\plugins")
 
-        cmd = sys.executable + " -B -u direct\\src\\plugin_installer\\make_installer.py"
+        cmd = sys.executable + " -B -u " + os.path.join("direct", "src", "plugin_installer", "make_installer.py")
         cmd += " --version %s --regview %s" % (VERSION, regview)
 
         if GetTargetArch() == 'x64':
@@ -6605,7 +6608,7 @@ def MakeInstallerNSIS(file, title, installdir):
             cmd += " --install \"$PROGRAMFILES32\\Panda3D\" "
 
         oscmd(cmd)
-        shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
+        shutil.move(os.path.join("direct", "src", "plugin_installer", "p3d-setup.exe"), file)
         return
 
     print("Building "+title+" installer at %s" % (file))
