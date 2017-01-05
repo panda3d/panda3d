@@ -26,6 +26,7 @@
 #include "lodNode.h"
 #include "nodeCullCallbackData.h"
 #include "pointLight.h"
+#include "rectangleLight.h"
 #include "selectiveChildNode.h"
 #include "sequenceNode.h"
 #include "shaderGenerator.h"
@@ -121,6 +122,7 @@ init_libpgraphnodes() {
   LODNode::init_type();
   NodeCullCallbackData::init_type();
   PointLight::init_type();
+  RectangleLight::init_type();
   SelectiveChildNode::init_type();
   SequenceNode::init_type();
   ShaderGenerator::init_type();
@@ -137,6 +139,7 @@ init_libpgraphnodes() {
   LightNode::register_with_read_factory();
   LODNode::register_with_read_factory();
   PointLight::register_with_read_factory();
+  RectangleLight::register_with_read_factory();
   SelectiveChildNode::register_with_read_factory();
   SequenceNode::register_with_read_factory();
   SphereLight::register_with_read_factory();

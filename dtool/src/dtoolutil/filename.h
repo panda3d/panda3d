@@ -55,20 +55,22 @@ public:
   };
 
   INLINE Filename(const char *filename);
-
-PUBLISHED:
-  INLINE Filename(const string &filename = "");
+  INLINE Filename(const string &filename);
   INLINE Filename(const wstring &filename);
   INLINE Filename(const Filename &copy);
-  Filename(const Filename &dirname, const Filename &basename);
-  INLINE ~Filename();
 
 #ifdef USE_MOVE_SEMANTICS
   INLINE Filename(string &&filename) NOEXCEPT;
   INLINE Filename(Filename &&from) NOEXCEPT;
 #endif
 
+PUBLISHED:
+  INLINE Filename();
+  Filename(const Filename &dirname, const Filename &basename);
+
 #ifdef HAVE_PYTHON
+  EXTENSION(Filename(PyObject *path));
+
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
 #endif
 
@@ -118,6 +120,7 @@ PUBLISHED:
   INLINE char operator [] (size_t n) const;
 
   EXTENSION(PyObject *__repr__() const);
+  EXTENSION(PyObject *__fspath__() const);
 
   INLINE string substr(size_t begin) const;
   INLINE string substr(size_t begin, size_t end) const;

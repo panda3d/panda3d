@@ -151,9 +151,9 @@ static TimeCollectorProperties time_properties[] = {
 
 static LevelCollectorProperties level_properties[] = {
   { 1, "Graphics memory",                  { 0.0, 0.0, 1.0 },  "MB", 64, 1048576 },
-  { 1, "Vertex buffer switch",             { 0.0, 0.6, 0.8 },  "", 500 },
-  { 1, "Vertex buffer switch:Vertex",      { 0.8, 0.0, 0.6 } },
-  { 1, "Vertex buffer switch:Index",       { 0.8, 0.6, 0.3 } },
+  { 1, "Buffer switch",                    { 0.0, 0.6, 0.8 },  "", 500 },
+  { 1, "Buffer switch:Vertex",             { 0.8, 0.0, 0.6 } },
+  { 1, "Buffer switch:Index",              { 0.8, 0.6, 0.3 } },
   { 1, "Geom cache size",                  { 0.6, 0.8, 0.6 },  "", 500 },
   { 1, "Geom cache size:Active",           { 0.9, 1.0, 0.3 },  "", 500 },
   { 1, "Geom cache operations",            { 1.0, 0.6, 0.6 },  "", 500 },

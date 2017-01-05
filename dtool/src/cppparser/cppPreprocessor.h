@@ -72,6 +72,9 @@ public:
   typedef map<string, CPPManifest *> Manifests;
   Manifests _manifests;
 
+  typedef pvector<CPPManifest *> ManifestStack;
+  map<string, ManifestStack> _manifest_stack;
+
   pvector<CPPFile::Source> _quote_include_kind;
   DSearchPath _quote_include_path;
   DSearchPath _angle_include_path;
@@ -140,6 +143,8 @@ private:
   void handle_error_directive(const string &args, const YYLTYPE &loc);
 
   void skip_false_if_block(bool consider_elifs);
+  bool is_manifest_defined(const string &manifest_name);
+  bool find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source);
 
   CPPToken get_quoted_char(int c);
   CPPToken get_quoted_string(int c);
@@ -150,6 +155,7 @@ private:
   void extract_manifest_args(const string &name, int num_args,
                              int va_arg, vector_string &args);
   void expand_defined_function(string &expr, size_t q, size_t &p);
+  void expand_has_include_function(string &expr, size_t q, size_t &p, YYLTYPE loc);
   void expand_manifest_inline(string &expr, size_t q, size_t &p,
                               const CPPManifest *manifest);
   void extract_manifest_args_inline(const string &name, int num_args,

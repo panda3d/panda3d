@@ -89,9 +89,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPFunctionType *rep = new CPPFunctionType(*this);
-  rep->_return_type =
-    _return_type->substitute_decl(subst, current_scope, global_scope)
-    ->as_type();
+  if (_return_type != NULL) {
+    rep->_return_type =
+      _return_type->substitute_decl(subst, current_scope, global_scope)
+      ->as_type();
+  }
 
   rep->_parameters =
     _parameters->substitute_decl(subst, current_scope, global_scope);
@@ -265,6 +267,9 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   if (_flags & F_const_method) {
     out << " const";
   }
+  if (_flags & F_volatile_method) {
+    out << " volatile";
+  }
   if (_flags & F_noexcept) {
     out << " noexcept";
   }
@@ -321,14 +326,17 @@ as_function_type() {
  * This is similar to is_equal(), except it is more forgiving: it considers
  * the functions to be equivalent only if the return type and the types of all
  * parameters match.
+ *
+ * Note that this isn't symmetric to account for covariant return types.
  */
 bool CPPFunctionType::
-is_equivalent_function(const CPPFunctionType &other) const {
-  if (!_return_type->is_equivalent(*other._return_type)) {
+match_virtual_override(const CPPFunctionType &other) const {
+  if (!_return_type->is_equivalent(*other._return_type) &&
+      !_return_type->is_convertible_to(other._return_type)) {
     return false;
   }
 
-  if (_flags != other._flags) {
+  if (((_flags ^ other._flags) & ~(F_override | F_final)) != 0) {
     return false;
   }
 

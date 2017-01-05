@@ -20,11 +20,6 @@
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
 
-#ifdef HAVE_XRANDR
-typedef unsigned short Rotation;
-typedef unsigned short SizeID;
-#endif
-
 /**
  * Interfaces to the X11 window system.
  */
@@ -76,9 +71,7 @@ protected:
 
 private:
   X11_Cursor get_cursor(const Filename &filename);
-#ifdef HAVE_XCURSOR
   X11_Cursor read_ico(istream &ico);
-#endif
 
 protected:
   X11_Display *_display;
@@ -87,12 +80,8 @@ protected:
   Colormap _colormap;
   XIC _ic;
   XVisualInfo *_visual_info;
-
-  bool _have_xrandr;
-#ifdef HAVE_XRANDR
   Rotation _orig_rotation;
   SizeID _orig_size_id;
-#endif
 
   LVecBase2i _fixed_size;
 
@@ -108,6 +97,9 @@ protected:
     string _io_buffer;
   };
   pvector<MouseDeviceInfo> _mouse_device_info;
+
+  x11GraphicsPipe::pfn_XRRGetScreenInfo _XRRGetScreenInfo;
+  x11GraphicsPipe::pfn_XRRSetScreenConfig _XRRSetScreenConfig;
 
 public:
   static TypeHandle get_class_type() {

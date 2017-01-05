@@ -199,6 +199,7 @@ GLXContext glXCreateContextAttribsARB (X11_Display *dpy, GLXFBConfig config, GLX
 
 #ifndef GLX_ARB_get_proc_address
 #define GLX_ARB_get_proc_address 1
+typedef void (*__GLXextFuncPtr)(void);
 typedef __GLXextFuncPtr ( *PFNGLXGETPROCADDRESSARBPROC) (const GLubyte *procName);
 #ifdef GLX_GLXEXT_PROTOTYPES
 __GLXextFuncPtr glXGetProcAddressARB (const GLubyte *procName);

@@ -212,7 +212,7 @@ pop_struct() {
 %token <u.integer> CHAR_TOK
 %token <str> SIMPLE_STRING SIMPLE_IDENTIFIER
 %token <u.expr> STRING_LITERAL CUSTOM_LITERAL
-%token <u.identifier> IDENTIFIER TYPENAME_IDENTIFIER SCOPING
+%token <u.identifier> IDENTIFIER TYPENAME_IDENTIFIER TYPEPACK_IDENTIFIER SCOPING
 %token <u.type> TYPEDEFNAME
 
 %token ELLIPSIS
@@ -280,9 +280,25 @@ pop_struct() {
 %token KW_FRIEND
 %token KW_FOR
 %token KW_GOTO
+%token KW_HAS_VIRTUAL_DESTRUCTOR
 %token KW_IF
 %token KW_INLINE
 %token KW_INT
+%token KW_IS_ABSTRACT
+%token KW_IS_BASE_OF
+%token KW_IS_CLASS
+%token KW_IS_CONSTRUCTIBLE
+%token KW_IS_CONVERTIBLE_TO
+%token KW_IS_DESTRUCTIBLE
+%token KW_IS_EMPTY
+%token KW_IS_ENUM
+%token KW_IS_FINAL
+%token KW_IS_FUNDAMENTAL
+%token KW_IS_POD
+%token KW_IS_POLYMORPHIC
+%token KW_IS_STANDARD_LAYOUT
+%token KW_IS_TRIVIAL
+%token KW_IS_UNION
 %token KW_LONG
 %token KW_MAKE_MAP_PROPERTY
 %token KW_MAKE_PROPERTY
@@ -317,6 +333,7 @@ pop_struct() {
 %token KW_TYPEDEF
 %token KW_TYPEID
 %token KW_TYPENAME
+%token KW_UNDERLYING_TYPE
 %token KW_UNION
 %token KW_UNSIGNED
 %token KW_USING
@@ -354,9 +371,10 @@ pop_struct() {
 %type <u.instance> formal_parameter
 %type <u.inst_ident> not_paren_formal_parameter_identifier
 %type <u.inst_ident> formal_parameter_identifier
+%type <u.inst_ident> parameter_pack_identifier
 %type <u.inst_ident> not_paren_empty_instance_identifier
 %type <u.inst_ident> empty_instance_identifier
-%type <u.type> type
+%type <u.type> type type_pack
 %type <u.decl> type_decl
 %type <u.decl> var_type_decl
 %type <u.type> predefined_type
@@ -445,6 +463,10 @@ constructor_inits:
 
 constructor_init:
         name '(' optional_const_expr_comma ')'
+{
+  delete $3;
+}
+        | name '(' optional_const_expr_comma ')' ELLIPSIS
 {
   delete $3;
 }
@@ -1187,32 +1209,48 @@ function_post:
 {
   $$ = 0;
 }
-        | KW_CONST
+        | function_post KW_CONST
 {
-  $$ = (int)CPPFunctionType::F_const_method;
+  $$ = $1 | (int)CPPFunctionType::F_const_method;
+}
+        | function_post KW_VOLATILE
+{
+  $$ = $1 | (int)CPPFunctionType::F_volatile_method;
 }
         | function_post KW_NOEXCEPT
 {
-  $$ = (int)CPPFunctionType::F_noexcept;
+  $$ = $1 | (int)CPPFunctionType::F_noexcept;
 }
         | function_post KW_FINAL
 {
-  $$ = (int)CPPFunctionType::F_final;
+  $$ = $1 | (int)CPPFunctionType::F_final;
 }
         | function_post KW_OVERRIDE
 {
-  $$ = (int)CPPFunctionType::F_override;
+  $$ = $1 | (int)CPPFunctionType::F_override;
+}
+        | function_post '&'
+{
+  $$ = $1 | (int)CPPFunctionType::F_lvalue_method;
+}
+        | function_post ANDAND
+{
+  $$ = $1 | (int)CPPFunctionType::F_rvalue_method;
 }
         | function_post KW_MUTABLE
 {
   // Used for lambdas, currently ignored.
-  $$ = 0;
+  $$ = $1;
 }
         | function_post KW_THROW '(' ')'
 {
   $$ = $1;
 }
         | function_post KW_THROW '(' name ')'
+{
+  $$ = $1;
+}
+        | function_post KW_THROW '(' name ELLIPSIS ')'
 {
   $$ = $1;
 }
@@ -1418,22 +1456,35 @@ template_nonempty_formal_parameters:
 }
         ;
 
+typename_keyword:
+        KW_CLASS
+        | KW_TYPENAME
+        ;
+
 template_formal_parameter:
-        KW_CLASS name
+        typename_keyword
+{
+  $$ = CPPType::new_type(new CPPClassTemplateParameter((CPPIdentifier *)NULL));
+}
+        | typename_keyword name
 {
   $$ = CPPType::new_type(new CPPClassTemplateParameter($2));
 }
-        | KW_CLASS name '=' full_type
+        | typename_keyword name '=' full_type
 {
   $$ = CPPType::new_type(new CPPClassTemplateParameter($2, $4));
 }
-        | KW_TYPENAME name
+        | typename_keyword ELLIPSIS
 {
-  $$ = CPPType::new_type(new CPPClassTemplateParameter($2));
+  CPPClassTemplateParameter *ctp = new CPPClassTemplateParameter((CPPIdentifier *)NULL);
+  ctp->_packed = true;
+  $$ = CPPType::new_type(ctp);
 }
-        | KW_TYPENAME name '=' full_type
+        | typename_keyword ELLIPSIS name
 {
-  $$ = CPPType::new_type(new CPPClassTemplateParameter($2, $4));
+  CPPClassTemplateParameter *ctp = new CPPClassTemplateParameter($3);
+  ctp->_packed = true;
+  $$ = CPPType::new_type(ctp);
 }
         | template_formal_parameter_type formal_parameter_identifier template_parameter_maybe_initialize
 {
@@ -1446,6 +1497,17 @@ template_formal_parameter:
   $3->add_modifier(IIT_const);
   CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
   inst->set_initializer($4);
+  $$ = inst;
+}
+        | template_formal_parameter_type parameter_pack_identifier
+{
+  CPPInstance *inst = new CPPInstance($1, $2, 0, @2.file);
+  $$ = inst;
+}
+        | KW_CONST template_formal_parameter_type parameter_pack_identifier
+{
+  $3->add_modifier(IIT_const);
+  CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
   $$ = inst;
 }
         ;
@@ -1461,6 +1523,14 @@ template_formal_parameter_type:
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
 }
         | TYPENAME_IDENTIFIER
+{
+  $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
+  assert($$ != NULL);
+}
+        | TYPEPACK_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
   if ($$ == NULL) {
@@ -1547,7 +1617,16 @@ instance_identifier:
 }
         | instance_identifier '('
 {
-  push_scope($1->get_scope(current_scope, global_scope));
+  // Create a scope for this function (in case it is a function)
+  CPPScope *scope = new CPPScope($1->get_scope(current_scope, global_scope),
+                                 CPPNameComponent(""), V_private);
+
+  // It still needs to be able to pick up any template arguments, if this is
+  // a definition for a method template.  Add a fake "using" declaration to
+  // accomplish this.
+  scope->_using.insert(current_scope);
+
+  push_scope(scope);
 }
         formal_parameter_list ')' function_post
 {
@@ -1786,6 +1865,23 @@ function_parameter:
   $$ = new CPPInstance($3, $4, 0, @3.file);
   $$->set_initializer($5);
 }
+        | type_pack parameter_pack_identifier maybe_initialize
+{
+  $$ = new CPPInstance($1, $2, 0, @2.file);
+  $$->set_initializer($3);
+}
+        | KW_CONST type_pack parameter_pack_identifier maybe_initialize
+{
+  $3->add_modifier(IIT_const);
+  $$ = new CPPInstance($2, $3, 0, @3.file);
+  $$->set_initializer($4);
+}
+        | KW_CONST KW_REGISTER type_pack parameter_pack_identifier maybe_initialize
+{
+  $4->add_modifier(IIT_const);
+  $$ = new CPPInstance($3, $4, 0, @3.file);
+  $$->set_initializer($5);
+}
         | KW_REGISTER function_parameter
 {
   $$ = $2;
@@ -1913,10 +2009,79 @@ formal_parameter_identifier:
 }
         ;
 
+parameter_pack_identifier:
+        ELLIPSIS
+{
+  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$->_packed = true;
+}
+        | ELLIPSIS name
+{
+  $$ = new CPPInstanceIdentifier($2);
+  $$->_packed = true;
+}
+        | KW_CONST parameter_pack_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE parameter_pack_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
+}
+        | '*' parameter_pack_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_pointer);
+}
+        | '&' parameter_pack_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_reference);
+}
+        | ANDAND parameter_pack_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
+}
+        | SCOPING '*' parameter_pack_identifier  %prec UNARY
+{
+  $$ = $3;
+  $$->add_scoped_pointer_modifier($1);
+}
+        | parameter_pack_identifier '[' optional_const_expr ']'
+{
+  $$ = $1;
+  $$->add_array_modifier($3);
+}
+        | '(' parameter_pack_identifier ')' '(' function_parameter_list ')' function_post
+{
+  $$ = $2;
+  $$->add_modifier(IIT_paren);
+  $$->add_func_modifier($5, $7);
+}
+        | '(' parameter_pack_identifier ')'
+{
+  $$ = $2;
+  $$->add_modifier(IIT_paren);
+}
+        ;
+
 not_paren_empty_instance_identifier:
         empty
 {
   $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+}
+        | ELLIPSIS
+{
+  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$->_packed = true;
+}
+        | ELLIPSIS name
+{
+  $$ = new CPPInstanceIdentifier($2);
+  $$->_packed = true;
 }
         | KW_CONST not_paren_empty_instance_identifier  %prec UNARY
 {
@@ -1959,6 +2124,16 @@ empty_instance_identifier:
         empty
 {
   $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+}
+        | ELLIPSIS
+{
+  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$->_packed = true;
+}
+        | ELLIPSIS name
+{
+  $$ = new CPPInstanceIdentifier($2);
+  $$->_packed = true;
 }
         | KW_CONST empty_instance_identifier  %prec UNARY
 {
@@ -2094,9 +2269,30 @@ type:
     yyerror("could not determine type of " + str.str(), @3);
   }
 }
+        | KW_UNDERLYING_TYPE '(' full_type ')'
+{
+  CPPEnumType *enum_type = $3->as_enum_type();
+  if (enum_type == NULL) {
+    yyerror("an enumeration type is required", @3);
+    $$ = $3;
+  } else {
+    $$ = enum_type->get_underlying_type();
+  }
+}
         | KW_AUTO
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
+}
+        ;
+
+type_pack:
+        TYPEPACK_IDENTIFIER
+{
+  $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
+  assert($$ != NULL);
 }
         ;
 
@@ -2188,6 +2384,16 @@ type_decl:
     yyerror("could not determine type of " + str.str(), @3);
   }
 }
+        | KW_UNDERLYING_TYPE '(' full_type ')'
+{
+  CPPEnumType *enum_type = $3->as_enum_type();
+  if (enum_type == NULL) {
+    yyerror("an enumeration type is required", @3);
+    $$ = $3;
+  } else {
+    $$ = enum_type->get_underlying_type();
+  }
+}
         | KW_AUTO
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
@@ -2252,6 +2458,16 @@ predefined_type:
     yyerror("could not determine type of " + str.str(), @3);
   }
 }
+        | KW_UNDERLYING_TYPE '(' full_type ')'
+{
+  CPPEnumType *enum_type = $3->as_enum_type();
+  if (enum_type == NULL) {
+    yyerror("an enumeration type is required", @3);
+    $$ = $3;
+  } else {
+    $$ = enum_type->get_underlying_type();
+  }
+}
         | KW_AUTO
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
@@ -2276,6 +2492,15 @@ full_type:
   $$ = $2->unroll_type($1);
 }
         | KW_CONST type empty_instance_identifier
+{
+  $3->add_modifier(IIT_const);
+  $$ = $3->unroll_type($2);
+}
+        | type_pack empty_instance_identifier
+{
+  $$ = $2->unroll_type($1);
+}
+        | KW_CONST type_pack empty_instance_identifier
 {
   $3->add_modifier(IIT_const);
   $$ = $3->unroll_type($2);
@@ -2693,6 +2918,7 @@ element:
         | CHAR_TOK
         | IDENTIFIER
         | TYPENAME_IDENTIFIER
+        | TYPEPACK_IDENTIFIER
         | SCOPING
         | SIMPLE_IDENTIFIER
         | ELLIPSIS | OROR | ANDAND
@@ -2711,10 +2937,11 @@ element:
         | KW_OPERATOR | KW_OVERRIDE | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_REINTERPRET_CAST
         | KW_RETURN | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC
-        | KW_STATIC_ASSERT | KW_STATIC_CAST | KW_STRUCT
+        | KW_STATIC_ASSERT | KW_STATIC_CAST | KW_STRUCT | KW_TEMPLATE
         | KW_THREAD_LOCAL | KW_THROW | KW_TRUE | KW_TRY | KW_TYPEDEF
-        | KW_TYPEID | KW_TYPENAME | KW_UNION | KW_UNSIGNED | KW_USING
-        | KW_VIRTUAL | KW_VOID | KW_VOLATILE | KW_WCHAR_T | KW_WHILE
+        | KW_TYPEID | KW_TYPENAME | KW_UNDERLYING_TYPE | KW_UNION
+        | KW_UNSIGNED | KW_USING | KW_VIRTUAL | KW_VOID | KW_VOLATILE
+        | KW_WCHAR_T | KW_WHILE
 {
 }
         | '+' | '-' | '*' | '/' | '&' | '|' | '^' | '!' | '~' | '=' | '%'
@@ -2783,6 +3010,10 @@ no_angle_bracket_const_expr:
         | KW_SIZEOF '(' full_type ')' %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
+}
+        | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::sizeof_ellipsis_func($4));
 }
         | KW_ALIGNOF '(' full_type ')' %prec UNARY
 {
@@ -3022,6 +3253,10 @@ const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
+        | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::sizeof_ellipsis_func($4));
+}
         | KW_ALIGNOF '(' full_type ')' %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::alignof_func($3));
@@ -3239,6 +3474,74 @@ const_operand:
 {
   $$ = NULL;
 }
+        | KW_HAS_VIRTUAL_DESTRUCTOR '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_HAS_VIRTUAL_DESTRUCTOR, $3));
+}
+        | KW_IS_ABSTRACT '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_ABSTRACT, $3));
+}
+        | KW_IS_BASE_OF '(' full_type ',' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_CLASS, $3, $5));
+}
+        | KW_IS_CLASS '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_CLASS, $3));
+}
+        | KW_IS_CONSTRUCTIBLE '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_CONSTRUCTIBLE, $3));
+}
+        | KW_IS_CONSTRUCTIBLE '(' full_type ',' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_CONSTRUCTIBLE, $3, $5));
+}
+        | KW_IS_CONVERTIBLE_TO '(' full_type ',' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_CONVERTIBLE_TO, $3, $5));
+}
+        | KW_IS_DESTRUCTIBLE '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_DESTRUCTIBLE, $3));
+}
+        | KW_IS_EMPTY '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_EMPTY, $3));
+}
+        | KW_IS_ENUM '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_ENUM, $3));
+}
+        | KW_IS_FINAL '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_FINAL, $3));
+}
+        | KW_IS_FUNDAMENTAL '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_FUNDAMENTAL, $3));
+}
+        | KW_IS_POD '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_POD, $3));
+}
+        | KW_IS_POLYMORPHIC '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_POLYMORPHIC, $3));
+}
+        | KW_IS_STANDARD_LAYOUT '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_STANDARD_LAYOUT, $3));
+}
+        | KW_IS_TRIVIAL '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_TRIVIAL, $3));
+}
+        | KW_IS_UNION '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_UNION, $3));
+}
         ;
 
 /* This is used for a const_expr as a "formal parameter", which really
@@ -3276,6 +3579,10 @@ formal_const_expr:
         | KW_SIZEOF '(' full_type ')' %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
+}
+        | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::sizeof_ellipsis_func($4));
 }
         | KW_ALIGNOF '(' full_type ')' %prec UNARY
 {
@@ -3519,6 +3826,12 @@ class_derivation_name:
 {
   $$ = CPPType::new_type(new CPPTBDType($2));
 }
+        | name ELLIPSIS
+{
+  CPPClassTemplateParameter *ctp = new CPPClassTemplateParameter($1);
+  ctp->_packed = true;
+  $$ = CPPType::new_type(ctp);
+}
         ;
 
 /*
@@ -3548,6 +3861,10 @@ name:
   $$ = $1;
 }
         | TYPENAME_IDENTIFIER
+{
+  $$ = $1;
+}
+        | TYPEPACK_IDENTIFIER
 {
   $$ = $1;
 }
@@ -3593,6 +3910,10 @@ name_no_final:
   $$ = $1;
 }
         | TYPENAME_IDENTIFIER
+{
+  $$ = $1;
+}
+        | TYPEPACK_IDENTIFIER
 {
   $$ = $1;
 }

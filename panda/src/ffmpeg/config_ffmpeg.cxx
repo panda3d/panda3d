@@ -76,6 +76,14 @@ ConfigVariableInt ffmpeg_read_buffer_size
           "This is important for performance.  A typical size is that of a "
           "cache page, e.g. 4kb."));
 
+ConfigVariableBool ffmpeg_prefer_libvpx
+("ffmpeg-prefer-libvpx", false,
+ PRC_DESC("If this is true, Panda will overrule ffmpeg's best judgment on "
+          "which decoder to use for decoding VP8 and VP9 files, and try to "
+          "choose libvpx.  This is useful when you want to play WebM videos "
+          "with an alpha channel, which aren't supported by ffmpeg's own "
+          "VP8/VP9 decoders."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

@@ -2344,7 +2344,7 @@ write_module_class(ostream &out, Object *obj) {
 
           string expected_params;
 
-          out << "  if (arg2 != (PyObject *)NULL) {\n";
+          out << "  if (arg2 != (PyObject *)NULL && arg2 != Py_None) {\n";
           out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
           write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
                                 true, true, AT_varargs, RF_pyobject | RF_err_null | RF_decref_args, true);
@@ -6142,7 +6142,7 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
 
         write_python_instance(out, indent_level, return_expr, owns_memory, itype, is_const);
       }
-    } else if (TypeManager::is_struct(orig_type->as_pointer_type()->_pointing_at)) {
+    } else if (TypeManager::is_struct(orig_type->remove_pointer())) {
       TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
       const InterrogateType &itype = idb->get_type(type_index);
 
@@ -6748,6 +6748,8 @@ is_cpp_type_legal(CPPType *in_ctype) {
   } else if (TypeManager::is_simple(type)) {
     return true;
   } else if (TypeManager::is_pointer_to_simple(type)) {
+    return true;
+  } else if (builder.in_forcetype(type->get_local_name(&parser))) {
     return true;
   } else if (TypeManager::is_exported(type)) {
     return true;

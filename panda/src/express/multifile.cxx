@@ -2478,12 +2478,7 @@ check_signatures() {
     }
 
     if (pkey != NULL) {
-      EVP_MD_CTX *md_ctx;
-#ifdef SSL_097
-      md_ctx = EVP_MD_CTX_create();
-#else
-      md_ctx = new EVP_MD_CTX;
-#endif
+      EVP_MD_CTX *md_ctx = EVP_MD_CTX_create();
       EVP_VerifyInit(md_ctx, EVP_sha1());
 
       nassertv(_read != NULL);
@@ -2764,12 +2759,7 @@ write_data(ostream &write, istream *read, streampos fpos,
       // And we also need to have a private key.
       nassertr(_pkey != NULL, fpos);
 
-      EVP_MD_CTX *md_ctx;
-#ifdef SSL_097
-      md_ctx = EVP_MD_CTX_create();
-#else
-      md_ctx = new EVP_MD_CTX;
-#endif
+      EVP_MD_CTX *md_ctx = EVP_MD_CTX_create();
       EVP_SignInit(md_ctx, EVP_sha1());
 
       // Read and hash the multifile contents, but only up till
@@ -2807,11 +2797,7 @@ write_data(ostream &write, istream *read, streampos fpos,
 
       delete[] sig_data;
 
-#ifdef SSL_097
       EVP_MD_CTX_destroy(md_ctx);
-#else
-      delete md_ctx;
-#endif
     }
 #endif  // HAVE_OPENSSL
 

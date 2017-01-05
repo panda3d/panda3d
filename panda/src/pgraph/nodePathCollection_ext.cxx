@@ -76,16 +76,19 @@ __reduce__(PyObject *self) const {
   // object whose constructor we should call (e.g.  this), and the arguments
   // necessary to reconstruct this object.
 
-  PyObject *this_class = PyObject_Type(self);
+  PyObject *this_class = (PyObject *)self->ob_type;
   if (this_class == NULL) {
+    return NULL;
+  }
+
+  PyObject *self_iter = PyObject_GetIter(self);
+  if (self_iter == NULL) {
     return NULL;
   }
 
   // Since a NodePathCollection is itself an iterator, we can simply pass it
   // as the fourth tuple component.
-  PyObject *result = Py_BuildValue("(O()OO)", this_class, Py_None, self);
-  Py_DECREF(this_class);
-  return result;
+  return Py_BuildValue("(O()ON)", this_class, Py_None, self_iter);
 }
 
 /**

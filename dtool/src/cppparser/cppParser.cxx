@@ -45,7 +45,20 @@ is_fully_specified() const {
  */
 bool CPPParser::
 parse_file(const Filename &filename) {
-  if (!init_cpp(CPPFile(filename, filename, CPPFile::S_local))) {
+  Filename canonical(filename);
+  canonical.make_canonical();
+
+  CPPFile file(canonical, filename, CPPFile::S_local);
+
+  // Don't read it if we included it before and it had #pragma once.
+  ParsedFiles::iterator it = _parsed_files.find(file);
+  if (it != _parsed_files.end() && it->_pragma_once) {
+    // But mark it as local.
+    it->_source = CPPFile::S_local;
+    return true;
+  }
+
+  if (!init_cpp(file)) {
     cerr << "Unable to read " << filename << "\n";
     return false;
   }
