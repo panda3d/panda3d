@@ -619,13 +619,10 @@ Section -post
     DetailPrint "Preloading .egg files into the model cache..."
     SetDetailsPrint listonly
 
-    ; We need to set the $PATH for eggcacher.
     SetOutPath $INSTDIR
-    ReadEnvStr $R0 "PATH"
-    StrCpy $R0 "$INSTDIR\python;$INSTDIR\bin;$R0"
-    System::Call 'Kernel32::SetEnvironmentVariableA(t, t) i("PATH", R0).r2'
-
-    nsExec::ExecToLog '"$INSTDIR\bin\eggcacher.exe" --concise models samples'
+    nsExec::ExecToLog '"$INSTDIR\python\python.exe" -m direct.directscripts.eggcacher --concise models samples'
+    Pop $0
+    DetailPrint "Command returned exit status $0"
 
     SetDetailsPrint both
     DetailPrint "Writing the uninstaller ..."
