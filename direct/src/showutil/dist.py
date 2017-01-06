@@ -14,7 +14,11 @@ from direct.showutil import FreezeTool
 import panda3d.core as p3d
 
 
-Application = collections.namedtuple('Application', 'scriptname runtimename')
+class Application(object):
+    def __init__(self, scriptname, runtimename, use_console=False):
+        self.scriptname = scriptname
+        self.runtimename = runtimename
+        self.use_console = use_console
 
 
 class Distribution(distutils.dist.Distribution):
@@ -85,21 +89,10 @@ class build(distutils.command.build.build):
                     raise RuntimeError("Missing panda3d wheel")
 
                 whlfiles = {whl: zipfile.ZipFile(whl) for whl in wheelpaths}
-                stub_path = 'panda3d_tools/deploy-stub'
-                if platform.startswith('win'):
-                    stub_path += '.exe'
-                stub_file = p3dwhl.open(stub_path)
 
                 # Add whl files to the path so they are picked up by modulefinder
                 for whl in wheelpaths:
                     sys.path.insert(0, whl)
-            else:
-                dtool_path = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name()).to_os_specific()
-                stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', 'deploy-stub')
-                if platform.startswith('win'):
-                    stub_path += '.exe'
-                stub_file = open(stub_path, 'rb')
-
 
             # Create runtime
             freezer_extras = set()
@@ -110,6 +103,20 @@ class build(distutils.command.build.build):
                 for exmod in self.distribution.exclude_modules:
                     freezer.excludeModule(exmod)
                 freezer.done(addStartupModules=True)
+
+                stub_name = 'deploy-stub'
+                if platform.startswith('win'):
+                    if not app.use_console:
+                        stub_name = 'deploy-stubw'
+                    stub_name += '.exe'
+
+                if use_wheels:
+                    stub_file = p3dwhl.open('panda3d_tools/{}'.format(stub_name))
+                else:
+                    dtool_path = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name()).to_os_specific()
+                    stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', stub_name)
+                    stub_file = open(stub_path, 'rb')
+
                 freezer.generateRuntimeFromStub(os.path.join(builddir, app.runtimename), stub_file)
                 stub_file.close()
 
