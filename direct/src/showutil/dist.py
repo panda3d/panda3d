@@ -46,7 +46,8 @@ def find_packages(whlfile):
 
 def get_python_ext_module_dir():
     import cmath
-    return os.path.dirname(cmath.__file__)
+    import inspect
+    return os.path.dirname(inspect.getfile(cmath))
 
 
 class build(distutils.command.build.build):
