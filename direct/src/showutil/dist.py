@@ -40,6 +40,11 @@ def find_packages(whlfile):
     return [i for i in filelist if '.so.' in i or i.endswith('.dll') or i.endswith('.dylib') or 'libpandagl' in i]
 
 
+def get_python_ext_module_dir():
+    import _sha1
+    return os.path.dirname(_sha1.__file__)
+
+
 class build(distutils.command.build.build):
     def run(self):
         distutils.command.build.build.run(self)
@@ -127,6 +132,10 @@ class build(distutils.command.build.build):
                     parts = basename.split('.')
                     parts = parts[:-2] + parts[-1:]
                     basename = '.'.join(parts)
+
+                if use_wheels and source_path.startswith(get_python_ext_module_dir()):
+                    # Look in panda3d whl instead
+                    source_path = source_path.replace(get_python_ext_module_dir(), '{}/deploy_libs'.format(p3dwhlfn))
 
                 target_path = os.path.join(builddir, basename)
                 if '.whl/' in source_path:
