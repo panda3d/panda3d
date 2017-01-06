@@ -123,7 +123,10 @@ class build(distutils.command.build.build):
                     basename = module.rsplit('.', 1)[0] + '.' + basename
 
                 # Remove python version string
-                basename = '.'.join([i for i in basename.split('.') if not i.startswith('cpython-')])
+                if sys.version_info >= (3, 0):
+                    parts = basename.split('.')
+                    parts = parts[:-2] + parts[-1:]
+                    basename = '.'.join(parts)
 
                 target_path = os.path.join(builddir, basename)
                 if '.whl/' in source_path:
