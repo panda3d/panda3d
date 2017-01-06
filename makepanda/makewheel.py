@@ -80,6 +80,11 @@ def is_fat_file(path):
            open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA')
 
 
+def get_python_ext_module_dir():
+    import _sha1
+    return os.path.dirname(_sha1.__file__)
+
+
 if sys.platform in ('win32', 'cygwin'):
     is_executable = is_exe_file
 elif sys.platform == 'darwin':
@@ -506,19 +511,24 @@ def makewheel(version, output_dir, platform=default_platform):
 
     ext_suffix = GetExtensionSuffix()
 
-    for file in os.listdir(panda3d_dir):
-        if file == '__init__.py':
-            pass
-        elif file.endswith(ext_suffix) or file.endswith('.py'):
-            source_path = os.path.join(panda3d_dir, file)
+    ext_mod_dirs = [
+        (panda3d_dir, 'panda3d/'),
+        (get_python_ext_module_dir(), 'deploy_libs/'),
+    ]
+    for srcdir, targetdir in ext_mod_dirs:
+        for file in os.listdir(srcdir):
+            if file == '__init__.py':
+                pass
+            elif file.endswith(ext_suffix) or file.endswith('.py'):
+                source_path = os.path.join(srcdir, file)
 
-            if file.endswith('.pyd') and platform.startswith('cygwin'):
-                # Rename it to .dll for cygwin Python to be able to load it.
-                target_path = 'panda3d/' + os.path.splitext(file)[0] + '.dll'
-            else:
-                target_path = 'panda3d/' + file
+                if file.endswith('.pyd') and platform.startswith('cygwin'):
+                    # Rename it to .dll for cygwin Python to be able to load it.
+                    target_path = targetdir + os.path.splitext(file)[0] + '.dll'
+                else:
+                    target_path = targetdir + file
 
-            whl.write_file(target_path, source_path)
+                whl.write_file(target_path, source_path)
 
     # Add plug-ins.
     for lib in PLUGIN_LIBS:
