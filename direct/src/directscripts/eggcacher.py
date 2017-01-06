@@ -87,8 +87,13 @@ class EggCacher:
             TexturePool.releaseAllTextures()
             progress += size
 
-cacher = EggCacher(sys.argv[1:])
 
-# Dummy main function so this can be added to console_scripts.
-def main():
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
+
+    cacher = EggCacher(args)
     return 0
+
+if __name__ == '__main__':
+    sys.exit(main())
