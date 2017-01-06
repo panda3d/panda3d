@@ -2661,16 +2661,16 @@ p3d_init = """"Python bindings for the Panda3D libraries"
 
 if GetTarget() == 'windows':
     p3d_init += """
-import os
+if '__file__' in locals():
+    import os
 
-bindir = os.path.join(os.path.dirname(__file__), '..', 'bin')
-if os.path.isfile(os.path.join(bindir, 'libpanda.dll')):
-    if not os.environ.get('PATH'):
-        os.environ['PATH'] = bindir
-    else:
-        os.environ['PATH'] = bindir + os.pathsep + os.environ['PATH']
-
-del os, bindir
+    bindir = os.path.join(os.path.dirname(__file__), '..', 'bin')
+    if os.path.isfile(os.path.join(bindir, 'libpanda.dll')):
+        if not os.environ.get('PATH'):
+            os.environ['PATH'] = bindir
+        else:
+            os.environ['PATH'] = bindir + os.pathsep + os.environ['PATH']
+    del os, bindir
 """
 
 if not PkgSkip("PYTHON"):
@@ -6383,6 +6383,11 @@ if PkgSkip("PYTHON") == 0:
     if GetTarget() == 'windows':
         TargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
     TargetAdd('deploy-stub.exe', opts=['PYTHON', 'DEPLOYSTUB', 'NOICON'])
+
+    if GetTarget() == 'windows':
+        TargetAdd('deploy-stubw.exe', input='deploy-stub.obj')
+        TargetAdd('deploy-stubw.exe', input='frozen_dllmain.obj')
+        TargetAdd('deploy-stubw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
 
 #
 # Generate the models directory and samples directory

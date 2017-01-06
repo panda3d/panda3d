@@ -16,29 +16,37 @@
 #endif
 
 #ifdef MS_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 extern void PyWinFreeze_ExeInit(void);
 extern void PyWinFreeze_ExeTerm(void);
-
-extern DL_IMPORT(int) PyImport_ExtendInittab(struct _inittab *newtab);
 
 static struct _inittab extensions[] = {
     {0, 0},
 };
+
+#if PY_MAJOR_VERSION >= 3
+#define WIN_UNICODE
+#endif
 #endif
 
 static unsigned char *modblob = NULL;
 
 /* Main program */
 
-int
-Py_FrozenMain(int argc, char **argv)
+#ifdef WIN_UNICODE
+int Py_FrozenMain(int argc, wchar_t **argv)
+#else
+int Py_FrozenMain(int argc, char **argv)
+#endif
 {
     char *p;
     int n, sts = 1;
     int inspect = 0;
     int unbuffered = 0;
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
     int i;
     char *oldloc;
     wchar_t **argv_copy = NULL;
@@ -66,7 +74,7 @@ Py_FrozenMain(int argc, char **argv)
         setbuf(stderr, (char *)NULL);
     }
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
     oldloc = setlocale(LC_ALL, NULL);
     setlocale(LC_ALL, "");
     for (i = 0; i < argc; i++) {
@@ -87,7 +95,7 @@ Py_FrozenMain(int argc, char **argv)
 #endif /* MS_WINDOWS */
 
     if (argc >= 1) {
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
         Py_SetProgramName(argv_copy[0]);
 #else
         Py_SetProgramName(argv[0]);
@@ -103,7 +111,7 @@ Py_FrozenMain(int argc, char **argv)
         fprintf(stderr, "Python %s\n%s\n",
             Py_GetVersion(), Py_GetCopyright());
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
     PySys_SetArgv(argc, argv_copy);
 #else
     PySys_SetArgv(argc, argv);
@@ -127,7 +135,7 @@ Py_FrozenMain(int argc, char **argv)
 #endif
     Py_Finalize();
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
 error:
     if (argv_copy2) {
         for (i = 0; i < argc; i++) {
@@ -143,11 +151,22 @@ error:
 }
 
 
-int
-main(int argc, char *argv[]) {
+#if defined(_WIN32) && PY_MAJOR_VERSION >= 3
+int wmain(int argc, wchar_t *argv[]) {
+#else
+int main(int argc, char *argv[]) {
+#endif
   struct _frozen *_PyImport_FrozenModules;
   unsigned int listoff, modsoff, fsize, modsize, listsize, nummods, modidx;
-  FILE *runtime = fopen(argv[0], "rb");
+  FILE *runtime;
+
+#ifdef _WIN32
+  wchar_t buffer[2048];
+  GetModuleFileNameW(NULL, buffer, 2048);
+  runtime = _wfopen(buffer, L"rb");
+#else
+  runtime = fopen(argv[0], "rb");
+#endif
 
   // Get offsets
   fseek(runtime, -12, SEEK_END);
@@ -199,3 +218,13 @@ main(int argc, char *argv[]) {
   PyImport_FrozenModules = _PyImport_FrozenModules;
   return Py_FrozenMain(argc, argv);
 }
+
+#ifdef WIN_UNICODE
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, wchar_t *lpCmdLine, int nCmdShow) {
+  return wmain(__argc, __wargv);
+}
+#elif defined(_WIN32)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char *lpCmdLine, int nCmdShow) {
+  return main(__argc, __argv);
+}
+#endif

@@ -32,6 +32,7 @@ isDebugBuild = (python.lower().endswith('_d'))
 # must be frozen in any main.exe.
 startupModules = [
     'encodings.cp1252', 'encodings.latin_1', 'encodings.utf_8',
+    'encodings.mbcs', 'encodings.cp850',
     ]
 if sys.version_info >= (3, 0):
     startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
@@ -1683,7 +1684,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         Returns None if the module could not be found. """
 
         if os.path.isfile(path):
-            return open(path, mode)
+            if sys.version_info >= (3, 0) and 'b' not in mode:
+                return open(path, mode, encoding='utf8')
+            else:
+                return open(path, mode)
 
         # Is there a zip file along the path?
         dir, dirname = os.path.split(path)
@@ -1707,7 +1711,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                     return None
 
                 if sys.version_info >= (3, 0) and 'b' not in mode:
-                    return TextIOWrapper(fp)
+                    return TextIOWrapper(fp, encoding='utf8')
                 return fp
 
             # Look at the parent directory.
