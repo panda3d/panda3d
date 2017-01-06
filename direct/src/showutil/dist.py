@@ -97,6 +97,8 @@ class build(distutils.command.build.build):
 
 
             # Create runtime
+            freezer_extras = set()
+            freezer_modules = set()
             for app in self.distribution.applications:
                 freezer = FreezeTool.Freezer()
                 freezer.addModule('__main__', filename=app.scriptname)
@@ -106,8 +108,11 @@ class build(distutils.command.build.build):
                 freezer.generateRuntimeFromStub(os.path.join(builddir, app.runtimename), stub_file)
                 stub_file.close()
 
+                freezer_extras.update(freezer.extras)
+                freezer_modules.update(freezer.getAllModuleNames())
+
             # Copy extension modules
-            for module, source_path in freezer.extras:
+            for module, source_path in freezer_extras:
                 if source_path is None:
                     # Built-in module.
                     continue
@@ -165,7 +170,7 @@ class build(distutils.command.build.build):
             # Copy Game Files
             ignore_copy_list = [
                 '__pycache__',
-            ] + freezer.getAllModuleNames() + self.distribution.exclude_paths + [i.scriptname for i  in self.distribution.applications]
+            ] + list(freezer_modules) + self.distribution.exclude_paths + [i.scriptname for i  in self.distribution.applications]
 
             for copydir in self.distribution.directories:
                 for item in os.listdir(copydir):
