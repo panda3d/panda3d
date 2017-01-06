@@ -75,6 +75,7 @@ typedef int ios_seekdir;
 #endif
 
 #include <string>
+#include <utility>
 
 #ifdef HAVE_NAMESPACE
 using namespace std;
@@ -112,6 +113,18 @@ typedef ios::openmode ios_openmode;
 typedef ios::fmtflags ios_fmtflags;
 typedef ios::iostate ios_iostate;
 typedef ios::seekdir ios_seekdir;
+#endif
+
+// Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
+// in some important missing functions.
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+template<class T> struct remove_reference      {typedef T type;};
+template<class T> struct remove_reference<T&>  {typedef T type;};
+template<class T> struct remove_reference<T&& >{typedef T type;};
+
+template<class T> typename remove_reference<T>::type &&move(T &&t) {
+  return static_cast<typename remove_reference<T>::type&&>(t);
+}
 #endif
 
 #ifdef _MSC_VER
@@ -153,7 +166,7 @@ typedef ios::seekdir ios_seekdir;
 #elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
 
 // GCC defines several macros which we can query.  List of all supported
-// builtin macros: https:gcc.gnu.orgprojectscxx0x.html
+// builtin macros: https://gcc.gnu.org/projects/cxx-status.html
 #  if __cpp_constexpr >= 200704
 #    define CONSTEXPR constexpr
 #  endif

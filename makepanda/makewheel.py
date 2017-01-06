@@ -551,7 +551,6 @@ def makewheel(version, output_dir, platform=default_platform):
     # Add a panda3d-tools directory containing the executables.
     entry_points = '[console_scripts]\n'
     entry_points += 'eggcacher = direct.directscripts.eggcacher:main\n'
-    entry_points += 'packpanda = direct.directscripts.packpanda:main\n'
     tools_init = ''
     for file in os.listdir(bin_dir):
         basename = os.path.splitext(file)[0]
