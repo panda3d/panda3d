@@ -81,9 +81,8 @@ def is_fat_file(path):
 
 
 def get_python_ext_module_dir():
-    import cmath
-    import inspect
-    return os.path.dirname(inspect.getfile(cmath))
+    import _ctypes
+    return os.path.dirname(_ctypes.__file__)
 
 
 if sys.platform in ('win32', 'cygwin'):
