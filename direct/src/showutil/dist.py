@@ -55,6 +55,8 @@ class build(distutils.command.build.build):
             use_wheels = True
         print("Building platforms: {}".format(','.join(platforms)))
 
+        saved_path = sys.path[:]
+
         for platform in platforms:
             builddir = os.path.join(self.build_base, platform)
 
@@ -86,6 +88,7 @@ class build(distutils.command.build.build):
                 whlfiles = {whl: zipfile.ZipFile(whl) for whl in wheelpaths}
 
                 # Add whl files to the path so they are picked up by modulefinder
+                sys.path = saved_path[:]
                 for whl in wheelpaths:
                     sys.path.insert(0, whl)
 
