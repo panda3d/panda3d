@@ -368,6 +368,9 @@ if VERSION is None:
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
 
+if WHLVERSION is None:
+    WHLVERSION = VERSION
+
 print("Version: %s" % VERSION)
 if RUNTIME or RTDIST:
     print("Core API Version: %s" % COREAPI_VERSION)
