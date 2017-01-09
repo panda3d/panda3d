@@ -39,7 +39,7 @@ PortalClipper::
 PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup):
 _reduced_viewport_min(-1,-1),
 _reduced_viewport_max(1,1),
-_clip_state(0)
+_clip_state(NULL)
 {
   _previous = new GeomNode("my_frustum");
 
