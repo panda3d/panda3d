@@ -327,13 +327,13 @@ set_time(double timestamp, int loop_count) {
 
   if (_eof_known) {
     if (loop_count == 0) {
-      frame = frame % _eof_frame;
+      frame = frame % (_eof_frame + 1);
     } else {
-      int last_frame = _eof_frame * loop_count;
+      int last_frame = (_eof_frame + 1) * loop_count;
       if (frame < last_frame) {
-        frame = frame % _eof_frame;
+        frame = frame % (_eof_frame + 1);
       } else {
-        frame = _eof_frame - 1;
+        frame = _eof_frame;
       }
     }
   }
