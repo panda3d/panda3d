@@ -2887,8 +2887,8 @@ if tp_dir is not None:
                 pydll += ".dll"
             CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            #for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
-            #    CopyFile(GetOutputDir() + "/bin/", fn)
+            for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
+                CopyFile(GetOutputDir() + "/bin/", fn)
 
             # Copy the whole Python directory.
             CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
@@ -2907,7 +2907,7 @@ if tp_dir is not None:
             else:
                 idents = ()
 
-            for ident in tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity'):
+            for ident in idents:
                 sxs_name = '_'.join([
                     ident.get('processorArchitecture'),
                     ident.get('name').lower(),
