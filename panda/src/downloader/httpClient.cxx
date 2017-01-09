@@ -807,7 +807,7 @@ load_client_certificate() {
 
       // Rewind the "file" to the beginning in order to read the public key
       // (which might appear first in the file).
-      BIO_reset(mbio);
+      (void)BIO_reset(mbio);
 
       ERR_clear_error();
       _client_certificate_pub =

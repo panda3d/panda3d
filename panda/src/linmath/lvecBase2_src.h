@@ -50,7 +50,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size();
+  CONSTEXPR static int size() { return 2; }
 
   INLINE_LINMATH bool is_nan() const;
 
@@ -74,7 +74,7 @@ PUBLISHED:
   INLINE_LINMATH void add_y(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components();
+  CONSTEXPR static int get_num_components() { return 2; }
 
 public:
   INLINE_LINMATH iterator begin();

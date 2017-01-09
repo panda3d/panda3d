@@ -307,7 +307,7 @@ template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
 set_data(int n, Value &&data) {
   nassertv(has_element(n));
-  _table[n]._data = std::move(data);
+  _table[n]._data = move(data);
 }
 #endif  // USE_MOVE_SEMANTICS
 

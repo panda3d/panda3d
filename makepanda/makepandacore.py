@@ -980,7 +980,10 @@ def WriteFile(wfile, data, newline=None):
         data = data.replace('\n', newline)
 
     try:
-        dsthandle = open(wfile, "w")
+        if sys.version_info >= (3, 0):
+            dsthandle = open(wfile, "w", newline='')
+        else:
+            dsthandle = open(wfile, "w")
         dsthandle.write(data)
         dsthandle.close()
     except:

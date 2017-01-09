@@ -120,7 +120,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
+  DCAST_INTO_R(sphere, entry.get_from(), NULL);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
 
@@ -231,7 +231,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), 0);
+  DCAST_INTO_R(line, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -271,7 +271,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
-  DCAST_INTO_R(box, entry.get_from(), 0);
+  DCAST_INTO_R(box, entry.get_from(), NULL);
 
   // Instead of transforming the box into the sphere's coordinate space, we do
   // it the other way around.  It's easier that way.
@@ -347,7 +347,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
+  DCAST_INTO_R(ray, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -394,7 +394,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), 0);
+  DCAST_INTO_R(segment, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -443,7 +443,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_tube(const CollisionEntry &entry) const {
   const CollisionTube *tube;
-  DCAST_INTO_R(tube, entry.get_from(), 0);
+  DCAST_INTO_R(tube, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -499,7 +499,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
-  DCAST_INTO_R(parabola, entry.get_from(), 0);
+  DCAST_INTO_R(parabola, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 

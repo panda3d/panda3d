@@ -118,6 +118,8 @@ typedef ios::seekdir ios_seekdir;
 // Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+typedef decltype(nullptr) nullptr_t;
+
 template<class T> struct remove_reference      {typedef T type;};
 template<class T> struct remove_reference<T&>  {typedef T type;};
 template<class T> struct remove_reference<T&& >{typedef T type;};
@@ -147,7 +149,9 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 // Determine the availability of C++11 features.
 #if defined(__has_extension) // Clang magic.
 #  if __has_extension(cxx_constexpr)
-#    define CONSTEXPR constexpr
+#    if !defined(__apple_build_version__) || __apple_build_version__ >= 5000000
+#      define CONSTEXPR constexpr
+#    endif
 #  endif
 #  if __has_extension(cxx_noexcept)
 #    define NOEXCEPT noexcept

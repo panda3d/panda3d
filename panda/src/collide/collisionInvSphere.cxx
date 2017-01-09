@@ -92,7 +92,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
+  DCAST_INTO_R(sphere, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -144,7 +144,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), 0);
+  DCAST_INTO_R(line, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -185,7 +185,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
+  DCAST_INTO_R(ray, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -228,7 +228,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), 0);
+  DCAST_INTO_R(segment, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
