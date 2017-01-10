@@ -31,6 +31,7 @@
 #include "samplerState.h"
 #include "shader.h"
 #include "texture.h"
+#include "shaderBuffer.h"
 
 /**
  * This is a small container class that can hold any one of the value types
@@ -52,6 +53,7 @@ PUBLISHED:
   INLINE ShaderInput(CPT_InternalName name, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, Texture *tex, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, ShaderBuffer *buf, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, const PTA_float &ptr, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase4f &ptr, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase3f &ptr, int priority=0);
@@ -96,7 +98,8 @@ PUBLISHED:
     M_numeric,
     M_texture_sampler,
     M_param,
-    M_texture_image
+    M_texture_image,
+    M_buffer,
   };
 
   INLINE const InternalName *get_name() const;
@@ -122,6 +125,8 @@ private:
   PT(TypedWritableReferenceCount) _value;
   int _priority;
   int _type;
+
+  friend class ShaderAttrib;
 
 public:
   static TypeHandle get_class_type() {

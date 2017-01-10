@@ -53,7 +53,12 @@
 // drose: We require 16-byte alignment of certain structures, to
 // support SSE2.  We don't strictly have to align *everything*, but
 // it's just easier to do so.
+#ifdef __AVX__
+// Eigen requires 32-byte alignment when using AVX instructions.
+#define MALLOC_ALIGNMENT ((size_t)32U)
+#else
 #define MALLOC_ALIGNMENT ((size_t)16U)
+#endif
 #endif
 
 #include "dlmalloc_src.cxx"

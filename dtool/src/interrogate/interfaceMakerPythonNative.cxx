@@ -6142,7 +6142,7 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
 
         write_python_instance(out, indent_level, return_expr, owns_memory, itype, is_const);
       }
-    } else if (TypeManager::is_struct(orig_type->as_pointer_type()->_pointing_at)) {
+    } else if (TypeManager::is_struct(orig_type->remove_pointer())) {
       TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
       const InterrogateType &itype = idb->get_type(type_index);
 
@@ -6198,7 +6198,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     // the assumption that the called method doesn't do anything with this
     // tuple other than unpack it (which is a fairly safe assumption to make).
     out << "  PyTupleObject args;\n";
-    out << "  PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
+    out << "  (void)PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
   }
 
   out <<
@@ -6748,6 +6748,8 @@ is_cpp_type_legal(CPPType *in_ctype) {
   } else if (TypeManager::is_simple(type)) {
     return true;
   } else if (TypeManager::is_pointer_to_simple(type)) {
+    return true;
+  } else if (builder.in_forcetype(type->get_local_name(&parser))) {
     return true;
   } else if (TypeManager::is_exported(type)) {
     return true;

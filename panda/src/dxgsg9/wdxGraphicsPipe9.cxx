@@ -19,6 +19,16 @@
 
 TypeHandle wdxGraphicsPipe9::_type_handle;
 
+static bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName) {
+  *pFn = (FARPROC) GetProcAddress(hDLL, szExportedFnName);
+  if (*pFn == NULL) {
+    wdxdisplay9_cat.error()
+      << "GetProcAddr failed for " << szExportedFnName << ", error=" << GetLastError() <<endl;
+    return false;
+  }
+  return true;
+}
+
 #define LOWVIDMEMTHRESHOLD 5700000  // 4MB cards should fall below this
 #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000  // if # is > 1MB, card is lying and I cant tell what it is
 #define UNKNOWN_VIDMEM_SIZE 0xFFFFFFFF
@@ -154,7 +164,10 @@ make_output(const string &name,
  */
 bool wdxGraphicsPipe9::
 init() {
-  if (!MyLoadLib(_hDDrawDLL, "ddraw.dll")) {
+  _hDDrawDLL = LoadLibrary("ddraw.dll");
+  if (_hDDrawDLL == NULL) {
+    wdxdisplay9_cat.error()
+      << "LoadLibrary failed for ddraw.dll, error=" << GetLastError() <<endl;
     goto error;
   }
 
@@ -166,7 +179,10 @@ init() {
     goto error;
   }
 
-  if (!MyLoadLib(_hD3D9_DLL, "d3d9.dll")) {
+  _hD3D9_DLL = LoadLibrary("d3d9.dll");
+  if (_hD3D9_DLL == NULL) {
+    wdxdisplay9_cat.error()
+      << "LoadLibrary failed for d3d9.dll, error=" << GetLastError() <<endl;
     goto error;
   }
 

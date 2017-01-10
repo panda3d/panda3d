@@ -62,12 +62,15 @@
 #include <algorithm>
 #include <limits.h>
 
-PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Vertex buffer switch:Vertex");
-PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Vertex buffer switch:Index");
+PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Buffer switch:Vertex");
+PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Buffer switch:Index");
+PStatCollector GraphicsStateGuardian::_shader_buffer_switch_pcollector("Buffer switch:Shader");
 PStatCollector GraphicsStateGuardian::_load_vertex_buffer_pcollector("Draw:Transfer data:Vertex buffer");
 PStatCollector GraphicsStateGuardian::_load_index_buffer_pcollector("Draw:Transfer data:Index buffer");
+PStatCollector GraphicsStateGuardian::_load_shader_buffer_pcollector("Draw:Transfer data:Shader buffer");
 PStatCollector GraphicsStateGuardian::_create_vertex_buffer_pcollector("Draw:Transfer data:Create Vertex buffer");
 PStatCollector GraphicsStateGuardian::_create_index_buffer_pcollector("Draw:Transfer data:Create Index buffer");
+PStatCollector GraphicsStateGuardian::_create_shader_buffer_pcollector("Draw:Transfer data:Create Shader buffer");
 PStatCollector GraphicsStateGuardian::_load_texture_pcollector("Draw:Transfer data:Texture");
 PStatCollector GraphicsStateGuardian::_data_transferred_pcollector("Data transferred");
 PStatCollector GraphicsStateGuardian::_texmgrmem_total_pcollector("Texture manager");
@@ -104,6 +107,7 @@ PStatCollector GraphicsStateGuardian::_prepare_geom_pcollector("Draw:Prepare:Geo
 PStatCollector GraphicsStateGuardian::_prepare_shader_pcollector("Draw:Prepare:Shader");
 PStatCollector GraphicsStateGuardian::_prepare_vertex_buffer_pcollector("Draw:Prepare:Vertex buffer");
 PStatCollector GraphicsStateGuardian::_prepare_index_buffer_pcollector("Draw:Prepare:Index buffer");
+PStatCollector GraphicsStateGuardian::_prepare_shader_buffer_pcollector("Draw:Prepare:Shader buffer");
 
 PStatCollector GraphicsStateGuardian::_draw_set_state_transform_pcollector("Draw:Set State:Transform");
 PStatCollector GraphicsStateGuardian::_draw_set_state_alpha_test_pcollector("Draw:Set State:Alpha test");
@@ -146,6 +150,10 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 {
   _coordinate_system = CS_invalid;
   _internal_transform = TransformState::make_identity();
+
+  if (_internal_coordinate_system == CS_default) {
+    _internal_coordinate_system = get_default_coordinate_system();
+  }
 
   set_coordinate_system(get_default_coordinate_system());
 
@@ -651,6 +659,22 @@ prepare_index_buffer(GeomPrimitive *) {
  */
 void GraphicsStateGuardian::
 release_index_buffer(IndexBufferContext *) {
+}
+
+/**
+ * Prepares the indicated buffer for retained-mode rendering.
+ */
+BufferContext *GraphicsStateGuardian::
+prepare_shader_buffer(ShaderBuffer *) {
+  return (BufferContext *)NULL;
+}
+
+/**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the BufferContext itself, if necessary.
+ */
+void GraphicsStateGuardian::
+release_shader_buffer(BufferContext *) {
 }
 
 /**

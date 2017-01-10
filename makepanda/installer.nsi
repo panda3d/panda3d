@@ -141,8 +141,9 @@ SectionGroup "Panda3D Libraries"
         SetDetailsPrint listonly
 
         SetOutPath "$INSTDIR"
-        File "${BUILT}\LICENSE"
-        File /r /x CVS "${BUILT}\ReleaseNotes"
+        File /nonfatal "${BUILT}\LICENSE"
+        File /nonfatal "${BUILT}\ReleaseNotes"
+        File /nonfatal "${BUILT}\pandaIcon.ico"
 
         SetOutPath $INSTDIR\etc
         File /r "${BUILT}\etc\*"
@@ -165,6 +166,10 @@ SectionGroup "Panda3D Libraries"
 
         SetOutPath $INSTDIR\models
         File /r /x CVS "${BUILT}\models\*"
+
+        SetDetailsPrint both
+        DetailPrint "Installing optional components..."
+        SetDetailsPrint listonly
 
         RMDir /r "$SMPROGRAMS\${TITLE}"
         CreateDirectory "$SMPROGRAMS\${TITLE}"
@@ -528,15 +533,17 @@ Section "Sample programs" SecSamples
     WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "https://www.panda3d.org/manual/index.php"
     WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "https://www.panda3d.org/manual/index.php/Sample_Programs_in_the_Distribution"
     SetOutPath $INSTDIR
-    CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda3D Manual"
-    CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda3D Website"
-    CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Program Manual.lnk" "$INSTDIR\Samples.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Sample Program Manual"
+    CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Manual"
+    CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Website"
+    CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Program Manual.lnk" "$INSTDIR\Samples.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Sample Program Manual"
 
     FindFirst $0 $1 $INSTDIR\samples\*
     loop:
         StrCmp $1 "" done
         StrCmp $1 "." next
         StrCmp $1 ".." next
+        FindFirst $2 $3 $INSTDIR\samples\$1\*.py
+        StrCmp $3 "" next
         Push $1
         Push "-"
         Push " "
@@ -553,14 +560,13 @@ Section "Sample programs" SecSamples
         DetailPrint "Creating shortcuts for sample program $READABLE"
         CreateDirectory "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE"
         SetOutPath $INSTDIR\samples\$1
-        WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "http://panda3d.org/wiki/index.php/Sample_Programs:_$MANPAGE"
-        CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE\Manual Page.lnk" "$INSTDIR\samples\$1\ManualPage.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Manual Entry on this Sample Program"
+        WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "https://www.panda3d.org/wiki/index.php/Sample_Programs:_$MANPAGE"
+        CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE\Manual Page.lnk" "$INSTDIR\samples\$1\ManualPage.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Manual Entry on this Sample Program"
         CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE\View Source Code.lnk" "$INSTDIR\samples\$1"
-        FindFirst $2 $3 $INSTDIR\samples\$1\*.py
         iloop:
             StrCmp $3 "" idone
-            CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE\Run $3.lnk" "$INSTDIR\python\python.exe" "-E $3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $3"
-            CreateShortCut "$INSTDIR\samples\$1\Run $3.lnk" "$INSTDIR\python\python.exe" "-E $3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $3"
+            CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE\Run $3.lnk" "$INSTDIR\python\python.exe" "-E $3" "$INSTDIR\pandaIcon.ico" 0 SW_SHOWMINIMIZED "" "Run $3"
+            CreateShortCut "$INSTDIR\samples\$1\Run $3.lnk" "$INSTDIR\python\python.exe" "-E $3" "$INSTDIR\pandaIcon.ico" 0 SW_SHOWMINIMIZED "" "Run $3"
             FindNext $2 $3
             goto iloop
         idone:
@@ -613,13 +619,10 @@ Section -post
     DetailPrint "Preloading .egg files into the model cache..."
     SetDetailsPrint listonly
 
-    ; We need to set the $PATH for eggcacher.
     SetOutPath $INSTDIR
-    ReadEnvStr $R0 "PATH"
-    StrCpy $R0 "$INSTDIR\python;$INSTDIR\bin;$R0"
-    System::Call 'Kernel32::SetEnvironmentVariableA(t, t) i("PATH", R0).r2'
-
-    nsExec::ExecToLog '"$INSTDIR\bin\eggcacher.exe" --concise models samples'
+    nsExec::ExecToLog '"$INSTDIR\python\python.exe" -m direct.directscripts.eggcacher --concise models samples'
+    Pop $0
+    DetailPrint "Command returned exit status $0"
 
     SetDetailsPrint both
     DetailPrint "Writing the uninstaller ..."
@@ -680,6 +683,10 @@ Section -post
     DetailPrint "Broadcasting WM_WININICHANGE message..."
     SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=500
 
+    # Now dump the log to disk.
+    StrCpy $0 "$INSTDIR\install.log"
+    Push $0
+    Call DumpLog
 SectionEnd
 
 Section Uninstall
@@ -1230,4 +1237,48 @@ done:
   Pop $R4
   Exch $R3
 
+FunctionEnd
+
+!define LVM_GETITEMCOUNT 0x1004
+!define LVM_GETITEMTEXT 0x102D
+
+Function DumpLog
+  Exch $5
+  Push $0
+  Push $1
+  Push $2
+  Push $3
+  Push $4
+  Push $6
+
+  FindWindow $0 "#32770" "" $HWNDPARENT
+  GetDlgItem $0 $0 1016
+  StrCmp $0 0 exit
+  FileOpen $5 $5 "w"
+  StrCmp $5 "" exit
+    SendMessage $0 ${LVM_GETITEMCOUNT} 0 0 $6
+    System::Alloc ${NSIS_MAX_STRLEN}
+    Pop $3
+    StrCpy $2 0
+    System::Call "*(i, i, i, i, i, i, i, i, i) i \
+      (0, 0, 0, 0, 0, r3, ${NSIS_MAX_STRLEN}) .r1"
+    loop: StrCmp $2 $6 done
+      System::Call "User32::SendMessageA(i, i, i, i) i \
+        ($0, ${LVM_GETITEMTEXT}, $2, r1)"
+      System::Call "*$3(&t${NSIS_MAX_STRLEN} .r4)"
+      FileWrite $5 "$4$\r$\n"
+      IntOp $2 $2 + 1
+      Goto loop
+    done:
+      FileClose $5
+      System::Free $1
+      System::Free $3
+  exit:
+    Pop $6
+    Pop $4
+    Pop $3
+    Pop $2
+    Pop $1
+    Pop $0
+    Exch $5
 FunctionEnd

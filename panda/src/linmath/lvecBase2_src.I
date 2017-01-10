@@ -73,14 +73,6 @@ operator [](int i) {
 }
 
 /**
- * Returns 2: the number of components of a LVecBase2.
- */
-CONSTEXPR int FLOATNAME(LVecBase2)::
-size() {
-  return 2;
-}
-
-/**
  * Returns true if any component of the vector is not-a-number, false
  * otherwise.
  */
@@ -176,14 +168,6 @@ add_y(FLOATTYPE value) {
 INLINE_LINMATH const FLOATTYPE *FLOATNAME(LVecBase2)::
 get_data() const {
   return &_v(0);
-}
-
-/**
- * Returns the number of elements in the vector, two.
- */
-CONSTEXPR int FLOATNAME(LVecBase2)::
-get_num_components() {
-  return 2;
 }
 
 /**

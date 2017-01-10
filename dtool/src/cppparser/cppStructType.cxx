@@ -378,6 +378,10 @@ is_constructible(const CPPType *given_type) const {
     }
   }
 
+  if (is_abstract()) {
+    return false;
+  }
+
   // Check for a different constructor.
   CPPFunctionGroup *fgroup = get_constructor();
   if (fgroup != (CPPFunctionGroup *)NULL) {
@@ -444,6 +448,10 @@ is_destructible() const {
  */
 bool CPPStructType::
 is_default_constructible(CPPVisibility min_vis) const {
+  if (is_abstract()) {
+    return false;
+  }
+
   CPPInstance *constructor = get_default_constructor();
   if (constructor != (CPPInstance *)NULL) {
     // It has a default constructor.
@@ -498,24 +506,6 @@ is_default_constructible(CPPVisibility min_vis) const {
     }
   }
 
-  // Check that we don't have pure virtual methods.
-  CPPScope::Functions::const_iterator fi;
-  for (fi = _scope->_functions.begin();
-       fi != _scope->_functions.end();
-       ++fi) {
-    CPPFunctionGroup *fgroup = (*fi).second;
-    CPPFunctionGroup::Instances::const_iterator ii;
-    for (ii = fgroup->_instances.begin();
-         ii != fgroup->_instances.end();
-         ++ii) {
-      CPPInstance *inst = (*ii);
-      if (inst->_storage_class & CPPInstance::SC_pure_virtual) {
-        // Here's a pure virtual function.
-        return false;
-      }
-    }
-  }
-
   return true;
 }
 
@@ -524,6 +514,10 @@ is_default_constructible(CPPVisibility min_vis) const {
  */
 bool CPPStructType::
 is_copy_constructible(CPPVisibility min_vis) const {
+  if (is_abstract()) {
+    return false;
+  }
+
   CPPInstance *constructor = get_copy_constructor();
   if (constructor != (CPPInstance *)NULL) {
     // It has a copy constructor.
@@ -581,24 +575,6 @@ is_copy_constructible(CPPVisibility min_vis) const {
     }
   }
 
-  // Check that we don't have pure virtual methods.
-  CPPScope::Functions::const_iterator fi;
-  for (fi = _scope->_functions.begin();
-       fi != _scope->_functions.end();
-       ++fi) {
-    CPPFunctionGroup *fgroup = (*fi).second;
-    CPPFunctionGroup::Instances::const_iterator ii;
-    for (ii = fgroup->_instances.begin();
-         ii != fgroup->_instances.end();
-         ++ii) {
-      CPPInstance *inst = (*ii);
-      if (inst->_storage_class & CPPInstance::SC_pure_virtual) {
-        // Here's a pure virtual function.
-        return false;
-      }
-    }
-  }
-
   return true;
 }
 
@@ -617,6 +593,10 @@ is_move_constructible(CPPVisibility min_vis) const {
 
     if (constructor->_storage_class & CPPInstance::SC_deleted) {
       // It is deleted.
+      return false;
+    }
+
+    if (is_abstract()) {
       return false;
     }
 
@@ -1214,7 +1194,7 @@ get_virtual_funcs(VFunctions &funcs) const {
           CPPFunctionType *new_ftype = new_inst->_type->as_function_type();
           assert(new_ftype != (CPPFunctionType *)NULL);
 
-          if (new_ftype->is_equivalent_function(*base_ftype)) {
+          if (new_ftype->match_virtual_override(*base_ftype)) {
             // It's a match!  We now know it's virtual.  Erase this function
             // from the list, so we can add it back in below.
             funcs.erase(vfi);

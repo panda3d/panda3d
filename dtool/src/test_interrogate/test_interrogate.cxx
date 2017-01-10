@@ -17,6 +17,7 @@
 #include "interrogate_request.h"
 #include "load_dso.h"
 #include "filename.h"
+#include "pystub.h"
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 
@@ -519,6 +520,8 @@ main(int argc, char **argv) {
   extern char *optarg;
   extern int optind;
   const char *optstr = "p:ftqh";
+
+  pystub();
 
   bool all_functions = false;
   bool all_types = false;

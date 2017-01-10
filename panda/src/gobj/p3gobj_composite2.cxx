@@ -5,6 +5,7 @@
 #include "samplerContext.cxx"
 #include "samplerState.cxx"
 #include "savedContext.cxx"
+#include "shaderBuffer.cxx"
 #include "shaderContext.cxx"
 #include "shader.cxx"
 #include "simpleAllocator.cxx"

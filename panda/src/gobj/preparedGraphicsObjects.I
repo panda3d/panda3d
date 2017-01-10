@@ -45,6 +45,7 @@ release_all() {
   _texture_residency.set_levels();
   _vbuffer_residency.set_levels();
   _ibuffer_residency.set_levels();
+  _sbuffer_residency.set_levels();
 }
 
 /**
@@ -58,7 +59,8 @@ get_num_queued() const {
           get_num_queued_geoms() +
           get_num_queued_shaders() +
           get_num_queued_vertex_buffers() +
-          get_num_queued_index_buffers());
+          get_num_queued_index_buffers() +
+          get_num_queued_shader_buffers());
 }
 
 /**
@@ -72,7 +74,8 @@ get_num_prepared() const {
           get_num_prepared_geoms() +
           get_num_prepared_shaders() +
           get_num_prepared_vertex_buffers() +
-          get_num_prepared_index_buffers());
+          get_num_prepared_index_buffers() +
+          get_num_prepared_shader_buffers());
 }
 
 /**

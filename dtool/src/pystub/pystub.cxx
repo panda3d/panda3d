@@ -149,12 +149,14 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicodeUCS2_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_AsWideChar(...);
+  EXPCL_PYSTUB int PyUnicodeUCS2_AsWideCharString(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_GetSize(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_FromFormat(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_FromString(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_AsWideChar(...);
+  EXPCL_PYSTUB int PyUnicodeUCS4_AsWideCharString(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_GetSize(...);
   EXPCL_PYSTUB int PyUnicode_AsUTF8(...);
   EXPCL_PYSTUB int PyUnicode_AsUTF8AndSize(...);
@@ -349,12 +351,14 @@ int PyUnicodeUCS2_FromString(...) { return 0; }
 int PyUnicodeUCS2_FromStringAndSize(...) { return 0; }
 int PyUnicodeUCS2_FromWideChar(...) { return 0; }
 int PyUnicodeUCS2_AsWideChar(...) { return 0; }
+int PyUnicodeUCS2_AsWideCharString(...) { return 0; }
 int PyUnicodeUCS2_GetSize(...) { return 0; }
 int PyUnicodeUCS4_FromFormat(...) { return 0; }
 int PyUnicodeUCS4_FromString(...) { return 0; }
 int PyUnicodeUCS4_FromStringAndSize(...) { return 0; }
 int PyUnicodeUCS4_FromWideChar(...) { return 0; }
 int PyUnicodeUCS4_AsWideChar(...) { return 0; }
+int PyUnicodeUCS4_AsWideCharString(...) { return 0; }
 int PyUnicodeUCS4_GetSize(...) { return 0; }
 int PyUnicode_AsUTF8(...) { return 0; }
 int PyUnicode_AsUTF8AndSize(...) { return 0; }

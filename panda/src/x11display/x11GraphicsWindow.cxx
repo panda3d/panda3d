@@ -38,7 +38,24 @@
 #include <linux/input.h>
 #endif
 
-#ifdef HAVE_XCURSOR
+struct _XcursorFile {
+  void *closure;
+  int (*read)(XcursorFile *, unsigned char *, int);
+  int (*write)(XcursorFile *, unsigned char *, int);
+  int (*seek)(XcursorFile *, long, int);
+};
+
+typedef struct _XcursorImage {
+  unsigned int version;
+  unsigned int size;
+  unsigned int width;
+  unsigned int height;
+  unsigned int xhot;
+  unsigned int yhot;
+  unsigned int delay;
+  unsigned int *pixels;
+} XcursorImage;
+
 static int xcursor_read(XcursorFile *file, unsigned char *buf, int len) {
   istream* str = (istream*) file->closure;
   str->read((char*) buf, len);
@@ -66,7 +83,6 @@ static int xcursor_seek(XcursorFile *file, long offset, int whence) {
 
   return str->tellg();
 }
-#endif
 
 TypeHandle x11GraphicsWindow::_type_handle;
 
@@ -92,14 +108,14 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _xwindow = (X11_Window)NULL;
   _ic = (XIC)NULL;
   _visual_info = NULL;
-
-#ifdef HAVE_XRANDR
   _orig_size_id = -1;
-  int event, error;
-  _have_xrandr = XRRQueryExtension(_display, &event, &error);
-#else
-  _have_xrandr = false;
-#endif
+
+  if (x11_pipe->_have_xrandr) {
+    // We may still need these functions after the pipe is already destroyed,
+    // so we copy them into the x11GraphicsWindow.
+    _XRRGetScreenInfo = x11_pipe->_XRRGetScreenInfo;
+    _XRRSetScreenConfig = x11_pipe->_XRRSetScreenConfig;
+  }
 
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
@@ -474,10 +490,9 @@ set_properties_now(WindowProperties &properties) {
 
   if (is_fullscreen != want_fullscreen || (is_fullscreen && properties.has_size())) {
     if (want_fullscreen) {
-      if (_have_xrandr) {
-#ifdef HAVE_XRANDR
-        XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
-        SizeID old_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
+      if (x11_pipe->_have_xrandr) {
+        XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
+        SizeID old_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
         SizeID new_size_id = (SizeID) -1;
         int num_sizes = 0, reqsizex, reqsizey;
         if (properties.has_size()) {
@@ -488,7 +503,7 @@ set_properties_now(WindowProperties &properties) {
           reqsizey = _properties.get_y_size();
         }
         XRRScreenSize *xrrs;
-        xrrs = XRRSizes(_display, 0, &num_sizes);
+        xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
         for (int i = 0; i < num_sizes; ++i) {
           if (xrrs[i].width == reqsizex &&
               xrrs[i].height == reqsizey) {
@@ -502,14 +517,13 @@ set_properties_now(WindowProperties &properties) {
         } else {
           if (new_size_id != old_size_id) {
 
-            XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
+            _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
             if (_orig_size_id == (SizeID) -1) {
               // Remember the original resolution so we can switch back to it.
               _orig_size_id = old_size_id;
             }
           }
         }
-#endif
       } else {
         // If we don't have Xrandr support, we fake the fullscreen support by
         // setting the window size to the desktop size.
@@ -517,15 +531,13 @@ set_properties_now(WindowProperties &properties) {
                             x11_pipe->get_display_height());
       }
     } else {
-#ifdef HAVE_XRANDR
       // Change the resolution back to what it was.  Don't remove the SizeID
       // typecast!
-      if (_have_xrandr && _orig_size_id != (SizeID) -1) {
-        XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
-        XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
+      if (_orig_size_id != (SizeID) -1) {
+        XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
+        _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
         _orig_size_id = (SizeID) -1;
       }
-#endif
       // Set the origin back to what it was
       if (!properties.has_origin() && _properties.has_origin()) {
         properties.set_origin(_properties.get_x_origin(), _properties.get_y_origin());
@@ -686,23 +698,17 @@ set_properties_now(WindowProperties &properties) {
     switch (properties.get_mouse_mode()) {
     case WindowProperties::M_absolute:
       XUngrabPointer(_display, CurrentTime);
-#ifdef HAVE_XF86DGA
       if (_dga_mouse_enabled) {
-        x11display_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
-        XF86DGADirectVideo(_display, _screen, 0);
+        x11_pipe->disable_relative_mouse();
         _dga_mouse_enabled = false;
       }
-#endif
       _properties.set_mouse_mode(WindowProperties::M_absolute);
       properties.clear_mouse_mode();
       break;
 
     case WindowProperties::M_relative:
-#ifdef HAVE_XF86DGA
       if (!_dga_mouse_enabled) {
-        int major_ver, minor_ver;
-        if (XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
-
+        if (x11_pipe->supports_relative_mouse()) {
           X11_Cursor cursor = None;
           if (_properties.get_cursor_hidden()) {
             x11GraphicsPipe *x11_pipe;
@@ -714,8 +720,7 @@ set_properties_now(WindowProperties &properties) {
               GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
             x11display_cat.error() << "Failed to grab pointer!\n";
           } else {
-            x11display_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
-            XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
+            x11_pipe->enable_relative_mouse();
 
             _properties.set_mouse_mode(WindowProperties::M_relative);
             properties.clear_mouse_mode();
@@ -730,25 +735,24 @@ set_properties_now(WindowProperties &properties) {
             _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
           }
         } else {
-          x11display_cat.info() << "XF86DGA extension not available\n";
+          x11display_cat.info()
+            << "XF86DGA extension not available, cannot enable relative mouse mode\n";
           _dga_mouse_enabled = false;
         }
       }
-#endif
       break;
 
     case WindowProperties::M_confined:
       {
-#ifdef HAVE_XF86DGA
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+
         if (_dga_mouse_enabled) {
-          XF86DGADirectVideo(_display, _screen, 0);
+          x11_pipe->disable_relative_mouse();
           _dga_mouse_enabled = false;
         }
-#endif
         X11_Cursor cursor = None;
         if (_properties.get_cursor_hidden()) {
-          x11GraphicsPipe *x11_pipe;
-          DCAST_INTO_V(x11_pipe, _pipe);
           cursor = x11_pipe->get_hidden_cursor();
         }
 
@@ -813,10 +817,9 @@ close_window() {
     XFlush(_display);
   }
 
-#ifdef HAVE_XRANDR
   // Change the resolution back to what it was.  Don't remove the SizeID
   // typecast!
-  if (_have_xrandr && _orig_size_id != (SizeID) -1) {
+  if (_orig_size_id != (SizeID) -1) {
     X11_Window root;
     if (_pipe != NULL) {
       x11GraphicsPipe *x11_pipe;
@@ -827,11 +830,10 @@ close_window() {
       // closed.  Oh well, let's get the root window by ourselves.
       root = RootWindow(_display, _screen);
     }
-    XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, root);
-    XRRSetScreenConfig(_display, conf, root, _orig_size_id, _orig_rotation, CurrentTime);
+    XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, root);
+    _XRRSetScreenConfig(_display, conf, root, _orig_size_id, _orig_rotation, CurrentTime);
     _orig_size_id = -1;
   }
-#endif
 
   GraphicsWindow::close_window();
 }
@@ -859,15 +861,14 @@ open_window() {
     _properties.set_size(100, 100);
   }
 
-#ifdef HAVE_XRANDR
-  if (_properties.get_fullscreen() && _have_xrandr) {
-    XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
+  if (_properties.get_fullscreen() && x11_pipe->_have_xrandr) {
+    XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
     if (_orig_size_id == (SizeID) -1) {
-      _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
+      _orig_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
     }
     int num_sizes, new_size_id = -1;
     XRRScreenSize *xrrs;
-    xrrs = XRRSizes(_display, 0, &num_sizes);
+    xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
     for (int i = 0; i < num_sizes; ++i) {
       if (xrrs[i].width == _properties.get_x_size() &&
           xrrs[i].height == _properties.get_y_size()) {
@@ -882,12 +883,11 @@ open_window() {
       return false;
     }
     if (new_size_id != _orig_size_id) {
-      XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
+      _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
     } else {
       _orig_size_id = -1;
     }
   }
-#endif
 
   X11_Window parent_window = x11_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
@@ -2081,11 +2081,15 @@ check_event(X11_Display *display, XEvent *event, char *arg) {
  */
 X11_Cursor x11GraphicsWindow::
 get_cursor(const Filename &filename) {
-#ifndef HAVE_XCURSOR
-  x11display_cat.info()
-    << "XCursor support not enabled in build; cannot change mouse cursor.\n";
-  return None;
-#else  // HAVE_XCURSOR
+  x11GraphicsPipe *x11_pipe;
+  DCAST_INTO_R(x11_pipe, _pipe, None);
+
+  if (x11_pipe->_xcursor_size == -1) {
+    x11display_cat.info()
+      << "libXcursor.so.1 not available; cannot change mouse cursor.\n";
+    return None;
+  }
+
   // First, look for the unresolved filename in our index.
   pmap<Filename, X11_Cursor>::iterator fi = _cursor_filenames.find(filename);
   if (fi != _cursor_filenames.end()) {
@@ -2135,10 +2139,10 @@ get_cursor(const Filename &filename) {
     xcfile.write = &xcursor_write;
     xcfile.seek = &xcursor_seek;
 
-    XcursorImages *images = XcursorXcFileLoadImages(&xcfile, XcursorGetDefaultSize(_display));
+    XcursorImages *images = x11_pipe->_XcursorXcFileLoadImages(&xcfile, x11_pipe->_xcursor_size);
     if (images != NULL) {
-      h = XcursorImagesLoadCursor(_display, images);
-      XcursorImagesDestroy(images);
+      h = x11_pipe->_XcursorImagesLoadCursor(_display, images);
+      x11_pipe->_XcursorImagesDestroy(images);
     }
 
   } else if (memcmp(magic, "\0\0\1\0", 4) == 0
@@ -2159,18 +2163,19 @@ get_cursor(const Filename &filename) {
 
   _cursor_filenames[resolved] = h;
   return h;
-#endif  // HAVE_XCURSOR
 }
 
-#ifdef HAVE_XCURSOR
 /**
  * Reads a Windows .ico or .cur file from the indicated stream and returns it
  * as an X11 Cursor.  If the file cannot be loaded, returns None.
  */
 X11_Cursor x11GraphicsWindow::
 read_ico(istream &ico) {
- // Local structs, this is just POD, make input easier
- typedef struct {
+  x11GraphicsPipe *x11_pipe;
+  DCAST_INTO_R(x11_pipe, _pipe, None);
+
+  // Local structs, this is just POD, make input easier
+  typedef struct {
     uint16_t reserved, type, count;
   } IcoHeader;
 
@@ -2204,7 +2209,7 @@ read_ico(istream &ico) {
   XcursorImage *image = NULL;
   X11_Cursor ret = None;
 
-  int def_size = XcursorGetDefaultSize(_display);
+  int def_size = x11_pipe->_xcursor_size;
 
   // Get our header, note that ICO = type 1 and CUR = type 2.
   ico.read(reinterpret_cast<char *>(&header), sizeof(IcoHeader));
@@ -2240,7 +2245,7 @@ read_ico(istream &ico) {
     }
     img.set_maxval(255);
 
-    image = XcursorImageCreate(img.get_x_size(), img.get_y_size());
+    image = x11_pipe->_XcursorImageCreate(img.get_x_size(), img.get_y_size());
 
     xel *ptr = img.get_array();
     xelval *alpha = img.get_alpha_array();
@@ -2285,7 +2290,7 @@ read_ico(istream &ico) {
     ico.read(andBmp, andBmpSize);
     if (!ico.good()) goto cleanup;
 
-    image = XcursorImageCreate(infoHeader.width, infoHeader.height / 2);
+    image = x11_pipe->_XcursorImageCreate(infoHeader.width, infoHeader.height / 2);
 
     // Support all the formats that GIMP supports.
     switch (bitsPerPixel) {
@@ -2370,10 +2375,10 @@ read_ico(istream &ico) {
     image->yhot = 0;
   }
 
-  ret = XcursorImageLoadCursor(_display, image);
+  ret = x11_pipe->_XcursorImageLoadCursor(_display, image);
 
 cleanup:
-  XcursorImageDestroy(image);
+  x11_pipe->_XcursorImageDestroy(image);
   delete[] entries;
   delete[] palette;
   delete[] xorBmp;
@@ -2381,4 +2386,3 @@ cleanup:
 
   return ret;
 }
-#endif  // HAVE_XCURSOR

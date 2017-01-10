@@ -809,12 +809,28 @@ expand_manifests(const string &input_expr, bool expand_undefined,
         // Here's an identifier.  Is it "defined"?
         if (ident == "defined") {
           expand_defined_function(expr, q, p);
+        } else if (expand_undefined && ident == "__has_include") {
+          expand_has_include_function(expr, q, p, loc);
         } else {
           // Is it a manifest?
           Manifests::const_iterator mi = _manifests.find(ident);
           if (mi != _manifests.end()) {
             const CPPManifest *manifest = (*mi).second;
             expand_manifest_inline(expr, q, p, manifest);
+            manifest_found = true;
+
+          } else if (ident == "__FILE__") {
+            // Special case: this is a dynamic definition.
+            string file = string("\"") + loc.file._filename_as_referenced.get_fullpath() + "\"";
+            expr = expr.substr(0, q) + file + expr.substr(p);
+            p = q + file.size();
+            manifest_found = true;
+
+          } else if (ident == "__LINE__") {
+            // So is this.
+            string line = format_string(loc.first_line);
+            expr = expr.substr(0, q) + line + expr.substr(p);
+            p = q + line.size();
             manifest_found = true;
 
           } else if (expand_undefined && ident != "true" && ident != "false") {
@@ -1461,7 +1477,6 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
       CPPManifest *other = result.first->second;
       warning("redefinition of macro '" + manifest->_name + "'", loc);
       warning("previous definition is here", other->_loc);
-      delete other;
       result.first->second = manifest;
     }
   }
@@ -1487,14 +1502,10 @@ handle_undef_directive(const string &args, const YYLTYPE &loc) {
  */
 void CPPPreprocessor::
 handle_ifdef_directive(const string &args, const YYLTYPE &loc) {
-  Manifests::const_iterator mi = _manifests.find(args);
-  if (mi != _manifests.end()) {
-    // The macro is defined.  We continue.
-    return;
+  if (!is_manifest_defined(args)) {
+    // The macro is undefined.  Skip stuff.
+    skip_false_if_block(true);
   }
-
-  // The macro is undefined.  Skip stuff.
-  skip_false_if_block(true);
 }
 
 /**
@@ -1502,16 +1513,11 @@ handle_ifdef_directive(const string &args, const YYLTYPE &loc) {
  */
 void CPPPreprocessor::
 handle_ifndef_directive(const string &args, const YYLTYPE &loc) {
-  Manifests::const_iterator mi = _manifests.find(args);
-  if (mi == _manifests.end()) {
-    // The macro is undefined.  We continue.
-    return;
+  if (is_manifest_defined(args)) {
+    // The macro is defined.  Skip stuff.
+    skip_false_if_block(true);
   }
-
-  // The macro is defined.  Skip stuff.
-  skip_false_if_block(true);
 }
-
 
 /**
  *
@@ -1594,6 +1600,8 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
         _angle_includes.insert(filename);
       }
     }
+  } else {
+    warning("Ignoring invalid #include directive", loc);
   }
 
   filename.set_text();
@@ -1601,71 +1609,30 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
 
   // Now look for the filename.  If we didn't use angle quotes, look first in
   // the current directory.
-  bool found_file = false;
   CPPFile::Source source = CPPFile::S_none;
 
-  if (okflag) {
-    found_file = false;
+  if (find_include(filename, angle_quotes, source)) {
+    _last_c = '\0';
 
-    // Search the current directory.
-    if (!angle_quotes && !found_file && filename.exists()) {
-      found_file = true;
+    // If it was explicitly named on the command-line, mark it S_local.
+    filename.make_canonical();
+    if (_explicit_files.count(filename)) {
       source = CPPFile::S_local;
     }
 
-    // Search the same directory as the includer.
-    if (!angle_quotes && !found_file) {
-      Filename match(get_file()._filename.get_dirname(), filename);
-      if (match.exists()) {
-        filename = match;
-        found_file = true;
-        source = CPPFile::S_alternate;
-      }
+    CPPFile file(filename, filename_as_referenced, source);
+
+    // Don't include it if we included it before and it had #pragma once.
+    ParsedFiles::const_iterator it = _parsed_files.find(file);
+    if (it != _parsed_files.end() && it->_pragma_once) {
+      return;
     }
 
-    // Now search the angle-include-path
-    if (angle_quotes && !found_file && filename.resolve_filename(_angle_include_path)) {
-      found_file = true;
-      source = CPPFile::S_system;
-    }
-
-    // Now search the quote-include-path
-    if (!angle_quotes && !found_file) {
-      for (size_t dir=0; dir<_quote_include_path.get_num_directories(); dir++) {
-        Filename match(_quote_include_path.get_directory(dir), filename);
-        if (match.exists()) {
-          filename = match;
-          found_file = true;
-          source = _quote_include_kind[dir];
-        }
-      }
-    }
-
-    if (!found_file) {
-      warning("Cannot find " + filename.get_fullpath(), loc);
-    } else {
-      _last_c = '\0';
-
-      // If it was explicitly named on the command-line, mark it S_local.
-      filename.make_canonical();
-      if (_explicit_files.count(filename)) {
-        source = CPPFile::S_local;
-      }
-
-      CPPFile file(filename, filename_as_referenced, source);
-
-      // Don't include it if we included it before and it had #pragma once.
-      ParsedFiles::const_iterator it = _parsed_files.find(file);
-      if (it != _parsed_files.end() && it->_pragma_once) {
-        return;
-      }
-
-      if (!push_file(file)) {
-        warning("Unable to read " + filename.get_fullpath(), loc);
-      }
+    if (!push_file(file)) {
+      warning("Unable to read " + filename.get_fullpath(), loc);
     }
   } else {
-    warning("Ignoring invalid #include directive", loc);
+    warning("Cannot find " + filename.get_fullpath(), loc);
   }
 }
 
@@ -1678,6 +1645,38 @@ handle_pragma_directive(const string &args, const YYLTYPE &loc) {
     ParsedFiles::iterator it = _parsed_files.find(loc.file);
     assert(it != _parsed_files.end());
     it->_pragma_once = true;
+  }
+
+  char macro[64];
+  if (sscanf(args.c_str(), "push_macro ( \"%63[^\"]\" )", macro) == 1) {
+    // We just mark it as pushed for now, so that the next time someone tries
+    // to override it, we save the old value.
+    Manifests::iterator mi = _manifests.find(macro);
+    if (mi != _manifests.end()) {
+      _manifest_stack[macro].push_back(mi->second);
+    } else {
+      _manifest_stack[macro].push_back(NULL);
+    }
+
+  } else if (sscanf(args.c_str(), "pop_macro ( \"%63[^\"]\" )", macro) == 1) {
+    ManifestStack &stack = _manifest_stack[macro];
+    if (stack.size() > 0) {
+      CPPManifest *manifest = stack.back();
+      stack.pop_back();
+      Manifests::iterator mi = _manifests.find(macro);
+      if (manifest == NULL) {
+        // It was undefined when it was pushed, so make it undefined again.
+        if (mi != _manifests.end()) {
+          _manifests.erase(mi);
+        }
+      } else if (mi != _manifests.end()) {
+        mi->second = manifest;
+      } else {
+        _manifests.insert(Manifests::value_type(macro, manifest));
+      }
+    } else {
+      warning("pop_macro without matching push_macro", loc);
+    }
   }
 }
 
@@ -1746,6 +1745,69 @@ skip_false_if_block(bool consider_elifs) {
   }
 
   _save_comments = true;
+}
+
+/**
+ * Returns true if the given manifest is defined.
+ */
+bool CPPPreprocessor::
+is_manifest_defined(const string &manifest_name) {
+  Manifests::const_iterator mi = _manifests.find(manifest_name);
+  if (mi != _manifests.end()) {
+    return true;
+  }
+
+  if (manifest_name == "__has_include" ||
+      manifest_name == "__FILE__" ||
+      manifest_name == "__LINE__") {
+    // Special built-in directives that are considered "defined".
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Locates the given filename.  Changes the first argument to the full path.
+ */
+bool CPPPreprocessor::
+find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source) {
+  // Now look for the filename.  If we didn't use angle quotes, look first in
+  // the current directory.
+  if (!angle_quotes && filename.exists()) {
+    source = CPPFile::S_local;
+    return true;
+  }
+
+  // Search the same directory as the includer.
+  if (!angle_quotes) {
+    Filename match(get_file()._filename.get_dirname(), filename);
+    if (match.exists()) {
+      filename = match;
+      source = CPPFile::S_alternate;
+      return true;
+    }
+  }
+
+  // Now search the angle-include-path
+  if (angle_quotes && filename.resolve_filename(_angle_include_path)) {
+    source = CPPFile::S_system;
+    return true;
+  }
+
+  // Now search the quote-include-path
+  if (!angle_quotes) {
+    for (size_t dir = 0; dir < _quote_include_path.get_num_directories(); ++dir) {
+      Filename match(_quote_include_path.get_directory(dir), filename);
+      if (match.exists()) {
+        filename = match;
+        source = _quote_include_kind[dir];
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -1853,6 +1915,14 @@ get_identifier(int c) {
   Manifests::const_iterator mi = _manifests.find(name);
   if (mi != _manifests.end() && !should_ignore_manifest((*mi).second)) {
     return expand_manifest((*mi).second);
+  }
+  if (name == "__FILE__") {
+    return get_literal(SIMPLE_STRING, loc, loc.file._filename_as_referenced);
+  }
+  if (name == "__LINE__") {
+    YYSTYPE result;
+    result.u.integer = loc.first_line;
+    return CPPToken(INTEGER, loc, "", result);
   }
 
   // Check for keywords.
@@ -2196,9 +2266,7 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
   vector_string args;
   extract_manifest_args_inline("defined", 1, -1, args, expr, p);
   if (args.size() >= 1) {
-    const string &manifest_name = args[0];
-    Manifests::const_iterator mi = _manifests.find(manifest_name);
-    if (mi != _manifests.end()) {
+    if (is_manifest_defined(args[0])) {
       // The macro is defined; the result is "1".
       result = "1";
     } else {
@@ -2207,6 +2275,70 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
     }
   }
 
+  expr = expr.substr(0, q) + result + expr.substr(p);
+  p = q + result.size();
+}
+
+/**
+ * Expands the __has_include(manifest) function to either 1 or 0, depending on
+ * whether the include file exists.
+ */
+void CPPPreprocessor::
+expand_has_include_function(string &expr, size_t q, size_t &p, YYLTYPE loc) {
+  bool found_file = false;
+
+  // Skip whitespace till paren.
+  while (p < expr.size() && isspace(expr[p])) {
+    p++;
+  }
+  size_t args_begin = p + 1;
+
+  vector_string args;
+  extract_manifest_args_inline("__has_include", 1, -1, args, expr, p);
+
+  if (!args.empty() && args[0].size() >= 2) {
+    Filename filename;
+    bool angle_quotes = false;
+
+    string inc = args[0];
+
+    // Just to play things safe, since our manifest-expansion logic might not
+    // filter out quotes and angle brackets properly, we'll only expand
+    // manifests if we don't begin with a quote or bracket.
+    if (!inc.empty() && (inc[0] != '"' && inc[0] != '<')) {
+      inc = expand_manifests(inc, false, loc);
+    }
+
+    if (inc[0] == '"' && inc[inc.size() - 1] == '"') {
+      filename = inc.substr(1, inc.size() - 2);
+    } else if (inc[0] == '<' && inc[inc.size() - 1] == '>') {
+      filename = inc.substr(1, inc.size() - 2);
+      if (!_noangles) {
+        // If _noangles is true, we don't make a distinction between angle
+        // brackets and quote marks--all #inc statements are treated the
+        // same, as if they used quote marks.
+        angle_quotes = true;
+      }
+    } else {
+      loc.last_column += loc.first_column + p - 2;
+      loc.first_column += args_begin;
+      warning("invalid argument for __has_include() directive", loc);
+      expr = expr.substr(0, q) + "0" + expr.substr(p);
+      p = q + 1;
+      return;
+    }
+
+    filename.set_text();
+
+    CPPFile::Source source = CPPFile::S_none;
+    found_file = find_include(filename, angle_quotes, source);
+  } else {
+    loc.last_column += loc.first_column + p - 2;
+    loc.first_column += args_begin;
+    warning("invalid argument for __has_include() directive", loc);
+  }
+
+  string result = found_file ? "1" : "0";
   expr = expr.substr(0, q) + result + expr.substr(p);
   p = q + result.size();
 }

@@ -49,6 +49,9 @@ PUBLISHED:
   virtual bool unref() const;
   INLINE void cache_ref() const;
   INLINE bool cache_unref() const;
+
+public:
+  void cache_ref_only() const;
 #endif  // COW_THREADED
 
 protected:

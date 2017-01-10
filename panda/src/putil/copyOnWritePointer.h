@@ -37,8 +37,10 @@ public:
   INLINE ~CopyOnWritePointer();
 
 #ifdef USE_MOVE_SEMANTICS
-  INLINE CopyOnWritePointer(CopyOnWritePointer &&move) NOEXCEPT;
-  INLINE void operator = (CopyOnWritePointer &&move) NOEXCEPT;
+  INLINE CopyOnWritePointer(CopyOnWritePointer &&from) NOEXCEPT;
+  INLINE CopyOnWritePointer(PointerTo<CopyOnWriteObject> &&from) NOEXCEPT;
+  INLINE void operator = (CopyOnWritePointer &&from) NOEXCEPT;
+  INLINE void operator = (PointerTo<CopyOnWriteObject> &&from) NOEXCEPT;
 #endif
 
   INLINE bool operator == (const CopyOnWritePointer &other) const;
@@ -61,7 +63,7 @@ public:
   INLINE bool test_ref_count_integrity() const;
   INLINE bool test_ref_count_nonzero() const;
 
-private:
+protected:
   CopyOnWriteObject *_cow_object;
 };
 
@@ -84,8 +86,10 @@ public:
   INLINE void operator = (To *object);
 
 #ifdef USE_MOVE_SEMANTICS
-  INLINE CopyOnWritePointerTo(CopyOnWritePointerTo &&move) NOEXCEPT;
-  INLINE void operator = (CopyOnWritePointerTo &&move) NOEXCEPT;
+  INLINE CopyOnWritePointerTo(CopyOnWritePointerTo &&from) NOEXCEPT;
+  INLINE CopyOnWritePointerTo(PointerTo<T> &&from) NOEXCEPT;
+  INLINE void operator = (CopyOnWritePointerTo &&from) NOEXCEPT;
+  INLINE void operator = (PointerTo<T> &&from) NOEXCEPT;
 #endif
 
 #ifdef COW_THREADED
