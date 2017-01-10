@@ -242,6 +242,8 @@ class AstronInternalRepository(ConnectionRepository):
             self.handleGetActivatedResp(di)
         elif msgType == STATESERVER_OBJECT_GET_LOCATION_RESP:
             self.handleGetLocationResp(di)
+        elif msgType == STATESERVER_OBJECT_GET_ALL_RESP:
+            self.handleGetObjectResp(di)
         elif msgType >= 20000:
             # These messages belong to the NetMessenger:
             self.netMessenger.handle(msgType, di)
@@ -337,6 +339,7 @@ class AstronInternalRepository(ConnectionRepository):
 
         Callback is called as: callback(doId, parentId, zoneId)
         """
+
         ctx = self.getContext()
         self.__callbacks[ctx] = callback
         dg = PyDatagram()
@@ -356,6 +359,66 @@ class AstronInternalRepository(ConnectionRepository):
 
         try:
             self.__callbacks[ctx](doId, parentId, zoneId)
+        finally:
+            del self.__callbacks[ctx]
+
+    def getObject(self, doId, callback):
+        """
+        Get the entire state of an object.
+
+        You should already be sure the object actually exists, otherwise the
+        callback will never be called.
+
+        Callback is called as: callback(doId, parentId, zoneId, dclass, fields)
+        """
+
+        ctx = self.getContext()
+        self.__callbacks[ctx] = callback
+        dg = PyDatagram()
+        dg.addServerHeader(doId, self.ourChannel, STATESERVER_OBJECT_GET_ALL)
+        dg.addUint32(ctx)
+        dg.addUint32(doId)
+        self.send(dg)
+
+    def handleGetObjectResp(self, di):
+        ctx = di.getUint32()
+        doId = di.getUint32()
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+        classId = di.getUint16()
+
+        if ctx not in self.__callbacks:
+            self.notify.warning('Received unexpected STATESERVER_OBJECT_GET_ALL_RESP (ctx: %d)' % ctx)
+            return
+
+        if classId not in self.dclassesByNumber:
+            self.notify.warning('Received STATESERVER_OBJECT_GET_ALL_RESP for unknown dclass=%d! (Object %d)' % (classId, doId))
+            return
+
+        dclass = self.dclassesByNumber[classId]
+
+        fields = {}
+        unpacker = DCPacker()
+        unpacker.setUnpackData(di.getRemainingBytes())
+
+        # Required:
+        for i in xrange(dclass.getNumInheritedFields()):
+            field = dclass.getInheritedField(i)
+            if not field.isRequired() or field.asMolecularField(): continue
+            unpacker.beginUnpack(field)
+            fields[field.getName()] = field.unpackArgs(unpacker)
+            unpacker.endUnpack()
+
+        # Other:
+        other = unpacker.rawUnpackUint16()
+        for i in xrange(other):
+            field = dclass.getFieldByIndex(unpacker.rawUnpackUint16())
+            unpacker.beginUnpack(field)
+            fields[field.getName()] = field.unpackArgs(unpacker)
+            unpacker.endUnpack()
+
+        try:
+            self.__callbacks[ctx](doId, parentId, zoneId, dclass, fields)
         finally:
             del self.__callbacks[ctx]
 
