@@ -840,7 +840,7 @@ if (COMPILER=="GCC"):
             if not RTDIST:
                 # We don't link anything in the SDK with libpython.
                 python_lib = ""
-            SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+            SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
@@ -6825,7 +6825,7 @@ deps: {DEPENDS}
 
 def MakeInstallerLinux():
     if not RUNTIME and not PkgSkip("PYTHON"):
-        PYTHONV = SDK["PYTHONVERSION"]
+        PYTHONV = SDK["PYTHONVERSION"].rstrip('dmu')
     else:
         PYTHONV = "python"
     PV = PYTHONV.replace("python", "")
@@ -6980,8 +6980,13 @@ def MakeInstallerOSX():
         oscmd(cmdstr)
         return
 
+    dmg_name = "Panda3D-" + VERSION
+    if not SDK["PYTHONVERSION"].startswith("python2."):
+        dmg_name += '-py' + SDK["PYTHONVERSION"][6:9]
+    dmg_name += ".dmg"
+
     import compileall
-    if (os.path.isfile("Panda3D-%s.dmg" % VERSION)): oscmd("rm -f Panda3D-%s.dmg" % VERSION)
+    if (os.path.isfile(dmg_name)): oscmd("rm -f %s" % dmg_name)
     if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
     if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
 
@@ -7022,7 +7027,7 @@ def MakeInstallerOSX():
         oscmd("cp -R " + GetOutputDir() + "/bin/" + base + " " + binname)
 
     if PkgSkip("PYTHON")==0:
-        PV = SDK["PYTHONVERSION"].replace("python", "")
+        PV = SDK["PYTHONVERSION"][6:9]
         oscmd("mkdir -p dstroot/pythoncode/usr/local/bin")
         oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/panda3d")
         oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % PV)
@@ -7177,7 +7182,7 @@ def MakeInstallerOSX():
     dist.close()
 
     oscmd('hdiutil create Panda3D-rw.dmg -volname "Panda3D SDK %s" -srcfolder dstroot/Panda3D' % (VERSION))
-    oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o Panda3D-%s.dmg' % (VERSION))
+    oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o %s' % (dmg_name))
     oscmd('rm -f Panda3D-rw.dmg')
 
 def MakeInstallerFreeBSD():
