@@ -123,6 +123,8 @@ MsgName2Id = {
     'CLIENTAGENT_SEND_DATAGRAM':                    1002,
     'CLIENTAGENT_EJECT':                            1004,
     'CLIENTAGENT_DROP':                             1005,
+    'CLIENTAGENT_GET_NETWORK_ADDRESS':              1006,
+    'CLIENTAGENT_GET_NETWORK_ADDRESS_RESP':         1007,
     'CLIENTAGENT_DECLARE_OBJECT':                   1010,
     'CLIENTAGENT_UNDECLARE_OBJECT':                 1011,
     'CLIENTAGENT_ADD_SESSION_OBJECT':               1012,

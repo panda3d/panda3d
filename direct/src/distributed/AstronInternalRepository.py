@@ -244,6 +244,8 @@ class AstronInternalRepository(ConnectionRepository):
             self.handleGetLocationResp(di)
         elif msgType == STATESERVER_OBJECT_GET_ALL_RESP:
             self.handleGetObjectResp(di)
+        elif msgType == CLIENTAGENT_GET_NETWORK_ADDRESS_RESP:
+            self.handleGetNetworkAddressResp(di)
         elif msgType >= 20000:
             # These messages belong to the NetMessenger:
             self.netMessenger.handle(msgType, di)
@@ -419,6 +421,39 @@ class AstronInternalRepository(ConnectionRepository):
 
         try:
             self.__callbacks[ctx](doId, parentId, zoneId, dclass, fields)
+        finally:
+            del self.__callbacks[ctx]
+
+    def getNetworkAddress(self, clientId, callback):
+        """
+        Get the endpoints of a client connection.
+
+        You should already be sure the client actually exists, otherwise the
+        callback will never be called.
+
+        Callback is called as: callback(remoteIp, remotePort, localIp, localPort)
+        """
+
+        ctx = self.getContext()
+        self.__callbacks[ctx] = callback
+        dg = PyDatagram()
+        dg.addServerHeader(clientId, self.ourChannel, CLIENTAGENT_GET_NETWORK_ADDRESS)
+        dg.addUint32(ctx)
+        self.send(dg)
+
+    def handleGetNetworkAddressResp(self, di):
+        ctx = di.getUint32()
+        remoteIp = di.getString()
+        remotePort = di.getUint16()
+        localIp = di.getString()
+        localPort = di.getUint16()
+
+        if ctx not in self.__callbacks:
+            self.notify.warning('Received unexpected CLIENTAGENT_GET_NETWORK_ADDRESS_RESP (ctx: %d)' % ctx)
+            return
+
+        try:
+            self.__callbacks[ctx](remoteIp, remotePort, localIp, localPort)
         finally:
             del self.__callbacks[ctx]
 
