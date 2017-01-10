@@ -837,9 +837,6 @@ if (COMPILER=="GCC"):
 
         if not PkgSkip("PYTHON"):
             python_lib = SDK["PYTHONVERSION"]
-            if not RTDIST:
-                # We don't link anything in the SDK with libpython.
-                python_lib = ""
             SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
