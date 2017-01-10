@@ -240,6 +240,8 @@ class AstronInternalRepository(ConnectionRepository):
             self.dbInterface.handleDatagram(msgType, di)
         elif msgType == DBSS_OBJECT_GET_ACTIVATED_RESP:
             self.handleGetActivatedResp(di)
+        elif msgType == STATESERVER_OBJECT_GET_LOCATION_RESP:
+            self.handleGetLocationResp(di)
         elif msgType >= 20000:
             # These messages belong to the NetMessenger:
             self.netMessenger.handle(msgType, di)
@@ -315,6 +317,7 @@ class AstronInternalRepository(ConnectionRepository):
         finally:
             del self.__callbacks[ctx]
 
+
     def getActivated(self, doId, callback):
         ctx = self.getContext()
         self.__callbacks[ctx] = callback
@@ -324,6 +327,37 @@ class AstronInternalRepository(ConnectionRepository):
         dg.addUint32(ctx)
         dg.addUint32(doId)
         self.send(dg)
+
+    def getLocation(self, doId, callback):
+        """
+        Ask a DistributedObject where it is.
+
+        You should already be sure the object actually exists, otherwise the
+        callback will never be called.
+
+        Callback is called as: callback(doId, parentId, zoneId)
+        """
+        ctx = self.getContext()
+        self.__callbacks[ctx] = callback
+        dg = PyDatagram()
+        dg.addServerHeader(doId, self.ourChannel, STATESERVER_OBJECT_GET_LOCATION)
+        dg.addUint32(ctx)
+        self.send(dg)
+
+    def handleGetLocationResp(self, di):
+        ctx = di.getUint32()
+        doId = di.getUint32()
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+
+        if ctx not in self.__callbacks:
+            self.notify.warning('Received unexpected STATESERVER_OBJECT_GET_LOCATION_RESP (ctx: %d)' % ctx)
+            return
+
+        try:
+            self.__callbacks[ctx](doId, parentId, zoneId)
+        finally:
+            del self.__callbacks[ctx]
 
     def sendUpdate(self, do, fieldName, args):
         """
