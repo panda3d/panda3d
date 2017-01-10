@@ -980,7 +980,10 @@ def WriteFile(wfile, data, newline=None):
         data = data.replace('\n', newline)
 
     try:
-        dsthandle = open(wfile, "w")
+        if sys.version_info >= (3, 0):
+            dsthandle = open(wfile, "w", newline='')
+        else:
+            dsthandle = open(wfile, "w")
         dsthandle.write(data)
         dsthandle.close()
     except:
@@ -1574,7 +1577,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                         location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
                     LibName(target_pkg, location)
                 else:
-                    print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
+                    print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + thirdparty_dir + GetColor())
 
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)

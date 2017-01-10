@@ -40,6 +40,10 @@ PStatCollector FfmpegVideoCursor::_export_frame_pcollector("*:FFMPEG Convert Vid
   #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
 #endif
 
+#if LIBAVCODEC_VERSION_MAJOR < 54
+#define AV_CODEC_ID_VP8 CODEC_ID_VP8
+#endif
+
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 74, 100)
 #define AV_PIX_FMT_NONE PIX_FMT_NONE
 #define AV_PIX_FMT_BGR24 PIX_FMT_BGR24
@@ -116,6 +120,7 @@ init_from(FfmpegVideo *source) {
   _eof_known = false;
   _eof_frame = 0;
 
+#if LIBAVUTIL_VERSION_MAJOR >= 52
   // Check if we got an alpha format.  Please note that some video codecs
   // (eg. libvpx) change the pix_fmt after decoding the first frame, which is
   // why we didn't do this earlier.
@@ -123,7 +128,9 @@ init_from(FfmpegVideo *source) {
   if (desc && (desc->flags & AV_PIX_FMT_FLAG_ALPHA) != 0) {
     _num_components = 4;
     _pixel_format = (int)AV_PIX_FMT_BGRA;
-  } else {
+  } else
+#endif
+  {
     _num_components = 3;
     _pixel_format = (int)AV_PIX_FMT_BGR24;
   }
@@ -320,13 +327,13 @@ set_time(double timestamp, int loop_count) {
 
   if (_eof_known) {
     if (loop_count == 0) {
-      frame = frame % _eof_frame;
+      frame = frame % (_eof_frame + 1);
     } else {
-      int last_frame = _eof_frame * loop_count;
+      int last_frame = (_eof_frame + 1) * loop_count;
       if (frame < last_frame) {
-        frame = frame % _eof_frame;
+        frame = frame % (_eof_frame + 1);
       } else {
-        frame = _eof_frame - 1;
+        frame = _eof_frame;
       }
     }
   }

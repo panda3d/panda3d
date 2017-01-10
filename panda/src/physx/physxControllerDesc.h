@@ -23,8 +23,9 @@
  * Descriptor class for a character controller.
  */
 class EXPCL_PANDAPHYSX PhysxControllerDesc {
-
 PUBLISHED:
+  virtual ~PhysxControllerDesc() {};
+
   virtual void set_to_default() = 0;
   virtual bool is_valid() const = 0;
 

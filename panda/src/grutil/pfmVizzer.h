@@ -30,6 +30,7 @@ class GeomVertexWriter;
 class EXPCL_PANDA_GRUTIL PfmVizzer {
 PUBLISHED:
   PfmVizzer(PfmFile &pfm);
+  INLINE ~PfmVizzer();
   INLINE PfmFile &get_pfm();
   INLINE const PfmFile &get_pfm() const;
 

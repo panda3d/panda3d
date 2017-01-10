@@ -125,7 +125,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
+  DCAST_INTO_R(ray, entry.get_from(), NULL);
   LPoint3 from_origin = ray->get_origin() * entry.get_wrt_mat();
 
   double fx = from_origin[0];
@@ -190,7 +190,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
+  DCAST_INTO_R(sphere, entry.get_from(), NULL);
   LPoint3 from_origin = sphere->get_center() * entry.get_wrt_mat();
 
   double fx = from_origin[0];

@@ -52,6 +52,7 @@ RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
 DEBVERSION=None
+WHLVERSION=None
 RPMRELEASE="1"
 GIT_COMMIT=None
 P3DSUFFIX=None
@@ -89,7 +90,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ROCKET", "AWESOMIUM",                               # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
   "X11",                                               # Unix platform support
-  "PANDATOOL", "PVIEW", "DEPLOYTOOLS", "DIRECTSCRIPTS",# Toolchain
+  "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses
   "PANDAPARTICLESYSTEM",                               # Built in particle system
@@ -163,7 +164,7 @@ def usage(problem):
 def parseopts(args):
     global INSTALLER,WHEEL,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
-    global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
+    global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
@@ -171,7 +172,7 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "universal", "target=", "arch=", "git-commit=",
+        "universal", "target=", "arch=", "git-commit=", "no-directscripts",
         "use-touchinput", "no-touchinput"]
     anything = 0
     optimize = ""
@@ -206,8 +207,11 @@ def parseopts(args):
             elif (option=="--arch"): target_arch = value.strip()
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
-                VERSION=value
-                if (len(VERSION.split(".")) != 3): raise Exception
+                match = re.match(r'^\d+\.\d+\.\d+', value)
+                if not match:
+                    usage("version requires three digits")
+                WHLVERSION = value
+                VERSION = match.group()
             elif (option=="--lzma"): COMPRESSOR="lzma"
             elif (option=="--override"): AddOverride(value.strip())
             elif (option=="--static"): SetLinkAllStatic(True)
@@ -220,6 +224,7 @@ def parseopts(args):
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
+            elif (option=="--no-directscripts"): pass
             elif (option=="--directx-sdk"):
                 STRDXSDKVERSION = value.strip().lower()
                 if STRDXSDKVERSION == '':
@@ -362,6 +367,9 @@ if VERSION is None:
         VERSION = PLUGIN_VERSION
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
+
+if WHLVERSION is None:
+    WHLVERSION = VERSION
 
 print("Version: %s" % VERSION)
 if RUNTIME or RTDIST:
@@ -828,7 +836,11 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
         if not PkgSkip("PYTHON"):
-            SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+            python_lib = SDK["PYTHONVERSION"]
+            if not RTDIST:
+                # We don't link anything in the SDK with libpython.
+                python_lib = ""
+            SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
@@ -1190,7 +1202,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++0x -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -2867,14 +2879,16 @@ if tp_dir is not None:
         CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
 
         if not PkgSkip("PYTHON") and not RTDIST:
-            #XXX rdb I don't think we need to copy over the Python DLL, do we?
-            #pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
-            #if (GetOptimize() <= 2): pydll += "_d.dll"
-            #else: pydll += ".dll"
-            #CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
+            # We need to copy the Python DLL to the bin directory for now.
+            pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
+            if GetOptimize() <= 2:
+                pydll += "_d.dll"
+            else:
+                pydll += ".dll"
+            CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
 
-            #for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
-            #    CopyFile(GetOutputDir() + "/bin/", fn)
+            for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
+                CopyFile(GetOutputDir() + "/bin/", fn)
 
             # Copy the whole Python directory.
             CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
@@ -2893,7 +2907,7 @@ if tp_dir is not None:
             else:
                 idents = ()
 
-            for ident in tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity'):
+            for ident in idents:
                 sxs_name = '_'.join([
                     ident.get('processorArchitecture'),
                     ident.get('name').lower(),
@@ -2945,6 +2959,7 @@ if GetTarget() == 'windows':
     # Convert to Windows newlines so they can be opened by notepad.
     WriteFile(GetOutputDir() + "/LICENSE", ReadFile("doc/LICENSE"), newline='\r\n')
     WriteFile(GetOutputDir() + "/ReleaseNotes", ReadFile("doc/ReleaseNotes"), newline='\r\n')
+    CopyFile(GetOutputDir() + "/pandaIcon.ico", "panda/src/configfiles/pandaIcon.ico")
 else:
     CopyFile(GetOutputDir()+"/", "doc/LICENSE")
     CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
@@ -4989,17 +5004,6 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('p3directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
-  if not PkgSkip("PYTHON") and not RTDIST and not RUNTIME and not PkgSkip("DIRECTSCRIPTS"):
-    DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
-    TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
-    TargetAdd('packpanda.exe', input='packpanda.obj')
-    TargetAdd('packpanda.exe', opts=['PYTHON'])
-
-    DefSymbol("BUILDING:EGGCACHER", "IMPORT_MODULE", "direct.directscripts.eggcacher")
-    TargetAdd('eggcacher.obj', opts=OPTS+['BUILDING:EGGCACHER'], input='ppython.cxx')
-    TargetAdd('eggcacher.exe', input='eggcacher.obj')
-    TargetAdd('eggcacher.exe', opts=['PYTHON'])
-
 #
 # DIRECTORY: direct/src/dcparser/
 #
@@ -6592,7 +6596,7 @@ def MakeInstallerNSIS(file, title, installdir):
         AddToPathEnv("PATH", GetOutputDir() + "\\bin")
         AddToPathEnv("PATH", GetOutputDir() + "\\plugins")
 
-        cmd = sys.executable + " -B -u direct\\src\\plugin_installer\\make_installer.py"
+        cmd = sys.executable + " -B -u " + os.path.join("direct", "src", "plugin_installer", "make_installer.py")
         cmd += " --version %s --regview %s" % (VERSION, regview)
 
         if GetTargetArch() == 'x64':
@@ -6601,7 +6605,7 @@ def MakeInstallerNSIS(file, title, installdir):
             cmd += " --install \"$PROGRAMFILES32\\Panda3D\" "
 
         oscmd(cmd)
-        shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
+        shutil.move(os.path.join("direct", "src", "plugin_installer", "p3d-setup.exe"), file)
         return
 
     print("Building "+title+" installer at %s" % (file))
@@ -7257,7 +7261,7 @@ try:
     if WHEEL:
         ProgressOutput(100.0, "Building wheel")
         from makewheel import makewheel
-        makewheel(VERSION, GetOutputDir())
+        makewheel(WHLVERSION, GetOutputDir())
 finally:
     SaveDependencyCache()
 

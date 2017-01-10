@@ -122,7 +122,7 @@ namespace std {
         struct is_always_equal;
  
         template <class T> using rebind_alloc = size_t;
-        template <class T> using rebind_traits = allocator_traits<rebind_alloc<T> >;
+        //template <class T> using rebind_traits = allocator_traits<rebind_alloc<T> >;
     };
 
     template <class T> class allocator;

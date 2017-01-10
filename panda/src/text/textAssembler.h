@@ -212,21 +212,6 @@ private:
   typedef pmap<GeomCollectorKey, GeomCollector> GeomCollectorMap;
 
   struct QuadDef {
-    // Copying this class is a performance hotspot, hence we define the move
-    // constructor.
-    ALWAYS_INLINE QuadDef() {}
-    ALWAYS_INLINE QuadDef(const QuadDef &copy) :
-      _dimensions(copy._dimensions), _uvs(copy._uvs),
-      _slantl(copy._slantl), _slanth(copy._slanth),
-      _glyph(copy._glyph) {}
-
-#ifdef USE_MOVE_SEMANTICS
-    ALWAYS_INLINE QuadDef(QuadDef &&from) NOEXCEPT :
-      _dimensions(from._dimensions), _uvs(from._uvs),
-      _slantl(from._slantl), _slanth(from._slanth),
-      _glyph(move(from._glyph)) {}
-#endif
-
     LVecBase4 _dimensions;
     LVecBase4 _uvs;
     PN_stdfloat _slantl, _slanth;

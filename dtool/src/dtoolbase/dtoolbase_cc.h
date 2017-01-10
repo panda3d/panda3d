@@ -75,6 +75,7 @@ typedef int ios_seekdir;
 #endif
 
 #include <string>
+#include <utility>
 
 #ifdef HAVE_NAMESPACE
 using namespace std;
@@ -114,6 +115,20 @@ typedef ios::iostate ios_iostate;
 typedef ios::seekdir ios_seekdir;
 #endif
 
+// Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
+// in some important missing functions.
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+typedef decltype(nullptr) nullptr_t;
+
+template<class T> struct remove_reference      {typedef T type;};
+template<class T> struct remove_reference<T&>  {typedef T type;};
+template<class T> struct remove_reference<T&& >{typedef T type;};
+
+template<class T> typename remove_reference<T>::type &&move(T &&t) {
+  return static_cast<typename remove_reference<T>::type&&>(t);
+}
+#endif
+
 #ifdef _MSC_VER
 #define ALWAYS_INLINE __forceinline
 #elif defined(__GNUC__)
@@ -134,7 +149,9 @@ typedef ios::seekdir ios_seekdir;
 // Determine the availability of C++11 features.
 #if defined(__has_extension) // Clang magic.
 #  if __has_extension(cxx_constexpr)
-#    define CONSTEXPR constexpr
+#    if !defined(__apple_build_version__) || __apple_build_version__ >= 5000000
+#      define CONSTEXPR constexpr
+#    endif
 #  endif
 #  if __has_extension(cxx_noexcept)
 #    define NOEXCEPT noexcept
@@ -153,7 +170,7 @@ typedef ios::seekdir ios_seekdir;
 #elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
 
 // GCC defines several macros which we can query.  List of all supported
-// builtin macros: https:gcc.gnu.orgprojectscxx0x.html
+// builtin macros: https://gcc.gnu.org/projects/cxx-status.html
 #  if __cpp_constexpr >= 200704
 #    define CONSTEXPR constexpr
 #  endif

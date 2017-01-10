@@ -487,7 +487,7 @@ filter_to_max(int max_clip_planes) const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_off(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  DCAST_INTO_R(ta, other, NULL);
 
   if (_off_all_planes || (!ta->_off_all_planes && ta->_off_planes.empty())) {
     // If we turn off all planes, or the other turns none off, the result is
@@ -701,7 +701,7 @@ get_hash_impl() const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_impl(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  DCAST_INTO_R(ta, other, NULL);
 
   if (ta->_off_all_planes) {
     // If the other type turns off all planes, it doesn't matter what we are.
