@@ -509,7 +509,7 @@ def makewheel(version, output_dir, platform=default_platform):
     # default one adds the bin directory to the PATH, which we don't have.
     whl.write_file_data('panda3d/__init__.py', '')
 
-    ext_suffix = GetExtensionSuffix()
+    ext_suffix = '.pyd' if sys.platform in ('win32', 'cygwin') else '.so'
 
     ext_mod_dirs = [
         (panda3d_dir, 'panda3d/'),
