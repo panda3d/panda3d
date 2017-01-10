@@ -717,6 +717,28 @@ class Freezer:
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
 
+        # Suffix/extension for Python C extension modules
+        if self.platform == PandaSystem.getPlatform():
+            self.moduleSuffixes = imp.get_suffixes()
+        else:
+            self.moduleSuffixes = [('.py', 'r', 1), ('.pyc', 'rb', 2)]
+            if 'linux' in self.platform:
+                self.moduleSuffixes += [
+                    ('.cpython-{0}{1}m-x86_64-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
+                    ('.cpython-{0}{1}m-i686-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
+                    ('.abi{}.so'.format(sys.version_info[0]), 'rb', 3),
+                    ('.so', 'rb', 3),
+                ]
+            elif 'win' in self.platform:
+                self.moduleSuffixes += [
+                    ('.cp{0}{1}-win_amd64.pyd'.format(*sys.version_info), 'rb', 3),
+                    ('.cp{0}{1}-win32.pyd'.format(*sys.version_info), 'rb', 3),
+                    ('.dll', 'rb', 3),
+                ]
+            else:
+                print("Unknown platform %s" % (self.platform))
+                self.moduleSuffixes = imp.get_suffixes()
+
     def excludeFrom(self, freezer):
         """ Excludes all modules that have already been processed by
         the indicated FreezeTool.  This is equivalent to passing the
@@ -966,7 +988,7 @@ class Freezer:
             else:
                 includes.append(mdef)
 
-        self.mf = PandaModuleFinder(excludes = list(excludeDict.keys()))
+        self.mf = PandaModuleFinder(excludes = list(excludeDict.keys()), suffixes=self.moduleSuffixes)
 
         # Attempt to import the explicit modules into the modulefinder.
 

@@ -100,7 +100,7 @@ class build(distutils.command.build.build):
             freezer_extras = set()
             freezer_modules = set()
             for app in self.distribution.applications:
-                freezer = FreezeTool.Freezer()
+                freezer = FreezeTool.Freezer(platform=platform)
                 freezer.addModule('__main__', filename=app.scriptname)
                 for exmod in self.distribution.exclude_modules:
                     freezer.excludeModule(exmod)
@@ -226,7 +226,10 @@ class bdist_panda3d(distutils.core.Command):
         pass
 
     def run(self):
-        platforms = [p3d.PandaSystem.get_platform()]
+        if not self.distribution.deploy_platforms:
+            platforms = [p3d.PandaSystem.get_platform()]
+        else:
+            platforms = self.distribution.deploy_platforms
         build_base = os.path.join(os.getcwd(), 'build')
 
         self.run_command("build")
