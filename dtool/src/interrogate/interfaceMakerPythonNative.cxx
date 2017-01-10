@@ -6198,7 +6198,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     // the assumption that the called method doesn't do anything with this
     // tuple other than unpack it (which is a fairly safe assumption to make).
     out << "  PyTupleObject args;\n";
-    out << "  PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
+    out << "  (void)PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
   }
 
   out <<

@@ -66,7 +66,7 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
 
       if (view.len % component_width != 0) {
         PyErr_Format(PyExc_ValueError,
-                    "byte buffer is not a multiple of %zu bytes",
+                    "byte buffer is not a multiple of %d bytes",
                     component_width);
         return;
       }
@@ -131,7 +131,7 @@ set_ram_image_as(PyObject *image, const string &provided_format) {
 
     if (view.len % component_width != 0) {
       PyErr_Format(PyExc_ValueError,
-                  "byte buffer is not a multiple of %zu bytes",
+                  "byte buffer is not a multiple of %d bytes",
                   component_width);
       return;
     }
