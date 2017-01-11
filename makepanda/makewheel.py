@@ -590,6 +590,15 @@ def makewheel(version, output_dir, platform=default_platform):
     whl.write_file(info_dir + '/README.md', readme_src)
     whl.write_file_data(info_dir + '/top_level.txt', 'direct\npanda3d\npandac\npanda3d_tools\n')
 
+    # Add libpython for deployment
+    if sys.platform in ('win32', 'cygwin'):
+        pylib_name = 'python{0}{1}.dll'.format(*sys.version_info)
+        pylib_path = os.path.join(get_config_var('BINDIR'), pylib_name)
+    else:
+        pylib_name = get_config_var('LDLIBRARY')
+        pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
+    whl.write_file('/deploy_libs/' + pylib_name, pylib_path)
+
     whl.close()
 
 
