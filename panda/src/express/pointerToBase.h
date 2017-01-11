@@ -31,7 +31,7 @@ public:
   typedef T To;
 
 protected:
-  ALWAYS_INLINE PointerToBase() DEFAULT_CTOR;
+  ALWAYS_INLINE CONSTEXPR PointerToBase() NOEXCEPT DEFAULT_CTOR;
   INLINE PointerToBase(To *ptr);
   INLINE PointerToBase(const PointerToBase<T> &copy);
   INLINE ~PointerToBase();

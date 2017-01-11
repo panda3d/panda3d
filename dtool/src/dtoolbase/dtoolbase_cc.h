@@ -39,6 +39,8 @@ using namespace std;
 #define OVERRIDE override
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
+#define DEFAULT_DTOR = default
+#define DELETED = delete
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -166,6 +168,10 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  endif
 #  if __has_extension(cxx_defaulted_functions)
 #     define DEFAULT_CTOR = default
+#     define DEFAULT_DTOR = default
+#  endif
+#  if __has_extension(cxx_deleted_functions)
+#     define DELETED = delete
 #  endif
 #elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
 
@@ -178,6 +184,8 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 // Starting at GCC 4.4
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
 #  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DELETED = delete
 #  endif
 
 // Starting at GCC 4.6
@@ -200,13 +208,18 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  define FINAL final
 #  define OVERRIDE override
 #  define MOVE(x) move(x)
-#  define DEFAULT_CTOR = default
 #elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
 #  define NOEXCEPT throw()
 #  define OVERRIDE override
 #  define USE_MOVE_SEMANTICS
 #  define FINAL sealed
 #  define MOVE(x) move(x)
+#endif
+
+#if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
+#  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DELETED = delete
 #endif
 
 // Fallbacks if features are not supported
@@ -227,6 +240,12 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #endif
 #ifndef DEFAULT_CTOR
 #  define DEFAULT_CTOR {}
+#endif
+#ifndef DEFAULT_DTOR
+#  define DEFAULT_DTOR {}
+#endif
+#ifndef DELETED
+#  define DELETED {assert(false);}
 #endif
 
 

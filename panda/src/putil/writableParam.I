@@ -33,22 +33,6 @@ WritableParam(const WritableParam &copy) :
 /**
  *
  */
-INLINE WritableParam::
-~WritableParam() {
-}
-
-/**
- *
- */
-INLINE void WritableParam::
-operator = (const WritableParam &) {
-  // The assignment operator cannot be used for this class.
-  nassertv(false);
-}
-
-/**
- *
- */
 INLINE const Datagram& WritableParam::
 get_datagram() {
   return _packet;

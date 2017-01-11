@@ -47,29 +47,49 @@
  * What follows are some examples that can be used in new classes that you
  * create.
  *
- * @par In the class definition (.h file): @code public: static TypeHandle
- * get_class_type() { return _type_handle; } static void init_type() {
- * <<<BaseClassOne>>>::init_type(); <<<BaseClassTwo>>>::init_type();
- * <<<BaseClassN>>>::init_type(); register_type(_type_handle,
- * "<<<ThisClassStringName>>>", <<<BaseClassOne>>>::get_class_type(),
- * <<<BaseClassTwo>>>::get_class_type(), <<<BaseClassN>>>::get_class_type());
- * } virtual TypeHandle get_type() const { return get_class_type(); } virtual
- * TypeHandle force_init_type() {init_type(); return get_class_type();}
+ * @par In the class definition (.h file):
+ * @code
+ * public:
+ *   static TypeHandle get_class_type() {
+ *     return _type_handle;
+ *   }
+ *   static void init_type() {
+ *     <<<BaseClassOne>>>::init_type();
+ *     <<<BaseClassTwo>>>::init_type();
+ *     <<<BaseClassN>>>::init_type();
+ *     register_type(_type_handle, "<<<ThisClassStringName>>>",
+ *                   <<<BaseClassOne>>>::get_class_type(),
+ *                   <<<BaseClassTwo>>>::get_class_type(),
+ *                   <<<BaseClassN>>>::get_class_type());
+ *   }
+ *   virtual TypeHandle get_type() const {
+ *     return get_class_type();
+ *   }
+ *   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
  *
- * private: static TypeHandle _type_handle; @endcode
+ * private:
+ *   static TypeHandle _type_handle;
+ * @endcode
  *
- * @par In the class .cxx file: @code TypeHandle
- * <<<ThisClassStringName>>>::_type_handle; @endcode
+ * @par In the class .cxx file:
+ * @code
+ * TypeHandle <<<ThisClassStringName>>>::_type_handle;
+ * @endcode
  *
- * @par In the class config_<<<PackageName>>>.cxx file: @code
- * ConfigureFn(config_<<<PackageName>>>) { <<<ClassOne>>>::init_type();
- * <<<ClassTwo>>>::init_type(); <<<ClassN>>>::init_type(); } @endcode
+ * @par In the class config_<<<PackageName>>>.cxx file:
+ * @code
+ * ConfigureFn(config_<<<PackageName>>>) {
+ *   <<<ClassOne>>>::init_type();
+ *   <<<ClassTwo>>>::init_type();
+ *   <<<ClassN>>>::init_type();
+ * }
+ * @endcode
  */
 class EXPCL_DTOOL TypedObject : public MemoryBase {
 public:
-  INLINE TypedObject();
-  INLINE TypedObject(const TypedObject &copy);
-  INLINE void operator = (const TypedObject &copy);
+  INLINE TypedObject() DEFAULT_CTOR;
+  INLINE TypedObject(const TypedObject &copy) DEFAULT_CTOR;
+  INLINE TypedObject &operator = (const TypedObject &copy) DEFAULT_CTOR;
 
 PUBLISHED:
   // A virtual destructor is just a good idea.

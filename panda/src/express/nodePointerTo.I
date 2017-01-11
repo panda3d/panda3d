@@ -33,16 +33,6 @@ NodePointerTo(const NodePointerTo<T> &copy) :
 }
 #endif  // CPPPARSER
 
-#ifndef CPPPARSER
-/**
- *
- */
-template<class T>
-INLINE NodePointerTo<T>::
-~NodePointerTo() {
-}
-#endif  // CPPPARSER
-
 #ifdef USE_MOVE_SEMANTICS
 #ifndef CPPPARSER
 /**
@@ -174,16 +164,6 @@ INLINE NodeConstPointerTo<T>::
 NodeConstPointerTo(const NodeConstPointerTo<T> &copy) :
   NodePointerToBase<T>((const NodePointerToBase<T> &)copy)
 {
-}
-#endif  // CPPPARSER
-
-#ifndef CPPPARSER
-/**
- *
- */
-template<class T>
-INLINE NodeConstPointerTo<T>::
-~NodeConstPointerTo() {
 }
 #endif  // CPPPARSER
 

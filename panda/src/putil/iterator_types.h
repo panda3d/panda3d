@@ -14,6 +14,7 @@
 #ifndef ITERATOR_TYPES_H
 #define ITERATOR_TYPES_H
 
+#include "dtoolbase.h"
 
 /**
  * This is an iterator adaptor that converts any iterator that returns a pair
@@ -25,9 +26,8 @@ class first_of_pair_iterator : public pair_iterator {
 public:
   typedef TYPENAME pair_iterator::value_type::first_type value_type;
 
-  first_of_pair_iterator() { }
+  first_of_pair_iterator() DEFAULT_CTOR;
   first_of_pair_iterator(const pair_iterator &init) : pair_iterator(init) { }
-  first_of_pair_iterator(const first_of_pair_iterator<pair_iterator> &copy) : pair_iterator(copy) { }
 
   value_type operator *() {
     return pair_iterator::operator *().first;
@@ -44,9 +44,8 @@ class second_of_pair_iterator : public pair_iterator {
 public:
   typedef TYPENAME pair_iterator::value_type::second_type value_type;
 
-  second_of_pair_iterator() { }
+  second_of_pair_iterator() DEFAULT_CTOR;
   second_of_pair_iterator(const pair_iterator &init) : pair_iterator(init) { }
-  second_of_pair_iterator(const second_of_pair_iterator<pair_iterator> &copy) : pair_iterator(copy) { }
 
   value_type operator *() {
     return pair_iterator::operator *().second;
@@ -62,9 +61,8 @@ class typecast_iterator : public base_iterator {
 public:
   typedef new_type value_type;
 
-  typecast_iterator() { }
+  typecast_iterator() DEFAULT_CTOR;
   typecast_iterator(const base_iterator &init) : base_iterator(init) { }
-  typecast_iterator(const typecast_iterator<base_iterator, new_type> &copy) : base_iterator(copy) { }
 
   value_type operator *() {
     return (new_type)base_iterator::operator *();

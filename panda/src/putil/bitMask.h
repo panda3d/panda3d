@@ -38,16 +38,12 @@ PUBLISHED:
 
   INLINE BitMask();
   INLINE BitMask(WordType init_value);
-  INLINE BitMask(const BitMask<WType, nbits> &copy);
-  INLINE BitMask<WType, nbits> &operator = (const BitMask<WType, nbits> &copy);
 
   INLINE static BitMask<WType, nbits> all_on();
   INLINE static BitMask<WType, nbits> all_off();
   INLINE static BitMask<WType, nbits> lower_on(int on_bits);
   INLINE static BitMask<WType, nbits> bit(int index);
   INLINE static BitMask<WType, nbits> range(int low_bit, int size);
-
-  INLINE ~BitMask();
 
   CONSTEXPR static bool has_max_num_bits();
   CONSTEXPR static int get_max_num_bits();

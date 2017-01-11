@@ -28,9 +28,14 @@
  */
 class EXPCL_DTOOL MutexPosixImpl {
 public:
-  INLINE MutexPosixImpl();
+  CONSTEXPR MutexPosixImpl() NOEXCEPT;
   INLINE ~MutexPosixImpl();
 
+private:
+  MutexPosixImpl(const MutexPosixImpl &copy) DELETED;
+  MutexPosixImpl &operator = (const MutexPosixImpl &copy) DELETED;
+
+public:
   INLINE void acquire();
   INLINE bool try_acquire();
   INLINE void release();
@@ -47,9 +52,18 @@ private:
  */
 class EXPCL_DTOOL ReMutexPosixImpl {
 public:
+#ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+  CONSTEXPR ReMutexPosixImpl() NOEXCEPT;
+#else
   INLINE ReMutexPosixImpl();
+#endif
   INLINE ~ReMutexPosixImpl();
 
+private:
+  ReMutexPosixImpl(const ReMutexPosixImpl &copy) DELETED;
+  ReMutexPosixImpl &operator = (const ReMutexPosixImpl &copy) DELETED;
+
+public:
   INLINE void acquire();
   INLINE bool try_acquire();
   INLINE void release();
