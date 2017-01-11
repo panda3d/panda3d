@@ -41,7 +41,14 @@ def find_packages(whlfile):
     else:
         filelist = whlfile.namelist()
 
-    return [i for i in filelist if '.so.' in i or i.endswith('.dll') or i.endswith('.dylib') or 'libpandagl' in i]
+    return [
+         i for i in filelist
+         if '.so.' in i or
+         i.endswith('.dll') or
+         i.endswith('.dylib') or
+         'libpandagl' in i or
+         'libpython' in i
+    ]
 
 
 class build(distutils.command.build.build):
