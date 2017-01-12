@@ -1928,6 +1928,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
         return
 
+    abiflags = getattr(sys, 'abiflags', '')
+
     if GetTarget() == 'windows':
         sdkdir = GetThirdpartyBase() + "/win-python"
 
@@ -1992,26 +1994,28 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
     elif GetTarget() == 'darwin':
-         # On Mac OS X, use the system Python framework.
-         py_fwx = SDK.get("MACOSX", "") + "/System/Library/Frameworks/Python.framework/Versions/Current"
+        # On macOS, search for the Python framework directory matching the
+        # version number of our current Python version.
+        sysroot = SDK.get("MACOSX", "")
+        version = sysconfig.get_python_version()
 
-         if not os.path.islink(py_fwx):
-             exit("Could not locate Python installation at %s" % (py_fwx))
+        py_fwx = "{0}/System/Library/Frameworks/Python.framework/Versions/{1}".format(sysroot, version)
 
-         ver = os.path.basename(os.readlink(py_fwx))
-         py_fwx = SDK.get("MACOSX", "") + "/System/Library/Frameworks/Python.framework/Versions/%s" % ver
+        if not os.path.exists(py_fwx):
+            # Fall back to looking on the system.
+            py_fwx = "/Library/Frameworks/Python.framework/Versions/" + version
 
-         SDK["PYTHON"] = py_fwx + "/Headers"
-         SDK["PYTHONVERSION"] = "python" + ver
-         SDK["PYTHONEXEC"] = "/System/Library/Frameworks/Python.framework/Versions/" + ver + "/bin/python" + ver
+        if not os.path.exists(py_fwx):
+            exit("Could not locate Python installation at %s" % (py_fwx))
 
-         # Avoid choosing the one in the thirdparty package dir.
-         PkgSetCustomLocation("PYTHON")
-         IncDirectory("PYTHON", py_fwx + "/include")
-         LibDirectory("PYTHON", "%s/usr/lib" % (SDK.get("MACOSX", "")))
+        SDK["PYTHON"] = py_fwx + "/Headers"
+        SDK["PYTHONVERSION"] = "python" + version + abiflags
+        SDK["PYTHONEXEC"] = py_fwx + "/bin/python" + version
 
-         if sys.version[:3] != ver:
-             print("Warning: building with Python %s instead of %s since you targeted a specific Mac OS X version." % (ver, sys.version[:3]))
+        # Avoid choosing the one in the thirdparty package dir.
+        PkgSetCustomLocation("PYTHON")
+        IncDirectory("PYTHON", py_fwx + "/include")
+        LibDirectory("PYTHON", "%s/usr/lib" % (sysroot))
 
     #elif GetTarget() == 'windows':
     #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
@@ -2020,13 +2024,13 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
     else:
         SDK["PYTHON"] = sysconfig.get_python_inc()
-        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
     if CrossCompiling():
         # We need a version of Python we can run.
         SDK["PYTHONEXEC"] = sys.executable
-        host_version = "python" + sysconfig.get_python_version()
+        host_version = "python" + sysconfig.get_python_version() + abiflags
         if SDK["PYTHONVERSION"] != host_version:
             exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
 
