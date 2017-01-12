@@ -33,7 +33,7 @@ public:
 
 private:
   MutexSpinlockImpl(const MutexSpinlockImpl &copy) DELETED;
-  MutexSpinlockImpl &operator = (const MutexSpinlockImpl &copy) DELETED;
+  MutexSpinlockImpl &operator = (const MutexSpinlockImpl &copy) DELETED_ASSIGN;
 
 public:
   INLINE void acquire();

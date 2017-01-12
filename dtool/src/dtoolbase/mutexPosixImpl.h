@@ -33,7 +33,7 @@ public:
 
 private:
   MutexPosixImpl(const MutexPosixImpl &copy) DELETED;
-  MutexPosixImpl &operator = (const MutexPosixImpl &copy) DELETED;
+  MutexPosixImpl &operator = (const MutexPosixImpl &copy) DELETED_ASSIGN;
 
 public:
   INLINE void acquire();

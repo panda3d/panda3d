@@ -14,7 +14,7 @@
 /**
  *
  */
-INLINE CONSTEXPR PointerToVoid::
+CONSTEXPR PointerToVoid::
 PointerToVoid() NOEXCEPT : _void_ptr(nullptr) {
 }
 
@@ -30,7 +30,7 @@ PointerToVoid() NOEXCEPT : _void_ptr(nullptr) {
  * Returns true if the PointerTo is a NULL pointer, false otherwise.  (Direct
  * comparison to a NULL pointer also works.)
  */
-ALWAYS_INLINE CONSTEXPR bool PointerToVoid::
+CONSTEXPR bool PointerToVoid::
 is_null() const {
   return _void_ptr == nullptr;
 }

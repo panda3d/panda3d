@@ -27,7 +27,7 @@ public:
 
 private:
   MutexDummyImpl(const MutexDummyImpl &copy) DELETED;
-  MutexDummyImpl &operator = (const MutexDummyImpl &copy) DELETED;
+  MutexDummyImpl &operator = (const MutexDummyImpl &copy) DELETED_ASSIGN;
 
 public:
   ALWAYS_INLINE void acquire();

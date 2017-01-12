@@ -32,14 +32,14 @@
  */
 class EXPCL_PANDAEXPRESS PointerToVoid : public MemoryBase {
 protected:
-  ALWAYS_INLINE CONSTEXPR PointerToVoid() NOEXCEPT;
+  CONSTEXPR PointerToVoid() NOEXCEPT;
   //INLINE ~PointerToVoid();
 
 private:
   PointerToVoid(const PointerToVoid &copy) DELETED;
 
 PUBLISHED:
-  ALWAYS_INLINE CONSTEXPR bool is_null() const;
+  CONSTEXPR bool is_null() const;
   INLINE size_t get_hash() const;
 
 public:

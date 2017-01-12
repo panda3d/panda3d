@@ -39,7 +39,7 @@ public:
 
 private:
   // The assignment operator cannot be used for this class.
-  INLINE void operator = (const WritableParam &other) DELETED;
+  WritableParam &operator = (const WritableParam &other) DELETED_ASSIGN;
 
 public:
   virtual TypeHandle get_type() const {

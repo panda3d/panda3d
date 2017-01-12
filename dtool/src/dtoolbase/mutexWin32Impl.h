@@ -33,7 +33,7 @@ public:
 
 private:
   MutexWin32Impl(const MutexWin32Impl &copy) DELETED;
-  MutexWin32Impl &operator = (const MutexWin32Impl &copy) DELETED;
+  MutexWin32Impl &operator = (const MutexWin32Impl &copy) DELETED_ASSIGN;
 
 public:
   INLINE void acquire();

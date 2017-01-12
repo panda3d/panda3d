@@ -89,7 +89,7 @@ class EXPCL_DTOOL TypedObject : public MemoryBase {
 public:
   INLINE TypedObject() DEFAULT_CTOR;
   INLINE TypedObject(const TypedObject &copy) DEFAULT_CTOR;
-  INLINE TypedObject &operator = (const TypedObject &copy) DEFAULT_CTOR;
+  INLINE TypedObject &operator = (const TypedObject &copy) DEFAULT_ASSIGN;
 
 PUBLISHED:
   // A virtual destructor is just a good idea.

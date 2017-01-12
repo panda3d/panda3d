@@ -40,7 +40,9 @@ using namespace std;
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
 #define DEFAULT_DTOR = default
+#define DEFAULT_ASSIGN = default
 #define DELETED = delete
+#define DELETED_ASSIGN = delete
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -169,6 +171,7 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  if __has_extension(cxx_defaulted_functions)
 #     define DEFAULT_CTOR = default
 #     define DEFAULT_DTOR = default
+#     define DEFAULT_ASSIGN = default
 #  endif
 #  if __has_extension(cxx_deleted_functions)
 #     define DELETED = delete
@@ -185,6 +188,7 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
 #  define DEFAULT_CTOR = default
 #  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
 #  define DELETED = delete
 #  endif
 
@@ -219,6 +223,7 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
 #  define DEFAULT_CTOR = default
 #  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
 #  define DELETED = delete
 #endif
 
@@ -244,8 +249,14 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #ifndef DEFAULT_DTOR
 #  define DEFAULT_DTOR {}
 #endif
+#ifndef DEFAULT_ASSIGN
+#  define DEFAULT_ASSIGN {return *this;}
+#endif
 #ifndef DELETED
 #  define DELETED {assert(false);}
+#  define DELETED_ASSIGN {assert(false);return *this;}
+#else
+#  define DELETED_ASSIGN DELETED
 #endif
 
 
