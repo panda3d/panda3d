@@ -68,6 +68,17 @@ PointerToArray(const PointerToArray<Element> &copy) :
 {
 }
 
+/**
+ * Initializes a PointerToArray by copying existing elements.
+ */
+template<class Element>
+INLINE PointerToArray<Element>::
+PointerToArray(const Element *begin, const Element *end, TypeHandle type_handle) :
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(begin, end, type_handle)),
+  _type_handle(type_handle)
+{
+}
+
 #ifdef USE_MOVE_SEMANTICS
 /**
  *
@@ -623,6 +634,17 @@ template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(TypeHandle type_handle) :
   PointerToArrayBase<Element>((ReferenceCountedVector<Element> *)NULL),
+  _type_handle(type_handle)
+{
+}
+
+/**
+ * Initializes a ConstPointerToArray by copying existing elements.
+ */
+template<class Element>
+INLINE ConstPointerToArray<Element>::
+ConstPointerToArray(const Element *begin, const Element *end, TypeHandle type_handle) :
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(begin, end, type_handle)),
   _type_handle(type_handle)
 {
 }

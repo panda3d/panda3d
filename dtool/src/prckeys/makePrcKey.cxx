@@ -161,7 +161,7 @@ write_public_keys(Filename outfile) {
       }
 
       output_c_string(out, "prc_pubkey", i, mbio);
-      BIO_reset(mbio);
+      (void)BIO_reset(mbio);
       out << "\n";
     }
   }

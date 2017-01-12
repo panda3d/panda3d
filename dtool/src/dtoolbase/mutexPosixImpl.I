@@ -14,16 +14,8 @@
 /**
  *
  */
-INLINE MutexPosixImpl::
-MutexPosixImpl() {
-  TAU_PROFILE("MutexPosixImpl::MutexPosixImpl", " ", TAU_USER);
-  pthread_mutexattr_t attr;
-  pthread_mutexattr_init(&attr);
-  // The symbol PTHREAD_MUTEX_DEFAULT isn't always available?
-  // pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_DEFAULT);
-  int result = pthread_mutex_init(&_lock, &attr);
-  pthread_mutexattr_destroy(&attr);
-  assert(result == 0);
+CONSTEXPR MutexPosixImpl::
+MutexPosixImpl() NOEXCEPT : _lock(PTHREAD_MUTEX_INITIALIZER) {
 }
 
 /**
@@ -78,6 +70,11 @@ get_posix_lock() {
 /**
  *
  */
+#ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+CONSTEXPR ReMutexPosixImpl::
+ReMutexPosixImpl() NOEXCEPT : _lock(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP) {
+}
+#else
 INLINE ReMutexPosixImpl::
 ReMutexPosixImpl() {
   TAU_PROFILE("ReMutexPosixImpl::ReMutexPosixImpl", " ", TAU_USER);
@@ -88,6 +85,7 @@ ReMutexPosixImpl() {
   pthread_mutexattr_destroy(&attr);
   assert(result == 0);
 }
+#endif
 
 /**
  *

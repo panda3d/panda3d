@@ -31,7 +31,6 @@ public:
   typedef TYPENAME NodePointerToBase<T>::To To;
   INLINE NodePointerTo(To *ptr = (To *)NULL);
   INLINE NodePointerTo(const NodePointerTo<T> &copy);
-  INLINE ~NodePointerTo();
 
 #ifdef USE_MOVE_SEMANTICS
   INLINE NodePointerTo(NodePointerTo<T> &&from) NOEXCEPT;
@@ -66,7 +65,6 @@ public:
   INLINE NodeConstPointerTo(const To *ptr = (const To *)NULL);
   INLINE NodeConstPointerTo(const NodePointerTo<T> &copy);
   INLINE NodeConstPointerTo(const NodeConstPointerTo<T> &copy);
-  INLINE ~NodeConstPointerTo();
 
 #ifdef USE_MOVE_SEMANTICS
   INLINE NodeConstPointerTo(NodePointerTo<T> &&from) NOEXCEPT;

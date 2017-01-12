@@ -26,12 +26,6 @@
 class EXPCL_PANDAEXPRESS Namable : public MemoryBase {
 PUBLISHED:
   INLINE explicit Namable(const string &initial_name = "");
-  INLINE Namable(const Namable &copy);
-  INLINE Namable &operator = (const Namable &other);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Namable &operator = (Namable &&other) NOEXCEPT;
-#endif
 
   INLINE void set_name(const string &name);
   INLINE void clear_name();

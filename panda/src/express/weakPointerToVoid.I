@@ -15,16 +15,9 @@
  *
  */
 INLINE WeakPointerToVoid::
-WeakPointerToVoid() {
-  _ptr_was_deleted = false;
-  _callback = NULL;
-}
-
-/**
- *
- */
-INLINE WeakPointerToVoid::
-~WeakPointerToVoid() {
+WeakPointerToVoid() :
+  _ptr_was_deleted(false),
+  _callback(NULL) {
 }
 
 /**
