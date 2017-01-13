@@ -397,6 +397,8 @@ operator << (ostream &out, WindowProperties::WindowMode mode) {
     return out << "fullscreen";
   case WindowProperties::W_undecorated:
     return out << "undecorated";
+  case WindowProperties::W_hidden:
+    return out << "hidden";
   }
   return out << "**invalid WindowProperties::WindowMode(" << (int)mode << ")**";
 }
@@ -412,6 +414,8 @@ operator >> (istream &in, WindowProperties::WindowMode &mode) {
     mode = WindowProperties::W_fullscreen;
   } else if (word == "undecorated") {
     mode = WindowProperties::W_undecorated;
+  } else if (word == "hidden") {
+    mode = WindowProperties::W_hidden;
   } else {
     display_cat.warning()
       << "Unknown window mode: " << word << "\n";

@@ -694,6 +694,8 @@ clear_mouse_mode() {
  *
  * W_undecorated: a window with no decorations (e.g., titlebar, borders, etc.)
  *
+ * W_hidden: hide the window from the window manager
+ *
  */
 INLINE void WindowProperties::
 set_window_mode(WindowMode mode) {

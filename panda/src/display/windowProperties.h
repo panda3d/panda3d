@@ -44,6 +44,7 @@ PUBLISHED:
     W_regular,
     W_fullscreen,
     W_undecorated,
+    W_hidden,
   };
 
   WindowProperties();

@@ -973,7 +973,9 @@ open_window() {
     XDefineCursor(_display, _xwindow, cursor);
   }
 
-  XMapWindow(_display, _xwindow);
+  if (_properties.get_window_mode() != WindowProperties::W_hidden) {
+    XMapWindow(_display, _xwindow);
+  }
 
   if (_properties.get_raw_mice()) {
     open_raw_mice();
@@ -1218,6 +1220,12 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   }
   if (class_hints_p != (XClassHint *)NULL) {
     XFree(class_hints_p);
+  }
+
+  if (properties.get_window_mode() == WindowProperties::W_hidden) {
+    XUnmapWindow(_display, _xwindow);
+  } else {
+    XMapWindow(_display, _xwindow);
   }
 
   // Also, indicate to the window manager that we'd like to get a chance to
