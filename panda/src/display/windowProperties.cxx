@@ -39,6 +39,7 @@ operator = (const WindowProperties &copy) {
   _z_order = copy._z_order;
   _flags = copy._flags;
   _mouse_mode = copy._mouse_mode;
+  _window_mode = copy._window_mode;
   _parent_window = copy._parent_window;
 }
 
@@ -62,8 +63,6 @@ get_config_properties() {
     props.set_origin(win_origin[0], win_origin[1]);
   }
 
-  props.set_fullscreen(fullscreen);
-  props.set_undecorated(undecorated);
   props.set_fixed_size(win_fixed_size);
   props.set_cursor_hidden(cursor_hidden);
   if (!icon_filename.empty()) {
@@ -82,6 +81,7 @@ get_config_properties() {
     props.set_parent_window(NativeWindowHandle::make_subprocess(subprocess_window));
   }
   props.set_mouse_mode(M_absolute);
+  props.set_window_mode(W_regular);
 
   return props;
 }
@@ -153,6 +153,7 @@ operator == (const WindowProperties &other) const {
           _icon_filename == other._icon_filename &&
           _cursor_filename == other._cursor_filename &&
           _mouse_mode == other._mouse_mode &&
+          _window_mode == other._window_mode &&
           _parent_window == other._parent_window);
 }
 
@@ -171,6 +172,7 @@ clear() {
   _z_order = Z_normal;
   _flags = 0;
   _mouse_mode = M_absolute;
+  _window_mode = W_regular;
   _parent_window = NULL;
 }
 
@@ -213,14 +215,8 @@ add_properties(const WindowProperties &other) {
   if (other.has_title()) {
     set_title(other.get_title());
   }
-  if (other.has_undecorated()) {
-    set_undecorated(other.get_undecorated());
-  }
   if (other.has_fixed_size()) {
     set_fixed_size(other.get_fixed_size());
-  }
-  if (other.has_fullscreen()) {
-    set_fullscreen(other.get_fullscreen());
   }
   if (other.has_foreground()) {
     set_foreground(other.get_foreground());
@@ -249,6 +245,9 @@ add_properties(const WindowProperties &other) {
   if (other.has_mouse_mode()) {
     set_mouse_mode(other.get_mouse_mode());
   }
+  if (other.has_window_mode()) {
+    set_window_mode(other.get_window_mode());
+  }
   if (other.has_parent_window()) {
     set_parent_window(other.get_parent_window());
   }
@@ -269,14 +268,8 @@ output(ostream &out) const {
   if (has_title()) {
     out << "title=\"" << get_title() << "\"" << " ";
   }
-  if (has_undecorated()) {
-    out << (get_undecorated() ? "undecorated " : "!undecorated ");
-  }
   if (has_fixed_size()) {
     out << (get_fixed_size() ? "fixed_size " : "!fixed_size ");
-  }
-  if (has_fullscreen()) {
-    out << (get_fullscreen() ? "fullscreen " : "!fullscreen ");
   }
   if (has_foreground()) {
     out << (get_foreground() ? "foreground " : "!foreground ");
@@ -304,6 +297,9 @@ output(ostream &out) const {
   }
   if (has_mouse_mode()) {
     out << get_mouse_mode() << " ";
+  }
+  if (has_window_mode()) {
+    out << get_window_mode() << " ";
   }
   if (has_parent_window()) {
     if (get_parent_window() == NULL) {
@@ -383,6 +379,41 @@ operator >> (istream &in, WindowProperties::MouseMode &mode) {
     display_cat.warning()
       << "Unknown mouse mode: " << word << "\n";
     mode = WindowProperties::M_absolute;
+  }
+
+  return in;
+}
+
+// WindowMode operators
+
+ostream &
+operator << (ostream &out, WindowProperties::WindowMode mode) {
+  switch (mode) {
+  case WindowProperties::W_regular:
+    return out << "regular";
+  case WindowProperties::W_fullscreen:
+    return out << "fullscreen";
+  case WindowProperties::W_undecorated:
+    return out << "undecorated";
+  }
+  return out << "**invalid WindowProperties::WindowMode(" << (int)mode << ")**";
+}
+
+istream &
+operator >> (istream &in, WindowProperties::WindowMode &mode) {
+  string word;
+  in >> word;
+
+  if (word == "regular") {
+    mode = WindowProperties::W_regular;
+  } else if (word == "fullscreen") {
+    mode = WindowProperties::W_fullscreen;
+  } else if (word == "undecorated") {
+    mode = WindowProperties::W_undecorated;
+  } else {
+    display_cat.warning()
+      << "Unknown window mode: " << word << "\n";
+    mode = WindowProperties::W_regular;
   }
 
   return in;

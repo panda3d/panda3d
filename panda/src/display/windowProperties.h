@@ -40,6 +40,12 @@ PUBLISHED:
     M_confined,
   };
 
+  enum WindowMode {
+    W_regular,
+    W_fullscreen,
+    W_undecorated,
+  };
+
   WindowProperties();
   INLINE WindowProperties(const WindowProperties &copy);
   void operator = (const WindowProperties &copy);
@@ -84,6 +90,13 @@ PUBLISHED:
   INLINE void clear_mouse_mode();
   MAKE_PROPERTY2(mouse_mode, has_mouse_mode, get_mouse_mode,
                              set_mouse_mode, clear_mouse_mode);
+
+  INLINE bool has_window_mode() const;
+  INLINE void set_window_mode(WindowMode mode);
+  INLINE WindowMode get_window_mode() const;
+  INLINE void clear_window_mode();
+  MAKE_PROPERTY2(window_mode, has_window_mode, get_window_mode,
+                             set_window_mode, clear_window_mode);
 
   INLINE void set_title(const string &title);
   INLINE const string &get_title() const;
@@ -183,8 +196,8 @@ private:
     S_origin               = 0x00001,
     S_size                 = 0x00002,
     S_title                = 0x00004,
-    S_undecorated          = 0x00008,
-    S_fullscreen           = 0x00010,
+    // UNUSED              = 0x00008,
+    // UNUSED              = 0x00010,
     S_foreground           = 0x00020,
     S_minimized            = 0x00040,
     S_open                 = 0x00080,
@@ -196,13 +209,12 @@ private:
     S_mouse_mode           = 0x02000,
     S_parent_window        = 0x04000,
     S_raw_mice             = 0x08000,
+    S_window_mode          = 0x10000,
   };
 
   // This bitmask represents the truefalse settings for various boolean flags
   // (assuming the corresponding S_* bit has been set, above).
   enum Flags {
-    F_undecorated    = S_undecorated,
-    F_fullscreen     = S_fullscreen,
     F_foreground     = S_foreground,
     F_minimized      = S_minimized,
     F_open           = S_open,
@@ -215,6 +227,7 @@ private:
   LPoint2i _origin;
   LVector2i _size;
   MouseMode _mouse_mode;
+  WindowMode _window_mode;
   string _title;
   Filename _cursor_filename;
   Filename _icon_filename;
@@ -234,6 +247,11 @@ EXPCL_PANDA_DISPLAY ostream &
 operator << (ostream &out, WindowProperties::MouseMode mode);
 EXPCL_PANDA_DISPLAY istream &
 operator >> (istream &in, WindowProperties::MouseMode &mode);
+
+EXPCL_PANDA_DISPLAY ostream &
+operator << (ostream &out, WindowProperties::WindowMode mode);
+EXPCL_PANDA_DISPLAY istream &
+operator >> (istream &in, WindowProperties::WindowMode &mode);
 
 
 INLINE ostream &operator << (ostream &out, const WindowProperties &properties);

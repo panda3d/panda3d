@@ -220,11 +220,10 @@ clear_title() {
 INLINE void WindowProperties::
 set_undecorated(bool undecorated) {
   if (undecorated) {
-    _flags |= F_undecorated;
+    set_window_mode(W_undecorated);
   } else {
-    _flags &= ~F_undecorated;
+    set_window_mode(W_regular);
   }
-  _specified |= S_undecorated;
 }
 
 /**
@@ -232,7 +231,7 @@ set_undecorated(bool undecorated) {
  */
 INLINE bool WindowProperties::
 get_undecorated() const {
-  return (_flags & F_undecorated) != 0;
+  return get_window_mode() == W_undecorated;
 }
 
 /**
@@ -240,7 +239,7 @@ get_undecorated() const {
  */
 INLINE bool WindowProperties::
 has_undecorated() const {
-  return ((_specified & S_undecorated) != 0);
+  return has_window_mode();
 }
 
 /**
@@ -248,8 +247,9 @@ has_undecorated() const {
  */
 INLINE void WindowProperties::
 clear_undecorated() {
-  _specified &= ~S_undecorated;
-  _flags &= ~F_undecorated;
+  if (get_undecorated()) {
+    clear_window_mode();
+  }
 }
 
 /**
@@ -297,11 +297,10 @@ clear_fixed_size() {
 INLINE void WindowProperties::
 set_fullscreen(bool fullscreen) {
   if (fullscreen) {
-    _flags |= F_fullscreen;
+    set_window_mode(W_fullscreen);
   } else {
-    _flags &= ~F_fullscreen;
+    set_window_mode(W_regular);
   }
-  _specified |= S_fullscreen;
 }
 
 /**
@@ -309,7 +308,7 @@ set_fullscreen(bool fullscreen) {
  */
 INLINE bool WindowProperties::
 get_fullscreen() const {
-  return (_flags & F_fullscreen) != 0;
+  return get_window_mode() == W_fullscreen;
 }
 
 /**
@@ -317,7 +316,7 @@ get_fullscreen() const {
  */
 INLINE bool WindowProperties::
 has_fullscreen() const {
-  return ((_specified & S_fullscreen) != 0);
+  return has_window_mode();
 }
 
 /**
@@ -325,8 +324,9 @@ has_fullscreen() const {
  */
 INLINE void WindowProperties::
 clear_fullscreen() {
-  _specified &= ~S_fullscreen;
-  _flags &= ~F_fullscreen;
+  if (get_fullscreen()) {
+    clear_window_mode();
+  }
 }
 
 /**
@@ -683,6 +683,47 @@ INLINE void WindowProperties::
 clear_mouse_mode() {
   _specified &= ~S_mouse_mode;
   _mouse_mode = M_absolute;
+}
+
+/**
+ * Specifies the mode in which the window is displayed.
+ *
+ * W_regular: a plain, decorated window
+ *
+ * W_fullscreen: fullscreen the application
+ *
+ * W_undecorated: a window with no decorations (e.g., titlebar, borders, etc.)
+ *
+ */
+INLINE void WindowProperties::
+set_window_mode(WindowMode mode) {
+  _window_mode=mode;
+  _specified |= S_window_mode;
+}
+
+/**
+ * See set_window_mode().
+ */
+INLINE WindowProperties::WindowMode WindowProperties::
+get_window_mode() const {
+ return _window_mode;
+}
+
+/**
+ *
+ */
+INLINE bool WindowProperties::
+has_window_mode() const {
+  return ((_specified & S_window_mode)!=0);
+}
+
+/**
+ * Removes the window_mode specification from the properties.
+ */
+INLINE void WindowProperties::
+clear_window_mode() {
+  _specified &= ~S_window_mode;
+  _window_mode = W_regular;
 }
 
 /**
