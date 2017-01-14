@@ -735,6 +735,10 @@ class Freezer:
                     ('.cp{0}{1}-win32.pyd'.format(*sys.version_info), 'rb', 3),
                     ('.dll', 'rb', 3),
                 ]
+            elif 'mac' in self.platform:
+                self.moduleSuffixes += [
+                    ('.cpython-{0}{1}m-darwin.so'.format(*sys.version_info), 'rb', 3),
+                ]
             else:
                 print("Unknown platform %s" % (self.platform))
                 self.moduleSuffixes = imp.get_suffixes()
