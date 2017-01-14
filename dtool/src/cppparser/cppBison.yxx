@@ -8,6 +8,7 @@
 
 #include "cppBisonDefs.h"
 #include "cppParser.h"
+#include "cppClosureType.h"
 #include "cppExpression.h"
 #include "cppSimpleType.h"
 #include "cppExtensionType.h"
@@ -44,6 +45,7 @@ static CPPEnumType *current_enum = NULL;
 static int current_storage_class = 0;
 static CPPType *current_type = NULL;
 static CPPExpression *current_expr = NULL;
+static CPPClosureType *current_closure = NULL;
 static int publish_nest_level = 0;
 static CPPVisibility publish_previous;
 static YYLTYPE publish_loc;
@@ -363,6 +365,8 @@ pop_struct() {
 %type <u.param_list> function_parameters
 %type <u.param_list> formal_parameter_list
 %type <u.param_list> formal_parameters
+%type <u.closure_type> capture_list
+%type <u.capture> capture
 %type <u.expr> template_parameter_maybe_initialize
 %type <u.expr> maybe_initialize
 %type <u.expr> maybe_initialize_or_constructor_body
@@ -1221,6 +1225,15 @@ function_post:
 {
   $$ = $1 | (int)CPPFunctionType::F_noexcept;
 }
+/*        | function_post KW_NOEXCEPT '(' const_expr ')'
+{
+  CPPExpression::Result result = $4->evaluate();
+  if (result._type == CPPExpression::RT_error) {
+    yywarning("noexcept requires a constant expression", @4);
+  } else if (result.as_boolean()) {
+    $$ = $1 | (int)CPPFunctionType::F_noexcept;
+  }
+}*/
         | function_post KW_FINAL
 {
   $$ = $1 | (int)CPPFunctionType::F_final;
@@ -1240,6 +1253,11 @@ function_post:
         | function_post KW_MUTABLE
 {
   // Used for lambdas, currently ignored.
+  $$ = $1;
+}
+        | function_post KW_CONSTEXPR
+{
+  // Used for lambdas in C++17, currently ignored.
   $$ = $1;
 }
         | function_post KW_THROW '(' ')'
@@ -3468,11 +3486,16 @@ const_operand:
 }
         | '[' capture_list ']' function_post maybe_trailing_return_type '{' code '}'
 {
-  $$ = NULL;
+  $2->_flags = $4;
+  $2->_return_type = $5;
+  $$ = new CPPExpression(CPPExpression::lambda($2));
 }
         | '[' capture_list ']' '(' function_parameter_list ')' function_post maybe_trailing_return_type '{' code '}'
 {
-  $$ = NULL;
+  $2->_parameters = $5;
+  $2->_flags = $7;
+  $2->_return_type = $8;
+  $$ = new CPPExpression(CPPExpression::lambda($2));
 }
         | KW_HAS_VIRTUAL_DESTRUCTOR '(' full_type ')'
 {
@@ -3794,15 +3817,63 @@ formal_const_operand:
 /* The contents of the [] list preceding a lambda expression. */
 capture_list:
         empty
+{
+  $$ = new CPPClosureType();
+}
+        | '='
+{
+  $$ = new CPPClosureType(CPPClosureType::CT_by_value);
+}
+        | '&'
+{
+  $$ = new CPPClosureType(CPPClosureType::CT_by_reference);
+}
         | capture
-        | capture ',' capture_list
+{
+  $$ = new CPPClosureType();
+  $$->_captures.push_back(*$1);
+  delete $1;
+}
+        | capture_list ',' capture
+{
+  $$ = $1;
+  $$->_captures.push_back(*$3);
+  delete $3;
+}
         ;
 
 capture:
-        '&'
-        | '='
-        | '&' name
+        '&' name
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $2->get_simple_name();
+  $$->_type = CPPClosureType::CT_by_reference;
+}
+        | '&' name ELLIPSIS
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $2->get_simple_name();
+  $$->_type = CPPClosureType::CT_by_reference;
+}
         | name
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $1->get_simple_name();
+  if ($$->_name == "this") {
+    $$->_type = CPPClosureType::CT_by_reference;
+  } else {
+    $$->_type = CPPClosureType::CT_by_value;
+  }
+}
+        | '*' name
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $2->get_simple_name();
+  $$->_type = CPPClosureType::CT_by_value;
+  if ($$->_name != "this") {
+    yywarning("only capture name 'this' may be preceded by an asterisk", @2);
+  }
+}
         ;
 
 class_derivation_name:

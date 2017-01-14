@@ -61,6 +61,7 @@ public:
     T_typeid_type,
     T_typeid_expr,
     T_type_trait,
+    T_lambda,
 
     // These are used when parsing =default and =delete methods.
     T_default,
@@ -87,6 +88,7 @@ public:
   static CPPExpression sizeof_func(CPPType *type);
   static CPPExpression sizeof_ellipsis_func(CPPIdentifier *ident);
   static CPPExpression alignof_func(CPPType *type);
+  static CPPExpression lambda(CPPClosureType *type);
 
   static CPPExpression literal(unsigned long long value, CPPInstance *lit_op);
   static CPPExpression literal(long double value, CPPInstance *lit_op);
@@ -150,6 +152,7 @@ public:
     CPPInstance *_variable;
     CPPFunctionGroup *_fgroup;
     CPPIdentifier *_ident;
+    CPPClosureType *_closure_type;
     struct {
       union {
         CPPType *_type;

@@ -24,6 +24,7 @@
 #include "cppInstance.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
+#include "cppClosureType.h"
 #include "cppStructType.h"
 #include "cppBison.h"
 #include "pdtoa.h"
@@ -435,6 +436,17 @@ alignof_func(CPPType *type) {
   expr._type = T_alignof;
   expr._u._typecast._to = type;
   expr._u._typecast._op1 = NULL;
+  return expr;
+}
+
+/**
+ *
+ */
+CPPExpression CPPExpression::
+lambda(CPPClosureType *type) {
+  CPPExpression expr(0);
+  expr._type = T_lambda;
+  expr._u._closure_type = type;
   return expr;
 }
 
@@ -1169,6 +1181,9 @@ determine_type() const {
   case T_type_trait:
     return bool_type;
 
+  case T_lambda:
+    return _u._closure_type;
+
   default:
     cerr << "**invalid operand**\n";
     abort();
@@ -1258,6 +1273,9 @@ is_fully_specified() const {
 
   case T_type_trait:
     return _u._type_trait._type->is_fully_specified();
+
+  case T_lambda:
+    return _u._closure_type->is_fully_specified();
 
   default:
     return true;
@@ -1477,6 +1495,9 @@ is_tbd() const {
 
   case T_type_trait:
     return _u._type_trait._type->is_tbd();
+
+  case T_lambda:
+    return _u._closure_type->is_tbd();
 
   default:
     return false;
@@ -1950,6 +1971,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     out << ')';
     break;
 
+  case T_lambda:
+    _u._closure_type->output(out, indent_level, scope, false);
+    break;
+
   default:
     out << "(** invalid operand type " << (int)_type << " **)";
   }
@@ -2109,6 +2134,9 @@ is_equal(const CPPDeclaration *other) const {
     return _u._type_trait._trait == ot->_u._type_trait._trait &&
            _u._type_trait._type == ot->_u._type_trait._type;
 
+  case T_lambda:
+    return _u._closure_type == ot->_u._closure_type;
+
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";
   }
@@ -2215,6 +2243,9 @@ is_less(const CPPDeclaration *other) const {
       return _u._type_trait._trait < ot->_u._type_trait._trait;
     }
     return *_u._type_trait._type < *ot->_u._type_trait._type;
+
+  case T_lambda:
+    return _u._closure_type < ot->_u._closure_type;
 
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";

@@ -48,6 +48,7 @@ class CPPEnumType;
 class CPPTypeProxy;
 class CPPMakeProperty;
 class CPPMakeSeq;
+class CPPClosureType;
 class CPPClassTemplateParameter;
 class CPPTBDType;
 class CPPScope;
@@ -85,6 +86,7 @@ public:
     ST_tbd,
     ST_type_proxy,
     ST_typedef,
+    ST_closure,
   };
 
   CPPDeclaration(const CPPFile &file);
@@ -140,6 +142,7 @@ public:
   virtual CPPTypeProxy *as_type_proxy();
   virtual CPPMakeProperty *as_make_property();
   virtual CPPMakeSeq *as_make_seq();
+  virtual CPPClosureType *as_closure_type();
 
   inline const CPPInstance *as_instance() const {
     return ((CPPDeclaration *)this)->as_instance();
@@ -206,6 +209,9 @@ public:
   }
   inline const CPPMakeSeq *as_make_seq() const {
     return ((CPPDeclaration *)this)->as_make_seq();
+  }
+  inline const CPPClosureType *as_closure_type() const {
+    return ((CPPDeclaration *)this)->as_closure_type();
   }
 
   CPPVisibility _vis;
