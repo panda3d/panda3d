@@ -81,7 +81,9 @@ get_config_properties() {
     props.set_parent_window(NativeWindowHandle::make_subprocess(subprocess_window));
   }
   props.set_mouse_mode(M_absolute);
-  props.set_window_mode(W_regular);
+  if (win_mode.has_value()) {
+    props.set_window_mode(win_mode);
+  }
 
   return props;
 }

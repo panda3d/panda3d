@@ -328,6 +328,11 @@ ConfigVariableBool undecorated
           "property.  When this is true, the default window is created "
           "without a title bar or resizable border."));
 
+ConfigVariableEnum<WindowProperties::WindowMode> win_mode
+("win-mode", WindowProperties::W_regular,
+ PRC_DESC("This specifies the default value of the 'window_mode' window "
+          "property."));
+
 ConfigVariableBool win_fixed_size
 ("win-fixed-size", false,
  PRC_DESC("This specifies the default value of the 'fixed_size' window "
