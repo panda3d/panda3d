@@ -31,7 +31,6 @@ PUBLISHED:
   // previously by another static initializer!
   INLINE ButtonHandle() DEFAULT_CTOR;
   CONSTEXPR ButtonHandle(int index);
-  INLINE ButtonHandle(const ButtonHandle &copy);
   ButtonHandle(const string &name);
 
 PUBLISHED:

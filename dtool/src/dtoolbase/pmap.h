@@ -52,7 +52,6 @@ public:
   typedef map<Key, Value, Compare, allocator> base_class;
 
   pmap(TypeHandle type_handle = pmap_type_handle) : base_class(Compare(), allocator(type_handle)) { }
-  pmap(const pmap<Key, Value, Compare> &copy) : base_class(copy) { }
   pmap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : base_class(comp, allocator(type_handle)) { }
 
 #ifdef USE_TAU
@@ -118,7 +117,6 @@ class pmultimap : public multimap<Key, Value, Compare, pallocator_single<pair<co
 public:
   typedef pallocator_single<pair<const Key, Value> > allocator;
   pmultimap(TypeHandle type_handle = pmap_type_handle) : multimap<Key, Value, Compare, allocator>(Compare(), allocator(type_handle)) { }
-  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, allocator>(copy) { }
   pmultimap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : multimap<Key, Value, Compare, allocator>(comp, allocator(type_handle)) { }
 };
 
@@ -132,7 +130,6 @@ template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class phash_map : public stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
 public:
   phash_map() : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >() { }
-  phash_map(const phash_map<Key, Value, Compare> &copy) : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(copy) { }
   phash_map(const Compare &comp) : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(comp) { }
 };
 
@@ -145,7 +142,6 @@ template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class phash_multimap : public stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
 public:
   phash_multimap() : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >() { }
-  phash_multimap(const phash_multimap<Key, Value, Compare> &copy) : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(copy) { }
   phash_multimap(const Compare &comp) : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(comp) { }
 };
 

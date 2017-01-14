@@ -2015,7 +2015,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         # Avoid choosing the one in the thirdparty package dir.
         PkgSetCustomLocation("PYTHON")
         IncDirectory("PYTHON", py_fwx + "/include")
-        LibDirectory("PYTHON", "%s/usr/lib" % (sysroot))
+        LibDirectory("PYTHON", py_fwx + "/lib")
 
     #elif GetTarget() == 'windows':
     #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())

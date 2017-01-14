@@ -20,13 +20,6 @@ HashGeneratorBase() {
 }
 
 /**
- *
- */
-INLINE HashGeneratorBase::
-~HashGeneratorBase() {
-}
-
-/**
  * Returns the hash number generated.
  */
 INLINE size_t HashGeneratorBase::

@@ -42,8 +42,6 @@ class DatagramIterator;
 class EXPCL_PANDA_PUTIL SparseArray {
 PUBLISHED:
   INLINE SparseArray();
-  INLINE SparseArray(const SparseArray &copy);
-  INLINE SparseArray &operator = (const SparseArray &copy);
   SparseArray(const BitArray &from);
 
   INLINE static SparseArray all_on();
@@ -51,8 +49,6 @@ PUBLISHED:
   INLINE static SparseArray lower_on(int on_bits);
   INLINE static SparseArray bit(int index);
   INLINE static SparseArray range(int low_bit, int size);
-
-  INLINE ~SparseArray();
 
   INLINE static bool has_max_num_bits();
   INLINE static int get_max_num_bits();
