@@ -594,6 +594,9 @@ def makewheel(version, output_dir, platform=default_platform):
     if sys.platform in ('win32', 'cygwin'):
         pylib_name = 'python{0}{1}.dll'.format(*sys.version_info)
         pylib_path = os.path.join(get_config_var('BINDIR'), pylib_name)
+    elif sys.platform == 'darwin':
+        pylib_name = 'libpython{0}.{1}.dylib'.format(*sys.version_info)
+        pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
     else:
         pylib_name = get_config_var('LDLIBRARY')
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
