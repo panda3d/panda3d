@@ -1558,6 +1558,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
           out << "\\\"";
           break;
 
+        case '\\':
+          out << "\\\\";
+          break;
+
         default:
           if (isprint(*si)) {
             out << *si;
