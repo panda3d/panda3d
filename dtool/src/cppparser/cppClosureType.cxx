@@ -12,6 +12,7 @@
  */
 
 #include "cppClosureType.h"
+#include "cppExpression.h"
 
 /**
  *
@@ -47,7 +48,7 @@ operator = (const CPPClosureType &copy) {
  * Adds a new capture to the beginning of the capture list.
  */
 void CPPClosureType::
-add_capture(string name, CaptureType type) {
+add_capture(string name, CaptureType type, CPPExpression *initializer) {
   if (type == CT_none) {
     if (name == "this") {
       type = CT_by_reference;
@@ -56,7 +57,7 @@ add_capture(string name, CaptureType type) {
     }
   }
 
-  Capture capture = {move(name), type};
+  Capture capture = {move(name), type, initializer};
   _captures.insert(_captures.begin(), move(capture));
 }
 
@@ -117,19 +118,25 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 
   Captures::const_iterator it;
   for (it = _captures.begin(); it != _captures.end(); ++it) {
+    const Capture &capture = *it;
     if (have_capture) {
       out << ", ";
     }
-    if ((*it)._name == "this") {
-      if ((*it)._type == CT_by_value) {
+    if (capture._name == "this") {
+      if (capture._type == CT_by_value) {
         out.put('*');
       }
     } else {
-      if ((*it)._type == CT_by_reference) {
+      if (capture._type == CT_by_reference) {
         out.put('&');
       }
     }
-    out << (*it)._name;
+    out << capture._name;
+
+    if (capture._initializer != NULL) {
+      out << " = " << *capture._initializer;
+    }
+
     have_capture = true;
   }
   out.put(']');

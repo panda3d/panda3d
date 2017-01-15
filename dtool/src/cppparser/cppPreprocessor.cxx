@@ -209,6 +209,7 @@ CPPPreprocessor() {
   _state = S_eof;
   _paren_nesting = 0;
   _parsing_template_params = false;
+  _parsing_attribute = false;
   _unget = '\0';
   _last_c = '\0';
   _start_of_line = true;
@@ -986,6 +987,13 @@ internal_get_next_token() {
         return CPPToken(0, loc);
       }
     }
+  } else if (_parsing_attribute) {
+    // If we're parsing an attribute, also keep track of the paren nesting.
+    if (c == '[' || c == '(') {
+      ++_paren_nesting;
+    } else if (c == ']' || c == ')') {
+      --_paren_nesting;
+    }
   }
 
   // Look for an end-of-line comment, and parse it before we finish this
@@ -1089,6 +1097,20 @@ check_digraph(int c) {
   case '%':
     if (next_c == '=') return MODEQUAL;
     if (next_c == '>') return '}';
+    break;
+
+  case '[':
+    if (next_c == '[' && !_parsing_attribute) {
+      _parsing_attribute = true;
+      return ATTR_LEFT;
+    }
+    break;
+
+  case ']':
+    if (next_c == ']' && _parsing_attribute && _paren_nesting == 0) {
+      _parsing_attribute = false;
+      return ATTR_RIGHT;
+    }
     break;
   }
 

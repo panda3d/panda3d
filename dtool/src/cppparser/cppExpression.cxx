@@ -257,13 +257,12 @@ CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
       _u._variable = inst;
       return;
     }
-    // Actually, we can't scope function groups.
-    /*CPPFunctionGroup *fgroup = decl->as_function_group();
+    CPPFunctionGroup *fgroup = decl->as_function_group();
     if (fgroup != NULL) {
       _type = T_function;
       _u._fgroup = fgroup;
       return;
-    }*/
+    }
   }
 
   _type = T_unknown_ident;
@@ -344,6 +343,22 @@ construct_op(CPPType *type, CPPExpression *op1) {
     expr._u._typecast._to = type;
     expr._u._typecast._op1 = op1;
   }
+  return expr;
+}
+
+/**
+ * Creates an expression that represents an aggregate initialization.
+ */
+CPPExpression CPPExpression::
+aggregate_init_op(CPPType *type, CPPExpression *op1) {
+  CPPExpression expr(0);
+  if (op1 == NULL) {
+    expr._type = T_empty_aggregate_init;
+  } else {
+    expr._type = T_aggregate_init;
+  }
+  expr._u._typecast._to = type;
+  expr._u._typecast._op1 = op1;
   return expr;
 }
 
@@ -606,6 +621,8 @@ evaluate() const {
 
   case T_construct:
   case T_default_construct:
+  case T_aggregate_init:
+  case T_empty_aggregate_init:
   case T_new:
   case T_default_new:
   case T_sizeof:
@@ -1029,6 +1046,8 @@ determine_type() const {
   case T_reinterpret_cast:
   case T_construct:
   case T_default_construct:
+  case T_aggregate_init:
+  case T_empty_aggregate_init:
     return _u._typecast._to;
 
   case T_new:
@@ -1147,9 +1166,27 @@ determine_type() const {
 
     case 'f': // Function evaluation
       if (t1 != NULL) {
+        // Easy case, function with only a single overload.
         CPPFunctionType *ftype = t1->as_function_type();
         if (ftype != (CPPFunctionType *)NULL) {
           return ftype->_return_type;
+        }
+      } else if (_u._op._op1->_type == T_function) {
+        CPPFunctionGroup *fgroup = _u._op._op1->_u._fgroup;
+        if (_u._op._op2 == NULL) {
+          // If we are passing no args, look for an overload that has takes no
+          // args.
+          for (auto it = fgroup->_instances.begin(); it != fgroup->_instances.end(); ++it) {
+            CPPInstance *inst = *it;
+            if (inst != NULL && inst->_type != NULL) {
+              CPPFunctionType *type = inst->_type->as_function_type();
+              if (type != NULL && type->accepts_num_parameters(0)) {
+                return type->_return_type;
+              }
+            }
+          }
+        } else {
+          //TODO
         }
       }
       return NULL;
@@ -1230,11 +1267,13 @@ is_fully_specified() const {
   case T_const_cast:
   case T_reinterpret_cast:
   case T_construct:
+  case T_aggregate_init:
   case T_new:
     return (_u._typecast._to->is_fully_specified() &&
             _u._typecast._op1->is_fully_specified());
 
   case T_default_construct:
+  case T_empty_aggregate_init:
   case T_default_new:
   case T_sizeof:
   case T_alignof:
@@ -1360,6 +1399,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   case T_const_cast:
   case T_reinterpret_cast:
   case T_construct:
+  case T_aggregate_init:
   case T_new:
     rep->_u._typecast._op1 =
       _u._typecast._op1->substitute_decl(subst, current_scope, global_scope)
@@ -1368,6 +1408,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     // fall through
 
   case T_default_construct:
+  case T_empty_aggregate_init:
   case T_default_new:
   case T_sizeof:
   case T_alignof:
@@ -1462,6 +1503,8 @@ is_tbd() const {
   case T_const_cast:
   case T_reinterpret_cast:
   case T_construct:
+  case T_aggregate_init:
+  case T_empty_aggregate_init:
   case T_new:
   case T_default_construct:
   case T_default_new:
@@ -1672,6 +1715,18 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   case T_default_construct:
     _u._typecast._to->output(out, indent_level, scope, false);
     out << "()";
+    break;
+
+  case T_aggregate_init:
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "{";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << "}";
+    break;
+
+  case T_empty_aggregate_init:
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "{}";
     break;
 
   case T_new:
@@ -2095,11 +2150,13 @@ is_equal(const CPPDeclaration *other) const {
   case T_const_cast:
   case T_reinterpret_cast:
   case T_construct:
+  case T_aggregate_init:
   case T_new:
     return _u._typecast._to == ot->_u._typecast._to &&
       *_u._typecast._op1 == *ot->_u._typecast._op1;
 
   case T_default_construct:
+  case T_empty_aggregate_init:
   case T_default_new:
   case T_sizeof:
   case T_alignof:
@@ -2193,6 +2250,7 @@ is_less(const CPPDeclaration *other) const {
   case T_const_cast:
   case T_reinterpret_cast:
   case T_construct:
+  case T_aggregate_init:
   case T_new:
     if (_u._typecast._to != ot->_u._typecast._to) {
       return _u._typecast._to < ot->_u._typecast._to;
@@ -2200,6 +2258,7 @@ is_less(const CPPDeclaration *other) const {
     return *_u._typecast._op1 < *ot->_u._typecast._op1;
 
   case T_default_construct:
+  case T_empty_aggregate_init:
   case T_default_new:
   case T_sizeof:
   case T_alignof:

@@ -67,6 +67,31 @@ operator = (const CPPFunctionType &copy) {
 }
 
 /**
+ * Returns true if the function accepts the given number of parameters.
+ */
+bool CPPFunctionType::
+accepts_num_parameters(int num_parameters) {
+  if (_parameters == NULL) {
+    return (num_parameters == 0);
+  }
+  size_t actual_num_parameters = _parameters->_parameters.size();
+  // If we passed too many parameters, it must have an ellipsis.
+  if (num_parameters > actual_num_parameters) {
+    return _parameters->_includes_ellipsis;
+  }
+
+  // Make sure all superfluous parameters have a default value.
+  for (size_t i = num_parameters; i < actual_num_parameters; ++i) {
+    CPPInstance *param = _parameters->_parameters[i];
+    if (param->_initializer == NULL) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Returns true if this declaration is an actual, factual declaration, or
  * false if some part of the declaration depends on a template parameter which
  * has not yet been instantiated.

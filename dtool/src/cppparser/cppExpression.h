@@ -48,6 +48,8 @@ public:
     T_reinterpret_cast,
     T_construct,
     T_default_construct,
+    T_aggregate_init,
+    T_empty_aggregate_init,
     T_new,
     T_default_new,
     T_sizeof,
@@ -81,6 +83,7 @@ public:
 
   static CPPExpression typecast_op(CPPType *type, CPPExpression *op1, Type cast_type = T_typecast);
   static CPPExpression construct_op(CPPType *type, CPPExpression *op1);
+  static CPPExpression aggregate_init_op(CPPType *type, CPPExpression *op1);
   static CPPExpression new_op(CPPType *type, CPPExpression *op1 = NULL);
   static CPPExpression typeid_op(CPPType *type, CPPType *std_type_info);
   static CPPExpression typeid_op(CPPExpression *op1, CPPType *std_type_info);

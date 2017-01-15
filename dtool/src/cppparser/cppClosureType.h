@@ -37,13 +37,14 @@ public:
   struct Capture {
     string _name;
     CaptureType _type;
+    CPPExpression *_initializer;
   };
   typedef vector<Capture> Captures;
   Captures _captures;
 
   CaptureType _default_capture;
 
-  void add_capture(string name, CaptureType type);
+  void add_capture(string name, CaptureType type, CPPExpression *initializer = NULL);
 
   virtual bool is_fully_specified() const;
 
