@@ -312,6 +312,14 @@ as_make_seq() {
 }
 
 /**
+ *
+ */
+CPPClosureType *CPPDeclaration::
+as_closure_type() {
+  return (CPPClosureType *)NULL;
+}
+
+/**
  * Called by CPPDeclaration to determine whether this type is equivalent to
  * another type of the same type.
  */

@@ -8,6 +8,7 @@
 
 #include "cppBisonDefs.h"
 #include "cppParser.h"
+#include "cppClosureType.h"
 #include "cppExpression.h"
 #include "cppSimpleType.h"
 #include "cppExtensionType.h"
@@ -44,6 +45,7 @@ static CPPEnumType *current_enum = NULL;
 static int current_storage_class = 0;
 static CPPType *current_type = NULL;
 static CPPExpression *current_expr = NULL;
+static CPPClosureType *current_closure = NULL;
 static int publish_nest_level = 0;
 static CPPVisibility publish_previous;
 static YYLTYPE publish_loc;
@@ -247,6 +249,8 @@ pop_struct() {
 %token XOREQUAL
 %token LSHIFTEQUAL
 %token RSHIFTEQUAL
+%token ATTR_LEFT
+%token ATTR_RIGHT
 
 %token KW_ALIGNAS
 %token KW_ALIGNOF
@@ -363,6 +367,8 @@ pop_struct() {
 %type <u.param_list> function_parameters
 %type <u.param_list> formal_parameter_list
 %type <u.param_list> formal_parameters
+%type <u.closure_type> capture_list
+%type <u.capture> capture
 %type <u.expr> template_parameter_maybe_initialize
 %type <u.expr> maybe_initialize
 %type <u.expr> maybe_initialize_or_constructor_body
@@ -870,10 +876,18 @@ storage_class:
 {
   $$ = $2 | (int)CPPInstance::SC_thread_local;
 }
-        | '[' '[' attribute_specifiers ']' ']' storage_class
+        | ATTR_LEFT attribute_specifiers ATTR_RIGHT storage_class
 {
   // Ignore attribute specifiers for now.
-  $$ = $6;
+  $$ = $4;
+}
+        | KW_ALIGNAS '(' const_expr ')' storage_class
+{
+  $$ = $5;
+}
+        | KW_ALIGNAS '(' type_decl ')' storage_class
+{
+  $$ = $5;
 }
         ;
 
@@ -885,6 +899,7 @@ attribute_specifiers:
 attribute_specifier:
         name
         | name '(' formal_parameter_list ')'
+        | KW_USING name ':' attribute_specifier
         ;
 
 type_like_declaration:
@@ -1221,6 +1236,15 @@ function_post:
 {
   $$ = $1 | (int)CPPFunctionType::F_noexcept;
 }
+/*        | function_post KW_NOEXCEPT '(' const_expr ')'
+{
+  CPPExpression::Result result = $4->evaluate();
+  if (result._type == CPPExpression::RT_error) {
+    yywarning("noexcept requires a constant expression", @4);
+  } else if (result.as_boolean()) {
+    $$ = $1 | (int)CPPFunctionType::F_noexcept;
+  }
+}*/
         | function_post KW_FINAL
 {
   $$ = $1 | (int)CPPFunctionType::F_final;
@@ -1242,6 +1266,11 @@ function_post:
   // Used for lambdas, currently ignored.
   $$ = $1;
 }
+        | function_post KW_CONSTEXPR
+{
+  // Used for lambdas in C++17, currently ignored.
+  $$ = $1;
+}
         | function_post KW_THROW '(' ')'
 {
   $$ = $1;
@@ -1254,10 +1283,10 @@ function_post:
 {
   $$ = $1;
 }
-/*        | function_post '[' '[' attribute_specifiers ']' ']'
+        | function_post ATTR_LEFT attribute_specifiers ATTR_RIGHT
 {
   $$ = $1;
-}*/
+}
         ;
 
 function_operator:
@@ -1425,7 +1454,8 @@ more_template_declaration:
         ;
 
 template_declaration:
-        KW_TEMPLATE
+        KW_EXTERN template_declaration
+        | KW_TEMPLATE
 {
   push_scope(new CPPTemplateScope(current_scope));
 }
@@ -1433,7 +1463,7 @@ template_declaration:
 {
   pop_scope();
 }
-	| KW_TEMPLATE type_like_declaration
+        | KW_TEMPLATE type_like_declaration
         ;
 
 template_formal_parameters:
@@ -1886,6 +1916,10 @@ function_parameter:
 {
   $$ = $2;
 }
+        | ATTR_LEFT attribute_specifiers ATTR_RIGHT function_parameter
+{
+  $$ = $4;
+}
         ;
 
 /* A "formal parameter" is like a function parameter, except that it parses
@@ -2228,16 +2262,16 @@ type:
 {
   $$ = CPPType::new_type($1);
 }
-        | struct_keyword name
+        | struct_keyword struct_attributes name
 {
-  CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = $3->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
     $$ = type;
   } else {
     CPPExtensionType *et =
-      CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
+      CPPType::new_type(new CPPExtensionType($1, $3, current_scope, @1.file))
       ->as_extension_type();
-    CPPScope *scope = $2->get_scope(current_scope, global_scope);
+    CPPScope *scope = $3->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
@@ -2268,6 +2302,10 @@ type:
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
   }
+}
+        | KW_DECLTYPE '(' KW_AUTO ')'
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
 }
         | KW_UNDERLYING_TYPE '(' full_type ')'
 {
@@ -2325,16 +2363,16 @@ type_decl:
 {
   $$ = new CPPTypeDeclaration(CPPType::new_type($1));
 }
-        | struct_keyword name
+        | struct_keyword struct_attributes name
 {
-  CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = $3->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
     $$ = type;
   } else {
     CPPExtensionType *et =
-      CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
+      CPPType::new_type(new CPPExtensionType($1, $3, current_scope, @1.file))
       ->as_extension_type();
-    CPPScope *scope = $2->get_scope(current_scope, global_scope);
+    CPPScope *scope = $3->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
@@ -2384,6 +2422,10 @@ type_decl:
     yyerror("could not determine type of " + str.str(), @3);
   }
 }
+        | KW_DECLTYPE '(' KW_AUTO ')'
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
+}
         | KW_UNDERLYING_TYPE '(' full_type ')'
 {
   CPPEnumType *enum_type = $3->as_enum_type();
@@ -2417,16 +2459,16 @@ predefined_type:
 {
   $$ = CPPType::new_type(new CPPTBDType($2));
 }
-        | struct_keyword name
+        | struct_keyword struct_attributes name
 {
-  CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = $3->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
     $$ = type;
   } else {
     CPPExtensionType *et =
-      CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
+      CPPType::new_type(new CPPExtensionType($1, $3, current_scope, @1.file))
       ->as_extension_type();
-    CPPScope *scope = $2->get_scope(current_scope, global_scope);
+    CPPScope *scope = $3->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
@@ -2507,8 +2549,15 @@ full_type:
 }
         ;
 
+struct_attributes:
+        empty
+        | struct_attributes ATTR_LEFT attribute_specifiers ATTR_RIGHT
+        | struct_attributes KW_ALIGNAS '(' const_expr ')'
+        | struct_attributes KW_ALIGNAS '(' type_decl ')'
+        ;
+
 anonymous_struct:
-        struct_keyword '{'
+        struct_keyword struct_attributes '{'
 {
   CPPVisibility starting_vis =
   ($1 == CPPExtensionType::T_class) ? V_private : V_public;
@@ -2532,19 +2581,19 @@ anonymous_struct:
         ;
 
 named_struct:
-        struct_keyword name_no_final
+        struct_keyword struct_attributes name_no_final
 {
   CPPVisibility starting_vis =
   ($1 == CPPExtensionType::T_class) ? V_private : V_public;
 
-  CPPScope *scope = $2->get_scope(current_scope, global_scope, current_lexer);
+  CPPScope *scope = $3->get_scope(current_scope, global_scope, current_lexer);
   if (scope == NULL) {
     scope = current_scope;
   }
-  CPPScope *new_scope = new CPPScope(scope, $2->_names.back(),
+  CPPScope *new_scope = new CPPScope(scope, $3->_names.back(),
                                      starting_vis);
 
-  CPPStructType *st = new CPPStructType($1, $2, current_scope,
+  CPPStructType *st = new CPPStructType($1, $3, current_scope,
                                         new_scope, @1.file);
   new_scope->set_struct_type(st);
   current_scope->define_extension_type(st);
@@ -2927,6 +2976,7 @@ element:
         | SCOPE | PLUSPLUS | MINUSMINUS
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
+        | ATTR_LEFT | ATTR_RIGHT
         | KW_ALIGNAS | KW_ALIGNOF | KW_AUTO | KW_BOOL | KW_CATCH
         | KW_CHAR | KW_CHAR16_T | KW_CHAR32_T | KW_CLASS | KW_CONST
         | KW_CONSTEXPR | KW_CONST_CAST | KW_DECLTYPE | KW_DEFAULT
@@ -3010,6 +3060,18 @@ no_angle_bracket_const_expr:
         | KW_SIZEOF '(' full_type ')' %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
+}
+        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+{
+  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
+  if (arg == (CPPDeclaration *)NULL) {
+    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
+  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
+    CPPInstance *inst = arg->as_instance();
+    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
+  } else {
+    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
+  }
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -3173,6 +3235,16 @@ const_expr:
   assert(type != NULL);
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
+        | TYPENAME_IDENTIFIER '{' optional_const_expr_comma '}'
+{
+  // Aggregate initialization.
+  CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
+  assert(type != NULL);
+  $$ = new CPPExpression(CPPExpression::aggregate_init_op(type, $3));
+}
         | KW_INT '(' optional_const_expr_comma ')'
 {
   CPPType *type =
@@ -3252,6 +3324,18 @@ const_expr:
         | KW_SIZEOF '(' full_type ')' %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
+}
+        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+{
+  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
+  if (arg == (CPPDeclaration *)NULL) {
+    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
+  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
+    CPPInstance *inst = arg->as_instance();
+    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
+  } else {
+    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
+  }
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -3468,11 +3552,16 @@ const_operand:
 }
         | '[' capture_list ']' function_post maybe_trailing_return_type '{' code '}'
 {
-  $$ = NULL;
+  $2->_flags = $4;
+  $2->_return_type = $5;
+  $$ = new CPPExpression(CPPExpression::lambda($2));
 }
         | '[' capture_list ']' '(' function_parameter_list ')' function_post maybe_trailing_return_type '{' code '}'
 {
-  $$ = NULL;
+  $2->_parameters = $5;
+  $2->_flags = $7;
+  $2->_return_type = $8;
+  $$ = new CPPExpression(CPPExpression::lambda($2));
 }
         | KW_HAS_VIRTUAL_DESTRUCTOR '(' full_type ')'
 {
@@ -3579,6 +3668,18 @@ formal_const_expr:
         | KW_SIZEOF '(' full_type ')' %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
+}
+        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+{
+  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
+  if (arg == (CPPDeclaration *)NULL) {
+    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
+  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
+    CPPInstance *inst = arg->as_instance();
+    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
+  } else {
+    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
+  }
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -3794,15 +3895,65 @@ formal_const_operand:
 /* The contents of the [] list preceding a lambda expression. */
 capture_list:
         empty
-        | capture
-        | capture ',' capture_list
+{
+  $$ = new CPPClosureType();
+}
+        | '='
+{
+  $$ = new CPPClosureType(CPPClosureType::CT_by_value);
+}
+        | '&'
+{
+  $$ = new CPPClosureType(CPPClosureType::CT_by_reference);
+}
+        | capture maybe_initialize
+{
+  $$ = new CPPClosureType();
+  $1->_initializer = $2;
+  $$->_captures.push_back(*$1);
+  delete $1;
+}
+        | capture_list ',' capture maybe_initialize
+{
+  $$ = $1;
+  $3->_initializer = $4;
+  $$->_captures.push_back(*$3);
+  delete $3;
+}
         ;
 
 capture:
-        '&'
-        | '='
-        | '&' name
+        '&' name
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $2->get_simple_name();
+  $$->_type = CPPClosureType::CT_by_reference;
+}
+        | '&' name ELLIPSIS
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $2->get_simple_name();
+  $$->_type = CPPClosureType::CT_by_reference;
+}
         | name
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $1->get_simple_name();
+  if ($$->_name == "this") {
+    $$->_type = CPPClosureType::CT_by_reference;
+  } else {
+    $$->_type = CPPClosureType::CT_by_value;
+  }
+}
+        | '*' name
+{
+  $$ = new CPPClosureType::Capture;
+  $$->_name = $2->get_simple_name();
+  $$->_type = CPPClosureType::CT_by_value;
+  if ($$->_name != "this") {
+    yywarning("only capture name 'this' may be preceded by an asterisk", @2);
+  }
+}
         ;
 
 class_derivation_name:
@@ -3811,14 +3962,6 @@ class_derivation_name:
   CPPType *type = $1->find_type(current_scope, global_scope, true);
   if (type == NULL) {
     type = CPPType::new_type(new CPPTBDType($1));
-  }
-  $$ = type;
-}
-        | struct_keyword name
-{
-  CPPType *type = $2->find_type(current_scope, global_scope, true, current_lexer);
-  if (type == NULL) {
-    type = CPPType::new_type(new CPPTBDType($2));
   }
   $$ = type;
 }

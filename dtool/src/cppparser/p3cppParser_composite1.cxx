@@ -2,6 +2,7 @@
 #include "cppFunctionType.cxx"
 #include "cppGlobals.cxx"
 #include "cppCommentBlock.cxx"
+#include "cppClosureType.cxx"
 #include "cppConstType.cxx"
 #include "cppDeclaration.cxx"
 #include "cppMakeProperty.cxx"

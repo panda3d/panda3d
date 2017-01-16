@@ -252,6 +252,14 @@ output(ostream &out) const {
     out << "RSHIFTEQUAL";
     break;
 
+  case ATTR_LEFT:
+    out << "ATTR_LEFT";
+    break;
+
+  case ATTR_RIGHT:
+    out << "ATTR_RIGHT";
+    break;
+
   case KW_BOOL:
     out << "KW_BOOL";
     break;
