@@ -351,6 +351,16 @@ set_properties_now(WindowProperties &properties) {
         windisplay_cat.warning()
           << "Switching to windowed mode failed!\n";
       }
+    } else if (properties.get_window_mode() != _properties.get_mouse_mode()) {
+      if (properties.get_window_mode() == WindowProperties::W_hidden) {
+        ShowWindow(_hWnd, SW_HIDE);
+        _properties.set_window_mode(properties.get_window_mode());
+        properties.clear_window_mode();
+      } else if (!_properties.get_minimized()) {
+        ShowWindow(_hWnd, SW_SHOWNORMAL);
+        _properties.set_window_mode(properties.get_window_mode());
+        properties.clear_window_mode();
+      }
     }
   }
 
@@ -451,8 +461,9 @@ open_window() {
   if (_cursor == 0) {
     _cursor = LoadCursor(NULL, IDC_ARROW);
   }
-  bool want_foreground = (!_properties.has_foreground() || _properties.get_foreground());
-  bool want_minimized = (_properties.has_minimized() && _properties.get_minimized()) && !want_foreground;
+  bool want_hidden = (_properties.has_window_mode() && _properties.get_window_mode() == WindowProperties::W_hidden);
+  bool want_foreground = (!_properties.has_foreground() || _properties.get_foreground()) && !want_hidden;
+  bool want_minimized = (_properties.has_minimized() && _properties.get_minimized()) && !want_foreground && !want_hidden;
 
   HWND old_foreground_window = GetForegroundWindow();
 
@@ -476,6 +487,10 @@ open_window() {
                SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
 
   // need to do twice to override any minimized flags in StartProcessInfo
+  if (want_hidden) {
+    ShowWindow(_hWnd, SW_HIDE);
+    ShowWindow(_hWnd, SW_HIDE);
+  }
   if (want_minimized) {
     ShowWindow(_hWnd, SW_MINIMIZE);
     ShowWindow(_hWnd, SW_MINIMIZE);
