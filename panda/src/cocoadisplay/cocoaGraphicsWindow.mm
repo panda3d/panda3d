@@ -523,9 +523,11 @@ open_window() {
 
     [_window setShowsResizeIndicator: !_properties.get_fixed_size()];
 
-    if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
+    if (_properties.get_window_mode() == WindowProperties::W_hidden) {
+      [_window orderOut:nil];
+    } else if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
       [_window makeKeyAndOrderFront:nil];
-     } else if (_properties.get_minimized()) {
+    } else if (_properties.get_minimized()) {
       [_window makeKeyAndOrderFront:nil];
       [_window miniaturize:nil];
     } else if (_properties.get_foreground()) {
@@ -1020,6 +1022,10 @@ set_properties_now(WindowProperties &properties) {
       case WindowProperties::W_undecorated:
       case WindowProperties::W_fullscreen:
         // Assume these were set
+        _properties.set_window_mode(properties.get_window_mode());
+        properties.clear_window_mode();
+        break;
+      case WindowProperties::W_hidden:
         _properties.set_window_mode(properties.get_window_mode());
         properties.clear_window_mode();
         break;
