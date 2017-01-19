@@ -334,19 +334,19 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_minimized();
   }
 
-  if (properties.has_fullscreen()) {
-    if (properties.get_fullscreen() && !is_fullscreen()) {
+  if (properties.has_window_mode()) {
+    if (properties.get_window_mode() == WindowProperties::W_fullscreen && !is_fullscreen()) {
       if (do_fullscreen_switch()){
-        _properties.set_fullscreen(true);
-        properties.clear_fullscreen();
+        _properties.set_window_mode(properties.get_window_mode());
+        properties.clear_window_mode();
       } else {
         windisplay_cat.warning()
           << "Switching to fullscreen mode failed!\n";
       }
-    } else if (!properties.get_fullscreen() && is_fullscreen()){
+    } else if (properties.get_window_mode() != WindowProperties::W_fullscreen && is_fullscreen()){
       if (do_windowed_switch()){
-        _properties.set_fullscreen(false);
-        properties.clear_fullscreen();
+        _properties.set_window_mode(properties.get_window_mode());
+        properties.clear_window_mode();
       } else {
         windisplay_cat.warning()
           << "Switching to windowed mode failed!\n";
@@ -913,7 +913,7 @@ make_style(bool fullscreen) {
 
   if (fullscreen){
     window_style |= WS_SYSMENU;
-  } else if (!_properties.get_undecorated()) {
+  } else if (_properties.get_window_mode() != WindowProperties::W_undecorated) {
     window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 
     if (!_properties.get_fixed_size()) {
