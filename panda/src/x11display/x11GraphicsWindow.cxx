@@ -485,8 +485,8 @@ set_properties_now(WindowProperties &properties) {
 
   // We're either going into or out of fullscreen, or are in fullscreen and
   // are changing the resolution.
-  bool is_fullscreen = _properties.has_fullscreen() && _properties.get_fullscreen();
-  bool want_fullscreen = properties.has_fullscreen() ? properties.get_fullscreen() : is_fullscreen;
+  bool is_fullscreen = _properties.has_window_mode() && _properties.get_window_mode() == WindowProperties::W_fullscreen;
+  bool want_fullscreen = properties.has_window_mode() ? properties.get_window_mode() == WindowProperties::W_fullscreen : is_fullscreen;
 
   if (is_fullscreen != want_fullscreen || (is_fullscreen && properties.has_size())) {
     if (want_fullscreen) {
@@ -588,10 +588,10 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_title();
   }
 
-  // Same for fullscreen.
-  if (properties.has_fullscreen()) {
-    _properties.set_fullscreen(properties.get_fullscreen());
-    properties.clear_fullscreen();
+  // Assume we've dealt with window_mode in set_wm_properties()
+  if (properties.has_window_mode()) {
+    _properties.set_window_mode(properties.get_window_mode());
+    properties.clear_window_mode();
   }
 
   // The size and position of an already-open window are changed via explicit
@@ -601,7 +601,7 @@ set_properties_now(WindowProperties &properties) {
   XWindowChanges changes;
   int value_mask = 0;
 
-  if (_properties.get_fullscreen()) {
+  if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
     changes.x = 0;
     changes.y = 0;
     value_mask |= CWX | CWY;
@@ -861,7 +861,7 @@ open_window() {
     _properties.set_size(100, 100);
   }
 
-  if (_properties.get_fullscreen() && x11_pipe->_have_xrandr) {
+  if (_properties.get_window_mode() == WindowProperties::W_fullscreen && x11_pipe->_have_xrandr) {
     XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
     if (_orig_size_id == (SizeID) -1) {
       _orig_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
@@ -1027,7 +1027,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     size_hints_p = XAllocSizeHints();
     if (size_hints_p != (XSizeHints *)NULL) {
       if (properties.has_origin()) {
-        if (_properties.get_fullscreen()) {
+        if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
           size_hints_p->x = 0;
           size_hints_p->y = 0;
         } else {
@@ -1088,8 +1088,8 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   SetAction set_data[max_set_data];
   int next_set_data = 0;
 
-  if (properties.has_fullscreen()) {
-    if (properties.get_fullscreen()) {
+  if (properties.has_window_mode()) {
+    if (properties.get_window_mode() == WindowProperties::W_fullscreen) {
       // For a "fullscreen" request, we pass this through, hoping the window
       // manager will support EWMH.
       type_data[next_type_data++] = x11_pipe->_net_wm_window_type_fullscreen;
@@ -1123,12 +1123,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
       class_hints_p->res_name = (char*) x_wm_class_name.c_str();
     }
 
-  } else if (properties.get_undecorated() || properties.get_fullscreen()) {
+  } else if (properties.get_window_mode() == WindowProperties::W_undecorated ||
+             properties.get_window_mode() == WindowProperties::W_fullscreen)
+  {
     class_hints_p = XAllocClassHint();
     class_hints_p->res_class = (char*) "Undecorated";
   }
 
-  if (properties.get_undecorated() && !properties.get_fullscreen()) {
+  if (properties.get_window_mode() == WindowProperties::W_undecorated)
+  {
     type_data[next_type_data++] = x11_pipe->_net_wm_window_type_splash;
   }
 
@@ -1226,6 +1229,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
   XSetWMProtocols(_display, _xwindow, protocols,
                   sizeof(protocols) / sizeof(Atom));
+
 }
 
 /**
