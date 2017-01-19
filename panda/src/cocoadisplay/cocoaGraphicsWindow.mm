@@ -99,7 +99,7 @@ move_pointer(int device, int x, int y) {
 
   if (device == 0) {
     CGPoint point;
-    if (_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
       point = CGPointMake(x, y + 1);
     } else {
       point = CGPointMake(x + _properties.get_x_origin(),
@@ -147,7 +147,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
 
   // Set the drawable.
-  if (_properties.get_fullscreen()) {
+  if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
     // Fullscreen.
     CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
   } else {
@@ -171,7 +171,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
 
   // Lock the view for drawing.
-  if (!_properties.get_fullscreen()) {
+  if (!_properties.get_window_mode() == WindowProperties::W_fullscreen) {
     nassertr_always([_view lockFocusIfCanDraw], false);
   }
 
@@ -203,7 +203,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
-  if (!_properties.get_fullscreen()) {
+  if (!_properties.get_window_mode() == WindowProperties::W_fullscreen) {
     [_view unlockFocus];
   }
   // Release the context.
@@ -335,14 +335,8 @@ open_window() {
   if (!_properties.has_size()) {
     _properties.set_size(100, 100);
   }
-  if (!_properties.has_fullscreen()) {
-    _properties.set_fullscreen(false);
-  }
   if (!_properties.has_foreground()) {
     _properties.set_foreground(true);
-  }
-  if (!_properties.has_undecorated()) {
-    _properties.set_undecorated(false);
   }
   if (!_properties.has_fixed_size()) {
     _properties.set_fixed_size(false);
@@ -355,6 +349,9 @@ open_window() {
   }
   if (!_properties.has_cursor_hidden()) {
     _properties.set_cursor_hidden(false);
+  }
+  if (!_properties.has_window_mode()) {
+    _properties.set_window_mode(WindowProperties::W_regular);
   }
 
   // Check if we have a parent view.
@@ -423,7 +420,7 @@ open_window() {
   if (_parent_window_handle == (WindowHandle *)NULL) {
     // Content rectangle
     NSRect rect;
-    if (_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
       rect = container;
     } else {
       rect = NSMakeRect(x, container.size.height - _properties.get_y_size() - y,
@@ -432,7 +429,8 @@ open_window() {
 
     // Configure the window decorations
     NSUInteger windowStyle;
-    if (_properties.get_undecorated() || _properties.get_fullscreen()) {
+    if (_properties.get_window_mode() == WindowProperties::W_undecorated ||
+        _properties.get_window_mode() == WindowProperties::W_fullscreen) {
       windowStyle = NSBorderlessWindowMask;
     } else if (_properties.get_fixed_size()) {
       // Fixed size windows should not show the resize button.
@@ -525,7 +523,7 @@ open_window() {
 
     [_window setShowsResizeIndicator: !_properties.get_fixed_size()];
 
-    if (_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
       [_window makeKeyAndOrderFront:nil];
      } else if (_properties.get_minimized()) {
       [_window makeKeyAndOrderFront:nil];
@@ -536,7 +534,7 @@ open_window() {
       [_window orderBack:nil];
     }
 
-    if (_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
       [_window setLevel: NSMainMenuWindowLevel + 1];
     } else {
       switch (_properties.get_z_order()) {
@@ -556,7 +554,7 @@ open_window() {
     }
   }
 
-  if (_properties.get_fullscreen()) {
+  if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
     // Change the display mode.
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     CGDisplayModeRef mode;
@@ -700,9 +698,9 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
-  if (properties.has_fullscreen()) {
-    if (_properties.get_fullscreen() != properties.get_fullscreen()) {
-      if (properties.get_fullscreen()) {
+  if (properties.has_window_mode()) {
+    if (_properties.get_window_mode() != properties.get_window_mode()) {
+      if (properties.get_window_mode() == WindowProperties::W_fullscreen) {
         int width, height;
         if (properties.has_size()) {
           width = properties.get_x_size();
@@ -742,9 +740,8 @@ set_properties_now(WindowProperties &properties) {
           _properties.set_size(width, height);
           properties.clear_origin();
           _properties.set_origin(0, 0);
-          properties.clear_fullscreen();
-          _properties.set_fullscreen(true);
-
+          _properties.set_window_mode(WindowProperties::W_fullscreen);
+          // Clear window_mode later
         } else {
           cocoadisplay_cat.error()
             << "Failed to change display mode.\n";
@@ -752,18 +749,15 @@ set_properties_now(WindowProperties &properties) {
 
       } else {
         do_switch_fullscreen(NULL);
-        _properties.set_fullscreen(false);
 
         // Force properties to be reset to their actual values
-        properties.set_undecorated(_properties.get_undecorated());
         properties.set_z_order(_properties.get_z_order());
-        properties.clear_fullscreen();
       }
     }
     _context_needs_update = true;
   }
 
-  if (properties.has_minimized() && !_properties.get_fullscreen() && _window != nil) {
+  if (properties.has_minimized() && _properties.get_window_mode() != WindowProperties::W_fullscreen && _window != nil) {
     _properties.set_minimized(properties.get_minimized());
     if (properties.get_minimized()) {
       [_window miniaturize:nil];
@@ -777,7 +771,7 @@ set_properties_now(WindowProperties &properties) {
     int width = properties.get_x_size();
     int height = properties.get_y_size();
 
-    if (!_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() != WindowProperties::W_fullscreen) {
       if (_window != nil) {
         [_window setContentSize:NSMakeSize(width, height)];
       }
@@ -817,7 +811,7 @@ set_properties_now(WindowProperties &properties) {
     }
   }
 
-  if (properties.has_origin() && !_properties.get_fullscreen()) {
+  if (properties.has_origin() && _properties.get_window_mode() != WindowProperties::W_fullscreen) {
     int x = properties.get_x_origin();
     int y = properties.get_y_origin();
 
@@ -842,7 +836,7 @@ set_properties_now(WindowProperties &properties) {
     }
     _properties.set_origin(x, y);
 
-    if (!_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() != WindowProperties::W_fullscreen) {
       // Remember, Mac OS X coordinates are flipped in the vertical axis.
       frame.origin.x = x;
       frame.origin.y = container.size.height - y - frame.size.height;
@@ -869,13 +863,14 @@ set_properties_now(WindowProperties &properties) {
     _properties.set_fixed_size(properties.get_fixed_size());
     [_window setShowsResizeIndicator:!properties.get_fixed_size()];
 
-    if (!_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() != WindowProperties::W_fullscreen) {
       // If our window is decorated, change the style mask to show or hide the
       // resize button appropriately.  However, if we're specifying the
       // 'undecorated' property also, then we'll be setting the style mask
       // about 25 LOC further down, so we won't need to bother setting it
       // here.
-      if (!properties.has_undecorated() && !_properties.get_undecorated() &&
+      if (!properties.has_window_mode() &&
+          _properties.get_window_mode() != WindowProperties::W_undecorated &&
           [_window respondsToSelector:@selector(setStyleMask:)]) {
         if (properties.get_fixed_size()) {
           [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
@@ -891,11 +886,9 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_fixed_size();
   }
 
-  if (properties.has_undecorated() && _window != nil && [_window respondsToSelector:@selector(setStyleMask:)]) {
-    _properties.set_undecorated(properties.get_undecorated());
-
-    if (!_properties.get_fullscreen()) {
-      if (properties.get_undecorated()) {
+  if (properties.has_window_mode() && _window != nil && [_window respondsToSelector:@selector(setStyleMask:)]) {
+    if (_properties.get_window_mode() != WindowProperties::W_fullscreen) {
+      if (properties.get_window_mode() == WindowProperties::W_undecorated) {
         [_window setStyleMask: NSBorderlessWindowMask];
       } else if (_properties.get_fixed_size()) {
         // Fixed size windows should not show the resize button.
@@ -907,11 +900,9 @@ set_properties_now(WindowProperties &properties) {
       }
       [_window makeFirstResponder:_view];
     }
-
-    properties.clear_undecorated();
   }
 
-  if (properties.has_foreground() && !_properties.get_fullscreen() && _window != nil) {
+  if (properties.has_foreground() && _properties.get_window_mode() != WindowProperties::W_fullscreen && _window != nil) {
     _properties.set_foreground(properties.get_foreground());
     if (!_properties.get_minimized()) {
       if (properties.get_foreground()) {
@@ -988,7 +979,7 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_z_order() && _window != nil) {
     _properties.set_z_order(properties.get_z_order());
 
-    if (!_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() != WindowProperties::W_fullscreen) {
       switch (properties.get_z_order()) {
       case WindowProperties::Z_bottom:
         [_window setLevel: NSNormalWindowLevel - 1];
@@ -1020,6 +1011,18 @@ set_properties_now(WindowProperties &properties) {
       _properties.set_mouse_mode(properties.get_mouse_mode());
       properties.clear_mouse_mode();
       break;
+    }
+  }
+
+  if (properties.has_window_mode()) {
+    switch (properties.get_window_mode()) {
+      case WindowProperties::W_regular:
+      case WindowProperties::W_undecorated:
+      case WindowProperties::W_fullscreen:
+        // Assume these were set
+        _properties.set_window_mode(properties.get_window_mode());
+        properties.clear_window_mode();
+        break;
     }
   }
 }
@@ -1665,7 +1668,7 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     nx = std::max(0., std::min((double) get_x_size() - 1, nx));
     ny = std::max(0., std::min((double) get_y_size() - 1, ny));
 
-    if (_properties.get_fullscreen()) {
+    if (_properties.get_window_mode() == WindowProperties::W_fullscreen) {
       point = CGPointMake(nx, ny + 1);
     } else {
       point = CGPointMake(nx + _properties.get_x_origin(),
