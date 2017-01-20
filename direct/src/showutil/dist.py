@@ -30,6 +30,7 @@ class Distribution(distutils.dist.Distribution):
         self.exclude_modules = []
         self.deploy_platforms = []
         self.requirements_path = './requirements.txt'
+        self.pypi_extra_indexes = []
         distutils.dist.Distribution.__init__(self, attrs)
 
 
@@ -74,13 +75,18 @@ class build(distutils.command.build.build):
             if use_wheels:
                 whldir = os.path.join(self.build_base, '__whl_cache__')
 
-                pip.main(args=[
+                pip_args = [
                     'download',
                     '-d', whldir,
                     '-r', self.distribution.requirements_path,
                     '--only-binary', ':all:',
                     '--platform', platform,
-                ])
+                ]
+
+                for index in self.distribution.pypi_extra_indexes:
+                    pip_args += ['--extra-index-url', index]
+
+                pip.main(args=pip_args)
 
                 wheelpaths = [os.path.join(whldir,i) for i in os.listdir(whldir) if platform in i]
 
