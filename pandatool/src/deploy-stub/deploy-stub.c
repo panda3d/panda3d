@@ -187,13 +187,15 @@ int main(int argc, char *argv[]) {
   fseek(runtime, listoff, SEEK_SET);
   for (modidx = 0; modidx < nummods; ++modidx) {
     struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
+    unsigned char name_size;
     char *name = NULL, namebuf[256] = {0};
     size_t nsize;
     unsigned int codeptr;
     int codesize;
 
     // Name
-    fread(namebuf, 1, 256, runtime);
+    fread(&name_size, 1, 1, runtime);
+    fread(namebuf, 1, name_size, runtime);
     nsize = strlen(namebuf) + 1;
     name = malloc(nsize);
     memcpy(name, namebuf, nsize);

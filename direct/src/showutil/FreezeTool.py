@@ -1579,10 +1579,26 @@ class Freezer:
             if getattr(module, "__path__", None):
                 # Indicate package by negative size
                 size = -size
-            return struct.pack('<256sIi', modulename.encode('ascii'), offset, size)
+            modname = modulename.encode('ascii')
+            modnamelen = len(modulename)
+            return struct.pack(
+                '<b{0}sIi'.format(modnamelen),
+                modnamelen,
+                modname,
+                offset,
+                size
+            )
 
         def make_forbidden_module_list_entry(modulename):
-            return struct.pack('<256sIi', modulename.encode('ascii'), 0, 0)
+            modname = modulename.encode('ascii')
+            modnamelen = len(modulename)
+            return struct.pack(
+                '<b{0}sIi'.format(modnamelen),
+                modnamelen,
+                modname,
+                0,
+                0
+            )
 
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
