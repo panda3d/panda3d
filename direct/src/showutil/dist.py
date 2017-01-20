@@ -29,6 +29,7 @@ class Distribution(distutils.dist.Distribution):
         self.exclude_paths = []
         self.exclude_modules = []
         self.deploy_platforms = []
+        self.requirements_path = './requirements.txt'
         distutils.dist.Distribution.__init__(self, attrs)
 
 
@@ -76,7 +77,7 @@ class build(distutils.command.build.build):
                 pip.main(args=[
                     'download',
                     '-d', whldir,
-                    '-r', 'requirements.txt',
+                    '-r', self.distribution.requirements_path,
                     '--only-binary', ':all:',
                     '--platform', platform,
                 ])
