@@ -2,6 +2,7 @@ import collections
 import os
 import pip
 import sys
+import subprocess
 import zipfile
 
 import distutils.command.build
@@ -31,6 +32,9 @@ class Distribution(distutils.dist.Distribution):
         self.deploy_platforms = []
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
+        self.build_scripts= {
+            '.egg': ('.bam', 'egg2bam -o {1} {0}'),
+        }
         distutils.dist.Distribution.__init__(self, attrs)
 
 
@@ -206,20 +210,36 @@ class build(distutils.command.build.build):
             ] + list(freezer_modules) + self.distribution.exclude_paths + [i.scriptname for i  in self.distribution.applications]
 
             for copydir in self.distribution.directories:
-                for item in os.listdir(copydir):
-                    src = os.path.join(copydir, item)
-                    dst = os.path.join(builddir, item)
+                for root, dirs, files in os.walk(copydir):
+                    for item in files:
+                        src = os.path.join(root, item)
+                        dst = os.path.normpath(os.path.join(builddir, root, item))
 
-                    if item in ignore_copy_list:
-                        print("skipping", src)
-                        continue
+                        if item in ignore_copy_list:
+                            print("skipping", src)
+                            continue
 
-                    if os.path.isdir(src):
-                        #print("Copy dir", src, dst)
-                        distutils.dir_util.copy_tree(src, dst)
-                    else:
-                        #print("Copy file", src, dst)
-                        distutils.file_util.copy_file(src, dst)
+                        ext = os.path.splitext(src)[1]
+                        dst_root = os.path.splitext(dst)[0]
+
+                        if ext in self.distribution.build_scripts:
+                            dst_ext, script = self.distribution.build_scripts[ext]
+                            dst = dst_root + dst_ext
+                            script = script.format(src, dst)
+                            print("using script:", script)
+                            subprocess.call(script.split())
+                        else:
+                            #print("Copy file", src, dst)
+                            distutils.file_util.copy_file(src, dst)
+
+                    for item in dirs[:]:
+                        path = os.path.join(builddir, root, item)
+                        if item in ignore_copy_list:
+                            print("skipping", path)
+                            dirs.remove(item)
+                        else:
+                            print("making directory", path)
+                            distutils.dir_util.mkpath(path)
 
             # Copy extra files
             for extra in self.distribution.files:
