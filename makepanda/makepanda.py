@@ -839,6 +839,10 @@ if (COMPILER=="GCC"):
             python_lib = SDK["PYTHONVERSION"]
             SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
 
+            if GetTarget() == "linux":
+                LibName("PYTHON", "-lutil")
+                LibName("PYTHON", "-lrt")
+
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
