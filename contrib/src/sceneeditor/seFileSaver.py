@@ -14,9 +14,9 @@ import string
 #### These modules are modified versions of Disney's equivalent modules
 #### We need to figure out a way to inherit their modules and overwrite what we need changed
 import seParticlePanel
-import seParticles
-import seParticleEffect
-import seForceGroup
+from direct.particles import ForceGroup
+from direct.particles import Particles
+from direct.particles import ParticleEffect
 ####################################################################################################################################################
 
 class FileSaver:
@@ -61,14 +61,16 @@ class FileSaver:
         out_file.write("##########################################################################################################\n")
         out_file.write("# Import Panda Modules\n")
         out_file.write("##########################################################################################################\n")
-        out_file.write("from direct.directbase.DirectStart import * # Core functionality for running the \"show\"\n")
+        #out_file.write("from direct.directbase.DirectStart import * # Core functionality for running the \"show\"\n")
+        out_file.write("from direct.showbase.DirectObject import DirectObject\n")
         out_file.write("from direct.actor import Actor # Importing models with animations\n")
         out_file.write("from direct.directutil import Mopath # Motion Paths\n")
         out_file.write("from direct.interval import MopathInterval # Motion Paths\n")
         out_file.write("from direct.interval.IntervalGlobal import * # Intervals for interpolation, sequencing and parallelization\n")
         out_file.write("from direct.particles import ParticleEffect # Particle Systems\n")
         out_file.write("from direct.particles import ForceGroup # Forces acting on Particles\n")
-        out_file.write("from direct.particles import Particles\n\n")
+        out_file.write("from direct.particles import Particles\n")
+        out_file.write("from panda3d.core import *\n\n")
         out_file.write("##########################################################################################################\n")
         out_file.write("# This class stores the entire scene\n")
         out_file.write("##########################################################################################################\n\n")
@@ -114,11 +116,11 @@ class FileSaver:
         out_file.write(i1+"##########################################################################################################\n")
         out_file.write(i1+"# Constructor: this is run first when you instantiate the SavedScene class\n")
         out_file.write(i1+"##########################################################################################################\n")
-        out_file.write(i1+"def __init__(self,loadmode=1,seParticleEffect=None,seParticles=None,executionpath=None):# loadmode 0 specifies that this file is being loaded by the scene editor and it passes its own versions of the particle fx modules\n")
+        out_file.write(i1+"def __init__(self,loadmode=1,ParticleEffect=None,Particles=None,executionpath=None):# loadmode 0 specifies that this file is being loaded by the scene editor and it passes its own versions of the particle fx modules\n")
         out_file.write("\n")
         out_file.write(i2+"self.loadmode=loadmode\n")
-        out_file.write(i2+"self.seParticleEffect=seParticleEffect\n")
-        out_file.write(i2+"self.seParticles=seParticles\n")
+        out_file.write(i2+"self.ParticleEffect=ParticleEffect\n")
+        out_file.write(i2+"self.Particles=Particles\n")
         out_file.write(i2+"self.executionpath=executionpath\n")
         out_file.write("\n")
         out_file.write(i2+"base.enableParticles()# Enable Particle effects\n")
@@ -488,7 +490,7 @@ class FileSaver:
                      out_file.write (i2+ "alight = AmbientLight(\'"+ light.getName() +"\')\n")
                      out_file.write (i2+ "alight.setColor(VBase4("+ str(light.getLightColor().getX())+ "," + str(light.getLightColor().getY())+ "," + str(light.getLightColor().getZ()) + "," + str(light.getLightColor().getW()) + "))\n")
                      out_file.write (i2+ "self.lightAttrib=self.lightAttrib.addLight(alight)\n")
-                     out_file.write (i2+ "self."+light.getName()+"= render.attachNewNode(alight.upcastToPandaNode())\n")
+                     out_file.write (i2+ "self."+light.getName()+"= render.attachNewNode(alight)\n")
                      out_file.write (i2+ "self."+light.getName()+".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
                      out_file.write (i2+ "self.LightDict[\'" + light.getName() + "\']=alight\n")
                      out_file.write (i2+ "self.LightTypes[\'" + light.getName() + "\']=\'" + type + "\'\n")
@@ -503,7 +505,7 @@ class FileSaver:
                      #out_file.write (i2+ "alight.setPoint(Point3(" + str(light.getX()) + "," + str(light.getY()) + "," + str(light.getZ()) + "))\n")
                      out_file.write (i2+ "alight.setSpecularColor(Vec4(" + str(light.getSpecColor().getX()) + "," + str(light.getSpecColor().getY()) + "," + str(light.getSpecColor().getZ()) + "," + str(light.getSpecColor().getW()) + "))\n")
                      out_file.write (i2+ "self.lightAttrib=self.lightAttrib.addLight(alight)\n")
-                     out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight.upcastToPandaNode())\n")
+                     out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight)\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setPos(Point3(" + str(light.getX()) + "," + str(light.getY()) + "," + str(light.getZ()) + "))\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setHpr(Vec3("+ str(light.getH())+ "," + str(light.getP())+ "," + str(light.getR()) + "))\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
@@ -521,7 +523,7 @@ class FileSaver:
                      out_file.write (i2+ "alight.setSpecularColor(Vec4(" + str(light.getSpecColor().getX()) + "," + str(light.getSpecColor().getY()) + "," + str(light.getSpecColor().getZ()) + "," + str(light.getSpecColor().getW()) + "))\n")
                      out_file.write (i2+ "alight.setAttenuation(Vec3("+ str(light.getAttenuation().getX()) + "," + str(light.getAttenuation().getY()) + "," + str(light.getAttenuation().getZ()) + "))\n")
                      out_file.write (i2+ "self.lightAttrib=self.lightAttrib.addLight(alight)\n")
-                     out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight.upcastToPandaNode())\n")
+                     out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight)\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setPos(Point3(" + str(light.getX()) + "," + str(light.getY()) + "," + str(light.getZ()) + "))\n")
                      out_file.write (i2+ "self.LightDict[\'" + light.getName() + "\']=alight\n")
@@ -539,7 +541,7 @@ class FileSaver:
                      out_file.write (i2+ "alight.setAttenuation(Vec3("+ str(light.getAttenuation().getX()) + "," + str(light.getAttenuation().getY()) + "," + str(light.getAttenuation().getZ()) + "))\n")
                      out_file.write (i2+ "alight.setExponent(" +str(light.getExponent()) +")\n")
                      out_file.write (i2+ "self.lightAttrib=self.lightAttrib.addLight(alight)\n")
-                     out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight.upcastToLensNode())\n")
+                     out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight)\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setPos(Point3(" + str(light.getX()) + "," + str(light.getY()) + "," + str(light.getZ()) + "))\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setHpr(Vec3("+ str(light.getH())+ "," + str(light.getP())+ "," + str(light.getR()) + "))\n")
@@ -569,7 +571,7 @@ class FileSaver:
         ####################################################################################################################################################
 
         out_file.write(i2+"# Load Particle Effects. The parameters to this function are to allow us to use our modified versions of the Particle Effects modules when loading this file with the level editor\n")
-        out_file.write(i2+"self.starteffects(self.loadmode,self.seParticleEffect,self.seParticles)\n")
+        out_file.write(i2+"self.starteffects(self.loadmode,self.ParticleEffect,self.Particles)\n")
         out_file.write("\n")
 
         ####################################################################################################################################################
@@ -756,10 +758,10 @@ class FileSaver:
         out_file.write(i2+"# Using Particles:\n")
         out_file.write(i2+"# theScene.enableeffect(\"Effect_Name\")\n")
         out_file.write(i2+"##########################################################################################################\n\n")
-        out_file.write(i1+"def starteffects(self,mode,seParticleEffect=None,seParticles=None):\n")
+        out_file.write(i1+"def starteffects(self,mode,ParticleEffect=None,Particles=None):\n")
         for effect in AllScene.particleDict:
             effectS=str(effect)
-            out_file.write(i2+ "self." + effectS + "=" + effectS + "(mode,seParticleEffect,seParticles)\n")
+            out_file.write(i2+ "self." + effectS + "=" + effectS + "(mode,ParticleEffect,Particles)\n")
             out_file.write(i2+ "effect=self."+ effectS + ".getEffect()\n")
             out_file.write(i2+ "self.particleDict[\"" + effectS + "\"]=effect\n")
             out_file.write(i2+ "effect.reparentTo(render)\n")
@@ -888,9 +890,9 @@ class FileSaver:
 
             out_file.write("\n\n")
             out_file.write("class " + str(effect) + ":\n")
-            out_file.write(i1+"def __init__(self,mode=1,seParticleEffect=None,seParticles=None):\n")
+            out_file.write(i1+"def __init__(self,mode=1,ParticleEffect=None,Particles=None):\n")
             out_file.write(i2+"if(mode==0):\n")
-            out_file.write(i2+i1+"self.effect=seParticleEffect.ParticleEffect()\n")
+            out_file.write(i2+i1+"self.effect=ParticleEffect.ParticleEffect()\n")
             out_file.write(i2+"else:\n")
             out_file.write(i2+i1+"self.effect=ParticleEffect.ParticleEffect()\n")
             AllScene.particleDict[effect].AppendConfig(out_file)

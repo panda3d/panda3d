@@ -12,6 +12,7 @@
 #
 #################################################################
 
+from panda3d.core import Vec3
 from direct.showbase.DirectObject import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
@@ -512,9 +513,12 @@ class ObjectHandles(NodePath,DirectObject):
         NodePath.__init__(self)
 
         # Load up object handles model and assign it to self
-        self.assign(loader.loadModel('models/misc/objectHandles'))
+        baseNP = NodePath('objectHandles')
+        handles = loader.loadModel('models/misc/objectHandles')
+        handles.reparentTo(baseNP)
+        self.assign(baseNP)
         self.setName('objectHandles')
-        self.scalingNode = self.getChild(0)
+        self.scalingNode = self.getChild(0)#.getParent()
         self.scalingNode.setName('ohScalingNode')
         self.ohScalingFactor = 1.0
         # To avoid recreating a vec every frame
@@ -751,9 +755,10 @@ class ObjectHandles(NodePath,DirectObject):
     def multiplyScalingFactorBy(self, factor):
         taskMgr.remove('resizeObjectHandles')
         sf = self.ohScalingFactor = self.ohScalingFactor * factor
-        self.scalingNode.lerpScale(sf,sf,sf, 0.5,
-                                   blendType = 'easeInOut',
-                                   task = 'resizeObjectHandles')
+        self.scalingNode.scaleInterval(
+            0.5, Vec3(sf,sf,sf),
+            blendType = 'easeInOut',
+            name = 'resizeObjectHandles')
 
     def growToFit(self):
         taskMgr.remove('resizeObjectHandles')
@@ -763,9 +768,10 @@ class ObjectHandles(NodePath,DirectObject):
         minDim = min(SEditor.dr.nearWidth, SEditor.dr.nearHeight)
         sf = 0.4 * minDim * (pos[1]/SEditor.dr.near)
         self.ohScalingFactor = sf
-        self.scalingNode.lerpScale(sf,sf,sf, 0.5,
-                                   blendType = 'easeInOut',
-                                   task = 'resizeObjectHandles')
+        self.scalingNode.scaleInterval(
+            0.5, Vec3(sf,sf,sf),
+            blendType = 'easeInOut',
+            name = 'resizeObjectHandles')
 
     def createObjectHandleLines(self):
         # X post

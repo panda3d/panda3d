@@ -194,11 +194,11 @@ class SeSession(DirectObject):  ### Customized DirectSession
 
         if self.oobeMode:
             # Position a target point to lerp the oobe camera to
-            self.cameraControl.camManipRef.iPosHpr(self.trueCamera)
-            t = self.oobeCamera.lerpPosHpr(
-                Point3(0), Vec3(0), 2.0,
+            self.cameraControl.camManipRef.setPosHpr(self.trueCamera.getPos(), self.trueCamera.getHpr())
+            t = self.oobeCamera.posHprInterval(
+                2.0, Point3(0), Vec3(0),
                 other = self.cameraControl.camManipRef,
-                task = 'manipulateCamera',
+                name = 'manipulateCamera',
                 blendType = 'easeInOut')
             # When move is done, switch to oobe mode
             t.uponDeath = self.endOOBE
@@ -211,30 +211,30 @@ class SeSession(DirectObject):  ### Customized DirectSession
             cameraParent = self.camera.getParent()
             # Prepare oobe camera
             self.oobeCamera.reparentTo(cameraParent)
-            self.oobeCamera.iPosHpr(self.trueCamera)
+            self.oobeCamera.setPosHpr(self.trueCamera.getPos(), self.trueCamera.getHpr())
             # Put camera under new oobe camera
             base.cam.reparentTo(self.oobeCamera)
             # Position a target point to lerp the oobe camera to
             self.cameraControl.camManipRef.setPos(
                 self.trueCamera, Vec3(-2,-20, 5))
             self.cameraControl.camManipRef.lookAt(self.trueCamera)
-            t = self.oobeCamera.lerpPosHpr(
-                Point3(0), Vec3(0), 2.0,
+            t = self.oobeCamera.posHprInterval(
+                2.0, Point3(0), Vec3(0),
                 other = self.cameraControl.camManipRef,
-                task = 'manipulateCamera',
+                name = 'manipulateCamera',
                 blendType = 'easeInOut')
             # When move is done, switch to oobe mode
             t.uponDeath = self.beginOOBE
 
     def beginOOBE(self, state):
         # Make sure we've reached our final destination
-        self.oobeCamera.iPosHpr(self.cameraControl.camManipRef)
+        self.oobeCamera.setPosHpr(self.cameraControl.camManipRef.getPos(), self.cameraControl.camManipRef.getHpr())
         self.camera = self.oobeCamera
         self.oobeMode = 1
 
     def endOOBE(self, state):
         # Make sure we've reached our final destination
-        self.oobeCamera.iPosHpr(self.trueCamera)
+        self.oobeCamera.setPosHpr(self.trueCamera.getPos(), self.trueCamera.getHpr())
         # Disable OOBE mode.
         base.cam.reparentTo(self.trueCamera)
         self.camera = self.trueCamera
@@ -388,7 +388,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             messenger.send('DIRECT_preSelectNodePath', [dnp])
             if fResetAncestry:
                 # Update ancestry
-                self.ancestry = dnp.getAncestors()
+                self.ancestry = list(dnp.getAncestors())
                 self.ancestry.reverse()
                 self.ancestryIndex = 0
             # Update the selectedNPReadout
@@ -479,7 +479,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
 
 
     def isNotCycle(self, nodePath, parent):
-        if nodePath.id() == parent.id():
+        if nodePath.get_key() == parent.get_key():
             print 'DIRECT.reparent: Invalid parent'
             return 0
         elif parent.hasParent():

@@ -28,8 +28,8 @@ import os
 import string
 import sys
 
-import seParticleEffect
-import seParticles
+from direct.particles import Particles
+from direct.particles import ParticleEffect
 
 ######################################################################################################
 # Data Holder
@@ -935,7 +935,7 @@ class dataHolder:
         ###########################################################################
 
         ### Ask for a filename
-        OpenFilename = tkFileDialog.askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
+        OpenFilename = tkFileDialog.askopenfilename(filetypes = [("Python","*.py")],title = "Load Scene")
         if(not OpenFilename):
             return None
         f=Filename.fromOsSpecific(OpenFilename)
@@ -952,12 +952,12 @@ class dataHolder:
         # Actually import the scene... this executes the code in the scene
         ############################################################################
         self.theScene=__import__(fileName)
-        self.Scene=self.theScene.SavedScene(0,seParticleEffect,seParticles,dirName) # Specify load mode of 0 which will allow us to pass seParticle and seParticleEffect
+        self.Scene=self.theScene.SavedScene(0,ParticleEffect,Particles,dirName) # Specify load mode of 0 which will allow us to pass Particle and ParticleEffect
         messenger.send('SGE_Update Explorer',[render])
 
 
         # Lets call some important initialization methods on our scene:
-        #self.Scene.starteffects(0,seParticleEffect,seParticles,dirName)    # This special calling of start effect with mode 0 is to use seParticleEffect and seParticles
+        #self.Scene.starteffects(0,ParticleEffect,Particles,dirName)    # This special calling of start effect with mode 0 is to use ParticleEffect and Particles
 
 
         ############################################################################

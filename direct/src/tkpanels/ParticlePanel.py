@@ -113,14 +113,14 @@ class ParticlePanel(AppShell):
             label = 'Save Params',
             command = self.saveParticleEffectToFile)
         self.menuBar._menuInfo[menuName][1].append("")
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')-1]
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Save Params')]
         self.menuBar._menuInfo[menuName][1][fileMenu.index('Save Params')] = ""
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Print Params',
             command = lambda s = self: s.particles.printParams())
         self.menuBar._menuInfo[menuName][1].append("")
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')-1]
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Print Params')]
         self.menuBar._menuInfo[menuName][1][fileMenu.index('Print Params')] = ""
 
         # PARTICLE MANAGER MENU

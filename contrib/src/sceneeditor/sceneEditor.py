@@ -951,7 +951,7 @@ class myLevelEditor(AppShell):
         # Instantiate FileSaver from seFileSaver.py and pass it the filename
         #################################################################
 
-        fileName = tkFileDialog.asksaveasfilename(filetypes = [("PY","py")],title = "Save Scene")
+        fileName = tkFileDialog.asksaveasfilename(filetypes = [("Python File","*.py")],title = "Save Scene")
         if(not fileName):
             return
         fCheck=Filename(fileName)

@@ -63,10 +63,10 @@ class seLight(NodePath):
         self.lence = lence
         self.active = True
 
-        if isinstance(light, Spotlight):
-            node = light.upcastToLensNode()
-        else:
-            node = light.upcastToPandaNode()
+        #if isinstance(light, Spotlight):
+        node = light
+        #else:
+        #    node = light
 
         # Attach node to self
         self.LightNode=parent.attachNewNode(node)
@@ -418,7 +418,7 @@ class seLightManager(NodePath):
         #################################################################
         type = lower(light.getType().getName())
 
-        light.upcastToNamable()
+        #light.upcastToNamable()
 
         specularColor = VBase4(1)
         position = Point3(0,0,0)

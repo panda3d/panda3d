@@ -1,25 +1,37 @@
 """PANDA3D Particle Panel"""
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from direct.tkwidgets.AppShell import AppShell
-from tkFileDialog import *
-from tkSimpleDialog import askstring
-import os, Pmw, Tkinter
-from direct.tkwidgets.Dial import AngleDial
-from direct.tkwidgets.Floater import Floater
-from direct.tkwidgets.Slider import Slider
-from direct.tkwidgets.VectorWidgets import Vector2Entry, Vector3Entry
-from direct.tkwidgets.VectorWidgets import ColorEntry
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
+from direct.tkwidgets import VectorWidgets
+from direct.tkpanels import Placer
+from direct.particles import ForceGroup
+from direct.particles import Particles
+from direct.particles import ParticleEffect
+import Pmw, os, sys
+
+if sys.version_info >= (3, 0):
+    from tkinter.filedialog import *
+    from tkinter.simpledialog import askstring
+else:
+    from tkFileDialog import *
+    from tkSimpleDialog import askstring
+
+from panda3d.core import *
+from panda3d.physics import *
+from panda3d.direct import getParticlePath
+from direct.particles import SpriteParticleRendererExt
 import sePlacer
-import seForceGroup
-import seParticles
-import seParticleEffect
+#import seParticleEffect
 
 class ParticlePanel(AppShell):
     # Override class variables
     appname = 'Particle Panel'
     frameWidth  = 375
-    frameHeight = 575
+    frameHeight = 675
     usecommandarea = 0
     usestatusarea  = 0
     balloonState = 'both'
@@ -36,8 +48,11 @@ class ParticlePanel(AppShell):
             self.particleEffect = particleEffect
             self.effectsDict = effectsDict
         else:
+            # Make sure particles are enabled
+            base.enableParticles()
+
             # Or create a new one if none given
-            particles = seParticles.Particles()
+            particles = Particles.Particles()
             particles.setBirthRate(0.02)
             particles.setLitterSize(10)
             particles.setLitterSpread(0)
@@ -45,9 +60,9 @@ class ParticlePanel(AppShell):
             particles.setRenderer("PointParticleRenderer")
             particles.setEmitter("SphereVolumeEmitter")
             particles.enable()
-            pe = seParticleEffect.ParticleEffect('effect1', particles)
+            pe = ParticleEffect.ParticleEffect('effect-1', particles)
             self.particleEffect = pe
-            self.emitter=loader.loadModel("sphere")
+            self.emitter=loader.loadModel("misc/sphere")
             pe.reparentTo(self.emitter)
             self.emitter.setName("effect1")
             self.emitter.reparentTo(render)
@@ -63,8 +78,9 @@ class ParticlePanel(AppShell):
 
         # Initialize panel Pmw options
         self.initialiseoptions(ParticlePanel)
+
         # Update panel values to reflect particle effect's state
-        self.selectEffectNamed(self.effectsDict.keys()[0])
+        self.selectEffectNamed(next(iter(self.effectsDict)))
         # Make sure labels/menus reflect current state
         self.updateMenusAndLabels()
         # Make sure there is a page for each forceGroup objects
@@ -76,8 +92,6 @@ class ParticlePanel(AppShell):
         self.widgetDict = {}
         self.variableDict = {}
         self.forcePagesDict = {}
-        # Make sure particles are enabled
-        base.enableParticles()
 
     def onDestroy(self, event):
         messenger.send('ParticlePanle_close')
@@ -94,19 +108,29 @@ class ParticlePanel(AppShell):
         # Get a handle on the file menu so commands can be inserted
         # before quit item
         fileMenu = self.menuBar.component('File-menu')
+        menuName = "File"
         # MRM: Need to add load and save effects methods
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Load Params',
             command = self.loadParticleEffectFromFile)
+        self.menuBar._menuInfo[menuName][1].append("")
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][1]
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Load Params')] = ""
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Save Params',
             command = self.saveParticleEffectToFile)
+        self.menuBar._menuInfo[menuName][1].append("")
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Save Params')]
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Save Params')] = ""
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Print Params',
             command = lambda s = self: s.particles.printParams())
+        self.menuBar._menuInfo[menuName][1].append("")
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Print Params')]
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Print Params')] = ""
 
         # PARTICLE MANAGER MENU
         self.menuBar.addmenu('ParticleMgr', 'ParticleMgr Operations')
@@ -164,7 +188,7 @@ class ParticlePanel(AppShell):
         self.particlesLabel.pack(side = LEFT, fill = 'x', expand = 1)
         self.bind(self.particlesLabel,
                   ('Select particles object to configure ' +
-                   'or add new particles object to current effect' ))
+                   'or add new particles object to current effect'))
         self.particlesLabelMenu.add_command(label = 'Create New Particles',
                                             command = self.createNewParticles)
         self.particlesEnableMenu = Menu(self.particlesLabelMenu, tearoff = 0)
@@ -463,6 +487,10 @@ class ParticlePanel(AppShell):
                            'Radius of ring',
                            command = self.setEmitterRingRadius,
                            min = 0.01)
+        self.createFloater(ringPage, 'Ring Emitter', 'Radius Spread',
+                           'Variation in radius of ring',
+                           command = self.setEmitterRingRadiusSpread,
+                           min = 0.0)
         self.ringCustomFrame = Frame(ringPage)
         self.createAngleDial(self.ringCustomFrame, 'Ring Emitter', 'Angle',
                              'Particle launch angle',
@@ -488,6 +516,10 @@ class ParticlePanel(AppShell):
                            'Radius of ring',
                            command = self.setEmitterTangentRingRadius,
                            min = 0.01)
+        self.createFloater(tangentRingPage, 'Tangent Ring Emitter',
+                           'Radius Spread',
+                           'Variation in radius of ring',
+                           command = self.setEmitterTangentRingRadiusSpread)
         self.emitterNotebook.pack(fill = X)
 
         ## RENDERER PAGE WIDGETS ##
@@ -502,7 +534,8 @@ class ParticlePanel(AppShell):
         self.createOptionMenu(rendererPage,
                               'Renderer', 'Alpha Mode',
                               "alpha setting over particles' lifetime",
-                              ('NO_ALPHA','ALPHA_OUT','ALPHA_IN','ALPHA_USER'),
+                              ('NO_ALPHA','ALPHA_IN','ALPHA_OUT',
+                               'ALPHA_IN_OUT', 'ALPHA_USER'),
                               self.setRendererAlphaMode)
 
         self.createSlider(
@@ -511,6 +544,8 @@ class ParticlePanel(AppShell):
             command = self.setRendererUserAlpha)
 
         self.rendererNotebook = Pmw.NoteBook(rendererPage, tabpos = None)
+        self.rendererNotebook.pack(fill = BOTH, expand = 1)
+
         # Line page #
         linePage = self.rendererNotebook.add('LineParticleRenderer')
         self.createColorEntry(linePage, 'Line Renderer', 'Head Color',
@@ -519,18 +554,147 @@ class ParticlePanel(AppShell):
         self.createColorEntry(linePage, 'Line Renderer', 'Tail Color',
                                 'Tail color of line',
                                 command = self.setRendererLineTailColor)
-        # Geom page #
+        self.createFloater(linePage, 'Line Renderer', 'Line Scale Factor',
+                           'Scale Factor applied to length of line',
+                           command = self.setRendererLineScaleFactor)
+
+        ############################################################################
+        # GEOM PARTICLE RENDERER PAGE #
+        ############################################################################
         geomPage = self.rendererNotebook.add('GeomParticleRenderer')
         f = Frame(geomPage)
         f.pack(fill = X)
-        Label(f, width = 12, text = 'Geom Node').pack(side = LEFT)
+
+        # Geom Node input field
+        Label(f, width = 12, text = 'Geom Node', pady = 3).pack(side = LEFT)
         self.rendererGeomNode = StringVar()
-        self.rendererGeomNodeEntry = Entry(
-            f, width = 12,
-            textvariable = self.rendererGeomNode)
+        self.rendererGeomNodeEntry = Entry(f, width = 12,
+                                           textvariable = self.rendererGeomNode)
         self.rendererGeomNodeEntry.bind('<Return>', self.setRendererGeomNode)
         self.rendererGeomNodeEntry.pack(side = LEFT, expand = 1, fill = X)
-        # Point #
+
+        # Setup frames
+        f = Frame(geomPage)
+        f.pack(fill = BOTH, expand = 1)
+        rendererGeomNotebook = Pmw.NoteBook(f)
+        rendererGeomNotebook.pack(fill = BOTH, expand = 1)
+
+        rendererGeomBlendPage = rendererGeomNotebook.add('Blend')
+        rendererGeomScalePage = rendererGeomNotebook.add('Scale')
+        rendererGeomInterpolationPage = rendererGeomNotebook.add('Interpolate')
+
+        ############################################################################
+        # Blend tab
+        p = Frame(rendererGeomBlendPage)
+        p.pack(fill = X)
+        self.createOptionMenu(p, 'Geom Renderer',
+                              'Color Blend',
+                              'How to render semi-transparent colors',
+                              ('MNone','MAdd','MSubtract','MInvSubtract','MMin','MMax'),
+                              self.setRendererGeomColorBlendMethod)
+        self.createOptionMenu(p, 'Geom Renderer',
+                              'Incoming Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OIncomingColorSaturate','OZero'),
+                              self.setRendererGeomColorBlendIncomingOperand)
+        self.getVariable('Geom Renderer','Incoming Op.').set('OIncomingAlpha')
+        self.createOptionMenu(p, 'Geom Renderer',
+                              'Fbuffer Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OZero'),
+                              self.setRendererGeomColorBlendFbufferOperand)
+        self.getVariable('Geom Renderer','Fbuffer Op.').set('OOneMinusIncomingAlpha')
+
+        ############################################################################
+        # Scale tab
+        p = Frame(rendererGeomScalePage)
+        p.pack(fill = X)
+
+        self.createCheckbutton(
+            p, 'Geom Renderer', 'X Scale',
+            ("On: x scale is interpolated over particle's life; " +
+             "Off: stays as start_X_Scale"),
+            self.toggleRendererGeomXScale, 0, side = LEFT)
+        self.createCheckbutton(
+            p, 'Geom Renderer', 'Y Scale',
+            ("On: y scale is interpolated over particle's life; " +
+             "Off: stays as start_Y_Scale"),
+            self.toggleRendererGeomYScale, 0, side = LEFT)
+        self.createCheckbutton(
+            p, 'Geom Renderer', 'Z Scale',
+            ("On: z scale is interpolated over particle's life; " +
+             "Off: stays as start_Z_Scale"),
+            self.toggleRendererGeomZScale, 0, side = LEFT)
+
+        p = Frame(rendererGeomScalePage)
+        p.pack(fill = X)
+
+        self.createFloater(p, 'Geom Renderer',
+                           'Initial X Scale',
+                           'Initial X scaling factor',
+                           command = self.setRendererGeomInitialXScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Final X Scale',
+                           'Final X scaling factor, if xScale enabled',
+                           command = self.setRendererGeomFinalXScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Initial Y Scale',
+                           'Initial Y scaling factor',
+                           command = self.setRendererGeomInitialYScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Final Y Scale',
+                           'Final Y scaling factor, if yScale enabled',
+                           command = self.setRendererGeomFinalYScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Initial Z Scale',
+                           'Initial Z scaling factor',
+                           command = self.setRendererGeomInitialZScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Final Z Scale',
+                           'Final Z scaling factor, if zScale enabled',
+                           command = self.setRendererGeomFinalZScale)
+
+        ############################################################################
+        # Interpolate tab
+        p = Frame(rendererGeomInterpolationPage)
+        p.pack(fill = X)
+        addSegmentButton = Menubutton(p, text = 'Add Segment',
+                                      relief = RAISED,
+                                      borderwidth = 2,
+                                      font=('MSSansSerif', 14, 'bold'),
+                                      activebackground = '#909090')
+        segmentMenu = Menu(addSegmentButton)
+        addSegmentButton['menu'] = segmentMenu
+        segmentMenu.add_command(label = 'Add Constant segment',
+                                command = self.addConstantInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Linear segment',
+                                command = self.addLinearInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Stepwave segment',
+                                command = self.addStepwaveInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Sinusoid segment',
+                                command = self.addSinusoidInterpolationSegment)
+        addSegmentButton.pack(expand = 0)
+
+        sf = Pmw.ScrolledFrame(p, horizflex = 'elastic')
+        sf.pack(fill = BOTH, expand = 1)
+
+        self.rendererGeomSegmentFrame = sf.interior()
+        self.rendererGeomSegmentFrame.pack(fill = BOTH, expand = 1)
+        self.rendererSegmentWidgetList = []
+
+        rendererGeomNotebook.setnaturalsize()
+
+        ############################################################################
+        # POINT PARTICLE RENDERER PAGE #
+        ############################################################################
         rendererPointPage = self.rendererNotebook.add('PointParticleRenderer')
         self.createFloater(rendererPointPage, 'Point Renderer', 'Point Size',
                            'Width and height of points in pixels',
@@ -581,101 +745,161 @@ class ParticlePanel(AppShell):
         # Sprite #
         spritePage = self.rendererNotebook.add('SpriteParticleRenderer')
         f = Frame(spritePage)
-        Label(f, width = 12, text = 'Texture Type:').pack(side = LEFT)
-        self.rendererSpriteSourceType = IntVar()
-        self.rendererSpriteSourceType.set(SpriteParticleRenderer.STTexture)
-        self.rendererSpriteSTTexture = self.createRadiobutton(
-            f, 'left',
-            'Sprite Renderer', 'Texture Type',
-            'Sprite particle renderer created from texture file',
-            self.rendererSpriteSourceType, SpriteParticleRenderer.STTexture,
-            self.setSpriteSourceType)
-        self.rendererSpriteSTTexture = self.createRadiobutton(
-            f, 'left',
-            'Sprite Renderer', 'NodePath Type',
-            'Sprite particle renderer created from node path',
-            self.rendererSpriteSourceType, SpriteParticleRenderer.STFromNode,
-            self.setSpriteSourceType)
-        f.pack(fill = X)
-        f = Frame(spritePage)
-        Label(f, width = 6, text = 'Texture:').pack(side = LEFT)
-        self.rendererSpriteTexture = StringVar()
-        self.rendererSpriteTexture.set(SpriteParticleRenderer.sourceTextureName)
-        self.rendererSpriteTextureEntry = Entry(
-            f, width = 12,
-            textvariable = self.rendererSpriteTexture)
-        self.rendererSpriteTextureEntry.pack(side = LEFT, expand = 1, fill = X)
-        f.pack(fill = X)
-        f = Frame(spritePage)
-        Label(f, width = 6, text = 'File:').pack(side = LEFT)
-        self.rendererSpriteFile = StringVar()
-        self.rendererSpriteFile.set(SpriteParticleRenderer.sourceFileName)
-        self.rendererSpriteFileEntry = Entry(
-            f, width = 12,
-            textvariable = self.rendererSpriteFile)
-        self.rendererSpriteFileEntry.pack(side = LEFT, expand = 1, fill = X)
-        Label(f, width = 6, text = 'Node:').pack(side = LEFT)
-        self.rendererSpriteNode = StringVar()
-        self.rendererSpriteNode.set(SpriteParticleRenderer.sourceNodeName)
-        self.rendererSpriteNodeEntry = Entry(
-            f, width = 6,
-            textvariable = self.rendererSpriteNode)
-        self.rendererSpriteNodeEntry.pack(side = LEFT, expand = 1, fill = X)
-        f.pack(fill = X)
-        # Init entries
-        self.setSpriteSourceType()
-        self.setTextureButton = Button(spritePage, text = 'Set Texture',
-                                       command = self.setRendererSpriteTexture)
-        self.setTextureButton.pack(fill = X)
-        f = Frame(spritePage)
+        f.pack(fill = BOTH, expand = 1)
+
+        rendererSpriteNotebook = Pmw.NoteBook(f)
+        rendererSpriteNotebook.pack(fill = BOTH, expand = 1)
+
+        rendererSpriteTexturePage = rendererSpriteNotebook.add('Texture')
+        rendererSpriteScalePage = rendererSpriteNotebook.add('Scale')
+        rendererSpriteBlendPage = rendererSpriteNotebook.add('Blend')
+        rendererSpriteInterpolationPage = rendererSpriteNotebook.add('Interpolate')
+##################################################################################
+
+        p = Frame(rendererSpriteTexturePage)
+        p.pack(fill = BOTH, expand = 1)
+
+        bp = Frame(p)
+        bp.pack(expand = 0, side = TOP)
+
+        bbp = Frame(bp)
+        bbp.pack()
         self.createCheckbutton(
-            f, 'Sprite Renderer', 'X Scale',
+            bbp, 'Sprite Renderer', 'Enable Animation',
+            ("On: Multitexture node will be animated; " +
+             "Off: Only the first frame of a node is rendered"),
+            self.setRendererSpriteAnimationEnable, 0, side = LEFT)
+        self.createFloater(bbp, 'Sprite Renderer', 'Frame Rate', 'Animation frame rate',
+                           command = self.setRendererSpriteAnimationFrameRate).pack(side = LEFT)
+
+        bbp = Frame(bp)
+        bbp.pack(pady=3)
+        Button(bbp, text = 'Add Texture',
+               command = self.addRendererSpriteAnimationTexture).pack(pady = 3, padx = 15, side = LEFT)
+        Button(bbp, text = 'Add Animation',
+               command = self.addRendererSpriteAnimationFromNode).pack(pady = 3, padx = 15, side = LEFT)
+
+        pp = Frame(p)
+        pp.pack(fill = BOTH, expand = 1, pady = 3)
+        sf = Pmw.ScrolledFrame(pp, horizflex = 'elastic')
+        sf.pack(fill = BOTH, expand = 1)
+
+        self.rendererSpriteAnimationFrame = sf.interior()
+        self.rendererSpriteAnimationFrame.pack(fill = BOTH, expand = 1)
+        self.rendererSpriteAnimationWidgetList = []
+
+        self.rendererSpriteTexture = StringVar()
+        self.rendererSpriteFile = StringVar()
+        self.rendererSpriteNode = StringVar()
+
+##################################################################################
+        p = Frame(rendererSpriteScalePage)
+        p.pack(fill = X)
+
+        self.createCheckbutton(
+            p, 'Sprite Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
              "Off: stays as start_X_Scale"),
             self.toggleRendererSpriteXScale, 0, side = LEFT)
         self.createCheckbutton(
-            f, 'Sprite Renderer', 'Y Scale',
+            p, 'Sprite Renderer', 'Y Scale',
             ("On: y scale is interpolated over particle's life; " +
              "Off: stays as start_Y_Scale"),
             self.toggleRendererSpriteYScale, 0, side = LEFT)
         self.createCheckbutton(
-            f, 'Sprite Renderer', 'Anim Angle',
+            p, 'Sprite Renderer', 'Anim Angle',
             ("On: particles that are set to spin on the Z axis will " +
              "spin appropriately"),
             self.toggleRendererSpriteAnimAngle, 0, side = LEFT)
-        f.pack(fill = X)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        p = Frame(rendererSpriteScalePage)
+        p.pack(fill = X)
+        self.createFloater(p, 'Sprite Renderer',
                            'Initial X Scale',
                            'Initial X scaling factor',
                            command = self.setRendererSpriteInitialXScale)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        self.createFloater(p, 'Sprite Renderer',
                            'Final X Scale',
                            'Final X scaling factor, if xScale enabled',
                            command = self.setRendererSpriteFinalXScale)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        self.createFloater(p, 'Sprite Renderer',
                            'Initial Y Scale',
                            'Initial Y scaling factor',
                            command = self.setRendererSpriteInitialYScale)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        self.createFloater(p, 'Sprite Renderer',
                            'Final Y Scale',
                            'Final Y scaling factor, if yScale enabled',
                            command = self.setRendererSpriteFinalYScale)
-        self.createAngleDial(spritePage, 'Sprite Renderer',
+        self.createAngleDial(p, 'Sprite Renderer',
                              'Non Animated Theta',
                              ('If animAngle is false: counter clockwise ' +
                               'Z rotation of all sprites'),
                              command = self.setRendererSpriteNonAnimatedTheta)
-        self.createOptionMenu(spritePage, 'Sprite Renderer',
+        p = Frame(rendererSpriteBlendPage)
+        p.pack(fill = X)
+        self.createOptionMenu(p, 'Sprite Renderer',
                               'Blend Type',
                               'Interpolation blend type for X and Y scaling',
                               ('PP_NO_BLEND', 'PP_LINEAR', 'PP_CUBIC'),
                               self.setRendererSpriteBlendMethod)
         self.createCheckbutton(
-            spritePage, 'Sprite Renderer', 'Alpha Disable',
+            p, 'Sprite Renderer', 'Alpha Disable',
             'On: alpha blending is disabled',
             self.toggleRendererSpriteAlphaDisable, 0)
-        self.rendererNotebook.pack(fill = X)
+        self.createOptionMenu(p, 'Sprite Renderer',
+                              'Color Blend',
+                              'How to render semi-transparent colors',
+                              ('MNone','MAdd','MSubtract','MInvSubtract','MMin','MMax'),
+                              self.setRendererSpriteColorBlendMethod)
+        self.createOptionMenu(p, 'Sprite Renderer',
+                              'Incoming Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OIncomingColorSaturate','OZero'),
+                              self.setRendererSpriteColorBlendIncomingOperand)
+        self.getVariable('Sprite Renderer','Incoming Op.').set('OIncomingAlpha')
+        self.createOptionMenu(p, 'Sprite Renderer',
+                              'Fbuffer Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OZero'),
+                              self.setRendererSpriteColorBlendFbufferOperand)
+        self.getVariable('Sprite Renderer','Fbuffer Op.').set('OOneMinusIncomingAlpha')
+        p = Frame(rendererSpriteInterpolationPage)
+        p.pack(fill = BOTH, expand = 1)
+        addSegmentButton = Menubutton(p, text = 'Add Segment',
+                                      relief = RAISED,
+                                      borderwidth = 2,
+                                      font=('MSSansSerif', 14, 'bold'),
+                                      activebackground = '#909090')
+        segmentMenu = Menu(addSegmentButton)
+        addSegmentButton['menu'] = segmentMenu
+        segmentMenu.add_command(label = 'Add Constant segment',
+                                command = self.addConstantInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Linear segment',
+                                command = self.addLinearInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Stepwave segment',
+                                command = self.addStepwaveInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Sinusoid segment',
+                                command = self.addSinusoidInterpolationSegment)
+        addSegmentButton.pack(expand = 0)
 
+        pp = Frame(p)
+        pp.pack(fill = BOTH, expand = 1, pady = 3)
+        sf = Pmw.ScrolledFrame(pp, horizflex = 'elastic')
+        sf.pack(fill = BOTH, expand = 1)
+
+        self.rendererSpriteSegmentFrame = sf.interior()
+        self.rendererSpriteSegmentFrame.pack(fill = BOTH, expand = 1)
+        self.rendererSegmentWidgetList = []
+
+        rendererSpriteNotebook.setnaturalsize()
+        ##########################################################
         ## FORCE PAGE WIDGETS ##
         self.addForceButton = Menubutton(forcePage, text = 'Add Force',
                                           relief = RAISED,
@@ -722,6 +946,7 @@ class ParticlePanel(AppShell):
         self.forceGroupNotebook = Pmw.NoteBook(self.forceFrame, tabpos = None)
         self.forceGroupNotebook.pack(fill = X)
 
+        ########################################################################
         self.factoryNotebook.setnaturalsize()
         self.emitterNotebook.setnaturalsize()
         self.rendererNotebook.setnaturalsize()
@@ -774,7 +999,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['resolution'] = resolution
         kw['numDigits'] = numDigits
-        widget = apply(Floater, (parent,), kw)
+        widget = Floater.Floater(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -786,7 +1011,7 @@ class ParticlePanel(AppShell):
                         command = None, **kw):
         kw['text'] = text
         kw['style'] = 'mini'
-        widget = apply(AngleDial,(parent,), kw)
+        widget = Dial.AngleDial(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -801,7 +1026,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['max'] = max
         kw['resolution'] = resolution
-        widget = apply(Slider, (parent,), kw)
+        widget = Slider.Slider(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -813,7 +1038,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(Vector2Entry, (parent,), kw)
+        widget = VectorWidgets.Vector2Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -825,7 +1050,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(Vector3Entry, (parent,), kw)
+        widget = VectorWidgets.Vector3Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -837,7 +1062,7 @@ class ParticlePanel(AppShell):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(ColorEntry, (parent,) ,kw)
+        widget = VectorWidgets.ColorEntry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -909,8 +1134,7 @@ class ParticlePanel(AppShell):
         self.effectsLabelMenu.delete(5, 'end')
         self.effectsLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
-        keys = self.effectsDict.keys()
-        keys.sort()
+        keys = sorted(self.effectsDict.keys())
         for name in keys:
             effect = self.effectsDict[name]
             self.effectsLabelMenu.add_command(
@@ -934,7 +1158,7 @@ class ParticlePanel(AppShell):
         self.particlesLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         particles = self.particleEffect.getParticlesList()
-        names = map(lambda x: x.getName(), particles)
+        names = [x.getName() for x in particles]
         names.sort()
         for name in names:
             particle = self.particleEffect.getParticlesNamed(name)
@@ -959,7 +1183,7 @@ class ParticlePanel(AppShell):
         self.forceGroupLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         forceGroupList = self.particleEffect.getForceGroupList()
-        names = map(lambda x: x.getName(), forceGroupList)
+        names = [x.getName() for x in forceGroupList]
         names.sort()
         for name in names:
             force = self.particleEffect.getForceGroupNamed(name)
@@ -992,7 +1216,7 @@ class ParticlePanel(AppShell):
             self.mainNotebook.selectpage('System')
             self.updateInfo('System')
         else:
-            print 'ParticlePanel: No effect named ' + name
+            print('ParticlePanel: No effect named ' + name)
 
     def toggleEffect(self, effect, var):
         if var.get():
@@ -1041,19 +1265,19 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            if `pPath.getDirectory(0)` == '.':
+            if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = pPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'ParticlePanel Warning: Invalid default DNA directory!'
-            print 'Using current directory'
+            print('ParticlePanel Warning: Invalid default DNA directory!')
+            print('Using current directory')
             path = '.'
         particleFilename = askopenfilename(
             defaultextension = '.ptf',
-            filetypes = (('Particle Files', '*.ptf'),('All files', '*')),
+            filetypes = (('Particle Files', '*.ptf'), ('All files', '*')),
             initialdir = path,
             title = 'Load Particle Effect',
             parent = self.parent)
@@ -1070,19 +1294,19 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            if `pPath.getDirectory(0)` == '.':
+            if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = pPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'ParticlePanel Warning: Invalid default DNA directory!'
-            print 'Using current directory'
+            print('ParticlePanel Warning: Invalid default DNA directory!')
+            print('Using current directory')
             path = '.'
         particleFilename = asksaveasfilename(
             defaultextension = '.ptf',
-            filetypes = (('Particle Files', '*.ptf'),('All files', '*')),
+            filetypes = (('Particle Files', '*.ptf'), ('All files', '*')),
             initialdir = path,
             title = 'Save Particle Effect as',
             parent = self.parent)
@@ -1282,6 +1506,8 @@ class ParticlePanel(AppShell):
         elif isinstance(emitter, RingEmitter):
             radius = emitter.getRadius()
             self.getWidget('Ring Emitter', 'Radius').set(radius, 0)
+            radiusSpread = emitter.getRadiusSpread()
+            self.getWidget('Ring Emitter', 'Radius Spread').set(radiusSpread, 0)
             angle = emitter.getAngle()
             self.getWidget('Ring Emitter', 'Angle').set(angle, 0)
         elif isinstance(emitter, SphereVolumeEmitter):
@@ -1293,6 +1519,9 @@ class ParticlePanel(AppShell):
         elif isinstance(emitter, TangentRingEmitter):
             radius = emitter.getRadius()
             self.getWidget('Tangent Ring Emitter', 'Radius').set(radius, 0)
+            radiusSpread = emitter.getRadiusSpread()
+            self.getWidget('Tangent Ring Emitter', 'Radius Spread').set(
+                radiusSpread, 0)
     # All #
     def setEmissionType(self, newType = None):
         if newType:
@@ -1316,6 +1545,7 @@ class ParticlePanel(AppShell):
                 'Emitter', 'Radiate Origin')['state'] = 'normal'
             self.getWidget(
                 'Emitter', 'Explicit Velocity')['state'] = 'disabled'
+
             # Hide custom widgets
             if isinstance(self.particles.emitter, DiscEmitter):
                 self.discCustomFrame.pack_forget()
@@ -1393,6 +1623,8 @@ class ParticlePanel(AppShell):
     # Ring #
     def setEmitterRingRadius(self, radius):
         self.particles.emitter.setRadius(radius)
+    def setEmitterRingRadiusSpread(self, radiusSpread):
+        self.particles.emitter.setRadiusSpread(radiusSpread)
     def setEmitterRingLaunchAngle(self, angle):
         self.particles.emitter.setAngle(angle)
     # Sphere surface #
@@ -1404,6 +1636,8 @@ class ParticlePanel(AppShell):
     # Tangent ring #
     def setEmitterTangentRingRadius(self, radius):
         self.particles.emitter.setRadius(radius)
+    def setEmitterTangentRingRadiusSpread(self, radiusSpread):
+        self.particles.emitter.setRadiusSpread(radiusSpread)
 
     ## RENDERER PAGE ##
     def selectRendererType(self, type):
@@ -1420,11 +1654,14 @@ class ParticlePanel(AppShell):
             aMode = 'ALPHA_OUT'
         elif alphaMode == BaseParticleRenderer.PRALPHAIN:
             aMode = 'ALPHA_IN'
+        elif alphaMode == BaseParticleRenderer.PRALPHAINOUT:
+            aMode = 'ALPHA_IN_OUT'
         elif alphaMode == BaseParticleRenderer.PRALPHAUSER:
             aMode = 'ALPHA_USER'
         self.getVariable('Renderer', 'Alpha Mode').set(aMode)
         userAlpha = renderer.getUserAlpha()
         self.getWidget('Renderer', 'User Alpha').set(userAlpha)
+
         if isinstance(renderer, LineParticleRenderer):
             headColor = renderer.getHeadColor() * 255.0
             self.getWidget('Line Renderer', 'Head Color').set(
@@ -1432,8 +1669,47 @@ class ParticlePanel(AppShell):
             tailColor = renderer.getTailColor() * 255.0
             self.getWidget('Line Renderer', 'Tail Color').set(
                 [tailColor[0], tailColor[1], tailColor[2], tailColor[3]])
+            self.getWidget('Line Renderer', 'Line Scale Factor').set(
+                renderer.getLineScaleFactor())
+
         elif isinstance(renderer, GeomParticleRenderer):
-            pass
+            self.getVariable('Geom Renderer', 'X Scale').set(
+                renderer.getXScaleFlag())
+            self.getVariable('Geom Renderer', 'Y Scale').set(
+                renderer.getYScaleFlag())
+            self.getVariable('Geom Renderer', 'Z Scale').set(
+                renderer.getZScaleFlag())
+            initialXScale = renderer.getInitialXScale()
+            self.getWidget('Geom Renderer', 'Initial X Scale').set(
+                initialXScale)
+            initialYScale = renderer.getInitialYScale()
+            self.getWidget('Geom Renderer', 'Initial Y Scale').set(
+                initialYScale)
+            initialZScale = renderer.getInitialZScale()
+            self.getWidget('Geom Renderer', 'Initial Z Scale').set(
+                initialZScale)
+            finalXScale = renderer.getFinalXScale()
+            self.getWidget('Geom Renderer', 'Final X Scale').set(
+                finalXScale)
+            finalYScale = renderer.getFinalYScale()
+            self.getWidget('Geom Renderer', 'Final Y Scale').set(
+                finalYScale)
+            finalZScale = renderer.getFinalZScale()
+            self.getWidget('Geom Renderer', 'Final Z Scale').set(
+                finalZScale)
+            if(self.getVariable('Geom Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+                self.getWidget('Geom Renderer','Incoming Op.').pack(fill = X)
+                self.getWidget('Geom Renderer','Fbuffer Op.').pack(fill = X)
+            else:
+                self.getWidget('Geom Renderer','Incoming Op.').pack_forget()
+                self.getWidget('Geom Renderer','Fbuffer Op.').pack_forget()
+            for x in self.rendererSegmentWidgetList:
+                x.pack_forget()
+                x.destroy()
+            self.rendererSegmentWidgetList = []
+            for id in self.particles.renderer.getColorInterpolationManager().getSegmentIdList().split():
+                self.createWidgetForExistingInterpolationSegment(eval(id))
+
         elif isinstance(renderer, PointParticleRenderer):
             pointSize = renderer.getPointSize()
             self.getWidget('Point Renderer', 'Point Size').set(pointSize)
@@ -1460,6 +1736,7 @@ class ParticlePanel(AppShell):
             elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
                 bMethod = "PP_BLEND_CUBIC"
             self.getVariable('Point Renderer', 'Blend Method').set(bMethod)
+
         elif isinstance(renderer, SparkleParticleRenderer):
             centerColor = renderer.getCenterColor() * 255.0
             self.getWidget('Sparkle Renderer', 'Center Color').set(
@@ -1477,21 +1754,12 @@ class ParticlePanel(AppShell):
             if (lifeScale == SparkleParticleRenderer.SPSCALE):
                 lScale = "SP_SCALE"
             self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
+
         elif isinstance(renderer, SpriteParticleRenderer):
-            color = renderer.getColor() * 255.0
-            # Update widgets to reflect current default values
-            # Texture
-            textureName = renderer.getSourceTextureName()
-            if textureName != None:
-                self.rendererSpriteTexture.set(textureName)
-            # File
-            fileName = renderer.getSourceFileName()
-            if fileName != None:
-                self.rendererSpriteFile.set(fileName)
-            # Node
-            nodeName = renderer.getSourceNodeName()
-            if nodeName != None:
-                self.rendererSpriteNode.set(nodeName)
+            self.getWidget('Sprite Renderer','Frame Rate').set(renderer.getAnimateFramesRate(), 0)
+            self.getVariable('Sprite Renderer','Enable Animation').set(
+                renderer.getAnimateFramesEnable())
+            self.readSpriteRendererAnimations() # Updates widgets with renderer data.
             self.getVariable('Sprite Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
             self.getVariable('Sprite Renderer', 'Y Scale').set(
@@ -1523,9 +1791,23 @@ class ParticlePanel(AppShell):
                 bMethod = "PP_BLEND_CUBIC"
             self.getVariable('Sprite Renderer', 'Alpha Disable').set(
                 renderer.getAlphaDisable())
+            if(self.getVariable('Sprite Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+                self.getWidget('Sprite Renderer','Incoming Op.').pack(fill = X)
+                self.getWidget('Sprite Renderer','Fbuffer Op.').pack(fill = X)
+            else:
+                self.getWidget('Sprite Renderer','Incoming Op.').pack_forget()
+                self.getWidget('Sprite Renderer','Fbuffer Op.').pack_forget()
+            for x in self.rendererSegmentWidgetList:
+                x.pack_forget()
+                x.destroy()
+            self.rendererSegmentWidgetList = []
+            for id in self.particles.renderer.getColorInterpolationManager().getSegmentIdList().split():
+                self.createWidgetForExistingInterpolationSegment(eval(id))
 
     def selectRendererPage(self):
         type = self.particles.renderer.__class__.__name__
+        if(type == 'SpriteParticleRendererExt'):
+           type = 'SpriteParticleRenderer'
         self.rendererNotebook.selectpage(type)
         self.getVariable('Renderer', 'Renderer Type').set(type)
 
@@ -1537,6 +1819,8 @@ class ParticlePanel(AppShell):
             aMode = BaseParticleRenderer.PRALPHAOUT
         elif alphaMode == 'ALPHA_IN':
             aMode = BaseParticleRenderer.PRALPHAIN
+        elif alphaMode == 'ALPHA_IN_OUT':
+            aMode = BaseParticleRenderer.PRALPHAINOUT
         elif alphaMode == 'ALPHA_USER':
             aMode = BaseParticleRenderer.PRALPHAUSER
         self.particles.renderer.setAlphaMode(aMode)
@@ -1553,6 +1837,8 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setTailColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+    def setRendererLineScaleFactor(self, sf):
+        self.particles.renderer.setLineScaleFactor(sf)
     # Geom #
     def setRendererGeomNode(self, event):
         node = None
@@ -1560,6 +1846,7 @@ class ParticlePanel(AppShell):
         if nodePath != None:
             node = nodePath.node()
         if (node != None):
+            self.particles.geomReference = self.rendererGeomNode.get()
             self.particles.renderer.setGeomNode(node)
     # Point #
     def setRendererPointSize(self, size):
@@ -1609,7 +1896,7 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setLifeScale(lScale)
     # Sprite #
     def setSpriteSourceType(self):
-        if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
+        if self.rendererSpriteSourceType.get() == SpriteAnim.ST_texture:
             self.rendererSpriteTextureEntry['state'] = 'normal'
             self.rendererSpriteFileEntry['state'] = 'disabled'
             self.rendererSpriteNodeEntry['state'] = 'disabled'
@@ -1623,12 +1910,55 @@ class ParticlePanel(AppShell):
             self.rendererSpriteTextureEntry['background'] = '#C0C0C0'
             self.rendererSpriteFileEntry['background'] = '#FFFFFF'
             self.rendererSpriteNodeEntry['background'] = '#FFFFFF'
-    def setRendererSpriteTexture(self):
-        if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
-            self.particles.renderer.setTextureFromFile(self.rendererSpriteTexture.get())
+
+    def setRendererSpriteAnimationFrameRate(self, rate):
+        self.particles.renderer.setAnimateFramesRate(rate)
+    def setRendererSpriteAnimationEnable(self):
+        self.particles.renderer.setAnimateFramesEnable(
+            self.getVariable('Sprite Renderer','Enable Animation').get())
+    def addRendererSpriteAnimationTexture(self):
+        ren = self.particles.getRenderer()
+        parent = self.rendererSpriteAnimationFrame
+
+        if ren.addTextureFromFile():
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
+            anim = ren.getAnim(animId)
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
+
+            self.rendererSpriteAnimationWidgetList.append(
+                self.createSpriteAnimationTextureWidget(parent, anim, repr(frameNum)))
         else:
-            self.particles.renderer.setTextureFromNode(
-                self.rendererSpriteFile.get(), self.rendererSpriteNode.get())
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
+            anim = SpriteAnim.STTexture
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
+
+            self.rendererSpriteAnimationWidgetList.append(
+                self.createSpriteAnimationTextureWidget(parent, anim, repr(frameNum)))
+        parent.pack(fill=BOTH, expand=1)
+    def addRendererSpriteAnimationFromNode(self):
+        ren = self.particles.getRenderer()
+        parent = self.rendererSpriteAnimationFrame
+
+        if ren.addTextureFromNode():
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
+            anim = ren.getAnim(animId)
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
+
+            self.rendererSpriteAnimationWidgetList.append(
+                self.createSpriteAnimationNodeWidget(parent, anim, repr(frameNum)))
+        else:
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
+            anim = SpriteAnim.STFromNode
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
+
+            self.rendererSpriteAnimationWidgetList.append(
+                self.createSpriteAnimationNodeWidget(parent, anim, repr(frameNum)))
+        parent.pack(fill=BOTH, expand=1)
+
     def toggleRendererSpriteXScale(self):
         self.particles.renderer.setXScaleFlag(
             self.getVariable('Sprite Renderer', 'X Scale').get())
@@ -1667,6 +1997,520 @@ class ParticlePanel(AppShell):
     def toggleRendererSpriteAlphaDisable(self):
         self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
+    def setRendererColorBlendAttrib(self, rendererName, blendMethodStr, incomingOperandStr, fbufferOperandStr):
+        self.particles.getRenderer().setColorBlendMode(getattr(ColorBlendAttrib, blendMethodStr),
+                                                       getattr(ColorBlendAttrib, incomingOperandStr),
+                                                       getattr(ColorBlendAttrib, fbufferOperandStr))
+
+        if(blendMethodStr in ['MAdd','MSubtract','MInvSubtract']):
+            self.getWidget(rendererName,'Incoming Op.').pack(fill = X)
+            self.getWidget(rendererName,'Fbuffer Op.').pack(fill = X)
+        else:
+            self.getWidget(rendererName,'Incoming Op.').pack_forget()
+            self.getWidget(rendererName,'Fbuffer Op.').pack_forget()
+
+        self.updateRendererWidgets()
+    def setRendererSpriteColorBlendMethod(self, blendMethod):
+        blendMethodStr = blendMethod
+        incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
+        fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
+
+        self.setRendererColorBlendAttrib('Sprite Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+    def setRendererSpriteColorBlendIncomingOperand(self, operand):
+        blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
+        incomingOperandStr = operand
+        fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
+
+        self.setRendererColorBlendAttrib('Sprite Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+    def setRendererSpriteColorBlendFbufferOperand(self, operand):
+        blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
+        incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
+        fbufferOperandStr = operand
+        self.setRendererColorBlendAttrib('Sprite Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
+
+    # GeomParticleRenderer Functionality
+    def toggleRendererGeomXScale(self):
+        self.particles.renderer.setXScaleFlag(
+            self.getVariable('Geom Renderer', 'X Scale').get())
+    def toggleRendererGeomYScale(self):
+        self.particles.renderer.setYScaleFlag(
+            self.getVariable('Geom Renderer', 'Y Scale').get())
+    def toggleRendererGeomZScale(self):
+        self.particles.renderer.setZScaleFlag(
+            self.getVariable('Geom Renderer', 'Z Scale').get())
+
+    def setRendererGeomInitialXScale(self, xScale):
+        self.particles.renderer.setInitialXScale(xScale)
+    def setRendererGeomFinalXScale(self, xScale):
+        self.particles.renderer.setFinalXScale(xScale)
+
+    def setRendererGeomInitialYScale(self, yScale):
+        self.particles.renderer.setInitialYScale(yScale)
+    def setRendererGeomFinalYScale(self, yScale):
+        self.particles.renderer.setFinalYScale(yScale)
+
+    def setRendererGeomInitialZScale(self, zScale):
+        self.particles.renderer.setInitialZScale(zScale)
+    def setRendererGeomFinalZScale(self, zScale):
+        self.particles.renderer.setFinalZScale(zScale)
+
+    def setRendererGeomColorBlendMethod(self, blendMethod):
+        blendMethodStr = blendMethod
+        incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
+        fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
+        self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
+    def setRendererGeomColorBlendIncomingOperand(self, operand):
+        blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
+        incomingOperandStr = operand
+        fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
+        self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
+    def setRendererGeomColorBlendFbufferOperand(self, operand):
+        blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
+        incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
+        fbufferOperandStr = operand
+        self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
+
+    def addConstantInterpolationSegment(self, id = None):
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        if id is None:
+            seg = cim.getSegment(cim.addConstant())
+        else:
+            seg = cim.getSegment(id)
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Constant'
+            self.rendererSegmentWidgetList.append(
+                self.createConstantInterpolationSegmentWidget(parent, segName, seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Constant'
+            self.rendererSegmentWidgetList.append(
+                self.createConstantInterpolationSegmentWidget(parent, segName, seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def addLinearInterpolationSegment(self, id = None):
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        if id is None:
+            seg = cim.getSegment(cim.addLinear())
+        else:
+            seg = cim.getSegment(id)
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Linear'
+            self.rendererSegmentWidgetList.append(
+                self.createLinearInterpolationSegmentWidget(parent, segName, seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Linear'
+            self.rendererSegmentWidgetList.append(
+                self.createLinearInterpolationSegmentWidget(parent, segName, seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def addStepwaveInterpolationSegment(self, id = None):
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        if id is None:
+            seg = cim.getSegment(cim.addStepwave())
+        else:
+            seg = cim.getSegment(id)
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Stepwave'
+            self.rendererSegmentWidgetList.append(
+                self.createStepwaveInterpolationSegmentWidget(parent, segName, seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Stepwave'
+            self.rendererSegmentWidgetList.append(
+                self.createStepwaveInterpolationSegmentWidget(parent, segName, seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def addSinusoidInterpolationSegment(self, id = None):
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        if id is None:
+            seg = cim.getSegment(cim.addSinusoid())
+        else:
+            seg = cim.getSegment(id)
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Sinusoid'
+            self.rendererSegmentWidgetList.append(
+                self.createSinusoidInterpolationSegmentWidget(parent, segName, seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = repr(len(self.rendererSegmentWidgetList))+':Sinusoid'
+            self.rendererSegmentWidgetList.append(
+                self.createSinusoidInterpolationSegmentWidget(parent, segName, seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def createWidgetForExistingInterpolationSegment(self, id):
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        seg = cim.getSegment(id)
+        assert seg
+
+        fun = seg.getFunction()
+        if isinstance(fun,ColorInterpolationFunctionSinusoid):
+            self.addSinusoidInterpolationSegment(id)
+        elif isinstance(fun,ColorInterpolationFunctionStepwave):
+            self.addStepwaveInterpolationSegment(id)
+        elif isinstance(fun,ColorInterpolationFunctionLinear):
+            self.addLinearInterpolationSegment(id)
+        elif isinstance(fun,ColorInterpolationFunctionConstant):
+            self.addConstantInterpolationSegment(id)
+
+    def createInterpolationSegmentFrame(self, parent, segName, seg):
+        frame = Frame(parent, relief = RAISED, borderwidth = 2)
+        lFrame = Frame(frame, relief = FLAT)
+        def removeInterpolationSegmentFrame(s = self, seg = seg, fr = frame):
+            s.particles.getRenderer().getColorInterpolationManager().clearSegment(seg.getId())
+            fr.pack_forget()
+        def setSegEnabled(s=self, n=segName):
+            enabled = s.getVariable('Sprite Renderer', n+' Enabled')
+            seg.setEnabled(enabled.get())
+        def setIsModulated(s=self, n=segName):
+            modulated = s.getVariable('Sprite Renderer', n+' isModulated')
+            seg.setIsModulated(modulated.get())
+        def setSegBegin(time):
+            seg.setTimeBegin(time)
+        def setSegEnd(time):
+            seg.setTimeEnd(time)
+        Button(lFrame, text = 'X',
+               command = removeInterpolationSegmentFrame).pack(side = RIGHT, expand = 0)
+        Label(lFrame, text = segName,
+              foreground = 'Blue',
+              font = ('MSSansSerif', 12, 'bold'),
+              ).pack(fill = X, expand = 1)
+        lFrame.pack(fill = X, expand = 1)
+        lFrame = Frame(frame, relief = FLAT)
+        self.createCheckbutton(
+            lFrame, 'Sprite Renderer', segName + ' Enabled',
+            ('On: Enabled\n' +
+             'Off: Disabled'),
+            command = setSegEnabled, initialState = seg.isEnabled())
+        self.createCheckbutton(
+            lFrame, 'Sprite Renderer', segName + ' isModulated',
+            ('On: Modulate\n' +
+             'Off: Add'),
+            command = setIsModulated, initialState = seg.isModulated())
+        lFrame.pack(fill = X, expand = 1)
+
+        f = Frame(frame)
+        self.createSlider(f,
+                          'Sprite Renderer', segName + ' Begin',
+                          '',
+                          command = setSegBegin,
+                          value = seg.getTimeBegin())
+        self.createSlider(f,'Sprite Renderer', segName + ' End',
+                          '',
+                          command = setSegEnd,
+                          value = seg.getTimeEnd())
+        f.pack(fill = X, expand = 0)
+        frame.pack(pady = 3, fill = X, expand = 0)
+        return frame
+
+    def createConstantInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()
+        def setSegColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0, color[1]/255.0,
+                     color[2]/255.0, color[3]/255.0))
+
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0, c[1]*255.0, c[2]*255.0, c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer', segName + ' Color A',
+                              '',
+                              command = setSegColorA,
+                              value = c)
+        f.pack(fill = X)
+        return frame
+
+    def createLinearInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()
+        def setSegColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0, color[1]/255.0,
+                     color[2]/255.0, color[3]/255.0))
+        def setSegColorB(color):
+            fun.setColorB(
+                Vec4(color[0]/255.0, color[1]/255.0,
+                     color[2]/255.0, color[3]/255.0))
+
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0, c[1]*255.0, c[2]*255.0, c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer', segName + ' Color A',
+                              '',
+                              command = setSegColorA,
+                              value = c)
+        c = fun.getColorB()
+        c = [c[0]*255.0, c[1]*255.0, c[2]*255.0, c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer', segName + ' Color B',
+                              '',
+                              command = setSegColorB,
+                              value = c)
+        f.pack(fill = X)
+        return frame
+
+    def createStepwaveInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()
+        def setColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0, color[1]/255.0,
+                     color[2]/255.0, color[3]/255.0))
+        def setColorB(color):
+            fun.setColorB(
+                Vec4(color[0]/255.0, color[1]/255.0,
+                     color[2]/255.0, color[3]/255.0))
+        def setWidthA(width):
+            fun.setWidthA(width)
+        def setWidthB(width):
+            fun.setWidthB(width)
+
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0, c[1]*255.0, c[2]*255.0, c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer', segName + ' Color A',
+                              '',
+                              command = setColorA,
+                              value = c)
+        c = fun.getColorB()
+        c = [c[0]*255.0, c[1]*255.0, c[2]*255.0, c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer', segName + ' Color B',
+                              '',
+                              command = setColorB,
+                              value = c)
+        w = fun.getWidthA()
+        self.createSlider(f,'Sprite Renderer', segName + ' Width A',
+                          '',
+                          command = setWidthA,
+                          value = w)
+        w = fun.getWidthB()
+        self.createSlider(f,'Sprite Renderer', segName + ' Width B',
+                          '',
+                          command = setWidthB,
+                          value = w)
+        f.pack(fill = X)
+        return frame
+
+    def createSinusoidInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()
+        def setColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0, color[1]/255.0,
+                     color[2]/255.0, color[3]/255.0))
+        def setColorB(color):
+            fun.setColorB(
+                Vec4(color[0]/255.0, color[1]/255.0,
+                     color[2]/255.0, color[3]/255.0))
+        def setPeriod(period):
+            fun.setPeriod(period)
+
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0, c[1]*255.0, c[2]*255.0, c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer', segName + ' Color A',
+                              '',
+                              command = setColorA,
+                              value = c)
+        c = fun.getColorB()
+        c = [c[0]*255.0, c[1]*255.0, c[2]*255.0, c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer', segName + ' Color B',
+                              '',
+                              command = setColorB,
+                              value = c)
+        p = fun.getPeriod()
+        self.createFloater(f,'Sprite Renderer', segName + ' Period',
+                          '',
+                          command = setPeriod,
+                          value = p)
+        f.pack(fill = X)
+        return frame
+
+    def createSpriteAnimationFrame(self, parent, anim, animName):
+        ren = self.particles.getRenderer()
+        pass
+        frame = Frame(parent, relief = RAISED, borderwidth = 2)
+        frame.pack(pady = 1, fill = X, expand = 0)
+
+        lFrame = Frame(frame, relief = FLAT)
+        lFrame.pack(fill = X, expand = 1)
+
+        def delete(s = self, fr = frame):
+            i = s.rendererSpriteAnimationWidgetList.index(fr)
+            s.rendererSpriteAnimationWidgetList[i] = None
+            fr.pack_forget()
+            fr.destroy()
+            s.writeSpriteRendererAnimations()
+            s.readSpriteRendererAnimations()
+
+        Button(lFrame, text = 'X', foreground = 'Red', font = ('MSSansSerif', 8, 'bold'),
+               command = delete).pack(side = RIGHT, expand = 0)
+
+        if(anim == SpriteAnim.STTexture or
+           anim == SpriteAnim.STFromNode):
+            frame.valid = False
+            frame.animSourceType = anim
+            if(anim == SpriteAnim.STTexture):
+                type = 'Texture'
+            else:
+                type = 'From Node'
+        else:
+            frame.valid = True
+
+            if(anim.getSourceType()==SpriteAnim.STTexture):
+                frame.animSourceType = SpriteAnim.STTexture
+                type = 'Texture'
+            else:
+                frame.animSourceType = SpriteAnim.STFromNode
+                type = 'From Node'
+
+        Label(lFrame, text = animName+': '+type,
+              foreground = 'Blue',
+              font = ('MSSansSerif', 12, 'bold'),
+              ).pack(fill = X, expand = 1)
+
+        return frame
+
+    def createSpriteAnimationTextureWidget(self, parent, anim, animName):
+        ren = self.particles.getRenderer()
+        frame = self.createSpriteAnimationFrame(parent, anim, animName)
+        f = Frame(frame)
+        f.pack(fill=X)
+
+        Label(f, text = 'Texture: ', font = ('MSSansSerif', 12), width=7).pack(side = LEFT)
+        strVar = StringVar()
+        entry = Entry(f, textvariable = strVar).pack(padx=3, pady=3, side=LEFT, fill=X, expand=1)
+        if frame.valid:
+            strVar.set(anim.getTexSource())
+        else:
+            strVar.set('Base model path: ' + repr(getModelPath().getValue()))
+
+        def checkForTexture(strVar = strVar):
+            tex = loader.loadTexture(strVar.get())
+            if tex:
+                frame.valid = True
+            else:
+                frame.valid = False
+            self.writeSpriteRendererAnimations()
+
+        Button(f, text = 'Update',
+               command = checkForTexture).pack(side=LEFT)
+        self.variableDict['Sprite Renderer-'+animName+' Anim Texture'] = strVar
+        self.widgetDict['Sprite Renderer-'+animName+' Anim Texture'] = entry
+
+        return frame
+
+    def createSpriteAnimationNodeWidget(self, parent, anim, animName):
+        ren = self.particles.getRenderer()
+        frame = self.createSpriteAnimationFrame(parent, anim, animName)
+        f = Frame(frame)
+        f.pack(fill=X)
+
+        lf = Frame(f)
+        lf.pack(fill=X, expand=1)
+        Label(lf, text = 'Model: ', font = ('MSSansSerif', 12), width=7).pack(side = LEFT)
+        mStrVar = StringVar()
+        entry = Entry(lf, textvariable = mStrVar).pack(padx=3, pady=3, side=LEFT, fill=X, expand=1)
+        if frame.valid:
+            mStrVar.set(anim.getModelSource())
+        else:
+            mStrVar.set('Base model path: ' + repr(getModelPath().getValue()))
+
+        mlf = lf
+
+        self.variableDict['Sprite Renderer-'+animName+' Anim Model'] = mStrVar
+        self.widgetDict['Sprite Renderer-'+animName+' Anim Model'] = entry
+
+        lf = Frame(f)
+        lf.pack(fill=X, expand=1)
+        Label(lf, text = 'Node: ', font = ('MSSansSerif', 12), width=7).pack(side = LEFT)
+        nStrVar = StringVar()
+        entry = Entry(lf, textvariable = nStrVar).pack(padx=3, pady=3, side=LEFT, fill=X, expand=1)
+        if frame.valid:
+            nStrVar.set(anim.getNodeSource())
+        else:
+            nStrVar.set('**/*')
+        nlf = lf
+
+        self.variableDict['Sprite Renderer-'+animName+' Anim Node'] = nStrVar
+        self.widgetDict['Sprite Renderer-'+animName+' Anim Node'] = entry
+
+        def checkForNode(modelStrVar=mStrVar, nodeStrVar=nStrVar):
+            mod = loader.loadModel(modelStrVar.get())
+            if mod:
+                node = mod.find(nodeStrVar.get())
+                if node:
+                    frame.valid = True
+                else:
+                    frame.valid = False
+            else:
+                frame.valid = False
+
+            self.writeSpriteRendererAnimations()
+
+        Button(mlf, text = 'Update',
+               command = checkForNode).pack(side=LEFT)
+        Button(nlf, text = 'Update',
+               command = checkForNode).pack(side=LEFT)
+
+        return frame
+
+    # get animation info from renderer into panel
+    def readSpriteRendererAnimations(self):
+        ren = self.particles.getRenderer()
+
+        for widget in self.rendererSpriteAnimationWidgetList:
+            if(widget):
+                widget.pack_forget()
+                widget.destroy()
+
+        self.rendererSpriteAnimationWidgetList = []
+
+        for anim in [ren.getAnim(x) for x in range(ren.getNumAnims())]:
+            if(anim.getSourceType() == SpriteAnim.STTexture):
+                w = self.createSpriteAnimationTextureWidget(self.rendererSpriteAnimationFrame, anim, repr(len(self.rendererSpriteAnimationWidgetList)))
+            else:
+                w = self.createSpriteAnimationNodeWidget(self.rendererSpriteAnimationFrame, anim, repr(len(self.rendererSpriteAnimationWidgetList)))
+            self.rendererSpriteAnimationWidgetList.append(w)
+
+    # set animation info from panel into renderer
+    def writeSpriteRendererAnimations(self):
+        ren = self.particles.getRenderer()
+
+        for x in range(ren.getNumAnims()):
+            ren.removeAnimation(0)
+
+        for x in range(len(self.rendererSpriteAnimationWidgetList)):
+            widget = self.rendererSpriteAnimationWidgetList[x]
+            if(widget and widget.valid):
+                if(widget.animSourceType == SpriteAnim.STTexture):
+                    texSource = self.getVariable('Sprite Renderer', repr(x) + ' Anim Texture').get()
+                    ren.addTextureFromFile(texSource)
+                else:
+                    modelSource = self.getVariable('Sprite Renderer', repr(x) + ' Anim Model').get()
+                    nodeSource = self.getVariable('Sprite Renderer', repr(x) + ' Anim Node').get()
+                    ren.addTextureFromNode(modelSource, nodeSource)
 
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
@@ -1706,14 +2550,14 @@ class ParticlePanel(AppShell):
         if self.forceGroup == None:
             self.createNewForceGroup()
         self.forceGroup.addForce(f)
-        self.addForceWidget(self.forceGroup,f)
+        self.addForceWidget(self.forceGroup, f)
 
     ## SYSTEM COMMANDS ##
     def createNewEffect(self):
         name = askstring('Particle Panel', 'Effect Name:',
                          parent = self.parent)
         if name:
-            particles = seParticles.Particles()
+            particles = Particles.Particles()
             particles.setBirthRate(0.02)
             particles.setLitterSize(10)
             particles.setLitterSpread(0)
@@ -1721,7 +2565,7 @@ class ParticlePanel(AppShell):
             particles.setRenderer("PointParticleRenderer")
             particles.setEmitter("SphereVolumeEmitter")
             particles.enable()
-            effect = seParticleEffect.ParticleEffect(name,particles)
+            effect = ParticleEffect.ParticleEffect(name, particles)
             self.effectsDict[name] = effect
             self.updateMenusAndLabels()
             self.selectEffectNamed(name)
@@ -1737,7 +2581,7 @@ class ParticlePanel(AppShell):
         name = askstring('Particle Panel', 'Particles Name:',
                          parent = self.parent)
         if name:
-            p = seParticles.Particles(name)
+            p = Particles.Particles(name)
             p.setBirthRate(0.02)
             p.setLitterSize(10)
             p.setLitterSpread(0)
@@ -1753,7 +2597,7 @@ class ParticlePanel(AppShell):
         name = askstring('Particle Panel', 'ForceGroup Name:',
                          parent = self.parent)
         if name:
-            forceGroup = seForceGroup.ForceGroup(name)
+            forceGroup = ForceGroup.ForceGroup(name)
             self.particleEffect.addForceGroup(forceGroup)
             self.updateForceGroupMenus()
             self.addForceGroupNotebookPage(self.particleEffect, forceGroup)
@@ -1774,7 +2618,7 @@ class ParticlePanel(AppShell):
         # How many forces of the same type in the force group object
         count = 0
         for f in forceGroup:
-            if f.getClassType().eq(force.getClassType()):
+            if f.getClassType() == force.getClassType():
                 count += 1
         if isinstance(force, LinearVectorForce):
             self.createLinearVectorForceWidget(
@@ -1863,7 +2707,7 @@ class ParticlePanel(AppShell):
                                       count, force):
         def setVec(vec, f = force):
             f.setVector(vec[0], vec[1], vec[2])
-        forceName = 'Vector Force-' + `count`
+        forceName = 'Vector Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         vec = force.getLocalVector()
@@ -1875,7 +2719,7 @@ class ParticlePanel(AppShell):
 
     def createLinearRandomForceWidget(self, forcePage, pageName, count,
                                 force, type):
-        forceName = type + ' Force-' + `count`
+        forceName = type + ' Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createForceActiveWidget(frame, pageName, forceName, force)
@@ -1884,7 +2728,7 @@ class ParticlePanel(AppShell):
                                         count, force):
         def setCoef(coef, f = force):
             f.setCoef(coef)
-        forceName = 'Friction Force-' + `count`
+        forceName = 'Friction Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createFloater(frame, pageName, forceName + ' Coef',
@@ -1895,7 +2739,7 @@ class ParticlePanel(AppShell):
 
     def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
                                               count, force):
-        forceName = 'Vortex Force-' + `count`
+        forceName = 'Vortex Force-' + repr(count)
         def setCoef(coef, f = force):
             f.setCoef(coef)
         def setLength(length, f = force):
@@ -1934,7 +2778,7 @@ class ParticlePanel(AppShell):
             f.setForceCenter(Point3(vec[0], vec[1], vec[2]))
         def setRadius(radius, f = force):
             f.setRadius(radius)
-        forceName = type + ' Force-' + `count`
+        forceName = type + ' Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         var = self.createOptionMenu(
@@ -1970,7 +2814,16 @@ class ParticlePanel(AppShell):
 
 # Create demo in root window for testing.
 if __name__ == '__main__':
+
+    try:
+        base
+    except:
+        from direct.showbase.ShowBase import ShowBase
+        base = ShowBase()
+
     root = Pmw.initialise()
     pp = ParticlePanel()
+    base.pp=pp
     #ve = VectorEntry(Toplevel(), relief = GROOVE)
     #ve.pack()
+    base.run()

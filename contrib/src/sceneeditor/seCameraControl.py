@@ -118,7 +118,7 @@ class DirectCameraControl(DirectObject):
             skipFlags |= SKIP_CAMERA * (1 - base.getControl())
             self.computeCOA(SEditor.iRay.pickGeom(skipFlags = skipFlags))
             # Record reference point
-            self.coaMarkerRef.iPosHprScale(base.cam)
+            self.coaMarkerRef.setPosHprScale(base.cam.getPos(), base.cam.getHpr(), base.cam.getScale())
             # Record entries
             self.cqEntries = []
             for i in range(SEditor.iRay.getNumEntries()):
@@ -392,8 +392,7 @@ class DirectCameraControl(DirectObject):
             sf = 0.1
         self.coaMarker.setScale(sf)
         # Lerp color to fade out
-        self.coaMarker.lerpColor(VBase4(1,0,0,1), VBase4(1,0,0,0), 3.0,
-                                 task = 'fadeAway')
+        self.coaMarker.colorInterval(3.0, VBase4(1,0,0,0), VBase4(1,0,0,1), name='fadeAway')
 
     def homeCam(self):
         # Record undo point
@@ -409,11 +408,11 @@ class DirectCameraControl(DirectObject):
         SEditor.pushUndo([SEditor.camera])
         # Pitch camera till upright
         currH = SEditor.camera.getH()
-        SEditor.camera.lerpHpr(currH, 0, 0,
-                              CAM_MOVE_DURATION,
-                              other = render,
-                              blendType = 'easeInOut',
-                              task = 'manipulateCamera')
+        SEditor.camera.hprInterval(
+            CAM_MOVE_DURATION, 0, currH,
+            other = render,
+            blendType = 'easeInOut',
+            name = 'manipulateCamera')
 
     def orbitUprightCam(self):
         taskMgr.remove('manipulateCamera')
@@ -445,11 +444,12 @@ class DirectCameraControl(DirectObject):
         parent = SEditor.camera.getParent()
         SEditor.camera.wrtReparentTo(self.camManipRef)
         # Rotate ref CS to final orientation
-        t = self.camManipRef.lerpHpr(rotAngle, orbitAngle, 0,
-                                     CAM_MOVE_DURATION,
-                                     other = render,
-                                     blendType = 'easeInOut',
-                                     task = 'manipulateCamera')
+        t = self.camManipRef.hprInterval(
+            CAM_MOVE_DURATION,
+            orbitAngle, rotAngle,
+            other = render,
+            blendType = 'easeInOut',
+            name = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         t.parent = parent
         t.uponDeath = self.reparentCam
@@ -470,11 +470,12 @@ class DirectCameraControl(DirectObject):
         scaledCenterVec = Y_AXIS * dist
         delta = markerToCam - scaledCenterVec
         self.camManipRef.setPosHpr(SEditor.camera, Point3(0), Point3(0))
-        t = SEditor.camera.lerpPos(Point3(delta),
-                                  CAM_MOVE_DURATION,
-                                  other = self.camManipRef,
-                                  blendType = 'easeInOut',
-                                  task = 'manipulateCamera')
+        t = SEditor.camera.posInterval(
+            CAM_MOVE_DURATION,
+            Point3(delta),
+            other = self.camManipRef,
+            blendType = 'easeInOut',
+            name = 'manipulateCamera')
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
 
     def zoomCam(self, zoomFactor, t):
@@ -487,11 +488,12 @@ class DirectCameraControl(DirectObject):
         # Put a target nodePath there
         self.camManipRef.setPos(SEditor.camera, zoomPtToCam)
         # Move to that point
-        t = SEditor.camera.lerpPos(ZERO_POINT,
-                                  CAM_MOVE_DURATION,
-                                  other = self.camManipRef,
-                                  blendType = 'easeInOut',
-                                  task = 'manipulateCamera')
+        t = SEditor.camera.posInterval(
+            CAM_MOVE_DURATION,
+            ZERO_POINT,
+            other = self.camManipRef,
+            blendType = 'easeInOut',
+            name = 'manipulateCamera')
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
 
     def spawnMoveToView(self, view):
@@ -536,12 +538,13 @@ class DirectCameraControl(DirectObject):
                                    ZERO_VEC)
         # Record view for next time around
         self.lastView = view
-        t = SEditor.camera.lerpPosHpr(ZERO_POINT,
-                                     VBase3(0,0,self.orthoViewRoll),
-                                     CAM_MOVE_DURATION,
-                                     other = self.camManipRef,
-                                     blendType = 'easeInOut',
-                                     task = 'manipulateCamera')
+        t = SEditor.camera.posHprInterval(
+            CAM_MOVE_DURATION,
+            ZERO_POINT,
+            VBase3(0,0,self.orthoViewRoll),
+            other = self.camManipRef,
+            blendType = 'easeInOut',
+            task = 'manipulateCamera')
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
 
 
@@ -560,10 +563,11 @@ class DirectCameraControl(DirectObject):
         parent = SEditor.camera.getParent()
         SEditor.camera.wrtReparentTo(self.camManipRef)
 
-        manipTask = self.camManipRef.lerpHpr(VBase3(degrees,0,0),
-                                             CAM_MOVE_DURATION,
-                                             blendType = 'easeInOut',
-                                             task = 'manipulateCamera')
+        manipTask = self.camManipRef.hprInterval(
+            CAM_MOVE_DURATION,
+            VBase3(degrees,0,0),
+            blendType = 'easeInOut',
+            name = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         manipTask.parent = parent
         manipTask.uponDeath = self.reparentCam
@@ -599,10 +603,11 @@ class DirectCameraControl(DirectObject):
 
         parent = SEditor.camera.getParent()
         SEditor.camera.wrtReparentTo(self.camManipRef)
-        fitTask = SEditor.camera.lerpPos(Point3(0,0,0),
-                                        CAM_MOVE_DURATION,
-                                        blendType = 'easeInOut',
-                                        task = 'manipulateCamera')
+        fitTask = SEditor.camera.posInterval(
+            CAM_MOVE_DURATION,
+            Point3(0,0,0),
+            blendType = 'easeInOut',
+            name = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         fitTask.parent = parent
         fitTask.uponDeath = self.reparentCam
@@ -627,11 +632,12 @@ class DirectCameraControl(DirectObject):
         # Spawn a task to keep the selected objects with the widget
         taskMgr.add(self.stickToWidgetTask, 'stickToWidget')
         # Spawn a task to move the widget
-        t = SEditor.widget.lerpPos(Point3(centerVec),
-                                  CAM_MOVE_DURATION,
-                                  other = SEditor.camera,
-                                  blendType = 'easeInOut',
-                                  task = 'moveToFitTask')
+        t = SEditor.widget.posInterval(
+            CAM_MOVE_DURATION,
+            Point3(centerVec),
+            other = SEditor.camera,
+            blendType = 'easeInOut',
+            task = 'moveToFitTask')
         t.uponDeath = lambda state: taskMgr.remove('stickToWidget')
 
     def stickToWidgetTask(self, state):
