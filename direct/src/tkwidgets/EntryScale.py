@@ -483,16 +483,27 @@ def rgbPanel(nodePath, callback = None):
         'RGBA Panel')
     # Update menu
     menu = esg.component('menubar').component('EntryScale Group-menu')
+    menubar = vgp.component('menubar')
+    menuName = "EntryScale Group"
     # Some helper functions
     # Clear color
     menu.insert_command(index = 1, label = 'Clear Color',
                         command = lambda np = nodePath: np.clearColor())
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][2] = menubar._menuInfo[menuName][1][1]
+    menubar._menuInfo[menuName][1][1] = ""
     # Set Clear Transparency
     menu.insert_command(index = 2, label = 'Set Transparency',
                         command = lambda np = nodePath: np.setTransparency(1))
+    menubar._menuInfo[menuName][2].append("")
+    menubar._menuInfo[menuName][2][3] = menubar._menuInfo[menuName][1][1]
+    menubar._menuInfo[menuName][2][2] = ""
     menu.insert_command(
         index = 3, label = 'Clear Transparency',
         command = lambda np = nodePath: np.clearTransparency())
+    menubar._menuInfo[menuName][3].append("")
+    menubar._menuInfo[menuName][3][4] = menubar._menuInfo[menuName][1][1]
+    menubar._menuInfo[menuName][3][3] = ""
     # System color picker
     def popupColorPicker(esg = esg):
         # Can pass in current color with: color = (255, 0, 0)
@@ -504,11 +515,17 @@ def rgbPanel(nodePath, callback = None):
             esg.set((color[0], color[1], color[2], esg.getAt(3)))
     menu.insert_command(index = 4, label = 'Popup Color Picker',
                         command = popupColorPicker)
+    menubar._menuInfo[menuName][4].append("")
+    menubar._menuInfo[menuName][4][5] = menubar._menuInfo[menuName][1][1]
+    menubar._menuInfo[menuName][4][4] = ""
     def printToLog(nodePath=nodePath):
         c=nodePath.getColor()
         print("Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3]))
     menu.insert_command(index = 5, label = 'Print to log',
                         command = printToLog)
+    menubar._menuInfo[menuName][5].append("")
+    menubar._menuInfo[menuName][5][6] = menubar._menuInfo[menuName][1][1]
+    menubar._menuInfo[menuName][5][5] = ""
 
     # Set callback
     def onRelease(r, g, b, a, nodePath = nodePath):

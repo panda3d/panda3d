@@ -186,14 +186,21 @@ class MopathRecorder(AppShell, DirectObject):
         # Get a handle on the file menu so commands can be inserted
         # before quit item
         fileMenu = self.menuBar.component('File-menu')
+        menuName = "File"
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Load Curve',
             command = self.loadCurveFromFile)
+        self.menuBar._menuInfo[menuName][1].append("")
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')-1]
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')-1] = ""
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Save Curve',
             command = self.saveCurveToFile)
+        self.menuBar._menuInfo[menuName][1].append("")
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')-1]
+        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')-1] = ""
 
         # Add mopath recorder commands to menubar
         self.menuBar.addmenu('Recorder', 'Mopath Recorder Panel Operations')

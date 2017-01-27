@@ -2,6 +2,7 @@
 
 __all__ = ['Valuator', 'ValuatorGroup', 'ValuatorGroupPanel']
 
+from panda3d.core import Vec4
 from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from . import WidgetPropertiesDialog
@@ -656,24 +657,41 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
 
     # Update menu
     menu = vgp.component('menubar').component('Valuator Group-menu')
+    menubar = vgp.component('menubar')
+    menuName = "Valuator Group"
     # Some helper functions
     # Clear color
     menu.insert_command(index = 1, label = 'Clear Color',
                         command = lambda: nodePath.clearColor())
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][2] = menubar._menuInfo[menuName][1][1]
+    menubar._menuInfo[menuName][1][1] = ""
     # Set Clear Transparency
     menu.insert_command(index = 2, label = 'Set Transparency',
                         command = lambda: nodePath.setTransparency(1))
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][3] = menubar._menuInfo[menuName][1][2]
+    menubar._menuInfo[menuName][1][2] = ""
     menu.insert_command(
         index = 3, label = 'Clear Transparency',
         command = lambda: nodePath.clearTransparency())
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][4] = menubar._menuInfo[menuName][1][3]
+    menubar._menuInfo[menuName][1][3] = ""
 
 
     # System color picker
     menu.insert_command(index = 4, label = 'Popup Color Picker',
                         command = popupColorPicker)
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][5] = menubar._menuInfo[menuName][1][4]
+    menubar._menuInfo[menuName][1][4] = ""
 
     menu.insert_command(index = 5, label = 'Print to log',
                         command = printToLog)
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][6] = menubar._menuInfo[menuName][1][5]
+    menubar._menuInfo[menuName][1][5] = ""
 
     def setNodePathColor(color):
         nodePath.setColor(color[0]/255.0, color[1]/255.0,
@@ -731,10 +749,16 @@ def lightRGBPanel(light, style = 'mini'):
     # Update menu
     menu = vgp.component('menubar').component('Valuator Group-menu')
     # System color picker
-    menu.insert_command(index = 4, label = 'Popup Color Picker',
+    menu.insert_command(index = 1, label = 'Popup Color Picker',
                         command = popupColorPicker)
-    menu.insert_command(index = 5, label = 'Print to log',
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][2] = menubar._menuInfo[menuName][1][1]
+    menubar._menuInfo[menuName][1][1] = ""
+    menu.insert_command(index = 2, label = 'Print to log',
                         command = printToLog)
+    menubar._menuInfo[menuName][1].append("")
+    menubar._menuInfo[menuName][1][3] = menubar._menuInfo[menuName][1][2]
+    menubar._menuInfo[menuName][1][2] = ""
     def setLightColor(color):
         light.setColor(Vec4(color[0]/255.0, color[1]/255.0,
                             color[2]/255.0, color[3]/255.0))
