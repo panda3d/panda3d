@@ -655,7 +655,7 @@ class ServerRepository:
         self.idAllocator.free(id)
 
         self.qcr.removeConnection(client.connection)
-        self.qcm.handleClientDisconnect(client.connection)
+        self.qcm.closeConnection(client.connection)
 
     def handleClientSetInterest(self, client, dgi):
         """ The client is specifying a particular set of zones it is
