@@ -69,8 +69,9 @@ class build_p3d(distutils.core.Command):
         for platform in platforms:
             builddir = os.path.join(self.build_base, platform)
 
-            if not os.path.exists(builddir):
-                distutils.dir_util.mkpath(builddir)
+            if os.path.exists(builddir):
+                distutils.dir_util.remove_tree(builddir)
+            distutils.dir_util.mkpath(builddir)
 
             if use_wheels:
                 whldir = os.path.join(self.build_base, '__whl_cache__')
