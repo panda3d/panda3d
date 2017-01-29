@@ -234,7 +234,7 @@ class build_p3d(distutils.core.Command):
                             distutils.file_util.copy_file(src, dst)
 
                     for item in dirs[:]:
-                        path = os.path.join(builddir, root, item)
+                        path = os.path.normpath(os.path.join(builddir, root, item))
                         if item in ignore_copy_list:
                             print("skipping", path)
                             dirs.remove(item)
