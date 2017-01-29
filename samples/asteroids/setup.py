@@ -1,4 +1,4 @@
-from direct.showutil.dist import *
+from setuptools import setup
 
 setup(
     name="asteroids",
