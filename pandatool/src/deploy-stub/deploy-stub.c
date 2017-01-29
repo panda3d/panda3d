@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
 #endif
   struct _frozen *_PyImport_FrozenModules;
   unsigned int listoff, modsoff, fsize, modsize, listsize, nummods, modidx;
+  int retval;
   FILE *runtime;
 
 #ifdef _WIN32
@@ -210,15 +211,25 @@ int main(int argc, char *argv[]) {
     moddef->size = codesize;
   }
 
+  fclose(runtime);
+
   // Uncomment this to print out the read in module list
-  //for (unsigned int modidx = 0; modidx < nummods + 1; ++modidx) {
+  //for (modidx = 0; modidx < nummods; ++modidx) {
   //  struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
   //  printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
   //}
-  fclose(runtime);
 
+  // Run frozen application
   PyImport_FrozenModules = _PyImport_FrozenModules;
-  return Py_FrozenMain(argc, argv);
+  retval = Py_FrozenMain(argc, argv);
+
+  // Free resources
+  free(modblob);
+  for (modidx = 0; modidx < nummods; ++modidx) {
+    struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
+    free((void*)moddef->name);
+  }
+  free(_PyImport_FrozenModules);
 }
 
 #ifdef WIN_UNICODE
