@@ -250,7 +250,7 @@ class build(distutils.command.build.build):
                 distutils.file_util.copy_file(src, dst)
 
 
-class bdist_panda3d(distutils.core.Command):
+class bdist_p3d_archive(distutils.core.Command):
     user_options = []
 
     def initialize_options(self):
@@ -288,5 +288,5 @@ def setup(**attrs):
     attrs.setdefault("distclass", Distribution)
     commandClasses = attrs.setdefault("cmdclass", {})
     commandClasses['build'] = build
-    commandClasses['bdist_panda3d'] = bdist_panda3d
+    commandClasses['bdist_p3d_archive'] = bdist_p3d_archive
     distutils.core.setup(**attrs)
