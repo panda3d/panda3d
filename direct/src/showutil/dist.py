@@ -120,8 +120,6 @@ class build(distutils.command.build.build):
             for app in self.distribution.applications:
                 freezer = FreezeTool.Freezer(platform=platform)
                 freezer.addModule('__main__', filename=app.scriptname)
-                if platform.startswith('win'):
-                    freezer.addModule('encodings.cp437')
                 for exmod in self.distribution.exclude_modules:
                     freezer.excludeModule(exmod)
                 freezer.done(addStartupModules=True)

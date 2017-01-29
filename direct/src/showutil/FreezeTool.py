@@ -32,7 +32,7 @@ isDebugBuild = (python.lower().endswith('_d'))
 # must be frozen in any main.exe.
 startupModules = [
     'encodings.cp1252', 'encodings.latin_1', 'encodings.utf_8',
-    'encodings.mbcs', 'encodings.cp850',
+    'encodings.mbcs', 'encodings.cp850', 'encodings.cp437', 'imp',
     ]
 if sys.version_info >= (3, 0):
     startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
