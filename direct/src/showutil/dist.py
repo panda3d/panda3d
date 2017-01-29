@@ -13,12 +13,6 @@ from direct.showutil import FreezeTool
 import panda3d.core as p3d
 
 
-class Application(object):
-    def __init__(self, scriptname, runtimename, use_console=False):
-        self.scriptname = scriptname
-        self.runtimename = runtimename
-        self.use_console = use_console
-
 
 # TODO replace with Packager
 def find_packages(whlfile):
@@ -44,7 +38,8 @@ class build_p3d(distutils.core.Command):
 
     def initialize_options(self):
         self.build_base = os.path.join(os.getcwd(), 'build')
-        self.applications = []
+        self.gui_apps = {}
+        self.console_apps = {}
         self.directories = []
         self.files = []
         self.exclude_paths = []
@@ -57,6 +52,7 @@ class build_p3d(distutils.core.Command):
         }
 
     def finalize_options(self):
+        # TODO
         pass
 
     def run(self):
@@ -114,19 +110,19 @@ class build_p3d(distutils.core.Command):
                 sys.path.insert(0, os.path.join(p3dwhlfn, 'deploy_libs'))
 
 
-            # Create runtime
+            # Create runtimes
             freezer_extras = set()
             freezer_modules = set()
-            for app in self.applications:
+            def create_runtime(appname, mainscript, use_console):
                 freezer = FreezeTool.Freezer(platform=platform)
-                freezer.addModule('__main__', filename=app.scriptname)
+                freezer.addModule('__main__', filename=mainscript)
                 for exmod in self.exclude_modules:
                     freezer.excludeModule(exmod)
                 freezer.done(addStartupModules=True)
 
                 stub_name = 'deploy-stub'
                 if platform.startswith('win'):
-                    if not app.use_console:
+                    if use_console:
                         stub_name = 'deploy-stubw'
                     stub_name += '.exe'
 
@@ -137,11 +133,17 @@ class build_p3d(distutils.core.Command):
                     stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', stub_name)
                     stub_file = open(stub_path, 'rb')
 
-                freezer.generateRuntimeFromStub(os.path.join(builddir, app.runtimename), stub_file)
+                freezer.generateRuntimeFromStub(os.path.join(builddir, appname), stub_file)
                 stub_file.close()
 
                 freezer_extras.update(freezer.extras)
                 freezer_modules.update(freezer.getAllModuleNames())
+
+            for appname, scriptname in self.gui_apps.items():
+                create_runtime(appname, scriptname, False)
+
+            for appname, scriptname in self.console_apps.items():
+                create_runtime(appname, scriptname, True)
 
             # Copy extension modules
             for module, source_path in freezer_extras:
@@ -205,7 +207,7 @@ class build_p3d(distutils.core.Command):
             # Copy Game Files
             ignore_copy_list = [
                 '__pycache__',
-            ] + list(freezer_modules) + self.exclude_paths + [i.scriptname for i  in self.applications]
+            ] + list(freezer_modules) + self.exclude_paths + list(self.gui_apps.values()) + list(self.console_apps.values())
 
             for copydir in self.directories:
                 for root, dirs, files in os.walk(copydir):
