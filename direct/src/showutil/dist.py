@@ -5,10 +5,8 @@ import sys
 import subprocess
 import zipfile
 
-import distutils.command.build
 import distutils.core
 import distutils.dir_util
-import distutils.dist
 import distutils.file_util
 
 from direct.showutil import FreezeTool
@@ -20,22 +18,6 @@ class Application(object):
         self.scriptname = scriptname
         self.runtimename = runtimename
         self.use_console = use_console
-
-
-class Distribution(distutils.dist.Distribution):
-    def __init__(self, attrs):
-        self.applications = []
-        self.directories = []
-        self.files = []
-        self.exclude_paths = []
-        self.exclude_modules = []
-        self.deploy_platforms = []
-        self.requirements_path = './requirements.txt'
-        self.pypi_extra_indexes = []
-        self.build_scripts= {
-            '.egg': ('.bam', 'egg2bam -o {1} {0}'),
-        }
-        distutils.dist.Distribution.__init__(self, attrs)
 
 
 # TODO replace with Packager
@@ -57,14 +39,32 @@ def find_packages(whlfile):
     ]
 
 
-class build(distutils.command.build.build):
+class build_p3d(distutils.core.Command):
+    user_options = [] # TODO
+
+    def initialize_options(self):
+        self.build_base = os.path.join(os.getcwd(), 'build')
+        self.applications = []
+        self.directories = []
+        self.files = []
+        self.exclude_paths = []
+        self.exclude_modules = []
+        self.deploy_platforms = []
+        self.requirements_path = './requirements.txt'
+        self.pypi_extra_indexes = []
+        self.build_scripts= {
+            '.egg': ('.bam', 'egg2bam -o {1} {0}'),
+        }
+
+    def finalize_options(self):
+        pass
+
     def run(self):
-        distutils.command.build.build.run(self)
-        if not self.distribution.deploy_platforms:
+        if not self.deploy_platforms:
             platforms = [p3d.PandaSystem.get_platform()]
             use_wheels = False
         else:
-            platforms = self.distribution.deploy_platforms
+            platforms = self.deploy_platforms
             use_wheels = True
         print("Building platforms: {}".format(','.join(platforms)))
 
@@ -82,12 +82,12 @@ class build(distutils.command.build.build):
                 pip_args = [
                     'download',
                     '-d', whldir,
-                    '-r', self.distribution.requirements_path,
+                    '-r', self.requirements_path,
                     '--only-binary', ':all:',
                     '--platform', platform,
                 ]
 
-                for index in self.distribution.pypi_extra_indexes:
+                for index in self.pypi_extra_indexes:
                     pip_args += ['--extra-index-url', index]
 
                 pip.main(args=pip_args)
@@ -117,10 +117,10 @@ class build(distutils.command.build.build):
             # Create runtime
             freezer_extras = set()
             freezer_modules = set()
-            for app in self.distribution.applications:
+            for app in self.applications:
                 freezer = FreezeTool.Freezer(platform=platform)
                 freezer.addModule('__main__', filename=app.scriptname)
-                for exmod in self.distribution.exclude_modules:
+                for exmod in self.exclude_modules:
                     freezer.excludeModule(exmod)
                 freezer.done(addStartupModules=True)
 
@@ -205,9 +205,9 @@ class build(distutils.command.build.build):
             # Copy Game Files
             ignore_copy_list = [
                 '__pycache__',
-            ] + list(freezer_modules) + self.distribution.exclude_paths + [i.scriptname for i  in self.distribution.applications]
+            ] + list(freezer_modules) + self.exclude_paths + [i.scriptname for i  in self.applications]
 
-            for copydir in self.distribution.directories:
+            for copydir in self.directories:
                 for root, dirs, files in os.walk(copydir):
                     for item in files:
                         src = os.path.join(root, item)
@@ -220,8 +220,8 @@ class build(distutils.command.build.build):
                         ext = os.path.splitext(src)[1]
                         dst_root = os.path.splitext(dst)[0]
 
-                        if ext in self.distribution.build_scripts:
-                            dst_ext, script = self.distribution.build_scripts[ext]
+                        if ext in self.build_scripts:
+                            dst_ext, script = self.build_scripts[ext]
                             dst = dst_root + dst_ext
                             script = script.format(src, dst)
                             print("using script:", script)
@@ -240,7 +240,7 @@ class build(distutils.command.build.build):
                             distutils.dir_util.mkpath(path)
 
             # Copy extra files
-            for extra in self.distribution.files:
+            for extra in self.files:
                 if len(extra) == 2:
                     src, dst = extra
                     dst = os.path.join(builddir, dst)
@@ -260,13 +260,14 @@ class bdist_p3d_archive(distutils.core.Command):
         pass
 
     def run(self):
-        if not self.distribution.deploy_platforms:
+        build_cmd = self.get_finalized_command('build_p3d')
+        if not build_cmd.deploy_platforms:
             platforms = [p3d.PandaSystem.get_platform()]
         else:
-            platforms = self.distribution.deploy_platforms
-        build_base = os.path.join(os.getcwd(), 'build')
+            platforms = build_cmd.deploy_platforms
+        build_base = build_cmd.build_base
 
-        self.run_command("build")
+        self.run_command('build_p3d')
         os.chdir(build_base)
 
         for platform in platforms:
@@ -285,8 +286,7 @@ class bdist_p3d_archive(distutils.core.Command):
             distutils.dir_util.remove_tree(temp_dir)
 
 def setup(**attrs):
-    attrs.setdefault("distclass", Distribution)
     commandClasses = attrs.setdefault("cmdclass", {})
-    commandClasses['build'] = build
+    commandClasses['build_p3d'] = build_p3d
     commandClasses['bdist_p3d_archive'] = bdist_p3d_archive
     distutils.core.setup(**attrs)
