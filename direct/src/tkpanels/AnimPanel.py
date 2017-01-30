@@ -11,11 +11,14 @@ from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 import Pmw, sys
 from direct.task import Task
+from panda3d.core import *
 
 if sys.version_info >= (3, 0):
     from tkinter.simpledialog import askfloat
+    from tkinter.filedialog import askopenfilename
 else:
     from tkSimpleDialog import askfloat
+    from tkFileDialog import askopenfilename
 
 
 FRAMES = 0
@@ -24,7 +27,7 @@ SECONDS = 1
 class AnimPanel(AppShell):
     # Override class variables
     appname = 'Anim Panel'
-    frameWidth  = 675
+    frameWidth  = 900
     frameHeight = 250
     usecommandarea = 0
     usestatusarea  = 0
@@ -59,7 +62,13 @@ class AnimPanel(AppShell):
 
 
         # Execute option callbacks
-        self.initialiseoptions(AnimPanel)
+        try:
+            # If we don't have an animation the 'Actor_label_width' option
+            # is not defined for some reason, so this needs to be in a try
+            # catch block.
+            self.initialiseoptions(AnimPanel)
+        except:
+            pass
         # We need to know when AnimPanel is closed
         self.destroyCallBack = None
 
@@ -220,10 +229,10 @@ class AnimPanel(AppShell):
                 topAnims.append('run')
             anims.sort()
             anims = topAnims + anims
-            if (len(anims)== 0):
-                # no animations set for this actor, don't
-                # display the control panel
-                continue
+            #if (len(anims)== 0):
+            #    # no animations set for this actor, don't
+            #    # display the control panel
+            #    continue
 #            currComponents = self.components()
 #            if ('actorControl%d' % index in currComponents):
 #                self.destroycomponent('actorControl%d' % index)
@@ -369,8 +378,9 @@ class AnimPanel(AppShell):
     def destroy(self):
         # First clean up
         taskMgr.remove(self.id + '_UpdateTask')
-        self.destroyCallBack()
-        self.destroyCallBack = None
+        if self.destroyCallBack is not None:
+            self.destroyCallBack()
+            self.destroyCallBack = None
         AppShell.destroy(self)
 
 class ActorControl(Pmw.MegaWidget):
@@ -378,12 +388,14 @@ class ActorControl(Pmw.MegaWidget):
 
         INITOPT = Pmw.INITOPT
         DEFAULT_FONT = (('MS', 'Sans', 'Serif'), 12, 'bold')
-        DEFAULT_ANIMS = ('neutral', 'run', 'walk')
+        DEFAULT_ANIMS = ()
+        #DEFAULT_ANIMS = ('neutral', 'run', 'walk')
         animList = kw.get('animList', DEFAULT_ANIMS)
         if len(animList) > 0:
             initActive = animList[0]
         else:
-            initActive = DEFAULT_ANIMS[0]
+            #initActive = DEFAULT_ANIMS[0]
+            initActive = ""
         optiondefs = (
             ('text',            'Actor',            self._updateLabelText),
             ('animPanel',       None,               None),
@@ -452,12 +464,24 @@ class ActorControl(Pmw.MegaWidget):
             labelpos = W, label_text = 'Anim:',
             entry_width = 12, selectioncommand = self.selectAnimNamed,
             scrolledlist_items = self['animList'])
-        self.animMenu.selectitem(self['active'])
+        if self['active'] in self.animMenu.component('listbox').get(0, 'end'):
+            self.animMenu.selectitem(self['active'])
         self.animMenu.pack(side = 'left', padx = 5, expand = 0)
+
+        # button to load new animations
+        self.loadButton = self.createcomponent(
+            'Load Animation', (), None,
+            Button, (interior,),
+            text = 'Load Animation', width = 10,
+            command = self.loadAnimation)
+        self.loadButton.pack(side = 'left', expand = 0)
 
         # Combo box to select frame rate
         playRateList = ['1/24.0', '0.1', '0.5', '1.0', '2.0', '5.0', '10.0']
-        playRate = '%0.1f' % self['actor'].getPlayRate(self['active'])
+        if self['active'] in self['actor'].getAnimNames():
+            playRate = '%0.1f' % self['actor'].getPlayRate(self['active'])
+        else:
+            playRate = '1.0'
         if playRate not in playRateList:
             def strCmp(a, b):
                 return cmp(eval(a), eval(b))
@@ -517,7 +541,10 @@ class ActorControl(Pmw.MegaWidget):
     def updateDisplay(self):
         actor = self['actor']
         active = self['active']
-        self.fps = actor.getFrameRate(active)
+        if active in self['actor'].getAnimNames():
+            self.fps = actor.getFrameRate(active)
+        else:
+            self.fps = None
         if (self.fps == None):
             # there was probably a problem loading the
             # active animation, set default anim properties
@@ -563,6 +590,29 @@ class ActorControl(Pmw.MegaWidget):
         self.setPlayRate('1.0')
         # Move slider to zero
         self.resetToZero()
+
+    def loadAnimation(self):
+        '''loadAnimation(self)
+        This function will open a dialog window to require user to input
+        the animation he wants to load in for this actor.
+        '''
+        self.loaderWindow = LoadAnimPanel(aNode=self['actor'])
+        base.accept('ANIMPANEL_AnimationLoad'+self['actor'].getName(),self.updateList)
+        return
+
+    def updateList(self, animDict=[]):
+        '''updateList(self)
+        This function will update the list of animations that the Actor
+        currently has into the combo box widget.
+        '''
+        if animDict != []:
+            self['actor'].loadAnims(animDict)
+            for anim in animDict:
+                self['actor'].bindAnim(anim)
+        base.ignore('ANIMPANEL_AnimationLoad'+self['actor'].getName())
+        del self.loaderWindow
+        self['animList'] = self['actor'].getAnimNames()
+        self.animMenu.setlist(self['animList'])
 
     def setPlayRate(self, rate):
         # set play rate on the actor, although for the AnimPanel
@@ -655,6 +705,7 @@ class ActorControl(Pmw.MegaWidget):
         as the control slider doesn't have the desired resolution
         """
         self.fOneShot = 1
+        if self.duration <= 0: return
         self.goToT((self.currT+(1/self.fps))%self.duration)
 
     def previousFrame(self):
@@ -663,8 +714,159 @@ class ActorControl(Pmw.MegaWidget):
         as the control slider doesn't have the desired resolution
         """
         self.fOneShot = 1
+        if self.duration <= 0: return
         self.goToT((self.currT-(1/self.fps))%self.duration)
 
+class LoadAnimPanel(AppShell):
+    #################################################################
+    # LoadAnimPanel(AppShell)
+    # This class will open a dialog to ask user to input names and
+    # file paths of animations
+    #################################################################
+    # Override class variables
+    appname = 'Load Animation'
+    frameWidth  = 600
+    frameHeight = 135
+    usecommandarea = 0
+    usestatusarea  = 0
+    index = 0
+    ## Anim name : File Path
+
+    def __init__(self, aNode =  None, parent = None, **kw):
+        INITOPT = Pmw.INITOPT
+        self.id = 'Load Animation '+ aNode.getName()
+        self.appname = self.id
+        self.animDic = {}
+        self.animList = []
+        optiondefs = (
+            ('title',               self.appname,       None),
+            )
+        self.defineoptions(kw, optiondefs)
+
+        self.nodeName = aNode.getName()
+        self.Actor = aNode
+        # Initialize the superclass
+        AppShell.__init__(self)
+
+        # Execute option callbacks
+        self.initialiseoptions(LoadAnimPanel)
+
+    def createInterface(self):
+        self.menuBar.destroy()
+        interior = self.interior()
+        mainFrame = Frame(interior)
+        self.inputZone = Pmw.Group(mainFrame, tag_text='File Setting')
+        self.inputZone.pack(fill='both',expand=1)
+
+        Label(interior, text='Animation').pack()#.place(anchor=NW,x=60,y=5)
+
+        settingFrame = self.inputZone.interior()
+
+        self.AnimName_1 = self.createcomponent(
+            'Anim Name List', (), None,
+            Pmw.ComboBox, (settingFrame,),label_text='Anim Name:',
+            labelpos = W, entry_width = 10, selectioncommand = self.selectAnim,
+            scrolledlist_items = self.animList)
+        self.AnimFile_1 = Pmw.EntryField(settingFrame,value='')
+        self.AnimFile_1.component('entry').config(width=20)
+        self.AnimName_1.pack(side=LEFT)
+        Label(settingFrame, text='File Path:').pack(side=LEFT)
+        self.AnimFile_1.pack(side=LEFT, fill=X, expand=1)
+
+        self.addIntoButton = self.createcomponent(
+            'Load Add', (), None,
+            Button, (settingFrame,),
+            text = 'Add to Load',
+            command = self.addIntoList)
+        self.addIntoButton.pack(side = RIGHT)
+
+        self.Browse_1 = self.createcomponent(
+            'File Browser1', (), None,
+            Button, (settingFrame,),
+            text = 'Browse...',
+            command = self.Browse_1)
+        self.Browse_1.pack(side = RIGHT)
+
+        att_label = Label(mainFrame, font=('MSSansSerif', 10),
+                          text= "Attention! Animations won't be loaded in before you press the 'OK' button!")
+        att_label.pack()#side = LEFT)
+
+        self.button_ok = Button(mainFrame, text="OK", command=self.ok_press,width=10)
+        self.button_ok.pack(fill=BOTH,expand=0,side=BOTTOM)
+
+        mainFrame.pack(expand = 1, fill = BOTH)
+
+
+
+    def onDestroy(self, event):
+        messenger.send('AWL_close',[self.nodeName])
+        '''
+        If you have open any thing, please rewrite here!
+        '''
+        pass
+
+    def selectAnim(self,name):
+        #################################################################
+        # selectAnim(self, name)
+        # This function will be called if user select an animation on the list.
+        #################################################################
+        if name in self.animDic:
+            self.AnimFile_1.setvalue = self.animDic[name]
+        return
+
+    def Browse_1(self):
+        #################################################################
+        # Browse_1(self)
+        # when the browse button pused, this function will be called.
+        # Do nothing but open a file dialog for user to set the path to target file
+        # Then, set the path back to the entry on the panel.
+        #################################################################
+        AnimFilename = askopenfilename(
+            defaultextension = '.egg',
+            filetypes = (('Egg Files', '*.egg'),
+                         ('Bam Files', '*.bam'),
+                         ('All files', '*')),
+            initialdir = '.',
+            title = 'File Path for Anim 1',
+            parent = self.parent)
+        if AnimFilename:
+            self.AnimFile_1.setvalue(AnimFilename)
+        return
+
+    def addIntoList(self):
+        #################################################################
+        # addIntoList(self)
+        # This function will be called each time when user click on the
+        # "Add to Load" button. This function will read the current data
+        # on the panel into a dictionary. then reset the list of the animation
+        # name list on this panel.(not the one in the animation panel...)
+        #
+        # This function won't load any animation....
+        #
+        #################################################################
+        name = self.AnimName_1.get()
+        self.animDic[name] = Filename.fromOsSpecific(self.AnimFile_1.getvalue()).getFullpath()
+        if name in self.animList:
+            pass
+        else:
+            self.animList.append(name)
+        self.AnimName_1.setlist(self.animList)
+        print self.animDic
+        return
+
+    def ok_press(self):
+        #################################################################
+        # ok_press(Self)
+        # This functiion will be called when user click on the "OK"
+        # button. This function will send a message along with the animation
+        # file we wish to load for this actor.
+        # Then, it will close the panel itself.
+        #################################################################
+        messenger.send('AW_AnimationLoad',[self.Actor,self.animDic])
+        messenger.send('ANIMPANEL_AnimationLoad'+self.Actor.getName(),[self.animDic])
+        #print self.animDic
+        self.quit()
+        return
 """
 # EXAMPLE CODE
 from direct.actor import Actor
