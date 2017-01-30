@@ -24,7 +24,6 @@ from panda3d.core import *
 from panda3d.physics import *
 from panda3d.direct import getParticlePath
 from direct.particles import SpriteParticleRendererExt
-import sePlacer
 #import seParticleEffect
 
 class ParticlePanel(AppShell):
@@ -161,10 +160,10 @@ class ParticlePanel(AppShell):
                                           command = self.createNewEffect)
         self.effectsLabelMenu.add_command(
             label = 'Select Particle Effect',
-            command = lambda s = self: SEditor.select(s.particleEffect))
+            command = lambda s = self: base.direct.select(s.particleEffect))
         self.effectsLabelMenu.add_command(
             label = 'Place Particle Effect',
-            command = lambda s = self: sePlacer.place(s.particleEffect))
+            command = lambda s = self: Placer.place(s.particleEffect))
         def togglePEVis(s = self):
             if s.particleEffect.isHidden():
                 s.particleEffect.show()
@@ -269,12 +268,12 @@ class ParticlePanel(AppShell):
         pos = self.createVector3Entry(systemPage, 'System', 'Pos',
                                       'Particle system position',
                                       command = self.setSystemPos)
-        pos.addMenuItem('Popup Placer Panel', sePlacer.Placer)
+        pos.addMenuItem('Popup Placer Panel', lambda s = self: Placer.place(s.particleEffect))
         hpr = self.createVector3Entry(systemPage, 'System', 'Hpr',
                                      'Particle system orientation',
                                       fGroup_labels = ('H', 'P', 'R'),
                                       command = self.setSystemHpr)
-        hpr.addMenuItem('Popup Placer Panel', sePlacer.Placer)
+        hpr.addMenuItem('Popup Placer Panel', lambda s = self: Placer.place(s.particleEffect))
 
         ## FACTORY PAGE WIDGETS ##
         self.createOptionMenu(
@@ -1984,7 +1983,6 @@ class ParticlePanel(AppShell):
     def setRendererSpriteNonAnimatedTheta(self, theta):
         self.particles.renderer.setNonanimatedTheta(theta)
     def setRendererSpriteBlendMethod(self, blendMethod):
-        print blendMethod
         if blendMethod == 'PP_NO_BLEND':
             bMethod = BaseParticleRenderer.PPNOBLEND
         elif blendMethod == 'PP_BLEND_LINEAR':

@@ -13,9 +13,11 @@ from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import*
 from direct.interval.IntervalGlobal import *
 from seCameraControl import *
-from seManipulation import *
+#from seManipulation import *
+from direct.directtools.DirectManipulation import *
 from seSelection import *
-from seGrid import *
+#from seGrid import *
+from direct.directtools.DirectGrid import *
 from seGeometry import *
 from direct.tkpanels import Placer
 from direct.tkwidgets import Slider
@@ -29,7 +31,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
     def __init__(self):
         # Establish a global pointer to the direct object early on
         # so dependant classes can access it in their code
-        __builtins__["SEditor"] = self
+        __builtins__["SEditor"] = __builtins__["direct"] = base.direct = self
         # These come early since they are used later on
         self.group = render.attachNewNode('SEditor')
         self.font = TextNode.getDefaultFont()
@@ -37,8 +39,8 @@ class SeSession(DirectObject):  ### Customized DirectSession
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
-        self.camera = base.camera
-        self.trueCamera = self.camera
+        base.direct.camera = base.camera
+        self.trueCamera = base.direct.camera
         self.iRay = self.dr.iRay
         self.coaMode = COA_ORIGIN
 
@@ -124,6 +126,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
                             'control-mouse3', 'control-mouse3-up',
                             'alt-mouse3', 'alt-mouse3-up',
                             ]
+        self.clusterMode = ''
 
     def enable(self):
         if self.fEnabled:
@@ -208,7 +211,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             # Remove any transformation on the models arc
             self.oobeVis.clearMat()
             # Make oobeCamera be a sibling of wherever camera is now.
-            cameraParent = self.camera.getParent()
+            cameraParent = base.direct.camera.getParent()
             # Prepare oobe camera
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.setPosHpr(self.trueCamera.getPos(), self.trueCamera.getHpr())
@@ -229,7 +232,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
     def beginOOBE(self, state):
         # Make sure we've reached our final destination
         self.oobeCamera.setPosHpr(self.cameraControl.camManipRef.getPos(), self.cameraControl.camManipRef.getHpr())
-        self.camera = self.oobeCamera
+        base.direct.camera = self.oobeCamera
         self.oobeMode = 1
 
     def endOOBE(self, state):
@@ -237,7 +240,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
         self.oobeCamera.setPosHpr(self.trueCamera.getPos(), self.trueCamera.getHpr())
         # Disable OOBE mode.
         base.cam.reparentTo(self.trueCamera)
-        self.camera = self.trueCamera
+        base.direct.camera = self.trueCamera
         # Get rid of ancillary node paths
         self.oobeVis.reparentTo(hidden)
         self.oobeCamera.reparentTo(hidden)
@@ -278,21 +281,21 @@ class SeSession(DirectObject):  ### Customized DirectSession
         # Deal with keyboard and mouse input
         if input == 'mouse1-up':
             messenger.send('DIRECT-mouse1Up')
-            if SEditor.widget.fActive:
+            if base.direct.widget.fActive:
                 messenger.send('shift-f')
         elif input.find('mouse1') != -1:
             modifiers = self.getModifiers(input, 'mouse1')
             messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'mouse2-up':
             messenger.send('DIRECT-mouse2Up')
-            if SEditor.widget.fActive:
+            if base.direct.widget.fActive:
                 messenger.send('shift-f')
         elif input.find('mouse2') != -1:
             modifiers = self.getModifiers(input, 'mouse2')
             messenger.send('DIRECT-mouse2', sentArgs = [modifiers])
         elif input == 'mouse3-up':
             messenger.send('DIRECT-mouse3Up')
-            if SEditor.widget.fActive:
+            if base.direct.widget.fActive:
                 messenger.send('shift-f')
         elif input.find('mouse3') != -1:
             modifiers = self.getModifiers(input, 'mouse3')
@@ -323,7 +326,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
         elif input == 'v':
             messenger.send('SEditor-ToggleWidgetVis')
             self.toggleWidgetVis()
-            if SEditor.widget.fActive:
+            if base.direct.widget.fActive:
                 messenger.send('shift-f')
         elif input == 'b':
             messenger.send('SEditor-ToggleBackface')
@@ -399,7 +402,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             self.widget.showWidget()
             # Update camera controls coa to this point
             # Coa2Camera = Coa2Dnp * Dnp2Camera
-            mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(self.camera)
+            mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(base.direct.camera)
             row = mCoa2Camera.getRow(3)
             coa = Vec3(row[0], row[1], row[2])
             self.cameraControl.updateCoa(coa)
@@ -421,7 +424,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
 
             self.upAncestry()
 
-            if SEditor.widget.fActive:
+            if base.direct.widget.fActive:
                 messenger.send('shift-f')
 
     def followSelectedNodePathTask(self, state):
@@ -491,7 +494,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
         if nodePath == 'None Given':
             # If nothing specified, try selected node path
             nodePath = self.selected.last
-        SEditor.select(nodePath)
+        base.direct.select(nodePath)
         def fitTask(state, self = self):
             self.cameraControl.fitOnWidget()
             return Task.done
@@ -520,7 +523,10 @@ class SeSession(DirectObject):  ### Customized DirectSession
             nodePath = self.selected.last
         if nodePath:
             # Now toggle node path's visibility state
-            nodePath.toggleVis()
+            if nodePath.isHidden():
+                nodePath.show()
+            else:
+                nodePath.hide()
 
     def removeNodePath(self, nodePath = 'None Given'):
         if nodePath == 'None Given':
@@ -689,7 +695,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
 
     def useObjectHandles(self):
         self.widget = self.manipulationControl.objectHandles
-        self.widget.reparentTo(SEditor.group)
+        self.widget.reparentTo(base.direct.group)
 
     def hideSelectedNPReadout(self):
         self.selectedNPReadout.reparentTo(hidden)
@@ -944,7 +950,7 @@ class DisplayRegionList(DirectObject):
     def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
         for dr in self.displayRegionList:
             dr.mouseUpdate()
-        SEditor.dr = self.getCurrentDr()
+        base.direct.dr = self.getCurrentDr()
 
     def getCurrentDr(self):
         for dr in self.displayRegionList:

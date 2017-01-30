@@ -402,9 +402,9 @@ class sideWindow(AppShell):
         #################################################################
         self.grid = (self.grid+1)%2
         if self.grid==1:
-            SEditor.grid.enable()
+            base.direct.grid.enable()
         else:
-            SEditor.grid.disable()
+            base.direct.grid.disable()
 
     def togglewidgetVis(self):
         #################################################################
@@ -412,8 +412,8 @@ class sideWindow(AppShell):
         # This function will toggle the visibility of the widget of the grid.
         #################################################################
         self.widgetVis = (self.widgetVis+1)%2
-        SEditor.toggleWidgetVis()
-        if SEditor.widget.fActive:
+        base.direct.toggleWidgetVis()
+        if base.direct.widget.fActive:
                 messenger.send('shift-f')
         return
 
@@ -448,7 +448,7 @@ class sideWindow(AppShell):
         # when user loaded model or actor into the scene.
         #################################################################
         self.enableAutoCamera = (self.enableAutoCamera+1)%2
-        SEditor.toggleAutoCamera()
+        base.direct.toggleAutoCamera()
         return
 
     def selectPage(self,page='Tree Graph'):

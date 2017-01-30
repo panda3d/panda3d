@@ -12,7 +12,7 @@
 #
 #################################################################
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 import math
@@ -149,23 +149,23 @@ def planeIntersect (lineOrigin, lineDir, planeOrigin, normal):
 def getNearProjectionPoint(nodePath):
     # Find the position of the projection of the specified node path
     # on the near plane
-    origin = nodePath.getPos(SEditor.camera)
+    origin = nodePath.getPos(base.direct.camera)
     # project this onto near plane
     if origin[1] != 0.0:
-        return origin * (SEditor.dr.near / origin[1])
+        return origin * (base.direct.dr.near / origin[1])
     else:
         # Object is coplaner with camera, just return something reasonable
-        return Point3(0, SEditor.dr.near, 0)
+        return Point3(0, base.direct.dr.near, 0)
 
 def getScreenXY(nodePath):
     # Where does the node path's projection fall on the near plane
     nearVec = getNearProjectionPoint(nodePath)
     # Clamp these coordinates to visible screen
-    nearX = CLAMP(nearVec[0], SEditor.dr.left, SEditor.dr.right)
-    nearY = CLAMP(nearVec[2], SEditor.dr.bottom, SEditor.dr.top)
+    nearX = CLAMP(nearVec[0], base.direct.dr.left, base.direct.dr.right)
+    nearY = CLAMP(nearVec[2], base.direct.dr.bottom, base.direct.dr.top)
     # What percentage of the distance across the screen is this?
-    percentX = (nearX - SEditor.dr.left)/SEditor.dr.nearWidth
-    percentY = (nearY - SEditor.dr.bottom)/SEditor.dr.nearHeight
+    percentX = (nearX - base.direct.dr.left)/base.direct.dr.nearWidth
+    percentY = (nearY - base.direct.dr.bottom)/base.direct.dr.nearHeight
     # Map this percentage to the same -1 to 1 space as the mouse
     screenXY = Vec3((2 * percentX) - 1.0,nearVec[1],(2 * percentY) - 1.0)
     # Return the resulting value
@@ -174,8 +174,8 @@ def getScreenXY(nodePath):
 def getCrankAngle(center):
     # Used to compute current angle of mouse (relative to the coa's
     # origin) in screen space
-    x = SEditor.dr.mouseX - center[0]
-    y = SEditor.dr.mouseY - center[2]
+    x = base.direct.dr.mouseX - center[0]
+    y = base.direct.dr.mouseY - center[2]
     return (180 + rad2Deg(math.atan2(y,x)))
 
 def relHpr(nodePath, base, h, p, r):

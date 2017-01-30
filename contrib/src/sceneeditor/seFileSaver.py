@@ -3,7 +3,7 @@
 # This code saves the scene out as python code... the scene is stored in the various dictionaries in "dataHolder.py" ...the class "AllScene"
 #
 ####################################################################################################################################################
-from pandac.PandaModules import *
+from panda3d.core import *
 
 from direct.showbase.ShowBaseGlobal import *
 import os

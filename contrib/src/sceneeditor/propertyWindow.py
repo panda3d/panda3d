@@ -11,7 +11,7 @@ from direct.tkwidgets import Floater
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
-from pandac.PandaModules import *
+from panda3d.core import *
 from Tkinter import *
 import Pmw
 
@@ -1046,41 +1046,41 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             command = self.toggleHprSnap)
         self.hprSnapButton.pack(fill = X, expand = 0, pady=3)
 
-        self.xyzSnap.set(SEditor.grid.getXyzSnap())
-        self.hprSnap.set(SEditor.grid.getHprSnap())
+        self.xyzSnap.set(base.direct.grid.getXyzSnap())
+        self.hprSnap.set(base.direct.grid.getHprSnap())
 
         self.gridSpacing = Floater.Floater(
             gridPage,
             text = 'Grid Spacing',
             min = 0.1,
-            value = SEditor.grid.getGridSpacing())
-        self.gridSpacing['command'] = SEditor.grid.setGridSpacing
+            value = base.direct.grid.getGridSpacing())
+        self.gridSpacing['command'] = base.direct.grid.setGridSpacing
         self.gridSpacing.pack(fill = X, expand = 0, pady=3)
 
         self.gridSize = Floater.Floater(
             gridPage,
             text = 'Grid Size',
             min = 1.0,
-            value = SEditor.grid.getGridSize())
-        self.gridSize['command'] = SEditor.grid.setGridSize
+            value = base.direct.grid.getGridSize())
+        self.gridSize['command'] = base.direct.grid.setGridSize
         self.gridSize.pack(fill = X, expand = 0, pady=3)
 
         self.gridSnapAngle = Dial.AngleDial(
             gridPage,
             text = 'Snap Angle',
             style = 'mini',
-            value = SEditor.grid.getSnapAngle())
-        self.gridSnapAngle['command'] = SEditor.grid.setSnapAngle
+            value = base.direct.grid.getSnapAngle())
+        self.gridSnapAngle['command'] = base.direct.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = X, expand = 0, pady=3)
 
         return
 
     def toggleXyzSnap(self):
-        SEditor.grid.setXyzSnap(self.xyzSnap.get())
+        base.direct.grid.setXyzSnap(self.xyzSnap.get())
         return
 
     def toggleHprSnap(self):
-        SEditor.grid.setHprSnap(self.hprSnap.get())
+        base.direct.grid.setHprSnap(self.hprSnap.get())
         return
 
 

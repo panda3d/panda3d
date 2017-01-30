@@ -11,7 +11,7 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from pandac.PandaModules import GeomNode
+from panda3d.core import GeomNode
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
@@ -33,7 +33,7 @@ class DirectNodePath(NodePath):
         # Create matrix to hold the offset between the nodepath
         # and its center of action (COA)
         self.mCoa2Dnp = Mat4(Mat4.identMat())
-        if SEditor.coaMode == COA_CENTER:
+        if base.direct.coaMode == COA_CENTER:
             self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
 
         # Transform from nodePath to widget
@@ -177,13 +177,13 @@ class SelectedNodePaths(DirectObject):
         self.forEachSelectedNodePathDo(self.getWrt)
 
     def getWrt(self, nodePath):
-        nodePath.tDnp2Widget = nodePath.getTransform(SEditor.widget)
+        nodePath.tDnp2Widget = nodePath.getTransform(base.direct.widget)
 
     def moveWrtWidgetAll(self):
         self.forEachSelectedNodePathDo(self.moveWrtWidget)
 
     def moveWrtWidget(self, nodePath):
-        nodePath.setTransform(SEditor.widget, nodePath.tDnp2Widget)
+        nodePath.setTransform(base.direct.widget, nodePath.tDnp2Widget)
 
     def deselectAll(self):
         self.forEachSelectedNodePathDo(self.deselect)
@@ -208,7 +208,10 @@ class SelectedNodePaths(DirectObject):
         selected = self.last
         # Toggle visibility of selected node paths
         if selected:
-            selected.toggleVis()
+            if selected.isHidden():
+                selected.show()
+            else:
+                selected.hide()
 
     def toggleVisAll(self):
         # Toggle viz for all selected node paths
@@ -540,8 +543,8 @@ class SelectionRay(SelectionQueue):
             mx = xy[0]
             my = xy[1]
         elif direct:
-            mx = SEditor.dr.mouseX
-            my = SEditor.dr.mouseY
+            mx = base.direct.dr.mouseX
+            my = base.direct.dr.mouseY
         else:
             if not base.mouseWatcherNode.hasMouse():
                 # No mouse in window.

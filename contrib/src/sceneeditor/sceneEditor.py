@@ -17,7 +17,7 @@ from lightingPanel import *
 from seMopathRecorder import *
 from seSession import *
 from quad import *
-from sePlacer import *
+from direct.tkpanels.Placer import *
 from seFileSaver import *
 from propertyWindow import *
 import seParticlePanel
@@ -36,7 +36,7 @@ from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.actor import Actor
-import seAnimPanel
+from direct.tkpanels import AnimPanel
 from direct.task import Task
 import math
 
@@ -251,7 +251,10 @@ class myLevelEditor(AppShell):
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
 
-        camera.toggleVis()
+        if camera.isHidden():
+            camera.show()
+        else:
+            camera.hide()
         self.selectNode(base.camera) ## Initially, we select camera as the first node...
 
     def appInit(self):
@@ -264,7 +267,7 @@ class myLevelEditor(AppShell):
         ### Create SceneEditor Ver. DirectSession
         self.seSession = SeSession()
         self.seSession.enable()
-        SEditor.camera.setPos(0,-50,10)
+        base.direct.camera.setPos(0,-50,10)
 
         self.placer=None
         self.MopathPanel = None
@@ -742,7 +745,7 @@ class myLevelEditor(AppShell):
         # This function will be called when user select a nodePaht
         # and want to reparent other node under it. (Drom side window pop-up nemu)
         #################################################################
-        SEditor.setActiveParent(nodepath)
+        base.direct.setActiveParent(nodepath)
         return
 
     def reparentToNode(self, nodepath = None):
@@ -755,7 +758,7 @@ class myLevelEditor(AppShell):
         # which is tunned from DirectSession
         #
         #################################################################
-        SEditor.reparent(nodepath, fWrt = 1)
+        base.direct.reparent(nodepath, fWrt = 1)
         return
 
     def openPlacerPanel(self, nodePath = None):
@@ -764,7 +767,7 @@ class myLevelEditor(AppShell):
         # This function will be call when user try to open a placer panel.
         # This call will only success if there is no other placer panel been activated
         #################################################################
-        if(self.placer==None):
+        if self.placer is None:
             self.placer = Placer()
             self.menuPanel.entryconfig('Placer Panel', state=DISABLED)
         return
@@ -796,8 +799,16 @@ class myLevelEditor(AppShell):
                 return
             else:
                 Actor = AllScene.getActor(name)
-                self.animPanel[name] = seAnimPanel.AnimPanel(aNode=Actor)
+                self.animPanel[name] = AnimPanel.AnimPanel(aList=[Actor])
+                self.animPanel[name].setDestroyCallBack(lambda n=name: self.closeAnimPanel(name))
                 pass
+
+    def closeAnimPanel(self, name):
+        if AllScene.isActor(name):
+            if self.animPanel.has_key(name):
+                self.animPanel[name] = None
+                del self.animPanel[name]
+
 
     def openMoPathPanel(self, nodepath = None):
         #################################################################
@@ -1413,7 +1424,8 @@ class myLevelEditor(AppShell):
             scale = self.nodeSelected.getScale()
             if ((self.oPos != pos )or(self.oScale != scale)or(self.oHpr != hpr)):
                 messenger.send('forPorpertyWindow'+self.nodeSelected.getName(),[pos, hpr, scale])
-                messenger.send('placerUpdate')
+                if self.placer is not None:
+                    self.placer.updatePlacer()
                 self.oPos = pos
                 self.oScale = scale
                 self.oHpr = hpr

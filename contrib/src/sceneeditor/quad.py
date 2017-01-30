@@ -9,10 +9,8 @@
 from direct.showbase.ShowBaseGlobal import *
 from direct.interval.IntervalGlobal import *
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import *
+from panda3d.core import *
 import math
-#Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
-from pandac.PandaModules import MouseWatcher
 
 
 class ViewPort:
@@ -507,8 +505,8 @@ class QuadView(DirectObject):
 
         self.xy=[ansX,ansY]
         print "Sent X:%f Sent Y:%f"%(ansX,ansY)
-        #SEditor.iRay.pick(render,self.xy)
-        SEditor.manipulationControl.manipulationStop(self.xy)
+        #base.direct.iRay.pick(render,self.xy)
+        base.direct.manipulationControl.manipulationStop(self.xy)
         #print "MouseX " + str(base.mouseWatcherNode.getMouseX()) + "MouseY " + str(base.mouseWatcherNode.getMouseY()) + "\n"
         #print "MouseX " + str(self.mouseWatcherNode.getMouseX()) + "MouseY " + str(self.mouseWatcherNode.getMouseY()) + "\n"
 

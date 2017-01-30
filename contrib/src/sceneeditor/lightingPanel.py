@@ -9,7 +9,7 @@ from direct.tkwidgets.VectorWidgets import Vector3Entry
 from direct.tkwidgets.Slider import Slider
 from Tkinter import Frame, Button, Menubutton, Menu
 import string, math, types, Pmw, Tkinter
-from pandac.PandaModules import *
+from panda3d.core import *
 
 class lightingPanel(AppShell):
     #################################################################

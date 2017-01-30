@@ -693,13 +693,17 @@ class dataHolder:
         # This function will return a Dictionary which contains the animation data in the actor "actorName".
         # The data inside is get from the actor, so, it can't be wrong...
         ###########################################################################
-        animContorlDict = self.ActorDic[actorName].getAnimControlDict()
+        animControlDict = self.ActorDic[actorName].getAnimControlDict()
         animNameList = self.ActorDic[actorName].getAnimNames()
         if len(animNameList)==0:
             return {}
         animDict = {}
         for anim in animNameList:
-            animDict[anim] = animContorlDict['lodRoot']['modelRoot'][anim][0]
+            print animControlDict
+            if 'lodRoot' in animControlDict:
+                animDict[anim] = animControlDict['lodRoot']['modelRoot'][anim][0]
+            else:
+                animDict[anim] = animControlDict['common']['modelRoot'][anim]
         return animDict
 
     def addDummyNode(self,nodePath):
