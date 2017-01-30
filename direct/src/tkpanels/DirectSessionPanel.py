@@ -172,12 +172,16 @@ class DirectSessionPanel(AppShell):
         sgeFrame = framePane.add('left', min = 250)
         notebookFrame = framePane.add('right', min = 300)
 
-        # Scene Graph Explorer
-        self.SGE = SceneGraphExplorer.SceneGraphExplorer(
-            sgeFrame, nodePath = render,
-            scrolledCanvas_hull_width = 250,
-            scrolledCanvas_hull_height = 300)
-        self.SGE.pack(fill = BOTH, expand = 1)
+        # Scene Graph Explorers
+        sgeList = []
+        for nodePath in [base.render, base.render2d]:
+            sgeList.append(
+                SceneGraphExplorer.SceneGraphExplorer(
+                    sgeFrame, nodePath = nodePath,
+                    scrolledCanvas_hull_width = 250,
+                    scrolledCanvas_hull_height = 0))
+            sgeList[-1].pack(fill = BOTH, expand = 1)
+        self.SGE = sgeList
         sgeFrame.pack(side = LEFT, fill = 'both', expand = 1)
 
         # Create the notebook pages
@@ -1012,4 +1016,5 @@ class DirectSessionPanel(AppShell):
         for event, method in self.actionEvents:
             self.ignore(event)
         # Destroy SGE hierarchy
-        self.SGE._node.destroy()
+        for sge in self.SGE:
+            sge._node.destroy()
