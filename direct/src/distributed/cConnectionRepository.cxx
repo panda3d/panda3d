@@ -403,7 +403,7 @@ send_datagram(const Datagram &dg) {
 
 #ifdef WANT_NATIVE_NET
   if (_native) {
-    bool result = _bdc.SendMessage();
+    bool result = _bdc.SendMessage(dg);
     if (!result && _bdc.IsConnected()) {
 #ifdef HAVE_PYTHON
       ostringstream s;
@@ -415,8 +415,8 @@ send_datagram(const Datagram &dg) {
 #endif
 
       s << endl << "Error sending message: " << endl;
-      msg.dump_hex(s);
-      s << "Message data: " << msg.get_data() << endl;
+      dg.dump_hex(s);
+      s << "Message data: " << dg.get_data() << endl;
 
       string message = s.str();
       PyErr_SetString(exc_type, message.c_str());

@@ -31,10 +31,7 @@ struct AVFormatContext;
 struct AVCodecContext;
 struct AVStream;
 struct AVPacket;
-
-#ifdef HAVE_SWRESAMPLE
 struct SwrContext;
-#endif
 
 /**
  * A stream that generates a sequence of audio samples.
@@ -72,9 +69,7 @@ protected:
   int       _buffer_head;
   int       _buffer_tail;
 
-#ifdef HAVE_SWRESAMPLE
   SwrContext *_resample_ctx;
-#endif
 
 public:
   static TypeHandle get_class_type() {

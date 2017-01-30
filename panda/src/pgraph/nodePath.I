@@ -1257,6 +1257,14 @@ set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z
  *
  */
 INLINE void NodePath::
+set_shader_input(CPT_InternalName id, ShaderBuffer *buf, int priority) {
+  set_shader_input(new ShaderInput(id, buf, priority));
+}
+
+/**
+ *
+ */
+INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const NodePath &np, int priority) {
   set_shader_input(new ShaderInput(id, np, priority));
 }

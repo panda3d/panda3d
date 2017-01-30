@@ -179,13 +179,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   }
   data += strm.str();
 
-  EVP_MD_CTX *md_ctx;
-
-#ifdef SSL_097
-  md_ctx = EVP_MD_CTX_create();
-#else
-  md_ctx = new EVP_MD_CTX;
-#endif
+  EVP_MD_CTX *md_ctx = EVP_MD_CTX_create();
 
   EVP_SignInit(md_ctx, EVP_sha1());
   EVP_SignUpdate(md_ctx, data.data(), data.size());
@@ -199,11 +193,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   }
   assert(sig_size <= max_size);
 
-#ifdef SSL_097
   EVP_MD_CTX_destroy(md_ctx);
-#else
-  delete md_ctx;
-#endif
 
   // Now open the file in write mode and rewrite it with the new signature.
   pofstream out;

@@ -52,7 +52,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size();
+  CONSTEXPR static int size() { return 3; }
 
   INLINE_LINMATH bool is_nan() const;
 
@@ -87,7 +87,7 @@ PUBLISHED:
   INLINE_LINMATH void add_z(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components();
+  CONSTEXPR static int get_num_components() { return 3; }
 
 public:
   INLINE_LINMATH iterator begin();

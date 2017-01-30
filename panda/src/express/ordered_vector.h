@@ -135,9 +135,6 @@ public:
   INLINE ordered_vector(TypeHandle type_handle = ov_set_type_handle);
   INLINE ordered_vector(const Compare &compare,
                         TypeHandle type_handle = ov_set_type_handle);
-  INLINE ordered_vector(const ordered_vector<Key, Compare, Vector> &copy);
-  INLINE ordered_vector<Key, Compare, Vector> &operator = (const ordered_vector<Key, Compare, Vector> &copy);
-  INLINE ~ordered_vector();
 
   // Iterator access.
   INLINE ITERATOR begin();
@@ -265,8 +262,6 @@ public:
   INLINE ov_set(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_set(const Compare &compare,
                 TypeHandle type_handle = ov_set_type_handle);
-  INLINE ov_set(const ov_set<Key, Compare, Vector> &copy);
-  INLINE ov_set<Key, Compare, Vector> &operator = (const ov_set<Key, Compare, Vector> &copy);
 
   INLINE ITERATOR insert(ITERATOR position, const VALUE_TYPE &key0);
   INLINE pair<ITERATOR, bool> insert(const VALUE_TYPE &key0);
@@ -288,8 +283,6 @@ public:
   INLINE ov_multiset(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_multiset(const Compare &compare,
                      TypeHandle type_handle = ov_set_type_handle);
-  INLINE ov_multiset(const ov_multiset<Key, Compare, Vector> &copy);
-  INLINE ov_multiset<Key, Compare, Vector> &operator = (const ov_multiset<Key, Compare, Vector> &copy);
 
   INLINE ITERATOR insert(ITERATOR position, const VALUE_TYPE &key);
   INLINE ITERATOR insert(const VALUE_TYPE &key);

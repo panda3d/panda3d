@@ -12,7 +12,12 @@
  */
 
 #include "cppType.h"
+#include "cppConstType.h"
+#include "cppPointerType.h"
+#include "cppReferenceType.h"
+#include "cppStructType.h"
 #include "cppTypedefType.h"
+#include "cppExtensionType.h"
 #include <algorithm>
 
 CPPType::Types CPPType::_types;
@@ -58,10 +63,34 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a fundamental type.
+ */
+bool CPPType::
+is_fundamental() const {
+  return false;
+}
+
+/**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPType::
+is_standard_layout() const {
+  return false;
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPType::
 is_trivial() const {
+  return false;
+}
+
+/**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPType::
+is_constructible(const CPPType *given_type) const {
   return false;
 }
 
@@ -82,6 +111,14 @@ is_copy_constructible() const {
 }
 
 /**
+ * Returns true if the type is destructible.
+ */
+bool CPPType::
+is_destructible() const {
+  return !is_incomplete();
+}
+
+/**
  * Returns true if the type is a special parameter expression type.
  *
  * This sort of type is created to handle instance declarations that initially
@@ -90,6 +127,136 @@ is_copy_constructible() const {
 bool CPPType::
 is_parameter_expr() const {
   return false;
+}
+
+/**
+ * Returns true if this is an enum type, or a typedef to an enum type.
+ */
+bool CPPType::
+is_enum() const {
+  const CPPTypedefType *td_type = as_typedef_type();
+  if (td_type != NULL) {
+    return td_type->_type->is_enum();
+  }
+  const CPPExtensionType *ext_type = as_extension_type();
+  if (ext_type != NULL) {
+    return ext_type->_type == CPPExtensionType::T_enum ||
+           ext_type->_type == CPPExtensionType::T_enum_struct ||
+           ext_type->_type == CPPExtensionType::T_enum_class;
+  }
+  return false;
+}
+
+/**
+ * Returns true if this is a const type, or a typedef to a const type.
+ */
+bool CPPType::
+is_const() const {
+  const CPPTypedefType *td_type = as_typedef_type();
+  if (td_type != NULL) {
+    return td_type->_type->is_const();
+  }
+  return get_subtype() == ST_const;
+}
+
+/**
+ * Returns true if this is a reference type, or a typedef to a reference type.
+ */
+bool CPPType::
+is_reference() const {
+  const CPPTypedefType *td_type = as_typedef_type();
+  if (td_type != NULL) {
+    return td_type->_type->is_reference();
+  }
+  return get_subtype() == ST_reference;
+}
+
+/**
+ * Returns true if this is an unqualified or cv-qualified pointer type, or a
+ * typedef to one.
+ */
+bool CPPType::
+is_pointer() const {
+  const CPPTypedefType *td_type = as_typedef_type();
+  if (td_type != NULL) {
+    return td_type->_type->is_pointer();
+  }
+  const CPPConstType *const_type = as_const_type();
+  if (const_type != NULL) {
+    return const_type->_wrapped_around->is_pointer();
+  }
+  return get_subtype() == ST_pointer;
+}
+
+/**
+ * Returns the type with any const qualifier stripped off.  Will follow
+ * typedefs, but only if necessary.
+ */
+CPPType *CPPType::
+remove_const() {
+  const CPPTypedefType *td_type = as_typedef_type();
+  if (td_type != NULL) {
+    CPPType *unwrapped = td_type->_type->remove_const();
+    if (unwrapped != td_type->_type) {
+      return unwrapped;
+    } else {
+      return this;
+    }
+  }
+  const CPPConstType *const_type = as_const_type();
+  if (const_type != NULL) {
+    return const_type->_wrapped_around->remove_const();
+  }
+  return this;
+}
+
+/**
+ * Returns the type with any reference stripped off.
+ */
+CPPType *CPPType::
+remove_reference() {
+  const CPPTypedefType *td_type = as_typedef_type();
+  if (td_type != NULL) {
+    CPPType *unwrapped = td_type->_type->remove_reference();
+    if (unwrapped != td_type->_type) {
+      return unwrapped;
+    } else {
+      return this;
+    }
+  }
+  const CPPReferenceType *ref_type = as_reference_type();
+  if (ref_type != NULL) {
+    return ref_type->_pointing_at;
+  }
+  return this;
+}
+
+/**
+ * Returns the type with any pointer and cv-qualifiers stripped off.
+ */
+CPPType *CPPType::
+remove_pointer() {
+  switch (get_subtype()) {
+  case ST_typedef:
+    {
+      const CPPTypedefType *td_type = as_typedef_type();
+      CPPType *unwrapped = td_type->_type->remove_pointer();
+      if (unwrapped != td_type->_type) {
+        return unwrapped;
+      } else {
+        return this;
+      }
+    }
+
+  case ST_pointer:
+    return ((const CPPPointerType *)this)->_pointing_at;
+
+  case ST_const:
+    return ((const CPPConstType *)this)->_wrapped_around->remove_pointer();
+
+  default:
+    return this;
+  }
 }
 
 /**
@@ -229,6 +396,14 @@ is_equivalent(const CPPType &other) const {
   return is_equal(&other);
 }
 
+/**
+ * Returns true if variables of this type may be implicitly converted to
+ * the other type.
+ */
+bool CPPType::
+is_convertible_to(const CPPType *other) const {
+  return other->is_constructible(this);
+}
 
 /**
  * Formats a C++-looking line that defines an instance of the given type, with

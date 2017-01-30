@@ -21,16 +21,12 @@ TypeHandle BulletRigidBodyNode::_type_handle;
  */
 BulletRigidBodyNode::
 BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
-
-  // Motion state
-  _motion = new MotionState();
-
   // Mass properties
   btScalar mass(0.0);
   btVector3 inertia(0, 0, 0);
 
   // construction info
-  btRigidBody::btRigidBodyConstructionInfo ci(mass, _motion, _shape, inertia);
+  btRigidBody::btRigidBodyConstructionInfo ci(mass, &_motion, _shape, inertia);
 
   // Additional damping
   if (bullet_additional_damping) {
@@ -44,6 +40,31 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
   // Rigid body
   _rigid = new btRigidBody(ci);
   _rigid->setUserPointer(this);
+}
+
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+BulletRigidBodyNode::
+BulletRigidBodyNode(const BulletRigidBodyNode &copy) :
+  BulletBodyNode(copy),
+  _motion(copy._motion)
+{
+  _rigid = new btRigidBody(*copy._rigid);
+  _rigid->setUserPointer(this);
+  _rigid->setCollisionShape(_shape);
+  _rigid->setMotionState(&_motion);
+}
+
+/**
+ * Returns a newly-allocated PandaNode that is a shallow copy of this one.  It
+ * will be a different pointer, but its internal data may or may not be shared
+ * with that of the original PandaNode.  No children will be copied.
+ */
+PandaNode *BulletRigidBodyNode::
+make_copy() const {
+  return new BulletRigidBodyNode(*this);
 }
 
 /**
@@ -255,7 +276,7 @@ apply_central_impulse(const LVector3 &impulse) {
 void BulletRigidBodyNode::
 transform_changed() {
 
-  if (_motion->sync_disabled()) return;
+  if (_motion.sync_disabled()) return;
 
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
@@ -265,7 +286,7 @@ transform_changed() {
   // transform within the motion state.  For dynamic bodies we need to store
   // the net scale within the motion state, since Bullet might update the
   // transform via MotionState::setWorldTransform.
-  _motion->set_net_transform(ts);
+  _motion.set_net_transform(ts);
 
   // For dynamic or static bodies we directly apply the new transform.
   if (!is_kinematic()) {
@@ -309,7 +330,7 @@ sync_p2b() {
 void BulletRigidBodyNode::
 sync_b2p() {
 
-  _motion->sync_b2p((PandaNode *)this);
+  _motion.sync_b2p((PandaNode *)this);
 }
 
 /**
@@ -564,7 +585,7 @@ pick_dirty_flag() {
 bool BulletRigidBodyNode::
 pick_dirty_flag() {
 
-  return _motion->pick_dirty_flag();
+  return _motion.pick_dirty_flag();
 }
 
 /**

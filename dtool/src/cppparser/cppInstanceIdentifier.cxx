@@ -26,12 +26,11 @@
  */
 CPPInstanceIdentifier::Modifier::
 Modifier(CPPInstanceIdentifierType type) :
-  _type(type)
-{
-  _func_params = NULL;
-  _func_flags = 0;
-  _scoping = NULL;
-  _expr = NULL;
+  _type(type),
+  _func_params(NULL),
+  _func_flags(0),
+  _scoping(NULL),
+  _expr(NULL) {
 }
 
 /**
@@ -83,7 +82,8 @@ initializer_type(CPPParameterList *params) {
 CPPInstanceIdentifier::
 CPPInstanceIdentifier(CPPIdentifier *ident) :
   _ident(ident),
-  _bit_width(-1) {
+  _bit_width(-1),
+  _packed(false) {
 }
 
 /**

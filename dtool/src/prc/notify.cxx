@@ -343,6 +343,9 @@ assert_failure(const char *expression, int line,
   // guarantee it has already been constructed.
   ALIGN_16BYTE ConfigVariableBool assert_abort("assert-abort", false);
   if (assert_abort) {
+    // Make sure the error message has been flushed to the output.
+    nout.flush();
+
 #ifdef WIN32
     // How to trigger an exception in VC++ that offers to take us into the
     // debugger?  abort() doesn't do it.  We used to be able to assert(false),

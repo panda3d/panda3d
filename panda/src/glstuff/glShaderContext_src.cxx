@@ -324,6 +324,34 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     }
   }
 
+#ifndef OPENGLES
+  // Get the used shader storage blocks.
+  if (_glgsg->_supports_shader_buffers) {
+    GLint block_count = 0, block_maxlength = 0;
+
+    _glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &block_count);
+    _glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, GL_MAX_NAME_LENGTH, &block_maxlength);
+
+    block_maxlength = max(64, block_maxlength);
+    char *block_name_cstr = (char *)alloca(block_maxlength);
+
+    for (int i = 0; i < block_count; ++i) {
+      block_name_cstr[0] = 0;
+      _glgsg->_glGetProgramResourceName(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, block_maxlength, NULL, block_name_cstr);
+
+      const GLenum props[] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
+      GLint values[2];
+      _glgsg->_glGetProgramResourceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, 2, props, 2, NULL, values);
+
+      StorageBlock block;
+      block._name = InternalName::make(block_name_cstr);
+      block._binding_index = values[0];
+      block._min_size = values[1];
+      _storage_blocks.push_back(block);
+    }
+  }
+#endif
+
   // Bind the program, so that we can call glUniform1i for the textures.
   _glgsg->_glUseProgram(_glsl_program);
 
@@ -901,7 +929,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_attr_material;
       bind._arg[0] = NULL;
-      bind._dep[0] = Shader::SSD_general | Shader::SSD_material;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_material | Shader::SSD_frame;
       bind._part[1] = Shader::SMO_identity;
       bind._arg[1] = NULL;
       bind._dep[1] = Shader::SSD_NONE;
@@ -2413,16 +2441,24 @@ update_shader_texture_bindings(ShaderContext *prev) {
       Texture *tex;
 
       const ShaderInput *sinp = _glgsg->_target_shader->get_shader_input(input._name);
-      if (sinp->get_value_type() == ShaderInput::M_texture_image) {
+      switch (sinp->get_value_type()) {
+      case ShaderInput::M_texture_image:
         param = (const ParamTextureImage *)sinp->get_param();
         tex = param->get_texture();
+        break;
 
-      } else if (sinp->get_value_type() == ShaderInput::M_texture) {
+      case ShaderInput::M_texture:
         // People find it convenient to be able to pass a texture without
         // further ado.
         tex = sinp->get_texture();
+        break;
 
-      } else {
+      case ShaderInput::M_invalid:
+        GLCAT.error()
+          << "Missing texture image binding input " << *input._name << "\n";
+        continue;
+
+      default:
         GLCAT.error()
           << "Mismatching type for parameter " << *input._name << ", expected texture image binding\n";
         continue;
@@ -2438,8 +2474,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
         if (gtc != (TextureContext*)NULL) {
           input._gtc = gtc;
 
-          gl_tex = gtc->_index;
           _glgsg->update_texture(gtc, true);
+          gl_tex = gtc->_index;
 
           if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
             barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
@@ -2478,7 +2514,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
           bool has_write = param->has_write_access();
           input._writable = has_write;
 
-          if (has_read && has_write) {
+          if (gl_force_image_bindings_writeonly) {
+            access = GL_WRITE_ONLY;
+
+          } else if (has_read && has_write) {
             access = GL_READ_WRITE;
 
           } else if (has_read) {
@@ -2646,6 +2685,31 @@ update_shader_texture_bindings(ShaderContext *prev) {
 #endif
 
   _glgsg->report_my_gl_errors();
+}
+
+/**
+ * Updates the shader buffer bindings for this shader.
+ */
+void CLP(ShaderContext)::
+update_shader_buffer_bindings(ShaderContext *prev) {
+#ifndef OPENGLES
+  // Update the shader storage buffer bindings.
+  const ShaderAttrib *attrib = _glgsg->_target_shader;
+
+  for (size_t i = 0; i < _storage_blocks.size(); ++i) {
+    StorageBlock &block = _storage_blocks[i];
+
+    ShaderBuffer *buffer = attrib->get_shader_input_buffer(block._name);
+#ifndef NDEBUG
+    if (buffer->get_data_size_bytes() < block._min_size) {
+      GLCAT.error()
+        << "cannot bind " << *buffer << " to shader because it is too small"
+           " (expected at least " << block._min_size << " bytes)\n";
+    }
+#endif
+    _glgsg->apply_shader_buffer(block._binding_index, buffer);
+  }
+#endif
 }
 
 /**

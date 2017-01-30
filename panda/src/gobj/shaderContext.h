@@ -42,6 +42,7 @@ public:
   INLINE virtual bool update_shader_vertex_arrays(ShaderContext *prev, bool force) { return false; };
   INLINE virtual void disable_shader_texture_bindings() {};
   INLINE virtual void update_shader_texture_bindings(ShaderContext *prev) {};
+  INLINE virtual void update_shader_buffer_bindings(ShaderContext *prev) {};
 
   INLINE virtual bool uses_standard_vertex_arrays(void) { return true; };
   INLINE virtual bool uses_custom_vertex_arrays(void) { return false; };

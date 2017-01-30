@@ -18,13 +18,20 @@
 
 TypeHandle EggTriangleFan::_type_handle;
 
-
 /**
  *
  */
 EggTriangleFan::
 ~EggTriangleFan() {
   clear();
+}
+
+/**
+ * Makes a copy of this object.
+ */
+EggTriangleFan *EggTriangleFan::
+make_copy() const {
+  return new EggTriangleFan(*this);
 }
 
 /**

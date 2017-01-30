@@ -20,17 +20,6 @@ ReferenceCountedVector(TypeHandle type_handle) : pvector<Element>(type_handle) {
 }
 
 /**
- *
- */
-template<class Element>
-INLINE ReferenceCountedVector<Element>::
-ReferenceCountedVector(const ReferenceCountedVector<Element> &copy) :
-  NodeReferenceCount(copy),
-  pvector<Element>(copy)
-{
-}
-
-/**
  * Creates an array of initial_size elements.
  */
 template<class Element>
@@ -41,11 +30,13 @@ ReferenceCountedVector(TYPENAME ReferenceCountedVector<Element>::size_type initi
 }
 
 /**
- *
+ * Creates an array with all elements from begin up to but not including end.
  */
 template<class Element>
 INLINE ReferenceCountedVector<Element>::
-~ReferenceCountedVector() {
+ReferenceCountedVector(const Element *begin, const Element *end, TypeHandle type_handle) :
+  pvector<Element>(begin, end, type_handle)
+{
 }
 
 /**

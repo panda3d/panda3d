@@ -36,11 +36,10 @@ private:
 public:
   INLINE WritableParam(const Datagram &datagram);
   INLINE WritableParam(const WritableParam &other);
-  INLINE ~WritableParam();
 
 private:
   // The assignment operator cannot be used for this class.
-  INLINE void operator = (const WritableParam &other);
+  WritableParam &operator = (const WritableParam &other) DELETED_ASSIGN;
 
 public:
   virtual TypeHandle get_type() const {

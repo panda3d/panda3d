@@ -177,8 +177,8 @@ class DirectSessionPanel(AppShell):
             sgeFrame, nodePath = render,
             scrolledCanvas_hull_width = 250,
             scrolledCanvas_hull_height = 300)
-        self.SGE.pack(fill = BOTH, expand = 0)
-        sgeFrame.pack(side = LEFT, fill = 'both', expand = 0)
+        self.SGE.pack(fill = BOTH, expand = 1)
+        sgeFrame.pack(side = LEFT, fill = 'both', expand = 1)
 
         # Create the notebook pages
         notebook = Pmw.NoteBook(notebookFrame)

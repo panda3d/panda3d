@@ -48,6 +48,14 @@ make_copy() {
 }
 
 /**
+ *
+ */
+PT(CollisionEntry) CollisionTube::
+test_intersection(const CollisionEntry &entry) const {
+  return entry.get_into()->test_intersection_from_tube(entry);
+}
+
+/**
  * Transforms the solid by the indicated matrix.
  */
 void CollisionTube::
@@ -138,7 +146,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
+  DCAST_INTO_R(sphere, entry.get_from(), NULL);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
   CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
@@ -216,7 +224,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), 0);
+  DCAST_INTO_R(line, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -264,7 +272,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
+  DCAST_INTO_R(ray, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -325,7 +333,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), 0);
+  DCAST_INTO_R(segment, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -389,7 +397,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
-  DCAST_INTO_R(parabola, entry.get_from(), 0);
+  DCAST_INTO_R(parabola, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 

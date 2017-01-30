@@ -379,7 +379,7 @@ cp_dependency(ShaderMatInput inp) {
     return SSD_NONE;
   }
   if (inp == SMO_attr_material || inp == SMO_attr_material2) {
-    dep |= SSD_material;
+    dep |= SSD_material | SSD_frame;
   }
   if (inp == SMO_attr_color) {
     dep |= SSD_color;
@@ -2388,6 +2388,11 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
     return spirv_analyze_shader(into);
   }
 
+  // Strip trailing whitespace.
+  while (!into.empty() && isspace(into[into.size() - 1])) {
+    into.resize(into.size() - 1);
+  }
+
   return true;
 }
 
@@ -2529,6 +2534,11 @@ r_preprocess_source(ostream &out, const Filename &fn,
       line += line2.substr(block_end + 2);
     }
 
+    // Strip trailing whitespace.
+    while (!line.empty() && isspace(line[line.size() - 1])) {
+      line.resize(line.size() - 1);
+    }
+
     // Check if this line contains a #directive.
     char directive[64];
     if (line.size() < 8 || sscanf(line.c_str(), " # %63s", directive) != 1) {
@@ -2610,7 +2620,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       // Check for special preprocessing extensions.
       char extension[256];
       char behavior[9];
-      if (sscanf(line.c_str(), " # extension%*[ \t]%255s : %8s", extension, behavior) == 2) {
+      if (sscanf(line.c_str(), " # extension%*[ \t]%255s%*[ \t]:%*[ \t]%8s", extension, behavior) == 2) {
         // Parse the behavior string.
         int mode;
         if (strcmp(behavior, "require") == 0 || strcmp(behavior, "enable") == 0) {
@@ -3182,6 +3192,14 @@ load(const Filename &file, ShaderLanguage lang) {
   }
 
   _load_table[sfile] = shader;
+
+  if (cache_generated_shaders) {
+    ShaderTable::const_iterator i = _make_table.find(shader->_text);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      return i->second;
+    }
+    _make_table[shader->_text] = shader;
+  }
   return shader;
 }
 
@@ -3212,6 +3230,14 @@ load(ShaderLanguage lang, const Filename &vertex,
   }
 
   _load_table[sfile] = shader;
+
+  if (cache_generated_shaders) {
+    ShaderTable::const_iterator i = _make_table.find(shader->_text);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      return i->second;
+    }
+    _make_table[shader->_text] = shader;
+  }
   return shader;
 }
 
@@ -3267,14 +3293,21 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   if (!shader->read(sfile, record)) {
     return NULL;
   }
+  _load_table[sfile] = shader;
+
+  if (cache_generated_shaders) {
+    ShaderTable::const_iterator i = _make_table.find(shader->_text);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      return i->second;
+    }
+    _make_table[shader->_text] = shader;
+  }
 
   // It makes little sense to cache the shader before compilation, so we keep
   // the record for when we have the compiled the shader.
   swap(shader->_record, record);
   shader->_cache_compiled_shader = BamCache::get_global_ptr()->get_cache_compiled_shaders();
   shader->_fullpath = shader->_source_files[0];
-
-  _load_table[sfile] = shader;
   return shader;
 }
 
@@ -3407,7 +3440,6 @@ make_compute(ShaderLanguage lang, const string &body) {
   ShaderFile sbody;
   sbody._separate = true;
   sbody._compute = body;
-
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);

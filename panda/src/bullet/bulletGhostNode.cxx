@@ -55,7 +55,7 @@ void BulletGhostNode::
 parents_changed() {
 
   Parents parents = get_parents();
-  for (int i=0; i < parents.get_num_parents(); ++i) {
+  for (size_t i = 0; i < parents.get_num_parents(); ++i) {
     PandaNode *parent = parents.get_parent(i);
     TypeHandle type = parent->get_type();
 

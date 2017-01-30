@@ -18,6 +18,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
+#include "collisionTube.h"
 #include "collisionParabola.h"
 #include "config_collide.h"
 #include "pointerToArray.h"
@@ -106,7 +107,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
+  DCAST_INTO_R(sphere, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -145,7 +146,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), 0);
+  DCAST_INTO_R(line, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -190,7 +191,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
+  DCAST_INTO_R(ray, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -242,7 +243,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), 0);
+  DCAST_INTO_R(segment, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -294,13 +295,83 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 /**
+ *
+ */
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_tube(const CollisionEntry &entry) const {
+  const CollisionTube *tube;
+  DCAST_INTO_R(tube, entry.get_from(), NULL);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_a = tube->get_point_a() * wrt_mat;
+  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LVector3 from_radius_v =
+    LVector3(tube->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = length(from_radius_v);
+
+  PN_stdfloat dist_a = _plane.dist_to_plane(from_a);
+  PN_stdfloat dist_b = _plane.dist_to_plane(from_b);
+
+  if (dist_a >= from_radius && dist_b >= from_radius) {
+    // Entirely in front of the plane means no intersection.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = (has_effective_normal() && tube->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  new_entry->set_surface_normal(normal);
+
+  PN_stdfloat t;
+  LVector3 from_direction = from_b - from_a;
+  if (_plane.intersects_line(t, from_a, from_direction)) {
+    // It intersects the plane.
+    if (t >= 1.0f) {
+      new_entry->set_surface_point(from_b - get_normal() * dist_b);
+
+    } else if (t <= 0.0f) {
+      new_entry->set_surface_point(from_a - get_normal() * dist_a);
+
+    } else {
+      // Within the tube!  Yay, that means we have a surface point.
+      new_entry->set_surface_point(from_a + t * from_direction);
+    }
+  } else {
+    // If it's completely parallel, pretend it's colliding in the center of
+    // the tube.
+    new_entry->set_surface_point(from_a + 0.5f * from_direction - get_normal() * dist_a);
+  }
+
+  if (IS_NEARLY_EQUAL(dist_a, dist_b)) {
+    // Let's be fair and choose the center of the tube.
+    new_entry->set_interior_point(from_a + 0.5f * from_direction - get_normal() * from_radius);
+
+  } else if (dist_a < dist_b) {
+    // Point A penetrates deeper.
+    new_entry->set_interior_point(from_a - get_normal() * from_radius);
+
+  } else if (dist_b < dist_a) {
+    // No, point B does.
+    new_entry->set_interior_point(from_b - get_normal() * from_radius);
+  }
+
+  return new_entry;
+}
+
+/**
  * This is part of the double-dispatch implementation of test_intersection().
  * It is called when the "from" object is a parabola.
  */
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
-  DCAST_INTO_R(parabola, entry.get_from(), 0);
+  DCAST_INTO_R(parabola, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -366,7 +437,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
-  DCAST_INTO_R(box, entry.get_from(), 0);
+  DCAST_INTO_R(box, entry.get_from(), NULL);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 

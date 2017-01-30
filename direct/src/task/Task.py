@@ -102,7 +102,10 @@ Task.DtoolClassDict['loop'] = staticmethod(loop)
 class TaskManager:
     notify = directNotify.newCategory("TaskManager")
 
-    extendedExceptions = False
+    taskTimerVerbose = ConfigVariableBool('task-timer-verbose', False)
+    extendedExceptions = ConfigVariableBool('extended-exceptions', False)
+    pStatsTasks = ConfigVariableBool('pstats-tasks', False)
+
     MaxEpochSpeed = 1.0/30.0
 
     def __init__(self):

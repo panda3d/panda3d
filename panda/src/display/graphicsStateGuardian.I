@@ -63,6 +63,14 @@ release_all_index_buffers() {
 }
 
 /**
+ * Frees the resources for all index buffers associated with this GSG.
+ */
+INLINE int GraphicsStateGuardian::
+release_all_shader_buffers() {
+  return _prepared_objects->release_all_shader_buffers();
+}
+
+/**
  * Sets the active flag associated with the GraphicsStateGuardian.  If the
  * GraphicsStateGuardian is marked inactive, nothing is rendered.  This is not
  * normally turned off unless there is a problem with the rendering detected

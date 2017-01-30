@@ -17,6 +17,13 @@
 
 TypeHandle EggPoint::_type_handle;
 
+/**
+ * Makes a copy of this object.
+ */
+EggPoint *EggPoint::
+make_copy() const {
+  return new EggPoint(*this);
+}
 
 /**
  * Cleans up modeling errors in whatever context this makes sense.  For

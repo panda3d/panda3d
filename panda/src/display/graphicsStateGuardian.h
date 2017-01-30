@@ -88,6 +88,7 @@ PUBLISHED:
   INLINE int release_all_geoms();
   INLINE int release_all_vertex_buffers();
   INLINE int release_all_index_buffers();
+  INLINE int release_all_shader_buffers();
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -307,6 +308,9 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
+  virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
+  virtual void release_shader_buffer(BufferContext *ibc);
+
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
@@ -322,7 +326,7 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
-  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
+  PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
   virtual void clear(DrawableRegion *clearable);
 
@@ -640,10 +644,13 @@ public:
   // Statistics
   static PStatCollector _vertex_buffer_switch_pcollector;
   static PStatCollector _index_buffer_switch_pcollector;
+  static PStatCollector _shader_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
   static PStatCollector _load_index_buffer_pcollector;
+  static PStatCollector _load_shader_buffer_pcollector;
   static PStatCollector _create_vertex_buffer_pcollector;
   static PStatCollector _create_index_buffer_pcollector;
+  static PStatCollector _create_shader_buffer_pcollector;
   static PStatCollector _load_texture_pcollector;
   static PStatCollector _data_transferred_pcollector;
   static PStatCollector _texmgrmem_total_pcollector;
@@ -680,6 +687,7 @@ public:
   static PStatCollector _prepare_shader_pcollector;
   static PStatCollector _prepare_vertex_buffer_pcollector;
   static PStatCollector _prepare_index_buffer_pcollector;
+  static PStatCollector _prepare_shader_buffer_pcollector;
 
   // A whole slew of collectors to measure the cost of individual state
   // changes.  These are disabled by default.

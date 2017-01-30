@@ -55,6 +55,7 @@ public:
   bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
   void disable_shader_texture_bindings() OVERRIDE;
   void update_shader_texture_bindings(ShaderContext *prev) OVERRIDE;
+  void update_shader_buffer_bindings(ShaderContext *prev) OVERRIDE;
 
   INLINE bool uses_standard_vertex_arrays(void);
   INLINE bool uses_custom_vertex_arrays(void);
@@ -85,6 +86,17 @@ private:
   GLint _frame_number;
 #ifndef OPENGLES
   pmap<GLint, GLuint64> _glsl_uniform_handles;
+#endif
+
+#ifndef OPENGLES
+  struct StorageBlock {
+    CPT(InternalName) _name;
+    GLuint _binding_index;
+    GLint _min_size;
+  };
+  typedef pvector<StorageBlock> StorageBlocks;
+  StorageBlocks _storage_blocks;
+  BitArray _used_storage_bindings;
 #endif
 
   struct ImageInput {

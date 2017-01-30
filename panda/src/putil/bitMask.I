@@ -35,26 +35,6 @@ BitMask(WordType init_value) :
 }
 
 /**
- *
- */
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-BitMask(const BitMask<WType, nbits> &copy) :
-  _word(copy._word)
-{
-}
-
-/**
- *
- */
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits> &BitMask<WType, nbits>::
-operator = (const BitMask<WType, nbits> &copy) {
-  _word = copy._word;
-  return *this;
-}
-
-/**
  * Returns a BitMask whose bits are all on.
  */
 template<class WType, int nbits>
@@ -119,14 +99,6 @@ range(int low_bit, int size) {
   }
   result._word <<= low_bit;
   return result;
-}
-
-/**
- *
- */
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-~BitMask() {
 }
 
 /**

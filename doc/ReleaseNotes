@@ -2,10 +2,12 @@
 
 This issue fixes several bugs that were still found in 1.9.2.
 
+* Fix crash when using homebrew Python on Mac OS X
 * Fix crash when running in Steam on Linux when using OpenAL
 * Fix crash using wx/tkinter on Mac as long as want-wx/tk is set
 * Fix loading models from 'models' package with models/ prefix
 * Fix random crashes in task system
+* Fix various race conditions causing threading issues
 * Fix memory leaks in BulletTriangleMesh
 * Fix loading old models with MovingPart<LMatrix4f>
 * Improve performance of CPU vertex animation somewhat
@@ -26,7 +28,33 @@ This issue fixes several bugs that were still found in 1.9.2.
 * Fix issues with certain Cg shader inputs in DX9
 * Support uint8 index buffers in DX9
 * Fix occasional frame lag when loading a big model asynchronously
-* Fix race condition reading string config var
+* Fix interrogate parsing issue with "const static"
+* Add back missing libp3pystub.a to Mac OS X SDK
+* Fix RAM caching of 2D texture arrays
+* Fix Ctrl+C interrupt propagation to runtime applications
+* Support for InvSphere, Box and Tube solids in bam2egg
+* Preserve "intangible" and "level" collide flags in bam2egg
+* Add normalized() method to vectors
+* asyncFlattenStrong with inPlace=True caused node to disappear
+* Fix asyncFlattenStrong called on nodes without parent
+* Fix is_playing() check when playing an animation backwards
+* Windows installer no longer clears %PATH% if longer than 1024 chars
+* Fix inoperative -tbn/-tbnall/-tbnauto options in egg-optchar
+* Fix tinydisplay texture errors on shutdown
+* Fix mipmap filtering issues in tinydisplay renderer
+* Fix exception when creating intervals before ShowBase is started
+* Fix rare X11 .ico cursor bug; also now supports PNG-compressed icons
+* Add keyword argument support to make() methods such as Shader.make()
+* Fix compilation errors with Bullet 2.84
+* Fix exception when trying to pickle NodePathCollection objects
+* Fix error when trying to raise vectors to a power
+* GLSL: fix error when legacy matrix generator inputs are mat3
+* Now tries to preserve refresh rate when switching fullscreen on Windows
+* Fix back-to-front sorting when gl-coordinate-system is changed
+* Now also compiles on older Linux distros (eg. CentOS 5 / manylinux1)
+* get_keyboard_map now includes keys on layouts with special characters
+* Fix crash due to incorrect alignment when compiling Eigen with AVX
+* Fix crash when writing 16-bit .tif file (now silently downsamples)
 
 ------------------------  RELEASE 1.9.2  ------------------------
 

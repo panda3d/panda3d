@@ -35,11 +35,56 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is a boolean, floating point or integral type.
+ */
+bool CPPSimpleType::
+is_arithmetic() const {
+  return (_type > T_unknown && _type < T_void);
+}
+
+/**
+ * Returns true if the type is considered a fundamental type.
+ */
+bool CPPSimpleType::
+is_fundamental() const {
+  return (_type != T_unknown && _type != T_parameter && _type != T_auto);
+}
+
+/**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPSimpleType::
+is_standard_layout() const {
+  return (_type != T_unknown && _type != T_parameter && _type != T_auto);
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPSimpleType::
 is_trivial() const {
   return true;
+}
+
+/**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPSimpleType::
+is_constructible(const CPPType *given_type) const {
+  given_type = ((CPPType *)given_type)->remove_reference()->remove_cv();
+
+  const CPPSimpleType *simple_type = given_type->as_simple_type();
+  if (simple_type == NULL) {
+    return given_type->is_enum() && is_arithmetic();
+  } else if (_type == T_nullptr) {
+    return simple_type->_type == T_nullptr;
+  } else if (_type == T_bool) {
+    return simple_type->is_arithmetic() || simple_type->_type == T_nullptr;
+  } else if (is_arithmetic()) {
+    return simple_type->is_arithmetic();
+  } else {
+    return false;
+  }
 }
 
 /**
@@ -55,6 +100,14 @@ is_default_constructible() const {
  */
 bool CPPSimpleType::
 is_copy_constructible() const {
+  return (_type != T_void);
+}
+
+/**
+ * Returns true if the type is destructible.
+ */
+bool CPPSimpleType::
+is_destructible() const {
   return (_type != T_void);
 }
 

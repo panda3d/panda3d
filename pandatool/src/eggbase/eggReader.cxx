@@ -170,11 +170,17 @@ handle_args(ProgramBase::Args &args) {
     Filename filename = Filename::from_os_specific(*ai);
 
     EggData file_data;
-    if (!file_data.read(filename)) {
-      // Rather than returning false, we simply exit here, so the ProgramBase
-      // won't try to tell the user how to run the program just because we got
-      // a bad egg file.
-      exit(1);
+    if (filename != "-") {
+      if (!file_data.read(filename)) {
+        // Rather than returning false, we simply exit here, so the ProgramBase
+        // won't try to tell the user how to run the program just because we got
+        // a bad egg file.
+        exit(1);
+      }
+    } else {
+      if (!file_data.read(cin)) {
+        exit(1);
+      }
     }
 
     if (_noabs && file_data.original_had_absolute_pathnames()) {

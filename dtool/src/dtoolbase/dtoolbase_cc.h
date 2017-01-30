@@ -39,6 +39,10 @@ using namespace std;
 #define OVERRIDE override
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
+#define DEFAULT_DTOR = default
+#define DEFAULT_ASSIGN = default
+#define DELETED = delete
+#define DELETED_ASSIGN = delete
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -75,6 +79,7 @@ typedef int ios_seekdir;
 #endif
 
 #include <string>
+#include <utility>
 
 #ifdef HAVE_NAMESPACE
 using namespace std;
@@ -114,6 +119,20 @@ typedef ios::iostate ios_iostate;
 typedef ios::seekdir ios_seekdir;
 #endif
 
+// Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
+// in some important missing functions.
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+typedef decltype(nullptr) nullptr_t;
+
+template<class T> struct remove_reference      {typedef T type;};
+template<class T> struct remove_reference<T&>  {typedef T type;};
+template<class T> struct remove_reference<T&& >{typedef T type;};
+
+template<class T> typename remove_reference<T>::type &&move(T &&t) {
+  return static_cast<typename remove_reference<T>::type&&>(t);
+}
+#endif
+
 #ifdef _MSC_VER
 #define ALWAYS_INLINE __forceinline
 #elif defined(__GNUC__)
@@ -134,7 +153,9 @@ typedef ios::seekdir ios_seekdir;
 // Determine the availability of C++11 features.
 #if defined(__has_extension) // Clang magic.
 #  if __has_extension(cxx_constexpr)
-#    define CONSTEXPR constexpr
+#    if !defined(__apple_build_version__) || __apple_build_version__ >= 5000000
+#      define CONSTEXPR constexpr
+#    endif
 #  endif
 #  if __has_extension(cxx_noexcept)
 #    define NOEXCEPT noexcept
@@ -149,11 +170,16 @@ typedef ios::seekdir ios_seekdir;
 #  endif
 #  if __has_extension(cxx_defaulted_functions)
 #     define DEFAULT_CTOR = default
+#     define DEFAULT_DTOR = default
+#     define DEFAULT_ASSIGN = default
+#  endif
+#  if __has_extension(cxx_deleted_functions)
+#     define DELETED = delete
 #  endif
 #elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
 
 // GCC defines several macros which we can query.  List of all supported
-// builtin macros: https:gcc.gnu.orgprojectscxx0x.html
+// builtin macros: https://gcc.gnu.org/projects/cxx-status.html
 #  if __cpp_constexpr >= 200704
 #    define CONSTEXPR constexpr
 #  endif
@@ -161,6 +187,9 @@ typedef ios::seekdir ios_seekdir;
 // Starting at GCC 4.4
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
 #  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
+#  define DELETED = delete
 #  endif
 
 // Starting at GCC 4.6
@@ -183,13 +212,19 @@ typedef ios::seekdir ios_seekdir;
 #  define FINAL final
 #  define OVERRIDE override
 #  define MOVE(x) move(x)
-#  define DEFAULT_CTOR = default
 #elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
 #  define NOEXCEPT throw()
 #  define OVERRIDE override
 #  define USE_MOVE_SEMANTICS
 #  define FINAL sealed
 #  define MOVE(x) move(x)
+#endif
+
+#if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
+#  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
+#  define DELETED = delete
 #endif
 
 // Fallbacks if features are not supported
@@ -210,6 +245,18 @@ typedef ios::seekdir ios_seekdir;
 #endif
 #ifndef DEFAULT_CTOR
 #  define DEFAULT_CTOR {}
+#endif
+#ifndef DEFAULT_DTOR
+#  define DEFAULT_DTOR {}
+#endif
+#ifndef DEFAULT_ASSIGN
+#  define DEFAULT_ASSIGN {return *this;}
+#endif
+#ifndef DELETED
+#  define DELETED {assert(false);}
+#  define DELETED_ASSIGN {assert(false);return *this;}
+#else
+#  define DELETED_ASSIGN DELETED
 #endif
 
 

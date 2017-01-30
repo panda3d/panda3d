@@ -129,11 +129,7 @@ read_prc(istream &in) {
 
 #ifdef HAVE_OPENSSL
   // Set up the evp context for verifying the signature, if we find one.
-#ifdef SSL_097
   _md_ctx = EVP_MD_CTX_create();
-#else
-  _md_ctx = new EVP_MD_CTX;
-#endif
   EVP_VerifyInit((EVP_MD_CTX *)_md_ctx, EVP_sha1());
 #endif  // HAVE_OPENSSL
 
@@ -208,11 +204,7 @@ read_prc(istream &in) {
         << "invalid signature found in " << get_name() << "\n";
     }
   }
-#ifdef SSL_097
   EVP_MD_CTX_destroy((EVP_MD_CTX *)_md_ctx);
-#else
-  delete (EVP_MD_CTX *)_md_ctx;
-#endif
 #endif  // HAVE_OPENSSL
 
   bool failed = (in.fail() && !in.eof());

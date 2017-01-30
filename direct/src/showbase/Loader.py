@@ -687,6 +687,63 @@ class Loader(DirectObject):
 
         return texture
 
+    def load2DTextureArray(self, texturePattern, readMipmaps = False, okMissing = False,
+                      minfilter = None, magfilter = None, anisotropicDegree = None,
+                      loaderOptions = None, multiview = None, numViews = 2):
+        """
+        texturePattern is a string that contains a sequence of one or
+        more hash characters ('#'), which will be filled in with the
+        z-height number.  Returns a 2-D Texture array object, suitable
+        for rendering array of textures.
+
+        okMissing should be True to indicate the method should return
+        None if the texture file is not found.  If it is False, the
+        method will raise an exception if the texture file is not
+        found or cannot be loaded.
+
+        If readMipmaps is True, then the filename string must contain
+        two sequences of hash characters; the first group is filled in
+        with the z-height number, and the second group with the mipmap
+        index number.
+
+        If multiview is true, it indicates to load a multiview or
+        stereo texture.  In this case, numViews should also be
+        specified (the default is 2), and the sequence of texture
+        images will be divided into numViews views.  The total
+        z-height will be (numImages / numViews).  For instance, if you
+        read 16 images with numViews = 2, then you have created a
+        stereo multiview image, with z = 8.  In this example, images
+        numbered 0 - 7 will be part of the left eye view, and images
+        numbered 8 - 15 will be part of the right eye view.
+        """
+        assert Loader.notify.debug("Loading 2-D texture array: %s" % (texturePattern))
+        if loaderOptions is None:
+            loaderOptions = LoaderOptions()
+        else:
+            loaderOptions = LoaderOptions(loaderOptions)
+        if multiview is not None:
+            flags = loaderOptions.getTextureFlags()
+            if multiview:
+                flags |= LoaderOptions.TFMultiview
+            else:
+                flags &= ~LoaderOptions.TFMultiview
+            loaderOptions.setTextureFlags(flags)
+            loaderOptions.setTextureNumViews(numViews)
+
+        texture = TexturePool.load2dTextureArray(texturePattern, readMipmaps, loaderOptions)
+        if not texture and not okMissing:
+            message = 'Could not load 2-D texture array: %s' % (texturePattern)
+            raise IOError(message)
+
+        if minfilter is not None:
+            texture.setMinfilter(minfilter)
+        if magfilter is not None:
+            texture.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            texture.setAnisotropicDegree(anisotropicDegree)
+
+        return texture
+
     def loadCubeMap(self, texturePattern, readMipmaps = False, okMissing = False,
                     minfilter = None, magfilter = None, anisotropicDegree = None,
                     loaderOptions = None, multiview = None):
@@ -892,9 +949,8 @@ class Loader(DirectObject):
         for model in modelList:
             request = ModelFlattenRequest(model.node())
             request.setDoneEvent(self.hook)
-            request.setPythonObject((cb, i))
             self.loader.loadAsync(request)
-            cb.requests[request] = True
+            cb.requests.add(request)
             self.__requests[request] = (cb, i)
             i += 1
         return cb
@@ -910,7 +966,7 @@ class Loader(DirectObject):
             orig = origModelList[i].node()
             flat = models[i].node()
             orig.copyAllProperties(flat)
-            orig.replaceNode(flat)
+            flat.replaceNode(orig)
 
         if callback:
             if gotList:

@@ -41,8 +41,13 @@ CPPDeclaration(const CPPDeclaration &copy) :
 /**
  *
  */
-CPPDeclaration::
-~CPPDeclaration() {
+CPPDeclaration &CPPDeclaration::
+operator = (const CPPDeclaration &copy) {
+  _vis = copy._vis;
+  _template_scope = copy._template_scope;
+  _file = copy._file;
+  _leading_comment = copy._leading_comment;
+  return *this;
 }
 
 /**
@@ -124,6 +129,7 @@ CPPDeclaration *CPPDeclaration::
 substitute_decl(SubstDecl &subst, CPPScope *, CPPScope *) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
+    assert((*si).second != NULL);
     return (*si).second;
   }
   return this;
@@ -303,6 +309,14 @@ as_make_property() {
 CPPMakeSeq *CPPDeclaration::
 as_make_seq() {
   return (CPPMakeSeq *)NULL;
+}
+
+/**
+ *
+ */
+CPPClosureType *CPPDeclaration::
+as_closure_type() {
+  return (CPPClosureType *)NULL;
 }
 
 /**

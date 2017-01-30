@@ -31,9 +31,6 @@ public:
 PUBLISHED:
   INLINE DatagramIterator();
   INLINE DatagramIterator(const Datagram &datagram, size_t offset = 0);
-  INLINE DatagramIterator(const DatagramIterator &copy);
-  INLINE void operator = (const DatagramIterator &copy);
-  INLINE ~DatagramIterator();
 
   INLINE bool get_bool();
   INLINE int8_t get_int8();

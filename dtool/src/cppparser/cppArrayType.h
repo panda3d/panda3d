@@ -38,6 +38,7 @@ public:
   virtual CPPType *resolve_type(CPPScope *current_scope,
                                 CPPScope *global_scope);
   virtual bool is_tbd() const;
+  virtual bool is_standard_layout() const;
   virtual bool is_trivial() const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;

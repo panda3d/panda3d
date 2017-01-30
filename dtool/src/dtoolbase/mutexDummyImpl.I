@@ -14,28 +14,14 @@
 /**
  *
  */
-INLINE MutexDummyImpl::
-MutexDummyImpl() {
-}
-
-/**
- *
- */
-INLINE MutexDummyImpl::
-~MutexDummyImpl() {
-}
-
-/**
- *
- */
-INLINE void MutexDummyImpl::
+ALWAYS_INLINE void MutexDummyImpl::
 acquire() {
 }
 
 /**
  *
  */
-INLINE bool MutexDummyImpl::
+ALWAYS_INLINE bool MutexDummyImpl::
 try_acquire() {
   return true;
 }
@@ -43,6 +29,6 @@ try_acquire() {
 /**
  *
  */
-INLINE void MutexDummyImpl::
+ALWAYS_INLINE void MutexDummyImpl::
 release() {
 }

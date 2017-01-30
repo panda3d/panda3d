@@ -46,8 +46,6 @@ PUBLISHED:
 
   INLINE BitArray();
   INLINE BitArray(WordType init_value);
-  INLINE BitArray(const BitArray &copy);
-  INLINE BitArray &operator = (const BitArray &copy);
   BitArray(const SparseArray &from);
 
   INLINE static BitArray all_on();
@@ -55,8 +53,6 @@ PUBLISHED:
   INLINE static BitArray lower_on(int on_bits);
   INLINE static BitArray bit(int index);
   INLINE static BitArray range(int low_bit, int size);
-
-  INLINE ~BitArray();
 
   CONSTEXPR static bool has_max_num_bits();
   CONSTEXPR static int get_max_num_bits();

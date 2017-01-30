@@ -139,11 +139,12 @@ public:
   Templates _templates;
   CPPNameComponent _name;
 
+  typedef set<CPPScope *> Using;
+  Using _using;
+
 protected:
   CPPScope *_parent_scope;
   CPPStructType *_struct_type;
-  typedef set<CPPScope *> Using;
-  Using _using;
   CPPVisibility _current_vis;
 
 private:

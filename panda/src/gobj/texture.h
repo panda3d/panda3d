@@ -445,9 +445,15 @@ PUBLISHED:
   CPTA_uchar get_ram_image_as(const string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
+#ifndef CPPPARSER
   INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
   void set_ram_image_as(CPTA_uchar image, const string &provided_format);
+#else
+  EXTEND void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
+                            size_t page_size = 0);
+  EXTEND void set_ram_image_as(PyObject *image, const string &provided_format);
+#endif
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -811,6 +817,8 @@ private:
                                          int n, istream &in);
   static PTA_uchar read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header,
                                          int n, istream &in);
+  static PTA_uchar read_dds_level_raw(Texture *tex, CData *cdata, const DDSHeader &header,
+                                      int n, istream &in);
   static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata,
                                                        const DDSHeader &header,
                                                        int n, istream &in);
