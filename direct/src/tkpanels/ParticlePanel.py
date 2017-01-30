@@ -1886,7 +1886,7 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setLifeScale(lScale)
     # Sprite #
     def setSpriteSourceType(self):
-        if self.rendererSpriteSourceType.get() == 0:
+        if self.rendererSpriteSourceType.get() == SpriteAnim.ST_texture:
             self.rendererSpriteTextureEntry['state'] = 'normal'
             self.rendererSpriteFileEntry['state'] = 'disabled'
             self.rendererSpriteNodeEntry['state'] = 'disabled'
@@ -1982,6 +1982,7 @@ class ParticlePanel(AppShell):
             bMethod = BaseParticleRenderer.PPBLENDCUBIC
         else:
             bMethod = BaseParticleRenderer.PPNOBLEND
+        self.particles.renderer.setAlphaBlendMethod(bMethod)
     def toggleRendererSpriteAlphaDisable(self):
         self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
