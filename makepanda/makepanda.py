@@ -6394,6 +6394,7 @@ if PkgSkip("PYTHON") == 0:
         # Setup rpath so libs can be found in the same directory as the deployed game
         LibName('DEPLOYSTUB', "-Wl,-rpath,\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
+        LibName('DEPLOYSTUB', "-rdynamic")
     TargetAdd('deploy-stub.exe', input='deploy-stub.obj')
     if GetTarget() == 'windows':
         TargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')

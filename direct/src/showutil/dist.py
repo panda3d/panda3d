@@ -26,6 +26,8 @@ def find_packages(whlfile):
     return [
          i for i in filelist
          if '.so.' in i or
+         #TODO: find a better way to exclude deploy_libs from this.
+         (i.endswith('.so') and not i.startswith('deploy_libs/')) or
          i.endswith('.dll') or
          i.endswith('.dylib') or
          'libpandagl' in i or
