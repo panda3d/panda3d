@@ -1474,6 +1474,14 @@ run_setup_ssl() {
     return false;
   }
 
+  string hostname = _request.get_url().get_server();
+  result = SSL_set_tlsext_host_name(ssl, hostname.c_str());
+  if (result == 0) {
+    downloader_cat.error()
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Could not set TLS SNI hostname to '" << hostname << "'\n";
+  }
+
 /*
  * It would be nice to use something like SSL_set_client_cert_cb() here to set
  * a callback to provide the certificate should it be requested, or even to
