@@ -31,6 +31,7 @@
 #include "pta_LVecBase4.h"
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
+#include "extension.h"
 
 /**
  *
@@ -146,6 +147,8 @@ private:
 
   typedef pmap<CPT_InternalName, CPT(ShaderInput)> Inputs;
   Inputs _inputs;
+
+  friend class Extension<NodePath>;
 
 PUBLISHED:
   static int get_class_slot() {
