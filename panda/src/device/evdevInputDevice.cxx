@@ -574,6 +574,21 @@ process_events() {
     case EV_KEY:
       button = map_button(code);
       _button_events->add_event(ButtonEvent(button, events[i].value ? ButtonEvent::T_down : ButtonEvent::T_up, time));
+      // set the buttons state
+      State state;
+      if (events[i].value) {
+        state = S_down;
+      } else {
+        state = S_up;
+      }
+      for (int i = 0; i < _buttons.size(); ++i) {
+        if (get_button(i).handle == button) {
+          //NOTE: set_button_state doesn't work correct here.
+          //set_button_state(i, state);
+          _buttons[i].state = state;
+          break;
+        }
+      }
       break;
 
     default:
