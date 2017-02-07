@@ -243,14 +243,13 @@ protected:
   PT(ButtonEventList) _button_events;
   PT(PointerEventList) _pointer_events;
 
-public:
+PUBLISHED:
   enum State {
     S_unknown,
     S_up,
     S_down
   };
 
-PUBLISHED:
   class ButtonState {
   public:
     INLINE ButtonState();
