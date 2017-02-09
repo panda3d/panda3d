@@ -17,7 +17,7 @@
 // For __rdtsc
 #ifdef _MSC_VER
 #include <intrin.h>
-#elif defined(__GNUC__) && !defined(__APPLE__)
+#elif defined(__GNUC__) && !defined(__clang__)
 #include <x86intrin.h>
 #endif
 
@@ -529,7 +529,7 @@ get_cpu_frequency() {
  */
 uint64_t DisplayInformation::
 get_cpu_time() {
-#if defined(_MSC_VER) || (defined(__GNUC__) && !defined(__APPLE__))
+#if defined(_MSC_VER) || (defined(__GNUC__) && !defined(__clang__))
   return __rdtsc();
 #else
   unsigned int lo, hi = 0;

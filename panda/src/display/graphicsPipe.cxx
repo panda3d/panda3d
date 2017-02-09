@@ -141,14 +141,15 @@ GraphicsPipe() :
   }
 
   if (max_extended >= 0x80000004) {
-    string brand;
+    char brand[49];
     get_cpuid(0x80000002, info);
-    brand += string(info.str, strnlen(info.str, 16));
+    memcpy(brand, info.str, 16);
     get_cpuid(0x80000003, info);
-    brand += string(info.str, strnlen(info.str, 16));
+    memcpy(brand + 16, info.str, 16);
     get_cpuid(0x80000004, info);
-    brand += string(info.str, strnlen(info.str, 16));
-    _display_information->_cpu_brand_string = move(brand);
+    memcpy(brand + 32, info.str, 16);
+    brand[48] = 0;
+    _display_information->_cpu_brand_string = brand;
   }
 
 #if defined(IS_OSX)
