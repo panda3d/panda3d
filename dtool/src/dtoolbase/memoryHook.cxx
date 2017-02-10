@@ -36,6 +36,15 @@
 
 #endif  // WIN32
 
+// Ensure we made the right decisions about the alignment size.
+static_assert(MEMORY_HOOK_ALIGNMENT >= sizeof(size_t),
+              "MEMORY_HOOK_ALIGNMENT should at least be sizeof(size_t)");
+static_assert(MEMORY_HOOK_ALIGNMENT >= sizeof(void *),
+              "MEMORY_HOOK_ALIGNMENT should at least be sizeof(void *)");
+static_assert(MEMORY_HOOK_ALIGNMENT * 8 >= NATIVE_WORDSIZE,
+              "MEMORY_HOOK_ALIGNMENT * 8 should at least be NATIVE_WORDSIZE");
+static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
+              "MEMORY_HOOK_ALIGNMENT should be a power of two");
 
 #if defined(USE_MEMORY_DLMALLOC)
 
@@ -49,17 +58,8 @@
 #ifdef _DEBUG
   #define DEBUG 1
 #endif
-#ifdef LINMATH_ALIGN
-// drose: We require 16-byte alignment of certain structures, to
-// support SSE2.  We don't strictly have to align *everything*, but
-// it's just easier to do so.
-#ifdef __AVX__
-// Eigen requires 32-byte alignment when using AVX instructions.
-#define MALLOC_ALIGNMENT ((size_t)32U)
-#else
-#define MALLOC_ALIGNMENT ((size_t)16U)
-#endif
-#endif
+// dlmalloc can do the alignment we ask for.
+#define MALLOC_ALIGNMENT MEMORY_HOOK_ALIGNMENT
 
 #include "dlmalloc_src.cxx"
 
@@ -204,6 +204,7 @@ heap_alloc_single(size_t size) {
 #endif  // DO_MEMORY_USAGE
 
   void *ptr = alloc_to_ptr(alloc, size);
+  assert(((uintptr_t)ptr % MEMORY_HOOK_ALIGNMENT) == 0);
   assert(ptr >= alloc && (char *)ptr + size <= (char *)alloc + inflated_size);
   return ptr;
 }
@@ -273,6 +274,7 @@ heap_alloc_array(size_t size) {
 #endif  // DO_MEMORY_USAGE
 
   void *ptr = alloc_to_ptr(alloc, size);
+  assert(((uintptr_t)ptr % MEMORY_HOOK_ALIGNMENT) == 0);
   assert(ptr >= alloc && (char *)ptr + size <= (char *)alloc + inflated_size);
   return ptr;
 }
@@ -316,17 +318,27 @@ heap_realloc_array(void *ptr, size_t size) {
 #endif
   }
 
-  void *ptr1 = alloc_to_ptr(alloc1, size);
-  assert(ptr1 >= alloc1 && (char *)ptr1 + size <= (char *)alloc1 + inflated_size);
-#if defined(MEMORY_HOOK_DO_ALIGN)
-  // We might have to shift the memory to account for the new offset due to
-  // the alignment.
+  // Align this to the requested boundary.
+#ifdef MEMORY_HOOK_DO_ALIGN
+  // This copies the code from alloc_to_ptr, since we can't write the size and
+  // pointer until after we have done the memmove.
+  uintptr_t *root = (uintptr_t *)((char *)alloc1 + sizeof(uintptr_t) * 2);
+  root = (uintptr_t *)(((uintptr_t)root + MEMORY_HOOK_ALIGNMENT - 1) & ~(MEMORY_HOOK_ALIGNMENT - 1));
+  void *ptr1 = (void *)root;
+
   size_t orig_delta = (char *)ptr - (char *)alloc;
   size_t new_delta = (char *)ptr1 - (char *)alloc1;
   if (orig_delta != new_delta) {
     memmove((char *)alloc1 + new_delta, (char *)alloc1 + orig_delta, min(size, orig_size));
   }
-#endif  // MEMORY_HOOK_DO_ALIGN
+
+  root[-2] = size;
+  root[-1] = (uintptr_t)alloc1;  // Save the pointer we originally allocated.
+#else
+  void *ptr1 = alloc_to_ptr(alloc1, size);
+#endif
+  assert(ptr1 >= alloc1 && (char *)ptr1 + size <= (char *)alloc1 + inflated_size);
+  assert(((uintptr_t)ptr1 % MEMORY_HOOK_ALIGNMENT) == 0);
   return ptr1;
 }
 

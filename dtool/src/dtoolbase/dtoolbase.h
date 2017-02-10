@@ -89,6 +89,12 @@
 #define NODEFAULT
 #endif
 
+// Use this to hint the compiler that a memory address is aligned.
+#if __has_builtin(__builtin_assume_aligned) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+#define ASSUME_ALIGNED(x, y) (__builtin_assume_aligned(x, y))
+#else
+#define ASSUME_ALIGNED(x, y) (x)
+#endif
 
 /*
   include win32 defns for everything up to WinServer2003, and assume
