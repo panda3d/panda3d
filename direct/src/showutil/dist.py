@@ -13,6 +13,9 @@ from direct.showutil import FreezeTool
 import panda3d.core as p3d
 
 
+if 'basestring' not in globals():
+    basestring = str
+
 
 # TODO replace with Packager
 def find_packages(whlfile):
@@ -42,8 +45,7 @@ class build_apps(distutils.core.Command):
         self.build_base = os.path.join(os.getcwd(), 'build')
         self.gui_apps = {}
         self.console_apps = {}
-        self.directories = []
-        self.files = []
+        self.copy_paths = []
         self.exclude_paths = []
         self.exclude_modules = []
         self.deploy_platforms = []
@@ -211,48 +213,55 @@ class build_apps(distutils.core.Command):
             ignore_copy_list = [
                 '__pycache__',
             ] + list(freezer_modules) + self.exclude_paths + list(self.gui_apps.values()) + list(self.console_apps.values())
+            ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
 
-            for copydir in self.directories:
-                for root, dirs, files in os.walk(copydir):
-                    for item in files:
-                        src = os.path.join(root, item)
-                        dst = os.path.normpath(os.path.join(builddir, root, item))
+            def copy_file(src, dst):
+                src = os.path.normpath(src)
+                dst = os.path.normpath(dst)
 
-                        if item in ignore_copy_list:
-                            print("skipping", src)
-                            continue
+                dst_dir = os.path.dirname(dst)
+                if not os.path.exists(dst_dir):
+                    distutils.dir_util.mkpath(dst_dir)
 
-                        ext = os.path.splitext(src)[1]
-                        dst_root = os.path.splitext(dst)[0]
+                ext = os.path.splitext(src)[1]
+                dst_root = os.path.splitext(dst)[0]
 
-                        if ext in self.build_scripts:
-                            dst_ext, script = self.build_scripts[ext]
-                            dst = dst_root + dst_ext
-                            script = script.format(src, dst)
-                            print("using script:", script)
-                            subprocess.call(script.split())
-                        else:
-                            #print("Copy file", src, dst)
-                            distutils.file_util.copy_file(src, dst)
+                for pattern in ignore_copy_list:
+                    #print("check ignore:", pattern, src, pattern.matches(src))
+                    if pattern.matches(src):
+                        print("skipping file", src)
+                        return
 
-                    for item in dirs[:]:
-                        path = os.path.normpath(os.path.join(builddir, root, item))
-                        if item in ignore_copy_list:
-                            print("skipping", path)
-                            dirs.remove(item)
-                        else:
-                            print("making directory", path)
-                            distutils.dir_util.mkpath(path)
-
-            # Copy extra files
-            for extra in self.files:
-                if len(extra) == 2:
-                    src, dst = extra
-                    dst = os.path.join(builddir, dst)
+                if ext in self.build_scripts:
+                    dst_ext, script = self.build_scripts[ext]
+                    dst = dst_root + dst_ext
+                    script = script.format(src, dst)
+                    print("using script:", script)
+                    subprocess.call(script.split())
                 else:
-                    src = extra
-                    dst = builddir
-                distutils.file_util.copy_file(src, dst)
+                    #print("Copy file", src, dst)
+                    distutils.file_util.copy_file(src, dst)
+
+            def copy_dir(src, dst):
+                for item in os.listdir(src):
+                    s = os.path.join(src, item)
+                    d = os.path.join(dst, item)
+                    if os.path.isfile(s):
+                        copy_file(s, d)
+                    else:
+                        copy_dir(s, d)
+
+            for path in self.copy_paths:
+                if isinstance(path, basestring):
+                    src = dst = path
+                else:
+                    src, dst = path
+                dst = os.path.join(builddir, dst)
+
+                if os.path.isfile(src):
+                    copy_file(src, dst)
+                else:
+                    copy_dir(src, dst)
 
 
 class bdist_apps(distutils.core.Command):

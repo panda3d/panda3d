@@ -4,8 +4,8 @@ setup(
     name="asteroids",
     options = {
         'build_apps': {
-            'directories': ['.'],
-            'exclude_paths': ['build', 'setup.py', 'requirements.txt', 'wheels'],
+            'copy_paths': ['.'],
+            'exclude_paths': ['build/*', 'setup.py', 'requirements.txt', 'wheels/*', '*.swp'],
             'gui_apps': {
                 'asteroids': 'main.py',
             },
