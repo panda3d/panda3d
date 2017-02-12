@@ -20,22 +20,6 @@
 #include "mutexImpl.h"
 #include <map>
 
-#ifdef LINMATH_ALIGN
-// We require 16-byte alignment of certain structures, to support SSE2.  We
-// don't strictly have to align *everything*, but it's just easier to do so.
-#ifdef __AVX__
-#define MEMORY_HOOK_ALIGNMENT 32
-#else
-#define MEMORY_HOOK_ALIGNMENT 16
-#endif
-// Otherwise, align to two words.  This seems to be pretty standard to the
-// point where some code may rely on this being the case.
-#elif defined(IS_OSX) || NATIVE_WORDSIZE >= 64
-#define MEMORY_HOOK_ALIGNMENT 16
-#else
-#define MEMORY_HOOK_ALIGNMENT 8
-#endif
-
 class DeletedBufferChain;
 
 /**
@@ -82,11 +66,6 @@ public:
   virtual void alloc_fail(size_t attempted_size);
 
   INLINE static size_t get_ptr_size(void *ptr);
-
-private:
-  INLINE static size_t inflate_size(size_t size);
-  INLINE static void *alloc_to_ptr(void *alloc, size_t size);
-  INLINE static void *ptr_to_alloc(void *ptr, size_t &size);
 
 #ifdef DO_MEMORY_USAGE
 protected:

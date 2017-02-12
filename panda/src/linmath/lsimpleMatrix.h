@@ -58,7 +58,7 @@ private:
 #endif  // HAVE_EIGEN
 
 // This is as good a place as any to define this alignment macro.
-#if defined(LINMATH_ALIGN) && defined(HAVE_EIGEN) && defined(__AVX__)
+#if defined(LINMATH_ALIGN) && defined(HAVE_EIGEN) && defined(__AVX__) && defined(STDFLOAT_DOUBLE)
 #define ALIGN_LINMATH ALIGN_32BYTE
 #elif defined(LINMATH_ALIGN)
 #define ALIGN_LINMATH ALIGN_16BYTE

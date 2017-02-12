@@ -57,8 +57,8 @@ public:
   void operator = (const VertexDataBuffer &copy);
   INLINE ~VertexDataBuffer();
 
-  INLINE const unsigned char *get_read_pointer(bool force) const;
-  INLINE unsigned char *get_write_pointer();
+  INLINE const unsigned char *get_read_pointer(bool force) const RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
+  INLINE unsigned char *get_write_pointer() RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
 
   INLINE size_t get_size() const;
   INLINE size_t get_reserved_size() const;

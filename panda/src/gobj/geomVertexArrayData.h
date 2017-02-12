@@ -261,8 +261,8 @@ public:
 
   INLINE Thread *get_current_thread() const;
 
-  INLINE const unsigned char *get_read_pointer(bool force) const;
-  unsigned char *get_write_pointer();
+  INLINE const unsigned char *get_read_pointer(bool force) const RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
+  unsigned char *get_write_pointer() RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
 
 PUBLISHED:
   INLINE const GeomVertexArrayData *get_object() const;

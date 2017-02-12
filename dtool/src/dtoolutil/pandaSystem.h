@@ -39,6 +39,8 @@ PUBLISHED:
   static int get_sequence_version();
   static bool is_official_version();
 
+  static int get_memory_alignment();
+
   static string get_distributor();
   static string get_compiler();
   static string get_build_date();

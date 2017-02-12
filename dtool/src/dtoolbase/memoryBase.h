@@ -26,7 +26,7 @@
 #ifndef USE_MEMORY_NOWRAPPERS
 
 #define ALLOC_MEMORY_BASE                                    \
-  inline void *operator new(size_t size) {                   \
+  inline void *operator new(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
     return PANDA_MALLOC_SINGLE(size);                        \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
@@ -38,7 +38,7 @@
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
-  inline void *operator new[](size_t size) {                 \
+  inline void *operator new[](size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
     return PANDA_MALLOC_ARRAY(size);                         \
   }                                                          \
   inline void *operator new[](size_t size, void *ptr) {      \
