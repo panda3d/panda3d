@@ -578,8 +578,8 @@ def makewheel(version, output_dir, platform=default_platform):
             entry_points += '{0} = panda3d_tools:{1}\n'.format(basename, funcname)
             tools_init += '{0} = lambda: _exec_tool({1!r})\n'.format(funcname, file)
     entry_points += '[distutils.commands]\n'
-    entry_points += 'build_p3d = direct.showutil.dist:build_p3d\n'
-    entry_points += 'bdist_p3d_archive = direct.showutil.dist:bdist_p3d_archive\n'
+    entry_points += 'build_apps = direct.showutil.dist:build_apps\n'
+    entry_points += 'bdist_apps = direct.showutil.dist:bdist_apps\n'
 
     whl.write_file_data('panda3d_tools/__init__.py', PANDA3D_TOOLS_INIT.format(tools_init))
 

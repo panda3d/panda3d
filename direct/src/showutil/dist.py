@@ -35,7 +35,7 @@ def find_packages(whlfile):
     ]
 
 
-class build_p3d(distutils.core.Command):
+class build_apps(distutils.core.Command):
     user_options = [] # TODO
 
     def initialize_options(self):
@@ -255,7 +255,7 @@ class build_p3d(distutils.core.Command):
                 distutils.file_util.copy_file(src, dst)
 
 
-class bdist_p3d_archive(distutils.core.Command):
+class bdist_apps(distutils.core.Command):
     user_options = []
 
     def initialize_options(self):
@@ -265,14 +265,14 @@ class bdist_p3d_archive(distutils.core.Command):
         pass
 
     def run(self):
-        build_cmd = self.get_finalized_command('build_p3d')
+        build_cmd = self.get_finalized_command('build_apps')
         if not build_cmd.deploy_platforms:
             platforms = [p3d.PandaSystem.get_platform()]
         else:
             platforms = build_cmd.deploy_platforms
         build_base = build_cmd.build_base
 
-        self.run_command('build_p3d')
+        self.run_command('build_apps')
         os.chdir(build_base)
 
         for platform in platforms:
@@ -292,6 +292,6 @@ class bdist_p3d_archive(distutils.core.Command):
 
 def setup(**attrs):
     commandClasses = attrs.setdefault("cmdclass", {})
-    commandClasses['build_p3d'] = build_p3d
-    commandClasses['bdist_p3d_archive'] = bdist_p3d_archive
+    commandClasses['build_apps'] = build_apps
+    commandClasses['bdist_apps'] = bdist_apps
     distutils.core.setup(**attrs)

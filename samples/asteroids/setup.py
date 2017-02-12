@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="asteroids",
     options = {
-        'build_p3d': {
+        'build_apps': {
             'directories': ['.'],
             'exclude_paths': ['build', 'setup.py', 'requirements.txt', 'wheels'],
             'gui_apps': {
