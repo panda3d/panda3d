@@ -94,17 +94,13 @@ PUBLISHED:
   int get_driver_date_day();
   int get_driver_date_year();
 
-  int get_cpu_id_version();
-  int get_cpu_id_size();
-  unsigned int get_cpu_id_data(int index);
-
-  const char *get_cpu_vendor_string();
-  const char *get_cpu_brand_string();
+  const string &get_cpu_vendor_string() const;
+  const string &get_cpu_brand_string() const;
   unsigned int get_cpu_version_information();
   unsigned int get_cpu_brand_index();
 
   uint64_t get_cpu_frequency();
-  uint64_t get_cpu_time();
+  static uint64_t get_cpu_time();
 
   uint64_t get_maximum_cpu_frequency();
   uint64_t get_current_cpu_frequency();
@@ -158,12 +154,9 @@ public:
   int _driver_date_day;
   int _driver_date_year;
 
-  int _cpu_id_version;
-  int _cpu_id_size;
-  unsigned int *_cpu_id_data;
 
-  char *_cpu_vendor_string;
-  char *_cpu_brand_string;
+  string _cpu_vendor_string;
+  string _cpu_brand_string;
   unsigned int _cpu_version_information;
   unsigned int _cpu_brand_index;
 
@@ -176,7 +169,6 @@ public:
   int _num_logical_cpus;
 
   void (*_get_memory_information_function) (DisplayInformation *display_information);
-  uint64_t (*_cpu_time_function) (void);
   int (*_update_cpu_frequency_function) (int processor_number, DisplayInformation *display_information);
 
   int _os_version_major;

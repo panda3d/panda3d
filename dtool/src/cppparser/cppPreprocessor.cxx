@@ -209,6 +209,7 @@ CPPPreprocessor() {
   _state = S_eof;
   _paren_nesting = 0;
   _parsing_template_params = false;
+  _parsing_attribute = false;
   _unget = '\0';
   _last_c = '\0';
   _start_of_line = true;
@@ -986,6 +987,13 @@ internal_get_next_token() {
         return CPPToken(0, loc);
       }
     }
+  } else if (_parsing_attribute) {
+    // If we're parsing an attribute, also keep track of the paren nesting.
+    if (c == '[' || c == '(') {
+      ++_paren_nesting;
+    } else if (c == ']' || c == ')') {
+      --_paren_nesting;
+    }
   }
 
   // Look for an end-of-line comment, and parse it before we finish this
@@ -1089,6 +1097,20 @@ check_digraph(int c) {
   case '%':
     if (next_c == '=') return MODEQUAL;
     if (next_c == '>') return '}';
+    break;
+
+  case '[':
+    if (next_c == '[' && !_parsing_attribute) {
+      _parsing_attribute = true;
+      return ATTR_LEFT;
+    }
+    break;
+
+  case ']':
+    if (next_c == ']' && _parsing_attribute && _paren_nesting == 0) {
+      _parsing_attribute = false;
+      return ATTR_RIGHT;
+    }
     break;
   }
 
@@ -1870,11 +1892,19 @@ get_identifier(int c) {
   loc.last_column = get_col_number();
 
   if ((c == '\'' || c == '"') &&
-      (name == "L" || name == "u8" ||
-       name == "u" || name == "U")) {
+      (name == "L" || name == "u8" || name == "u" || name == "U" ||
+       name == "R" || name == "LR" || name == "u8R" || name == "uR" || name == "UR")) {
     // This is actually a wide-character or wide-string literal or some such.
-    // Figure out the correct character type to use.
+    get();
+    string str;
+    if (name[name.size() - 1] == 'R') {
+      name.resize(name.size() - 1);
+      str = scan_raw(c);
+    } else {
+      str = scan_quoted(c);
+    }
 
+    // Figure out the correct character type to use.
     CPPExpression::Type type;
     if (name == "L") {
       type = CPPExpression::T_wstring;
@@ -1887,8 +1917,6 @@ get_identifier(int c) {
     } else {
       type = CPPExpression::T_string;
     }
-    get();
-    string str = scan_quoted(c);
 
     loc.last_line = get_line_number();
     loc.last_column = get_col_number();
@@ -2762,6 +2790,43 @@ scan_quoted(int c) {
       c = scan_escape_sequence(c);
     }
 
+    str += c;
+    c = get();
+  }
+
+  if (c != quote_mark) {
+    warning("Unclosed string");
+  }
+  return str;
+}
+
+/**
+ * Parses a C++11 raw string.
+ */
+string CPPPreprocessor::
+scan_raw(int c) {
+  int quote_mark = c;
+
+  string delimiter = ")";
+
+  string str;
+  c = get();
+  while (c != EOF && c != '(') {
+    delimiter += c;
+    c = get();
+  }
+
+  // OK, now start parsing the string, until we see the delimiter again.
+  c = get();
+  while (c != EOF) {
+    if (c == quote_mark) {
+      // We encountered a quote mark - did the last part of the string end
+      // with the given delimiter?  If so, we've reached the end.
+      if (str.compare(str.size() - delimiter.size(), delimiter.size(), delimiter) == 0) {
+        str.resize(str.size() - delimiter.size());
+        break;
+      }
+    }
     str += c;
     c = get();
   }

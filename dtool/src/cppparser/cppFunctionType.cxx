@@ -31,7 +31,8 @@ CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
 
   // If the parameter list contains just the token "void", it means no
   // parameters.
-  if (_parameters->_parameters.size() == 1 &&
+  if (_parameters != NULL &&
+      _parameters->_parameters.size() == 1 &&
       _parameters->_parameters.front()->_type->as_simple_type() != NULL &&
       _parameters->_parameters.front()->_type->as_simple_type()->_type ==
       CPPSimpleType::T_void &&
@@ -66,6 +67,31 @@ operator = (const CPPFunctionType &copy) {
 }
 
 /**
+ * Returns true if the function accepts the given number of parameters.
+ */
+bool CPPFunctionType::
+accepts_num_parameters(int num_parameters) {
+  if (_parameters == NULL) {
+    return (num_parameters == 0);
+  }
+  size_t actual_num_parameters = _parameters->_parameters.size();
+  // If we passed too many parameters, it must have an ellipsis.
+  if (num_parameters > actual_num_parameters) {
+    return _parameters->_includes_ellipsis;
+  }
+
+  // Make sure all superfluous parameters have a default value.
+  for (size_t i = num_parameters; i < actual_num_parameters; ++i) {
+    CPPInstance *param = _parameters->_parameters[i];
+    if (param->_initializer == NULL) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Returns true if this declaration is an actual, factual declaration, or
  * false if some part of the declaration depends on a template parameter which
  * has not yet been instantiated.
@@ -95,8 +121,10 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
       ->as_type();
   }
 
-  rep->_parameters =
-    _parameters->substitute_decl(subst, current_scope, global_scope);
+  if (_parameters != NULL) {
+    rep->_parameters =
+      _parameters->substitute_decl(subst, current_scope, global_scope);
+  }
 
   if (rep->_return_type == _return_type &&
       rep->_parameters == _parameters) {
@@ -117,8 +145,12 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 CPPType *CPPFunctionType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPType *rtype = _return_type->resolve_type(current_scope, global_scope);
-  CPPParameterList *params =
-    _parameters->resolve_type(current_scope, global_scope);
+  CPPParameterList *params;
+  if (_parameters == NULL) {
+    params = NULL;
+  } else {
+    params = _parameters->resolve_type(current_scope, global_scope);
+  }
 
   if (rtype != _return_type || params != _parameters) {
     CPPFunctionType *rep = new CPPFunctionType(*this);
@@ -139,7 +171,7 @@ is_tbd() const {
   if (_return_type->is_tbd()) {
     return true;
   }
-  return _parameters->is_tbd();
+  return _parameters == NULL || _parameters->is_tbd();
 }
 
 /**
@@ -294,6 +326,10 @@ get_num_default_parameters() const {
   // The trick is just to count, beginning from the end and working towards
   // the front, the number of parameters that have some initializer.
 
+  if (_parameters == NULL) {
+    return 0;
+  }
+
   const CPPParameterList::Parameters &params = _parameters->_parameters;
   CPPParameterList::Parameters::const_reverse_iterator pi;
   int count = 0;
@@ -362,7 +398,11 @@ is_equal(const CPPDeclaration *other) const {
   if (_flags != ot->_flags) {
     return false;
   }
-  if (*_parameters != *ot->_parameters) {
+  if (_parameters == ot->_parameters) {
+    return true;
+  }
+  if (_parameters == NULL || ot->_parameters == NULL ||
+      *_parameters != *ot->_parameters) {
     return false;
   }
   return true;
@@ -384,6 +424,11 @@ is_less(const CPPDeclaration *other) const {
   if (_flags != ot->_flags) {
     return _flags < ot->_flags;
   }
-
+  if (_parameters == ot->_parameters) {
+    return 0;
+  }
+  if (_parameters == NULL || ot->_parameters == NULL) {
+    return _parameters < ot->_parameters;
+  }
   return *_parameters < *ot->_parameters;
 }

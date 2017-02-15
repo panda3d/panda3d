@@ -39,6 +39,10 @@ using namespace std;
 #define OVERRIDE override
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
+#define DEFAULT_DTOR = default
+#define DEFAULT_ASSIGN = default
+#define DELETED = delete
+#define DELETED_ASSIGN = delete
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -166,6 +170,11 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  endif
 #  if __has_extension(cxx_defaulted_functions)
 #     define DEFAULT_CTOR = default
+#     define DEFAULT_DTOR = default
+#     define DEFAULT_ASSIGN = default
+#  endif
+#  if __has_extension(cxx_deleted_functions)
+#     define DELETED = delete
 #  endif
 #elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
 
@@ -178,6 +187,9 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 // Starting at GCC 4.4
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
 #  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
+#  define DELETED = delete
 #  endif
 
 // Starting at GCC 4.6
@@ -200,13 +212,19 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  define FINAL final
 #  define OVERRIDE override
 #  define MOVE(x) move(x)
-#  define DEFAULT_CTOR = default
 #elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
 #  define NOEXCEPT throw()
 #  define OVERRIDE override
 #  define USE_MOVE_SEMANTICS
 #  define FINAL sealed
 #  define MOVE(x) move(x)
+#endif
+
+#if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
+#  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
+#  define DELETED = delete
 #endif
 
 // Fallbacks if features are not supported
@@ -227,6 +245,18 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #endif
 #ifndef DEFAULT_CTOR
 #  define DEFAULT_CTOR {}
+#endif
+#ifndef DEFAULT_DTOR
+#  define DEFAULT_DTOR {}
+#endif
+#ifndef DEFAULT_ASSIGN
+#  define DEFAULT_ASSIGN {return *this;}
+#endif
+#ifndef DELETED
+#  define DELETED {assert(false);}
+#  define DELETED_ASSIGN {assert(false);return *this;}
+#else
+#  define DELETED_ASSIGN DELETED
 #endif
 
 
@@ -260,10 +290,10 @@ EXPCL_DTOOL void init_memory_hook();
 
 // Now redefine some handy macros to hook into the above MemoryHook object.
 #ifndef USE_MEMORY_NOWRAPPERS
-#define PANDA_MALLOC_SINGLE(size) (memory_hook->heap_alloc_single(size))
+#define PANDA_MALLOC_SINGLE(size) (ASSUME_ALIGNED(memory_hook->heap_alloc_single(size), MEMORY_HOOK_ALIGNMENT))
 #define PANDA_FREE_SINGLE(ptr) memory_hook->heap_free_single(ptr)
-#define PANDA_MALLOC_ARRAY(size) (memory_hook->heap_alloc_array(size))
-#define PANDA_REALLOC_ARRAY(ptr, size) (memory_hook->heap_realloc_array(ptr, size))
+#define PANDA_MALLOC_ARRAY(size) (ASSUME_ALIGNED(memory_hook->heap_alloc_array(size), MEMORY_HOOK_ALIGNMENT))
+#define PANDA_REALLOC_ARRAY(ptr, size) (ASSUME_ALIGNED(memory_hook->heap_realloc_array(ptr, size), MEMORY_HOOK_ALIGNMENT))
 #define PANDA_FREE_ARRAY(ptr) memory_hook->heap_free_array(ptr)
 #else
 #define PANDA_MALLOC_SINGLE(size) ::malloc(size)

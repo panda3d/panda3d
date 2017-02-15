@@ -52,11 +52,11 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_single(TypeHandle type_handle) throw();
+  INLINE pallocator_single(TypeHandle type_handle) NOEXCEPT;
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
-  INLINE pallocator_single(const pallocator_single<U> &copy) throw() :
+  INLINE pallocator_single(const pallocator_single<U> &copy) NOEXCEPT :
     _type_handle(copy._type_handle) { }
 
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
@@ -80,11 +80,11 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_array(TypeHandle type_handle = TypeHandle::none()) throw();
+  INLINE pallocator_array(TypeHandle type_handle = TypeHandle::none()) NOEXCEPT;
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
-  INLINE pallocator_array(const pallocator_array<U> &copy) throw() :
+  INLINE pallocator_array(const pallocator_array<U> &copy) NOEXCEPT :
     _type_handle(copy._type_handle) { }
 
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);

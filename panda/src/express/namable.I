@@ -23,35 +23,6 @@ Namable(const string &initial_name) :
 /**
  *
  */
-INLINE Namable::
-Namable(const Namable &copy) :
-  _name(copy._name)
-{
-}
-
-/**
- *
- */
-INLINE Namable &Namable::
-operator = (const Namable &other) {
-  _name = other._name;
-  return *this;
-}
-
-#ifdef USE_MOVE_SEMANTICS
-/**
- *
- */
-INLINE Namable &Namable::
-operator = (Namable &&other) NOEXCEPT {
-  _name = MOVE(other._name);
-  return *this;
-}
-#endif
-
-/**
- *
- */
 INLINE void Namable::
 set_name(const string &name) {
   _name = name;

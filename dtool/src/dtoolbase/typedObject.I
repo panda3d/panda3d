@@ -12,27 +12,6 @@
  */
 
 /**
- *
- */
-INLINE TypedObject::
-TypedObject() {
-}
-
-/**
- *
- */
-INLINE TypedObject::
-TypedObject(const TypedObject &) {
-}
-
-/**
- *
- */
-INLINE void TypedObject::
-operator = (const TypedObject &) {
-}
-
-/**
  * Returns the internal index number associated with this object's TypeHandle,
  * a unique number for each different type.  This is equivalent to
  * get_type().get_index().

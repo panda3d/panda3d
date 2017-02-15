@@ -11,8 +11,8 @@
  * @date 2001-03-04
  */
 
-#ifndef NODEPATHCOLLECTION_H
-#define NODEPATHCOLLECTION_H
+#ifndef PARAMETRICCURVECOLLECTION_H
+#define PARAMETRICCURVECOLLECTION_H
 
 #include "pandabase.h"
 

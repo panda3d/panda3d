@@ -34,36 +34,6 @@ ordered_vector(const Compare &compare, TypeHandle type_handle) :
 }
 
 /**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ordered_vector<Key, Compare, Vector>::
-ordered_vector(const ordered_vector<Key, Compare, Vector> &copy) :
-  _compare(copy._compare),
-  _vector(copy._vector)
-{
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ordered_vector<Key, Compare, Vector> &ordered_vector<Key, Compare, Vector>::
-operator = (const ordered_vector<Key, Compare, Vector> &copy) {
-  _compare = copy._compare;
-  _vector = copy._vector;
-  return *this;
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ordered_vector<Key, Compare, Vector>::
-~ordered_vector() {
-}
-
-/**
  * Returns the iterator that marks the first element in the ordered vector.
  */
 template<class Key, class Compare, class Vector>
@@ -637,26 +607,6 @@ ov_set(const Compare &compare, TypeHandle type_handle) :
 }
 
 /**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_set<Key, Compare, Vector>::
-ov_set(const ov_set<Key, Compare, Vector> &copy) :
-  ordered_vector<Key, Compare, Vector>(copy)
-{
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_set<Key, Compare, Vector> &ov_set<Key, Compare, Vector>::
-operator = (const ov_set<Key, Compare, Vector> &copy) {
-  ordered_vector<Key, Compare, Vector>::operator = (copy);
-  return *this;
-}
-
-/**
  * Maps to insert_unique().
  */
 template<class Key, class Compare, class Vector>
@@ -711,26 +661,6 @@ INLINE ov_multiset<Key, Compare, Vector>::
 ov_multiset(const Compare &compare, TypeHandle type_handle) :
   ordered_vector<Key, Compare, Vector>(compare, type_handle)
 {
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_multiset<Key, Compare, Vector>::
-ov_multiset(const ov_multiset<Key, Compare, Vector> &copy) :
-  ordered_vector<Key, Compare, Vector>(copy)
-{
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_multiset<Key, Compare, Vector> &ov_multiset<Key, Compare, Vector>::
-operator = (const ov_multiset<Key, Compare, Vector> &copy) {
-  ordered_vector<Key, Compare, Vector>::operator = (copy);
-  return *this;
 }
 
 /**

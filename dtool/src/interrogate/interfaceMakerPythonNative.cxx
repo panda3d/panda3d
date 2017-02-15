@@ -3453,7 +3453,13 @@ write_function_for_name(ostream &out, Object *obj,
     max_required_args = collapse_default_remaps(map_sets, max_required_args);
   }
 
-  if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
+  if (remap->_flags & FunctionRemap::F_explicit_args) {
+    // We have a remap that wants to handle the wrapper itself.
+    string expected_params;
+    write_function_instance(out, remap, 0, 0, expected_params, 2, true, true,
+                            args_type, return_flags);
+
+  } else if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
     switch (args_type) {
     case AT_keyword_args:
       indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
@@ -4536,19 +4542,23 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   expected_params += methodNameFromCppName(remap, "", false);
   expected_params += "(";
 
-  int num_params = max_num_args;
-  if (remap->_has_this) {
-    num_params += 1;
-  }
-  if (num_params > (int)remap->_parameters.size()) {
-    // Limit to how many parameters this remap actually has.
-    num_params = (int)remap->_parameters.size();
-    max_num_args = num_params;
+  int num_params = 0;
+
+  if ((remap->_flags & FunctionRemap::F_explicit_args) == 0) {
+    num_params = max_num_args;
     if (remap->_has_this) {
-      --max_num_args;
+      num_params += 1;
     }
+    if (num_params > (int)remap->_parameters.size()) {
+      // Limit to how many parameters this remap actually has.
+      num_params = (int)remap->_parameters.size();
+      max_num_args = num_params;
+      if (remap->_has_this) {
+        --max_num_args;
+      }
+    }
+    nassertv(num_params <= (int)remap->_parameters.size());
   }
-  nassertv(num_params <= (int)remap->_parameters.size());
 
   bool only_pyobjects = true;
 
@@ -4582,6 +4592,17 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       pexprs.push_back(first_pexpr);
       ++pn;
     }
+  }
+
+  if (remap->_flags & FunctionRemap::F_explicit_args) {
+    // The function handles the arguments by itself.
+    expected_params += "*args";
+    pexprs.push_back("args");
+    if (args_type == AT_keyword_args) {
+      expected_params += ", **kwargs";
+      pexprs.push_back("kwds");
+    }
+    num_params = 0;
   }
 
   // Now convert (the rest of the) actual arguments, one by one.

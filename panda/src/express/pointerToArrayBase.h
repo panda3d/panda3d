@@ -41,9 +41,8 @@ public:
   typedef TYPENAME pvector<Element>::size_type size_type;
 
   INLINE ReferenceCountedVector(TypeHandle type_handle);
-  INLINE ReferenceCountedVector(const ReferenceCountedVector<Element> &copy);
   INLINE ReferenceCountedVector(size_type initial_size, TypeHandle type_handle);
-  INLINE ~ReferenceCountedVector();
+  INLINE ReferenceCountedVector(const Element *begin, const Element *end, TypeHandle type_handle);
   ALLOC_DELETED_CHAIN(ReferenceCountedVector<Element>);
 
   INLINE size_type size() const;

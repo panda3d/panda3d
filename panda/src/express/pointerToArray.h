@@ -134,6 +134,7 @@ public:
   INLINE PointerToArray(TypeHandle type_handle = get_type_handle(Element));
   INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(size_type n, const Element &value, TypeHandle type_handle = get_type_handle(Element));
+  INLINE PointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
 #ifdef USE_MOVE_SEMANTICS
@@ -289,6 +290,7 @@ PUBLISHED:
   typedef TYPENAME pvector<Element>::size_type size_type;
 
   INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
+  INLINE ConstPointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
