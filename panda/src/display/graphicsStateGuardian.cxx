@@ -1684,8 +1684,11 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     t = get_external_transform()->get_mat() *
       get_scene()->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat() *
-      LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system()) *
-      lens->get_projection_mat() * biasmat;
+      LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
+
+    if (!node->is_of_type(PointLight::get_class_type())) {
+      t *= lens->get_projection_mat() * biasmat;
+    }
     return &t;
 
   } else {

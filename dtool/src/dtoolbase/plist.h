@@ -38,7 +38,6 @@ public:
   typedef list<Type, allocator> base_class;
   typedef TYPENAME base_class::size_type size_type;
   plist(TypeHandle type_handle = plist_type_handle) : base_class(allocator(type_handle)) { }
-  plist(const plist<Type> &copy) : base_class(copy) { }
   plist(size_type n, TypeHandle type_handle = plist_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
   plist(size_type n, const Type &value, TypeHandle type_handle = plist_type_handle) : base_class(n, value, allocator(type_handle)) { }
 

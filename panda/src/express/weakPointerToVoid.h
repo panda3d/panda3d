@@ -25,7 +25,6 @@
 class EXPCL_PANDAEXPRESS WeakPointerToVoid : public PointerToVoid {
 protected:
   INLINE WeakPointerToVoid();
-  INLINE ~WeakPointerToVoid();
 
 public:
   INLINE void mark_deleted();

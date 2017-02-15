@@ -50,6 +50,8 @@ public:
   CPPFunctionType(const CPPFunctionType &copy);
   void operator = (const CPPFunctionType &copy);
 
+  bool accepts_num_parameters(int num_parameters);
+
   CPPType *_return_type;
   CPPParameterList *_parameters;
   int _flags;

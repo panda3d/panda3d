@@ -166,6 +166,7 @@ private:
   static int check_keyword(const string &name);
   int scan_escape_sequence(int c);
   string scan_quoted(int c);
+  string scan_raw(int c);
 
   bool should_ignore_manifest(const CPPManifest *manifest) const;
   bool should_ignore_preprocessor() const;
@@ -212,6 +213,7 @@ private:
   State _state;
   int _paren_nesting;
   bool _parsing_template_params;
+  bool _parsing_attribute;
 
   bool _start_of_line;
   int _unget;

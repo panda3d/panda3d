@@ -31,8 +31,8 @@ are included as part of the Windows 7.1 SDK.
 You will also need to have the third-party dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
 depending on whether you are on a 32-bit or 64-bit system:
-https://www.panda3d.org/download/panda3d-1.9.2/panda3d-1.9.2-tools-win32.zip
-https://www.panda3d.org/download/panda3d-1.9.2/panda3d-1.9.2-tools-win64.zip
+https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-win32.zip
+https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-win64.zip
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command:
@@ -93,11 +93,11 @@ may have to use the installpanda.py script instead, which will directly copy the
 files into the appropriate locations on your computer.  You may have to run the
 `ldconfig` tool in order to update your library cache after installing Panda3D.
 
-Mac OS X
---------
+macOS
+-----
 
-On Mac OS X, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.2/panda3d-1.9.2-tools-mac.tar.gz).
+On macOS, you will need to download a set of precompiled thirdparty packages in order to
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -107,7 +107,7 @@ python makepanda/makepanda.py --everything --installer
 ```
 
 In order to make a universal build, pass the --universal flag.  You may also
-target a specific minimum Mac OS X version using the --osxtarget flag followed
+target a specific minimum macOS version using the --osxtarget flag followed
 by the release number, eg. 10.6 or 10.7.
 
 If the build was successful, makepanda will have generated a .dmg file in

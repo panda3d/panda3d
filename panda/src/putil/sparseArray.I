@@ -19,26 +19,6 @@ SparseArray() : _inverse(false) {
 }
 
 /**
- *
- */
-INLINE SparseArray::
-SparseArray(const SparseArray &copy) :
-  _subranges(copy._subranges),
-  _inverse(copy._inverse)
-{
-}
-
-/**
- *
- */
-INLINE SparseArray &SparseArray::
-operator = (const SparseArray &copy) {
-  _subranges = copy._subranges;
-  _inverse = copy._inverse;
-  return *this;
-}
-
-/**
  * Returns a SparseArray with an infinite array of bits, all on.
  */
 INLINE SparseArray SparseArray::
@@ -62,7 +42,9 @@ all_off() {
 INLINE SparseArray SparseArray::
 lower_on(int on_bits) {
   SparseArray result;
-  result.set_range(0, on_bits);
+  if (on_bits > 0) {
+    result._subranges.push_back(Subrange(0, on_bits));
+  }
   return result;
 }
 
@@ -84,13 +66,6 @@ range(int low_bit, int size) {
   SparseArray result;
   result.set_range(low_bit, size);
   return result;
-}
-
-/**
- *
- */
-INLINE SparseArray::
-~SparseArray() {
 }
 
 /**

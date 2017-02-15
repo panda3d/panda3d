@@ -14,34 +14,25 @@
 /**
  *
  */
-INLINE PointerToVoid::
-PointerToVoid() {
-  _void_ptr = (void *)NULL;
+CONSTEXPR PointerToVoid::
+PointerToVoid() NOEXCEPT : _void_ptr(nullptr) {
 }
 
 /**
  *
  */
-INLINE PointerToVoid::
-~PointerToVoid() {
-  nassertv(_void_ptr == (void *)NULL);
-}
-
-/**
- * Don't use this constructor.
- */
-INLINE PointerToVoid::
-PointerToVoid(const PointerToVoid &) {
-  nassertv(false);
-}
+//INLINE PointerToVoid::
+//~PointerToVoid() {
+//  nassertv(_void_ptr == nullptr);
+//}
 
 /**
  * Returns true if the PointerTo is a NULL pointer, false otherwise.  (Direct
  * comparison to a NULL pointer also works.)
  */
-ALWAYS_INLINE bool PointerToVoid::
+CONSTEXPR bool PointerToVoid::
 is_null() const {
-  return (_void_ptr == (void *)NULL);
+  return _void_ptr == nullptr;
 }
 
 /**

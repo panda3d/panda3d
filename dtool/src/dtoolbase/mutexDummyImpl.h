@@ -23,12 +23,16 @@
  */
 class EXPCL_DTOOL MutexDummyImpl {
 public:
-  INLINE MutexDummyImpl();
-  INLINE ~MutexDummyImpl();
+  CONSTEXPR MutexDummyImpl() DEFAULT_CTOR;
 
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
+private:
+  MutexDummyImpl(const MutexDummyImpl &copy) DELETED;
+  MutexDummyImpl &operator = (const MutexDummyImpl &copy) DELETED_ASSIGN;
+
+public:
+  ALWAYS_INLINE void acquire();
+  ALWAYS_INLINE bool try_acquire();
+  ALWAYS_INLINE void release();
 };
 
 #include "mutexDummyImpl.I"
