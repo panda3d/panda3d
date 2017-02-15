@@ -72,7 +72,10 @@ def msgpack_encode(dg, element):
         for v in element:
             msgpack_encode(dg, v)
     elif isinstance(element, basestring):
-        msgpack_length(dg, len(element), 0xa0, 0x20, 0xd9, 0xda, 0xdb)
+        # 0xd9 is str 8 in all recent versions of the MsgPack spec, but somehow
+        # Logstash bundles a MsgPack implementation SO OLD that this isn't
+        # handled correctly so this function avoids it too
+        msgpack_length(dg, len(element), 0xa0, 0x20, None, 0xda, 0xdb)
         dg.appendData(element)
     elif isinstance(element, float):
         # Python does not distinguish between floats and doubles, so we send
