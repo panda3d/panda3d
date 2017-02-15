@@ -6,6 +6,20 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
 project(Panda3D)
 enable_testing()
 
+# Panda3D is now a C++11 project. Newer versions of CMake support this out of
+# the box; for older versions we take a shot in the dark:
+if(CMAKE_VERSION VERSION_LESS "3.1")
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
+  if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  endif()
+else()
+  set(CMAKE_CXX_STANDARD 11)
+endif()
+
 # Add generic modules to cmake module path,
 # and add Panda3D specific modules to cmake module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
