@@ -47,7 +47,8 @@ class build_apps(distutils.core.Command):
         self.console_apps = {}
         self.copy_paths = []
         self.exclude_paths = []
-        self.exclude_modules = []
+        self.include_modules = {}
+        self.exclude_modules = {}
         self.deploy_platforms = []
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
@@ -121,7 +122,9 @@ class build_apps(distutils.core.Command):
             def create_runtime(appname, mainscript, use_console):
                 freezer = FreezeTool.Freezer(platform=platform)
                 freezer.addModule('__main__', filename=mainscript)
-                for exmod in self.exclude_modules:
+                for incmod in self.include_modules.get(appname, []) + self.include_modules.get('*', []):
+                    freezer.addModule(incmod)
+                for exmod in self.exclude_modules.get(appname, []) + self.exclude_modules.get('*', []):
                     freezer.excludeModule(exmod)
                 freezer.done(addStartupModules=True)
 
