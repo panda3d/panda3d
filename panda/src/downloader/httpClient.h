@@ -32,7 +32,11 @@
 #include "pmap.h"
 #include "pset.h"
 #include "referenceCount.h"
-#include "openSSLWrapper.h"
+
+typedef struct ssl_ctx_st SSL_CTX;
+typedef struct x509_st X509;
+typedef struct X509_name_st X509_NAME;
+typedef struct evp_pkey_st EVP_PKEY;
 
 class Filename;
 class HTTPChannel;
@@ -154,12 +158,6 @@ private:
   static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
 
   static void split_whitespace(string &a, string &b, const string &c);
-
-#ifndef NDEBUG
-  static void ssl_msg_callback(int write_p, int version, int content_type,
-                               const void *buf, size_t len, SSL *ssl,
-                               void *arg);
-#endif
 
   typedef pvector<URLSpec> Proxies;
   typedef pmap<string, Proxies> ProxiesByScheme;
