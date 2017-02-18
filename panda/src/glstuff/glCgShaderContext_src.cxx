@@ -917,7 +917,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         // There is no vertex column with this name; disable the attribute
         // array.
 #ifdef SUPPORT_FIXED_FUNCTION
-        if (p == 0) {
+        if (_glgsg->has_fixed_function_pipeline() && (p == 0)) {
           // NOTE: if we disable attribute 0 in compatibility profile, the
           // object will disappear.  In GLSL we fix this by forcing the vertex
           // column to be at 0, but we don't have control over that with Cg.
