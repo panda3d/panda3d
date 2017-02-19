@@ -1165,8 +1165,10 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   glgsg->apply_texture(gtc);
 
 #if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
-  GLclampf priority = 1.0f;
-  glPrioritizeTextures(1, &gtc->_index, &priority);
+  if (glgsg->has_fixed_function_pipeline()) {
+    GLclampf priority = 1.0f;
+    glPrioritizeTextures(1, &gtc->_index, &priority);
+  }
 #endif
 
 #ifndef OPENGLES

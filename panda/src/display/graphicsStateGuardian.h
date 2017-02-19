@@ -154,6 +154,7 @@ PUBLISHED:
   INLINE bool get_supports_generate_mipmap() const;
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_depth_stencil() const;
+  INLINE bool get_supports_luminance_texture() const;
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_sampler_objects() const;
   INLINE bool get_supports_basic_shaders() const;
@@ -203,6 +204,7 @@ PUBLISHED:
   MAKE_PROPERTY(supports_generate_mipmap, get_supports_generate_mipmap);
   MAKE_PROPERTY(supports_depth_texture, get_supports_depth_texture);
   MAKE_PROPERTY(supports_depth_stencil, get_supports_depth_stencil);
+  MAKE_PROPERTY(supports_luminance_texture, get_supports_luminance_texture);
   MAKE_PROPERTY(supports_shadow_filter, get_supports_shadow_filter);
   MAKE_PROPERTY(supports_sampler_objects, get_supports_sampler_objects);
   MAKE_PROPERTY(supports_basic_shaders, get_supports_basic_shaders);
@@ -597,6 +599,7 @@ protected:
   bool _supports_generate_mipmap;
   bool _supports_depth_texture;
   bool _supports_depth_stencil;
+  bool _supports_luminance_texture;
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
   bool _supports_basic_shaders;
