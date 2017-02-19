@@ -18,6 +18,7 @@ target_link_libraries(p3gsgbase p3putil p3linmath)
 target_interrogate(p3gsgbase ALL)
 
 install(TARGETS p3gsgbase DESTINATION lib)
+install(FILES ${P3GSGBASE_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_gsgbase

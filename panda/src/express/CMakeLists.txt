@@ -155,6 +155,7 @@ if(WIN32)
 endif()
 
 install(TARGETS p3express DESTINATION lib)
+install(FILES ${P3EXPRESS_HEADERS} DESTINATION include/panda3d)
 
 #add_executable(p3expressTestTypes test_types.cxx)
 #target_link_libraries(p3expressTestTypes p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)

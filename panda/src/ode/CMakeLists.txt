@@ -87,4 +87,5 @@ if(HAVE_ODE)
   target_interrogate(p3ode ${P3ODE_IGATE_SOURCES} EXTENSIONS ${P3ODE_IGATEEXT})
 
   install(TARGETS p3ode DESTINATION lib)
+  install(FILES ${P3ODE_HEADERS} DESTINATION include/panda3d)
 endif()

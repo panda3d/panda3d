@@ -30,4 +30,5 @@ if(WANT_NATIVE_NET)
   target_interrogate(p3nativenet ALL)
 
   install(TARGETS p3nativenet DESTINATION lib)
+  install(FILES ${P3NATIVENET_HEADERS} DESTINATION include/panda3d)
 endif()

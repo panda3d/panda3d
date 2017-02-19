@@ -49,6 +49,7 @@ target_link_libraries(p3linmath p3express p3pandabase)
 target_interrogate(p3linmath ALL)
 
 install(TARGETS p3linmath DESTINATION lib)
+install(FILES ${P3LINMATH_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_math

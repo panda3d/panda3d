@@ -26,3 +26,4 @@ target_link_libraries(p3cull p3pgraph)
 target_interrogate(p3cull ALL)
 
 install(TARGETS p3cull DESTINATION lib)
+install(FILES ${P3CULL_HEADERS} DESTINATION include/panda3d)

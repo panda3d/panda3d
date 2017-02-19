@@ -35,4 +35,5 @@ if(HAVE_NET AND WANT_NATIVE_NET)
   endif()
 
   install(TARGETS p3net DESTINATION lib)
+  install(FILES ${P3NET_HEADERS} DESTINATION include/panda3d)
 endif()

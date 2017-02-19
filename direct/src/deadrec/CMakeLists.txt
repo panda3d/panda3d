@@ -11,3 +11,4 @@ target_link_libraries(p3deadrec p3directbase p3linmath p3pgraph p3prc)
 target_interrogate(p3deadrec ALL)
 
 install(TARGETS p3deadrec DESTINATION lib)
+install(FILES ${P3DEADREC_HEADERS} DESTINATION include/panda3d)

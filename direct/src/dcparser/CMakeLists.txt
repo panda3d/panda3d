@@ -53,3 +53,4 @@ target_link_libraries(p3dcparser p3directbase p3express p3pstatclient p3prc)
 target_interrogate(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES})
 
 install(TARGETS p3dcparser DESTINATION lib)
+install(FILES ${P3DCPARSER_HEADERS} DESTINATION include/panda3d)

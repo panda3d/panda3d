@@ -50,3 +50,4 @@ target_link_libraries(p3pgraphnodes p3pgraph)
 target_interrogate(p3pgraphnodes ALL)
 
 install(TARGETS p3pgraphnodes DESTINATION lib)
+install(FILES ${P3PGRAPHNODES_HEADERS} DESTINATION include/panda3d)

@@ -23,4 +23,5 @@ if(HAVE_FFMPEG)
   target_use_packages(p3ffmpeg FFMPEG SWSCALE SWRESAMPLE)
 
   install(TARGETS p3ffmpeg DESTINATION lib)
+  install(FILES ${P3FFMPEG_HEADERS} DESTINATION include/panda3d)
 endif()

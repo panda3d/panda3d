@@ -68,3 +68,4 @@ add_library(p3prc ${P3PRC_HEADERS} ${P3PRC_SOURCES})
 target_link_libraries(p3prc p3dtoolutil p3dtoolbase ${_OPENSSL_LIBRARIES})
 
 install(TARGETS p3prc DESTINATION lib)
+install(FILES ${P3PRC_HEADERS} DESTINATION include/panda3d)

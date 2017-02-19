@@ -4,6 +4,7 @@ configure_file(checkPandaVersion.cxx.in checkPandaVersion.cxx)
 
 set(P3DTOOLUTIL_HEADERS
   ${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.h
+  ${CMAKE_CURRENT_BINARY_DIR}/pandaVersion.h
   config_dtoolutil.h
   dSearchPath.I dSearchPath.h
   executionEnvironment.I executionEnvironment.h filename.I
@@ -14,7 +15,7 @@ set(P3DTOOLUTIL_HEADERS
   load_dso.h
   pandaFileStream.h pandaFileStream.I
   pandaFileStreamBuf.h
-  pandaSystem.h pandaVersion.h
+  pandaSystem.h
   panda_getopt.h panda_getopt_long.h panda_getopt_impl.h
   pfstream.h pfstream.I pfstreamBuf.h
   preprocess_argv.h
@@ -68,3 +69,4 @@ if(APPLE)
 endif()
 
 install(TARGETS p3dtoolutil DESTINATION lib)
+install(FILES ${P3DTOOLUTIL_HEADERS} DESTINATION include/panda3d)

@@ -35,4 +35,5 @@ if(HAVE_EGG)
   target_interrogate(p3egg2pg ALL)
 
   install(TARGETS p3egg2pg DESTINATION lib)
+  install(FILES ${P3EGG2PG_HEADERS} DESTINATION include/panda3d)
 endif()

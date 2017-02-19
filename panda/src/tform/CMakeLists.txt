@@ -32,3 +32,4 @@ target_link_libraries(p3tform p3device p3grutil)
 target_interrogate(p3tform ALL)
 
 install(TARGETS p3tform DESTINATION lib)
+install(FILES ${P3TFORM_HEADERS} DESTINATION include/panda3d)

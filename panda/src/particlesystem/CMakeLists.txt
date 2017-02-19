@@ -43,3 +43,4 @@ target_link_libraries(p3particlesystem p3pgraph p3physics)
 target_interrogate(p3particlesystem ALL)
 
 install(TARGETS p3particlesystem DESTINATION lib)
+install(FILES ${P3PARTICLESYSTEM_HEADERS} DESTINATION include/panda3d)

@@ -32,3 +32,4 @@ target_link_libraries(p3device p3dgraph p3display)
 target_interrogate(p3device ALL)
 
 install(TARGETS p3device DESTINATION lib)
+install(FILES ${P3DEVICE_HEADERS} DESTINATION include/panda3d)

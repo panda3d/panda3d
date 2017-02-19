@@ -41,3 +41,4 @@ target_link_libraries(p3interval p3directbase p3pstatclient p3pgraph p3chan p3dc
 target_interrogate(p3interval ALL)
 
 install(TARGETS p3interval DESTINATION lib)
+install(FILES ${P3INTERVAL_HEADERS} DESTINATION include/panda3d)

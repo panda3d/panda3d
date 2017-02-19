@@ -35,4 +35,5 @@ if(HAVE_GL)
   target_link_libraries(p3glstuff p3pandabase p3gobj)
 
   install(TARGETS p3glstuff DESTINATION lib)
+  install(FILES ${P3GLSTUFF_HEADERS} DESTINATION include/panda3d)
 endif()

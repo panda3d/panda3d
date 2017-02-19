@@ -46,6 +46,7 @@ target_link_libraries(p3event p3linmath p3pstatclient)
 target_interrogate(p3event ALL EXTENSIONS ${P3EVENT_IGATEEXT})
 
 install(TARGETS p3event DESTINATION lib)
+install(FILES ${P3EVENT_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_task

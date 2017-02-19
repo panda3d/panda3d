@@ -43,3 +43,4 @@ target_link_libraries(p3movies p3pandabase p3express p3pstatclient p3gobj p3dcon
 target_interrogate(p3movies ALL)
 
 install(TARGETS p3movies DESTINATION lib)
+install(FILES ${P3MOVIES_HEADERS} DESTINATION include/panda3d)

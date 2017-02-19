@@ -58,3 +58,4 @@ target_link_libraries(p3chan p3pgraph)
 target_interrogate(p3chan ALL)
 
 install(TARGETS p3chan DESTINATION lib)
+install(FILES ${P3CHAN_HEADERS} DESTINATION include/panda3d)

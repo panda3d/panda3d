@@ -127,6 +127,7 @@ target_link_libraries(p3putil p3linmath p3pipeline)
 target_interrogate(p3putil ALL EXTENSIONS ${P3PUTIL_IGATEEXT})
 
 install(TARGETS p3putil DESTINATION lib)
+install(FILES ${P3PUTIL_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_bamRead

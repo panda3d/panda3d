@@ -17,3 +17,4 @@ target_link_libraries(p3dxml p3express)
 target_interrogate(p3dxml ALL)
 
 install(TARGETS p3dxml DESTINATION lib)
+install(FILES ${P3DXML_HEADERS} DESTINATION include/panda3d)

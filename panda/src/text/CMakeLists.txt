@@ -41,3 +41,4 @@ endif()
 target_interrogate(p3text ALL)
 
 install(TARGETS p3text DESTINATION lib)
+install(FILES ${P3TEXT_HEADERS} DESTINATION include/panda3d)

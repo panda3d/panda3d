@@ -17,3 +17,4 @@ target_link_libraries(p3dgraph p3pgraph)
 target_interrogate(p3dgraph ALL)
 
 install(TARGETS p3dgraph DESTINATION lib)
+install(FILES ${P3DGRAPH_HEADERS} DESTINATION include/panda3d)

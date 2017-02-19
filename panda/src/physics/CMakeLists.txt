@@ -41,3 +41,4 @@ target_link_libraries(p3physics p3pgraph p3linmath p3collide)
 target_interrogate(p3physics ALL)
 
 install(TARGETS p3physics DESTINATION lib)
+install(FILES ${P3PHYSICS_HEADERS} DESTINATION include/panda3d)

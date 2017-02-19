@@ -20,4 +20,5 @@ if(HAVE_FREETYPE)
   target_interrogate(p3pnmtext ALL)
 
   install(TARGETS p3pnmtext DESTINATION lib)
+  install(FILES ${P3PNMTEXT_HEADERS} DESTINATION include/panda3d)
 endif()

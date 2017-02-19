@@ -55,3 +55,4 @@ add_library(p3framework ${P3FRAMEWORK_HEADERS} ${P3FRAMEWORK_SOURCES})
 target_link_libraries(p3framework ${P3FRAMEWORK_LINK_TARGETS})
 
 install(TARGETS p3framework DESTINATION lib)
+install(FILES ${P3FRAMEWORK_HEADERS} DESTINATION include/panda3d)

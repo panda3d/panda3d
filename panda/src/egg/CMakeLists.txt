@@ -104,4 +104,5 @@ if(HAVE_EGG)
   target_interrogate(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} EXTENSIONS ${P3EGG_IGATEEXT})
 
   install(TARGETS p3egg DESTINATION lib)
+  install(FILES ${P3EGG_HEADERS} DESTINATION include/panda3d)
 endif()

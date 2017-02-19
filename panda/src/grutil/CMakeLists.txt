@@ -46,3 +46,4 @@ endif()
 target_interrogate(p3grutil ALL)
 
 install(TARGETS p3grutil DESTINATION lib)
+install(FILES ${P3GRUTIL_HEADERS} DESTINATION include/panda3d)

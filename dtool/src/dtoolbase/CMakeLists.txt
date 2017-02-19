@@ -68,3 +68,4 @@ add_library(p3dtoolbase	${P3DTOOLBASE_HEADERS} ${P3DTOOLBASE_SOURCES})
 target_use_packages(p3dtoolbase THREADS PYTHON)
 
 install(TARGETS p3dtoolbase DESTINATION lib)
+install(FILES ${P3DTOOLBASE_HEADERS} DESTINATION include/panda3d)

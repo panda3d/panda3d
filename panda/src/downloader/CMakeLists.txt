@@ -73,3 +73,4 @@ target_link_libraries(p3downloader p3express p3pipeline)
 target_interrogate(p3downloader ALL EXTENSIONS ${P3DOWNLOADER_IGATEEXT})
 
 install(TARGETS p3downloader DESTINATION lib)
+install(FILES ${P3DOWNLOADER_HEADERS} DESTINATION include/panda3d)

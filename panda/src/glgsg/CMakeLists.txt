@@ -14,4 +14,5 @@ if(HAVE_GL)
     ${OPENGL_LIBRARIES} ${_CG_LIBRARIES})
 
   install(TARGETS p3glgsg DESTINATION lib)
+  install(FILES ${P3GLGSG_HEADERS} DESTINATION include/panda3d)
 endif()

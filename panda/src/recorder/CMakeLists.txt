@@ -22,3 +22,4 @@ target_link_libraries(p3recorder p3dgraph p3downloader)
 target_interrogate(p3recorder ALL)
 
 install(TARGETS p3recorder DESTINATION lib)
+install(FILES ${P3RECORDER_HEADERS} DESTINATION include/panda3d)

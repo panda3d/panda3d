@@ -45,6 +45,7 @@ target_link_libraries(p3pgui p3tform)
 target_interrogate(p3pgui ALL)
 
 install(TARGETS p3pgui DESTINATION lib)
+install(FILES ${P3PGUI_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_pgentry

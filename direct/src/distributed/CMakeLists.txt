@@ -23,4 +23,5 @@ if(HAVE_PYTHON)
   target_interrogate(p3distributed ALL)
 
   install(TARGETS p3distributed DESTINATION lib)
+  install(FILES ${P3DISTRIBUTED_HEADERS} DESTINATION include/panda3d)
 endif()

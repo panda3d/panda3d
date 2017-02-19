@@ -23,4 +23,5 @@ if(HAVE_AUDIO)
   target_interrogate(p3audio ALL)
 
   install(TARGETS p3audio DESTINATION lib)
+  install(FILES ${P3AUDIO_HEADERS} DESTINATION include/panda3d)
 endif()

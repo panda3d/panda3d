@@ -24,3 +24,4 @@ target_link_libraries(p3char p3chan)
 target_interrogate(p3char ALL)
 
 install(TARGETS p3char DESTINATION lib)
+install(FILES ${P3CHAR_HEADERS} DESTINATION include/panda3d)

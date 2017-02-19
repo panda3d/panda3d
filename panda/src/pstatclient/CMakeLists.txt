@@ -26,3 +26,4 @@ target_link_libraries(p3pstatclient p3net p3putil p3express)
 target_interrogate(p3pstatclient ALL)
 
 install(TARGETS p3pstatclient DESTINATION lib)
+install(FILES ${P3PSTATCLIENT_HEADERS} DESTINATION include/panda3d)

@@ -40,3 +40,4 @@ target_link_libraries(p3pnmimage p3mathutil)
 target_interrogate(p3pnmimage ALL EXTENSIONS ${P3PNMIMAGE_IGATEEXT})
 
 install(TARGETS p3pnmimage DESTINATION lib)
+install(FILES ${P3PNMIMAGE_HEADERS} DESTINATION include/panda3d)

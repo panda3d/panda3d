@@ -141,6 +141,7 @@ target_link_libraries(p3pipeline p3express)
 target_interrogate(p3pipeline ALL)
 
 install(TARGETS p3pipeline DESTINATION lib)
+install(FILES ${P3PIPELINE_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_threaddata

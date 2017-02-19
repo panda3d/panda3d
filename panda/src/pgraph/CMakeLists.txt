@@ -218,6 +218,7 @@ target_link_libraries(p3pgraph p3gobj p3event p3gsgbase p3putil p3linmath p3down
 target_interrogate(p3pgraph ALL EXTENSIONS ${P3PGRAPH_IGATEEXT})
 
 install(TARGETS p3pgraph DESTINATION lib)
+install(FILES ${P3PGRAPH_HEADERS} DESTINATION include/panda3d)
 
 
 #begin test_bin_target
