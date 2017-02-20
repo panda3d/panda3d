@@ -45,6 +45,11 @@ PandaSystem() :
 #else
   set_system_tag("eigen", "vectorize", "0");
 #endif
+#ifdef __AVX__
+  set_system_tag("eigen", "avx", "1");
+#else
+  set_system_tag("eigen", "avx", "0");
+#endif
 #endif  // HAVE_EIGEN
 
 #ifdef USE_MEMORY_DLMALLOC
@@ -187,6 +192,14 @@ is_official_version() {
 #else
   return false;
 #endif
+}
+
+/**
+ * Returns the memory alignment that Panda's allocators are using.
+ */
+int PandaSystem::
+get_memory_alignment() {
+  return MEMORY_HOOK_ALIGNMENT;
 }
 
 /**

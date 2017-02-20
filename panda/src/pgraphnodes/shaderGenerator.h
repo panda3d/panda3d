@@ -151,9 +151,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "ShaderGenerator",
-                  TypedObject::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -173,9 +173,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "ShaderGenerator",
-                  TypedObject::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

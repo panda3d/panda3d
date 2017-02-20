@@ -269,6 +269,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       }
     }
 #endif
+  } else if (mode == FM_refresh) {
+    // Just bind the FBO.
+    rebuild_bitplanes();
   }
 
   _gsg->set_current_properties(&get_fb_properties());
@@ -1162,8 +1165,10 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   glgsg->apply_texture(gtc);
 
 #if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
-  GLclampf priority = 1.0f;
-  glPrioritizeTextures(1, &gtc->_index, &priority);
+  if (glgsg->has_fixed_function_pipeline()) {
+    GLclampf priority = 1.0f;
+    glPrioritizeTextures(1, &gtc->_index, &priority);
+  }
 #endif
 
 #ifndef OPENGLES

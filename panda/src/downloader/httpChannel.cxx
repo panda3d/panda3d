@@ -27,6 +27,8 @@
 
 #ifdef HAVE_OPENSSL
 
+#include "openSSLWrapper.h"
+
 #if defined(WIN32_VC) || defined(WIN64_VC)
   #include <WinSock2.h>
   #include <windows.h>  // for select()
@@ -1472,6 +1474,14 @@ run_setup_ssl() {
     _status_entry._status_code = SC_ssl_internal_failure;
     _state = S_failure;
     return false;
+  }
+
+  string hostname = _request.get_url().get_server();
+  result = SSL_set_tlsext_host_name(ssl, hostname.c_str());
+  if (result == 0) {
+    downloader_cat.error()
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Could not set TLS SNI hostname to '" << hostname << "'\n";
   }
 
 /*

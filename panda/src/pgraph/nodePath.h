@@ -659,6 +659,8 @@ PUBLISHED:
   INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
                                PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
+  EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
+
   void clear_shader_input(CPT_InternalName id);
   void set_instance_count(int instance_count);
 

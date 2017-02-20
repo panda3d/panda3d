@@ -67,17 +67,22 @@ INLINE const unsigned char *VertexDataBuffer::
 get_read_pointer(bool force) const {
   LightMutexHolder holder(_lock);
 
+  const unsigned char *ptr;
   if (_resident_data != (unsigned char *)NULL || _size == 0) {
-    return _resident_data;
+    ptr = _resident_data;
+  } else {
+    nassertr(_block != (VertexDataBlock *)NULL, NULL);
+    nassertr(_reserved_size >= _size, NULL);
+
+    // We don't necessarily need to page the buffer all the way into independent
+    // status; it's sufficient just to return the block's pointer, which will
+    // force its page to resident status.
+    ptr = _block->get_pointer(force);
   }
-
-  nassertr(_block != (VertexDataBlock *)NULL, NULL);
-  nassertr(_reserved_size >= _size, NULL);
-
-  // We don't necessarily need to page the buffer all the way into independent
-  // status; it's sufficient just to return the block's pointer, which will
-  // force its page to resident status.
-  return _block->get_pointer(force);
+#ifdef _DEBUG
+  assert(((uintptr_t)ptr % MEMORY_HOOK_ALIGNMENT) == 0);
+#endif
+  return (const unsigned char *)ASSUME_ALIGNED(ptr, MEMORY_HOOK_ALIGNMENT);
 }
 
 /**
@@ -91,7 +96,10 @@ get_write_pointer() {
     do_page_in();
   }
   nassertr(_reserved_size >= _size, NULL);
-  return _resident_data;
+#ifdef _DEBUG
+  assert(((uintptr_t)_resident_data % MEMORY_HOOK_ALIGNMENT) == 0);
+#endif
+  return (unsigned char *)ASSUME_ALIGNED(_resident_data, MEMORY_HOOK_ALIGNMENT);
 }
 
 /**

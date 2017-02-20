@@ -974,9 +974,7 @@ if GetTarget() == 'android':
     DefSymbol("ALWAYS", "ANDROID")
 
 if not PkgSkip("EIGEN"):
-    DefSymbol("ALWAYS", "EIGEN_MPL2_ONLY")
     if GetOptimize() >= 3:
-        DefSymbol("ALWAYS", "EIGEN_NO_DEBUG")
         if COMPILER == "MSVC":
             # Squeeze out a bit more performance on MSVC builds...
             # Only do this if EIGEN_NO_DEBUG is also set, otherwise it

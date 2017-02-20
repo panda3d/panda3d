@@ -90,6 +90,7 @@ extern "C" {
   EXPCL_PYSTUB int PyModule_AddObject(...);
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
   EXPCL_PYSTUB int PyModule_Create2(...);
+  EXPCL_PYSTUB int PyModule_Create2TraceRefs(...);
   EXPCL_PYSTUB int PyNumber_Check(...);
   EXPCL_PYSTUB int PyNumber_Float(...);
   EXPCL_PYSTUB int PyNumber_Int(...);
@@ -175,6 +176,7 @@ extern "C" {
   EXPCL_PYSTUB int Py_InitModule4(...);
   EXPCL_PYSTUB int Py_InitModule4_64(...);
   EXPCL_PYSTUB int Py_InitModule4TraceRefs(...);
+  EXPCL_PYSTUB int Py_InitModule4TraceRefs_64(...);
   EXPCL_PYSTUB int _PyArg_ParseTuple_SizeT(...);
   EXPCL_PYSTUB int _PyArg_ParseTupleAndKeywords_SizeT(...);
   EXPCL_PYSTUB int _PyArg_Parse_SizeT(...);
@@ -184,9 +186,14 @@ extern "C" {
   EXPCL_PYSTUB int _PyObject_Del(...);
   EXPCL_PYSTUB int _PyUnicode_AsString(...);
   EXPCL_PYSTUB int _PyUnicode_AsStringAndSize(...);
+  EXPCL_PYSTUB int _Py_AddToAllObjects(...);
   EXPCL_PYSTUB int _Py_BuildValue_SizeT(...);
   EXPCL_PYSTUB int _Py_Dealloc(...);
+  EXPCL_PYSTUB int _Py_ForgetReference(...);
   EXPCL_PYSTUB int _Py_NegativeRefcount(...);
+  EXPCL_PYSTUB int _Py_NewReference(...);
+  EXPCL_PYSTUB int _Py_PrintReferenceAddresses(...);
+  EXPCL_PYSTUB int _Py_PrintReferences(...);
   EXPCL_PYSTUB int _Py_RefTotal(...);
 
   EXPCL_PYSTUB void Py_Initialize();
@@ -292,6 +299,7 @@ int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
 int PyModule_Create2(...) { return 0; };
+int PyModule_Create2TraceRefs(...) { return 0; };
 int PyNumber_Check(...) { return 0; }
 int PyNumber_Float(...) { return 0; }
 int PyNumber_Int(...) { return 0; }
@@ -377,6 +385,7 @@ int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
 int Py_InitModule4_64(...) { return 0; }
 int Py_InitModule4TraceRefs(...) { return 0; };
+int Py_InitModule4TraceRefs_64(...) { return 0; };
 int _PyArg_ParseTuple_SizeT(...) { return 0; };
 int _PyArg_ParseTupleAndKeywords_SizeT(...) { return 0; };
 int _PyArg_Parse_SizeT(...) { return 0; };
@@ -386,9 +395,14 @@ int _PyObject_DebugFree(...) { return 0; };
 int _PyObject_Del(...) { return 0; };
 int _PyUnicode_AsString(...) { return 0; };
 int _PyUnicode_AsStringAndSize(...) { return 0; };
+int _Py_AddToAllObjects(...) { return 0; };
 int _Py_BuildValue_SizeT(...) { return 0; };
 int _Py_Dealloc(...) { return 0; };
+int _Py_ForgetReference(...) { return 0; };
 int _Py_NegativeRefcount(...) { return 0; };
+int _Py_NewReference(...) { return 0; };
+int _Py_PrintReferenceAddresses(...) { return 0; };
+int _Py_PrintReferences(...) { return 0; };
 int _Py_RefTotal(...) { return 0; };
 
 // We actually might call this one.

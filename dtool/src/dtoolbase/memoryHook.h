@@ -52,8 +52,7 @@ public:
 
   bool heap_trim(size_t pad);
 
-  INLINE static size_t get_memory_alignment();
-  INLINE static size_t get_header_reserved_bytes();
+  CONSTEXPR static size_t get_memory_alignment();
 
   virtual void *mmap_alloc(size_t size, bool allow_exec);
   virtual void mmap_free(void *ptr, size_t size);
@@ -66,10 +65,7 @@ public:
 
   virtual void alloc_fail(size_t attempted_size);
 
-private:
-  INLINE static size_t inflate_size(size_t size);
-  INLINE static void *alloc_to_ptr(void *alloc, size_t size);
-  INLINE static void *ptr_to_alloc(void *ptr, size_t &size);
+  INLINE static size_t get_ptr_size(void *ptr);
 
 #ifdef DO_MEMORY_USAGE
 protected:

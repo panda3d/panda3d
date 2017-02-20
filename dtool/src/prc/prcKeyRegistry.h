@@ -22,10 +22,8 @@
 #ifdef HAVE_OPENSSL
 
 #include <vector>
-#include "openssl/evp.h"
 
-// Some versions of OpenSSL appear to define this as a macro.  Yucky.
-#undef set_key
+typedef struct evp_pkey_st EVP_PKEY;
 
 /**
  * This class records the set of public keys used to verify the signature on a

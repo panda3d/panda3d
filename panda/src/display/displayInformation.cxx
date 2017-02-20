@@ -14,6 +14,13 @@
 #include "graphicsStateGuardian.h"
 #include "displayInformation.h"
 
+// For __rdtsc
+#ifdef _MSC_VER
+#include <intrin.h>
+#elif defined(__GNUC__) && !defined(__clang__)
+#include <x86intrin.h>
+#endif
+
 /**
  * Returns true if these two DisplayModes are identical.
  */
@@ -57,12 +64,6 @@ DisplayInformation::
 ~DisplayInformation() {
   if (_display_mode_array != NULL) {
     delete[] _display_mode_array;
-  }
-  if (_cpu_id_data != NULL) {
-    delete _cpu_id_data;
-  }
-  if (_cpu_brand_string != NULL) {
-    delete _cpu_brand_string;
   }
 }
 
@@ -134,12 +135,6 @@ DisplayInformation() {
   _driver_date_day = 0;
   _driver_date_year = 0;
 
-  _cpu_id_version = 1;
-  _cpu_id_size = 0;
-  _cpu_id_data = 0;
-
-  _cpu_vendor_string = 0;
-  _cpu_brand_string = 0;
   _cpu_version_information = 0;
   _cpu_brand_index = 0;
 
@@ -152,7 +147,6 @@ DisplayInformation() {
   _num_logical_cpus = 0;
 
   _get_memory_information_function = 0;
-  _cpu_time_function = 0;
   _update_cpu_frequency_function = 0;
 
   _os_version_major = -1;
@@ -493,62 +487,17 @@ get_driver_date_year() {
 /**
  *
  */
-int DisplayInformation::
-get_cpu_id_version() {
-  return _cpu_id_version;
-}
-
-/**
- * Returns the number of 32-bit values for cpu id binary data.
- */
-int DisplayInformation::
-get_cpu_id_size() {
-  return _cpu_id_size;
-}
-
-/**
- * Returns part of cpu id binary data based on the index.
- */
-unsigned int DisplayInformation::
-get_cpu_id_data(int index) {
-  unsigned int data;
-
-  data = 0;
-  if (index >= 0 && index < _cpu_id_size) {
-    data = _cpu_id_data [index];
-  }
-
-  return data;
+const string &DisplayInformation::
+get_cpu_vendor_string() const {
+  return _cpu_vendor_string;
 }
 
 /**
  *
  */
-const char *DisplayInformation::
-get_cpu_vendor_string() {
-  const char *string;
-
-  string = _cpu_vendor_string;
-  if (string == 0) {
-    string = "";
-  }
-
-  return string;
-}
-
-/**
- *
- */
-const char *DisplayInformation::
-get_cpu_brand_string() {
-  const char *string;
-
-  string = _cpu_brand_string;
-  if (string == 0) {
-    string = "";
-  }
-
-  return string;
+const string &DisplayInformation::
+get_cpu_brand_string() const {
+  return _cpu_brand_string;
 }
 
 /**
@@ -576,18 +525,17 @@ get_cpu_frequency() {
 }
 
 /**
- *
+ * Equivalent to the rdtsc processor instruction.
  */
 uint64_t DisplayInformation::
 get_cpu_time() {
-  uint64_t cpu_time;
-
-  cpu_time = 0;
-  if (_cpu_time_function) {
-    cpu_time = _cpu_time_function();
-  }
-
-  return cpu_time;
+#if defined(_MSC_VER) || (defined(__GNUC__) && !defined(__clang__))
+  return __rdtsc();
+#else
+  unsigned int lo, hi = 0;
+  __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+  return ((uint64_t)hi << 32) | lo;
+#endif
 }
 
 /**
