@@ -687,8 +687,8 @@ read_args() {
     dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
 
     while (map != NULL) {
-      char *tail = strrchr(map->l_name, '/');
-      char *head = strchr(map->l_name, '/');
+      const char *tail = strrchr(map->l_name, '/');
+      const char *head = strchr(map->l_name, '/');
       if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
                         || strcmp(tail, "/libp3dtool.so") == 0)) {
         _dtool_name = head;
@@ -711,8 +711,8 @@ read_args() {
       char buffer[PATH_MAX];
       buffer[0] = 0;
       maps.getline(buffer, PATH_MAX);
-      char *tail = strrchr(buffer, '/');
-      char *head = strchr(buffer, '/');
+      const char *tail = strrchr(buffer, '/');
+      const char *head = strchr(buffer, '/');
       if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
                         || strcmp(tail, "/libp3dtool.so") == 0)) {
         _dtool_name = head;
