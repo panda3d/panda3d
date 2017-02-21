@@ -409,6 +409,10 @@ protected:
                                     Thread *current_thread,
                                     GeomVertexData::CData *cdata);
 
+private:
+  GeomVertexDataPipelineBase(const GeomVertexDataPipelineBase &copy) DELETED;
+  GeomVertexDataPipelineBase &operator = (const GeomVertexDataPipelineBase &copy) DELETED_ASSIGN;
+
 public:
   INLINE ~GeomVertexDataPipelineBase();
 
@@ -429,7 +433,7 @@ public:
 
 protected:
   PT(GeomVertexData) _object;
-  Thread *const _current_thread;
+  Thread *_current_thread;
   GeomVertexData::CData *_cdata;
 };
 
@@ -441,11 +445,7 @@ class EXPCL_PANDA_GOBJ GeomVertexDataPipelineReader : public GeomVertexDataPipel
 public:
   INLINE GeomVertexDataPipelineReader(Thread *current_thread);
   INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, Thread *current_thread);
-private:
-  GeomVertexDataPipelineReader(const GeomVertexDataPipelineReader &copy) DELETED;
-  GeomVertexDataPipelineReader &operator = (const GeomVertexDataPipelineReader &copy) DELETED_ASSIGN;
 
-public:
   ALLOC_DELETED_CHAIN(GeomVertexDataPipelineReader);
 
   INLINE void set_object(CPT(GeomVertexData) object);
@@ -509,11 +509,7 @@ class EXPCL_PANDA_GOBJ GeomVertexDataPipelineWriter : public GeomVertexDataPipel
 public:
   INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,
                                       Thread *current_thread);
-private:
-  GeomVertexDataPipelineWriter(const GeomVertexDataPipelineWriter &copy) DELETED;
-  GeomVertexDataPipelineWriter &operator = (const GeomVertexDataPipelineWriter &copy) DELETED_ASSIGN;
 
-public:
   INLINE ~GeomVertexDataPipelineWriter();
   ALLOC_DELETED_CHAIN(GeomVertexDataPipelineWriter);
 

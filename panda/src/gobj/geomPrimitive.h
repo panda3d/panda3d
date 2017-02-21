@@ -389,7 +389,7 @@ public:
 
 private:
   CPT(GeomPrimitive) _object;
-  Thread *const _current_thread;
+  Thread *_current_thread;
   const GeomPrimitive::CData *_cdata;
 
   CPT(GeomVertexArrayData) _vertices;

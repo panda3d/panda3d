@@ -435,7 +435,7 @@ public:
 
 private:
   const Geom *_object;
-  Thread *const _current_thread;
+  Thread *_current_thread;
   const Geom::CData *_cdata;
 
 public:
