@@ -929,7 +929,7 @@ reset() {
 #endif
 
 #ifndef OPENGLES
-  if (is_at_least_gl_version(3, 0)) {
+  if (is_at_least_gl_version(3, 1)) {
     _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBuffer");
     _supports_buffer_texture = true;
 
