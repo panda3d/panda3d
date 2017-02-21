@@ -81,7 +81,7 @@ get_pipeline_stage() const {
   __builtin_assume(_pipeline_stage >= 0);
   return pipeline_stage;
 #else
-  return pipeline_stage;
+  return _pipeline_stage;
 #endif
 }
 
