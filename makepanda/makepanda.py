@@ -1290,7 +1290,7 @@ def CompileCxx(obj,src,opts):
         cmd += " -fno-strict-aliasing"
 
         if optlevel >= 3:
-            cmd += " -ffast-math"
+            cmd += " -ffast-math -fno-stack-protector -fno-stack-check"
         if optlevel == 3:
             # Fast math is nice, but we'd like to see NaN in dev builds.
             cmd += " -fno-finite-math-only"

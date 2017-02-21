@@ -53,7 +53,7 @@ inc_memory_usage(MemoryClass memory_class, size_t size) {
     // cerr << *this << ".inc(" << memory_class << ", " << size << ") -> " <<
     // rnode->_memory_usage[memory_class] << "\n";
     if (rnode->_memory_usage[memory_class] < 0) {
-      cerr << "Memory usage overflow for type " << *this << ".\n";
+      cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
       abort();
     }
   }
@@ -98,7 +98,7 @@ allocate_array(size_t size) {
     assert(rnode != (TypeRegistryNode *)NULL);
     AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)alloc_size);
     if (rnode->_memory_usage[MC_array] < 0) {
-      cerr << "Memory usage overflow for type " << *this << ".\n";
+      cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
       abort();
     }
   }

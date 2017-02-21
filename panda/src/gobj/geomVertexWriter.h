@@ -212,7 +212,7 @@ private:
 
   int _start_row;
 
-#ifndef NDEBUG
+#ifdef _DEBUG
   // This is defined just for the benefit of having something non-NULL to
   // return from a nassertr() call.
   static unsigned char empty_buffer[100];

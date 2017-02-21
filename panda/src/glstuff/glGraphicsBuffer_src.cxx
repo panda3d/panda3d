@@ -95,8 +95,7 @@ clear(Thread *current_thread) {
     return;
   }
 
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   if (glgsg->_glClearBufferfv == NULL) {
     // We can't efficiently clear the buffer.  Fall back to the inefficient
@@ -254,8 +253,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // until we call glBlitFramebuffer.
 #ifndef OPENGLES_1
     if (gl_enable_memory_barriers && _fbo_multisample == 0) {
-      CLP(GraphicsStateGuardian) *glgsg;
-      DCAST_INTO_R(glgsg, _gsg, false);
+      CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
       TextureContexts::iterator it;
       for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
@@ -285,8 +283,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
  */
 bool CLP(GraphicsBuffer)::
 check_fbo() {
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_R(glgsg, _gsg, false);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   GLenum status = glgsg->_glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
   if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
@@ -341,8 +338,7 @@ rebuild_bitplanes() {
     return;
   }
 
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   if (!_needs_rebuild) {
     if (_fbo_multisample != 0) {
@@ -685,8 +681,7 @@ rebuild_bitplanes() {
  */
 void CLP(GraphicsBuffer)::
 bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   Texture *tex = attach[slot];
 
@@ -1020,8 +1015,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
  */
 void CLP(GraphicsBuffer)::
 bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   if ((_rbm[slot] != 0)&&(!rb_resize)) {
     return;
@@ -1144,8 +1138,7 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
  */
 void CLP(GraphicsBuffer)::
 attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   if (view >= attach->get_num_views()) {
     attach->set_num_views(view + 1);
@@ -1215,8 +1208,7 @@ generate_mipmaps() {
     return;
   }
 
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   // PStatGPUTimer timer(glgsg, _generate_mipmap_pcollector);
 
@@ -1253,8 +1245,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
   // Unbind the FBO.  TODO: calling bind_fbo is slow, so we should probably
   // move this to begin_frame to prevent unnecessary calls.
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
   glgsg->bind_fbo(0);
   _bound_tex_page = -1;
 
@@ -1293,8 +1284,7 @@ void CLP(GraphicsBuffer)::
 select_target_tex_page(int page) {
   nassertv(page >= 0 && page < _fbo.size());
 
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   bool switched_page = (_bound_tex_page != page);
 
@@ -1689,8 +1679,7 @@ report_my_errors(int line, const char *file) {
       GLCAT.error() << file << ", line " << line << ": GL error " << (int)error_code << "\n";
     }
   } else {
-    CLP(GraphicsStateGuardian) *glgsg;
-    DCAST_INTO_V(glgsg, _gsg);
+    CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
     glgsg->report_my_errors(line, file);
   }
 }
@@ -1723,8 +1712,7 @@ void CLP(GraphicsBuffer)::
 resolve_multisamples() {
   nassertv(_fbo.size() > 0);
 
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
   PStatGPUTimer timer(glgsg, _resolve_multisample_pcollector);
 

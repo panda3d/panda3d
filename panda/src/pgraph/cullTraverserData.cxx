@@ -101,7 +101,7 @@ apply_transform_and_state(CullTraverser *trav,
   if (clip_plane_cull) {
     _cull_planes = _cull_planes->apply_state(trav, this,
                                              (const ClipPlaneAttrib *)node_state->get_attrib(ClipPlaneAttrib::get_class_slot()),
-                                             DCAST(ClipPlaneAttrib, off_clip_planes),
+                                             (const ClipPlaneAttrib *)off_clip_planes,
                                              (const OccluderEffect *)node_effects->get_effect(OccluderEffect::get_class_type()));
   }
 }

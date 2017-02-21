@@ -24,6 +24,19 @@ freshen_derivations() {
 }
 
 /**
+ * Returns the pointer to the global TypeRegistry object.
+ */
+INLINE TypeRegistry *TypeRegistry::
+ptr() {
+  // It's OK that we don't acquire the lock, because we guarantee that this is
+  // called at static init time.
+  if (_global_pointer == NULL) {
+    init_global_pointer();
+  }
+  return _global_pointer;
+}
+
+/**
  * Ensures the lock pointer has been allocated.
  */
 INLINE void TypeRegistry::

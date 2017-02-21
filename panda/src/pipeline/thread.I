@@ -73,7 +73,16 @@ get_unique_id() const {
  */
 INLINE int Thread::
 get_pipeline_stage() const {
-  return _pipeline_stage;
+#if !defined(_DEBUG) && defined(__has_builtin) && __has_builtin(__builtin_assume)
+  // Because this is a signed int, this results in a sign extend on x86-64.
+  // However, since we guarantee that this is never less than zero, clang
+  // offers a nice way to avoid that.
+  int pipeline_stage = _pipeline_stage;
+  __builtin_assume(_pipeline_stage >= 0);
+  return pipeline_stage;
+#else
+  return pipeline_stage;
+#endif
 }
 
 /**
