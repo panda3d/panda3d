@@ -704,20 +704,18 @@ static int stbi__cpuid3(void)
 
 static int stbi__sse2_available()
 {
-   int info3 = stbi__cpuid3();
-   return ((info3 >> 26) & 1) != 0;
-}
-#else // assume GCC-style if not VC++
-#define STBI_SIMD_ALIGN(type, name) type name __attribute__((aligned(16)))
-
-static int stbi__sse2_available()
-{
-#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 408 // GCC 4.8 or later
-   // GCC 4.8+ has a nice way to do this
-   return __builtin_cpu_supports("sse2");
+// #if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 408 // GCC 4.8 or later
+//   // GCC 4.8+ has a nice way to do this
+//   return __builtin_cpu_supports("sse2");
+    #if defined(STBI__X64_TARGET)
+       // on x64, SSE2 can be assumed to be available.
+       return 1;
 #else
-   // portable way to do this, preferably without using GCC inline ASM?
-   // just bail for now.
+   // __builtin_cpu_supports is buggy on GCC 5 and above, causing problems if
+   // referenced in a shared object, giving missing __cpu_model hidden symbol errors.
+   // To get around that, just assume that SSE2 is not available on x86.
+   //
+   // See https://github.com/nothings/stb/issues/280 for more information.
    return 0;
 #endif
 }
