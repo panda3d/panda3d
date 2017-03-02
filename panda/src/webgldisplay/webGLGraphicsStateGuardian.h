@@ -18,7 +18,7 @@
 #include "webGLGraphicsPipe.h"
 #include "gles2gsg.h"
 
-#include <html5.h>
+#include <emscripten/html5.h>
 
 /**
  * A specialization on GLES2GraphicsStateGuardian to add emscripten-specific
