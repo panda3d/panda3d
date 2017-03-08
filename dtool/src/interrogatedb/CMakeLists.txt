@@ -29,6 +29,7 @@ composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
 
 add_library(p3interrogatedb ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
 target_link_libraries(p3interrogatedb p3dconfig)
+target_use_packages(p3interrogatedb PYTHON)
 
 install(TARGETS p3interrogatedb DESTINATION lib)
 install(FILES ${P3INTERROGATEDB_HEADERS} DESTINATION include/panda3d)
