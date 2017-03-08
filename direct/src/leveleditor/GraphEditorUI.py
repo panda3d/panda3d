@@ -863,7 +863,7 @@ class GraphEditorUI(wx.Dialog):
 
     def AddTreeNodes(self, parentItem, items):
         for item in items:
-            if type(item) == str:
+            if type(item) is str:
                 self.tree.AppendItem(parentItem, item)
 
     def OnSelChanged(self, evt):

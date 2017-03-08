@@ -215,7 +215,7 @@ class ServerRepository:
         self.hashVal = 0
 
         dcImports = {}
-        if dcFileNames == None:
+        if dcFileNames is None:
             readResult = dcFile.readAll()
             if not readResult:
                 self.notify.error("Could not read dc file.")
@@ -266,19 +266,19 @@ class ServerRepository:
             classDef = dcImports.get(className)
 
             # Also try it without the dcSuffix.
-            if classDef == None:
+            if classDef is None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
 
-            if classDef == None:
+            if classDef is None:
                 self.notify.debug("No class definition for %s." % (className))
             else:
-                if type(classDef) == types.ModuleType:
+                if type(classDef) is types.ModuleType:
                     if not hasattr(classDef, className):
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
 
-                if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
+                if type(classDef) is not types.ClassType and type(classDef) != types.TypeType:
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)
@@ -455,7 +455,7 @@ class ServerRepository:
             return
 
         dcfield = object.dclass.getFieldByIndex(fieldId)
-        if dcfield == None:
+        if dcfield is None:
             self.notify.warning(
                 "Ignoring update for field %s on object %s from client %s; no such field for class %s." % (
                 fieldId, doId, client.doIdBase, object.dclass.getName()))

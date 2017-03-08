@@ -12,7 +12,7 @@ class Audio3DManager:
         self.audio_manager = audio_manager
         self.listener_target = listener_target
 
-        if (root==None):
+        if (root is None):
             self.root = render
         else:
             self.root = root
@@ -141,7 +141,7 @@ class Audio3DManager:
         """
         if (sound in self.vel_dict):
             vel = self.vel_dict[sound]
-            if (vel!=None):
+            if (vel is not None):
                 return vel
             else:
                 for known_object in list(self.sound_dict.keys()):
@@ -172,9 +172,9 @@ class Audio3DManager:
         """
         Get the velocity of the listener.
         """
-        if (self.listener_vel!=None):
+        if (self.listener_vel is not None):
             return self.listener_vel
-        elif (self.listener_target!=None):
+        elif (self.listener_target is not None):
             return self.listener_target.getPosDelta(self.root)/globalClock.getDt()
         else:
             return VBase3(0, 0, 0)

@@ -69,7 +69,7 @@ class ClusterClient(DirectObject.DirectObject):
             server = DisplayConnection(
                 self.qcm, serverConfig.serverName,
                 serverConfig.serverMsgPort, self.msgHandler)
-            if server == None:
+            if server is None:
                 self.notify.error('Could not open %s on %s port %d' %
                                   (serverConfig.serverConfigName,
                                    serverConfig.serverName,
@@ -145,7 +145,7 @@ class ClusterClient(DirectObject.DirectObject):
 
     def sendNamedMovementDone(self, serverList = None):
 
-        if (serverList == None):
+        if (serverList is None):
             serverList = range(len(self.serverList))
 
         for server in serverList:
@@ -218,9 +218,9 @@ class ClusterClient(DirectObject.DirectObject):
     def addControlMapping(self,objectName,controlledName, serverList = None,
                           offset = None, priority = 0):
         if (objectName not in self.controlMappings):
-            if (serverList == None):
+            if (serverList is None):
                 serverList = range(len(self.serverList))
-            if (offset == None):
+            if (offset is None):
                 offset = Vec3(0,0,0)
 
             self.controlMappings[objectName] = [controlledName,serverList]
@@ -245,7 +245,7 @@ class ClusterClient(DirectObject.DirectObject):
     def removeControlMapping(self,name, serverList = None):
         if (name in self.controlMappings):
 
-            if (serverList == None):
+            if (serverList is None):
                 self.controlMappings.pop(name)
                 self.controlPriorities.pop(name)
             else:
@@ -302,7 +302,7 @@ class ClusterClient(DirectObject.DirectObject):
             tag = self.taggedObjects[name]
             function = tag["selectFunction"]
             args     = tag["selectArgs"]
-            if (function != None):
+            if (function is not None):
                 function(*args)
         else:
             self(self.getNodePathFindCmd(nodePath) + '.select()', 0)
@@ -314,7 +314,7 @@ class ClusterClient(DirectObject.DirectObject):
             tag = self.taggedObjects[name]
             function = tag["deselectFunction"]
             args     = tag["deselectArgs"]
-            if (function != None):
+            if (function is not None):
                 function(*args)
             self.startMoveSelectedTask()
         self(self.getNodePathFindCmd(nodePath) + '.deselect()', 0)
@@ -450,7 +450,7 @@ class DisplayConnection:
         self.tcpConn = qcm.openTCPClientConnection(
             serverName, port, gameServerTimeoutMs)
         # Test for bad connection
-        if self.tcpConn == None:
+        if self.tcpConn is None:
             return None
         else:
             self.tcpConn.setNoDelay(1)

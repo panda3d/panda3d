@@ -77,7 +77,7 @@ class DirectRadioButton(DirectButton):
         else:
             self.indicator['text'] = (' ', ' ')
 
-        if self['boxGeomColor'] != None and self['boxGeom'] != None:
+        if self['boxGeomColor'] is not None and self['boxGeom'] is not None:
             self.colors = [VBase4(1, 1, 1, 0), self['boxGeomColor']]
             self.component('indicator')['geom_color'] = VBase4(1, 1, 1, 0)
 
@@ -212,10 +212,10 @@ class DirectRadioButton(DirectButton):
 
     def uncheck(self):
         self['indicatorValue'] = 0
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['geom_color'] = self.colors[self['indicatorValue']]
 
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['geom_color'] = self.colors[self['indicatorValue']]

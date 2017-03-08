@@ -124,7 +124,7 @@ else:
                 del kw['gsg']
 
             fbprops = kw.get('fbprops', None)
-            if fbprops == None:
+            if fbprops is None:
                 fbprops = FrameBufferProperties.getDefault()
 
             attribList = kw.get('attribList', None)

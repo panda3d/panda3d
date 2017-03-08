@@ -256,7 +256,7 @@ class DialWidget(Pmw.MegaWidget):
                 self.rollCount = 0
             value = self['base'] + ((value - self['base']) % self['delta'])
         # Send command if any
-        if fCommand and (self['command'] != None):
+        if fCommand and (self['command'] is not None):
             self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value

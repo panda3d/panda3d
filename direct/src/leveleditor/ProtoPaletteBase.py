@@ -12,9 +12,9 @@ class ProtoPaletteBase(ObjectPaletteBase):
         assert self.dirname
 
     def addItems(self):
-        if type(protoData) == dict:
+        if type(protoData) is dict:
             for key in list(protoData.keys()):
-                if type(protoData[key]) == dict:
+                if type(protoData[key]) is dict:
                     self.add(key, parent)
                     self.addItems(protoData[key], key)
                 else:

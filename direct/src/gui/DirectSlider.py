@@ -58,7 +58,7 @@ class DirectSlider(DirectFrame):
         self.thumb = self.createcomponent("thumb", (), None,
                                           DirectButton, (self,),
                                           borderWidth = self['borderWidth'])
-        if self.thumb['frameSize'] == None and \
+        if self.thumb['frameSize'] is None and \
            self.thumb.bounds == [0.0, 0.0, 0.0, 0.0]:
             # Compute a default frameSize for the thumb.
             f = self['frameSize']

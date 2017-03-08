@@ -127,7 +127,7 @@ class ClusterServer(DirectObject.DirectObject):
                           priority = 0):
         if (objectName not in self.controlMappings):
             self.controlMappings[objectName] = controlledName
-            if (offset == None):
+            if (offset is None):
                 offset = Vec3(0,0,0)
             self.controlOffsets[objectName]  = offset
             self.controlPriorities[objectName] = priority

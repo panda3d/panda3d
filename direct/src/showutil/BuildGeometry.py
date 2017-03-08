@@ -26,7 +26,7 @@ def getCirclePoints(segCount, centerX, centerY, radius, wideX= 1.0, wideY = 1.0)
 
 def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0), centerColor = None, layer = 0):
     targetGN=GeomNode("target Circle")
-    if centerColor == None:
+    if centerColor is None:
         centerColor = color
     zFloat = 0.025
     targetCircleShape = getCirclePoints(5 + (vertexCount), 0.0, 0.0, radius)

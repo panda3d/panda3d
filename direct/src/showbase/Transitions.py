@@ -230,7 +230,7 @@ class Transitions:
     ##################################################
 
     def loadIris(self):
-        if self.iris == None:
+        if self.iris is None:
             self.iris = loader.loadModel(self.IrisModelName)
             self.iris.setPos(0, 0, 0)
 
@@ -294,7 +294,7 @@ class Transitions:
         if self.transitionIval:
             self.transitionIval.pause()
             self.transitionIval = None
-        if self.iris != None:
+        if self.iris is not None:
             self.iris.detachNode()
         # Actually we need to remove the fade too,
         # because the iris effect uses it.

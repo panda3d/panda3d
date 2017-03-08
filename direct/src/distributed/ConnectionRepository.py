@@ -174,7 +174,7 @@ class ConnectionRepository(
         def applyFieldValues(distObj, dclass, values):
             for i in range(dclass.getNumInheritedFields()):
                 field = dclass.getInheritedField(i)
-                if field.asMolecularField() == None:
+                if field.asMolecularField() is None:
                     value = values.get(field.getName(), None)
                     if value is None and field.isRequired():
                         # Gee, this could be better.  What would really be
@@ -251,7 +251,7 @@ class ConnectionRepository(
             dcFileNames = [dcFileNames]
 
         dcImports = {}
-        if dcFileNames == None:
+        if dcFileNames is None:
             readResult = dcFile.readAll()
             if not readResult:
                 self.notify.error("Could not read dc file.")
@@ -320,7 +320,7 @@ class ConnectionRepository(
                 classDef = dcImports.get(className)
 
             # Also try it without the dcSuffix.
-            if classDef == None:
+            if classDef is None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
             if classDef is None:
@@ -581,7 +581,7 @@ class ConnectionRepository(
         # available.  Returns the HTTPClient (also self.http), or None
         # if not set.
 
-        if self.http == None:
+        if self.http is None:
             try:
                 self.http = HTTPClient()
             except:
