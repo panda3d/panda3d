@@ -124,21 +124,15 @@ if(WIN32)
   )
 endif()
 
-if(HAVE_PYTHON)
-  set(P3PIPELINE_HEADERS
-    ${P3PIPELINE_HEADERS}
-    pythonThread.h
-  )
-  set(P3PIPELINE_SOURCES
-    ${P3PIPELINE_SOURCES}
+set(P3PIPELINE_IGATEEXT
     pythonThread.cxx
-  )
-endif()
+    pythonThread.h
+)
 
 composite_sources(p3pipeline P3PIPELINE_SOURCES)
 add_library(p3pipeline ${P3PIPELINE_HEADERS} ${P3PIPELINE_SOURCES})
 target_link_libraries(p3pipeline p3express)
-target_interrogate(p3pipeline ALL)
+target_interrogate(p3pipeline ALL EXTENSIONS ${P3PIPELINE_IGATEEXT})
 
 install(TARGETS p3pipeline DESTINATION lib)
 install(FILES ${P3PIPELINE_HEADERS} DESTINATION include/panda3d)
