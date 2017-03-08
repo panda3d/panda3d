@@ -298,7 +298,7 @@ class SceneGraphUIBase(wx.Panel):
 
         if item != self.tree.GetRootItem(): # prevent dragging root item
             text = self.tree.GetItemText(item)
-            print("Starting SceneGraphUI drag'n'drop with %s..." % repr(text))
+            print("Starting SceneGraphUI drag'n'drop with %r..." % text)
 
             tdo = wx.TextDataObject(text)
             tds = wx.DropSource(self.tree)

@@ -1468,7 +1468,7 @@ def safeRepr(obj):
     try:
         return repr(obj)
     except:
-        return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
+        return '<** FAILED REPR OF %s instance at 0x%x **>' % (obj.__class__.__name__, id(obj))
 
 def safeReprTypeOnFail(obj):
     global dtoolSuperBase
@@ -1658,7 +1658,7 @@ def itype(obj):
     t = type(obj)
     if t is types.InstanceType:
         return '%s of <class %s>>' % (repr(types.InstanceType)[:-1],
-                                      str(obj.__class__))
+                                      obj.__class__)
     else:
         # C++ object instances appear to be types via type()
         # check if this is a C++ object
@@ -1666,7 +1666,7 @@ def itype(obj):
             _getDtoolSuperBase()
         if isinstance(obj, dtoolSuperBase):
             return '%s of %s>' % (repr(types.InstanceType)[:-1],
-                                  str(obj.__class__))
+                                  obj.__class__)
         return t
 
 def deeptype(obj, maxLen=100, _visitedIds=None):
@@ -2098,7 +2098,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
             if 'args' in types:
                 rArgs += [repr(x)+', ' for x in args[1:]] + \
-                         [ x + ' = ' + '%s, ' % repr(y) for x,y in kwargs.items()]
+                         [ x + ' = ' + '%r, ' % y for x,y in kwargs.items()]
 
             if not rArgs:
                 rArgs = '()'
@@ -2126,7 +2126,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 outStr = '%-8.2f : %s' % (globalClock.getRealTime() - \
                                          globalClockDelta.delta, outStr)
             if 'avLocation' in types:
-                outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
+                outStr = '%s : %s' % (outStr, localAvatar.getLocation())
 
             if xform:
                 outStr = '%s : %s' % (outStr, xform(args[0]))
@@ -2411,7 +2411,7 @@ class MiniLog:
 
     def enterFunction(self, funcName, *args, **kw):
         rArgs = [repr(x)+', ' for x in args] + \
-                [ x + ' = ' + '%s, ' % repr(y) for x,y in kw.items()]
+                [ x + ' = ' + '%r, ' % y for x,y in kw.items()]
 
         if not rArgs:
             rArgs = '()'

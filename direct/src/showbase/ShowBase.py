@@ -2691,7 +2691,7 @@ class ShowBase(DirectObject.DirectObject):
         if properties != self.__prevWindowProperties:
             self.__prevWindowProperties = properties
 
-            self.notify.debug("Got window event: %s" % (repr(properties)))
+            self.notify.debug("Got window event: %r" % (properties))
             if not properties.getOpen():
                 # If the user closes the main window, we should exit.
                 self.notify.info("User closed main window.")

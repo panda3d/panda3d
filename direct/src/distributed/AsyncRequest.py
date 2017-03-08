@@ -243,8 +243,8 @@ class AsyncRequest(DirectObject):
             "neededObjects: %s"%(self.neededObjects,))
         if self.numRetries > 0:
             assert AsyncRequest.notify.debug(
-                'Timed out. Trying %d more time(s) : %s' %
-                (self.numRetries + 1, repr(self.neededObjects)))
+                'Timed out. Trying %d more time(s) : %r' %
+                (self.numRetries + 1, self.neededObjects))
             self.numRetries -= 1
             return Task.again
         else:

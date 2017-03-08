@@ -48,7 +48,7 @@ class Actor(DirectObject, NodePath):
             return self.partBundleHandle.getBundle()
 
         def __repr__(self):
-            return 'Actor.PartDef(%s, %s)' % (repr(self.partBundleNP), repr(self.partModel))
+            return 'Actor.PartDef(%r, %r)' % (self.partBundleNP, self.partModel)
 
     class AnimDef:
 
@@ -70,7 +70,7 @@ class Actor(DirectObject, NodePath):
             return Actor.AnimDef(self.filename, self.animBundle)
 
         def __repr__(self):
-            return 'Actor.AnimDef(%s)' % (repr(self.filename))
+            return 'Actor.AnimDef(%r)' % (self.filename)
 
     class SubpartDef:
 
@@ -90,7 +90,7 @@ class Actor(DirectObject, NodePath):
 
 
         def __repr__(self):
-            return 'Actor.SubpartDef(%s, %s)' % (repr(self.truePartName), repr(self.subset))
+            return 'Actor.SubpartDef(%r, %r)' % (self.truePartName, self.subset)
 
     def __init__(self, models=None, anims=None, other=None, copy=True,
                  lodNode = None, flattenable = True, setFinal = False,
@@ -1847,7 +1847,7 @@ class Actor(DirectObject, NodePath):
                         else:
                             # bind the animation first if we need to
                             animControl = anim.animControl
-                            if animControl is  None:
+                            if animControl is� None:
                                 animControl = self.__bindAnimToPart(
                                     animName, thisPart, lodName,
                                     allowAsyncBind = allowAsyncBind)

@@ -155,7 +155,7 @@ class PaletteTreeCtrl(wx.TreeCtrl):
 
         if item != self.GetRootItem(): # prevent dragging root item
             text = self.GetItemText(item)
-            print("Starting drag'n'drop with %s..." % repr(text))
+            print("Starting drag'n'drop with %r..." % text)
 
             tdo = wx.TextDataObject(text)
             tds = wx.DropSource(self)

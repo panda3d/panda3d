@@ -593,7 +593,7 @@ class AppRunner(DirectObject):
             if hasattr(builtins, "base"):
                 base.destroy()
 
-            self.notify.info("Normal exit with status %s." % repr(err.code))
+            self.notify.info("Normal exit with status %r." % err.code)
             raise
 
         except:

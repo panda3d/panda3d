@@ -208,10 +208,10 @@ class ProjectileInterval(Interval):
             self.endPos = self.__calcPos(self.duration)
 
         # these are the parameters that we need to know:
-        assert self.notify.debug('startPos: %s' % repr(self.startPos))
-        assert self.notify.debug('endPos:   %s' % repr(self.endPos))
+        assert self.notify.debug('startPos: %r' % self.startPos)
+        assert self.notify.debug('endPos:   %r' % self.endPos)
         assert self.notify.debug('duration: %s' % self.duration)
-        assert self.notify.debug('startVel: %s' % repr(self.startVel))
+        assert self.notify.debug('startVel: %r' % self.startVel)
         assert self.notify.debug('z-accel:  %s' % self.zAcc)
 
     def __initialize(self):

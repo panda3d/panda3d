@@ -397,7 +397,7 @@ class TaskManager:
             task.setArgs(extraArgs, appendTask)
         elif extraArgs is not None:
             self.notify.error(
-                'Task %s does not accept arguments.' % (repr(task)))
+                'Task %r does not accept arguments.' % (task))
 
         if name is not None:
             task.setName(name)

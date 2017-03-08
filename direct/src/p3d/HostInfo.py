@@ -248,7 +248,7 @@ class HostInfo:
                         # no launcher
                         pass
                     except AttributeError as e:
-                        self.notify.warning("%s" % (str(e),))
+                        self.notify.warning("%s" % (e,))
                         pass
                     return False
 

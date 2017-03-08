@@ -80,7 +80,7 @@ class FunctionInterval(Interval.Interval):
         name = 'Func-%s-%d' % (getattr(func, '__name__', str(func)), FunctionInterval.functionIntervalNum)
         FunctionInterval.functionIntervalNum += 1
         if suffix:
-            name = '%s-%s' % (name, str(suffix))
+            name = '%s-%s' % (name, suffix)
         return name
 
     def privInstant(self):
