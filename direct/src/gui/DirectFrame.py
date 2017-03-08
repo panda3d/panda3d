@@ -58,7 +58,7 @@ class DirectFrame(DirectGuiWidget):
 
     def setText(self):
         # Determine if user passed in single string or a sequence
-        if self['text'] == None:
+        if self['text'] is None:
             textList = (None,) * self['numStates']
         elif isinstance(self['text'], stringType):
             # If just passing in a single string, make a tuple out of it
@@ -77,13 +77,13 @@ class DirectFrame(DirectGuiWidget):
                 text = textList[-1]
 
             if self.hascomponent(component):
-                if text == None:
+                if text is None:
                     # Destroy component
                     self.destroycomponent(component)
                 else:
                     self[component + '_text'] = text
             else:
-                if text == None:
+                if text is None:
                     return
                 else:
                     from .OnscreenText import OnscreenText
@@ -99,7 +99,7 @@ class DirectFrame(DirectGuiWidget):
         # Determine argument type
         geom = self['geom']
 
-        if geom == None:
+        if geom is None:
             # Passed in None
             geomList = (None,) * self['numStates']
         elif isinstance(geom, NodePath) or \
@@ -121,13 +121,13 @@ class DirectFrame(DirectGuiWidget):
                 geom = geomList[-1]
 
             if self.hascomponent(component):
-                if geom == None:
+                if geom is None:
                     # Destroy component
                     self.destroycomponent(component)
                 else:
                     self[component + '_geom'] = geom
             else:
-                if geom == None:
+                if geom is None:
                     return
                 else:
                     self.createcomponent(
@@ -140,7 +140,7 @@ class DirectFrame(DirectGuiWidget):
     def setImage(self):
         # Determine argument type
         arg = self['image']
-        if arg == None:
+        if arg is None:
             # Passed in None
             imageList = (None,) * self['numStates']
         elif isinstance(arg, NodePath) or \
@@ -169,13 +169,13 @@ class DirectFrame(DirectGuiWidget):
                 image = imageList[-1]
 
             if self.hascomponent(component):
-                if image == None:
+                if image is None:
                     # Destroy component
                     self.destroycomponent(component)
                 else:
                     self[component + '_image'] = image
             else:
-                if image == None:
+                if image is None:
                     return
                 else:
                     self.createcomponent(
