@@ -639,7 +639,7 @@ def flattenMultitex(self, stateFrom = None, target = None,
                         useGeom = 0, allowTexMat = 0, win = None):
         from panda3d.core import MultitexReducer
         mr = MultitexReducer()
-        if target != None:
+        if target is not None:
             mr.setTarget(target)
         mr.setUseGeom(useGeom)
         mr.setAllowTexMat(allowTexMat)
