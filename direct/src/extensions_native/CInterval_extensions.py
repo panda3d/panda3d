@@ -70,7 +70,7 @@ def popupControls(self, tl = None):
         else:
             tkinter = importlib.import_module('Tkinter')
 
-        if tl == None:
+        if tl is None:
             tl = tkinter.Toplevel()
             tl.title('Interval Controls')
         outerFrame = tkinter.Frame(tl)
