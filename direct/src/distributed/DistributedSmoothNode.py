@@ -195,7 +195,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                 # a position being smoothed to (so we don't interrupt
                 # any current smoothing and only do this if the object
                 # is actually locally stopped)
-                if (timestamp == None):
+                if (timestamp is None):
                     # no timestamp, use current time
                     local = 0.0
                 else:
@@ -359,7 +359,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             howFarFuture = local - now
             if howFarFuture - chug >= MaxFuture:
                 # Too far off; advise the other client of our clock information.
-                if globalClockDelta.getUncertainty() != None and \
+                if globalClockDelta.getUncertainty() is not None and \
                    realTime - self.lastSuggestResync >= MinSuggestResync and \
                    hasattr(self.cr, 'localAvatarDoId'):
                     self.lastSuggestResync = realTime
@@ -456,7 +456,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         result = self.peerToPeerResync(
             avId, timestampA, serverTime, uncertainty)
         if result >= 0 and \
-           globalClockDelta.getUncertainty() != None:
+           globalClockDelta.getUncertainty() is not None:
             other = self.cr.doId2do.get(avId)
             if (not other):
                 assert self.notify.info(
@@ -497,7 +497,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         # If we didn't get anything useful from the other client,
         # maybe our clock is just completely hosed.  Go ask the AI.
         if not gotSync:
-            if self.cr.timeManager != None:
+            if self.cr.timeManager is not None:
                 self.cr.timeManager.synchronize("suggested by %d" % (avId))
 
         return gotSync
