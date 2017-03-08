@@ -712,7 +712,7 @@ class AppRunner(DirectObject):
                 mainModule = sys.modules[moduleName]
 
             # Check if it has a main() function.  If so, call it.
-            if hasattr(mainModule, 'main') and hasattr(mainModule.main, '__call__'):
+            if hasattr(mainModule, 'main') and callable(mainModule.main):
                 mainModule.main(self)
 
             # Now clear this flag.

@@ -126,7 +126,7 @@ class Messenger:
                  safeRepr(extraArgs), persistent))
 
         # Make sure that the method is callable
-        assert hasattr(method, '__call__'), (
+        assert callable(method), (
             "method not callable in accept (ignoring): %s %s"%
             (safeRepr(method), safeRepr(extraArgs)))
 
@@ -403,7 +403,7 @@ class Messenger:
                 # we have cleaned up the accept hook, because the
                 # method itself might call accept() or acceptOnce()
                 # again.
-                assert hasattr(method, '__call__')
+                assert callable(method)
 
                 # Release the lock temporarily while we call the method.
                 self.lock.release()

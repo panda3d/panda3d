@@ -302,7 +302,7 @@ class PosHprScaleInterval(FunctionInterval):
 class Func(FunctionInterval):
     def __init__(self, *args, **kw):
         function = args[0]
-        assert hasattr(function, '__call__')
+        assert callable(function)
         extraArgs = args[1:]
         kw['extraArgs'] = extraArgs
         FunctionInterval.__init__(self, function, **kw)
