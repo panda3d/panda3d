@@ -58,13 +58,13 @@ class DistributedSmoothNodeBase:
         self.d_broadcastPosHpr = None
 
     def posHprBroadcastStarted(self):
-        return self.d_broadcastPosHpr != None
+        return self.d_broadcastPosHpr is not None
 
     def wantSmoothPosBroadcastTask(self):
         return True
 
     def startPosHprBroadcast(self, period=.2, stagger=0, type=None):
-        if self.cnode == None:
+        if self.cnode is None:
             self.initializeCnode()
 
         BT = DistributedSmoothNodeBase.BroadcastTypes
