@@ -76,7 +76,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
             )
         self.defineoptions(kw, optiondefs)
         # If no toplevel passed in, create one
-        if parent == None:
+        if parent is None:
             self.parent = Toplevel()
         else:
             self.parent = parent
