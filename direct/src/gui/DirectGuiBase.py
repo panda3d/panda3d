@@ -555,7 +555,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         if widgetClass is None:
             return None
         # Get arguments for widget constructor
-        if len(widgetArgs) == 1 and type(widgetArgs[0]) == tuple:
+        if len(widgetArgs) == 1 and type(widgetArgs[0]) is tuple:
             # Arguments to the constructor can be specified as either
             # multiple trailing arguments to createcomponent() or as a
             # single tuple argument.
@@ -737,7 +737,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 if hasattr(base, 'printGuiCreates'):
                     printStack()
         # Attach button to parent and make that self
-        if (parent == None):
+        if (parent is None):
             parent = aspect2d
         self.assign(parent.attachNewNode(self.guiItem, self['sortOrder']))
         # Update pose to initial values
@@ -853,7 +853,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         taskMgr.remove('guiEditTask')
 
     def setState(self):
-        if type(self['state']) == type(0):
+        if type(self['state']) is type(0):
             self.guiItem.setActive(self['state'])
         elif (self['state'] == DGG.NORMAL) or (self['state'] == 'normal'):
             self.guiItem.setActive(1)
@@ -947,7 +947,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setRelief(self, fSetStyle = 1):
         relief = self['relief']
         # Convert None, and string arguments
-        if relief == None:
+        if relief is None:
             relief = PGFrameStyle.TNone
         elif isinstance(relief, stringType):
             # Convert string to frame style int
@@ -974,8 +974,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameColor(self):
         # this might be a single color or a list of colors
         colors = self['frameColor']
-        if type(colors[0]) == int or \
-           type(colors[0]) == float:
+        if type(colors[0]) is int or \
+           type(colors[0]) is float:
             colors = (colors,)
         for i in range(self['numStates']):
             if i >= len(colors):
@@ -988,7 +988,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameTexture(self):
         # this might be a single texture or a list of textures
         textures = self['frameTexture']
-        if textures == None or \
+        if textures is None or \
            isinstance(textures, Texture) or \
            isinstance(textures, stringType):
             textures = (textures,) * self['numStates']
