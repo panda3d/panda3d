@@ -32,7 +32,7 @@ class Notifier:
         """
         self.__name = name
 
-        if (logger==None):
+        if (logger is None):
             self.__logger = defaultLogger
         else:
             self.__logger = logger
@@ -268,7 +268,7 @@ class Notifier:
 
                 if hasattr(obj, 'doId'):
                     doId = " doId:%s"%(obj.doId,)
-            #if type(obj) == types.ClassType:
+            #if type(obj) is types.ClassType:
             #    name = "%s."%(obj.__class__.__name__,)
             string = ":%s:%s [%-7s] id(%s)%s %s"%(
                 self.getOnlyTime(),
