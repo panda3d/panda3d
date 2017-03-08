@@ -62,7 +62,7 @@ class Viewport(WxPandaWindow, DirectObject):
     WxPandaWindow.__init__(self, *args, **kwargs)
 
     ViewportManager.viewports.append(self)
-    if ViewportManager.gsg == None:
+    if ViewportManager.gsg is None:
       ViewportManager.gsg = self.win.getGsg()
 
     self.camera = None
@@ -102,9 +102,9 @@ class Viewport(WxPandaWindow, DirectObject):
     base.setupWindowControls(winCtrl)
 
     self.initialized = True
-    if self.lens != None:      self.cam.node().setLens(self.lens)
-    if self.camPos != None:    self.camera.setPos(self.camPos)
-    if self.camLookAt != None: self.camera.lookAt(self.camLookAt)
+    if self.lens is not None:      self.cam.node().setLens(self.lens)
+    if self.camPos is not None:    self.camera.setPos(self.camPos)
+    if self.camLookAt is not None: self.camera.lookAt(self.camLookAt)
 
     self.camLens = self.camNode.getLens()
 
@@ -134,7 +134,7 @@ class Viewport(WxPandaWindow, DirectObject):
     """Invoked when the viewport is resized."""
     WxPandaWindow.onSize(self, evt)
 
-    if self.win != None:
+    if self.win is not None:
       newWidth = self.ClientSize.GetWidth()
       newHeight = self.ClientSize.GetHeight()
 
@@ -146,7 +146,7 @@ class Viewport(WxPandaWindow, DirectObject):
 
   def onRightDown(self, evt = None):
     """Invoked when the viewport is right-clicked."""
-    if evt == None:
+    if evt is None:
       mpos = wx.GetMouseState()
       mpos = self.ScreenToClient((mpos.x, mpos.y))
     else:
@@ -164,7 +164,7 @@ class Viewport(WxPandaWindow, DirectObject):
   @staticmethod
   def make(parent, vpType = None):
     """Safe constructor that also takes CREATENEW, VPLEFT, VPTOP, etc."""
-    if vpType == None or vpType == CREATENEW:
+    if vpType is None or vpType == CREATENEW:
       return Viewport(parent)
     if isinstance(vpType, Viewport): return vpType
     if vpType == VPLEFT:  return Viewport.makeLeft(parent)
