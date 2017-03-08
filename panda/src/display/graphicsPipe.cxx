@@ -28,6 +28,16 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
+#endif
+
+// CPUID is only available on i386 and x86-64 architectures.
+#if defined(__i386) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
+
 #if defined(__GNUC__) && !defined(__APPLE__)
 // GCC and Clang offer a useful cpuid.h header.
 #include <cpuid.h>
@@ -36,13 +46,6 @@
 #ifdef _MSC_VER
 // MSVC has a __cpuid intrinsic.
 #include <intrin.h>
-#endif
-
-#ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#endif
-#include <windows.h>
 #endif
 
 union cpuid_info {
@@ -85,6 +88,7 @@ static inline void get_cpuid(uint32_t leaf, cpuid_info &info) {
            : "0" (leaf));
 #endif
 }
+#endif
 
 #ifdef IS_LINUX
 /**
@@ -123,6 +127,7 @@ GraphicsPipe() :
 
   _display_information = new DisplayInformation();
 
+#if defined(__i386) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
   cpuid_info info;
   const uint32_t max_cpuid = get_cpuid_max(0);
   const uint32_t max_extended = get_cpuid_max(0x80000000);
@@ -148,6 +153,7 @@ GraphicsPipe() :
     brand[48] = 0;
     _display_information->_cpu_brand_string = brand;
   }
+#endif
 
 #if defined(IS_OSX)
   // macOS exposes a lot of useful information through sysctl.
