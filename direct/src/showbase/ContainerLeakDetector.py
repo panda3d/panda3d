@@ -423,7 +423,7 @@ class FindContainers(Job):
         if id(obj) in ContainerLeakDetector.PrivateIds:
             return True
         # prevent crashes in objects that define __cmp__ and don't handle strings
-        if type(objName) == str and objName in ('im_self', 'im_class'):
+        if type(objName) is str and objName in ('im_self', 'im_class'):
             return True
         try:
             className = obj.__class__.__name__
