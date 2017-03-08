@@ -67,7 +67,7 @@ class ProjectileInterval(Interval):
                 self.collNode = self.collNode.node()
             assert self.collNode.getNumSolids() == 0
 
-        if name == None:
+        if name is None:
             name = '%s-%s' % (self.__class__.__name__,
                               self.projectileIntervalNum)
             ProjectileInterval.projectileIntervalNum += 1
@@ -138,7 +138,7 @@ class ProjectileInterval(Interval):
                                            startVel, accel)
             if not time:
                 return None
-            if type(time) == type([]):
+            if type(time) is type([]):
                 # projectile hits plane once going up, once going down
                 # assume they want the one on the way down
                 assert self.notify.debug('projectile hits plane twice at times: %s' %
