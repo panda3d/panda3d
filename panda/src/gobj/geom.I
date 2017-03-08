@@ -51,7 +51,7 @@ get_geom_rendering() const {
 INLINE CPT(GeomVertexData) Geom::
 get_vertex_data(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_data.get_read_pointer();
+  return cdata->_data.get_read_pointer(current_thread);
 }
 
 /**
@@ -514,6 +514,18 @@ CData(const Geom::CData &copy) :
 {
 }
 
+
+/**
+ *
+ */
+INLINE GeomPipelineReader::
+GeomPipelineReader(Thread *current_thread) :
+  _object(nullptr),
+  _current_thread(current_thread),
+  _cdata(nullptr)
+{
+}
+
 /**
  *
  */
@@ -532,39 +544,51 @@ GeomPipelineReader(const Geom *object, Thread *current_thread) :
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE GeomPipelineReader::
-GeomPipelineReader(const GeomPipelineReader &) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomPipelineReader::
-operator = (const GeomPipelineReader &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE GeomPipelineReader::
 ~GeomPipelineReader() {
 #ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
+  if (_object != nullptr) {
+    nassertv(_object->test_ref_count_nonzero());
+  }
 #endif // _DEBUG
   // _object->_cycler.release_read(_cdata);
 
 #ifdef DO_PIPELINING
-  unref_delete((CycleData *)_cdata);
+  if (_cdata != nullptr) {
+    unref_delete((CycleData *)_cdata);
+  }
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
   _object = NULL;
   _cdata = NULL;
 #endif  // _DEBUG
+}
+
+/**
+ *
+ */
+INLINE void GeomPipelineReader::
+set_object(const Geom *object) {
+  if (object != _object) {
+    // _object->_cycler.release_read(_cdata);
+
+#ifdef DO_PIPELINING
+    if (_cdata != NULL) {
+      unref_delete((CycleData *)_cdata);
+    }
+#endif  // DO_PIPELINING
+
+    _cdata = object->_cycler.read_unlocked(_current_thread);
+
+#ifdef DO_PIPELINING
+    _cdata->ref();
+#endif  // DO_PIPELINING
+
+    _object = object;
+  }
 }
 
 /**

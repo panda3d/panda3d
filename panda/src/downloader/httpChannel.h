@@ -22,10 +22,6 @@
 
 #ifdef HAVE_OPENSSL
 
-#ifndef OPENSSL_NO_KRB5
-#define OPENSSL_NO_KRB5
-#endif
-
 #include "httpClient.h"
 #include "httpEnum.h"
 #include "urlSpec.h"
@@ -37,9 +33,9 @@
 #include "pointerTo.h"
 #include "config_downloader.h"
 #include "filename.h"
-#include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
 #include "typedReferenceCount.h"
+
+typedef struct bio_st BIO;
 
 class Ramfile;
 class HTTPClient;

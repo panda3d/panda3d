@@ -1142,7 +1142,6 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
     } else {
       tris->set_index_type(GeomEnums::NT_uint16);
     }
-    PT(GeomVertexArrayData) indices = tris->modify_vertices();
 
     int i = 0;
 
@@ -1150,9 +1149,10 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
     // bottleneck.  So, I've written this out the hard way instead.  Two
     // versions of the loop: one for 32-bit indices, one for 16-bit.
     {
-      PT(GeomVertexArrayDataHandle) vtx_handle = vdata->modify_array(0)->modify_handle();
+      PT(GeomVertexArrayDataHandle) vtx_handle = vdata->modify_array_handle(0);
       vtx_handle->unclean_set_num_rows(quads.size() * 4);
 
+      Thread *current_thread = Thread::get_current_thread();
       unsigned char *write_ptr = vtx_handle->get_write_pointer();
       size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float32);
 
@@ -1163,7 +1163,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
 
       if (tris->get_index_type() == GeomEnums::NT_uint32) {
         // 32-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
+        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
         idx_handle->unclean_set_num_rows(quads.size() * 6);
         uint32_t *idx_ptr = (uint32_t *)idx_handle->get_write_pointer();
 
@@ -1219,7 +1219,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
         }
       } else {
         // 16-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
+        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
         idx_handle->unclean_set_num_rows(quads.size() * 6);
         uint16_t *idx_ptr = (uint16_t *)idx_handle->get_write_pointer();
 

@@ -973,9 +973,7 @@ if GetTarget() == 'android':
     DefSymbol("ALWAYS", "ANDROID")
 
 if not PkgSkip("EIGEN"):
-    DefSymbol("ALWAYS", "EIGEN_MPL2_ONLY")
     if GetOptimize() >= 3:
-        DefSymbol("ALWAYS", "EIGEN_NO_DEBUG")
         if COMPILER == "MSVC":
             # Squeeze out a bit more performance on MSVC builds...
             # Only do this if EIGEN_NO_DEBUG is also set, otherwise it
@@ -1292,7 +1290,7 @@ def CompileCxx(obj,src,opts):
         cmd += " -fno-strict-aliasing"
 
         if optlevel >= 3:
-            cmd += " -ffast-math"
+            cmd += " -ffast-math -fno-stack-protector"
         if optlevel == 3:
             # Fast math is nice, but we'd like to see NaN in dev builds.
             cmd += " -fno-finite-math-only"

@@ -19,7 +19,7 @@ pallocator_single(TypeHandle type_handle) NOEXCEPT :
 }
 
 template<class Type>
-INLINE TYPENAME pallocator_single<Type>::pointer pallocator_single<Type>::
+INLINE Type *pallocator_single<Type>::
 allocate(TYPENAME pallocator_single<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
   TAU_PROFILE("pallocator_single:allocate()", " ", TAU_USER);
   // This doesn't support allocating arrays.
@@ -43,34 +43,14 @@ pallocator_array(TypeHandle type_handle) NOEXCEPT :
 }
 
 template<class Type>
-INLINE TYPENAME pallocator_array<Type>::pointer pallocator_array<Type>::
+INLINE Type *pallocator_array<Type>::
 allocate(TYPENAME pallocator_array<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
-  TAU_PROFILE("pallocator_array:allocate()", " ", TAU_USER);
-#ifdef DO_MEMORY_USAGE
-  size_t alloc_size = n * sizeof(Type);
-  void *ptr = (TYPENAME pallocator_array<Type>::pointer)PANDA_MALLOC_ARRAY(alloc_size);
-#ifdef _DEBUG
-  assert(alloc_size == MemoryHook::get_ptr_size(ptr));
-#endif
-  _type_handle.inc_memory_usage(TypeHandle::MC_array, alloc_size);
-  return (TYPENAME pallocator_array<Type>::pointer)ASSUME_ALIGNED(ptr, MEMORY_HOOK_ALIGNMENT);
-#else
-  return (TYPENAME pallocator_array<Type>::pointer)PANDA_MALLOC_ARRAY(n * sizeof(Type));
-#endif  // DO_MEMORY_USAGE
+  return (TYPENAME pallocator_array<Type>::pointer)
+    ASSUME_ALIGNED(_type_handle.allocate_array(n * sizeof(Type)), MEMORY_HOOK_ALIGNMENT);
 }
 
 template<class Type>
 INLINE void pallocator_array<Type>::
 deallocate(TYPENAME pallocator_array<Type>::pointer p, TYPENAME pallocator_array<Type>::size_type) {
-  TAU_PROFILE("pallocator_array:deallocate()", " ", TAU_USER);
-#ifdef DO_MEMORY_USAGE
-  // Now we need to recover the total number of bytes.  Fortunately, in the
-  // case of DO_MEMORY_USAGE, MemoryHook already keeps track of this.
-  void *ptr = (void *)p;
-  size_t alloc_size = MemoryHook::get_ptr_size(ptr);
-  _type_handle.dec_memory_usage(TypeHandle::MC_array, alloc_size);
-  PANDA_FREE_ARRAY(ptr);
-#else
-  PANDA_FREE_ARRAY(p);
-#endif  // DO_MEMORY_USAGE
+  _type_handle.deallocate_array((void *)p);
 }

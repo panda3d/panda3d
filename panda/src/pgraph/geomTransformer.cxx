@@ -1243,16 +1243,14 @@ apply_collect_changes() {
 void GeomTransformer::NewCollectedData::
 append_vdata(const GeomVertexData *vdata, int vertex_offset) {
   for (int i = 0; i < vdata->get_num_arrays(); ++i) {
-    PT(GeomVertexArrayData) new_array = _new_data->modify_array(i);
-    CPT(GeomVertexArrayData) old_array = vdata->get_array(i);
+    PT(GeomVertexArrayDataHandle) new_handle = _new_data->modify_array_handle(i);
+    CPT(GeomVertexArrayDataHandle) old_handle = vdata->get_array_handle(i);
     size_t stride = (size_t)_new_format->get_array(i)->get_stride();
     size_t start_byte = (size_t)vertex_offset * stride;
-    size_t copy_bytes = old_array->get_data_size_bytes();
-    nassertv(start_byte + copy_bytes <= new_array->get_data_size_bytes());
+    size_t copy_bytes = old_handle->get_data_size_bytes();
+    nassertv(start_byte + copy_bytes <= new_handle->get_data_size_bytes());
 
-    new_array->modify_handle()->copy_subdata_from
-      (start_byte, copy_bytes,
-       old_array->get_handle(), 0, copy_bytes);
+    new_handle->copy_subdata_from(start_byte, copy_bytes, old_handle, 0, copy_bytes);
   }
 
   // Also, copy the animation data (if any).  This means combining transform

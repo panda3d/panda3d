@@ -23,11 +23,8 @@
 #include <unistd.h>
 #endif
 
-#ifdef IS_OSX
+#if defined(IS_OSX) || defined(IS_FREEBSD)
 #include <sys/sysctl.h>
-#endif
-
-#ifdef IS_FREEBSD
 #include <unistd.h>
 #endif
 

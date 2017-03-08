@@ -132,8 +132,7 @@ allocate_ibuffer(DXScreenData &scrn,
       dxgsg9_cat.debug()
         << "creating index buffer " << _ibuffer << ": "
         << reader->get_num_vertices() << " indices ("
-        << reader->get_vertices_reader()->get_array_format()->get_column(0)->get_numeric_type()
-        << ")\n";
+        << reader->get_index_type() << ")\n";
     }
   }
 }
