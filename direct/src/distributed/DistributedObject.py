@@ -156,25 +156,25 @@ class DistributedObject(DistributedObjectBase):
             self._cachedData = self.cr.doDataCache.popCachedData(self.doId)
 
     def setCachedData(self, name, data):
-        assert type(name) == type('')
+        assert type(name) is type('')
         # ownership of the data passes to the repository data cache
         self.cr.doDataCache.setCachedData(self.doId, name, data)
 
     def hasCachedData(self, name):
-        assert type(name) == type('')
+        assert type(name) is type('')
         if not hasattr(self, '_cachedData'):
             return False
         return name in self._cachedData
 
     def getCachedData(self, name):
-        assert type(name) == type('')
+        assert type(name) is type('')
         # ownership of the data passes to the caller of this method
         data = self._cachedData[name]
         del self._cachedData[name]
         return data
 
     def flushCachedData(self, name):
-        assert type(name) == type('')
+        assert type(name) is type('')
         # call this to throw out cached data from a previous instantiation
         self._cachedData[name].flush()
 
@@ -426,7 +426,7 @@ class DistributedObject(DistributedObjectBase):
         if tuple:
             callback, extraArgs = tuple
             completeArgs = args + extraArgs
-            if callback != None:
+            if callback is not None:
                 callback(*completeArgs)
             del self.__callbacks[context]
         else:
@@ -467,9 +467,9 @@ class DistributedObject(DistributedObjectBase):
         # doneBarrier() twice, or we have not received a barrier
         # context from the AI.  I think in either case it's ok to
         # silently ignore the error.
-        if self.__barrierContext != None:
+        if self.__barrierContext is not None:
             context, aiName = self.__barrierContext
-            if name == None or name == aiName:
+            if name is None or name == aiName:
                 assert self.notify.debug('doneBarrier(%s, %s)' % (context, aiName))
                 self.sendUpdate("setBarrierReady", [context])
                 self.__barrierContext = None
