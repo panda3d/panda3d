@@ -1847,7 +1847,7 @@ class Actor(DirectObject, NodePath):
                         else:
                             # bind the animation first if we need to
                             animControl = anim.animControl
-                            if animControl is� None:
+                            if animControl is None:
                                 animControl = self.__bindAnimToPart(
                                     animName, thisPart, lodName,
                                     allowAsyncBind = allowAsyncBind)
