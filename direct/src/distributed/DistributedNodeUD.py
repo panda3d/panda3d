@@ -20,7 +20,7 @@ class DistributedNodeUD(DistributedObjectUD):
         self.d_setParent(parentToken)
 
     def d_setParent(self, parentToken):
-        if type(parentToken) is type(''):
+        if type(parentToken) is str:
             self.sendUpdate("setParentStr", [parentToken])
         else:
             self.sendUpdate("setParent", [parentToken])

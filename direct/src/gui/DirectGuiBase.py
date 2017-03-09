@@ -853,7 +853,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         taskMgr.remove('guiEditTask')
 
     def setState(self):
-        if type(self['state']) is type(0):
+        if type(self['state']) is int:
             self.guiItem.setActive(self['state'])
         elif (self['state'] == DGG.NORMAL) or (self['state'] == 'normal'):
             self.guiItem.setActive(1)

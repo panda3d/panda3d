@@ -101,7 +101,7 @@ class State(DirectObject):
             return 1
 
         # if we're given a state object, get its name instead
-        if type(otherState) is not type(''):
+        if type(otherState) is not str:
             otherState = otherState.getName()
         return (otherState in self.__transitions)
 
