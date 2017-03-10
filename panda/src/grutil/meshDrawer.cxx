@@ -34,7 +34,7 @@
 TypeHandle MeshDrawer::_type_handle;
 
 PN_stdfloat randFloat() {
-  return ((PN_stdfloat) rand() / (PN_stdfloat) 0x7fffffff);
+  return ((PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,39 +45,43 @@ PN_stdfloat randFloat() {
 void MeshDrawer::generator(int budget) {
   // create enough triangles for budget:
   _vdata = new GeomVertexData(_root.get_name(), GeomVertexFormat::get_v3n3c4t2(), Geom::UH_static);//UH_dynamic);
-  GeomVertexWriter *tvertex = new GeomVertexWriter(_vdata, "vertex");
-  GeomVertexWriter *tnormal = new GeomVertexWriter(_vdata, "normal");
-  GeomVertexWriter *tuv = new GeomVertexWriter(_vdata, "texcoord");
-  GeomVertexWriter *tcolor = new GeomVertexWriter(_vdata, "color");
-  _prim = new GeomTriangles(Geom::UH_static);
+  _vdata->unclean_set_num_rows(budget * 3);
 
-  // iterate and fill _up a geom with random data so that it will
-  // not be optimized out by panda3d system
-  for(int i = 0; i < budget; i++) {
-    for( int vert = 0; vert < 3; vert++) {
-      LVector3 vec3 = LVector3(randFloat()+1000,randFloat(),randFloat())*.001;
-      LVector4 vec4 = LVector4(1,1,1,randFloat());
-      LVector2 vec2 = LVector2(0,randFloat());
-      tvertex->add_data3(vec3);
-      tcolor->add_data4(vec4);
-      tuv->add_data2(vec2);
-      tnormal->add_data3(vec3);
+  {
+    GeomVertexWriter tvertex(_vdata, "vertex");
+    GeomVertexWriter tnormal(_vdata, "normal");
+    GeomVertexWriter tuv(_vdata, "texcoord");
+    GeomVertexWriter tcolor(_vdata, "color");
+
+    // iterate and fill _up a geom with random data so that it will not be
+    // optimized out by panda3d system
+    for (int i = 0; i < budget; i++) {
+      for (int vert = 0; vert < 3; vert++) {
+        LVector3 vec3 = LVector3(randFloat()+1000,randFloat(),randFloat())*.001;
+        LVector4 vec4 = LVector4(1,1,1,randFloat());
+        LVector2 vec2 = LVector2(0,randFloat());
+        tvertex.set_data3(vec3);
+        tcolor.set_data4(vec4);
+        tuv.set_data2(vec2);
+        tnormal.set_data3(vec3);
+      }
     }
-    _prim->add_vertices(i * 3, i * 3 + 1, i * 3 + 2);
   }
+
   // create our node and attach it to this node path
+  _prim = new GeomTriangles(Geom::UH_static);
+  _prim->add_next_vertices(budget * 3);
   _prim->close_primitive();
   _geom = new Geom(_vdata);
   _geom->add_primitive(_prim);
-  _geomnode = new GeomNode("__MeshDrawer_GeomNode");
+  if (_geomnode == NULL) {
+    _geomnode = new GeomNode("__MeshDrawer_GeomNode");
+    _root.attach_new_node(_geomnode);
+  } else {
+    _geomnode->remove_all_geoms();
+  }
   _geomnode->add_geom(_geom);
-  _root.attach_new_node(_geomnode);
   _last_clear_index = budget;
-
-  delete tvertex;
-  delete tnormal;
-  delete tuv;
-  delete tcolor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -492,8 +496,9 @@ link_segment(const LVector3 &pos, const LVector4 &frame,
   LVector3 cam_stop3d = _camera.get_relative_point(_render, stop);
   LPoint2 cam_stop2d = LVector2();
 
-  PT(Camera) camera = DCAST(Camera, _camera.node());
-  PT(Lens) lens = camera->get_lens();
+  const Camera *camera;
+  DCAST_INTO_V(camera, _camera.node());
+  const Lens *lens = camera->get_lens();
 
   lens->project(cam_start3d, cam_start2d);
   lens->project(cam_stop3d, cam_stop2d);
