@@ -27,8 +27,8 @@ INLINE BulletHeightfieldShape::
 BulletHeightfieldShape(const BulletHeightfieldShape &copy) :
 
   _shape(copy._shape),
-  _y_size(copy._y_size),
   _x_size(copy._x_size),
+  _y_size(copy._y_size),
   _max_height(copy._max_height),
   _data(copy._data) {}
 
@@ -39,19 +39,10 @@ INLINE void BulletHeightfieldShape::
 operator = (const BulletHeightfieldShape &copy) {
 
   _shape = copy._shape;
-  _y_size = copy._y_size;
   _x_size = copy._x_size;
+  _y_size = copy._y_size;
   _max_height = copy._max_height;
   _data = copy._data;
-}
-
-/**
- *
- */
-INLINE int BulletHeightfieldShape::
-get_y_size() const {
-
-  return _y_size;
 }
 
 /**
@@ -64,6 +55,15 @@ get_x_size() const {
 }
 
 /**
+ *
+ */
+INLINE int BulletHeightfieldShape::
+get_y_size() const {
+
+  return _y_size;
+}
+
+/**
  * @brief Sets a DynamicHeightfield which will propagate changes made to it.
  * @details It's recommended to construct BulletHeightfieldShape with a 
  *   heightfield and STM sampling. Then, construct DynamicHeightfield, 
@@ -72,7 +72,7 @@ get_x_size() const {
 
 INLINE void BulletHeightfieldShape::
 set_dynamic_heightfield(DynamicHeightfield* dynamic_hf) {
-  if (_x_size != dynamic_hf->get_y_size()+1 || _y_size != dynamic_hf->get_x_size()+1) {
+  if (_x_size != dynamic_hf->get_x_size()+1 || _y_size != dynamic_hf->get_y_size()+1) {
     bullet_cat.error() << "Size mismatch between BulletHeightfieldShape and DynamicHeightfield! DynamicHeightfield was not set." << endl;
     return;
   }

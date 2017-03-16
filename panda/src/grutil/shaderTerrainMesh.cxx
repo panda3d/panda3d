@@ -190,7 +190,7 @@ void ShaderTerrainMesh::on_change() {
   }
 
   // recalculate bounds from children for chunks at one depth at a time, then decrement depth.
-  for (int depth = max_depth; depth >= 0; --depth) {
+  for (int depth = max_depth; depth >= 1; --depth) {
     // shader_terrain_cat.debug() << "Recalculating " << chunks2update[depth].size() << " chunks at depth " << depth << endl;
     for (pvector<Chunk*>::iterator it = chunks2update[depth].begin(); it != chunks2update[depth].end(); ++it) {
       compute_bounds_from_children(*it);
@@ -324,7 +324,7 @@ void ShaderTerrainMesh::do_init_chunk(Chunk* chunk) {
 }
 
 /**
- * @brief Will find recursively find intersecting chunks. If it is a leaf this calculates its bounds, if not, the chunk is stored in a map for later processing.
+ * @brief Will recursively find intersecting chunks. If it is a leaf this calculates its bounds, if not, the chunk is stored in a map for later processing.
  */
 void ShaderTerrainMesh::recompute_intersecting_chunk_bounds(Chunk* top, const LVector4i& corners, pmap< int, pvector<Chunk*> >& chunks2update) {
   for (size_t i = 0; i < 4; ++i) {

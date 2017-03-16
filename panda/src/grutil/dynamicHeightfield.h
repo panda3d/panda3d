@@ -27,7 +27,7 @@ PUBLISHED:
   INLINE ~DynamicHeightfield();
 
   class Observer {
-    public: virtual void on_change()=0;
+    public: virtual void on_change() = 0;
   };
 
   INLINE void update(int lower_x, int upper_x, int lower_y, int upper_y);

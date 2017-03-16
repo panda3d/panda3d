@@ -362,6 +362,20 @@ calc_autocrop(LVecBase4d &range) const {
 }
 
 /**
+ * Computes the minimum range of x and y across the PFM file that include all
+ * points.  If there are no points with no_data_value in the grid--that is,
+ * all points are included--then this will return (0, get_x_size(), 0,
+ * get_y_size()).
+ */
+INLINE bool PfmFile::
+calc_autocrop(LVecBase4i &range) const {
+  int x_begin, x_end, y_begin, y_end;
+  bool result = calc_autocrop(x_begin, x_end, y_begin, y_end);
+  range.set(x_begin, x_end, y_begin, y_end);
+  return result;
+}
+
+/**
  * Sets the zero_special flag.  When this flag is true, values of (0, 0, 0) in
  * the pfm file are treated as a special case, and are not processed.
  *

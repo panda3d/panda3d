@@ -1205,6 +1205,94 @@ flip(bool flip_x, bool flip_y, bool transpose) {
 }
 
 /**
+ * @brief Other is rotated angle degrees counter-clockwise around the center into this file.
+ * @details Fill is set as the "no data" value and the wedges caused by the
+ *    rotation are filled with it. The file is auto-cropped.
+ */
+void PfmFile::
+rotate_from(const PfmFile &other, float angle, LPoint4f fill) {
+  float src_x_size = (float)other.get_x_size();
+  float src_y_size = (float)other.get_y_size();
+  int tgt_size = (int)ceil(LVector2f(src_x_size, src_y_size).length());
+  float half_tgt_size = (float)tgt_size / 2.0;
+
+  clear(tgt_size, tgt_size, other.get_num_channels());
+  set_no_data_value(fill);
+  fill_no_data_value();
+  LMatrix3f rot_mat;
+  rot_mat.set_rotate_mat_normaxis(angle, LVector3f::up());
+
+  LVector2f p;
+  LPoint3f interp_point;
+  int num_channels = get_num_channels();
+  switch (num_channels) {
+  case 1:
+    {
+      for (int yi = 0; yi < tgt_size; ++yi) {
+        for (int xi = 0; xi < tgt_size; ++xi) {
+          p.set_x((float)xi - half_tgt_size);
+          p.set_y((float)yi - half_tgt_size);
+          rot_mat.xform_point_in_place(p);
+          if (other.calc_bilinear_point(interp_point, p.get_x() / src_x_size + 0.5, p.get_y() / src_y_size + 0.5)) {
+            set_point1(xi, yi, interp_point.get_x());
+          }
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (int yi = 0; yi < tgt_size; ++yi) {
+        for (int xi = 0; xi < tgt_size; ++xi) {
+          p.set_x((float)xi - half_tgt_size);
+          p.set_y((float)yi - half_tgt_size);
+          rot_mat.xform_point_in_place(p);
+          if (other.calc_bilinear_point(interp_point, p.get_x() / src_x_size + 0.5, p.get_y() / src_y_size + 0.5)) {
+            set_point2(xi, yi, LPoint2f(interp_point[0], interp_point[1]));
+          }
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (int yi = 0; yi < tgt_size; ++yi) {
+        for (int xi = 0; xi < tgt_size; ++xi) {
+          p.set_x((float)xi - half_tgt_size);
+          p.set_y((float)yi - half_tgt_size);
+          rot_mat.xform_point_in_place(p);
+          if (other.calc_bilinear_point(interp_point, p.get_x() / src_x_size + 0.5, p.get_y() / src_y_size + 0.5)) {
+            set_point3(xi, yi, interp_point);
+          }
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (int yi = 0; yi < tgt_size; ++yi) {
+        for (int xi = 0; xi < tgt_size; ++xi) {
+          p.set_x((float)xi - half_tgt_size);
+          p.set_y((float)yi - half_tgt_size);
+          rot_mat.xform_point_in_place(p);
+          if (other.calc_bilinear_point(interp_point, p.get_x() / src_x_size + 0.5, p.get_y() / src_y_size + 0.5)) {
+            set_point4(xi, yi, LPoint4f(interp_point[0], interp_point[1], interp_point[2], 0.0));
+          }
+        }
+      }
+    }
+    break;
+  }
+
+  int x_begin, x_end, y_begin, y_end;
+  bool result = calc_autocrop(x_begin, x_end, y_begin, y_end);
+  apply_crop(x_begin, x_end, y_begin, y_end);
+}
+
+/**
  * Applies the indicated transform matrix to all points in-place.
  */
 void PfmFile::
