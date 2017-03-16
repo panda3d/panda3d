@@ -24,9 +24,9 @@ BulletHeightfieldShape::
 BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) {
 
   _max_height = max_height;
-  _y_size = image.get_x_size();
-  _x_size = image.get_y_size();
-  _data.reserve(_y_size * _x_size);
+  _x_size = image.get_x_size();
+  _y_size = image.get_y_size();
+  _data.reserve(_x_size * _y_size);
 
   PfmFile pfm;
   if (!pfm.load(image)) {
@@ -34,8 +34,8 @@ BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAx
   }
   sample_regular(pfm);
 
-  _shape = new btHeightfieldTerrainShape(_y_size,
-                                         _x_size,
+  _shape = new btHeightfieldTerrainShape(_x_size,
+                                         _y_size,
                                          _data.data(),
                                          1.0f,
                                          0.0f,
@@ -65,21 +65,21 @@ BulletHeightfieldShape(const PfmFile &field, PN_stdfloat max_height, bool STM, B
   _max_height = max_height;
 
   if (STM) {
-    _y_size = field.get_x_size() + 1;
-    _x_size = field.get_y_size() + 1;
-    _data.reserve(_y_size * _x_size);
+    _x_size = field.get_x_size() + 1;
+    _y_size = field.get_y_size() + 1;
+    _data.reserve(_x_size * _y_size);
     LVector4i entire = LVector4i(0, field.get_x_size()-1, 0, field.get_y_size()-1);
     update_region(entire, field);
   } else {
-    _y_size = field.get_x_size();
-    _x_size = field.get_y_size();
-    _data.reserve(_y_size * _x_size);
+    _x_size = field.get_x_size();
+    _y_size = field.get_y_size();
+    _data.reserve(_x_size * _y_size);
     sample_regular(field);
   }
 
   // using regular non-legacy constructor. Available in Bullet since at least 2.81-rev2613.
-  _shape = new btHeightfieldTerrainShape(_y_size,
-                                         _x_size,
+  _shape = new btHeightfieldTerrainShape(_x_size,
+                                         _y_size,
                                          _data.data(),
                                          1.0f,  // height scale. unused.
                                          0.0f,  // minimum height
@@ -127,14 +127,16 @@ update_region(const LVector4i &corners, const PfmFile &field) {
   PN_stdfloat step_y = 1.0 / (PN_stdfloat)field.get_y_size();
   LPoint3f sample;
 
-  for (int row = corners.get_x(); row <= corners.get_y(); row++) {
-    for (int column = corners.get_z(); column <= corners.get_w(); column++) {
-      if (!field.calc_bilinear_point(sample, row * step_x, column * step_y)) {
+  for (int column = corners.get_x(); column <= corners.get_y(); column++) {
+    for (int row = corners.get_z(); row <= corners.get_w(); row++) {
+      if (!field.calc_bilinear_point(sample, column * step_x, row * step_y)) {
         bullet_cat.error() << "Trying to sample unknown point from array." << endl;
       }
-      _data[_y_size * (_x_size - 1 - column) + row] = _max_height * sample.get_x();
+      _data[_x_size * (_y_size - 1 - row) + column] = _max_height * sample.get_x();
     }
   }
+
+
 }
 
 /**
@@ -143,13 +145,24 @@ update_region(const LVector4i &corners, const PfmFile &field) {
 void BulletHeightfieldShape::
 sample_regular(const PfmFile &pfm) {
 
-  int num_rows = pfm.get_x_size();
-  int num_cols = pfm.get_y_size();
+  // int num_rows = pfm.get_x_size();
+  // int num_cols = pfm.get_y_size();
 
-  for (int row=0; row < num_rows; row++) {
-    for (int column=0; column < num_cols; column++) {
+  // for (int row=0; row < num_rows; row++) {
+  //   for (int column=0; column < num_cols; column++) {
+  //     // Transpose and flip y
+  //     // _data[_y_size * column + row] = _max_height * pfm.get_point1(row, num_cols - column - 1);
+  //     _data[_x_size * column + row] = _max_height * pfm.get_point1(row, num_cols - column - 1);
+  //   }
+  // }
+
+  int num_cols = pfm.get_x_size();
+  int num_rows = pfm.get_y_size();
+
+  for (int column=0; column < num_cols; column++) {
+    for (int row=0; row < num_rows; row++) {
       // Transpose and flip y
-      _data[_y_size * column + row] = _max_height * pfm.get_point1(row, num_cols - column - 1);
+      _data[_x_size * row + column] = _max_height * pfm.get_point1(column, num_rows - row - 1);
     }
   }
 }

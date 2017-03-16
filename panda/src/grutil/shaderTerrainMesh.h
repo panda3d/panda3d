@@ -158,15 +158,14 @@ private:
   void do_init_data_texture();
   void do_create_chunks();
   void do_init_chunk(Chunk* chunk);
-  // void do_compute_bounds(Chunk* chunk, Chunk* start);
   void do_compute_bounds(Chunk* chunk);
   void do_create_chunk_geom();
   void do_traverse(Chunk* chunk, TraversalData* data, bool fully_visible = false);
   void do_emit_chunk(Chunk* chunk, TraversalData* data);
   bool do_check_lod_matches(Chunk* chunk, TraversalData* data);
 
-  void compute_bounds_from_children(Chunk* chunk);
   void recompute_intersecting_chunk_bounds(Chunk* top, const LVector4i& corners, pmap< int, pvector<Chunk*> >& chunks2update);
+  void compute_bounds_from_children(Chunk* chunk);
   void list_chunks(Chunk* chunk);
 
   bool bind_heightfield(bool write);
