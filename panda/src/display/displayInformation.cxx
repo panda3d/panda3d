@@ -15,10 +15,12 @@
 #include "displayInformation.h"
 
 // For __rdtsc
+#if defined(__i386) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
 #ifdef _MSC_VER
 #include <intrin.h>
 #elif defined(__GNUC__) && !defined(__clang__)
 #include <x86intrin.h>
+#endif
 #endif
 
 /**
@@ -529,12 +531,16 @@ get_cpu_frequency() {
  */
 uint64_t DisplayInformation::
 get_cpu_time() {
+#if defined(__i386) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(_MSC_VER) || (defined(__GNUC__) && !defined(__clang__))
   return __rdtsc();
 #else
   unsigned int lo, hi = 0;
   __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
   return ((uint64_t)hi << 32) | lo;
+#endif
+#else
+  return 0;
 #endif
 }
 

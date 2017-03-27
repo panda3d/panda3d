@@ -2194,7 +2194,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     // Figure out which attributes to enable or disable.
     BitMask32 enabled_attribs = _enabled_attribs;
     if (_color_attrib_index != -1 &&
-        color_attrib->get_type() != ColorAttrib::T_vertex) {
+        color_attrib->get_color_type() != ColorAttrib::T_vertex) {
       // Vertex colours are disabled.
       enabled_attribs.clear_bit(_color_attrib_index);
 
@@ -2247,7 +2247,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
       int num_elements, element_stride, divisor;
       bool normalized;
-      if ((p != _color_attrib_index || color_attrib->get_type() == ColorAttrib::T_vertex) &&
+      if ((p != _color_attrib_index || color_attrib->get_color_type() == ColorAttrib::T_vertex) &&
           _glgsg->_data_reader->get_array_info(name, array_reader,
                                                num_values, numeric_type,
                                                normalized, start, stride, divisor,

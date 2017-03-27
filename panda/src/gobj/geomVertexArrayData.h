@@ -250,7 +250,11 @@ class EXPCL_PANDA_GOBJ GeomVertexArrayDataHandle : public ReferenceCount, public
 private:
   INLINE GeomVertexArrayDataHandle(CPT(GeomVertexArrayData) object,
                                    Thread *current_thread);
+  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
+                                   Thread *current_thread);
   INLINE GeomVertexArrayDataHandle(PT(GeomVertexArrayData) object,
+                                   Thread *current_thread);
+  INLINE GeomVertexArrayDataHandle(GeomVertexArrayData *object,
                                    Thread *current_thread);
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &);
   INLINE void operator = (const GeomVertexArrayDataHandle &);
