@@ -18,7 +18,6 @@
 // This is initialized to zero by static initialization.
 TypeHandle TypeHandle::_none;
 
-#ifdef DO_MEMORY_USAGE
 /**
  * Returns the total allocated memory used by objects of this type, for the
  * indicated memory class.  This is only updated if track-memory-usage is set
@@ -26,6 +25,7 @@ TypeHandle TypeHandle::_none;
  */
 size_t TypeHandle::
 get_memory_usage(MemoryClass memory_class) const {
+#ifdef DO_MEMORY_USAGE
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) == TypeHandle::none()) {
     return 0;
@@ -34,16 +34,17 @@ get_memory_usage(MemoryClass memory_class) const {
     assert(rnode != (TypeRegistryNode *)NULL);
     return (size_t)AtomicAdjust::get(rnode->_memory_usage[memory_class]);
   }
-}
 #endif  // DO_MEMORY_USAGE
+  return 0;
+}
 
-#ifdef DO_MEMORY_USAGE
 /**
  * Adds the indicated amount to the record for the total allocated memory for
  * objects of this type.
  */
 void TypeHandle::
 inc_memory_usage(MemoryClass memory_class, size_t size) {
+#ifdef DO_MEMORY_USAGE
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
@@ -52,20 +53,20 @@ inc_memory_usage(MemoryClass memory_class, size_t size) {
     // cerr << *this << ".inc(" << memory_class << ", " << size << ") -> " <<
     // rnode->_memory_usage[memory_class] << "\n";
     if (rnode->_memory_usage[memory_class] < 0) {
-      cerr << "Memory usage overflow for type " << *this << ".\n";
+      cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
       abort();
     }
   }
-}
 #endif  // DO_MEMORY_USAGE
+}
 
-#ifdef DO_MEMORY_USAGE
 /**
  * Subtracts the indicated amount from the record for the total allocated
  * memory for objects of this type.
  */
 void TypeHandle::
 dec_memory_usage(MemoryClass memory_class, size_t size) {
+#ifdef DO_MEMORY_USAGE
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
@@ -75,8 +76,81 @@ dec_memory_usage(MemoryClass memory_class, size_t size) {
     // rnode->_memory_usage[memory_class] << "\n";
     assert(rnode->_memory_usage[memory_class] >= 0);
   }
-}
 #endif  // DO_MEMORY_USAGE
+}
+
+/**
+ * Allocates memory, adding it to the total amount of memory allocated for
+ * this type.
+ */
+void *TypeHandle::
+allocate_array(size_t size) {
+  TAU_PROFILE("TypeHandle:allocate_array()", " ", TAU_USER);
+
+  void *ptr = PANDA_MALLOC_ARRAY(size);
+#ifdef DO_MEMORY_USAGE
+  if ((*this) != TypeHandle::none()) {
+    size_t alloc_size = MemoryHook::get_ptr_size(ptr);
+#ifdef _DEBUG
+    assert(size <= alloc_size);
+#endif
+    TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
+    assert(rnode != (TypeRegistryNode *)NULL);
+    AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)alloc_size);
+    if (rnode->_memory_usage[MC_array] < 0) {
+      cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
+      abort();
+    }
+  }
+#endif  // DO_MEMORY_USAGE
+  return ptr;
+}
+
+/**
+ * Reallocates memory, adjusting the total amount of memory allocated for this
+ * type.
+ */
+void *TypeHandle::
+reallocate_array(void *old_ptr, size_t size) {
+  TAU_PROFILE("TypeHandle:reallocate_array()", " ", TAU_USER);
+
+#ifdef DO_MEMORY_USAGE
+  size_t old_size = MemoryHook::get_ptr_size(old_ptr);
+  void *new_ptr = PANDA_REALLOC_ARRAY(old_ptr, size);
+
+  if ((*this) != TypeHandle::none()) {
+    size_t new_size = MemoryHook::get_ptr_size(new_ptr);
+
+    TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
+    assert(rnode != (TypeRegistryNode *)NULL);
+    AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)new_size - (AtomicAdjust::Integer)old_size);
+    assert(rnode->_memory_usage[MC_array] >= 0);
+  }
+#else
+  void *new_ptr = PANDA_REALLOC_ARRAY(old_ptr, size);
+#endif
+  return new_ptr;
+}
+
+/**
+ * Deallocates memory, subtracting it from the total amount of memory
+ * allocated for this type.
+ */
+void TypeHandle::
+deallocate_array(void *ptr) {
+  TAU_PROFILE("TypeHandle:deallocate_array()", " ", TAU_USER);
+
+#ifdef DO_MEMORY_USAGE
+  size_t alloc_size = MemoryHook::get_ptr_size(ptr);
+  if ((*this) != TypeHandle::none()) {
+    TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
+    assert(rnode != (TypeRegistryNode *)NULL);
+    AtomicAdjust::add(rnode->_memory_usage[MC_array], -(AtomicAdjust::Integer)alloc_size);
+    assert(rnode->_memory_usage[MC_array] >= 0);
+  }
+#endif  // DO_MEMORY_USAGE
+  PANDA_FREE_ARRAY(ptr);
+}
 
 /**
  * Return the Index of the BEst fit Classs from a set

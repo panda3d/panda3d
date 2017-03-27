@@ -59,7 +59,8 @@ public:
   INLINE pallocator_single(const pallocator_single<U> &copy) NOEXCEPT :
     _type_handle(copy._type_handle) { }
 
-  INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
+  INLINE Type *allocate(size_type n, allocator<void>::const_pointer hint = 0)
+    RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   INLINE void deallocate(pointer p, size_type n);
 
   template<class U> struct rebind {
@@ -87,7 +88,8 @@ public:
   INLINE pallocator_array(const pallocator_array<U> &copy) NOEXCEPT :
     _type_handle(copy._type_handle) { }
 
-  INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
+  INLINE Type *allocate(size_type n, allocator<void>::const_pointer hint = 0)
+    RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   INLINE void deallocate(pointer p, size_type n);
 
   template<class U> struct rebind {

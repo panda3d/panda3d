@@ -27,15 +27,13 @@ operator = (const VertexDataBuffer &copy) {
 
   if (_resident_data != (unsigned char *)NULL) {
     nassertv(_reserved_size != 0);
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_reserved_size);
-    PANDA_FREE_ARRAY(_resident_data);
+    get_class_type().deallocate_array(_resident_data);
     _resident_data = NULL;
   }
   if (copy._resident_data != (unsigned char *)NULL && copy._size != 0) {
     // We only allocate _size bytes, not the full _reserved_size allocated by
     // the original copy.
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)copy._size);
-    _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(copy._size);
+    _resident_data = (unsigned char *)get_class_type().allocate_array(copy._size);
     memcpy(_resident_data, copy._resident_data, copy._size);
   }
   _size = copy._size;
@@ -55,17 +53,16 @@ swap(VertexDataBuffer &other) {
   unsigned char *resident_data = _resident_data;
   size_t size = _size;
   size_t reserved_size = _reserved_size;
-  PT(VertexDataBlock) block = _block;
+
+  _block.swap(other._block);
 
   _resident_data = other._resident_data;
   _size = other._size;
   _reserved_size = other._reserved_size;
-  _block = other._block;
 
   other._resident_data = resident_data;
   other._size = size;
   other._reserved_size = reserved_size;
-  other._block = block;
   nassertv(_reserved_size >= _size);
 }
 
@@ -94,13 +91,12 @@ do_clean_realloc(size_t reserved_size) {
       do_page_in();
     }
 
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)reserved_size - (int)_reserved_size);
     if (_reserved_size == 0) {
       nassertv(_resident_data == (unsigned char *)NULL);
-      _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(reserved_size);
+      _resident_data = (unsigned char *)get_class_type().allocate_array(reserved_size);
     } else {
       nassertv(_resident_data != (unsigned char *)NULL);
-      _resident_data = (unsigned char *)PANDA_REALLOC_ARRAY(_resident_data, reserved_size);
+      _resident_data = (unsigned char *)get_class_type().reallocate_array(_resident_data, reserved_size);
     }
     nassertv(_resident_data != (unsigned char *)NULL);
     _reserved_size = reserved_size;
@@ -129,16 +125,14 @@ do_unclean_realloc(size_t reserved_size) {
     if (_resident_data != (unsigned char *)NULL) {
       nassertv(_reserved_size != 0);
 
-      get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_reserved_size);
-      PANDA_FREE_ARRAY(_resident_data);
+      get_class_type().deallocate_array(_resident_data);
       _resident_data = NULL;
       _reserved_size = 0;
     }
 
     if (reserved_size != 0) {
-      get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)reserved_size);
       nassertv(_resident_data == (unsigned char *)NULL);
-      _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(reserved_size);
+      _resident_data = (unsigned char *)get_class_type().allocate_array(reserved_size);
     }
 
     _reserved_size = reserved_size;
@@ -166,8 +160,7 @@ do_page_out(VertexDataBook &book) {
   if (_size == 0) {
     // It's an empty buffer.  Just deallocate it; don't bother to create a
     // block.
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_reserved_size);
-    PANDA_FREE_ARRAY(_resident_data);
+    get_class_type().deallocate_array(_resident_data);
     _resident_data = NULL;
     _reserved_size = 0;
 
@@ -180,8 +173,7 @@ do_page_out(VertexDataBook &book) {
     nassertv(pointer != (unsigned char *)NULL);
     memcpy(pointer, _resident_data, _size);
 
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_reserved_size);
-    PANDA_FREE_ARRAY(_resident_data);
+    get_class_type().deallocate_array(_resident_data);
     _resident_data = NULL;
 
     _reserved_size = _size;
@@ -205,8 +197,7 @@ do_page_in() {
   nassertv(_block != (VertexDataBlock *)NULL);
   nassertv(_reserved_size == _size);
 
-  get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
-  _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(_size);
+  _resident_data = (unsigned char *)get_class_type().allocate_array(_size);
   nassertv(_resident_data != (unsigned char *)NULL);
 
   memcpy(_resident_data, _block->get_pointer(true), _size);

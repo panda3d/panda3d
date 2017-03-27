@@ -27,6 +27,8 @@
 
 #ifdef HAVE_OPENSSL
 
+#include "openSSLWrapper.h"
+
 #if defined(WIN32_VC) || defined(WIN64_VC)
   #include <WinSock2.h>
   #include <windows.h>  // for select()

@@ -24,7 +24,11 @@
 #include "indirectLess.h"
 #include "referenceCount.h"
 #include "pvector.h"
-#include "openSSLWrapper.h"
+
+#ifdef HAVE_OPENSSL
+typedef struct x509_st X509;
+typedef struct evp_pkey_st EVP_PKEY;
+#endif
 
 /**
  * A file that contains a set of files.
@@ -148,7 +152,6 @@ public:
   };
   typedef pvector<CertRecord> CertChain;
 
-  bool add_signature(X509 *certificate, STACK_OF(X509) *chain, EVP_PKEY *pkey);
   bool add_signature(const CertChain &chain, EVP_PKEY *pkey);
 
   const CertChain &get_signature(int n) const;

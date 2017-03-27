@@ -63,83 +63,28 @@ round_up_to_page_size(size_t size) const {
 
 /**
  * Given a pointer that was returned by a MemoryHook allocation, returns the
- * number of bytes that were allocated for it.  Returns 0 if not compiling
- * with DO_MEMORY_USAGE.
+ * number of bytes that were allocated for it.  This may be slightly larger
+ * than the number of bytes requested.
+ * The behavior of this function is undefined if the given pointer was not
+ * returned by the MemoryHook allocator or was already freed.
+ * May return 0 if not compiling with DO_MEMORY_USAGE.
+ *
+ * This is only defined publicly so TypeHandle can get at it; it really
+ * shouldn't be used outside of dtoolbase.
  */
 INLINE size_t MemoryHook::
 get_ptr_size(void *ptr) {
 #if defined(MEMORY_HOOK_DO_ALIGN)
   uintptr_t *root = (uintptr_t *)ptr;
   return (size_t)root[-2];
+#elif defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+  // If we are using dlmalloc, we know how it stores the size.
+  size_t *root = (size_t *)ptr;
+  return (root[-1] & ~0x7) - sizeof(size_t);
 #elif defined(DO_MEMORY_USAGE)
   size_t *root = (size_t *)((char *)ptr - MEMORY_HOOK_ALIGNMENT);
   return *root;
 #else
   return 0;
-#endif  // DO_MEMORY_USAGE
-}
-
-/**
- * Increments the amount of requested size as necessary to accommodate the
- * extra data we might piggyback on each allocated block.
- */
-INLINE size_t MemoryHook::
-inflate_size(size_t size) {
-#if defined(MEMORY_HOOK_DO_ALIGN)
-  // If we're aligning, we need to request the header size, plus extra bytes
-  // to give us wiggle room to adjust the pointer.
-  return size + sizeof(uintptr_t) * 2 + MEMORY_HOOK_ALIGNMENT - 1;
-#elif defined(DO_MEMORY_USAGE)
-  // If we're not aligning, but we're tracking memory allocations, we just
-  // need the header size extra (this gives us a place to store the size of
-  // the allocated block).  However, we do need to make sure that any
-  // alignment guarantee is kept.
-  return size + MEMORY_HOOK_ALIGNMENT;
-#else
-  // If we're not doing any of that, we can just allocate the precise
-  // requested amount.
-  return size;
-#endif  // DO_MEMORY_USAGE
-}
-
-/**
- * Converts an allocated pointer to a pointer returnable to the application.
- * Stuffs size in the first n bytes of the allocated space.
- */
-INLINE void *MemoryHook::
-alloc_to_ptr(void *alloc, size_t size) {
-#if defined(MEMORY_HOOK_DO_ALIGN)
-  // Add room for two uintptr_t values.
-  uintptr_t *root = (uintptr_t *)((char *)alloc + sizeof(uintptr_t) * 2);
-  // Align this to the requested boundary.
-  root = (uintptr_t *)(((uintptr_t)root + MEMORY_HOOK_ALIGNMENT - 1) & ~(MEMORY_HOOK_ALIGNMENT - 1));
-  root[-2] = size;
-  root[-1] = (uintptr_t)alloc;  // Save the pointer we originally allocated.
-  return (void *)root;
-#elif defined(DO_MEMORY_USAGE)
-  size_t *root = (size_t *)alloc;
-  root[0] = size;
-  return (void *)((char *)root + MEMORY_HOOK_ALIGNMENT);
-#else
-  return alloc;
-#endif  // DO_MEMORY_USAGE
-}
-
-/**
- * Converts an application pointer back to the original allocated pointer.
- * Extracts size from the first n bytes of the allocated space.
- */
-INLINE void *MemoryHook::
-ptr_to_alloc(void *ptr, size_t &size) {
-#if defined(MEMORY_HOOK_DO_ALIGN)
-  uintptr_t *root = (uintptr_t *)ptr;
-  size = root[-2];
-  return (void *)root[-1]; // Get the pointer we originally allocated.
-#elif defined(DO_MEMORY_USAGE)
-  size_t *root = (size_t *)((char *)ptr - MEMORY_HOOK_ALIGNMENT);
-  size = root[0];
-  return (void *)root;
-#else
-  return ptr;
 #endif  // DO_MEMORY_USAGE
 }

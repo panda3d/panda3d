@@ -2612,12 +2612,10 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
 
   if (gltex->total_bytecount != total_bytecount) {
     if (gltex->allocated_buffer != NULL) {
-      PANDA_FREE_ARRAY(gltex->allocated_buffer);
-      TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
+      TinyTextureContext::get_class_type().deallocate_array(gltex->allocated_buffer);
     }
-    gltex->allocated_buffer = PANDA_MALLOC_ARRAY(total_bytecount);
+    gltex->allocated_buffer = TinyTextureContext::get_class_type().allocate_array(total_bytecount);
     gltex->total_bytecount = total_bytecount;
-    TinyTextureContext::get_class_type().inc_memory_usage(TypeHandle::MC_array, total_bytecount);
   }
 
   char *next_buffer = (char *)gltex->allocated_buffer;

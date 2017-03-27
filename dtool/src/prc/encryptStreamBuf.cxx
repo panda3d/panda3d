@@ -21,6 +21,7 @@
 #ifdef HAVE_OPENSSL
 
 #include "openssl/rand.h"
+#include "openssl/evp.h"
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us

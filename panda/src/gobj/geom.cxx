@@ -236,7 +236,7 @@ make_nonindexed(bool composite_only) {
   int num_changed = 0;
 
   CDWriter cdata(_cycler, true, current_thread);
-  CPT(GeomVertexData) orig_data = cdata->_data.get_read_pointer();
+  CPT(GeomVertexData) orig_data = cdata->_data.get_read_pointer(current_thread);
   PT(GeomVertexData) new_data = new GeomVertexData(*orig_data);
   new_data->clear_rows();
 
@@ -247,7 +247,7 @@ make_nonindexed(bool composite_only) {
   Primitives new_prims;
   new_prims.reserve(cdata->_primitives.size());
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    PT(GeomPrimitive) primitive = (*pi).get_read_pointer()->make_copy();
+    PT(GeomPrimitive) primitive = (*pi).get_read_pointer(current_thread)->make_copy();
     new_prims.push_back(primitive.p());
 
     // GeomPoints are considered "composite" for the purposes of making
@@ -298,7 +298,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
-  nassertv(primitive->check_valid(cdata->_data.get_read_pointer()));
+  nassertv(primitive->check_valid(cdata->_data.get_read_pointer(current_thread)));
 
   // All primitives within a particular Geom must have the same fundamental
   // primitive type (triangles, points, or lines).
@@ -339,7 +339,7 @@ add_primitive(const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
 
-  nassertv(primitive->check_valid(cdata->_data.get_read_pointer()));
+  nassertv(primitive->check_valid(cdata->_data.get_read_pointer(current_thread)));
 
   // All primitives within a particular Geom must have the same fundamental
   // primitive type (triangles, points, or lines).
@@ -426,11 +426,11 @@ decompose_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->decompose();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->decompose();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
       all_is_valid = false;
     }
 #endif
@@ -460,11 +460,11 @@ doubleside_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->doubleside();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->doubleside();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
       all_is_valid = false;
     }
 #endif
@@ -494,11 +494,11 @@ reverse_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->reverse();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->reverse();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
       all_is_valid = false;
     }
 #endif
@@ -528,11 +528,11 @@ rotate_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->rotate();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->rotate();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
       all_is_valid = false;
     }
 #endif
@@ -596,7 +596,7 @@ unify_in_place(int max_indices, bool preserve_order) {
 
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
+    CPT(GeomPrimitive) primitive = (*pi).get_read_pointer(current_thread);
     NewPrims::iterator npi = new_prims.find(primitive->get_type());
     if (npi == new_prims.end()) {
       // This is the first primitive of this type.
@@ -648,7 +648,7 @@ unify_in_place(int max_indices, bool preserve_order) {
   for (npi = new_prims.begin(); npi != new_prims.end(); ++npi) {
     GeomPrimitive *prim = (*npi).second;
 
-    nassertv(prim->check_valid(cdata->_data.get_read_pointer()));
+    nassertv(prim->check_valid(cdata->_data.get_read_pointer(current_thread)));
 
     // Each new primitive, naturally, inherits the Geom's overall shade model.
     prim->set_shade_model(cdata->_shade_model);
@@ -706,11 +706,11 @@ make_lines_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->make_lines();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->make_lines();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
       all_is_valid = false;
     }
 #endif
@@ -740,11 +740,11 @@ make_points_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->make_points();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->make_points();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
       all_is_valid = false;
     }
 #endif
@@ -774,11 +774,11 @@ make_patches_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->make_patches();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->make_patches();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
       all_is_valid = false;
     }
 #endif
@@ -865,7 +865,9 @@ get_num_bytes() const {
  */
 bool Geom::
 request_resident() const {
-  CDReader cdata(_cycler);
+  Thread *current_thread = Thread::get_current_thread();
+
+  CDReader cdata(_cycler, current_thread);
 
   bool resident = true;
 
@@ -873,7 +875,7 @@ request_resident() const {
   for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
-    if (!(*pi).get_read_pointer()->request_resident()) {
+    if (!(*pi).get_read_pointer(current_thread)->request_resident()) {
       resident = false;
     }
   }
@@ -1197,7 +1199,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   int num_vertices = 0;
 
   // Get the vertex data, after animation.
-  CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer();
+  CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer(current_thread);
   vertex_data = vertex_data->animate_vertices(true, current_thread);
 
   // Now actually compute the bounding volume.  We do this by using
@@ -1296,7 +1298,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
     for (pi = cdata->_primitives.begin();
          pi != cdata->_primitives.end();
          ++pi) {
-      CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+      CPT(GeomPrimitive) prim = (*pi).get_read_pointer(current_thread);
       num_vertices += prim->get_num_vertices();
     }
 
@@ -1327,7 +1329,7 @@ do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
-    CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+    CPT(GeomPrimitive) prim = (*pi).get_read_pointer(current_thread);
     prim->calc_tight_bounds(min_point, max_point, sq_center_dist,
                             found_any, vertex_data, got_mat, mat,
                             column_name, current_thread);
@@ -1345,7 +1347,7 @@ do_calc_sphere_radius(const LPoint3 &center, PN_stdfloat &sq_radius,
   for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
-    CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+    CPT(GeomPrimitive) prim = (*pi).get_read_pointer(current_thread);
     prim->calc_sphere_radius(center, sq_radius, found_any,
                              vertex_data, current_thread);
   }
@@ -1469,8 +1471,10 @@ combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
     a_prim->append_unused_vertices(a_vertices, b_vertex);
   }
 
-  PT(GeomVertexArrayDataHandle) a_handle = a_vertices->modify_handle(current_thread);
-  CPT(GeomVertexArrayDataHandle) b_handle = b_vertices->get_handle(current_thread);
+  PT(GeomVertexArrayDataHandle) a_handle =
+    new GeomVertexArrayDataHandle(move(a_vertices), current_thread);
+  CPT(GeomVertexArrayDataHandle) b_handle =
+    new GeomVertexArrayDataHandle(move(b_vertices), current_thread);
 
   size_t orig_a_vertices = a_handle->get_num_rows();
 
@@ -1683,8 +1687,7 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
   for (pi = _cdata->_primitives.begin();
        pi != _cdata->_primitives.end();
        ++pi) {
-    CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
-    GeomPrimitivePipelineReader reader(primitive, _current_thread);
+    GeomPrimitivePipelineReader reader((*pi).get_read_pointer(_current_thread), _current_thread);
     reader.check_minmax();
     if (!reader.check_valid(data_reader)) {
       return false;
@@ -1707,12 +1710,11 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
     for (pi = _cdata->_primitives.begin();
          pi != _cdata->_primitives.end();
          ++pi) {
-      CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
-      GeomPrimitivePipelineReader reader(primitive, _current_thread);
+      GeomPrimitivePipelineReader reader((*pi).get_read_pointer(_current_thread), _current_thread);
       if (reader.get_num_vertices() != 0) {
         reader.check_minmax();
         nassertr(reader.check_valid(data_reader), false);
-        if (!primitive->draw(gsg, &reader, force)) {
+        if (!reader.draw(gsg, force)) {
           all_ok = false;
         }
       }

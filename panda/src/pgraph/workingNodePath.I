@@ -43,10 +43,10 @@ WorkingNodePath(const WorkingNodePath &copy) :
  * traversal to the next node.
  */
 INLINE WorkingNodePath::
-WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) {
-  _next = &parent;
-  _start = (NodePathComponent *)NULL;
-  _node = child;
+WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) :
+  _next(&parent),
+  _start(nullptr),
+  _node(child) {
   nassertv(_node != _next->_node);
 }
 

@@ -14,7 +14,7 @@
 #include "geomVertexWriter.h"
 
 
-#ifndef NDEBUG
+#ifdef _DEBUG
   // This is defined just for the benefit of having something non-NULL to
   // return from a nassertr() call.
 unsigned char GeomVertexWriter::empty_buffer[100] = { 0 };

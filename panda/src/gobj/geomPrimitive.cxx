@@ -1036,23 +1036,23 @@ get_num_bytes() const {
  * shortly; try again later.
  */
 bool GeomPrimitive::
-request_resident() const {
-  CDReader cdata(_cycler);
+request_resident(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
 
   bool resident = true;
 
   if (!cdata->_vertices.is_null() &&
-      !cdata->_vertices.get_read_pointer()->request_resident()) {
+      !cdata->_vertices.get_read_pointer(current_thread)->request_resident(current_thread)) {
     resident = false;
   }
 
   if (is_composite() && cdata->_got_minmax) {
     if (!cdata->_mins.is_null() &&
-        !cdata->_mins.get_read_pointer()->request_resident()) {
+        !cdata->_mins.get_read_pointer(current_thread)->request_resident(current_thread)) {
       resident = false;
     }
     if (!cdata->_maxs.is_null() &&
-        !cdata->_maxs.get_read_pointer()->request_resident()) {
+        !cdata->_maxs.get_read_pointer(current_thread)->request_resident(current_thread)) {
       resident = false;
     }
   }
@@ -2178,14 +2178,17 @@ check_minmax() const {
  */
 int GeomPrimitivePipelineReader::
 get_first_vertex() const {
-  if (_cdata->_vertices.is_null()) {
+  if (_vertices.is_null()) {
     return _cdata->_first_vertex;
-  } else if (_vertices_reader->get_num_rows() == 0) {
-    return 0;
-  } else {
-    GeomVertexReader index(_cdata->_vertices.get_read_pointer(), 0);
-    return index.get_data1i();
   }
+
+  size_t size = _vertices_cdata->_buffer.get_size();
+  if (size == 0) {
+    return 0;
+  }
+
+  GeomVertexReader index(_vertices, 0);
+  return index.get_data1i();
 }
 
 /**
@@ -2193,11 +2196,11 @@ get_first_vertex() const {
  */
 int GeomPrimitivePipelineReader::
 get_vertex(int i) const {
-  if (!_cdata->_vertices.is_null()) {
+  if (!_vertices.is_null()) {
     // The indexed case.
-    nassertr(i >= 0 && i < _vertices_reader->get_num_rows(), -1);
+    nassertr(i >= 0 && i < get_num_vertices(), -1);
 
-    GeomVertexReader index(_cdata->_vertices.get_read_pointer(), 0);
+    GeomVertexReader index(_vertices, 0);
     index.set_row_unsafe(i);
     return index.get_data1i();
 

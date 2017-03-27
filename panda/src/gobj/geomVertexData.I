@@ -148,6 +148,17 @@ get_array(int i) const {
 }
 
 /**
+ * Equivalent to get_array(i).get_handle().
+ */
+INLINE CPT(GeomVertexArrayDataHandle) GeomVertexData::
+get_array_handle(int i) const {
+  Thread *current_thread = Thread::get_current_thread();
+  CDReader cdata(_cycler, current_thread);
+  nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
+  return new GeomVertexArrayDataHandle(cdata->_arrays[i].get_read_pointer(), current_thread);
+}
+
+/**
  * Returns a modifiable pointer to the indicated vertex array, so that
  * application code may directly manipulate the data.  You should avoid
  * changing the length of this array, since all of the arrays should be kept
@@ -160,6 +171,16 @@ INLINE PT(GeomVertexArrayData) GeomVertexData::
 modify_array(int i) {
   GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
   return writer.modify_array(i);
+}
+
+/**
+ * Equivalent to modify_array(i).modify_handle().
+ */
+INLINE PT(GeomVertexArrayDataHandle) GeomVertexData::
+modify_array_handle(int i) {
+  Thread *current_thread = Thread::get_current_thread();
+  GeomVertexDataPipelineWriter writer(this, true, current_thread);
+  return new GeomVertexArrayDataHandle(writer.modify_array(i), current_thread);
 }
 
 /**
@@ -579,6 +600,17 @@ CData(const GeomVertexData::CData &copy) :
  *
  */
 INLINE GeomVertexDataPipelineBase::
+GeomVertexDataPipelineBase(Thread *current_thread) :
+  _object(nullptr),
+  _current_thread(current_thread),
+  _cdata(nullptr)
+{
+}
+
+/**
+ *
+ */
+INLINE GeomVertexDataPipelineBase::
 GeomVertexDataPipelineBase(GeomVertexData *object,
                            Thread *current_thread,
                            GeomVertexData::CData *cdata) :
@@ -600,11 +632,15 @@ GeomVertexDataPipelineBase(GeomVertexData *object,
 INLINE GeomVertexDataPipelineBase::
 ~GeomVertexDataPipelineBase() {
 #ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
+  if (_object != nullptr) {
+    nassertv(_object->test_ref_count_nonzero());
+  }
 #endif // _DEBUG
 
 #ifdef DO_PIPELINING
-  unref_delete((CycleData *)_cdata);
+  if (_cdata != nullptr) {
+    unref_delete((CycleData *)_cdata);
+  }
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
@@ -698,6 +734,16 @@ get_modified() const {
  *
  */
 INLINE GeomVertexDataPipelineReader::
+GeomVertexDataPipelineReader(Thread *current_thread) :
+  GeomVertexDataPipelineBase(current_thread),
+  _got_array_readers(false)
+{
+}
+
+/**
+ *
+ */
+INLINE GeomVertexDataPipelineReader::
 GeomVertexDataPipelineReader(const GeomVertexData *object,
                              Thread *current_thread) :
   GeomVertexDataPipelineBase((GeomVertexData *)object, current_thread,
@@ -707,32 +753,22 @@ GeomVertexDataPipelineReader(const GeomVertexData *object,
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE GeomVertexDataPipelineReader::
-GeomVertexDataPipelineReader(const GeomVertexDataPipelineReader &copy) :
-  GeomVertexDataPipelineBase(copy)
-{
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomVertexDataPipelineReader::
-operator = (const GeomVertexDataPipelineReader &) {
-  nassertv(false);
-}
-
-/**
  *
  */
-INLINE GeomVertexDataPipelineReader::
-~GeomVertexDataPipelineReader() {
-  if (_got_array_readers) {
-    delete_array_readers();
+INLINE void GeomVertexDataPipelineReader::
+set_object(CPT(GeomVertexData) object) {
+#ifdef DO_PIPELINING
+  if (_cdata != NULL) {
+    unref_delete((CycleData *)_cdata);
   }
-  // _object->_cycler.release_read(_cdata);
+#endif  // DO_PIPELINING
+  _array_readers.clear();
+
+  _object.swap(object);
+  _cdata = (GeomVertexData::CData *)_object->_cycler.read_unlocked(_current_thread);
+  _got_array_readers = false;
+
+  _cdata->ref();
 }
 
 /**
@@ -817,24 +853,6 @@ GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
 #endif // _DEBUG
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE GeomVertexDataPipelineWriter::
-GeomVertexDataPipelineWriter(const GeomVertexDataPipelineWriter &copy) :
-  GeomVertexDataPipelineBase(copy)
-{
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomVertexDataPipelineWriter::
-operator = (const GeomVertexDataPipelineWriter &) {
-  nassertv(false);
 }
 
 /**

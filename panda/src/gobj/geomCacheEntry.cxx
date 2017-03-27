@@ -95,8 +95,8 @@ PT(GeomCacheEntry) GeomCacheEntry::
 erase() {
   nassertr(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL, NULL);
 
-  PT(GeomCacheEntry) keepme = this;
-  unref();
+  PT(GeomCacheEntry) keepme;
+  keepme.cheat() = this;
 
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()

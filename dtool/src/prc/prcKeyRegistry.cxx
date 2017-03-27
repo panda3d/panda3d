@@ -19,7 +19,11 @@
 
 #ifdef HAVE_OPENSSL
 
+#include "openssl/evp.h"
 #include "openssl/pem.h"
+
+// Some versions of OpenSSL appear to define this as a macro.  Yucky.
+#undef set_key
 
 PrcKeyRegistry *PrcKeyRegistry::_global_ptr = NULL;
 
