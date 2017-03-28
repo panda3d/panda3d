@@ -1529,10 +1529,12 @@ assemble_row(TextAssembler::TextRow &row,
           << "\n";
       }
 
+      glyph_scale *= properties->get_glyph_scale() * properties->get_text_scale();
+
       // Add the kerning delta.
       if (text_kerning) {
         if (prev_char != -1) {
-          xpos += font->get_kerning(prev_char, character);
+          xpos += font->get_kerning(prev_char, character) * glyph_scale;
         }
         prev_char = character;
       }
@@ -1543,7 +1545,6 @@ assemble_row(TextAssembler::TextRow &row,
       // ligatures.
       GlyphPlacement placement;
 
-      glyph_scale *= properties->get_glyph_scale() * properties->get_text_scale();
       placement._glyph = NULL;
       placement._scale = glyph_scale;
       placement._xpos = xpos;
