@@ -202,7 +202,7 @@ get_wheel_radius() const {
 void BulletWheel::
 set_steering(PN_stdfloat value) {
 
-  _info.m_steering = (btScalar)deg_2_rad(value);
+  _info.m_steering = (btScalar)value;
 }
 
 /**
@@ -211,7 +211,7 @@ set_steering(PN_stdfloat value) {
 PN_stdfloat BulletWheel::
 get_steering() const {
 
-  return (PN_stdfloat)rad_2_deg(_info.m_steering);
+  return (PN_stdfloat)_info.m_steering;
 }
 
 /**
