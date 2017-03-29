@@ -90,6 +90,7 @@ class FourState:
         off (and so is state 2 which is oposite of 4 and therefore
         oposite of 'on').
         """
+        self.stateIndex = 0
         assert self.debugPrint("FourState(names=%s)"%(names))
         self.track = None
         self.stateTime = 0.0
@@ -120,7 +121,6 @@ class FourState:
                            self.exitState4,
                            [names[1]]),
             }
-        self.stateIndex = 0
         self.fsm = ClassicFSM.ClassicFSM('FourState',
                            list(self.states.values()),
                            # Initial State
