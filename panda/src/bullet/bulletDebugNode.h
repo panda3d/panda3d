@@ -35,6 +35,15 @@ PUBLISHED:
   INLINE void show_constraints(bool show);
   INLINE void show_bounding_boxes(bool show);
   INLINE void show_normals(bool show);
+  INLINE bool get_show_wireframe() const;
+  INLINE bool get_show_constraints() const;
+  INLINE bool get_show_bounding_boxes() const;
+  INLINE bool get_show_normals() const;
+
+  MAKE_PROPERTY(wireframe, get_show_wireframe, show_wireframe);
+  MAKE_PROPERTY(constraints, get_show_constraints, show_constraints);
+  MAKE_PROPERTY(bounding_boxes, get_show_bounding_boxes, show_bounding_boxes);
+  MAKE_PROPERTY(normals, get_show_normals, show_normals);
 
 public:
   virtual bool safe_to_flatten() const;

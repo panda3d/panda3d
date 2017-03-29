@@ -34,13 +34,13 @@ PUBLISHED:
   BulletRigidBodyNode *get_rigid_body_b();
 
   void enable_feedback(bool value);
-  void set_debug_draw_size(PN_stdfloat size);
 
-  PN_stdfloat get_applied_impulse() const;
+  void set_debug_draw_size(PN_stdfloat size);
   PN_stdfloat get_debug_draw_size();
 
+  PN_stdfloat get_applied_impulse() const;
   INLINE void set_breaking_threshold(PN_stdfloat threshold);
-  INLINE PN_stdfloat set_breaking_threshold() const;
+  INLINE PN_stdfloat get_breaking_threshold() const;
   INLINE void set_enabled(bool enabled);
   INLINE bool is_enabled() const;
 
@@ -53,6 +53,13 @@ PUBLISHED:
 
   void set_param(ConstraintParam num, PN_stdfloat value, int axis=-1);
   PN_stdfloat get_param(ConstraintParam num, int axis=-1);
+
+  MAKE_PROPERTY(rigid_body_a, get_rigid_body_a);
+  MAKE_PROPERTY(rigid_body_b, get_rigid_body_b);
+  MAKE_PROPERTY(debug_draw_size, get_debug_draw_size, set_debug_draw_size);
+  MAKE_PROPERTY(applied_impulse, get_applied_impulse);
+  MAKE_PROPERTY(breaking_threshold, get_breaking_threshold, set_breaking_threshold);
+  MAKE_PROPERTY(enabled, is_enabled, set_enabled);
 
 public:
   virtual btTypedConstraint *ptr() const = 0;
