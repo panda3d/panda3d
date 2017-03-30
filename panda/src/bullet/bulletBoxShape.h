@@ -42,6 +42,9 @@ PUBLISHED:
 
   static BulletBoxShape *make_from_solid(const CollisionBox *solid);
 
+  MAKE_PROPERTY(half_extents_with_margin, get_half_extents_with_margin);
+  MAKE_PROPERTY(half_extents_without_margin, get_half_extents_without_margin);
+
 public:
   virtual btCollisionShape *ptr() const;
 

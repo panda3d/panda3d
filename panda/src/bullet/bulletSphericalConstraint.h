@@ -48,6 +48,9 @@ PUBLISHED:
   LPoint3 get_pivot_in_a() const;
   LPoint3 get_pivot_in_b() const;
 
+  MAKE_PROPERTY(pivot_a, get_pivot_in_a, set_pivot_a);
+  MAKE_PROPERTY(pivot_b, get_pivot_in_b, set_pivot_b);
+
 public:
   virtual btTypedConstraint *ptr() const;
 

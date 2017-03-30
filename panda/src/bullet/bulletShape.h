@@ -45,10 +45,20 @@ PUBLISHED:
   PN_stdfloat get_margin() const;
 
   BoundingSphere get_shape_bounds() const;
+  
+  MAKE_PROPERTY(polyhedral, is_polyhedral);
+  MAKE_PROPERTY(convex, is_convex);
+  MAKE_PROPERTY(convex_2d, is_convex_2d);
+  MAKE_PROPERTY(concave, is_concave);
+  MAKE_PROPERTY(infinite, is_infinite);
+  MAKE_PROPERTY(non_moving, is_non_moving);
+  MAKE_PROPERTY(soft_body, is_soft_body);
+  MAKE_PROPERTY(margin, get_margin, set_margin);
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY(shape_bounds, get_shape_bounds);
 
 public:
   virtual btCollisionShape *ptr() const = 0;
-
   LVecBase3 get_local_scale() const;
   void set_local_scale(const LVecBase3 &scale);
 

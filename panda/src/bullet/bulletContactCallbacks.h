@@ -26,7 +26,7 @@
 #include "eventParameter.h"
 #include "pandaNode.h"
 
-struct UserPersitentData {
+struct UserPersistentData {
   PT(PandaNode) node0;
   PT(PandaNode) node1;
 };
@@ -64,7 +64,7 @@ contact_added_callback(btManifoldPoint &cp,
     bullet_cat.debug() << "contact added: " << cp.m_userPersistentData << endl;
 
     // Gather persistent data
-    UserPersitentData *data = new UserPersitentData();
+    UserPersistentData *data = new UserPersistentData();
     data->node0 = node0;
     data->node1 = node1;
 
@@ -126,7 +126,7 @@ contact_destroyed_callback(void *userPersistentData) {
 
   bullet_cat.debug() << "contact removed: " << userPersistentData << endl;
 
-  UserPersitentData *data = (UserPersitentData *)userPersistentData;
+  UserPersistentData *data = (UserPersistentData *)userPersistentData;
 
   // Send event
   if (bullet_enable_contact_events) {

@@ -32,8 +32,8 @@ PUBLISHED:
 
   INLINE void set_motor_enabled(int axis, bool enable);
   INLINE void set_low_limit(const LVecBase3 &limit);
-  INLINE void set_high_limit(const LVecBase3 & limit);
-  INLINE void set_target_velocity(const LVecBase3&velocity);
+  INLINE void set_high_limit(const LVecBase3 &limit);
+  INLINE void set_target_velocity(const LVecBase3 &velocity);
   INLINE void set_max_motor_force(const LVecBase3 &force);
   INLINE void set_damping(PN_stdfloat damping);
   INLINE void set_softness(PN_stdfloat softness);
@@ -48,6 +48,10 @@ PUBLISHED:
   INLINE LVector3 get_current_error() const;
   INLINE LPoint3 get_current_diff() const;
   INLINE LVector3 get_accumulated_impulse() const;
+
+  MAKE_PROPERTY(current_error, get_current_error);
+  MAKE_PROPERTY(current_diff, get_current_diff);
+  MAKE_PROPERTY(accumulated_impulse, get_accumulated_impulse);
 
 public:
   BulletTranslationalLimitMotor(btTranslationalLimitMotor &motor);

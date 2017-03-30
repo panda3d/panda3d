@@ -93,11 +93,11 @@ class FourStateAI:
         off (and so is state 2 which is oposite of state 4 and therefore
         oposite of 'on').
         """
-        assert self.debugPrint(
+        self.stateIndex = 0
+        assert self.__debugPrint(
                 "FourStateAI(names=%s, durations=%s)"
                 %(names, durations))
         self.doLaterTask = None
-        self.stateIndex = 0
         assert len(names) == 5
         assert len(names) == len(durations)
         self.names = names
@@ -137,7 +137,7 @@ class FourStateAI:
         self.fsm.enterInitialState()
 
     def delete(self):
-        assert self.debugPrint("delete()")
+        assert self.__debugPrint("delete()")
         if self.doLaterTask is not None:
             self.doLaterTask.remove()
             del self.doLaterTask
@@ -145,15 +145,15 @@ class FourStateAI:
         del self.fsm
 
     def getState(self):
-        assert self.debugPrint("getState() returning %s"%(self.stateIndex,))
+        assert self.__debugPrint("getState() returning %s"%(self.stateIndex,))
         return [self.stateIndex]
 
     def sendState(self):
-        assert self.debugPrint("sendState()")
+        assert self.__debugPrint("sendState()")
         self.sendUpdate('setState', self.getState())
 
     def setIsOn(self, isOn):
-        assert self.debugPrint("setIsOn(isOn=%s)"%(isOn,))
+        assert self.__debugPrint("setIsOn(isOn=%s)"%(isOn,))
         if isOn:
             if self.stateIndex != 4:
                 # ...if it's not On; request turning on:
@@ -170,7 +170,7 @@ class FourStateAI:
         #    self.fsm.request(self.states[nextState])
 
     def isOn(self):
-        assert self.debugPrint("isOn() returning %s (stateIndex=%s)"%(self.stateIndex==4, self.stateIndex))
+        assert self.__debugPrint("isOn() returning %s (stateIndex=%s)"%(self.stateIndex==4, self.stateIndex))
         return self.stateIndex==4
 
     def changedOnState(self, isOn):
@@ -179,12 +179,12 @@ class FourStateAI:
         The self.isOn value has toggled.  Call getIsOn() to
         get the current state.
         """
-        assert self.debugPrint("changedOnState(isOn=%s)"%(isOn,))
+        assert self.__debugPrint("changedOnState(isOn=%s)"%(isOn,))
 
     ##### states #####
 
     def switchToNextStateTask(self, task):
-        assert self.debugPrint("switchToNextStateTask()")
+        assert self.__debugPrint("switchToNextStateTask()")
         self.fsm.request(self.states[self.nextStateIndex])
         return Task.done
 
@@ -193,11 +193,11 @@ class FourStateAI:
         This function is intentionaly simple so that derived classes
         may easily alter the network message.
         """
-        assert self.debugPrint("distributeStateChange()")
+        assert self.__debugPrint("distributeStateChange()")
         self.sendState()
 
     def enterStateN(self, stateIndex, nextStateIndex):
-        assert self.debugPrint(
+        assert self.__debugPrint(
             "enterStateN(stateIndex=%s, nextStateIndex=%s)"%
             (stateIndex, nextStateIndex))
         self.stateIndex = stateIndex
@@ -211,7 +211,7 @@ class FourStateAI:
                 "enterStateN-timer-%s"%id(self))
 
     def exitStateN(self):
-        assert self.debugPrint("exitStateN()")
+        assert self.__debugPrint("exitStateN()")
         if self.doLaterTask:
             taskMgr.remove(self.doLaterTask)
             self.doLaterTask=None
@@ -219,56 +219,56 @@ class FourStateAI:
     ##### state 0 #####
 
     def enterState0(self):
-        assert self.debugPrint("enter0()")
+        assert self.__debugPrint("enter0()")
         self.enterStateN(0, 0)
 
     def exitState0(self):
-        assert self.debugPrint("exit0()")
+        assert self.__debugPrint("exit0()")
 
     ##### state 1 #####
 
     def enterState1(self):
-        #assert self.debugPrint("enterState1()")
+        #assert self.__debugPrint("enterState1()")
         self.enterStateN(1, 2)
 
     def exitState1(self):
-        assert self.debugPrint("exitState1()")
+        assert self.__debugPrint("exitState1()")
         self.exitStateN()
 
     ##### state 2 #####
 
     def enterState2(self):
-        #assert self.debugPrint("enterState2()")
+        #assert self.__debugPrint("enterState2()")
         self.enterStateN(2, 3)
 
     def exitState2(self):
-        assert self.debugPrint("exitState2()")
+        assert self.__debugPrint("exitState2()")
         self.exitStateN()
 
     ##### state 3 #####
 
     def enterState3(self):
-        #assert self.debugPrint("enterState3()")
+        #assert self.__debugPrint("enterState3()")
         self.enterStateN(3, 4)
 
     def exitState3(self):
-        assert self.debugPrint("exitState3()")
+        assert self.__debugPrint("exitState3()")
         self.exitStateN()
 
     ##### state 4 #####
 
     def enterState4(self):
-        assert self.debugPrint("enterState4()")
+        assert self.__debugPrint("enterState4()")
         self.enterStateN(4, 1)
         self.changedOnState(1)
 
     def exitState4(self):
-        assert self.debugPrint("exitState4()")
+        assert self.__debugPrint("exitState4()")
         self.exitStateN()
         self.changedOnState(0)
 
     if __debug__:
-        def debugPrint(self, message):
+        def __debugPrint(self, message):
             """for debugging"""
             return self.notify.debug("%d (%d) %s"%(
                     id(self), self.stateIndex==4, message))

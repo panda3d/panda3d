@@ -56,7 +56,7 @@ PUBLISHED:
   INLINE void set_drag_coefficient(PN_stdfloat value);
   INLINE void set_lift_coefficient(PN_stdfloat value);
   INLINE void set_pressure_coefficient(PN_stdfloat value);
-  INLINE void set_volume_conversation_coefficient(PN_stdfloat value);
+  INLINE void set_volume_conservation_coefficient(PN_stdfloat value);
   INLINE void set_dynamic_friction_coefficient(PN_stdfloat value);
   INLINE void set_pose_matching_coefficient(PN_stdfloat value);
   INLINE void set_rigid_contacts_hardness(PN_stdfloat value);
@@ -81,7 +81,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_drag_coefficient() const;
   INLINE PN_stdfloat get_lift_coefficient() const;
   INLINE PN_stdfloat get_pressure_coefficient() const;
-  INLINE PN_stdfloat get_volume_conversation_coefficient() const;
+  INLINE PN_stdfloat get_volume_conservation_coefficient() const;
   INLINE PN_stdfloat get_dynamic_friction_coefficient() const;
   INLINE PN_stdfloat get_pose_matching_coefficient() const;
   INLINE PN_stdfloat get_rigid_contacts_hardness() const;
@@ -100,6 +100,32 @@ PUBLISHED:
   INLINE int get_velocities_solver_iterations() const;
   INLINE int get_drift_solver_iterations() const;
   INLINE int get_cluster_solver_iterations() const;
+
+  MAKE_PROPERTY(aero_model, get_aero_model, set_aero_model);
+  MAKE_PROPERTY(velocities_correction_factor, get_velocities_correction_factor, set_velocities_correction_factor);
+  MAKE_PROPERTY(damping_coefficient, get_damping_coefficient, set_damping_coefficient);
+  MAKE_PROPERTY(drag_coefficient, get_drag_coefficient, set_drag_coefficient);
+  MAKE_PROPERTY(lift_coefficient, get_lift_coefficient, set_lift_coefficient);
+  MAKE_PROPERTY(pressure_coefficient, get_pressure_coefficient, set_pressure_coefficient);
+  MAKE_PROPERTY(volume_conservation_coefficient, get_volume_conservation_coefficient, set_volume_conservation_coefficient);
+  MAKE_PROPERTY(dynamic_friction_coefficient, get_dynamic_friction_coefficient, set_dynamic_friction_coefficient);
+  MAKE_PROPERTY(pose_matching_coefficient, get_pose_matching_coefficient, set_pose_matching_coefficient);
+  MAKE_PROPERTY(rigid_contacts_hardness, get_rigid_contacts_hardness, set_rigid_contacts_hardness);
+  MAKE_PROPERTY(kinetic_contacts_hardness, get_kinetic_contacts_hardness, set_kinetic_contacts_hardness);
+  MAKE_PROPERTY(soft_contacts_hardness, get_soft_contacts_hardness, set_soft_contacts_hardness);
+  MAKE_PROPERTY(anchors_hardness, get_anchors_hardness, set_anchors_hardness);
+  MAKE_PROPERTY(soft_vs_rigid_hardness, get_soft_vs_rigid_hardness, set_soft_vs_rigid_hardness);
+  MAKE_PROPERTY(soft_vs_kinetic_hardness, get_soft_vs_kinetic_hardness, set_soft_vs_kinetic_hardness);
+  MAKE_PROPERTY(soft_vs_soft_hardness, get_soft_vs_soft_hardness, set_soft_vs_soft_hardness);
+  MAKE_PROPERTY(soft_vs_rigid_impulse_split, get_soft_vs_rigid_impulse_split, set_soft_vs_rigid_impulse_split);
+  MAKE_PROPERTY(soft_vs_kinetic_impulse_split, get_soft_vs_kinetic_impulse_split, set_soft_vs_kinetic_impulse_split);
+  MAKE_PROPERTY(soft_vs_soft_impulse_split, get_soft_vs_soft_impulse_split, set_soft_vs_soft_impulse_split);
+  MAKE_PROPERTY(maxvolume, get_maxvolume, set_maxvolume);
+  MAKE_PROPERTY(timescale, get_timescale, set_timescale);
+  MAKE_PROPERTY(positions_solver_iterations, get_positions_solver_iterations, set_positions_solver_iterations);
+  MAKE_PROPERTY(velocities_solver_iterations, get_velocities_solver_iterations, set_velocities_solver_iterations);
+  MAKE_PROPERTY(drift_solver_iterations, get_drift_solver_iterations, set_drift_solver_iterations);
+  MAKE_PROPERTY(cluster_solver_iterations, get_cluster_solver_iterations, set_cluster_solver_iterations);
 
 public:
   BulletSoftBodyConfig(btSoftBody::Config &cfg);

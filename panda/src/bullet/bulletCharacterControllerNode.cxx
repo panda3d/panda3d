@@ -296,7 +296,6 @@ set_gravity(PN_stdfloat gravity) {
 #endif
 }
 
-
 /**
  *
  */

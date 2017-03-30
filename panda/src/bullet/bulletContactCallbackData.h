@@ -41,6 +41,14 @@ PUBLISHED:
   INLINE int get_index0() const;
   INLINE int get_index1() const;
 
+  MAKE_PROPERTY(manifold, get_manifold);
+  MAKE_PROPERTY(node0, get_node0);
+  MAKE_PROPERTY(node1, get_node1);
+  MAKE_PROPERTY(part_id0, get_part_id0);
+  MAKE_PROPERTY(part_id1, get_part_id1);
+  MAKE_PROPERTY(index0, get_index0);
+  MAKE_PROPERTY(index1, get_index1);
+
 private:
   BulletManifoldPoint &_mp;
   PandaNode *_node0;

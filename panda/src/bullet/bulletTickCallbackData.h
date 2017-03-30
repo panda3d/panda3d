@@ -30,6 +30,8 @@ PUBLISHED:
 
   INLINE PN_stdfloat get_timestep() const;
 
+  MAKE_PROPERTY(timestep, get_timestep);
+
 private:
   btScalar _timestep;
 
