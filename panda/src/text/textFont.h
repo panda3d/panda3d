@@ -74,6 +74,8 @@ PUBLISHED:
 
   INLINE CPT(TextGlyph) get_glyph(int character);
 
+  virtual PN_stdfloat get_kerning(int first, int second) const;
+
   virtual void write(ostream &out, int indent_level) const;
 
 public:

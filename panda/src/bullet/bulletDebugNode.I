@@ -32,11 +32,29 @@ show_wireframe(bool show) {
 /**
  *
  */
+INLINE bool BulletDebugNode::
+get_show_wireframe() const {
+
+  return _wireframe;
+}
+
+/**
+ *
+ */
 INLINE void BulletDebugNode::
 show_constraints(bool show) {
 
   _constraints = show;
   draw_mask_changed();
+}
+
+/**
+ *
+ */
+INLINE bool BulletDebugNode::
+get_show_constraints() const {
+
+  return _constraints;
 }
 
 /**
@@ -52,8 +70,26 @@ show_bounding_boxes(bool show) {
 /**
  *
  */
+INLINE bool BulletDebugNode::
+get_show_bounding_boxes() const {
+
+  return _bounds;
+}
+
+/**
+ *
+ */
 INLINE void BulletDebugNode::
 show_normals(bool show) {
 
   _drawer._normals = show;
+}
+
+/**
+ *
+ */
+INLINE bool BulletDebugNode::
+get_show_normals() const {
+
+  return _drawer._normals;
 }

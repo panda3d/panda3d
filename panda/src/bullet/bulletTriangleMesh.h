@@ -55,6 +55,9 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
+  MAKE_PROPERTY(num_triangles, get_num_triangles);
+  MAKE_PROPERTY(welding_distance, get_welding_distance, set_welding_distance);
+
 public:
   INLINE btTriangleMesh *ptr() const;
 

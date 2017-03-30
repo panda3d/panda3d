@@ -56,6 +56,10 @@ PUBLISHED:
   INLINE CPT(TransformState) get_frame_a() const;
   INLINE CPT(TransformState) get_frame_b() const;
 
+  MAKE_PROPERTY(fix_threshold, get_fix_threshold, set_fix_threshold);
+  MAKE_PROPERTY(frame_a, get_frame_a);
+  MAKE_PROPERTY(frame_b, get_frame_b);
+
 public:
   virtual btTypedConstraint *ptr() const;
 

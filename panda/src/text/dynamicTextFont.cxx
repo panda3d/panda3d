@@ -278,6 +278,32 @@ get_glyph(int character, CPT(TextGlyph) &glyph) {
   return (glyph_index != 0);
 }
 
+/**
+ * Returns the amount by which to offset the second glyph when it directly
+ * follows the first glyph.  This is an additional offset that is added on top
+ * of the advance.
+ */
+PN_stdfloat DynamicTextFont::
+get_kerning(int first, int second) const {
+  if (!_is_valid) {
+    return 0;
+  }
+
+  FT_Face face = acquire_face();
+  if (!FT_HAS_KERNING(face)) {
+    release_face(face);
+    return 0;
+  }
+
+  int first_index = FT_Get_Char_Index(face, first);
+  int second_index = FT_Get_Char_Index(face, second);
+
+  FT_Vector delta;
+  FT_Get_Kerning(face, first_index, second_index, FT_KERNING_DEFAULT, &delta);
+  release_face(face);
+
+  return delta.x / (_font_pixels_per_unit * 64);
+}
 
 /**
  * Called from both constructors to set up some initial values.

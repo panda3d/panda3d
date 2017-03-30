@@ -39,19 +39,26 @@ PUBLISHED:
 
   BulletShape *get_shape() const;
 
+  void set_gravity(PN_stdfloat gravity);
   PN_stdfloat get_gravity() const;
-  PN_stdfloat get_max_slope() const;
 
   void set_fall_speed(PN_stdfloat fall_speed);
   void set_jump_speed(PN_stdfloat jump_speed);
   void set_max_jump_height(PN_stdfloat max_jump_height);
+  
   void set_max_slope(PN_stdfloat max_slope);
-  void set_gravity(PN_stdfloat gravity);
+  PN_stdfloat get_max_slope() const;
+
   void set_use_ghost_sweep_test(bool value);
 
   bool is_on_ground() const;
   bool can_jump() const;
   void do_jump();
+
+  MAKE_PROPERTY(shape, get_shape);
+  MAKE_PROPERTY(gravity, get_gravity, set_gravity);
+  MAKE_PROPERTY(max_slope, get_max_slope, set_max_slope);
+  MAKE_PROPERTY(on_ground, is_on_ground);
 
 public:
   INLINE virtual btPairCachingGhostObject *get_ghost() const;
