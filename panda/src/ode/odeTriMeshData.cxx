@@ -30,7 +30,7 @@ get_data(dGeomID id) {
   if (iter != data_map.end()) {
     return iter->second;
   }
-  return 0;
+  return NULL;
 }
 
 void OdeTriMeshData::

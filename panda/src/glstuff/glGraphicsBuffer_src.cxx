@@ -163,6 +163,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       }
     }
 #endif
+  } else if (mode == FM_refresh) {
+    // Just bind the FBO.
+    rebuild_bitplanes();
   }
 
   _gsg->set_current_properties(&get_fb_properties());

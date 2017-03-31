@@ -713,7 +713,7 @@ box_filter_line(const PNMImage &image,
 
     // Get the final (partial) xel
     float x_contrib = x1 - (float)x_last;
-    if (x_contrib > 0.0001f) {
+    if (x_contrib > 0.0001f && x < image.get_x_size()) {
       box_filter_xel(image, x, y, x_contrib, y_contrib,
                      color, pixel_count);
     }
@@ -745,7 +745,7 @@ box_filter_region(const PNMImage &image,
 
     // Get the final (partial) row
     float y_contrib = y1 - (float)y_last;
-    if (y_contrib > 0.0001f) {
+    if (y_contrib > 0.0001f && y < image.get_y_size()) {
       box_filter_line(image, x0, y, x1, y_contrib,
                       color, pixel_count);
     }

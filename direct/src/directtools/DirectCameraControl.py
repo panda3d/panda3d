@@ -413,7 +413,7 @@ class DirectCameraControl(DirectObject):
                 np = NodePath('temp')
                 np.setPos(base.direct.camera, hitPt)
                 self.coaMarkerPos = np.getPos()
-                np.remove()
+                np.removeNode()
                 self.coaMarker.setPos(self.coaMarkerPos)
 
             iRay.collisionNodePath.removeNode()

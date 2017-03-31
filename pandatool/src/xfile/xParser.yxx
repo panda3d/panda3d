@@ -31,7 +31,7 @@
 
 static XFile *x_file = (XFile *)NULL;
 static XFileNode *current_node = (XFileNode *)NULL;
-static PT(XFileDataDef) current_data_def = (XFileDataDef *)NULL;
+static PT(XFileDataDef) current_data_def;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.

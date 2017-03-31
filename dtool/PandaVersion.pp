@@ -3,7 +3,7 @@
 // ppremake scripts for Panda.
 
 // Use spaces to separate the major, minor, and sequence numbers here.
-#define PANDA_VERSION 1 9 3
+#define PANDA_VERSION 1 9 4
 
 // This variable will be defined to false in the CVS repository, but
 // scripts that generate source tarballs and/or binary releases for

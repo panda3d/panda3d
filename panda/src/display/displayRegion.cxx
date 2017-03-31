@@ -582,6 +582,12 @@ get_screenshot() {
     return NULL;
   }
 
+  {
+    // Make sure that the correct viewport is active.
+    DisplayRegionPipelineReader dr_reader(this, current_thread);
+    gsg->prepare_display_region(&dr_reader);
+  }
+
   PT(Texture) tex = new Texture;
   
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),

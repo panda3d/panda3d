@@ -290,7 +290,7 @@ refresh() {
     return;
   }
   if (_toplevel_window != NULL) {
-    Rect r = { 0, 0, _win_height, _win_width }; 
+    Rect r = { 0, 0, (short)_win_height, (short)_win_width };
     InvalWindowRect(_toplevel_window, &r);
     
   } else {
@@ -374,7 +374,7 @@ paint_window_osx_cgcontext(CGContextRef context) {
   CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
   CGColorRef bg = CGColorCreate(rgb_space, bg_components);
 
-  CGRect region = { { 0, 0 }, { _win_width, _win_height } };
+  CGRect region = { { 0, 0 }, { (CGFloat)_win_width, (CGFloat)_win_height } };
   CGContextSetFillColorWithColor(context, bg);
   CGContextFillRect(context, region);
 
@@ -440,7 +440,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     // First, convert the coordinates from screen coordinates to
     // browser window coordinates.
     WindowRef window = handle._handle._osx_cgcontext._window;
-    CGPoint cgpt = { pt.h, pt.v };
+    CGPoint cgpt = { (CGFloat)pt.h, (CGFloat)pt.v };
     HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
                    kHICoordSpaceWindow, window);
 
@@ -662,7 +662,7 @@ paint_progress_bar(CGContextRef context) {
   int bar_x, bar_y, bar_width, bar_height;
   get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
-  CGRect bar_rect = { { bar_x, bar_y }, { bar_width, bar_height } };
+  CGRect bar_rect = { { (CGFloat)bar_x, (CGFloat)bar_y }, { (CGFloat)bar_width, (CGFloat)bar_height } };
 
   // Clear the entire progress bar to white (or the background color).
   CGContextSetFillColorWithColor(context, bar_bg);
@@ -672,7 +672,7 @@ paint_progress_bar(CGContextRef context) {
   if (_progress_known) {
     int progress_width = (int)(bar_width * _install_progress + 0.5);
     if (progress_width != 0) {
-      CGRect prog = { { bar_x, bar_y }, { progress_width, bar_height } };
+      CGRect prog = { { (CGFloat)bar_x, (CGFloat)bar_y }, { (CGFloat)progress_width, (CGFloat)bar_height } };
       CGContextSetFillColorWithColor(context, bar);
       CGContextFillRect(context, prog);
     }
@@ -687,7 +687,7 @@ paint_progress_bar(CGContextRef context) {
       progress = block_travel * 2 - progress;
     }
 
-    CGRect prog = { { bar_x + progress, bar_y }, { block_width, bar_height } };
+    CGRect prog = { { (CGFloat)(bar_x + progress), (CGFloat)bar_y }, { (CGFloat)block_width, (CGFloat)bar_height } };
     CGContextSetFillColorWithColor(context, bar);
     CGContextFillRect(context, prog);
   }
@@ -697,8 +697,8 @@ paint_progress_bar(CGContextRef context) {
     // We offset the border by half a pixel, so we'll be drawing the
     // one-pixel line through the middle of a pixel, and it won't try to
     // antialias itself into a half-black two-pixel line.
-    CGRect border_rect = { { bar_x - 0.5, bar_y - 0.5 },
-                           { bar_width + 1, bar_height + 1 } };
+    CGRect border_rect = { { (CGFloat)(bar_x - 0.5), (CGFloat)(bar_y - 0.5) },
+                           { (CGFloat)(bar_width + 1), (CGFloat)(bar_height + 1) } };
 
     CGContextBeginPath(context);
     CGContextSetLineWidth(context, 1);

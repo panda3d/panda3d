@@ -1075,6 +1075,7 @@ function_operator:
 more_template_declaration:
         type_like_declaration
         | template_declaration
+        | friend_declaration
         ;
 
 template_declaration:

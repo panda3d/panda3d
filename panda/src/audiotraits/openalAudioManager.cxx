@@ -1120,7 +1120,6 @@ cleanup() {
 OpenALAudioManager::SoundData::
 SoundData() :
   _manager(0),
-  _movie(0),
   _sample(0),
   _stream(NULL),
   _length(0.0),

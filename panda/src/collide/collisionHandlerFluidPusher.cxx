@@ -143,7 +143,7 @@ handle_entries() {
       
       // currently we only support spheres as the collider
       const CollisionSphere *sphere;
-      DCAST_INTO_R(sphere, entries.front()->get_from(), 0);
+      DCAST_INTO_R(sphere, entries.front()->get_from(), false);
       
       from_node_path.set_pos(wrt_node, 0,0,0);
       LPoint3 sphere_offset = (sphere->get_center() *

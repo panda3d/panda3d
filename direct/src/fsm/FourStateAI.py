@@ -93,11 +93,11 @@ class FourStateAI:
         off (and so is state 2 which is oposite of state 4 and therefore 
         oposite of 'on').
         """
+        self.stateIndex = 0
         assert self.debugPrint(
                 "FourStateAI(names=%s, durations=%s)"
                 %(names, durations))
         self.doLaterTask = None
-        self.stateIndex = 0
         assert len(names) == 5
         assert len(names) == len(durations)
         self.names = names

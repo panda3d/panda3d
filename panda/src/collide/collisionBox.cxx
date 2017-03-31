@@ -258,7 +258,7 @@ PT(CollisionEntry) CollisionBox::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
+  DCAST_INTO_R(sphere, entry.get_from(), NULL);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
   CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
@@ -466,7 +466,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
+  DCAST_INTO_R(ray, entry.get_from(), NULL);
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   LPoint3 from_origin = ray->get_origin() * wrt_mat;
@@ -549,7 +549,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *seg;
-  DCAST_INTO_R(seg, entry.get_from(), 0);
+  DCAST_INTO_R(seg, entry.get_from(), NULL);
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   LPoint3 from_origin = seg->get_point_a() * wrt_mat;

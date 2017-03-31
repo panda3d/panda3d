@@ -3699,8 +3699,8 @@ paint_window_osx_port() {
   int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
   size_t rowsize = _swbuffer->get_row_size();
 
-  Rect src_rect = {0, 0, y_size, x_size};
-  Rect ddrc_rect = {0, 0, y_size, x_size};
+  Rect src_rect = {0, 0, (short)y_size, (short)x_size};
+  Rect ddrc_rect = {0, 0, (short)y_size, (short)x_size};
 
   QDErr err;
 
@@ -3754,7 +3754,7 @@ paint_window_osx_cgcontext(CGContextRef context) {
   int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
 
   if (_buffer_image != NULL) {
-    CGRect region = { { 0, 0 }, { x_size, y_size } };
+    CGRect region = { { 0, 0 }, { (CGFloat)x_size, (CGFloat)y_size } };
     CGContextDrawImage(context, region, _buffer_image);
   }
 }
@@ -3794,7 +3794,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     // First, convert the coordinates from screen coordinates to
     // browser window coordinates.
     WindowRef window = handle._handle._osx_cgcontext._window;
-    CGPoint cgpt = { pt.h, pt.v };
+    CGPoint cgpt = { (CGFloat)pt.h, (CGFloat)pt.v };
     HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
                    kHICoordSpaceWindow, window);
     

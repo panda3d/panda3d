@@ -481,7 +481,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
       } else if (child->is_of_type(CollisionSphere::get_class_type())) {
         CPT(CollisionSphere) sphere = DCAST(CollisionSphere, child);
         LPoint3 center = sphere->get_center();
-        LVector3 offset(sphere->get_radius(), 0, 0);
+        PN_stdfloat radius = sphere->get_radius();
 
         EggGroup *egg_sphere;
         if (num_solids == 1) {
@@ -498,15 +498,19 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         }
         egg_sphere->set_collide_flags(flags);
 
-        EggVertex ev1, ev2;
-        ev1.set_pos(LCAST(double, (center + offset) * net_mat));
-        ev2.set_pos(LCAST(double, (center - offset) * net_mat));
+        EggVertex ev1, ev2, ev3, ev4;
+        ev1.set_pos(LCAST(double, (center + LVector3(radius, 0, 0)) * net_mat));
+        ev2.set_pos(LCAST(double, (center + LVector3(0, radius, 0)) * net_mat));
+        ev3.set_pos(LCAST(double, (center + LVector3(-radius, 0, 0)) * net_mat));
+        ev4.set_pos(LCAST(double, (center + LVector3(0, -radius, 0)) * net_mat));
 
         EggPolygon *egg_poly = new EggPolygon;
         egg_sphere->add_child(egg_poly);
 
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev2));
+        egg_poly->add_vertex(cvpool->create_unique_vertex(ev3));
+        egg_poly->add_vertex(cvpool->create_unique_vertex(ev4));
 
       } else if (child->is_of_type(CollisionPlane::get_class_type())) {
         LPlane plane = DCAST(CollisionPlane, child)->get_plane();

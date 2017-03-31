@@ -282,6 +282,9 @@ class MemoryExplorerItem:
     def getNumChildren(self):
         return len(self.children)
 
+    def getChildren(self):
+        return self.children
+
     def getChildrenAsList(self):
         return self.children
 

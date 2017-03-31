@@ -346,8 +346,14 @@ template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&
 
 // Functions related to error reporting.
 
+// _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.
+// Some implementations of the CPython API (e.g. PyPy's cpyext) do not define
+// it, so in these cases we just silently fall back to PyErr_Occurred.
+#ifndef _PyErr_OCCURRED
+#define _PyErr_OCCURRED() PyErr_Occurred()
+#endif
+
 #ifdef NDEBUG
-// _PyErr_OCCURRED is an undocumented inline version of PyErr_Occurred.
 #define Dtool_CheckErrorOccurred() (_PyErr_OCCURRED() != NULL)
 #else
 EXPCL_DTOOLCONFIG bool Dtool_CheckErrorOccurred();
