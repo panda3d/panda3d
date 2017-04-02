@@ -1133,7 +1133,8 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   // to a macro function.
   out << "typedef " << c_class_name << " " << class_name << "_localtype;\n";
   if (obj->_itype.has_destructor() ||
-      obj->_itype.destructor_is_inherited()) {
+      obj->_itype.destructor_is_inherited() ||
+      obj->_itype.destructor_is_implicit()) {
 
     if (TypeManager::is_reference_count(type)) {
       out << "Define_Module_ClassRef";
