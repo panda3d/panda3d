@@ -9260,18 +9260,22 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_RGBA16F;
     } else
 #endif
-#ifndef OPENGLES
+#ifdef OPENGLES
+    {
+      // In OpenGL ES, the internal format must match the external format.
+      return _supports_bgr ? GL_BGRA : GL_RGBA;
+    }
+#else
     if (tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_RGBA16;
     } else if (tex->get_component_type() == Texture::T_short) {
       return GL_RGBA16_SNORM;
     } else if (tex->get_component_type() == Texture::T_byte) {
       return GL_RGBA8_SNORM;
-    } else
-#endif
-    {
+    } else {
       return force_sized ? GL_RGBA8 : GL_RGBA;
     }
+#endif
 
   case Texture::F_rgba4:
     return GL_RGBA4;
@@ -12702,6 +12706,9 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   _data_transferred_pcollector.add_level(image_size);
 #endif
 
+#ifdef OPENGLES
+  internal_format = external_format;
+#endif
   glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
                width, height, 0,
                external_format, component_type, image_ptr);
