@@ -93,6 +93,8 @@ private:
   typedef pvector< COWPT(CollisionSolid) > Solids;
   Solids _solids;
 
+  friend class CollisionTraverser;
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

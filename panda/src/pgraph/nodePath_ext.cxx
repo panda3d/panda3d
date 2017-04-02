@@ -278,7 +278,7 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
     }
 
     CPT_InternalName name(string(buffer, length));
-    ShaderInput *input = nullptr;
+    ShaderInput input(nullptr, 0);
 
     if (PyTuple_CheckExact(value)) {
       // A tuple is interpreted as a vector.
@@ -300,13 +300,13 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
         for (Py_ssize_t i = 0; i < size; ++i) {
           vec[i] = (PN_stdfloat)PyFloat_AsDouble(PyTuple_GET_ITEM(value, i));
         }
-        input = new ShaderInput(name, vec);
+        input = ShaderInput(move(name), vec);
       } else {
         LVecBase4i vec(0);
         for (Py_ssize_t i = 0; i < size; ++i) {
           vec[i] = (int)PyLong_AsLong(PyTuple_GET_ITEM(value, i));
         }
-        input = new ShaderInput(name, vec);
+        input = ShaderInput(move(name), vec);
       }
 
     } else if (DtoolCanThisBeAPandaInstance(value)) {
@@ -314,91 +314,91 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
       void *ptr;
 
       if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_Texture))) {
-        input = new ShaderInput(name, (Texture *)ptr);
+        input = ShaderInput(move(name), (Texture *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_NodePath))) {
-        input = new ShaderInput(name, *(const NodePath *)ptr);
+        input = ShaderInput(move(name), *(const NodePath *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_float))) {
-        input = new ShaderInput(name, *(const PTA_float *)ptr);
+        input = ShaderInput(move(name), *(const PTA_float *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_double))) {
-        input = new ShaderInput(name, *(const PTA_double *)ptr);
+        input = ShaderInput(move(name), *(const PTA_double *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_int))) {
-        input = new ShaderInput(name, *(const PTA_int *)ptr);
+        input = ShaderInput(move(name), *(const PTA_int *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4f))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase4f *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase4f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3f))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase3f *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase3f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2f))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase2f *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase2f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLMatrix4f))) {
-        input = new ShaderInput(name, *(const PTA_LMatrix4f *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LMatrix4f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LMatrix3f))) {
-        input = new ShaderInput(name, *(const PTA_LMatrix3f *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LMatrix3f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4d))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase4d *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase4d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3d))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase3d *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase3d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2d))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase2d *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase2d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLMatrix4d))) {
-        input = new ShaderInput(name, *(const PTA_LMatrix4d *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LMatrix4d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LMatrix3d))) {
-        input = new ShaderInput(name, *(const PTA_LMatrix3d *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LMatrix3d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4i))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase4i *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase4i *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3i))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase3i *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase3i *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2i))) {
-        input = new ShaderInput(name, *(const PTA_LVecBase2i *)ptr);
+        input = ShaderInput(move(name), *(const PTA_LVecBase2i *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4f))) {
-        input = new ShaderInput(name, *(const LVecBase4f *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase4f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3f))) {
-        input = new ShaderInput(name, *(const LVecBase3f *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase3f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2f))) {
-        input = new ShaderInput(name, *(const LVecBase2f *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase2f *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4d))) {
-        input = new ShaderInput(name, *(const LVecBase4d *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase4d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3d))) {
-        input = new ShaderInput(name, *(const LVecBase3d *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase3d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2d))) {
-        input = new ShaderInput(name, *(const LVecBase2d *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase2d *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4i))) {
-        input = new ShaderInput(name, *(const LVecBase4i *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase4i *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3i))) {
-        input = new ShaderInput(name, *(const LVecBase3i *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase3i *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2i))) {
-        input = new ShaderInput(name, *(const LVecBase2i *)ptr);
+        input = ShaderInput(move(name), *(const LVecBase2i *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_ShaderBuffer))) {
-        input = new ShaderInput(name, (ShaderBuffer *)ptr);
+        input = ShaderInput(move(name), (ShaderBuffer *)ptr);
 
       } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_ParamValueBase))) {
-        input = new ShaderInput(name, (ParamValueBase *)ptr);
+        input = ShaderInput(move(name), (ParamValueBase *)ptr);
 
       } else {
         Dtool_Raise_TypeError("unknown type passed to NodePath.set_shader_inputs");
@@ -406,22 +406,22 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
       }
 
     } else if (PyFloat_Check(value)) {
-      input = new ShaderInput(name, LVecBase4(PyFloat_AS_DOUBLE(value), 0, 0, 0));
+      input = ShaderInput(move(name), LVecBase4(PyFloat_AS_DOUBLE(value), 0, 0, 0));
 
 #if PY_MAJOR_VERSION < 3
     } else if (PyInt_Check(value)) {
-      input = new ShaderInput(name, LVecBase4i((int)PyInt_AS_LONG(value), 0, 0, 0));
+      input = ShaderInput(move(name), LVecBase4i((int)PyInt_AS_LONG(value), 0, 0, 0));
 #endif
 
     } else if (PyLong_Check(value)) {
-      input = new ShaderInput(name, LVecBase4i((int)PyLong_AsLong(value), 0, 0, 0));
+      input = ShaderInput(move(name), LVecBase4i((int)PyLong_AsLong(value), 0, 0, 0));
 
     } else {
       Dtool_Raise_TypeError("unknown type passed to NodePath.set_shader_inputs");
       return;
     }
 
-    attrib->_inputs[move(name)] = input;
+    attrib->_inputs[input.get_name()] = move(input);
   }
 
   node->set_attrib(ShaderAttrib::return_new(attrib));

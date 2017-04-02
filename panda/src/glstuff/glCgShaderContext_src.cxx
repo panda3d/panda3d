@@ -399,6 +399,7 @@ unbind() {
 void CLP(CgShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
+                        const TransformState *camera_transform,
                         const TransformState *projection_transform) {
 
   if (!valid()) {
@@ -410,6 +411,10 @@ set_state_and_transform(const RenderState *target_rs,
 
   if (_modelview_transform != modelview_transform) {
     _modelview_transform = modelview_transform;
+    altered |= (Shader::SSD_transform & ~Shader::SSD_view_transform);
+  }
+  if (_camera_transform != camera_transform) {
+    _camera_transform = camera_transform;
     altered |= Shader::SSD_transform;
   }
   if (_projection_transform != projection_transform) {

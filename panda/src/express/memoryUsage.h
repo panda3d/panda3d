@@ -95,6 +95,8 @@ private:
   MemoryUsage(const MemoryHook &copy);
   INLINE static MemoryUsage *get_global_ptr();
 
+  static void init_memory_usage();
+
   void ns_record_pointer(ReferenceCount *ptr);
   void ns_update_type(ReferenceCount *ptr, TypeHandle type);
   void ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr);

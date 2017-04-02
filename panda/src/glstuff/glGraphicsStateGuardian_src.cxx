@@ -10350,7 +10350,7 @@ set_state_and_transform(const RenderState *target,
 
   // Update all of the state that is bound to the shader program.
   if (_current_shader_context != NULL) {
-    _current_shader_context->set_state_and_transform(target, transform, _projection_mat);
+    _current_shader_context->set_state_and_transform(target, transform, _scene_setup->get_camera_transform(), _projection_mat);
   }
 #endif
 

@@ -45,7 +45,9 @@ get_memory_usage(MemoryClass memory_class) const {
 void TypeHandle::
 inc_memory_usage(MemoryClass memory_class, size_t size) {
 #ifdef DO_MEMORY_USAGE
+#ifdef _DEBUG
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
+#endif
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
     assert(rnode != (TypeRegistryNode *)NULL);
@@ -67,7 +69,9 @@ inc_memory_usage(MemoryClass memory_class, size_t size) {
 void TypeHandle::
 dec_memory_usage(MemoryClass memory_class, size_t size) {
 #ifdef DO_MEMORY_USAGE
+#ifdef _DEBUG
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
+#endif
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
     assert(rnode != (TypeRegistryNode *)NULL);

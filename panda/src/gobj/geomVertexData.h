@@ -432,7 +432,7 @@ public:
   INLINE UpdateSeq get_modified() const;
 
 protected:
-  PT(GeomVertexData) _object;
+  GeomVertexData *_object;
   Thread *_current_thread;
   GeomVertexData::CData *_cdata;
 };
@@ -440,6 +440,8 @@ protected:
 /**
  * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
  * the pipeline.
+ * Does not hold a reference to the GeomVertexData, so make sure it does not
+ * go out of scope.
  */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
 public:
@@ -448,7 +450,7 @@ public:
 
   ALLOC_DELETED_CHAIN(GeomVertexDataPipelineReader);
 
-  INLINE void set_object(CPT(GeomVertexData) object);
+  INLINE void set_object(const GeomVertexData *object);
   INLINE const GeomVertexData *get_object() const;
 
   INLINE void check_array_readers() const;
@@ -504,6 +506,8 @@ private:
 /**
  * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
  * the pipeline.
+ * Does not hold a reference to the GeomVertexData, so make sure it does not
+ * go out of scope.
  */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
 public:

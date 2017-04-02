@@ -22,7 +22,7 @@ LightReMutex *RenderAttrib::_attribs_lock = NULL;
 RenderAttrib::Attribs *RenderAttrib::_attribs = NULL;
 TypeHandle RenderAttrib::_type_handle;
 
-int RenderAttrib::_garbage_index = 0;
+size_t RenderAttrib::_garbage_index = 0;
 
 PStatCollector RenderAttrib::_garbage_collect_pcollector("*:State Cache:Garbage Collect");
 
@@ -195,8 +195,8 @@ list_attribs(ostream &out) {
   LightReMutexHolder holder(*_attribs_lock);
 
   out << _attribs->get_num_entries() << " attribs:\n";
-  int size = _attribs->get_size();
-  for (int si = 0; si < size; ++si) {
+  size_t size = _attribs->get_size();
+  for (size_t si = 0; si < size; ++si) {
     if (!_attribs->has_element(si)) {
       continue;
     }
@@ -219,7 +219,9 @@ garbage_collect() {
   PStatTimer timer(_garbage_collect_pcollector);
   int orig_size = _attribs->get_num_entries();
 
+#ifdef _DEBUG
   nassertr(_attribs->validate(), 0);
+#endif
 
   // How many elements to process this pass?
   int size = _attribs->get_size();
@@ -230,11 +232,9 @@ garbage_collect() {
   num_this_pass = min(num_this_pass, size);
   int stop_at_element = (_garbage_index + num_this_pass) % size;
 
-  int num_elements = 0;
-  int si = _garbage_index;
+  size_t si = _garbage_index;
   do {
     if (_attribs->has_element(si)) {
-      ++num_elements;
       RenderAttrib *attrib = (RenderAttrib *)_attribs->get_key(si);
       if (attrib->get_ref_count() == 1) {
         // This attrib has recently been unreffed to 1 (the one we added when
@@ -250,9 +250,12 @@ garbage_collect() {
     si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
-  nassertr(_attribs->validate(), 0);
 
-  int new_size = _attribs->get_num_entries();
+#ifdef _DEBUG
+  nassertr(_attribs->validate(), 0);
+#endif
+
+  size_t new_size = _attribs->get_num_entries();
   return orig_size - new_size;
 }
 
@@ -272,8 +275,8 @@ validate_attribs() {
     pgraph_cat.error()
       << "RenderAttrib::_attribs cache is invalid!\n";
 
-    int size = _attribs->get_size();
-    for (int si = 0; si < size; ++si) {
+    size_t size = _attribs->get_size();
+    for (size_t si = 0; si < size; ++si) {
       if (!_attribs->has_element(si)) {
         continue;
       }
@@ -285,14 +288,14 @@ validate_attribs() {
     return false;
   }
 
-  int size = _attribs->get_size();
-  int si = 0;
+  size_t size = _attribs->get_size();
+  size_t si = 0;
   while (si < size && !_attribs->has_element(si)) {
     ++si;
   }
   nassertr(si < size, false);
   nassertr(_attribs->get_key(si)->get_ref_count() >= 0, false);
-  int snext = si;
+  size_t snext = si;
   ++snext;
   while (snext < size && !_attribs->has_element(snext)) {
     ++snext;

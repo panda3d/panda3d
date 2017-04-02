@@ -111,10 +111,12 @@ any_in_bounds() {
   }
 #endif  // NDEBUG
 
-  CPT(BoundingVolume) node_bv = node()->get_bounds();
+  PandaNode *pnode = node();
+
+  CPT(BoundingVolume) node_bv = pnode->get_bounds();
   if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-    const GeometricBoundingVolume *node_gbv;
-    DCAST_INTO_R(node_gbv, node_bv, false);
+    const GeometricBoundingVolume *node_gbv = (const GeometricBoundingVolume *)node_bv.p();
+    CollideMask this_mask = pnode->get_net_collide_mask();
 
     int num_colliders = get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -125,10 +127,10 @@ any_in_bounds() {
         // Don't even bother testing the bounding volume if there are no
         // collide bits in common between our collider and this node.
         CollideMask from_mask = cnode->get_from_collide_mask() & _include_mask;
-        if (!(from_mask & node()->get_net_collide_mask()).is_zero()) {
+        if (!(from_mask & this_mask).is_zero()) {
           // Also don't test a node with itself, or with any of its
           // descendants.
-          if (node() == cnode) {
+          if (pnode == cnode) {
 #ifndef NDEBUG
             if (collide_cat.is_spam()) {
               indent(collide_cat.spam(false), indent_level)

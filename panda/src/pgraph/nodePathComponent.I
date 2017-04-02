@@ -75,6 +75,15 @@ has_key() const {
   return (_key != 0);
 }
 
+/**
+ * Returns the next component in the path.
+ */
+INLINE NodePathComponent *NodePathComponent::
+get_next(int pipeline_stage, Thread *current_thread) const {
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  return cdata->_next;
+}
+
 INLINE ostream &operator << (ostream &out, const NodePathComponent &comp) {
   comp.output(out);
   return out;

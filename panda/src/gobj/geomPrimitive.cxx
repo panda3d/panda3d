@@ -165,16 +165,17 @@ add_vertex(int vertex) {
 
   consider_elevate_index_type(cdata, vertex);
 
-  int num_primitives = get_num_primitives();
-  if (num_primitives > 0 &&
-      requires_unused_vertices() &&
-      get_num_vertices() == get_primitive_end(num_primitives - 1)) {
-    // If we are beginning a new primitive, give the derived class a chance to
-    // insert some degenerate vertices.
-    if (cdata->_vertices.is_null()) {
-      do_make_indexed(cdata);
+  if (requires_unused_vertices()) {
+    int num_primitives = get_num_primitives();
+    if (num_primitives > 0 &&
+        get_num_vertices() == get_primitive_end(num_primitives - 1)) {
+      // If we are beginning a new primitive, give the derived class a chance to
+      // insert some degenerate vertices.
+      if (cdata->_vertices.is_null()) {
+        do_make_indexed(cdata);
+      }
+      append_unused_vertices(cdata->_vertices.get_write_pointer(), vertex);
     }
-    append_unused_vertices(cdata->_vertices.get_write_pointer(), vertex);
   }
 
   if (cdata->_vertices.is_null()) {
@@ -199,11 +200,28 @@ add_vertex(int vertex) {
     do_make_indexed(cdata);
   }
 
-  PT(GeomVertexArrayData) array_obj = cdata->_vertices.get_write_pointer();
-  GeomVertexWriter index(array_obj, 0);
-  index.set_row_unsafe(array_obj->get_num_rows());
+  {
+    GeomVertexArrayDataHandle handle(cdata->_vertices.get_write_pointer(),
+                                     Thread::get_current_thread());
+    int num_rows = handle.get_num_rows();
+    handle.set_num_rows(num_rows + 1);
 
-  index.add_data1i(vertex);
+    unsigned char *ptr = handle.get_write_pointer();
+    switch (cdata->_index_type) {
+    case GeomEnums::NT_uint8:
+      ((uint8_t *)ptr)[num_rows] = vertex;
+      break;
+    case GeomEnums::NT_uint16:
+      ((uint16_t *)ptr)[num_rows] = vertex;
+      break;
+    case GeomEnums::NT_uint32:
+      ((uint32_t *)ptr)[num_rows] = vertex;
+      break;
+    default:
+      nassertv(false);
+      break;
+    }
+  }
 
   cdata->_modified = Geom::get_next_modified();
   cdata->_got_minmax = false;
@@ -888,21 +906,9 @@ make_points() const {
   // First, get a list of all of the vertices referenced by the original
   // primitive.
   BitArray bits;
-  int num_vertices = get_num_vertices();
-  if (is_indexed()) {
-    CPT(GeomVertexArrayData) vertices = get_vertices();
-    int strip_cut_index = get_strip_cut_index();
-    GeomVertexReader index(vertices, 0);
-    for (int vi = 0; vi < num_vertices; ++vi) {
-      nassertr(!index.is_at_end(), NULL);
-      int vertex = index.get_data1i();
-      if (vertex != strip_cut_index) {
-        bits.set_bit(vertex);
-      }
-    }
-  } else {
-    int first_vertex = get_first_vertex();
-    bits.set_range(first_vertex, num_vertices);
+  {
+    GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
+    reader.get_referenced_vertices(bits);
   }
 
   // Now construct a new index array with just those bits.
@@ -2200,9 +2206,21 @@ get_vertex(int i) const {
     // The indexed case.
     nassertr(i >= 0 && i < get_num_vertices(), -1);
 
-    GeomVertexReader index(_vertices, 0);
-    index.set_row_unsafe(i);
-    return index.get_data1i();
+    const unsigned char *ptr = get_read_pointer(true);
+    switch (_cdata->_index_type) {
+    case GeomEnums::NT_uint8:
+      return ((uint8_t *)ptr)[i];
+      break;
+    case GeomEnums::NT_uint16:
+      return ((uint16_t *)ptr)[i];
+      break;
+    case GeomEnums::NT_uint32:
+      return ((uint32_t *)ptr)[i];
+      break;
+    default:
+      nassertr(false, -1);
+      return -1;
+    }
 
   } else {
     // The nonindexed case.
@@ -2226,6 +2244,52 @@ get_num_primitives() const {
     // This is a simple primitive type like a triangle: each primitive uses
     // the same number of vertices.
     return (get_num_vertices() / num_vertices_per_primitive);
+  }
+}
+
+/**
+ * Turns on all the bits corresponding to the vertices that are referenced
+ * by this GeomPrimitive.
+ */
+void GeomPrimitivePipelineReader::
+get_referenced_vertices(BitArray &bits) const {
+  int num_vertices = get_num_vertices();
+
+  if (is_indexed()) {
+    int strip_cut_index = get_strip_cut_index();
+    const unsigned char *ptr = get_read_pointer(true);
+    switch (get_index_type()) {
+    case GeomEnums::NT_uint8:
+      for (int vi = 0; vi < num_vertices; ++vi) {
+        int index = ((const uint8_t *)ptr)[vi];
+        if (index != strip_cut_index) {
+          bits.set_bit(index);
+        }
+      }
+      break;
+    case GeomEnums::NT_uint16:
+      for (int vi = 0; vi < num_vertices; ++vi) {
+        int index = ((const uint16_t *)ptr)[vi];
+        if (index != strip_cut_index) {
+          bits.set_bit(index);
+        }
+      }
+      break;
+    case GeomEnums::NT_uint32:
+      for (int vi = 0; vi < num_vertices; ++vi) {
+        int index = ((const uint32_t *)ptr)[vi];
+        if (index != strip_cut_index) {
+          bits.set_bit(index);
+        }
+      }
+      break;
+    default:
+      nassertv(false);
+      break;
+    }
+  } else {
+    // Nonindexed case.
+    bits.set_range(get_first_vertex(), num_vertices);
   }
 }
 

@@ -756,7 +756,7 @@ GeomVertexDataPipelineReader(const GeomVertexData *object,
  *
  */
 INLINE void GeomVertexDataPipelineReader::
-set_object(CPT(GeomVertexData) object) {
+set_object(const GeomVertexData *object) {
 #ifdef DO_PIPELINING
   if (_cdata != NULL) {
     unref_delete((CycleData *)_cdata);
@@ -764,7 +764,7 @@ set_object(CPT(GeomVertexData) object) {
 #endif  // DO_PIPELINING
   _array_readers.clear();
 
-  _object.swap(object);
+  _object = (GeomVertexData *)object;
   _cdata = (GeomVertexData::CData *)_object->_cycler.read_unlocked(_current_thread);
   _got_array_readers = false;
 

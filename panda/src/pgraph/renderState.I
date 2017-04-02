@@ -522,7 +522,8 @@ INLINE void RenderState::
 check_hash() const {
   // This pretends to be a const function, even though it's not, because it
   // only updates a transparent cache value.
-  if ((_flags & F_hash_known) == 0) {
+  if ((_flags & F_hash_known) != 0) {
+  } else {
     ((RenderState *)this)->calc_hash();
   }
 }

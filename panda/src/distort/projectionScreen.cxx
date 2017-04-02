@@ -103,7 +103,7 @@ make_copy() const {
 bool ProjectionScreen::
 cull_callback(CullTraverser *, CullTraverserData &data) {
   if (_auto_recompute) {
-    recompute_if_stale(data._node_path.get_node_path());
+    recompute_if_stale(data.get_node_path());
   }
   return true;
 }
