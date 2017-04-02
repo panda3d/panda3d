@@ -31,8 +31,8 @@ are included as part of the Windows 7.1 SDK.
 You will also need to have the third-party dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
 depending on whether you are on a 32-bit or 64-bit system:
-https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-win32.zip
-https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-win64.zip
+https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win32.zip
+https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win64.zip
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command:
@@ -97,7 +97,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:

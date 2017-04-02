@@ -1,3 +1,18 @@
+------------------------  RELEASE 1.9.4  ------------------------
+
+One of the bugfixes in the last 1.9.3 release introduced a regression,
+therefore it was decided to make another 1.9.x release.
+
+* Fix 1.9.3 regression with generating geometry in threaded pipeline
+* Various compile warning fixes
+* Fix occasional crash in PNMImage::quick_filter_from()
+* Fix issue taking screenshots from an OpenGL FBO buffer
+* Fix various issues with MeshDrawer
+* Fix issue with collision sphere generation in bam2egg
+* Fix compile errors with more obscure Python configurations
+* Fix assert when using Texture.load_sub_image to load whole image
+* Fix fsm FourState
+
 ------------------------  RELEASE 1.9.3  ------------------------
 
 This issue fixes several bugs that were still found in 1.9.2.
