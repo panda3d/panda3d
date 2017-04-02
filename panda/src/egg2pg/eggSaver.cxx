@@ -940,6 +940,9 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
     ModelNode *model_node = DCAST(ModelNode, node);
     switch (model_node->get_preserve_transform()) {
     case ModelNode::PT_none:
+	  egg_group->set_model_flag(true);
+	  break;
+	
     case ModelNode::PT_drop_node:
       break;
 
