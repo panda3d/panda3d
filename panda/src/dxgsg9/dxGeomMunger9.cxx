@@ -164,7 +164,7 @@ munge_format_impl(const GeomVertexFormat *orig,
 
   // Now go through the remaining arrays and make sure they are tightly
   // packed.  If not, repack them.
-  for (int i = 0; i < new_format->get_num_arrays(); ++i) {
+  for (size_t i = 0; i < new_format->get_num_arrays(); ++i) {
     CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
     if (orig_a->count_unused_space() != 0) {
       PT(GeomVertexArrayFormat) new_a = new GeomVertexArrayFormat;
@@ -267,7 +267,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 
   // Now go through the remaining arrays and make sure they are tightly
   // packed.  If not, repack them.
-  for (int i = 0; i < new_format->get_num_arrays(); ++i) {
+  for (size_t i = 0; i < new_format->get_num_arrays(); ++i) {
     CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
     if (orig_a->count_unused_space() != 0) {
       PT(GeomVertexArrayFormat) new_a = new GeomVertexArrayFormat;
