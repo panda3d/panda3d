@@ -286,7 +286,7 @@ PUBLISHED:
   MAKE_PROPERTY(driver_shader_version_minor, get_driver_shader_version_minor);
 
   bool set_scene(SceneSetup *scene_setup);
-  virtual SceneSetup *get_scene() const;
+  virtual SceneSetup *get_scene() const FINAL;
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
 public:

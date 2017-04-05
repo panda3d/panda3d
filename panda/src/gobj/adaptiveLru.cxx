@@ -114,12 +114,16 @@ update_page(AdaptiveLruPage *page) {
 
       update_frames = (_current_frame_identifier - page->_update_frame_identifier);
       if (update_frames > 0) {
-        PN_stdfloat update_average_frame_utilization =
-          (PN_stdfloat) (page->_update_total_usage) / (PN_stdfloat)update_frames;
+        if (page->_update_total_usage > 0) {
+          PN_stdfloat update_average_frame_utilization =
+            (PN_stdfloat) (page->_update_total_usage) / (PN_stdfloat)update_frames;
 
-        page->_average_frame_utilization =
-          calculate_exponential_moving_average(update_average_frame_utilization,
-                                               page->_average_frame_utilization);
+          page->_average_frame_utilization =
+            calculate_exponential_moving_average(update_average_frame_utilization,
+                                                 page->_average_frame_utilization);
+        } else {
+          page->_average_frame_utilization *= 1.0f - _weight;
+        }
 
         target_priority = page->_priority;
         if (page->_average_frame_utilization >= 1.0f) {

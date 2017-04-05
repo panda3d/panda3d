@@ -41,7 +41,7 @@ void NodeCullCallbackData::
 upcall() {
   PandaNode *node = _data.node();
   if (node->is_of_type(CallbackNode::get_class_type())) {
-    CallbackNode *cbnode = DCAST(CallbackNode, _data.node());
+    CallbackNode *cbnode = (CallbackNode *)node;
 
     // OK, render this node.  Rendering a CallbackNode means creating a
     // CullableObject for the draw_callback, if any.  We don't need to pass

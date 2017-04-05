@@ -489,20 +489,6 @@ write(ostream &out) const {
 }
 
 /**
- * Returns the pointer to the global TypeRegistry object.
- */
-TypeRegistry *TypeRegistry::
-ptr() {
-  init_lock();
-  _lock->acquire();
-  if (_global_pointer == NULL) {
-    init_global_pointer();
-  }
-  _lock->release();
-  return _global_pointer;
-}
-
-/**
  *
  */
 TypeRegistry::
@@ -531,6 +517,7 @@ TypeRegistry() {
  */
 void TypeRegistry::
 init_global_pointer() {
+  init_lock();
   init_memory_hook();
   _global_pointer = new TypeRegistry;
 }

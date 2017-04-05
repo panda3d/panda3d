@@ -1133,7 +1133,8 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   // to a macro function.
   out << "typedef " << c_class_name << " " << class_name << "_localtype;\n";
   if (obj->_itype.has_destructor() ||
-      obj->_itype.destructor_is_inherited()) {
+      obj->_itype.destructor_is_inherited() ||
+      obj->_itype.destructor_is_implicit()) {
 
     if (TypeManager::is_reference_count(type)) {
       out << "Define_Module_ClassRef";
@@ -6219,7 +6220,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     // the assumption that the called method doesn't do anything with this
     // tuple other than unpack it (which is a fairly safe assumption to make).
     out << "  PyTupleObject args;\n";
-    out << "  (void)PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
+    out << "  (void)PyObject_INIT_VAR((PyVarObject *)&args, &PyTuple_Type, 1);\n";
   }
 
   out <<

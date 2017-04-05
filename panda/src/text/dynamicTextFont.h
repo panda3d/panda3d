@@ -123,6 +123,7 @@ PUBLISHED:
 
 public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
+  virtual PN_stdfloat get_kerning(int first, int second) const;
 
 private:
   void initialize();

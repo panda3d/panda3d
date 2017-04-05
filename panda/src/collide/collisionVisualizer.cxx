@@ -111,10 +111,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // its objects according to their appropriate net transform.
     xform_data._net_transform = TransformState::make_identity();
     xform_data._view_frustum = trav->get_view_frustum();
-    xform_data.apply_transform_and_state(trav, net_transform,
-                                         RenderState::make_empty(),
-                                         RenderEffects::make_empty(),
-                                         ClipPlaneAttrib::make());
+    xform_data.apply_transform(net_transform);
 
     // Draw all the collision solids.
     Solids::const_iterator si;

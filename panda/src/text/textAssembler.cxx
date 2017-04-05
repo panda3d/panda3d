@@ -609,6 +609,8 @@ assemble_text() {
  * Returns the width of a single character, according to its associated font.
  * This also correctly calculates the width of cheesy ligatures and accented
  * characters, which may not exist in the font as such.
+ *
+ * This does not take kerning into account, however.
  */
 PN_stdfloat TextAssembler::
 calc_width(wchar_t character, const TextProperties &properties) {
@@ -1142,7 +1144,6 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
     } else {
       tris->set_index_type(GeomEnums::NT_uint16);
     }
-    PT(GeomVertexArrayData) indices = tris->modify_vertices();
 
     int i = 0;
 
@@ -1150,9 +1151,10 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
     // bottleneck.  So, I've written this out the hard way instead.  Two
     // versions of the loop: one for 32-bit indices, one for 16-bit.
     {
-      PT(GeomVertexArrayDataHandle) vtx_handle = vdata->modify_array(0)->modify_handle();
+      PT(GeomVertexArrayDataHandle) vtx_handle = vdata->modify_array_handle(0);
       vtx_handle->unclean_set_num_rows(quads.size() * 4);
 
+      Thread *current_thread = Thread::get_current_thread();
       unsigned char *write_ptr = vtx_handle->get_write_pointer();
       size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float32);
 
@@ -1163,7 +1165,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
 
       if (tris->get_index_type() == GeomEnums::NT_uint32) {
         // 32-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
+        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
         idx_handle->unclean_set_num_rows(quads.size() * 6);
         uint32_t *idx_ptr = (uint32_t *)idx_handle->get_write_pointer();
 
@@ -1219,7 +1221,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
         }
       } else {
         // 16-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
+        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
         idx_handle->unclean_set_num_rows(quads.size() * 6);
         uint16_t *idx_ptr = (uint16_t *)idx_handle->get_write_pointer();
 
@@ -1399,6 +1401,9 @@ assemble_row(TextAssembler::TextRow &row,
   PN_stdfloat xpos = 0.0f;
   align = TextProperties::A_left;
 
+  // Remember previous character, for kerning.
+  int prev_char = -1;
+
   bool underscore = false;
   PN_stdfloat underscore_start = 0.0f;
   const TextProperties *underscore_properties = NULL;
@@ -1450,11 +1455,13 @@ assemble_row(TextAssembler::TextRow &row,
     if (character == ' ') {
       // A space is a special case.
       xpos += properties->get_glyph_scale() * properties->get_text_scale() * font->get_space_advance();
+      prev_char = -1;
 
     } else if (character == '\t') {
       // So is a tab character.
       PN_stdfloat tab_width = properties->get_tab_width();
       xpos = (floor(xpos / tab_width) + 1.0f) * tab_width;
+      prev_char = -1;
 
     } else if (character == text_soft_hyphen_key) {
       // And so is the 'soft-hyphen' key character.
@@ -1493,6 +1500,7 @@ assemble_row(TextAssembler::TextRow &row,
       placed_glyphs.push_back(placement);
 
       xpos += advance * glyph_scale;
+      prev_char = -1;
 
     } else {
       // A printable character.
@@ -1521,13 +1529,22 @@ assemble_row(TextAssembler::TextRow &row,
           << "\n";
       }
 
+      glyph_scale *= properties->get_glyph_scale() * properties->get_text_scale();
+
+      // Add the kerning delta.
+      if (text_kerning) {
+        if (prev_char != -1) {
+          xpos += font->get_kerning(prev_char, character) * glyph_scale;
+        }
+        prev_char = character;
+      }
+
       // Build up a GlyphPlacement, indicating all of the Geoms that go into
       // this character.  Normally, there is only one Geom per character, but
       // it may involve multiple Geoms if we need to add cheesy accents or
       // ligatures.
       GlyphPlacement placement;
 
-      glyph_scale *= properties->get_glyph_scale() * properties->get_text_scale();
       placement._glyph = NULL;
       placement._scale = glyph_scale;
       placement._xpos = xpos;

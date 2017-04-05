@@ -295,10 +295,13 @@ show_trend_ages() {
  */
 INLINE MemoryUsage *MemoryUsage::
 get_global_ptr() {
-  if (_global_ptr == (MemoryUsage *)NULL) {
-    init_memory_hook();
-    _global_ptr = new MemoryUsage(*memory_hook);
-    memory_hook = _global_ptr;
+#ifdef __GNUC__
+  // Tell the compiler that this is an unlikely branch.
+  if (__builtin_expect(_global_ptr == nullptr, 0)) {
+#else
+  if (_global_ptr == nullptr) {
+#endif
+    init_memory_usage();
   }
 
   return _global_ptr;

@@ -15,18 +15,13 @@
 #include "paramNodePath.h"
 #include "paramTexture.h"
 
-TypeHandle ShaderInput::_type_handle;
-
 /**
  * Returns a static ShaderInput object with name NULL, priority zero, type
  * INVALID, and all value-fields cleared.
  */
-const ShaderInput *ShaderInput::
+const ShaderInput &ShaderInput::
 get_blank() {
-  static CPT(ShaderInput) blank;
-  if (blank == 0) {
-    blank = new ShaderInput(NULL, 0);
-  }
+  static ShaderInput blank(nullptr, 0);
   return blank;
 }
 
@@ -64,6 +59,30 @@ ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, in
   _priority(priority),
   _value(new ParamTextureSampler(tex, sampler))
 {
+}
+
+/**
+ *
+ */
+size_t ShaderInput::
+add_hash(size_t hash) const {
+  hash = int_hash::add_hash(hash, _type);
+  hash = pointer_hash::add_hash(hash, _name);
+  hash = int_hash::add_hash(hash, _priority);
+
+  switch (_type) {
+  case M_invalid:
+    return hash;
+
+  case M_vector:
+    return _stored_vector.add_hash(hash);
+
+  case M_numeric:
+    return pointer_hash::add_hash(hash, _stored_ptr._ptr);
+
+  default:
+    return pointer_hash::add_hash(hash, _value);
+  }
 }
 
 /**

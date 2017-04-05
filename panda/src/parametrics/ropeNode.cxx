@@ -132,9 +132,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     if (curve != (NurbsCurveEvaluator *)NULL) {
       PT(NurbsCurveResult) result;
       if (has_matrix()) {
-        result = curve->evaluate(data._node_path.get_node_path(), get_matrix());
+        result = curve->evaluate(data.get_node_path(), get_matrix());
       } else {
-        result = curve->evaluate(data._node_path.get_node_path());
+        result = curve->evaluate(data.get_node_path());
       }
 
       if (result->get_num_segments() > 0) {

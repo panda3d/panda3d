@@ -73,6 +73,13 @@ PUBLISHED:
   INLINE CPT(TransformState) get_frame_a() const;
   INLINE CPT(TransformState) get_frame_b() const;
 
+  MAKE_PROPERTY(hinge_angle, get_hinge_angle);
+  MAKE_PROPERTY(lower_limit, get_lower_limit);
+  MAKE_PROPERTY(upper_limit, get_upper_limit);
+  MAKE_PROPERTY(angular_only, get_angular_only, set_angular_only);
+  MAKE_PROPERTY(frame_a, get_frame_a);
+  MAKE_PROPERTY(frame_b, get_frame_b);
+
 public:
   virtual btTypedConstraint *ptr() const;
 

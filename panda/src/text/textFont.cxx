@@ -55,6 +55,16 @@ TextFont::
 }
 
 /**
+ * Returns the amount by which to offset the second glyph when it directly
+ * follows the first glyph.  This is an additional offset that is added on top
+ * of the advance.
+ */
+PN_stdfloat TextFont::
+get_kerning(int first, int second) const {
+  return 0;
+}
+
+/**
  *
  */
 void TextFont::

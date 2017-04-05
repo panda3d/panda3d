@@ -346,6 +346,14 @@ destructor_is_inherited() const {
 /**
  *
  */
+INLINE bool InterrogateType::
+destructor_is_implicit() const {
+  return (_flags & F_implicit_destructor) != 0;
+}
+
+/**
+ *
+ */
 INLINE FunctionIndex InterrogateType::
 get_destructor() const {
   return _destructor;

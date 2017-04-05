@@ -36,6 +36,8 @@ PUBLISHED:
 
   INLINE int get_num_points() const;
 
+  MAKE_PROPERTY(num_points, get_num_points);
+
 public:
   virtual btCollisionShape *ptr() const;
 

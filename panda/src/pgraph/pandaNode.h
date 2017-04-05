@@ -827,6 +827,7 @@ private:
   friend class PandaNodePipelineReader;
   friend class EggLoader;
   friend class Extension<PandaNode>;
+  friend class CullTraverserData;
 };
 
 /**
@@ -877,8 +878,8 @@ public:
   INLINE bool has_tag(const string &key) const;
 
   INLINE CollideMask get_net_collide_mask() const;
-  INLINE CPT(RenderAttrib) get_off_clip_planes() const;
-  INLINE CPT(BoundingVolume) get_bounds() const;
+  INLINE const RenderAttrib *get_off_clip_planes() const;
+  INLINE const BoundingVolume *get_bounds() const;
   INLINE int get_nested_vertices() const;
   INLINE bool is_final() const;
   INLINE int get_fancy_bits() const;
@@ -905,6 +906,12 @@ private:
   static TypeHandle _type_handle;
 
 };
+
+#ifdef DO_MEMORY_USAGE
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<PandaNode>::update_type(To *ptr) {}
+#endif
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {
   node.output(out);

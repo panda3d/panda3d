@@ -284,7 +284,7 @@ analyze_renderstate(const RenderState *rs) {
     PandaNode *light_obj = light.node();
     nassertv(light_obj != (PandaNode *)NULL);
 
-    if (light_obj->get_type() == AmbientLight::get_class_type()) {
+    if (light_obj->is_ambient_light()) {
       if (_material->has_ambient()) {
         LColor a = _material->get_ambient();
         if ((a[0]!=0.0)||(a[1]!=0.0)||(a[2]!=0.0)) {
@@ -298,7 +298,7 @@ analyze_renderstate(const RenderState *rs) {
     } else if (light_obj->is_of_type(LightLensNode::get_class_type())) {
       _lights_np.push_back(light);
       _lights.push_back((LightLensNode *)light_obj);
-      if (DCAST(LightLensNode, light_obj)->is_shadow_caster()) {
+      if (((const LightLensNode *)light_obj)->is_shadow_caster()) {
         _shadows = true;
       }
       _lighting = true;

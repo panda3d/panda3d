@@ -166,7 +166,7 @@ operator < (const CopyOnWritePointer &other) const {
  * This flavor of the method is written for the non-threaded case.
  */
 INLINE const CopyOnWriteObject *CopyOnWritePointer::
-get_read_pointer() const {
+get_read_pointer(Thread *current_thread) const {
   return _cow_object;
 }
 #endif  // COW_THREADED
@@ -362,8 +362,14 @@ operator = (PointerTo<T> &&from) NOEXCEPT {
  */
 template<class T>
 INLINE CPT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
-get_read_pointer() const {
-  return (const To *)(CopyOnWritePointer::get_read_pointer().p());
+get_read_pointer(Thread *current_thread) const {
+  // This is necessary because we don't currently have a way to cast between
+  // two compatible PointerTo types without losing the reference count.
+  CPT(TYPENAME CopyOnWritePointerTo<T>::To) to;
+  CPT(CopyOnWriteObject) from = CopyOnWritePointer::get_read_pointer(current_thread);
+  to.cheat() = (const To *)from.p();
+  from.cheat() = nullptr;
+  return to;
 }
 #else  // COW_THREADED
 /**
@@ -371,8 +377,8 @@ get_read_pointer() const {
  */
 template<class T>
 INLINE const TYPENAME CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
-get_read_pointer() const {
-  return (const To *)CopyOnWritePointer::get_read_pointer();
+get_read_pointer(Thread *current_thread) const {
+  return (const To *)CopyOnWritePointer::get_read_pointer(current_thread);
 }
 #endif  // COW_THREADED
 #endif  // CPPPARSER
@@ -385,7 +391,13 @@ get_read_pointer() const {
 template<class T>
 INLINE PT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
 get_write_pointer() {
-  return (To *)(CopyOnWritePointer::get_write_pointer().p());
+  // This is necessary because we don't currently have a way to cast between
+  // two compatible PointerTo types without losing the reference count.
+  PT(TYPENAME CopyOnWritePointerTo<T>::To) to;
+  PT(CopyOnWriteObject) from = CopyOnWritePointer::get_write_pointer();
+  to.cheat() = (To *)from.p();
+  from.cheat() = nullptr;
+  return to;
 }
 #else  // COW_THREADED
 /**

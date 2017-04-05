@@ -34,6 +34,9 @@ PUBLISHED:
   INLINE PN_stdfloat get_radius() const;
   INLINE PN_stdfloat get_half_height() const;
 
+  MAKE_PROPERTY(radius, get_radius);
+  MAKE_PROPERTY(half_height, get_half_height);
+
 public:
   virtual btCollisionShape *ptr() const;
 

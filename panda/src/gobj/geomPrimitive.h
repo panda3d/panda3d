@@ -142,7 +142,7 @@ PUBLISHED:
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
   MAKE_PROPERTY(modified, get_modified);
 
-  bool request_resident() const;
+  bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE bool check_valid(const GeomVertexData *vertex_data) const;
 
@@ -162,7 +162,9 @@ PUBLISHED:
  */
 
   INLINE CPT(GeomVertexArrayData) get_vertices() const;
+  INLINE CPT(GeomVertexArrayDataHandle) get_vertices_handle(Thread *current_thread) const;
   PT(GeomVertexArrayData) modify_vertices(int num_vertices = -1);
+  INLINE PT(GeomVertexArrayDataHandle) modify_vertices_handle(Thread *current_thread);
   void set_vertices(const GeomVertexArrayData *vertices, int num_vertices = -1);
   void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
@@ -347,10 +349,10 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomPrimitivePipelineReader : public GeomEnums {
 public:
-  INLINE GeomPrimitivePipelineReader(const GeomPrimitive *object, Thread *current_thread);
+  INLINE GeomPrimitivePipelineReader(CPT(GeomPrimitive) object, Thread *current_thread);
 private:
-  INLINE GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy);
-  INLINE void operator = (const GeomPrimitivePipelineReader &copy);
+  GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy) DELETED;
+  GeomPrimitivePipelineReader &operator = (const GeomPrimitivePipelineReader &copy) DELETED_ASSIGN;
 
 public:
   INLINE ~GeomPrimitivePipelineReader();
@@ -369,13 +371,13 @@ public:
   INLINE int get_num_vertices() const;
   int get_vertex(int i) const;
   int get_num_primitives() const;
+  void get_referenced_vertices(BitArray &bits) const;
   INLINE int get_min_vertex() const;
   INLINE int get_max_vertex() const;
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
   INLINE int get_index_stride() const;
-  INLINE const GeomVertexArrayDataHandle *get_vertices_reader() const;
   INLINE const unsigned char *get_read_pointer(bool force) const;
   INLINE int get_strip_cut_index() const;
   INLINE CPTA_int get_ends() const;
@@ -384,13 +386,15 @@ public:
 
   INLINE IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                          GraphicsStateGuardianBase *gsg) const;
+  INLINE bool draw(GraphicsStateGuardianBase *gsg, bool force) const;
 
 private:
   CPT(GeomPrimitive) _object;
   Thread *_current_thread;
   const GeomPrimitive::CData *_cdata;
 
-  CPT(GeomVertexArrayDataHandle) _vertices_reader;
+  CPT(GeomVertexArrayData) _vertices;
+  const GeomVertexArrayData::CData *_vertices_cdata;
 
 public:
   static TypeHandle get_class_type() {

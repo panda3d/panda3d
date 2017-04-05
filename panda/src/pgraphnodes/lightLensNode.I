@@ -15,7 +15,7 @@
  * Returns whether this light is configured to cast shadows or not.
  */
 INLINE bool LightLensNode::
-is_shadow_caster() {
+is_shadow_caster() const {
   return _shadow_caster;
 }
 

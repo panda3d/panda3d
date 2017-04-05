@@ -113,7 +113,7 @@ set_pressure_coefficient(PN_stdfloat value) {
  * Getter for property kVC.
  */
 INLINE PN_stdfloat BulletSoftBodyConfig::
-get_volume_conversation_coefficient() const {
+get_volume_conservation_coefficient() const {
 
   return (PN_stdfloat)_cfg.kVC;
 }
@@ -122,7 +122,7 @@ get_volume_conversation_coefficient() const {
  * Setter for property kVC.
  */
 INLINE void BulletSoftBodyConfig::
-set_volume_conversation_coefficient(PN_stdfloat value) {
+set_volume_conservation_coefficient(PN_stdfloat value) {
 
   _cfg.kVC = (btScalar)value;
 }

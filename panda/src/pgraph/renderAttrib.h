@@ -196,7 +196,7 @@ private:
 
   // This keeps track of our current position through the garbage collection
   // cycle.
-  static int _garbage_index;
+  static size_t _garbage_index;
 
   static PStatCollector _garbage_collect_pcollector;
 

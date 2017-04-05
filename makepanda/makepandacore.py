@@ -76,7 +76,8 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2014","2014"),
                    ("MAYA2015","2015"),
                    ("MAYA2016","2016"),
-                   ("MAYA20165","2016.5")
+                   ("MAYA20165","2016.5"),
+                   ("MAYA2017","2017")
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -2383,6 +2384,8 @@ def SetupVisualStudioEnviron():
     os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
 
+    winsdk_ver = SDK["MSPLATFORM_VERSION"]
+
     # Determine the directories to look in based on the architecture.
     arch = GetTargetArch()
     bindir = ""
@@ -2398,9 +2401,16 @@ def SetupVisualStudioEnviron():
         # Special version of the tools that run on x86.
         bindir = 'x86_' + bindir
 
-    binpath = SDK["VISUALSTUDIO"] + "VC\\bin\\" + bindir
-    if not os.path.isdir(binpath):
-        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
+    vc_binpath = SDK["VISUALSTUDIO"] + "VC\\bin"
+    binpath = os.path.join(vc_binpath, bindir)
+    if not os.path.isfile(binpath + "\\cl.exe"):
+        # Try the x86 tools, those should work just as well.
+        if arch == 'x64' and os.path.isfile(vc_binpath + "\\x86_amd64\\cl.exe"):
+            binpath = "{0}\\x86_amd64;{0}".format(vc_binpath)
+        elif winsdk_ver.startswith('10.'):
+            exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
+        else:
+            exit("Couldn't find compilers in %s." % binpath)
 
     AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")

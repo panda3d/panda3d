@@ -571,6 +571,10 @@ if (COMPILER == "MSVC"):
             #LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
 
+            if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+                # dxerr needs this for __vsnwprintf definition.
+                LibName(pkg, 'legacy_stdio_definitions.lib')
+
     if not PkgSkip("FREETYPE") and os.path.isdir(GetThirdpartyDir() + "freetype/include/freetype2"):
         IncDirectory("FREETYPE", GetThirdpartyDir() + "freetype/include/freetype2")
 
@@ -637,7 +641,6 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",GetThirdpartyDir() + "artoolkit/lib/libAR.lib")
-    if (PkgSkip("ASSIMP")==0):   PkgDisable("ASSIMP")  # Not yet supported
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cv.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/highgui.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cvaux.lib")
@@ -652,6 +655,9 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("FCOLLADA")==0):
         LibName("FCOLLADA", GetThirdpartyDir() + "fcollada/lib/FCollada.lib")
         IncDirectory("FCOLLADA", GetThirdpartyDir() + "fcollada/include/FCollada")
+    if (PkgSkip("ASSIMP")==0):
+        LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/assimp.lib")
+        IncDirectory("ASSIMP", GetThirdpartyDir() + "assimp/include/assimp")
     if (PkgSkip("SQUISH")==0):
         if GetOptimize() <= 2:
             LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squishd.lib")
@@ -1291,7 +1297,7 @@ def CompileCxx(obj,src,opts):
         cmd += " -fno-strict-aliasing"
 
         if optlevel >= 3:
-            cmd += " -ffast-math"
+            cmd += " -ffast-math -fno-stack-protector"
         if optlevel == 3:
             # Fast math is nice, but we'd like to see NaN in dev builds.
             cmd += " -fno-finite-math-only"
@@ -2789,17 +2795,17 @@ else:
 
 tp_dir = GetThirdpartyDir()
 if tp_dir is not None:
-    dylibs = set()
+    dylibs = {}
 
     if GetTarget() == 'darwin':
         # Make a list of all the dylibs we ship, to figure out whether we should use
         # install_name_tool to correct the library reference to point to our copy.
         for lib in glob.glob(tp_dir + "/*/lib/*.dylib"):
-            dylibs.add(os.path.basename(lib))
+            dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
 
         if not PkgSkip("PYTHON"):
             for lib in glob.glob(tp_dir + "/*/lib/" + SDK["PYTHONVERSION"] + "/*.dylib"):
-                dylibs.add(os.path.basename(lib))
+                dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
 
     for pkg in PkgListGet():
         if PkgSkip(pkg):
@@ -2854,7 +2860,8 @@ if tp_dir is not None:
                     libdep = line.split(" ", 1)[0]
                     dep_basename = os.path.basename(libdep)
                     if dep_basename in dylibs:
-                        oscmd("install_name_tool -change %s %s%s %s" % (libdep, dep_prefix, dep_basename, target), True)
+                        dep_target = dylibs[dep_basename]
+                        oscmd("install_name_tool -change %s %s%s %s" % (libdep, dep_prefix, dep_target, target), True)
 
                 JustBuilt([target], [tp_lib])
 
@@ -2875,7 +2882,8 @@ if tp_dir is not None:
                         CopyFile(GetOutputDir() + "/" + base, tp_lib)
 
     if GetTarget() == 'windows':
-        CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
+        if os.path.isdir(os.path.join(tp_dir, "extras", "bin")):
+            CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
 
         if not PkgSkip("PYTHON") and not RTDIST:
             # We need to copy the Python DLL to the bin directory for now.
@@ -5575,7 +5583,7 @@ if not PkgSkip("PANDATOOL") and not PkgSkip("ASSIMP"):
   TargetAdd('p3assimp_composite1.obj', opts=OPTS, input='p3assimp_composite1.cxx')
   TargetAdd('libp3assimp.dll', input='p3assimp_composite1.obj')
   TargetAdd('libp3assimp.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3assimp.dll', opts=OPTS)
+  TargetAdd('libp3assimp.dll', opts=OPTS+['ZLIB'])
 
 #
 # DIRECTORY: pandatool/src/daeprogs/

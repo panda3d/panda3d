@@ -122,6 +122,13 @@ private:
 // constant expressions and compilation will fail if the assertion is not
 // true.
 
+#ifdef __GNUC__
+// Tell the optimizer to optimize for the case where the condition is true.
+#define _nassert_check(condition) (__builtin_expect(!(condition), 0))
+#else
+#define _nassert_check(condition) (!(condition))
+#endif
+
 #ifdef NDEBUG
 
 #define nassertr(condition, return_value)
@@ -131,14 +138,14 @@ private:
 
 #define nassertr_always(condition, return_value) \
   { \
-    if (!(condition)) { \
+    if (_nassert_check(condition)) { \
       return return_value; \
     } \
   }
 
 #define nassertv_always(condition) \
   { \
-    if (!(condition)) { \
+    if (_nassert_check(condition)) { \
       return; \
     } \
   }
@@ -151,7 +158,7 @@ private:
 
 #define nassertr(condition, return_value) \
   { \
-    if (!(condition)) { \
+    if (_nassert_check(condition)) { \
       if (Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__)) { \
         return return_value; \
       } \
@@ -160,7 +167,7 @@ private:
 
 #define nassertv(condition) \
   { \
-    if (!(condition)) { \
+    if (_nassert_check(condition)) { \
       if (Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__)) { \
         return; \
       } \
@@ -168,7 +175,7 @@ private:
   }
 
 #define nassertd(condition) \
-  if (!(condition) && \
+  if (_nassert_check(condition) && \
       Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__))
 
 #define nassertr_always(condition, return_value) nassertr(condition, return_value)
@@ -177,7 +184,7 @@ private:
 #define nassert_raise(message) Notify::ptr()->assert_failure(message, __LINE__, __FILE__)
 
 #define enter_debugger_if(condition) \
-  if (condition) { \
+  if (_nassert_check(condition)) { \
     Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__); \
     __asm { int 3 } \
   }

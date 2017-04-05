@@ -234,8 +234,8 @@ get_size() const {
  */
 template<class Key, class Value>
 INLINE bool WeakKeyHashMap<Key, Value>::
-has_element(int n) const {
-  nassertr(n >= 0 && n < (int)_table_size, false);
+has_element(size_t n) const {
+  nassertr(n < _table_size, false);
   return (get_exists_array()[n] != 0 && !_table[n]._key.was_deleted());
 }
 
@@ -248,7 +248,7 @@ has_element(int n) const {
  */
 template<class Key, class Value>
 INLINE const Key *WeakKeyHashMap<Key, Value>::
-get_key(int n) const {
+get_key(size_t n) const {
   nassertr(has_element(n), _table[n]._key);
   return _table[n]._key;
 }
@@ -262,7 +262,7 @@ get_key(int n) const {
  */
 template<class Key, class Value>
 INLINE const Value &WeakKeyHashMap<Key, Value>::
-get_data(int n) const {
+get_data(size_t n) const {
   nassertr(has_element(n), _table[n]._data);
   return _table[n]._data;
 }
@@ -276,7 +276,7 @@ get_data(int n) const {
  */
 template<class Key, class Value>
 INLINE Value &WeakKeyHashMap<Key, Value>::
-modify_data(int n) {
+modify_data(size_t n) {
   nassertr(has_element(n), _table[n]._data);
   return _table[n]._data;
 }
@@ -290,7 +290,7 @@ modify_data(int n) {
  */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
-set_data(int n, const Value &data) {
+set_data(size_t n, const Value &data) {
   nassertv(has_element(n));
   _table[n]._data = data;
 }
@@ -305,7 +305,7 @@ set_data(int n, const Value &data) {
  */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
-set_data(int n, Value &&data) {
+set_data(size_t n, Value &&data) {
   nassertv(has_element(n));
   _table[n]._data = move(data);
 }
@@ -320,7 +320,7 @@ set_data(int n, Value &&data) {
  */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
-remove_element(int n) {
+remove_element(size_t n) {
   nassertv(get_exists_array()[n] != 0);
 
   clear_element(n);
@@ -329,7 +329,7 @@ remove_element(int n) {
 
   // Now we have put a hole in the table.  If there was a hash conflict in the
   // slot following this one, we have to move it down to close the hole.
-  size_t i = (size_t)n;
+  size_t i = n;
   i = (i + 1) & (_table_size - 1);
   while (get_exists_array()[i] != 0) {
     if (_table[i]._key.was_deleted()) {
@@ -430,15 +430,17 @@ bool WeakKeyHashMap<Key, Value>::
 validate() const {
   size_t count = 0;
 
+  const unsigned char *exists_array = get_exists_array();
+
   for (size_t i = 0; i < _table_size; ++i) {
-    if (get_exists_array()[i] != 0) {
+    if (exists_array[i] != 0) {
       ++count;
       if (_table[i]._key.was_deleted()) {
         continue;
       }
       size_t ideal_index = get_hash(_table[i]._key.get_orig());
       size_t wants_index = ideal_index;
-      while (wants_index != i && get_exists_array()[i] != 0) {
+      while (wants_index != i && exists_array[wants_index] != 0) {
         wants_index = (wants_index + 1) & (_table_size - 1);
       }
       if (wants_index != i) {
@@ -485,7 +487,7 @@ get_hash(const Key *key) const {
  */
 template<class Key, class Value>
 INLINE bool WeakKeyHashMap<Key, Value>::
-is_element(int n, const Key *key) const {
+is_element(size_t n, const Key *key) const {
   nassertr(has_element(n), false);
   return _table[n]._key == key;
 }
@@ -496,7 +498,7 @@ is_element(int n, const Key *key) const {
  */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
-store_new_element(int n, const Key *key, const Value &data) {
+store_new_element(size_t n, const Key *key, const Value &data) {
   if (get_exists_array()[n] != 0) {
     // There was already an element in this spot.  This can happen if it was a
     // pointer that had already been deleted.
@@ -513,7 +515,7 @@ store_new_element(int n, const Key *key, const Value &data) {
  */
 template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
-clear_element(int n) {
+clear_element(size_t n) {
   _table[n].~TableEntry();
   get_exists_array()[n] = false;
 }

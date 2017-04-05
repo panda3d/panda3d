@@ -40,7 +40,7 @@ LightReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
 const RenderState *RenderState::_empty_state = NULL;
 UpdateSeq RenderState::_last_cycle_detect;
-int RenderState::_garbage_index = 0;
+size_t RenderState::_garbage_index = 0;
 
 PStatCollector RenderState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector RenderState::_garbage_collect_pcollector("*:State Cache:Garbage Collect");
@@ -75,6 +75,10 @@ RenderState() :
   _cache_stats.add_num_states(1);
   _read_overrides = NULL;
   _generated_shader = NULL;
+
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
 }
 
 /**
@@ -97,6 +101,10 @@ RenderState(const RenderState &copy) :
   _cache_stats.add_num_states(1);
   _read_overrides = NULL;
   _generated_shader = NULL;
+
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
 }
 
 /**
@@ -617,7 +625,7 @@ adjust_all_priorities(int adjustment) const {
  */
 bool RenderState::
 unref() const {
-  if (!state_cache || garbage_collect_states) {
+  if (garbage_collect_states || !state_cache) {
     // If we're not using the cache at all, or if we're relying on garbage
     // collection, just allow the pointer to unref normally.
     return ReferenceCount::unref();
@@ -774,8 +782,8 @@ get_num_unused_states() {
   typedef pmap<const RenderState *, int> StateCount;
   StateCount state_count;
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
+  size_t size = _states->get_size();
+  for (size_t si = 0; si < size; ++si) {
     if (!_states->has_element(si)) {
       continue;
     }
@@ -871,8 +879,8 @@ clear_cache() {
     TempStates temp_states;
     temp_states.reserve(orig_size);
 
-    int size = _states->get_size();
-    for (int si = 0; si < size; ++si) {
+    size_t size = _states->get_size();
+    for (size_t si = 0; si < size; ++si) {
       if (!_states->has_element(si)) {
         continue;
       }
@@ -938,27 +946,30 @@ garbage_collect() {
   if (_states == (States *)NULL || !garbage_collect_states) {
     return num_attribs;
   }
+
+  bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
+
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
   int orig_size = _states->get_num_entries();
 
   // How many elements to process this pass?
-  int size = _states->get_size();
-  int num_this_pass = int(size * garbage_collect_states_rate);
-  if (num_this_pass <= 0) {
+  size_t size = _states->get_size();
+  size_t num_this_pass = int((int)size * garbage_collect_states_rate);
+  if (size <= 0 || num_this_pass <= 0) {
     return num_attribs;
   }
-  num_this_pass = min(num_this_pass, size);
-  int stop_at_element = (_garbage_index + num_this_pass) % size;
 
-  int num_elements = 0;
-  int si = _garbage_index;
+  size_t si = _garbage_index;
+
+  num_this_pass = min(num_this_pass, size);
+  size_t stop_at_element = (si + num_this_pass) % (size - 1);
+
   do {
     if (_states->has_element(si)) {
-      ++num_elements;
       RenderState *state = (RenderState *)_states->get_key(si);
-      if (auto_break_cycles && uniquify_states) {
+      if (break_and_uniquify) {
         if (state->get_cache_ref_count() > 0 &&
             state->get_ref_count() == state->get_cache_ref_count()) {
           // If we have removed all the references to this state not in the
@@ -982,10 +993,13 @@ garbage_collect() {
       }
     }
 
-    si = (si + 1) % size;
+    si = (si + 1) & (size - 1);
   } while (si != stop_at_element);
   _garbage_index = si;
+
+#ifdef _DEBUG
   nassertr(_states->validate(), 0);
+#endif
 
   int new_size = _states->get_num_entries();
   return orig_size - new_size + num_attribs;
@@ -999,8 +1013,8 @@ void RenderState::
 clear_munger_cache() {
   LightReMutexHolder holder(*_states_lock);
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
+  size_t size = _states->get_size();
+  for (size_t si = 0; si < size; ++si) {
     if (!_states->has_element(si)) {
       continue;
     }
@@ -1034,8 +1048,8 @@ list_cycles(ostream &out) {
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
+  size_t size = _states->get_size();
+  for (size_t si = 0; si < size; ++si) {
     if (!_states->has_element(si)) {
       continue;
     }
@@ -1113,8 +1127,8 @@ list_states(ostream &out) {
 
   out << _states->get_num_entries() << " states:\n";
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
+  size_t size = _states->get_size();
+  for (size_t si = 0; si < size; ++si) {
     if (!_states->has_element(si)) {
       continue;
     }
@@ -1148,14 +1162,14 @@ validate_states() {
     return false;
   }
 
-  int size = _states->get_size();
-  int si = 0;
+  size_t size = _states->get_size();
+  size_t si = 0;
   while (si < size && !_states->has_element(si)) {
     ++si;
   }
   nassertr(si < size, false);
   nassertr(_states->get_key(si)->get_ref_count() >= 0, false);
-  int snext = si;
+  size_t snext = si;
   ++snext;
   while (snext < size && !_states->has_element(snext)) {
     ++snext;

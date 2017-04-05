@@ -929,7 +929,7 @@ reset() {
 #endif
 
 #ifndef OPENGLES
-  if (is_at_least_gl_version(3, 0)) {
+  if (is_at_least_gl_version(3, 1)) {
     _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBuffer");
     _supports_buffer_texture = true;
 
@@ -9260,18 +9260,22 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_RGBA16F;
     } else
 #endif
-#ifndef OPENGLES
+#ifdef OPENGLES
+    {
+      // In OpenGL ES, the internal format must match the external format.
+      return _supports_bgr ? GL_BGRA : GL_RGBA;
+    }
+#else
     if (tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_RGBA16;
     } else if (tex->get_component_type() == Texture::T_short) {
       return GL_RGBA16_SNORM;
     } else if (tex->get_component_type() == Texture::T_byte) {
       return GL_RGBA8_SNORM;
-    } else
-#endif
-    {
+    } else {
       return force_sized ? GL_RGBA8 : GL_RGBA;
     }
+#endif
 
   case Texture::F_rgba4:
     return GL_RGBA4;
@@ -10350,7 +10354,7 @@ set_state_and_transform(const RenderState *target,
 
   // Update all of the state that is bound to the shader program.
   if (_current_shader_context != NULL) {
-    _current_shader_context->set_state_and_transform(target, transform, _projection_mat);
+    _current_shader_context->set_state_and_transform(target, transform, _scene_setup->get_camera_transform(), _projection_mat);
   }
 #endif
 
@@ -12702,6 +12706,9 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   _data_transferred_pcollector.add_level(image_size);
 #endif
 
+#ifdef OPENGLES
+  internal_format = external_format;
+#endif
   glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
                width, height, 0,
                external_format, component_type, image_ptr);

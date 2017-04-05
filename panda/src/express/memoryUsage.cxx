@@ -490,6 +490,16 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
 }
 
 /**
+ * Initializes the global MemoryUsage pointer.
+ */
+void MemoryUsage::
+init_memory_usage() {
+  init_memory_hook();
+  _global_ptr = new MemoryUsage(*memory_hook);
+  memory_hook = _global_ptr;
+}
+
+/**
  * This callback method is called whenever the total allocated heap size
  * exceeds _max_heap_size.  It's mainly intended for reporting memory leaks,
  * on the assumption that once we cross some specified threshold, we're just

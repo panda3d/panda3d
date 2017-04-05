@@ -515,7 +515,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   CPT(TransformState) internal_transform = data.get_internal_transform(trav);
 
   for (int i = 0; i < num_geoms; i++) {
-    const Geom *geom = geoms.get_geom(i);
+    CPT(Geom) geom = geoms.get_geom(i);
     if (geom->is_empty()) {
       continue;
     }
@@ -558,7 +558,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     }
 
     CullableObject *object =
-      new CullableObject(geom, state, internal_transform);
+      new CullableObject(move(geom), move(state), internal_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
 }

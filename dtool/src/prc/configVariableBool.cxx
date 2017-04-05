@@ -12,3 +12,12 @@
  */
 
 #include "configVariableBool.h"
+
+/**
+ * Refreshes the cached value.
+ */
+void ConfigVariableBool::
+reload_value() const {
+  mark_cache_valid(_local_modified);
+  _cache = get_bool_word(0);
+}
