@@ -225,18 +225,19 @@ class build_apps(distutils.core.Command):
                 src = os.path.normpath(src)
                 dst = os.path.normpath(dst)
 
+                for pattern in ignore_copy_list:
+                    #print("check ignore:", pattern, src, pattern.matches(src))
+                    if pattern.matches(src):
+                        print("skipping file", src)
+                        return
+
+
                 dst_dir = os.path.dirname(dst)
                 if not os.path.exists(dst_dir):
                     distutils.dir_util.mkpath(dst_dir)
 
                 ext = os.path.splitext(src)[1]
                 dst_root = os.path.splitext(dst)[0]
-
-                for pattern in ignore_copy_list:
-                    #print("check ignore:", pattern, src, pattern.matches(src))
-                    if pattern.matches(src):
-                        print("skipping file", src)
-                        return
 
                 if ext in self.build_scripts:
                     dst_ext, script = self.build_scripts[ext]
