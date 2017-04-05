@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import collections
 import os
 import pip
@@ -215,6 +217,7 @@ class build_apps(distutils.core.Command):
             # Copy Game Files
             ignore_copy_list = [
                 '__pycache__',
+                '*.pyc',
             ] + list(freezer_modules) + self.exclude_paths + list(self.gui_apps.values()) + list(self.console_apps.values())
             ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
 
