@@ -699,7 +699,10 @@ reset() {
 
 #elif defined(OPENGLES)
   if (gl_support_primitive_restart_index && is_at_least_gles_version(3, 0)) {
+    // In WebGL 2, primitive restart is always enabled.
+#ifndef __EMSCRIPTEN__
     glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+#endif
     _supported_geom_rendering |= Geom::GR_strip_cut_index;
   }
 
@@ -744,6 +747,8 @@ reset() {
 #ifndef OPENGLES_1
   _glDrawRangeElements = null_glDrawRangeElements;
 
+  // Temporarily disabled in WebGL due to Firefox bug
+#ifndef __EMSCRIPTEN__
 #ifdef OPENGLES
   if (is_at_least_gles_version(3, 0)) {
     _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
@@ -764,6 +769,7 @@ reset() {
       << "glDrawRangeElements advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     _glDrawRangeElements = null_glDrawRangeElements;
   }
+#endif  // !__EMSCRIPTEN__
 #endif  // !OPENGLES_1
 
   _supports_3d_texture = false;
@@ -2887,7 +2893,7 @@ reset() {
   }
 #endif  // !OPENGLES
 
-#ifndef OPENGLES_1
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   _supports_get_program_binary = false;
   _program_binary_formats.clear();
 
@@ -3113,7 +3119,7 @@ reset() {
 
   report_my_gl_errors();
 
-#ifndef OPENGLES_1
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   if (GLCAT.is_debug()) {
     if (_supports_get_program_binary) {
       GLCAT.debug()

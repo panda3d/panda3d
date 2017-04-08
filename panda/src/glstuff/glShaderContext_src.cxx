@@ -3048,6 +3048,7 @@ glsl_compile_and_link() {
 
   // If we requested to retrieve the shader, we should indicate that before
   // linking.
+#ifndef __EMSCRIPTEN__
   bool retrieve_binary = false;
   if (_glgsg->_supports_get_program_binary) {
     retrieve_binary = _shader->get_cache_compiled_shader();
@@ -3060,6 +3061,7 @@ glsl_compile_and_link() {
 
     _glgsg->_glProgramParameteri(_glsl_program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
   }
+#endif  // !__EMSCRIPTEN__
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
@@ -3080,6 +3082,7 @@ glsl_compile_and_link() {
   // Report any warnings.
   glsl_report_program_errors(_glsl_program, false);
 
+#ifndef __EMSCRIPTEN__
   if (retrieve_binary) {
     GLint length = 0;
     _glgsg->_glGetProgramiv(_glsl_program, GL_PROGRAM_BINARY_LENGTH, &length);
@@ -3110,6 +3113,7 @@ glsl_compile_and_link() {
     }
 #endif  // NDEBUG
   }
+#endif  // !__EMSCRIPTEN__
 
   _glgsg->report_my_gl_errors();
   return true;

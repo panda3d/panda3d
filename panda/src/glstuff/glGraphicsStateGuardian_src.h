@@ -703,8 +703,11 @@ protected:
   bool _supports_anisotropy;
   GLint _max_image_units;
   bool _supports_multi_bind;
+
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   bool _supports_get_program_binary;
   pset<GLenum> _program_binary_formats;
+#endif
 
 #ifdef OPENGLES
   bool _supports_depth24;

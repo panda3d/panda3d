@@ -19,7 +19,7 @@
 #include "webGLGraphicsPipe.h"
 #include "graphicsWindow.h"
 
-#include <html5.h>
+#include <emscripten/html5.h>
 
 /**
  * An interface to Emscripten's WebGL interface that represents an HTML5
