@@ -8,8 +8,9 @@ from direct.task.Task import Task, TaskManager
 from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import *
 from panda3d.direct import *
-from direct.extensions_native import CInterval_extensions
-from direct.extensions_native import NodePath_extensions
+import direct.extensions_native.CInterval_extensions as CInterval_extensions
+import direct.extensions_native.NodePath_extensions as NodePath_extensions
+
 import math
 
 class Interval(DirectObject):

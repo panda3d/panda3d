@@ -168,10 +168,16 @@ set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
 
   if (properties.has_size()) {
-    emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
-    _properties.set_size(properties.get_size());
+    //emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
+        int width, height, fullscreen;
+        emscripten_get_canvas_size(&width, &height, &fullscreen);
+    printf("WebGLGraphicsWindow::set_properties_now ( %i x %i ) but browser forced to ( %i x %i )\n",
+        properties.get_x_size(), properties.get_y_size(), width,height );
+    _properties.set_size( width,height );
     properties.clear_size();
+
     set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
+
     throw_event(get_window_event(), this);
   }
 
@@ -300,14 +306,17 @@ open_window() {
     //}
   }
 
-  if (_properties.has_size() && _properties.get_size() != LVecBase2i(1, 1)) {
-    emscripten_set_canvas_size(_properties.get_x_size(), _properties.get_y_size());
-  } else {
+/*  
+    canvas id="canvas" width="320" height="200" style="width: 1920px; height: 1080px;"
+    use width="320" height="200" as render buffer size : 3d power realistic
+    as style is scaled version of canvas for page display on maybe big screen.
+*/
     int width, height, fullscreen;
     emscripten_get_canvas_size(&width, &height, &fullscreen);
     _properties.set_size(width, height);
+printf("WebGLGraphicsWindow::open_window( %i , %i )", width , height );
     _properties.set_fullscreen(fullscreen > 0);
-  }
+
 
   _properties.set_undecorated(true);
 
@@ -465,7 +474,7 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
     int keycode = 0;
     EM_ASM_({
       stringToUTF32(String.fromCharCode($0), $1, 4);
-    }, event->charCode, &keycode);
+    }, event->which, &keycode);
 
     if (keycode != 0) {
       device->keystroke(keycode);
