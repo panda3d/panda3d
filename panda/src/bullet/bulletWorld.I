@@ -84,6 +84,15 @@ get_debug_node() const {
 /**
  *
  */
+INLINE bool BulletWorld::
+has_debug_node() const {
+
+  return _debug != NULL;
+}
+
+/**
+ *
+ */
 INLINE btDynamicsWorld *BulletWorld::
 get_world() const {
 

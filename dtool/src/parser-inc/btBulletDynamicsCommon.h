@@ -65,7 +65,6 @@ class btPoint2PointConstraint;
 class btPolyhedralConvexShape;
 class btQuaternion;
 class btSequentialImpulseConstraintSolver;
-class btScalar;
 class btSliderConstraint;
 class btSoftBodyHelpers;
 class btSoftBodyRigidBodyCollisionConfiguration;
@@ -80,10 +79,12 @@ class btTranslationalLimitMotor;
 class btTriangleMesh;
 class btTypedConstraint;
 class btTypedObject;
-class btVector3;
 class btVehicleRaycaster;
 
 template <typename T> class btAlignedObjectArray;
+
+struct btVector3 {};
+typedef double btScalar;
 
 class btWheelInfo {
 public:

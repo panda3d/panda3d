@@ -92,6 +92,14 @@ set_port(int port) {
 }
 
 /**
+ * Returns true if the IP address has only zeroes.
+ */
+bool NetAddress::
+is_any() const {
+  return _addr.is_any();
+}
+
+/**
  * Returns the IP address to which this address refers, formatted as a string.
  */
 string NetAddress::
@@ -102,6 +110,7 @@ get_ip_string() const {
 /**
  * Returns the IP address to which this address refers, as a 32-bit integer,
  * in host byte order.
+ * @deprecated  Does not work with IPv6 addresses.
  */
 uint32_t NetAddress::
 get_ip() const {
@@ -135,7 +144,7 @@ get_addr() const {
  */
 void NetAddress::
 output(ostream &out) const {
-  out << get_ip_string();
+  out << _addr.get_ip_port();
 }
 
 /**

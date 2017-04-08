@@ -464,42 +464,33 @@ void PipeOcclusionCullTraverser::
 make_box() {
   PT(GeomVertexData) vdata = new GeomVertexData
     ("occlusion_box", GeomVertexFormat::get_v3(), Geom::UH_static);
-  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  vdata->unclean_set_num_rows(8);
 
-  vertex.add_data3(0.0f, 0.0f, 0.0f);
-  vertex.add_data3(0.0f, 0.0f, 1.0f);
-  vertex.add_data3(0.0f, 1.0f, 0.0f);
-  vertex.add_data3(0.0f, 1.0f, 1.0f);
-  vertex.add_data3(1.0f, 0.0f, 0.0f);
-  vertex.add_data3(1.0f, 0.0f, 1.0f);
-  vertex.add_data3(1.0f, 1.0f, 0.0f);
-  vertex.add_data3(1.0f, 1.0f, 1.0f);
+  {
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    vertex.set_data3(0.0f, 0.0f, 0.0f);
+    vertex.set_data3(0.0f, 0.0f, 1.0f);
+    vertex.set_data3(0.0f, 1.0f, 0.0f);
+    vertex.set_data3(0.0f, 1.0f, 1.0f);
+    vertex.set_data3(1.0f, 0.0f, 0.0f);
+    vertex.set_data3(1.0f, 0.0f, 1.0f);
+    vertex.set_data3(1.0f, 1.0f, 0.0f);
+    vertex.set_data3(1.0f, 1.0f, 1.0f);
+  }
 
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
   tris->add_vertices(0, 4, 5);
-  tris->close_primitive();
   tris->add_vertices(0, 5, 1);
-  tris->close_primitive();
   tris->add_vertices(4, 6, 7);
-  tris->close_primitive();
   tris->add_vertices(4, 7, 5);
-  tris->close_primitive();
   tris->add_vertices(6, 2, 3);
-  tris->close_primitive();
   tris->add_vertices(6, 3, 7);
-  tris->close_primitive();
   tris->add_vertices(2, 0, 1);
-  tris->close_primitive();
   tris->add_vertices(2, 1, 3);
-  tris->close_primitive();
   tris->add_vertices(1, 5, 7);
-  tris->close_primitive();
   tris->add_vertices(1, 7, 3);
-  tris->close_primitive();
   tris->add_vertices(2, 6, 4);
-  tris->close_primitive();
   tris->add_vertices(2, 4, 0);
-  tris->close_primitive();
 
   _box_geom = new Geom(vdata);
   _box_geom->add_primitive(tris);
@@ -672,8 +663,6 @@ show_results(int num_fragments, const Geom *geom,
      DepthTestAttrib::make(DepthTestAttrib::M_less),
      TransparencyAttrib::make(TransparencyAttrib::M_alpha),
      ColorAttrib::make_flat(color));
-
-  GraphicsStateGuardian *gsg = _buffer->get_gsg();
 
   CullableObject *internal_viz =
     new CullableObject(geom, state, internal_transform);

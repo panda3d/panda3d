@@ -90,14 +90,6 @@ operator [](int i) {
 }
 
 /**
- * Returns 3: the number of components of a LVecBase3.
- */
-CONSTEXPR int FLOATNAME(LVecBase3)::
-size() {
-  return 3;
-}
-
-/**
  * Returns true if any component of the vector is not-a-number, false
  * otherwise.
  */
@@ -244,14 +236,6 @@ add_z(FLOATTYPE value) {
 INLINE_LINMATH const FLOATTYPE *FLOATNAME(LVecBase3)::
 get_data() const {
   return &_v(0);
-}
-
-/**
- * Returns the number of elements in the vector, three.
- */
-CONSTEXPR int FLOATNAME(LVecBase3)::
-get_num_components() {
-  return 3;
 }
 
 /**
@@ -528,10 +512,9 @@ INLINE_LINMATH size_t FLOATNAME(LVecBase3)::
 add_hash(size_t hash) const {
   TAU_PROFILE("size_t LVecBase3::add_hash(size_t)", " ", TAU_USER);
 #ifdef FLOATTYPE_IS_INT
-  int_hash ihasher;
-  hash = ihasher.add_hash(hash, _v(0));
-  hash = ihasher.add_hash(hash, _v(1));
-  hash = ihasher.add_hash(hash, _v(2));
+  hash = int_hash::add_hash(hash, _v(0));
+  hash = int_hash::add_hash(hash, _v(1));
+  hash = int_hash::add_hash(hash, _v(2));
   return hash;
 #else
   return add_hash(hash, NEARLY_ZERO(FLOATTYPE));

@@ -1544,7 +1544,14 @@ INLINE size_t Texture::
 get_ram_mipmap_image_size(int n) const {
   CDReader cdata(_cycler);
   if (n >= 0 && n < (int)cdata->_ram_images.size()) {
-    return cdata->_ram_images[n]._image.size();
+    if (cdata->_ram_images[n]._pointer_image == nullptr) {
+      return cdata->_ram_images[n]._image.size();
+    } else {
+      // Calculate it based on the given page size.
+      return do_get_ram_mipmap_page_size(cdata, n) *
+             do_get_expected_mipmap_z_size(cdata, n) *
+             cdata->_num_views;
+    }
   }
   return 0;
 }
@@ -2318,8 +2325,8 @@ get_unsigned_short(const unsigned char *&p) {
 }
 
 /**
- * Returns true if the indicated filename ends in .txo or .txo.pz, false
- * otherwise.
+ * Returns true if the indicated filename ends in .txo or .txo.pz or .txo.gz,
+ * false otherwise.
  */
 INLINE bool Texture::
 is_txo_filename(const Filename &fullpath) {
@@ -2333,8 +2340,8 @@ is_txo_filename(const Filename &fullpath) {
 }
 
 /**
- * Returns true if the indicated filename ends in .dds or .dds.pz, false
- * otherwise.
+ * Returns true if the indicated filename ends in .dds or .dds.pz or .dds.gz,
+ * false otherwise.
  */
 INLINE bool Texture::
 is_dds_filename(const Filename &fullpath) {
@@ -2345,6 +2352,21 @@ is_dds_filename(const Filename &fullpath) {
   }
 #endif  // HAVE_ZLIB
   return (downcase(extension) == "dds");
+}
+
+/**
+ * Returns true if the indicated filename ends in .ktx or .ktx.pz or .ktx.gz,
+ * false otherwise.
+ */
+INLINE bool Texture::
+is_ktx_filename(const Filename &fullpath) {
+  string extension = fullpath.get_extension();
+#ifdef HAVE_ZLIB
+  if (extension == "pz" || extension == "gz") {
+    extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
+  }
+#endif  // HAVE_ZLIB
+  return (downcase(extension) == "ktx");
 }
 
 /**

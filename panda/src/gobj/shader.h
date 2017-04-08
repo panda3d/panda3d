@@ -287,7 +287,7 @@ public:
   enum ShaderStateDep {
     SSD_NONE          = 0x000,
     SSD_general       = 0x001,
-    SSD_transform     = 0x002,
+    SSD_transform    = 0x2002,
     SSD_color         = 0x004,
     SSD_colorscale    = 0x008,
     SSD_material      = 0x010,
@@ -299,6 +299,7 @@ public:
     SSD_frame         = 0x400,
     SSD_projection    = 0x800,
     SSD_texture      = 0x1000,
+    SSD_view_transform= 0x2000,
   };
 
   enum ShaderBug {
@@ -556,10 +557,10 @@ public:
 #endif
 
 public:
-  pvector <ShaderPtrSpec> _ptr_spec;
-  epvector <ShaderMatSpec> _mat_spec;
-  pvector <ShaderTexSpec> _tex_spec;
-  pvector <ShaderVarSpec> _var_spec;
+  pvector<ShaderPtrSpec> _ptr_spec;
+  epvector<ShaderMatSpec> _mat_spec;
+  pvector<ShaderTexSpec> _tex_spec;
+  pvector<ShaderVarSpec> _var_spec;
   int _mat_deps;
 
   bool _error_flag;
@@ -616,7 +617,7 @@ private:
 public:
   ~Shader();
 
-  INLINE Filename get_filename_from_index(int index, ShaderType type) const;
+  Filename get_filename_from_index(int index, ShaderType type) const;
 
 public:
   static void register_with_read_factory();

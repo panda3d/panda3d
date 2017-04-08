@@ -61,6 +61,10 @@ PUBLISHED:
   INLINE CPT(TransformState) get_frame_a() const;
   INLINE CPT(TransformState) get_frame_b() const;
 
+  MAKE_PROPERTY(translational_limit_motor, get_translational_limit_motor);
+  MAKE_PROPERTY(frame_a, get_frame_a);
+  MAKE_PROPERTY(frame_b, get_frame_b);
+
 public:
   virtual btTypedConstraint *ptr() const;
 

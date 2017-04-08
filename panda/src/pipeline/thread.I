@@ -49,6 +49,16 @@ get_pstats_index() const {
 }
 
 /**
+ * Returns the Python index associated with this thread, or -1 if no index has
+ * yet been associated with this thread.  This is used internally by the
+ * direct.stdpy.thread module; you should not need to call this directly.
+ */
+INLINE int Thread::
+get_python_index() const {
+  return _python_index;
+}
+
+/**
  * Returns a string that is guaranteed to be unique to this thread, across all
  * processes on the machine, during at least the lifetime of this process.
  */
@@ -63,7 +73,16 @@ get_unique_id() const {
  */
 INLINE int Thread::
 get_pipeline_stage() const {
+#if !defined(_DEBUG) && defined(__has_builtin) && __has_builtin(__builtin_assume)
+  // Because this is a signed int, this results in a sign extend on x86-64.
+  // However, since we guarantee that this is never less than zero, clang
+  // offers a nice way to avoid that.
+  int pipeline_stage = _pipeline_stage;
+  __builtin_assume(pipeline_stage >= 0);
+  return pipeline_stage;
+#else
   return _pipeline_stage;
+#endif
 }
 
 /**
@@ -261,6 +280,15 @@ preempt() {
 INLINE AsyncTaskBase *Thread::
 get_current_task() const {
   return _current_task;
+}
+
+/**
+ * Stores a Python index to be associated with this thread.  This is used
+ * internally by the thread module; you should not need to call this directly.
+ */
+INLINE void Thread::
+set_python_index(int python_index) {
+  _python_index = python_index;
 }
 
 /**

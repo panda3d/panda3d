@@ -31,35 +31,12 @@ DatagramIterator(const Datagram &datagram, size_t offset) :
 }
 
 /**
- *
- */
-INLINE DatagramIterator::
-DatagramIterator(const DatagramIterator &copy) :
-    _datagram(copy._datagram),
-  _current_index(copy._current_index) {
-}
-
-/**
- *
- */
-INLINE void DatagramIterator::
-operator = (const DatagramIterator &copy) {
-  _datagram = copy._datagram;
-  _current_index = copy._current_index;
-}
-/**
  * direct Assignment to a Datagram
  */
-INLINE void DatagramIterator::assign(Datagram &datagram, size_t offset)
-{
-    _datagram =&datagram;
-    _current_index = offset;
-}
-/**
- *
- */
-INLINE DatagramIterator::
-~DatagramIterator() {
+INLINE void DatagramIterator::
+assign(Datagram &datagram, size_t offset) {
+  _datagram = &datagram;
+  _current_index = offset;
 }
 
 // Various ways to get data and increment the iterator... Cut-and-paste-orama

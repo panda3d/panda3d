@@ -41,6 +41,9 @@ PUBLISHED:
   INLINE bool is_static() const;
   INLINE bool is_dynamic() const;
 
+  MAKE_PROPERTY(static, is_static);
+  MAKE_PROPERTY(dynamic, is_dynamic);
+
 public:
   virtual btCollisionShape *ptr() const;
 

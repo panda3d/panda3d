@@ -184,6 +184,16 @@ INLINE void HashVal::
 hash_string(const string &data) {
   hash_buffer(data.data(), data.length());
 }
+
+/**
+ * Generates the hash value by hashing the indicated data.  This method is
+ * only defined if we have the OpenSSL library (which provides md5
+ * functionality) available.
+ */
+INLINE void HashVal::
+hash_bytes(const pvector<unsigned char> &data) {
+  hash_buffer((const char *)&data[0], data.size());
+}
 #endif  // HAVE_OPENSSL
 
 /**

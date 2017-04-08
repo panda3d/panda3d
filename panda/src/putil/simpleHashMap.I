@@ -235,8 +235,8 @@ get_size() const {
  */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
-has_element(int n) const {
-  nassertr(n >= 0 && n < (int)_table_size, false);
+has_element(size_t n) const {
+  nassertr(n < _table_size, false);
   return (get_exists_array()[n] != 0);
 }
 
@@ -249,7 +249,7 @@ has_element(int n) const {
  */
 template<class Key, class Value, class Compare>
 INLINE const Key &SimpleHashMap<Key, Value, Compare>::
-get_key(int n) const {
+get_key(size_t n) const {
   nassertr(has_element(n), _table[n]._key);
   return _table[n]._key;
 }
@@ -263,7 +263,7 @@ get_key(int n) const {
  */
 template<class Key, class Value, class Compare>
 INLINE const Value &SimpleHashMap<Key, Value, Compare>::
-get_data(int n) const {
+get_data(size_t n) const {
   nassertr(has_element(n), _table[n]._data);
   return _table[n]._data;
 }
@@ -277,7 +277,7 @@ get_data(int n) const {
  */
 template<class Key, class Value, class Compare>
 INLINE Value &SimpleHashMap<Key, Value, Compare>::
-modify_data(int n) {
+modify_data(size_t n) {
   nassertr(has_element(n), _table[n]._data);
   return _table[n]._data;
 }
@@ -291,7 +291,7 @@ modify_data(int n) {
  */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
-set_data(int n, const Value &data) {
+set_data(size_t n, const Value &data) {
   nassertv(has_element(n));
   _table[n]._data = data;
 }
@@ -305,7 +305,7 @@ set_data(int n, const Value &data) {
  */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
-remove_element(int n) {
+remove_element(size_t n) {
   nassertv(has_element(n));
 
   clear_element(n);
@@ -314,7 +314,7 @@ remove_element(int n) {
 
   // Now we have put a hole in the table.  If there was a hash conflict in the
   // slot following this one, we have to move it down to close the hole.
-  size_t i = (size_t)n;
+  size_t i = n;
   i = (i + 1) & (_table_size - 1);
   while (has_element(i)) {
     size_t wants_index = get_hash(_table[i]._key);
@@ -403,12 +403,14 @@ bool SimpleHashMap<Key, Value, Compare>::
 validate() const {
   size_t count = 0;
 
+  const unsigned char *exists_array = get_exists_array();
+
   for (size_t i = 0; i < _table_size; ++i) {
-    if (has_element(i)) {
+    if (exists_array[i] != 0) {
       ++count;
       size_t ideal_index = get_hash(_table[i]._key);
       size_t wants_index = ideal_index;
-      while (wants_index != i && has_element(wants_index)) {
+      while (wants_index != i && exists_array[wants_index] != 0) {
         wants_index = (wants_index + 1) & (_table_size - 1);
       }
       if (wants_index != i) {
@@ -455,7 +457,7 @@ get_hash(const Key &key) const {
  */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
-is_element(int n, const Key &key) const {
+is_element(size_t n, const Key &key) const {
   nassertr(has_element(n), false);
   return _comp.is_equal(_table[n]._key, key);
 }
@@ -466,7 +468,7 @@ is_element(int n, const Key &key) const {
  */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
-store_new_element(int n, const Key &key, const Value &data) {
+store_new_element(size_t n, const Key &key, const Value &data) {
   new(&_table[n]) TableEntry(key, data);
   get_exists_array()[n] = true;
 }
@@ -476,7 +478,7 @@ store_new_element(int n, const Key &key, const Value &data) {
  */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
-clear_element(int n) {
+clear_element(size_t n) {
   _table[n].~TableEntry();
   get_exists_array()[n] = false;
 }
@@ -553,7 +555,6 @@ expand_table() {
   nassertv(_num_entries == 0);
 
   // Now copy the entries from the old table into the new table.
-  int num_added = 0;
   for (size_t i = 0; i < old_table_size; ++i) {
     if (old_map.has_element(i)) {
       size_t new_index = get_hash(old_map._table[i]._key);

@@ -114,7 +114,8 @@ reset() {
     Geom::GR_point |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip |
-    Geom::GR_flat_last_vertex;
+    Geom::GR_flat_last_vertex |
+    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point;
 
   _max_texture_dimension = (1 << ZB_POINT_ST_FRAC_BITS);
   _max_texture_stages = MAX_TEXTURE_STAGES;
@@ -1722,24 +1723,9 @@ update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmap
  */
 void TinyGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
-  TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
-
   _texturing_state = 0;  // just in case
 
-  GLTexture *gltex = &gtc->_gltex;
-  if (gltex->allocated_buffer != NULL) {
-    nassertv(gltex->num_levels != 0);
-    TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
-    PANDA_FREE_ARRAY(gltex->allocated_buffer);
-    gltex->allocated_buffer = NULL;
-    gltex->total_bytecount = 0;
-    gltex->num_levels = 0;
-  } else {
-    nassertv(gltex->num_levels == 0);
-  }
-
-  gtc->dequeue_lru();
-
+  TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
   delete gtc;
 }
 
@@ -2626,12 +2612,10 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
 
   if (gltex->total_bytecount != total_bytecount) {
     if (gltex->allocated_buffer != NULL) {
-      PANDA_FREE_ARRAY(gltex->allocated_buffer);
-      TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
+      TinyTextureContext::get_class_type().deallocate_array(gltex->allocated_buffer);
     }
-    gltex->allocated_buffer = PANDA_MALLOC_ARRAY(total_bytecount);
+    gltex->allocated_buffer = TinyTextureContext::get_class_type().allocate_array(total_bytecount);
     gltex->total_bytecount = total_bytecount;
-    TinyTextureContext::get_class_type().inc_memory_usage(TypeHandle::MC_array, total_bytecount);
   }
 
   char *next_buffer = (char *)gltex->allocated_buffer;

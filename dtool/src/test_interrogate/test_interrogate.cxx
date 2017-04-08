@@ -521,6 +521,8 @@ main(int argc, char **argv) {
   extern int optind;
   const char *optstr = "p:ftqh";
 
+  pystub();
+
   bool all_functions = false;
   bool all_types = false;
   bool quick_load = false;

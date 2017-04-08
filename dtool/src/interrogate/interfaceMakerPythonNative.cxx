@@ -1133,7 +1133,8 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   // to a macro function.
   out << "typedef " << c_class_name << " " << class_name << "_localtype;\n";
   if (obj->_itype.has_destructor() ||
-      obj->_itype.destructor_is_inherited()) {
+      obj->_itype.destructor_is_inherited() ||
+      obj->_itype.destructor_is_implicit()) {
 
     if (TypeManager::is_reference_count(type)) {
       out << "Define_Module_ClassRef";
@@ -1259,9 +1260,16 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       if (is_cpp_type_legal(object->_itype._cpptype) &&
           isExportThisRun(object->_itype._cpptype)) {
         string class_name = make_safe_name(object->_itype.get_scoped_name());
-        bool is_typed = HasAGetClassTypeFunction(object->_itype._cpptype);
+        bool is_typed = has_get_class_type_function(object->_itype._cpptype);
 
         if (is_typed) {
+          if (has_init_type_function(object->_itype._cpptype)) {
+            // Call the init_type function.  This isn't necessary for all
+            // types as many of them are automatically initialized at static
+            // init type, but for some extension classes it's useful.
+            out << "  " << object->_itype._cpptype->get_local_name(&parser)
+                << "::init_type();\n";
+          }
           out << "  Dtool_" << class_name << "._type = "
               << object->_itype._cpptype->get_local_name(&parser)
               << "::get_class_type();\n"
@@ -1291,7 +1299,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
     string class_name = (*ii)->get_local_name(&parser);
     string safe_name = make_safe_name(class_name);
 
-    if (HasAGetClassTypeFunction(*ii)) {
+    if (has_get_class_type_function(*ii)) {
       out << "  Dtool_Ptr_" << safe_name << " = LookupRuntimeTypedClass(" << class_name << "::get_class_type());\n";
     } else {
       out << "  Dtool_Ptr_" << safe_name << " = LookupNamedClass(\"" << class_name << "\");\n";
@@ -1541,7 +1549,7 @@ write_module_class(ostream &out, Object *obj) {
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
 
   bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
-  if (!is_runtime_typed && HasAGetClassTypeFunction(obj->_itype._cpptype)) {
+  if (!is_runtime_typed && has_get_class_type_function(obj->_itype._cpptype)) {
     is_runtime_typed = true;
   }
 
@@ -2337,7 +2345,7 @@ write_module_class(ostream &out, Object *obj) {
 
           string expected_params;
 
-          out << "  if (arg2 != (PyObject *)NULL) {\n";
+          out << "  if (arg2 != (PyObject *)NULL && arg2 != Py_None) {\n";
           out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
           write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
                                 true, true, AT_varargs, RF_pyobject | RF_err_null | RF_decref_args, true);
@@ -2890,10 +2898,12 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   // traverseproc tp_traverse;
-  write_function_slot(out, 4, slots, "tp_traverse");
+  out << "    0, // tp_traverse\n";
+  //write_function_slot(out, 4, slots, "tp_traverse");
 
   // inquiry tp_clear;
-  write_function_slot(out, 4, slots, "tp_clear");
+  out << "    0, // tp_clear\n";
+  //write_function_slot(out, 4, slots, "tp_clear");
 
   // richcmpfunc tp_richcompare;
   if (has_local_richcompare) {
@@ -3444,7 +3454,13 @@ write_function_for_name(ostream &out, Object *obj,
     max_required_args = collapse_default_remaps(map_sets, max_required_args);
   }
 
-  if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
+  if (remap->_flags & FunctionRemap::F_explicit_args) {
+    // We have a remap that wants to handle the wrapper itself.
+    string expected_params;
+    write_function_instance(out, remap, 0, 0, expected_params, 2, true, true,
+                            args_type, return_flags);
+
+  } else if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
     switch (args_type) {
     case AT_keyword_args:
       indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
@@ -4194,7 +4210,7 @@ write_function_forset(ostream &out,
     return;
   }
 
-  FunctionRemap *remap;
+  FunctionRemap *remap = NULL;
   std::set<FunctionRemap *>::iterator sii;
 
   bool all_nonconst = false;
@@ -4527,19 +4543,23 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   expected_params += methodNameFromCppName(remap, "", false);
   expected_params += "(";
 
-  int num_params = max_num_args;
-  if (remap->_has_this) {
-    num_params += 1;
-  }
-  if (num_params > (int)remap->_parameters.size()) {
-    // Limit to how many parameters this remap actually has.
-    num_params = (int)remap->_parameters.size();
-    max_num_args = num_params;
+  int num_params = 0;
+
+  if ((remap->_flags & FunctionRemap::F_explicit_args) == 0) {
+    num_params = max_num_args;
     if (remap->_has_this) {
-      --max_num_args;
+      num_params += 1;
     }
+    if (num_params > (int)remap->_parameters.size()) {
+      // Limit to how many parameters this remap actually has.
+      num_params = (int)remap->_parameters.size();
+      max_num_args = num_params;
+      if (remap->_has_this) {
+        --max_num_args;
+      }
+    }
+    nassertv(num_params <= (int)remap->_parameters.size());
   }
-  nassertv(num_params <= (int)remap->_parameters.size());
 
   bool only_pyobjects = true;
 
@@ -4573,6 +4593,17 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       pexprs.push_back(first_pexpr);
       ++pn;
     }
+  }
+
+  if (remap->_flags & FunctionRemap::F_explicit_args) {
+    // The function handles the arguments by itself.
+    expected_params += "*args";
+    pexprs.push_back("args");
+    if (args_type == AT_keyword_args) {
+      expected_params += ", **kwargs";
+      pexprs.push_back("kwds");
+    }
+    num_params = 0;
   }
 
   // Now convert (the rest of the) actual arguments, one by one.
@@ -4790,6 +4821,26 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         //}
         expected_params += "str";
       }
+      // Remember to clear the TypeError that any of the above methods raise.
+      clear_error = true;
+      only_pyobjects = false;
+
+    } else if (TypeManager::is_vector_unsigned_char(type)) {
+      indent(out, indent_level) << "unsigned char *" << param_name << "_str = NULL;\n";
+      indent(out, indent_level) << "Py_ssize_t " << param_name << "_len;\n";
+
+      if (args_type == AT_single_arg) {
+        extra_param_check << " && PyBytes_AsStringAndSize(arg, (char **)&"
+          << param_name << "_str, &" << param_name << "_len) >= 0";
+      } else {
+        format_specifiers += "\" FMTCHAR_BYTES \"#";
+        parameter_list += ", &" + param_name + "_str, &" + param_name + "_len";
+      }
+
+      pexpr_string = type->get_local_name(&parser);
+      pexpr_string += "(" + param_name + "_str, " + param_name + "_str + " + param_name + "_len" + ")";
+      expected_params += "bytes";
+
       // Remember to clear the TypeError that any of the above methods raise.
       clear_error = true;
       only_pyobjects = false;
@@ -6072,7 +6123,8 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       TypeManager::is_char_pointer(type) ||
       TypeManager::is_wchar_pointer(type) ||
       TypeManager::is_pointer_to_PyObject(type) ||
-      TypeManager::is_pointer_to_Py_buffer(type)) {
+      TypeManager::is_pointer_to_Py_buffer(type) ||
+      TypeManager::is_vector_unsigned_char(type)) {
     // Most types are now handled by the many overloads of Dtool_WrapValue,
     // defined in py_panda.h.
     indent(out, indent_level)
@@ -6112,7 +6164,7 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
 
         write_python_instance(out, indent_level, return_expr, owns_memory, itype, is_const);
       }
-    } else if (TypeManager::is_struct(orig_type->as_pointer_type()->_pointing_at)) {
+    } else if (TypeManager::is_struct(orig_type->remove_pointer())) {
       TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
       const InterrogateType &itype = idb->get_type(type_index);
 
@@ -6168,7 +6220,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     // the assumption that the called method doesn't do anything with this
     // tuple other than unpack it (which is a fairly safe assumption to make).
     out << "  PyTupleObject args;\n";
-    out << "  PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
+    out << "  (void)PyObject_INIT_VAR((PyVarObject *)&args, &PyTuple_Type, 1);\n";
   }
 
   out <<
@@ -6241,7 +6293,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out <<
         "  " << cClassName  << " *local_this = NULL;\n"
         "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
-        "    return NULL;\n"
+        "    return -1;\n"
         "  }\n"
         "  return (Py_ssize_t)" << len_remap->get_call_str("local_this", pexprs) << ";\n";
     } else {
@@ -6713,9 +6765,13 @@ is_cpp_type_legal(CPPType *in_ctype) {
     return true;
   } else if (TypeManager::is_basic_string_wchar(type)) {
     return true;
+  } else if (TypeManager::is_vector_unsigned_char(type)) {
+    return true;
   } else if (TypeManager::is_simple(type)) {
     return true;
   } else if (TypeManager::is_pointer_to_simple(type)) {
+    return true;
+  } else if (builder.in_forcetype(type->get_local_name(&parser))) {
     return true;
   } else if (TypeManager::is_exported(type)) {
     return true;
@@ -6985,7 +7041,7 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
 
  */
 bool InterfaceMakerPythonNative::
-HasAGetClassTypeFunction(CPPType *type) {
+has_get_class_type_function(CPPType *type) {
   while (type->get_subtype() == CPPDeclaration::ST_typedef) {
     type = type->as_typedef_type()->_type;
   }
@@ -6998,6 +7054,43 @@ HasAGetClassTypeFunction(CPPType *type) {
   CPPScope *scope = struct_type->get_scope();
 
   return scope->_functions.find("get_class_type") != scope->_functions.end();
+}
+
+/**
+ *
+ */
+bool InterfaceMakerPythonNative::
+has_init_type_function(CPPType *type) {
+  while (type->get_subtype() == CPPDeclaration::ST_typedef) {
+    type = type->as_typedef_type()->_type;
+  }
+
+  CPPStructType *struct_type = type->as_struct_type();
+  if (struct_type == NULL) {
+    return false;
+  }
+
+  CPPScope *scope = struct_type->get_scope();
+  CPPScope::Functions::const_iterator it = scope->_functions.find("init_type");
+  if (it == scope->_functions.end()) {
+    return false;
+  }
+  const CPPFunctionGroup *group = it->second;
+
+  CPPFunctionGroup::Instances::const_iterator ii;
+  for (ii = group->_instances.begin(); ii != group->_instances.end(); ++ii) {
+    const CPPInstance *cppinst = *ii;
+    const CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
+
+    if (cppfunc != NULL &&
+        cppfunc->_parameters != NULL &&
+        cppfunc->_parameters->_parameters.size() == 0 &&
+        (cppinst->_storage_class & CPPInstance::SC_static) != 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**

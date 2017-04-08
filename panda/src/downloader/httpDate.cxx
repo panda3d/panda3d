@@ -223,8 +223,9 @@ HTTPDate(const string &format) {
     struct tm *tp = localtime(&now);
     _time -= tp->tm_gmtoff;
 #elif defined(_WIN32)
-    extern long int _timezone;
-    _time -= _timezone;
+    long int timezone;
+    _get_timezone(&timezone);
+    _time -= timezone;
 #else
     extern long int timezone;
     _time -= timezone;

@@ -46,8 +46,8 @@ class EXPCL_PANDA_PGRAPH CullableObject
 {
 public:
   INLINE CullableObject();
-  INLINE CullableObject(const Geom *geom, const RenderState *state,
-                        const TransformState *internal_transform);
+  INLINE CullableObject(CPT(Geom) geom, CPT(RenderState) state,
+                        CPT(TransformState) internal_transform);
 
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
@@ -62,6 +62,11 @@ public:
   INLINE static void flush_level();
 
   INLINE void set_draw_callback(CallbackObject *draw_callback);
+
+  INLINE void draw_inline(GraphicsStateGuardianBase *gsg,
+                          bool force, Thread *current_thread);
+  INLINE void draw_callback(GraphicsStateGuardianBase *gsg,
+                            bool force, Thread *current_thread);
 
 public:
   ALLOC_DELETED_CHAIN(CullableObject);
@@ -81,9 +86,6 @@ private:
 
   static CPT(RenderState) get_flash_cpu_state();
   static CPT(RenderState) get_flash_hardware_state();
-
-  INLINE void draw_inline(GraphicsStateGuardianBase *gsg,
-                          bool force, Thread *current_thread);
 
 private:
   // This class is used internally by munge_points_to_quads().

@@ -16,10 +16,10 @@ else:
     import cPickle as pickle
     import thread
 
-SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
+SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB = [".lib",".ilb"]
-VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg"])
+VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
 VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
 MAINTHREAD = threading.currentThread()
@@ -80,6 +80,8 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2014","2014"),
                    ("MAYA2015","2015"),
                    ("MAYA2016","2016"),
+                   ("MAYA20165","2016.5"),
+                   ("MAYA2017","2017")
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -299,6 +301,7 @@ def SetTarget(target, arch=None):
     be called *before* any calls are made to GetOutputDir, GetCC, etc."""
     global TARGET, TARGET_ARCH, HAS_TARGET_ARCH
     global TOOLCHAIN_PREFIX
+    global DEFAULT_CC, DEFAULT_CXX, DEFAULT_AR, DEFAULT_RANLIB
 
     host = GetHost()
     host_arch = GetHostArch()
@@ -322,6 +325,9 @@ def SetTarget(target, arch=None):
             exit("Windows architecture must be x86 or x64")
 
     elif target == 'darwin':
+        DEFAULT_CC = "clang"
+        DEFAULT_CXX = "clang++"
+
         if arch == 'amd64':
             arch = 'x86_64'
 
@@ -359,7 +365,6 @@ def SetTarget(target, arch=None):
             exit('Should specify an architecture when building for Linux')
 
     elif target == 'emscripten':
-        global DEFAULT_CC, DEFAULT_CXX, DEFAULT_AR, DEFAULT_RANLIB
         DEFAULT_CC = "emcc"
         DEFAULT_CXX = "em++"
         DEFAULT_AR = "emar"
@@ -522,6 +527,7 @@ def oscmd(cmd, ignoreError = False):
             exit("Cannot find "+exe+" on search path")
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
     else:
+        cmd = cmd.replace(';', '\\;')
         res = subprocess.call(cmd, shell=True)
         sig = res & 0x7F
         if (GetVerbose() and res != 0):
@@ -976,9 +982,17 @@ def ReadBinaryFile(wfile):
         ex = sys.exc_info()[1]
         exit("Cannot read %s: %s" % (wfile, ex))
 
-def WriteFile(wfile, data):
+def WriteFile(wfile, data, newline=None):
+    if newline is not None:
+        data = data.replace('\r\n', '\n')
+        data = data.replace('\r', '\n')
+        data = data.replace('\n', newline)
+
     try:
-        dsthandle = open(wfile, "w")
+        if sys.version_info >= (3, 0):
+            dsthandle = open(wfile, "w", newline='')
+        else:
+            dsthandle = open(wfile, "w")
         dsthandle.write(data)
         dsthandle.close()
     except:
@@ -994,18 +1008,24 @@ def WriteBinaryFile(wfile, data):
         ex = sys.exc_info()[1]
         exit("Cannot write to %s: %s" % (wfile, ex))
 
-def ConditionalWriteFile(dest, desiredcontents):
+def ConditionalWriteFile(dest, data, newline=None):
+    if newline is not None:
+        data = data.replace('\r\n', '\n')
+        data = data.replace('\r', '\n')
+        data = data.replace('\n', newline)
+
     try:
         rfile = open(dest, 'r')
         contents = rfile.read(-1)
         rfile.close()
     except:
         contents = 0
-    if contents != desiredcontents:
+
+    if contents != data:
         if VERBOSE:
             print("Writing %s" % (dest))
         sys.stdout.flush()
-        WriteFile(dest, desiredcontents)
+        WriteFile(dest, data)
 
 def DeleteVCS(dir):
     if dir == "": dir = "."
@@ -1406,7 +1426,12 @@ def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
     for l in result.split(" "):
         if (l.startswith("-D")):
             d = l.replace("-D", "").replace("\"", "").strip().split("=")
-            if (len(d) == 1):
+
+            if d[0] in ('NDEBUG', '_DEBUG'):
+                # Setting one of these flags by accident could cause serious harm.
+                if GetVerbose():
+                    print("Ignoring %s flag provided by %s" % (l, tool))
+            elif len(d) == 1:
                 defs[d[0]] = ""
             else:
                 defs[d[0]] = d[1]
@@ -1466,7 +1491,7 @@ def ChooseLib(libs, thirdparty=None):
             print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
-def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config"):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config", thirdparty_dir = None):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
@@ -1496,16 +1521,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
     custom_loc = PkgHasCustomLocation(pkg)
 
-    if pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h"):
-        # Let it be handled by the ffmpeg package
-        LibName(target_pkg, "-lswscale")
-        return
-    if pkg.lower() == "swresample" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswresample/swresample.h"):
-        LibName(target_pkg, "-lswresample")
-        return
+    # Determine the location of the thirdparty directory.
+    if not thirdparty_dir:
+        thirdparty_dir = pkg.lower()
+    pkg_dir = os.path.join(GetThirdpartyDir(), thirdparty_dir)
 
-    # First check if the package is in the thirdparty directory.
-    pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
+    # First check if the library can be found in the thirdparty directory.
     if not custom_loc and os.path.isdir(pkg_dir):
         if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
             FrameworkDirectory(target_pkg, pkg_dir)
@@ -1555,15 +1576,20 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
             location = LocateLibrary(libname, lpath, prefer_static=True)
             if location is not None:
+                # If it's a .so or .dylib we may have changed it and copied it to the built/lib dir.
+                if location.endswith('.so') or location.endswith('.dylib'):
+                    location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
                 LibName(target_pkg, location)
             else:
                 # This is for backward compatibility - in the thirdparty dir,
                 # we kept some libs with "panda" prefix, like libpandatiff.
                 location = LocateLibrary("panda" + libname, lpath, prefer_static=True)
                 if location is not None:
+                    if location.endswith('.so') or location.endswith('.dylib'):
+                        location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
                     LibName(target_pkg, location)
                 else:
-                    print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + pkg.lower() + GetColor())
+                    print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + thirdparty_dir + GetColor())
 
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)
@@ -1914,6 +1940,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
         return
 
+    abiflags = getattr(sys, 'abiflags', '')
+
     if GetTarget() == 'windows':
         sdkdir = GetThirdpartyBase() + "/win-python"
 
@@ -1978,21 +2006,28 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
     elif GetTarget() == 'darwin':
-         # On Mac OS X, use the system Python framework.
-         py_fwx = SDK.get("MACOSX", "") + "/System/Library/Frameworks/Python.framework/Versions/Current"
+        # On macOS, search for the Python framework directory matching the
+        # version number of our current Python version.
+        sysroot = SDK.get("MACOSX", "")
+        version = sysconfig.get_python_version()
 
-         if not os.path.islink(py_fwx):
-             exit("Could not locate Python installation at %s" % (py_fwx))
+        py_fwx = "{0}/System/Library/Frameworks/Python.framework/Versions/{1}".format(sysroot, version)
 
-         ver = os.path.basename(os.readlink(py_fwx))
-         py_fwx = SDK.get("MACOSX", "") + "/System/Library/Frameworks/Python.framework/Versions/%s" % ver
+        if not os.path.exists(py_fwx):
+            # Fall back to looking on the system.
+            py_fwx = "/Library/Frameworks/Python.framework/Versions/" + version
 
-         SDK["PYTHON"] = py_fwx + "/Headers"
-         SDK["PYTHONVERSION"] = "python" + ver
-         SDK["PYTHONEXEC"] = "/System/Library/Frameworks/Python.framework/Versions/" + ver + "/bin/python" + ver
+        if not os.path.exists(py_fwx):
+            exit("Could not locate Python installation at %s" % (py_fwx))
 
-         if sys.version[:3] != ver:
-             print("Warning: building with Python %s instead of %s since you targeted a specific Mac OS X version." % (ver, sys.version[:3]))
+        SDK["PYTHON"] = py_fwx + "/Headers"
+        SDK["PYTHONVERSION"] = "python" + version + abiflags
+        SDK["PYTHONEXEC"] = py_fwx + "/bin/python" + version
+
+        # Avoid choosing the one in the thirdparty package dir.
+        PkgSetCustomLocation("PYTHON")
+        IncDirectory("PYTHON", py_fwx + "/include")
+        LibDirectory("PYTHON", py_fwx + "/lib")
 
     #elif GetTarget() == 'windows':
     #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
@@ -2001,13 +2036,13 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
     else:
         SDK["PYTHON"] = sysconfig.get_python_inc()
-        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
     if CrossCompiling():
         # We need a version of Python we can run.
         SDK["PYTHONEXEC"] = sys.executable
-        host_version = "python" + sysconfig.get_python_version()
+        host_version = "python" + sysconfig.get_python_version() + abiflags
         if SDK["PYTHONVERSION"] != host_version:
             exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
 
@@ -2058,9 +2093,68 @@ def SdkLocateWindows(version = '7.1'):
     version = version.upper()
 
     if version == '10':
+        version = '10.0'
+
+    if version.startswith('10.') and version.count('.') == 1:
+        # Choose the latest version of the Windows 10 SDK.
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+
+        # Fallback in case we can't read the registry.
+        if not platsdk or not os.path.isdir(platsdk):
+            platsdk = "C:\\Program Files (x86)\\Windows Kits\\10\\"
+
+        if platsdk and os.path.isdir(platsdk):
+            incdirs = glob.glob(os.path.join(platsdk, 'Include', version + '.*.*'))
+            max_version = ()
+            for dir in incdirs:
+                verstring = os.path.basename(dir)
+
+                # Check that the important include directories exist.
+                if not os.path.isdir(os.path.join(dir, 'ucrt')):
+                    continue
+                if not os.path.isdir(os.path.join(dir, 'shared')):
+                    continue
+                if not os.path.isdir(os.path.join(dir, 'um')):
+                    continue
+                if not os.path.isdir(os.path.join(platsdk, 'Lib', verstring, 'ucrt')):
+                    continue
+                if not os.path.isdir(os.path.join(platsdk, 'Lib', verstring, 'um')):
+                    continue
+
+                print(verstring)
+                vertuple = tuple(map(int, verstring.split('.')))
+                if vertuple > max_version:
+                    version = verstring
+                    max_version = vertuple
+
+            if not max_version:
+                # No suitable version found.
+                platsdk = None
+
+    elif version.startswith('10.'):
+        # We chose a specific version of the Windows 10 SDK.  Verify it exists.
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+
+        # Fallback in case we can't read the registry.
+        if not platsdk or not os.path.isdir(platsdk):
+            platsdk = "C:\\Program Files (x86)\\Windows Kits\\10\\"
+
+        if version.count('.') == 2:
+            version += '.0'
+
+        if platsdk and not os.path.isdir(os.path.join(platsdk, 'Include', version)):
+            platsdk = None
+
+    elif version == '8.1':
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot81")
+
+        # Fallback in case we can't read the registry.
+        if not platsdk or not os.path.isdir(platsdk):
+            platsdk = "C:\\Program Files (x86)\\Windows Kits\\8.1\\"
+
     elif version == '8.0':
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot")
+
     else:
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v" + version, "InstallationFolder")
 
@@ -2301,6 +2395,8 @@ def SetupVisualStudioEnviron():
     os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
 
+    winsdk_ver = SDK["MSPLATFORM_VERSION"]
+
     # Determine the directories to look in based on the architecture.
     arch = GetTargetArch()
     bindir = ""
@@ -2316,9 +2412,16 @@ def SetupVisualStudioEnviron():
         # Special version of the tools that run on x86.
         bindir = 'x86_' + bindir
 
-    binpath = SDK["VISUALSTUDIO"] + "VC\\bin\\" + bindir
-    if not os.path.isdir(binpath):
-        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1.")
+    vc_binpath = SDK["VISUALSTUDIO"] + "VC\\bin"
+    binpath = os.path.join(vc_binpath, bindir)
+    if not os.path.isfile(binpath + "\\cl.exe"):
+        # Try the x86 tools, those should work just as well.
+        if arch == 'x64' and os.path.isfile(vc_binpath + "\\x86_amd64\\cl.exe"):
+            binpath = "{0}\\x86_amd64;{0}".format(vc_binpath)
+        elif winsdk_ver.startswith('10.'):
+            exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
+        else:
+            exit("Couldn't find compilers in %s." % binpath)
 
     AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
@@ -2327,12 +2430,13 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib\\" + libdir)
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib\\" + libdir)
 
-    if SDK["MSPLATFORM_VERSION"] == '10':
+    winsdk_ver = SDK["MSPLATFORM_VERSION"]
+    if winsdk_ver.startswith('10.'):
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
-        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10586.0\\"
-        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10586.0\\"
+        inc_dir = SDK["MSPLATFORM"] + "Include\\" + winsdk_ver + "\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\" + winsdk_ver + "\\"
         AddToPathEnv("INCLUDE", inc_dir + "shared")
         AddToPathEnv("INCLUDE", inc_dir + "ucrt")
         AddToPathEnv("INCLUDE", inc_dir + "um")
@@ -2360,10 +2464,20 @@ def SetupVisualStudioEnviron():
 
     # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
     # with Visual Studio 2015 requires use of the Universal CRT.
-    if SDK["MSPLATFORM_VERSION"] == '7.1' and SDK["VISUALSTUDIO_VERSION"] == '14.0':
+    if winsdk_ver == '7.1' and SDK["VISUALSTUDIO_VERSION"] == '14.0':
         win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+
+        # Fallback in case we can't read the registry.
+        if not win_kit or not os.path.isdir(win_kit):
+            win_kit = "C:\\Program Files (x86)\\Windows Kits\\10\\"
+        elif not win_kit.endswith('\\'):
+            win_kit += '\\'
+
         AddToPathEnv("LIB", win_kit + "Lib\\10.0.10150.0\\ucrt\\" + arch)
         AddToPathEnv("INCLUDE", win_kit + "Include\\10.0.10150.0\\ucrt")
+
+        # Copy the DLLs to the bin directory.
+        CopyAllFiles(GetOutputDir() + "/bin/", win_kit + "Redist\\ucrt\\DLLs\\" + arch + "\\")
 
 ########################################################################
 #

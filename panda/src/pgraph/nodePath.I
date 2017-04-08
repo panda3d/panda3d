@@ -1080,7 +1080,7 @@ get_sa() const {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_float &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1088,7 +1088,7 @@ set_shader_input(CPT_InternalName id, const PTA_float &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_double &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1096,7 +1096,7 @@ set_shader_input(CPT_InternalName id, const PTA_double &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_int &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1104,7 +1104,7 @@ set_shader_input(CPT_InternalName id, const PTA_int &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1112,7 +1112,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 
@@ -1121,7 +1121,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1129,7 +1129,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1137,7 +1137,7 @@ set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1145,7 +1145,7 @@ set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1153,7 +1153,7 @@ set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1161,7 +1161,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 
@@ -1170,7 +1170,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1178,7 +1178,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1186,7 +1186,7 @@ set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1194,7 +1194,7 @@ set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1202,7 +1202,7 @@ set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1210,7 +1210,7 @@ set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1218,7 +1218,7 @@ set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1226,7 +1226,7 @@ set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority) {
-  set_shader_input(new ShaderInput(id, v, priority));
+  set_shader_input(ShaderInput(move(id), v, priority));
 }
 
 /**
@@ -1234,7 +1234,7 @@ set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, Texture *tex, int priority) {
-  set_shader_input(new ShaderInput(id, tex, priority));
+  set_shader_input(ShaderInput(move(id), tex, priority));
 }
 
 /**
@@ -1242,7 +1242,7 @@ set_shader_input(CPT_InternalName id, Texture *tex, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority) {
-  set_shader_input(new ShaderInput(id, tex, sampler, priority));
+  set_shader_input(ShaderInput(move(id), tex, sampler, priority));
 }
 
 /**
@@ -1250,7 +1250,15 @@ set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler,
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z, int n, int priority) {
-  set_shader_input(new ShaderInput(id, tex, read, write, z, n, priority));
+  set_shader_input(ShaderInput(move(id), tex, read, write, z, n, priority));
+}
+
+/**
+ *
+ */
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, ShaderBuffer *buf, int priority) {
+  set_shader_input(ShaderInput(move(id), buf, priority));
 }
 
 /**
@@ -1258,7 +1266,7 @@ set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const NodePath &np, int priority) {
-  set_shader_input(new ShaderInput(id, np, priority));
+  set_shader_input(ShaderInput(move(id), np, priority));
 }
 
 /**
@@ -1266,7 +1274,7 @@ set_shader_input(CPT_InternalName id, const NodePath &np, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, int n1, int n2, int n3, int n4, int priority) {
-  set_shader_input(new ShaderInput(id, LVecBase4i(n1, n2, n3, n4), priority));
+  set_shader_input(ShaderInput(move(id), LVecBase4i(n1, n2, n3, n4), priority));
 }
 
 /**
@@ -1274,7 +1282,7 @@ set_shader_input(CPT_InternalName id, int n1, int n2, int n3, int n4, int priori
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2, PN_stdfloat n3, PN_stdfloat n4, int priority) {
-  set_shader_input(new ShaderInput(id, LVecBase4(n1, n2, n3, n4), priority));
+  set_shader_input(ShaderInput(move(id), LVecBase4(n1, n2, n3, n4), priority));
 }
 
 /**

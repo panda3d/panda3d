@@ -157,7 +157,7 @@ has_adjust_transform() const {
 void CompassEffect::
 adjust_transform(CPT(TransformState) &net_transform,
                  CPT(TransformState) &node_transform,
-                 PandaNode *) const {
+                 const PandaNode *) const {
   if (_properties == 0) {
     // Nothing to do.
     return;

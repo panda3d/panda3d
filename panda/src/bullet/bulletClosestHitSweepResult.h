@@ -41,6 +41,13 @@ PUBLISHED:
   LVector3 get_hit_normal() const;
   PN_stdfloat get_hit_fraction() const;
 
+  MAKE_PROPERTY(from_pos, get_from_pos);
+  MAKE_PROPERTY(to_pos, get_to_pos);
+  MAKE_PROPERTY(node, get_node);
+  MAKE_PROPERTY(hit_pos, get_hit_pos);
+  MAKE_PROPERTY(hit_normal, get_hit_normal);
+  MAKE_PROPERTY(hit_fraction, get_hit_fraction);
+
 public:
   virtual bool needsCollision(btBroadphaseProxy* proxy0) const;
 

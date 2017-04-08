@@ -107,8 +107,10 @@ PUBLISHED:
 
   INLINE int get_num_arrays() const;
   INLINE CPT(GeomVertexArrayData) get_array(int i) const;
+  INLINE CPT(GeomVertexArrayDataHandle) get_array_handle(int i) const;
   MAKE_SEQ(get_arrays, get_num_arrays, get_array);
   INLINE PT(GeomVertexArrayData) modify_array(int i);
+  INLINE PT(GeomVertexArrayDataHandle) modify_array_handle(int i);
   INLINE void set_array(int i, const GeomVertexArrayData *array);
   MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array);
 
@@ -402,9 +404,14 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineBase : public GeomEnums {
 protected:
+  INLINE GeomVertexDataPipelineBase(Thread *current_thread);
   INLINE GeomVertexDataPipelineBase(GeomVertexData *object,
                                     Thread *current_thread,
                                     GeomVertexData::CData *cdata);
+
+private:
+  GeomVertexDataPipelineBase(const GeomVertexDataPipelineBase &copy) DELETED;
+  GeomVertexDataPipelineBase &operator = (const GeomVertexDataPipelineBase &copy) DELETED_ASSIGN;
 
 public:
   INLINE ~GeomVertexDataPipelineBase();
@@ -425,7 +432,7 @@ public:
   INLINE UpdateSeq get_modified() const;
 
 protected:
-  PT(GeomVertexData) _object;
+  GeomVertexData *_object;
   Thread *_current_thread;
   GeomVertexData::CData *_cdata;
 };
@@ -433,18 +440,17 @@ protected:
 /**
  * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
  * the pipeline.
+ * Does not hold a reference to the GeomVertexData, so make sure it does not
+ * go out of scope.
  */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
 public:
+  INLINE GeomVertexDataPipelineReader(Thread *current_thread);
   INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, Thread *current_thread);
-private:
-  INLINE GeomVertexDataPipelineReader(const GeomVertexDataPipelineReader &copy);
-  INLINE void operator = (const GeomVertexDataPipelineReader &copy);
 
-public:
-  INLINE ~GeomVertexDataPipelineReader();
   ALLOC_DELETED_CHAIN(GeomVertexDataPipelineReader);
 
+  INLINE void set_object(const GeomVertexData *object);
   INLINE const GeomVertexData *get_object() const;
 
   INLINE void check_array_readers() const;
@@ -480,7 +486,6 @@ public:
 
 private:
   void make_array_readers();
-  void delete_array_readers();
 
   bool _got_array_readers;
   typedef pvector<CPT(GeomVertexArrayDataHandle) > ArrayReaders;
@@ -501,16 +506,14 @@ private:
 /**
  * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
  * the pipeline.
+ * Does not hold a reference to the GeomVertexData, so make sure it does not
+ * go out of scope.
  */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
 public:
   INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,
                                       Thread *current_thread);
-private:
-  INLINE GeomVertexDataPipelineWriter(const GeomVertexDataPipelineWriter &copy);
-  INLINE void operator = (const GeomVertexDataPipelineWriter &copy);
 
-public:
   INLINE ~GeomVertexDataPipelineWriter();
   ALLOC_DELETED_CHAIN(GeomVertexDataPipelineWriter);
 

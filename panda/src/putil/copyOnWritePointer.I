@@ -74,23 +74,58 @@ INLINE CopyOnWritePointer::
  *
  */
 INLINE CopyOnWritePointer::
-CopyOnWritePointer(CopyOnWritePointer &&move) NOEXCEPT :
-  _cow_object(move._cow_object)
+CopyOnWritePointer(CopyOnWritePointer &&from) NOEXCEPT :
+  _cow_object(from._cow_object)
 {
   // Steal the other's reference count.
-  move._cow_object = (CopyOnWriteObject *)NULL;
+  from._cow_object = (CopyOnWriteObject *)NULL;
+}
+
+/**
+ *
+ */
+INLINE CopyOnWritePointer::
+CopyOnWritePointer(PointerTo<CopyOnWriteObject> &&from) NOEXCEPT :
+  _cow_object(from.p())
+{
+  // Steal the other's reference count, but because it is a regular pointer,
+  // we do need to include the cache reference count.
+  if (_cow_object != (CopyOnWriteObject *)NULL) {
+    _cow_object->cache_ref_only();
+  }
+  from.cheat() = NULL;
 }
 
 /**
  *
  */
 INLINE void CopyOnWritePointer::
-operator = (CopyOnWritePointer &&move) NOEXCEPT {
+operator = (CopyOnWritePointer &&from) NOEXCEPT {
   // Protect against self-move-assignment.
-  if (move._cow_object != _cow_object) {
+  if (from._cow_object != _cow_object) {
     CopyOnWriteObject *old_object = _cow_object;
-    _cow_object = move._cow_object;
-    move._cow_object = NULL;
+    _cow_object = from._cow_object;
+    from._cow_object = NULL;
+
+    if (old_object != (CopyOnWriteObject *)NULL) {
+      cache_unref_delete(old_object);
+    }
+  }
+}
+
+/**
+ *
+ */
+INLINE void CopyOnWritePointer::
+operator = (PointerTo<CopyOnWriteObject> &&from) NOEXCEPT {
+  if (from.p() != _cow_object) {
+    CopyOnWriteObject *old_object = _cow_object;
+
+    // Steal the other's reference count, but because it is a regular pointer,
+    // we do need to include the cache reference count.
+    _cow_object = from.p();
+    _cow_object->cache_ref_only();
+    from.cheat() = NULL;
 
     if (old_object != (CopyOnWriteObject *)NULL) {
       cache_unref_delete(old_object);
@@ -131,7 +166,7 @@ operator < (const CopyOnWritePointer &other) const {
  * This flavor of the method is written for the non-threaded case.
  */
 INLINE const CopyOnWriteObject *CopyOnWritePointer::
-get_read_pointer() const {
+get_read_pointer(Thread *current_thread) const {
   return _cow_object;
 }
 #endif  // COW_THREADED
@@ -262,8 +297,8 @@ operator = (To *object) {
  */
 template<class T>
 INLINE CopyOnWritePointerTo<T>::
-CopyOnWritePointerTo(CopyOnWritePointerTo<T> &&move) NOEXCEPT :
-  CopyOnWritePointer((CopyOnWritePointer &&)move)
+CopyOnWritePointerTo(CopyOnWritePointerTo<T> &&from) NOEXCEPT :
+  CopyOnWritePointer((CopyOnWritePointer &&)from)
 {
 }
 #endif  // CPPPARSER
@@ -273,9 +308,49 @@ CopyOnWritePointerTo(CopyOnWritePointerTo<T> &&move) NOEXCEPT :
  *
  */
 template<class T>
+INLINE CopyOnWritePointerTo<T>::
+CopyOnWritePointerTo(PointerTo<T> &&from) NOEXCEPT {
+  // Steal the other's reference count, but because it is a regular pointer,
+  // we do need to include the cache reference count.
+  _cow_object = from.p();
+  if (_cow_object != (CopyOnWriteObject *)NULL) {
+    _cow_object->cache_ref_only();
+  }
+  from.cheat() = NULL;
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+/**
+ *
+ */
+template<class T>
 INLINE void CopyOnWritePointerTo<T>::
-operator = (CopyOnWritePointerTo<T> &&move) NOEXCEPT {
-  CopyOnWritePointer::operator = ((CopyOnWritePointer &&)move);
+operator = (CopyOnWritePointerTo<T> &&from) NOEXCEPT {
+  CopyOnWritePointer::operator = ((CopyOnWritePointer &&)from);
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+/**
+ *
+ */
+template<class T>
+INLINE void CopyOnWritePointerTo<T>::
+operator = (PointerTo<T> &&from) NOEXCEPT {
+  if (from.p() != _cow_object) {
+    CopyOnWriteObject *old_object = _cow_object;
+
+    // Steal the other's reference count, but because it is a regular pointer,
+    // we do need to include the cache reference count.
+    _cow_object = from.p();
+    _cow_object->cache_ref_only();
+    from.cheat() = NULL;
+
+    if (old_object != (CopyOnWriteObject *)NULL) {
+      cache_unref_delete(old_object);
+    }
+  }
 }
 #endif  // CPPPARSER
 #endif  // USE_MOVE_SEMANTICS
@@ -287,8 +362,14 @@ operator = (CopyOnWritePointerTo<T> &&move) NOEXCEPT {
  */
 template<class T>
 INLINE CPT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
-get_read_pointer() const {
-  return (const To *)(CopyOnWritePointer::get_read_pointer().p());
+get_read_pointer(Thread *current_thread) const {
+  // This is necessary because we don't currently have a way to cast between
+  // two compatible PointerTo types without losing the reference count.
+  CPT(TYPENAME CopyOnWritePointerTo<T>::To) to;
+  CPT(CopyOnWriteObject) from = CopyOnWritePointer::get_read_pointer(current_thread);
+  to.cheat() = (const To *)from.p();
+  from.cheat() = nullptr;
+  return to;
 }
 #else  // COW_THREADED
 /**
@@ -296,8 +377,8 @@ get_read_pointer() const {
  */
 template<class T>
 INLINE const TYPENAME CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
-get_read_pointer() const {
-  return (const To *)CopyOnWritePointer::get_read_pointer();
+get_read_pointer(Thread *current_thread) const {
+  return (const To *)CopyOnWritePointer::get_read_pointer(current_thread);
 }
 #endif  // COW_THREADED
 #endif  // CPPPARSER
@@ -310,7 +391,13 @@ get_read_pointer() const {
 template<class T>
 INLINE PT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
 get_write_pointer() {
-  return (To *)(CopyOnWritePointer::get_write_pointer().p());
+  // This is necessary because we don't currently have a way to cast between
+  // two compatible PointerTo types without losing the reference count.
+  PT(TYPENAME CopyOnWritePointerTo<T>::To) to;
+  PT(CopyOnWriteObject) from = CopyOnWritePointer::get_write_pointer();
+  to.cheat() = (To *)from.p();
+  from.cheat() = nullptr;
+  return to;
 }
 #else  // COW_THREADED
 /**

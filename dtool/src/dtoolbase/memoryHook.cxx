@@ -14,6 +14,7 @@
 #include "memoryHook.h"
 #include "deletedBufferChain.h"
 #include <stdlib.h>
+#include "typeRegistry.h"
 
 #ifdef WIN32
 
@@ -36,6 +37,15 @@
 
 #endif  // WIN32
 
+// Ensure we made the right decisions about the alignment size.
+static_assert(MEMORY_HOOK_ALIGNMENT >= sizeof(size_t),
+              "MEMORY_HOOK_ALIGNMENT should at least be sizeof(size_t)");
+static_assert(MEMORY_HOOK_ALIGNMENT >= sizeof(void *),
+              "MEMORY_HOOK_ALIGNMENT should at least be sizeof(void *)");
+static_assert(MEMORY_HOOK_ALIGNMENT * 8 >= NATIVE_WORDSIZE,
+              "MEMORY_HOOK_ALIGNMENT * 8 should at least be NATIVE_WORDSIZE");
+static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
+              "MEMORY_HOOK_ALIGNMENT should be a power of two");
 
 #if defined(USE_MEMORY_DLMALLOC)
 
@@ -43,16 +53,15 @@
 // fast, but it is not thread-safe.  However, we provide thread locking within
 // MemoryHook.
 
+#define DLMALLOC_EXPORT static
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
 #ifdef _DEBUG
   #define DEBUG 1
 #endif
-#ifdef assert
-  // dlmalloc defines its own assert, which clashes.
-  #undef assert
-#endif
-#include "dlmalloc.h"
+// dlmalloc can do the alignment we ask for.
+#define MALLOC_ALIGNMENT MEMORY_HOOK_ALIGNMENT
+
 #include "dlmalloc_src.cxx"
 
 #define call_malloc dlmalloc
@@ -95,6 +104,83 @@
 #undef MEMORY_HOOK_MALLOC_LOCK
 
 #endif  // USE_MEMORY_*
+
+/**
+ * Increments the amount of requested size as necessary to accommodate the
+ * extra data we might piggyback on each allocated block.
+ */
+INLINE static size_t
+inflate_size(size_t size) {
+#if defined(MEMORY_HOOK_DO_ALIGN)
+  // If we're aligning, we need to request the header size, plus extra bytes
+  // to give us wiggle room to adjust the pointer.
+  return size + sizeof(uintptr_t) * 2 + MEMORY_HOOK_ALIGNMENT - 1;
+#elif defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+  // If we are can access the allocator's bookkeeping to figure out how many
+  // bytes were allocated, we don't need to add our own information.
+  return size;
+#elif defined(DO_MEMORY_USAGE)
+  // If we're not aligning, but we're tracking memory allocations, we just
+  // need the header size extra (this gives us a place to store the size of
+  // the allocated block).  However, we do need to make sure that any
+  // alignment guarantee is kept.
+  return size + MEMORY_HOOK_ALIGNMENT;
+#else
+  // If we're not doing any of that, we can just allocate the precise
+  // requested amount.
+  return size;
+#endif  // DO_MEMORY_USAGE
+}
+
+/**
+ * Converts an allocated pointer to a pointer returnable to the application.
+ * Stuffs size in the first n bytes of the allocated space.
+ */
+INLINE static void *
+alloc_to_ptr(void *alloc, size_t size) {
+#if defined(MEMORY_HOOK_DO_ALIGN)
+  // Add room for two uintptr_t values.
+  uintptr_t *root = (uintptr_t *)((char *)alloc + sizeof(uintptr_t) * 2);
+  // Align this to the requested boundary.
+  root = (uintptr_t *)(((uintptr_t)root + MEMORY_HOOK_ALIGNMENT - 1) & ~(MEMORY_HOOK_ALIGNMENT - 1));
+  root[-2] = size;
+  root[-1] = (uintptr_t)alloc;  // Save the pointer we originally allocated.
+  return (void *)root;
+#elif defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+  return alloc;
+#elif defined(DO_MEMORY_USAGE)
+  size_t *root = (size_t *)alloc;
+  root[0] = size;
+  return (void *)((char *)root + MEMORY_HOOK_ALIGNMENT);
+#else
+  return alloc;
+#endif  // DO_MEMORY_USAGE
+}
+
+/**
+ * Converts an application pointer back to the original allocated pointer.
+ * Extracts size from the first n bytes of the allocated space, but only if
+ * DO_MEMORY_USAGE is defined.
+ */
+INLINE static void *
+ptr_to_alloc(void *ptr, size_t &size) {
+#if defined(MEMORY_HOOK_DO_ALIGN)
+  uintptr_t *root = (uintptr_t *)ptr;
+  size = root[-2];
+  return (void *)root[-1]; // Get the pointer we originally allocated.
+#elif defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+#ifdef DO_MEMORY_USAGE
+  size = MemoryHook::get_ptr_size(ptr);
+#endif
+  return ptr;
+#elif defined(DO_MEMORY_USAGE)
+  size_t *root = (size_t *)((char *)ptr - MEMORY_HOOK_ALIGNMENT);
+  size = root[0];
+  return (void *)root;
+#else
+  return ptr;
+#endif  // DO_MEMORY_USAGE
+}
 
 /**
  *
@@ -187,6 +273,11 @@ heap_alloc_single(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // In the DO_MEMORY_USAGE case, we want to track the total size of allocated
   // bytes on the heap.
+#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+  // dlmalloc may slightly overallocate, however.
+  size = get_ptr_size(alloc);
+  inflated_size = size;
+#endif
   AtomicAdjust::add(_total_heap_single_size, (AtomicAdjust::Integer)size);
   if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
@@ -196,7 +287,10 @@ heap_alloc_single(size_t size) {
 #endif  // DO_MEMORY_USAGE
 
   void *ptr = alloc_to_ptr(alloc, size);
+#ifdef _DEBUG
+  assert(((uintptr_t)ptr % MEMORY_HOOK_ALIGNMENT) == 0);
   assert(ptr >= alloc && (char *)ptr + size <= (char *)alloc + inflated_size);
+#endif
   return ptr;
 }
 
@@ -256,6 +350,11 @@ heap_alloc_array(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // In the DO_MEMORY_USAGE case, we want to track the total size of allocated
   // bytes on the heap.
+#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+  // dlmalloc may slightly overallocate, however.
+  size = get_ptr_size(alloc);
+  inflated_size = size;
+#endif
   AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size);
   if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
@@ -265,7 +364,10 @@ heap_alloc_array(size_t size) {
 #endif  // DO_MEMORY_USAGE
 
   void *ptr = alloc_to_ptr(alloc, size);
+#ifdef _DEBUG
+  assert(((uintptr_t)ptr % MEMORY_HOOK_ALIGNMENT) == 0);
   assert(ptr >= alloc && (char *)ptr + size <= (char *)alloc + inflated_size);
+#endif
   return ptr;
 }
 
@@ -276,11 +378,6 @@ void *MemoryHook::
 heap_realloc_array(void *ptr, size_t size) {
   size_t orig_size;
   void *alloc = ptr_to_alloc(ptr, orig_size);
-
-#ifdef DO_MEMORY_USAGE
-  assert((AtomicAdjust::Integer)orig_size <= _total_heap_array_size);
-  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size-(AtomicAdjust::Integer)orig_size);
-#endif  // DO_MEMORY_USAGE
 
   size_t inflated_size = inflate_size(size);
 
@@ -308,17 +405,40 @@ heap_realloc_array(void *ptr, size_t size) {
 #endif
   }
 
-  void *ptr1 = alloc_to_ptr(alloc1, size);
-  assert(ptr1 >= alloc1 && (char *)ptr1 + size <= (char *)alloc1 + inflated_size);
-#if defined(MEMORY_HOOK_DO_ALIGN)
-  // We might have to shift the memory to account for the new offset due to
-  // the alignment.
+#ifdef DO_MEMORY_USAGE
+#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+  // dlmalloc may slightly overallocate, however.
+  size = get_ptr_size(alloc1);
+  inflated_size = size;
+#endif
+  assert((AtomicAdjust::Integer)orig_size <= _total_heap_array_size);
+  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size-(AtomicAdjust::Integer)orig_size);
+#endif  // DO_MEMORY_USAGE
+
+  // Align this to the requested boundary.
+#ifdef MEMORY_HOOK_DO_ALIGN
+  // This copies the code from alloc_to_ptr, since we can't write the size and
+  // pointer until after we have done the memmove.
+  uintptr_t *root = (uintptr_t *)((char *)alloc1 + sizeof(uintptr_t) * 2);
+  root = (uintptr_t *)(((uintptr_t)root + MEMORY_HOOK_ALIGNMENT - 1) & ~(MEMORY_HOOK_ALIGNMENT - 1));
+  void *ptr1 = (void *)root;
+
   size_t orig_delta = (char *)ptr - (char *)alloc;
   size_t new_delta = (char *)ptr1 - (char *)alloc1;
   if (orig_delta != new_delta) {
     memmove((char *)alloc1 + new_delta, (char *)alloc1 + orig_delta, min(size, orig_size));
   }
-#endif  // MEMORY_HOOK_DO_ALIGN
+
+  root[-2] = size;
+  root[-1] = (uintptr_t)alloc1;  // Save the pointer we originally allocated.
+#else
+  void *ptr1 = alloc_to_ptr(alloc1, size);
+#endif
+
+#ifdef _DEBUG
+  assert(ptr1 >= alloc1 && (char *)ptr1 + size <= (char *)alloc1 + inflated_size);
+  assert(((uintptr_t)ptr1 % MEMORY_HOOK_ALIGNMENT) == 0);
+#endif
   return ptr1;
 }
 

@@ -29,6 +29,8 @@ PUBLISHED:
   INLINE EggTriangleFan &operator = (const EggTriangleFan &copy);
   virtual ~EggTriangleFan();
 
+  virtual EggTriangleFan *make_copy() const OVERRIDE;
+
   virtual void write(ostream &out, int indent_level) const;
   virtual void apply_first_attribute();
 

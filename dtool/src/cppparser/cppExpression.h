@@ -48,9 +48,12 @@ public:
     T_reinterpret_cast,
     T_construct,
     T_default_construct,
+    T_aggregate_init,
+    T_empty_aggregate_init,
     T_new,
     T_default_new,
     T_sizeof,
+    T_sizeof_ellipsis,
     T_alignof,
     T_unary_operation,
     T_binary_operation,
@@ -59,6 +62,8 @@ public:
     T_raw_literal,
     T_typeid_type,
     T_typeid_expr,
+    T_type_trait,
+    T_lambda,
 
     // These are used when parsing =default and =delete methods.
     T_default,
@@ -78,11 +83,15 @@ public:
 
   static CPPExpression typecast_op(CPPType *type, CPPExpression *op1, Type cast_type = T_typecast);
   static CPPExpression construct_op(CPPType *type, CPPExpression *op1);
+  static CPPExpression aggregate_init_op(CPPType *type, CPPExpression *op1);
   static CPPExpression new_op(CPPType *type, CPPExpression *op1 = NULL);
   static CPPExpression typeid_op(CPPType *type, CPPType *std_type_info);
   static CPPExpression typeid_op(CPPExpression *op1, CPPType *std_type_info);
+  static CPPExpression type_trait(int trait, CPPType *type, CPPType *arg = NULL);
   static CPPExpression sizeof_func(CPPType *type);
+  static CPPExpression sizeof_ellipsis_func(CPPIdentifier *ident);
   static CPPExpression alignof_func(CPPType *type);
+  static CPPExpression lambda(CPPClosureType *type);
 
   static CPPExpression literal(unsigned long long value, CPPInstance *lit_op);
   static CPPExpression literal(long double value, CPPInstance *lit_op);
@@ -92,8 +101,6 @@ public:
   static const CPPExpression &get_nullptr();
   static const CPPExpression &get_default();
   static const CPPExpression &get_delete();
-
-  ~CPPExpression();
 
   enum ResultType {
     RT_integer,
@@ -148,6 +155,7 @@ public:
     CPPInstance *_variable;
     CPPFunctionGroup *_fgroup;
     CPPIdentifier *_ident;
+    CPPClosureType *_closure_type;
     struct {
       union {
         CPPType *_type;
@@ -170,6 +178,11 @@ public:
       CPPInstance *_operator;
       CPPExpression *_value;
     } _literal;
+    struct {
+      int _trait;
+      CPPType *_type;
+      CPPType *_arg;
+    } _type_trait;
   } _u;
 
 protected:

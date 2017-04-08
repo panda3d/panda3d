@@ -324,6 +324,34 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     }
   }
 
+#ifndef OPENGLES
+  // Get the used shader storage blocks.
+  if (_glgsg->_supports_shader_buffers) {
+    GLint block_count = 0, block_maxlength = 0;
+
+    _glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &block_count);
+    _glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, GL_MAX_NAME_LENGTH, &block_maxlength);
+
+    block_maxlength = max(64, block_maxlength);
+    char *block_name_cstr = (char *)alloca(block_maxlength);
+
+    for (int i = 0; i < block_count; ++i) {
+      block_name_cstr[0] = 0;
+      _glgsg->_glGetProgramResourceName(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, block_maxlength, NULL, block_name_cstr);
+
+      const GLenum props[] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
+      GLint values[2];
+      _glgsg->_glGetProgramResourceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, 2, props, 2, NULL, values);
+
+      StorageBlock block;
+      block._name = InternalName::make(block_name_cstr);
+      block._binding_index = values[0];
+      block._min_size = values[1];
+      _storage_blocks.push_back(block);
+    }
+  }
+#endif
+
   // Bind the program, so that we can call glUniform1i for the textures.
   _glgsg->_glUseProgram(_glsl_program);
 
@@ -510,7 +538,6 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
 
   GLint data_size = 0;
   GLint param_count = 0;
-  GLsizei param_size;
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param_count);
 
@@ -847,7 +874,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
                  matrix_name.substr(0, 12) == "LightSource[" &&
                  sscanf(matrix_name.c_str(), "LightSource[%d].%s", &bind._index, name_buffer) == 2) {
         // A matrix member of a p3d_LightSource struct.
-        if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
+        if (strncmp(name_buffer, "shadowViewMatrix", 127) == 0) {
           if (inverse) {
             // Tack inverse back onto the end.
             strcpy(name_buffer + strlen(name_buffer), "Inverse");
@@ -857,7 +884,25 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_light_source_i_attrib;
           bind._arg[0] = InternalName::make(name_buffer);
           bind._part[1] = Shader::SMO_identity;
+          bind._arg[1] = NULL;
 
+        } else if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
+          // Only supported for backward compatibility: includes the model
+          // matrix.  Not very efficient to do this.
+          bind._func = Shader::SMF_compose;
+          bind._part[0] = Shader::SMO_model_to_apiview;
+          bind._arg[0] = NULL;
+          bind._part[1] = Shader::SMO_light_source_i_attrib;
+          bind._arg[1] = InternalName::make("shadowViewMatrix");
+
+          static bool warned = false;
+          if (!warned) {
+            warned = true;
+            GLCAT.warning()
+              << "p3d_LightSource[].shadowMatrix is deprecated; use "
+                "shadowViewMatrix instead, which transforms from view space "
+                "instead of model space.\n";
+          }
         } else {
           GLCAT.error() << "p3d_LightSource struct does not provide a matrix named " << matrix_name << "!\n";
           return;
@@ -902,7 +947,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_attr_material;
       bind._arg[0] = NULL;
-      bind._dep[0] = Shader::SSD_general | Shader::SSD_material;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_material | Shader::SSD_frame;
       bind._part[1] = Shader::SMO_identity;
       bind._arg[1] = NULL;
       bind._dep[1] = Shader::SSD_NONE;
@@ -1136,10 +1181,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._index = index;
           bind._part[0] = Shader::SMO_light_source_i_attrib;
           bind._arg[0] = InternalName::make(member_name);
-          bind._dep[0] = Shader::SSD_general | Shader::SSD_light | Shader::SSD_frame | Shader::SSD_transform;
+          bind._dep[0] = Shader::SSD_general | Shader::SSD_light | Shader::SSD_frame;
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = NULL;
           bind._dep[1] = Shader::SSD_NONE;
+
+          if (member_name == "position" || member_name == "halfVector" ||
+              member_name == "spotDirection") {
+            bind._dep[0] |= Shader::SSD_view_transform;
+          }
 
           switch (param_type) {
           case GL_FLOAT:
@@ -1223,7 +1273,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._func = Shader::SMF_compose;
       bind._part[0] = Shader::SMO_world_to_view;
       bind._part[1] = Shader::SMO_view_to_apiview;
-      bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_view_transform;
       bind._dep[1] = Shader::SSD_general;
       _shader->_mat_spec.push_back(bind);
       _shader->_mat_deps |= bind._dep[0] | bind._dep[1];
@@ -1235,7 +1285,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._part[0] = Shader::SMO_apiview_to_view;
       bind._part[1] = Shader::SMO_view_to_world;
       bind._dep[0] = Shader::SSD_general;
-      bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
+      bind._dep[1] = Shader::SSD_general | Shader::SSD_view_transform;
       _shader->_mat_spec.push_back(bind);
       _shader->_mat_deps |= bind._dep[0] | bind._dep[1];
       return;
@@ -1297,12 +1347,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_SAMPLER_2D_ARRAY_SHADOW:
 #ifndef OPENGLES
       case GL_INT_SAMPLER_1D:
+      case GL_INT_SAMPLER_1D_ARRAY:
       case GL_INT_SAMPLER_BUFFER:
       case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_1D:
+      case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_BUFFER:
       case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_SAMPLER_1D:
+      case GL_SAMPLER_1D_ARRAY:
       case GL_SAMPLER_1D_SHADOW:
       case GL_SAMPLER_BUFFER:
       case GL_SAMPLER_CUBE_MAP_ARRAY:
@@ -1353,22 +1406,43 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._id = arg_id;
         bind._piece = Shader::SMP_whole;
         bind._func = Shader::SMF_first;
+        bind._part[1] = Shader::SMO_identity;
+        bind._arg[1] = NULL;
+        bind._dep[1] = Shader::SSD_NONE;
         PT(InternalName) iname = InternalName::make(param_name);
         if (iname->get_parent() != InternalName::get_root()) {
           // It might be something like an attribute of a shader input, like a
           // light parameter.  It might also just be a custom struct
           // parameter.  We can't know yet, sadly.
-          bind._part[0] = Shader::SMO_mat_constant_x_attrib;
-          bind._arg[0] = InternalName::make(param_name);
-          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_transform;
+          if (iname->get_basename() == "shadowMatrix") {
+            // Special exception for shadowMatrix, which is deprecated,
+            // because it includes the model transformation.  It is far more
+            // efficient to do that in the shader instead.
+            static bool warned = false;
+            if (!warned) {
+              warned = true;
+              GLCAT.warning()
+                << "light.shadowMatrix inputs are deprecated; use "
+                   "shadowViewMatrix instead, which transforms from view "
+                   "space instead of model space.\n";
+            }
+            bind._func = Shader::SMF_compose;
+            bind._part[0] = Shader::SMO_model_to_apiview;
+            bind._arg[0] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+            bind._part[1] = Shader::SMO_mat_constant_x_attrib;
+            bind._arg[1] = InternalName::make("shadowViewMatrix");
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
+          } else {
+            bind._part[0] = Shader::SMO_mat_constant_x_attrib;
+            bind._arg[0] = InternalName::make(param_name);
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
+          }
         } else {
           bind._part[0] = Shader::SMO_mat_constant_x;
           bind._arg[0] = InternalName::make(param_name);
           bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
         }
-        bind._part[1] = Shader::SMO_identity;
-        bind._arg[1] = NULL;
-        bind._dep[1] = Shader::SSD_NONE;
         _shader->_mat_spec.push_back(bind);
         _shader->_mat_deps |= bind._dep[0];
         return;
@@ -1400,9 +1474,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._func = Shader::SMF_first;
           bind._part[0] = Shader::SMO_vec_constant_x_attrib;
           bind._arg[0] = iname;
-          // We need SSD_transform since some attributes (eg.  light position)
-          // have to be transformed to view space.
-          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_transform;
+          // We need SSD_view_transform since some attributes (eg. light
+          // position) have to be transformed to view space.
+          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = NULL;
           bind._dep[1] = Shader::SSD_NONE;
@@ -1598,6 +1672,12 @@ get_sampler_texture_type(int &out, GLenum param_type) {
   case GL_SAMPLER_1D:
     out = Texture::TT_1d_texture;
     return true;
+
+  case GL_INT_SAMPLER_1D_ARRAY:
+  case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+  case GL_SAMPLER_1D_ARRAY:
+    out = Texture::TT_1d_texture_array;
+    return true;
 #endif
 
   case GL_INT_SAMPLER_2D:
@@ -1786,6 +1866,7 @@ unbind() {
 void CLP(ShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
+                        const TransformState *camera_transform,
                         const TransformState *projection_transform) {
 
   // Find out which state properties have changed.
@@ -1793,6 +1874,10 @@ set_state_and_transform(const RenderState *target_rs,
 
   if (_modelview_transform != modelview_transform) {
     _modelview_transform = modelview_transform;
+    altered |= (Shader::SSD_transform & ~Shader::SSD_view_transform);
+  }
+  if (_camera_transform != camera_transform) {
+    _camera_transform = camera_transform;
     altered |= Shader::SSD_transform;
   }
   if (_projection_transform != projection_transform) {
@@ -2146,7 +2231,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
       // Bind the vertex buffer to the binding index.
       if (ai >= _glgsg->_current_vertex_buffers.size()) {
-        _glgsg->_current_vertex_buffers.resize(ai + 1, 0);
+        GLuint zero = 0;
+        _glgsg->_current_vertex_buffers.resize(ai + 1, zero);
       }
       if (_glgsg->_current_vertex_buffers[ai] != gvbc->_index) {
         _glgsg->_glBindVertexBuffer(ai, gvbc->_index, 0, stride);
@@ -2157,7 +2243,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     // Figure out which attributes to enable or disable.
     BitMask32 enabled_attribs = _enabled_attribs;
     if (_color_attrib_index != -1 &&
-        color_attrib->get_type() != ColorAttrib::T_vertex) {
+        color_attrib->get_color_type() != ColorAttrib::T_vertex) {
       // Vertex colours are disabled.
       enabled_attribs.clear_bit(_color_attrib_index);
 
@@ -2210,7 +2296,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
       int num_elements, element_stride, divisor;
       bool normalized;
-      if ((p != _color_attrib_index || color_attrib->get_type() == ColorAttrib::T_vertex) &&
+      if ((p != _color_attrib_index || color_attrib->get_color_type() == ColorAttrib::T_vertex) &&
           _glgsg->_data_reader->get_array_info(name, array_reader,
                                                num_values, numeric_type,
                                                normalized, start, stride, divisor,
@@ -2403,17 +2489,25 @@ update_shader_texture_bindings(ShaderContext *prev) {
       const ParamTextureImage *param = NULL;
       Texture *tex;
 
-      const ShaderInput *sinp = _glgsg->_target_shader->get_shader_input(input._name);
-      if (sinp->get_value_type() == ShaderInput::M_texture_image) {
-        param = (const ParamTextureImage *)sinp->get_param();
+      const ShaderInput &sinp = _glgsg->_target_shader->get_shader_input(input._name);
+      switch (sinp.get_value_type()) {
+      case ShaderInput::M_texture_image:
+        param = (const ParamTextureImage *)sinp.get_param();
         tex = param->get_texture();
+        break;
 
-      } else if (sinp->get_value_type() == ShaderInput::M_texture) {
+      case ShaderInput::M_texture:
         // People find it convenient to be able to pass a texture without
         // further ado.
-        tex = sinp->get_texture();
+        tex = sinp.get_texture();
+        break;
 
-      } else {
+      case ShaderInput::M_invalid:
+        GLCAT.error()
+          << "Missing texture image binding input " << *input._name << "\n";
+        continue;
+
+      default:
         GLCAT.error()
           << "Mismatching type for parameter " << *input._name << ", expected texture image binding\n";
         continue;
@@ -2429,8 +2523,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
         if (gtc != (TextureContext*)NULL) {
           input._gtc = gtc;
 
-          gl_tex = gtc->_index;
           _glgsg->update_texture(gtc, true);
+          gl_tex = gtc->_index;
 
           if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
             barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
@@ -2469,7 +2563,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
           bool has_write = param->has_write_access();
           input._writable = has_write;
 
-          if (has_read && has_write) {
+          if (gl_force_image_bindings_writeonly) {
+            access = GL_WRITE_ONLY;
+
+          } else if (has_read && has_write) {
             access = GL_READ_WRITE;
 
           } else if (has_read) {
@@ -2640,6 +2737,31 @@ update_shader_texture_bindings(ShaderContext *prev) {
 }
 
 /**
+ * Updates the shader buffer bindings for this shader.
+ */
+void CLP(ShaderContext)::
+update_shader_buffer_bindings(ShaderContext *prev) {
+#ifndef OPENGLES
+  // Update the shader storage buffer bindings.
+  const ShaderAttrib *attrib = _glgsg->_target_shader;
+
+  for (size_t i = 0; i < _storage_blocks.size(); ++i) {
+    StorageBlock &block = _storage_blocks[i];
+
+    ShaderBuffer *buffer = attrib->get_shader_input_buffer(block._name);
+#ifndef NDEBUG
+    if (buffer->get_data_size_bytes() < block._min_size) {
+      GLCAT.error()
+        << "cannot bind " << *buffer << " to shader because it is too small"
+           " (expected at least " << block._min_size << " bytes)\n";
+    }
+#endif
+    _glgsg->apply_shader_buffer(block._binding_index, buffer);
+  }
+#endif
+}
+
+/**
  * This subroutine prints the infolog for a shader.
  */
 void CLP(ShaderContext)::
@@ -2683,7 +2805,6 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
       Filename fn = _shader->get_filename_from_index(fileno, type);
       GLCAT.warning(false)
         << "WARNING: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
-
 
     } else if (sscanf(line.c_str(), "%d(%d) : %n", &fileno, &lineno, &prefixlen) == 2
                && prefixlen > 0) {

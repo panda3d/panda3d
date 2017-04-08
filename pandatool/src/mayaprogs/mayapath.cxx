@@ -49,10 +49,6 @@
 #include <sys/stat.h>
 #endif
 
-#ifdef HAVE_PYTHON
-#include "pystub.h"
-#endif
-
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)
 
@@ -101,6 +97,8 @@ struct MayaVerInfo maya_versions[] = {
   { "MAYA2014", "2014"},
   { "MAYA2015", "2015"},
   { "MAYA2016", "2016"},
+  { "MAYA20165", "2016.5"},
+  { "MAYA2017", "2017"},
   { 0, 0 },
 };
 
@@ -186,11 +184,6 @@ get_maya_location(const char *ver, string &loc) {
 
 int
 main(int argc, char *argv[]) {
-#ifdef HAVE_PYTHON
-  // Force pystub to be linked in.
-  pystub();
-#endif
-
   // First, get the command line and append _bin, so we will actually run
   // maya2egg_bin.exe, egg2maya_bin.exe, etc.
   Filename command = Filename::from_os_specific(argv[0]);

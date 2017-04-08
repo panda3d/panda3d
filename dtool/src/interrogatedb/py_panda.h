@@ -128,6 +128,13 @@ typedef long Py_hash_t;
 #endif
 #endif
 
+// Which character to use in PyArg_ParseTuple et al for a byte string.
+#if PY_MAJOR_VERSION >= 3
+#define FMTCHAR_BYTES "y"
+#else
+#define FMTCHAR_BYTES "s"
+#endif
+
 using namespace std;
 
 // this is tempory .. untill this is glued better into the panda build system
@@ -212,9 +219,10 @@ static PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyOb
 }
 
 // The following used to be in the above macro, but it doesn't seem to be
-// necessary as tp_alloc memsets the object to 0. ((Dtool_PyInstDef
-// *)self)->_ptr_to_object = NULL;\ ((Dtool_PyInstDef *)self)->_memory_rules =
-// false;\ ((Dtool_PyInstDef *)self)->_is_const = false;\
+// necessary as tp_alloc memsets the object to 0.
+//  ((Dtool_PyInstDef *)self)->_ptr_to_object = NULL;
+//  ((Dtool_PyInstDef *)self)->_memory_rules = false;
+//  ((Dtool_PyInstDef *)self)->_is_const = false;
 
 // Delete functions..
 #ifdef NDEBUG
@@ -295,8 +303,14 @@ template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&
 // Functions related to error reporting.
 EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
 
+// _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.
+// Some implementations of the CPython API (e.g. PyPy's cpyext) do not define
+// it, so in these cases we just silently fall back to PyErr_Occurred.
+#ifndef _PyErr_OCCURRED
+#define _PyErr_OCCURRED() PyErr_Occurred()
+#endif
+
 #ifdef NDEBUG
-// _PyErr_OCCURRED is an undocumented inline version of PyErr_Occurred.
 #define Dtool_CheckErrorOccurred() (_PyErr_OCCURRED() != NULL)
 #else
 #define Dtool_CheckErrorOccurred() _Dtool_CheckErrorOccurred()

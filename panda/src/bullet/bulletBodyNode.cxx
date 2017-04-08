@@ -37,6 +37,34 @@ BulletBodyNode(const char *name) : PandaNode(name) {
 }
 
 /**
+ *
+ */
+BulletBodyNode::
+BulletBodyNode(const BulletBodyNode &copy) :
+  PandaNode(copy),
+  _shapes(copy._shapes)
+{
+  if (copy._shape && copy._shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
+    // btCompoundShape does not define a copy constructor.  Manually copy.
+    btCompoundShape *shape = new btCompoundShape;
+    _shape = shape;
+
+    btCompoundShape *copy_shape = (btCompoundShape *)copy._shape;
+    int num_children = copy_shape->getNumChildShapes();
+    for (int i = 0; i < num_children; ++i) {
+      shape->addChildShape(copy_shape->getChildTransform(i),
+                           copy_shape->getChildShape(i));
+    }
+  }
+  else if (copy._shape && copy._shape->getShapeType() == EMPTY_SHAPE_PROXYTYPE) {
+    _shape = new btEmptyShape();
+  }
+  else {
+    _shape = copy._shape;
+  }
+}
+
+/**
  * Returns the subset of CollideMask bits that may be set for this particular
  * type of PandaNode.  For BodyNodes this returns all bits on.
  */
@@ -412,6 +440,15 @@ set_active(bool active, bool force) {
       get_object()->setActivationState(ISLAND_SLEEPING);
     }
   }
+}
+
+/**
+ *
+ */
+void BulletBodyNode::
+force_active(bool active) {
+
+  set_active(active, true);
 }
 
 /**

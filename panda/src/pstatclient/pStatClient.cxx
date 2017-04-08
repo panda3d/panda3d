@@ -105,6 +105,47 @@ PStatClient::
 }
 
 /**
+ * Sets the name of the client.  This is reported to the PStatsServer, and
+ * will presumably be written in the title bar or something.
+ */
+void PStatClient::
+set_client_name(const string &name) {
+  get_impl()->set_client_name(name);
+}
+
+/**
+ * Retrieves the name of the client as set.
+ */
+string PStatClient::
+get_client_name() const {
+  return get_impl()->get_client_name();
+}
+
+/**
+ * Controls the number of packets that will be sent to the server.  Normally,
+ * one packet is sent per frame, but this can flood the server with more
+ * packets than it can handle if the frame rate is especially good (e.g.  if
+ * nothing is onscreen at the moment).  Set this parameter to a reasonable
+ * number to prevent this from happening.
+ *
+ * This number specifies the maximum number of packets that will be sent to
+ * the server per second, per thread.
+ */
+void PStatClient::
+set_max_rate(double rate) {
+  get_impl()->set_max_rate(rate);
+}
+
+/**
+ * Returns the maximum number of packets that will be sent to the server per
+ * second, per thread.  See set_max_rate().
+ */
+double PStatClient::
+get_max_rate() const {
+  return get_impl()->get_max_rate();
+}
+
+/**
  * Returns the nth collector.
  */
 PStatCollector PStatClient::
@@ -173,6 +214,20 @@ get_current_thread() const {
     return get_main_thread();
   }
   return PStatThread(Thread::get_current_thread(), (PStatClient *)this);
+}
+
+/**
+ * Returns the time according to to the PStatClient's clock object.  It keeps
+ * its own clock, instead of using the global clock object, so the stats won't
+ * get mucked up if you put the global clock in non-real-time mode or
+ * something.
+ */
+double PStatClient::
+get_real_time() const {
+  if (has_impl()) {
+    return _impl->get_real_time();
+  }
+  return 0.0f;
 }
 
 /**
@@ -384,6 +439,16 @@ client_thread_tick(const string &sync_name) {
 }
 
 /**
+ * The nonstatic implementation of connect().
+ */
+bool PStatClient::
+client_connect(string hostname, int port) {
+  ReMutexHolder holder(_lock);
+  client_disconnect();
+  return get_impl()->client_connect(hostname, port);
+}
+
+/**
  * The nonstatic implementation of disconnect().
  */
 void PStatClient::
@@ -417,6 +482,26 @@ client_disconnect() {
 }
 
 /**
+ * The nonstatic implementation of is_connected().
+ */
+bool PStatClient::
+client_is_connected() const {
+  return has_impl() && _impl->client_is_connected();
+}
+
+/**
+ * Resumes the PStatClient after the simulation has been paused for a while.
+ * This allows the stats to continue exactly where it left off, instead of
+ * leaving a big gap that would represent a chug.
+ */
+void PStatClient::
+client_resume_after_pause() {
+  if (has_impl()) {
+    _impl->client_resume_after_pause();
+  }
+}
+
+/**
  * Returns a pointer to the global PStatClient object.  It's legal to declare
  * your own PStatClient locally, but it's also convenient to have a global one
  * that everyone can register with.  This is the global one.
@@ -431,6 +516,14 @@ get_global_pstats() {
     ClockObject::_stop_clock_wait = stop_clock_wait;
   }
   return _global_pstats;
+}
+
+/**
+ * Creates the PStatClientImpl class for this PStatClient.
+ */
+void PStatClient::
+make_impl() const {
+  _impl = new PStatClientImpl((PStatClient *)this);
 }
 
 /**

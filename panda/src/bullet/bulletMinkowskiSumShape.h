@@ -43,6 +43,12 @@ PUBLISHED:
 
   INLINE PN_stdfloat get_margin() const;
 
+  MAKE_PROPERTY(transform_a, get_transform_a, set_transform_a);
+  MAKE_PROPERTY(transform_b, get_transform_b, set_transform_b);
+  MAKE_PROPERTY(shape_a, get_shape_a);
+  MAKE_PROPERTY(shape_b, get_shape_b);
+  MAKE_PROPERTY(margin, get_margin);
+
 public:
   virtual btCollisionShape *ptr() const;
 

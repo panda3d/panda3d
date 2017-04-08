@@ -17,6 +17,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
+#include "collisionTube.h"
 #include "collisionParabola.h"
 #include "collisionBox.h"
 #include "collisionEntry.h"
@@ -233,6 +234,17 @@ test_intersection_from_ray(const CollisionEntry &) const {
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_segment(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSegment::get_class_type(),
+                                     get_type());
+  return NULL;
+}
+
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a tube.
+ */
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_tube(const CollisionEntry &) const {
+  report_undefined_intersection_test(CollisionTube::get_class_type(),
                                      get_type());
   return NULL;
 }

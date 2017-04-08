@@ -487,7 +487,7 @@ filter_to_max(int max_clip_planes) const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_off(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  DCAST_INTO_R(ta, other, NULL);
 
   if (_off_all_planes || (!ta->_off_all_planes && ta->_off_planes.empty())) {
     // If we turn off all planes, or the other turns none off, the result is
@@ -701,7 +701,7 @@ get_hash_impl() const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_impl(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  DCAST_INTO_R(ta, other, NULL);
 
   if (ta->_off_all_planes) {
     // If the other type turns off all planes, it doesn't matter what we are.
@@ -911,7 +911,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
   if (manager->get_file_minor_ver() >= 40) {
-    for (int i = 0; i < _off_planes.size(); ++i) {
+    for (size_t i = 0; i < _off_planes.size(); ++i) {
       pi += _off_planes[i].complete_pointers(p_list + pi, manager);
 
       int n = areg->find_node(_off_planes[i]);
@@ -921,7 +921,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       }
     }
 
-    for (int i = 0; i < _on_planes.size(); ++i) {
+    for (size_t i = 0; i < _on_planes.size(); ++i) {
       pi += _on_planes[i].complete_pointers(p_list + pi, manager);
 
       int n = areg->find_node(_on_planes[i]);

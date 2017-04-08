@@ -34,7 +34,7 @@ PUBLISHED:
   LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
   virtual ~LightLensNode();
 
-  INLINE bool is_shadow_caster();
+  INLINE bool is_shadow_caster() const;
   INLINE void set_shadow_caster(bool caster);
   INLINE void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
 

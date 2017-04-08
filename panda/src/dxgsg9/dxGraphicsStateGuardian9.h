@@ -79,7 +79,7 @@ public:
                            bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
-  bool setup_array_data(CLP(VertexBufferContext)*& vbc,
+  bool setup_array_data(DXVertexBufferContext9 *&vbc,
                         const GeomVertexArrayDataHandle* data,
                         bool force);
 
@@ -295,12 +295,12 @@ protected:
   CullFaceAttrib::Mode _cull_face_mode;
   RenderModeAttrib::Mode _current_fill_mode;  //point/wireframe/solid
 
-  PT(Shader)  _current_shader;
-  CLP(ShaderContext)  *_current_shader_context;
-  PT(Shader)  _vertex_array_shader;
-  CLP(ShaderContext)  *_vertex_array_shader_context;
-  PT(Shader)  _texture_binding_shader;
-  CLP(ShaderContext)  *_texture_binding_shader_context;
+  PT(Shader) _current_shader;
+  DXShaderContext9 *_current_shader_context;
+  PT(Shader) _vertex_array_shader;
+  DXShaderContext9 *_vertex_array_shader_context;
+  PT(Shader) _texture_binding_shader;
+  DXShaderContext9 *_texture_binding_shader_context;
 
   const DXIndexBufferContext9 *_active_ibuffer;
 

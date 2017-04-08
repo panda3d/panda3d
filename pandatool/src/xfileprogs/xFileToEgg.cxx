@@ -14,7 +14,6 @@
 #include "xFileToEgg.h"
 #include "xFileToEggConverter.h"
 #include "config_xfile.h"
-#include "pystub.h"
 
 /**
  *
@@ -114,9 +113,6 @@ run() {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   init_libxfile();
   XFileToEgg prog;
   prog.parse_command_line(argc, argv);

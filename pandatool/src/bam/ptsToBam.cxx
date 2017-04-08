@@ -19,7 +19,6 @@
 #include "pandaNode.h"
 #include "geomNode.h"
 #include "dcast.h"
-#include "pystub.h"
 #include "string_utils.h"
 #include "config_egg2pg.h"
 
@@ -230,9 +229,6 @@ close_vertex_data() {
 }
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   PtsToBam prog;
   prog.parse_command_line(argc, argv);
   prog.run();

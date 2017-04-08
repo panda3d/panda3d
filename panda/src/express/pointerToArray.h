@@ -14,36 +14,47 @@
 #ifndef POINTERTOARRAY_H
 #define POINTERTOARRAY_H
 
-
 /*
  * This file defines the classes PointerToArray and ConstPointerToArray (and
  * their abbreviations, PTA and CPTA), which are extensions to the PointerTo
- * class that support reference-counted arrays.  You may think of a
- * PointerToArray as the same thing as a traditional C-style array.  However,
- * it actually stores a pointer to an STL vector, which is then reference-
- * counted.  Thus, most vector operations may be applied directly to a
- * PointerToArray object, including dynamic resizing via push_back() and
- * pop_back(). Unlike the PointerTo class, the PointerToArray may store
- * pointers to any kind of object, not just those derived from ReferenceCount.
+ * class that support reference-counted arrays.
+ *
+ * You may think of a PointerToArray as the same thing as a traditional
+ * C-style array.  However, it actually stores a pointer to an STL vector,
+ * which is then reference-counted.  Thus, most vector operations may be
+ * applied directly to a PointerToArray object, including dynamic resizing via
+ * push_back() and pop_back().
+ *
+ * Unlike the PointerTo class, the PointerToArray may store pointers to any
+ * kind of object, not just those derived from ReferenceCount.
+ *
  * Like PointerTo and ConstPointerTo, the macro abbreviations PTA and CPTA are
- * defined for convenience.  Some examples of syntax:              instead of:
+ * defined for convenience.
+ *
+ * Some examples of syntax:              instead of:
+ *
  * PTA(int) array(10);                     int *array = new int[10];
  * memset(array, 0, sizeof(int) * 10);     memset(array, 0, sizeof(int) * 10);
- * array[i] = array[i+1];                  array[i] = array[i+1]; num_elements
- * = array.size();             (no equivalent) PTA(int) copy = array;
- * int *copy = array; Note that in the above example, unlike an STL vector
- * (but like a C-style array), assigning a PointerToArray object from another
- * simply copies the pointer, and does not copy individual elements.  (Of
- * course, reference counts are adjusted appropriately7.)  If you actually
- * wanted an element-by-element copy of the array, you would do this: PTA(int)
- * copy(0);               Create a pointer to an empty vector.  copy.v() =
- * array.v();           v() is the STL vector itself.  The (0) parameter to
- * the constructor in the above example is crucial.  When a numeric length
- * parameter, such as zero, is given to the constructor, it means to define a
- * new STL vector with that number of elements initially in it.  If no
- * parameter is given, on the other hand, it means the PointerToArray should
- * point to nothing--no STL vector is created.  This is equivalent to a C
- * array that points to NULL.
+ * array[i] = array[i+1];                  array[i] = array[i+1];
+ * num_elements = array.size();             (no equivalent)
+ *
+ * PTA(int) copy = array;                  int *copy = array;
+ *
+ * Note that in the above example, unlike an STL vector (but like a C-style
+ * array), assigning a PointerToArray object from another simply copies the
+ * pointer, and does not copy individual elements. (Of course, reference
+ * counts are adjusted appropriately.)  If you actually wanted an
+ * element-by-element copy of the array, you would do this:
+ *
+ * PTA(int) copy(0);              // Create a pointer to an empty vector.
+ * copy.v() = array.v();          // v() is the STL vector itself.
+ *
+ * The (0) parameter to the constructor in the above example is crucial.  When
+ * a numeric length parameter, such as zero, is given to the constructor, it
+ * means to define a new STL vector with that number of elements initially in
+ * it.  If no parameter is given, on the other hand, it means the
+ * PointerToArray should point to nothing--no STL vector is created.  This is
+ * equivalent to a C array that points to NULL.
  */
 
 #include "pandabase.h"
@@ -102,10 +113,8 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
 
 #ifdef HAVE_PYTHON
-#if PY_VERSION_HEX >= 0x02060000
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
-#endif
 #endif
 
 #else  // CPPPARSER
@@ -125,6 +134,7 @@ public:
   INLINE PointerToArray(TypeHandle type_handle = get_type_handle(Element));
   INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(size_type n, const Element &value, TypeHandle type_handle = get_type_handle(Element));
+  INLINE PointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
 #ifdef USE_MOVE_SEMANTICS
@@ -257,10 +267,8 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
 
 #ifdef HAVE_PYTHON
-#if PY_VERSION_HEX >= 0x02060000
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
-#endif
 #endif
 
 #else  // CPPPARSER
@@ -282,6 +290,7 @@ PUBLISHED:
   typedef TYPENAME pvector<Element>::size_type size_type;
 
   INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
+  INLINE ConstPointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 

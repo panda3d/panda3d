@@ -56,6 +56,9 @@ class panda3d(package):
            'direct.stdpy.*',
            'direct.task.*')
 
+    # Keep these modules for backward compatibility.
+    module('pandac.PandaModules', 'pandac.extension_native_helpers')
+
     module('panda3d.core',
            'panda3d.direct',
            'panda3d.fx',
@@ -63,8 +66,10 @@ class panda3d(package):
 
     # Include various standard Python encodings.  The rest is in morepy.
     module('encodings', 'encodings.aliases', 'encodings.undefined',
-           'encodings.utf_8', 'encodings.ascii', 'encodings.string_escape',
-           'encodings.mbcs', 'encodings.latin_1', 'io')
+           'encodings.utf_8', 'encodings.ascii', 'encodings.mbcs',
+           'encodings.latin_1', 'io')
+    if sys.version_info < (3, 0):
+        module('encodings.string_escape')
 
     # Pick up the shader files that appear in direct/src/filter.
     import direct
@@ -241,7 +246,10 @@ class models(package):
     # we assume this is the models directory.
     pathname = getModelPath().findFile('cmss12.egg')
     if pathname:
-        dir(pathname.getDirname(), newDir = '')
+        dir(pathname.getDirname(), newDir = 'models')
+
+    # Some people are used to loading the models without models/ prefix.
+    file('models.prc', extract = True, text = "model-path $MODELS_ROOT/models")
 
 
 class fmod(package):
@@ -457,6 +465,8 @@ class packp3d(p3d):
 
     mainModule('direct.p3d.packp3d')
 
+    file('packp3d.prc', extract = True, text = "preload-textures false")
+
 
 class ppackage(p3d):
     # As above, a packaging utility.  This is the fully-general ppackage
@@ -469,6 +479,8 @@ class ppackage(p3d):
     require('panda3d', 'egg')
 
     mainModule('direct.p3d.ppackage')
+
+    file('ppackage.prc', extract = True, text = "preload-textures false")
 
 
 class ppatcher(p3d):

@@ -65,6 +65,7 @@ PUBLISHED:
   INLINE void set_debug_node(BulletDebugNode *node);
   INLINE void clear_debug_node();
   INLINE BulletDebugNode *get_debug_node() const;
+  INLINE bool has_debug_node() const;
 
   // AttachRemove
   void attach(TypedObject *object);
@@ -158,6 +159,17 @@ PUBLISHED:
     FA_groups_mask,
     FA_callback,
   };
+
+  MAKE_PROPERTY(gravity, get_gravity, set_gravity);
+  MAKE_PROPERTY(world_info, get_world_info);
+  MAKE_PROPERTY2(debug_node, has_debug_node, get_debug_node, set_debug_node, clear_debug_node);
+  MAKE_SEQ_PROPERTY(ghosts, get_num_ghosts, get_ghost);
+  MAKE_SEQ_PROPERTY(rigid_bodies, get_num_rigid_bodies, get_rigid_body);
+  MAKE_SEQ_PROPERTY(soft_bodies, get_num_soft_bodies, get_soft_body);
+  MAKE_SEQ_PROPERTY(characters, get_num_characters, get_character);
+  MAKE_SEQ_PROPERTY(vehicles, get_num_vehicles, get_vehicle);
+  MAKE_SEQ_PROPERTY(constraints, get_num_constraints, get_constraint);
+  MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, get_manifold);
 
 PUBLISHED: // Deprecated methods, will become private soon
   void attach_ghost(BulletGhostNode *node);

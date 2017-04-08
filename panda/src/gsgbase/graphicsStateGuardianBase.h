@@ -31,6 +31,7 @@ class GraphicsOutputBase;
 
 class VertexBufferContext;
 class IndexBufferContext;
+class BufferContext;
 class GeomContext;
 class GeomNode;
 class Geom;
@@ -57,6 +58,7 @@ class SamplerContext;
 class SamplerState;
 class Shader;
 class ShaderContext;
+class ShaderBuffer;
 class RenderState;
 class TransformState;
 class Material;
@@ -162,6 +164,9 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
 
+  virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data)=0;
+  virtual void release_shader_buffer(BufferContext *ibc)=0;
+
   virtual void dispatch_compute(int size_x, int size_y, int size_z)=0;
 
   virtual PT(GeomMunger) get_geom_munger(const RenderState *state,
@@ -223,8 +228,8 @@ PUBLISHED:
   static GraphicsStateGuardianBase *get_default_gsg();
   static void set_default_gsg(GraphicsStateGuardianBase *default_gsg);
 
-  static int get_num_gsgs();
-  static GraphicsStateGuardianBase *get_gsg(int n);
+  static size_t get_num_gsgs();
+  static GraphicsStateGuardianBase *get_gsg(size_t n);
   MAKE_SEQ(get_gsgs, get_num_gsgs, get_gsg);
 
 public:
@@ -232,10 +237,14 @@ public:
   static void remove_gsg(GraphicsStateGuardianBase *gsg);
 
 private:
-  typedef pvector<GraphicsStateGuardianBase *> GSGs;
-  static GSGs _gsgs;
-  static GraphicsStateGuardianBase *_default_gsg;
-  static LightMutex _lock;
+  struct GSGList {
+    LightMutex _lock;
+
+    typedef pvector<GraphicsStateGuardianBase *> GSGs;
+    GSGs _gsgs;
+    GraphicsStateGuardianBase *_default_gsg;
+  };
+  static AtomicAdjust::Pointer _gsg_list;
 
 public:
   static TypeHandle get_class_type() {

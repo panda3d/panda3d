@@ -25,7 +25,7 @@ class CLP(GraphicsStateGuardian);
 /**
  * xyz
  */
-class EXPCL_GL CLP(CgShaderContext) : public ShaderContext {
+class EXPCL_GL CLP(CgShaderContext) FINAL : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
 
@@ -39,7 +39,8 @@ public:
 
   void set_state_and_transform(const RenderState *state,
                                const TransformState *modelview_transform,
-                               const TransformState *projection_transform);
+                               const TransformState *camera_transform,
+                               const TransformState *projection_transform) OVERRIDE;
 
   void issue_parameters(int altered) OVERRIDE;
   void update_transform_table(const TransformTable *table);
@@ -77,6 +78,7 @@ private:
 
   WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
+  CPT(TransformState) _camera_transform;
   CPT(TransformState) _projection_transform;
   GLint _frame_number;
 
@@ -93,10 +95,10 @@ public:
     register_type(_type_handle, CLASSPREFIX_QUOTED "CgShaderContext",
                   ShaderContext::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const OVERRIDE {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() OVERRIDE {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

@@ -15,8 +15,8 @@
  *
  */
 template<class T>
-INLINE PointerTo<T>::
-PointerTo(To *ptr) : PointerToBase<T>(ptr) {
+ALWAYS_INLINE PointerTo<T>::
+PointerTo(To *ptr) NOEXCEPT : PointerToBase<T>(ptr) {
 }
 
 /**
@@ -55,16 +55,8 @@ operator = (PointerTo<T> &&from) NOEXCEPT {
  *
  */
 template<class T>
-INLINE PointerTo<T>::
-~PointerTo() {
-}
-
-/**
- *
- */
-template<class T>
-INLINE TYPENAME PointerTo<T>::To &PointerTo<T>::
-operator *() const {
+CONSTEXPR TYPENAME PointerTo<T>::To &PointerTo<T>::
+operator *() const NOEXCEPT {
   return *((To *)(this->_void_ptr));
 }
 
@@ -72,8 +64,8 @@ operator *() const {
  *
  */
 template<class T>
-INLINE TYPENAME PointerTo<T>::To *PointerTo<T>::
-operator -> () const {
+CONSTEXPR TYPENAME PointerTo<T>::To *PointerTo<T>::
+operator -> () const NOEXCEPT {
   return (To *)(this->_void_ptr);
 }
 
@@ -84,8 +76,8 @@ operator -> () const {
  * goes because either will be correct.
  */
 template<class T>
-INLINE PointerTo<T>::
-operator T * () const {
+CONSTEXPR PointerTo<T>::
+operator T * () const NOEXCEPT {
   return (To *)(this->_void_ptr);
 }
 
@@ -107,8 +99,8 @@ cheat() {
  * compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE TYPENAME PointerTo<T>::To *PointerTo<T>::
-p() const {
+CONSTEXPR TYPENAME PointerTo<T>::To *PointerTo<T>::
+p() const NOEXCEPT {
   return (To *)(this->_void_ptr);
 }
 
@@ -136,8 +128,8 @@ operator = (const PointerTo<T> &copy) {
  *
  */
 template<class T>
-INLINE ConstPointerTo<T>::
-ConstPointerTo(const TYPENAME ConstPointerTo<T>::To *ptr) :
+ALWAYS_INLINE ConstPointerTo<T>::
+ConstPointerTo(const TYPENAME ConstPointerTo<T>::To *ptr) NOEXCEPT :
   PointerToBase<T>((TYPENAME ConstPointerTo<T>::To *)ptr)
 {
 }
@@ -150,14 +142,6 @@ INLINE ConstPointerTo<T>::
 ConstPointerTo(const PointerTo<T> &copy) :
   PointerToBase<T>((const PointerToBase<T> &)copy)
 {
-}
-
-/**
- *
- */
-template<class T>
-INLINE ConstPointerTo<T>::
-~ConstPointerTo() {
 }
 
 /**
@@ -216,8 +200,8 @@ operator = (ConstPointerTo<T> &&from) NOEXCEPT {
  *
  */
 template<class T>
-INLINE const TYPENAME ConstPointerTo<T>::To &ConstPointerTo<T>::
-operator *() const {
+CONSTEXPR const TYPENAME ConstPointerTo<T>::To &ConstPointerTo<T>::
+operator *() const NOEXCEPT {
   return *((To *)(this->_void_ptr));
 }
 
@@ -225,8 +209,8 @@ operator *() const {
  *
  */
 template<class T>
-INLINE const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
-operator -> () const {
+CONSTEXPR const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
+operator -> () const NOEXCEPT {
   return (To *)(this->_void_ptr);
 }
 
@@ -237,8 +221,8 @@ operator -> () const {
  * don't care which way it goes because either will be correct.
  */
 template<class T>
-INLINE ConstPointerTo<T>::
-operator const T * () const {
+CONSTEXPR ConstPointerTo<T>::
+operator const T * () const NOEXCEPT {
 return (To *)(this->_void_ptr);
 }
 
@@ -260,8 +244,8 @@ cheat() {
  * around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
-p() const {
+CONSTEXPR const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
+p() const NOEXCEPT {
   return (To *)(this->_void_ptr);
 }
 

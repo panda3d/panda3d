@@ -27,7 +27,7 @@ public:
   INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);
   ALLOC_DELETED_CHAIN(TinyTextureContext);
 
-  INLINE ~TinyTextureContext();
+  ~TinyTextureContext();
 
   virtual void evict_lru();
 

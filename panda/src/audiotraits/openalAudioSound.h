@@ -21,7 +21,7 @@
 #include "openalAudioManager.h"
 
 // OSX uses the OpenAL framework
-#ifdef IS_OSX
+#ifdef HAVE_OPENAL_FRAMEWORK
   #include <OpenAL/al.h>
   #include <OpenAL/alc.h>
 #else

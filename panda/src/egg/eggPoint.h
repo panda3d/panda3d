@@ -28,6 +28,8 @@ PUBLISHED:
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);
 
+  virtual EggPoint *make_copy() const OVERRIDE;
+
   INLINE bool has_thick() const;
   INLINE double get_thick() const;
   INLINE void set_thick(double thick);

@@ -25,9 +25,12 @@
  */
 class EXPCL_PANDA_PUTIL ButtonHandle FINAL {
 PUBLISHED:
-  INLINE ButtonHandle();
+  // The default constructor must do nothing, because we can't guarantee
+  // ordering of static initializers.  If the constructor tried to initialize
+  // its value, it  might happen after the value had already been set
+  // previously by another static initializer!
+  INLINE ButtonHandle() DEFAULT_CTOR;
   CONSTEXPR ButtonHandle(int index);
-  INLINE ButtonHandle(const ButtonHandle &copy);
   ButtonHandle(const string &name);
 
 PUBLISHED:

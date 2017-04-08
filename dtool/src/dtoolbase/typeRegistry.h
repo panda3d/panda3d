@@ -77,7 +77,7 @@ PUBLISHED:
   void write(ostream &out) const;
 
   // ptr() returns the pointer to the global TypeRegistry object.
-  static TypeRegistry *ptr();
+  static INLINE TypeRegistry *ptr();
 
   MAKE_SEQ_PROPERTY(typehandles, get_num_typehandles, get_typehandle);
   MAKE_SEQ_PROPERTY(root_classes, get_num_root_classes, get_root_class);

@@ -31,9 +31,7 @@ class Extension<PfmFile> : public ExtensionBase<PfmFile> {
 public:
   PyObject *get_points() const;
 
-#if PY_VERSION_HEX >= 0x02060000
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
-#endif
 };
 
 #endif  // HAVE_PYTHON

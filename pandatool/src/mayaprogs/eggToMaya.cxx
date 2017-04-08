@@ -14,9 +14,6 @@
 #include "eggToMaya.h"
 #include "mayaEggLoader.h"
 #include "mayaApi.h"
-#ifdef _WIN32
-  #include "pystub.h"
-#endif
 
 // We must define this to prevent Maya from doubly-declaring its MApiVersion
 // string in this file as well as in libmayaegg.
@@ -128,13 +125,6 @@ run() {
 }
 
 int main(int argc, char *argv[]) {
-  // We don't want pystub on linux, since it gives problems with Maya's
-  // python.
-#ifdef _WIN32
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-#endif
-
   EggToMaya prog;
   prog.parse_command_line(argc, argv);
   prog.run();

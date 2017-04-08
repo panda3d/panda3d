@@ -41,7 +41,7 @@ resolve_type(CPPType *type, CPPScope *scope) {
     scope = &parser;
   }
 
-  CPPType *orig_type = type;
+  //CPPType *orig_type = type;
   type = type->resolve_type(scope, &parser);
   string name = type->get_local_name(&parser);
   if (name.empty()) {
@@ -938,6 +938,66 @@ is_wstring(CPPType *type) {
 }
 
 /**
+ * Returns true if the type is vector<unsigned char>, or a const reference to
+ * it.
+ */
+bool TypeManager::
+is_vector_unsigned_char(CPPType *type) {
+  if (type->get_local_name(&parser) == "vector< unsigned char >" ||
+      type->get_local_name(&parser) == "pvector< unsigned char >") {
+    return true;
+  }
+
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_vector_unsigned_char(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return is_const_vector_unsigned_char(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_struct:
+    {
+      CPPStructType *stype = type->as_struct_type();
+      CPPStructType::Derivation::const_iterator di;
+      for (di = stype->_derivation.begin();
+           di != stype->_derivation.end();
+           ++di) {
+        if (is_vector_unsigned_char((*di)._base)) {
+          return true;
+        }
+      }
+    }
+    break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_vector_unsigned_char(type->as_typedef_type()->_type);
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+/**
+ * Returns true if the indicated type is a const wrapper around
+ * vector<unsigned char>.
+ */
+bool TypeManager::
+is_const_vector_unsigned_char(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_vector_unsigned_char(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_vector_unsigned_char(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
  * Returns true if the indicated type is bool, or some trivial variant.
  */
 bool TypeManager::
@@ -1680,7 +1740,8 @@ is_Py_buffer(CPPType *type) {
 
   case CPPDeclaration::ST_extension:
   case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "Py_buffer");
+    return (type->get_local_name(&parser) == "Py_buffer" ||
+            type->get_local_name(&parser) == "bufferinfo");
 
   case CPPDeclaration::ST_typedef:
     return is_Py_buffer(type->as_typedef_type()->_type);

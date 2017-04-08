@@ -27,6 +27,8 @@
 
 #ifdef HAVE_OPENSSL
 
+#include "openSSLWrapper.h"
+
 #if defined(WIN32_VC) || defined(WIN64_VC)
   #include <WinSock2.h>
   #include <windows.h>  // for select()
@@ -375,26 +377,28 @@ run() {
       }
 
       // No connection.  Attempt to establish one.
+      URLSpec url;
       if (_proxy.empty()) {
-        _bio = new BioPtr(_request.get_url());
+        url = _request.get_url();
       } else {
-        _bio = new BioPtr(_proxy);
+        url = _proxy;
       }
+      _bio = new BioPtr(url);
       _source = new BioStreamPtr(new BioStream(_bio));
       if (_nonblocking) {
-        BIO_set_nbio(*_bio, 1);
+        _bio->set_nbio(true);
       }
 
       if (downloader_cat.is_debug()) {
         if (_connect_count > 0) {
           downloader_cat.debug()
             << _NOTIFY_HTTP_CHANNEL_ID
-            << "Reconnecting to " << _bio->get_server_name() << ":"
+            << "Reconnecting to " << _bio->get_server_name() << " port "
             << _bio->get_port() << "\n";
         } else {
           downloader_cat.debug()
             << _NOTIFY_HTTP_CHANNEL_ID
-            << "Connecting to " << _bio->get_server_name() << ":"
+            << "Connecting to " << _bio->get_server_name() << " port "
             << _bio->get_port() << "\n";
         }
       }
@@ -941,14 +945,14 @@ bool HTTPChannel::
 run_connecting() {
   _status_entry = StatusEntry();
 
-  if (BIO_do_connect(*_bio) <= 0) {
-    if (BIO_should_retry(*_bio)) {
+  if (!_bio->connect()) {
+    if (_bio->should_retry()) {
       _state = S_connecting_wait;
       return false;
     }
     downloader_cat.info()
       << _NOTIFY_HTTP_CHANNEL_ID
-      << "Could not connect to " << _bio->get_server_name() << ":"
+      << "Could not connect to " << _bio->get_server_name() << " port "
       << _bio->get_port() << "\n";
     OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
     _status_entry._status_code = SC_no_connection;
@@ -959,7 +963,7 @@ run_connecting() {
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << _NOTIFY_HTTP_CHANNEL_ID
-      << "Connected to " << _bio->get_server_name() << ":"
+      << "Connected to " << _bio->get_server_name() << " port "
       << _bio->get_port() << "\n";
   }
 
@@ -1362,6 +1366,10 @@ run_socks_proxy_connect_reply() {
     total_bytes += (unsigned int)reply[4];
     break;
 
+  case 0x04:  // IPv6
+    total_bytes += 16;
+    break;
+
   default:
     downloader_cat.info()
       << _NOTIFY_HTTP_CHANNEL_ID
@@ -1395,6 +1403,18 @@ run_socks_proxy_connect_reply() {
 
     case 0x03:  // DNS
       connect_host = string(&reply[5], (unsigned int)reply[4]);
+      break;
+
+    case 0x04:  // IPv6
+      {
+        char buf[48];
+        sprintf(buf, "[%02hhx%02hhx:%02hhx%02hhx:%02hhx%02hhx:%02hhx%02hhx"
+                     ":%02hhx%02hhx:%02hhx%02hhx:%02hhx%02hhx:%02hhx%02hhx]",
+                reply[4], reply[5], reply[6], reply[7], reply[8], reply[9],
+                reply[10], reply[11], reply[12], reply[13], reply[14],
+                reply[15], reply[16], reply[17], reply[18], reply[19]);
+        total_bytes += 16;
+      }
       break;
     }
 
@@ -1454,6 +1474,14 @@ run_setup_ssl() {
     _status_entry._status_code = SC_ssl_internal_failure;
     _state = S_failure;
     return false;
+  }
+
+  string hostname = _request.get_url().get_server();
+  result = SSL_set_tlsext_host_name(ssl, hostname.c_str());
+  if (result == 0) {
+    downloader_cat.error()
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Could not set TLS SNI hostname to '" << hostname << "'\n";
   }
 
 /*
@@ -2742,8 +2770,8 @@ server_getline(string &str) {
         }
         str = str.substr(0, p);
       }
-      if (downloader_cat.is_debug()) {
-        downloader_cat.debug()
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
           << _NOTIFY_HTTP_CHANNEL_ID
           << "recv: " << str << "\n";
       }
@@ -2915,7 +2943,7 @@ server_send(const string &str, bool secret) {
   }
 
 #ifndef NDEBUG
-  if (!secret && downloader_cat.is_debug()) {
+  if (!secret && downloader_cat.is_spam()) {
     show_send(str.substr(0, write_count));
   }
 #endif
@@ -3486,14 +3514,19 @@ make_header() {
 
   if (_client->get_http_version() >= HTTPEnum::HV_11) {
 
-    stream
-      << "Host: " << _request.get_url().get_server();
-    if (!_request.get_url().is_default_port()) {
+    if (_request.get_url().has_port() && _request.get_url().is_default_port()) {
       // It appears that some servers (notably gstatic.com) might return a 404
       // if you include an explicit port number in with the Host: header, even
       // if it is the default port.  So, don't include the port number unless
       // we need to.
-      stream << ":" << _request.get_url().get_port();
+      string server = _request.get_url().get_server();
+      if (server.find(':') != string::npos) {
+        stream << "Host: [" << server << "]";
+      } else {
+        stream << "Host: " << server;
+      }
+    } else {
+      stream << "Host: " << _request.get_url().get_server_and_port();
     }
     stream << "\r\n";
     if (!get_persistent_connection()) {
@@ -3703,14 +3736,14 @@ show_send(const string &message) {
   size_t newline = message.find('\n', start);
   while (newline != string::npos) {
     // Assume every \n is preceded by a \r.
-    downloader_cat.debug()
+    downloader_cat.spam()
       << "send: " << message.substr(start, newline - start - 1) << "\n";
     start = newline + 1;
     newline = message.find('\n', start);
   }
 
   if (start < message.length()) {
-    downloader_cat.debug()
+    downloader_cat.spam()
       << "send: " << message.substr(start) << " (no newline)\n";
   }
 }

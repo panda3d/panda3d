@@ -40,6 +40,8 @@ PUBLISHED:
 
   static BulletSphereShape *make_from_solid(const CollisionSphere *solid);
 
+  MAKE_PROPERTY(radius, get_radius);
+
 public:
   virtual btCollisionShape *ptr() const;
 

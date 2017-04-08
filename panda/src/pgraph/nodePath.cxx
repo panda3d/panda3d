@@ -697,8 +697,10 @@ get_state(const NodePath &other, Thread *current_thread) const {
     return other.get_net_state(current_thread)->invert_compose(RenderState::make_empty());
   }
 
+#if defined(_DEBUG) || (defined(HAVE_THREADS) && defined(SIMPLE_THREADS))
   nassertr(verify_complete(current_thread), RenderState::make_empty());
   nassertr(other.verify_complete(current_thread), RenderState::make_empty());
+#endif
 
   int a_count, b_count;
   if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
@@ -767,8 +769,10 @@ get_transform(const NodePath &other, Thread *current_thread) const {
     return other.get_net_transform(current_thread)->invert_compose(TransformState::make_identity());
   }
 
+#if defined(_DEBUG) || (defined(HAVE_THREADS) && defined(SIMPLE_THREADS))
   nassertr(verify_complete(current_thread), TransformState::make_identity());
   nassertr(other.verify_complete(current_thread), TransformState::make_identity());
+#endif
 
   int a_count, b_count;
   if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
@@ -852,8 +856,10 @@ get_prev_transform(const NodePath &other, Thread *current_thread) const {
     return other.get_net_prev_transform(current_thread)->invert_compose(TransformState::make_identity());
   }
 
+#if defined(_DEBUG) || (defined(HAVE_THREADS) && defined(SIMPLE_THREADS))
   nassertr(verify_complete(current_thread), TransformState::make_identity());
   nassertr(other.verify_complete(current_thread), TransformState::make_identity());
+#endif
 
   int a_count, b_count;
   if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
@@ -3255,35 +3261,36 @@ get_shader() const {
  *
  */
 void NodePath::
-set_shader_input(const ShaderInput *inp) {
+set_shader_input(ShaderInput inp) {
   nassertv_always(!is_empty());
 
+  PandaNode *pnode = node();
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
-    node()->set_attrib(sa->set_shader_input(inp));
+    pnode->get_attrib(ShaderAttrib::get_class_slot());
+  if (attrib != nullptr) {
+    const ShaderAttrib *sa = (const ShaderAttrib *)attrib;
+    pnode->set_attrib(sa->set_shader_input(inp));
   } else {
     // Create a new ShaderAttrib for this node.
     CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
-    node()->set_attrib(sa->set_shader_input(inp));
+    pnode->set_attrib(sa->set_shader_input(inp));
   }
 }
 
 /**
  *
  */
-const ShaderInput *NodePath::
+ShaderInput NodePath::
 get_shader_input(CPT_InternalName id) const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), ShaderInput::get_blank());
 
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+  if (attrib != nullptr) {
+    const ShaderAttrib *sa = (const ShaderAttrib *)attrib;
     return sa->get_shader_input(id);
   }
-  return NULL;
+  return ShaderInput::get_blank();
 }
 
 /**
@@ -5786,17 +5793,22 @@ r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
   if (comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
+    PandaNode *node = comp->get_node();
     int pipeline_stage = current_thread->get_pipeline_stage();
     CPT(TransformState) net_transform = r_get_net_transform(comp->get_next(pipeline_stage, current_thread), current_thread);
-    PandaNode *node = comp->get_node();
-    CPT(TransformState) transform = node->get_transform(current_thread);
 
-    CPT(RenderEffects) effects = node->get_effects(current_thread);
-    if (effects->has_adjust_transform()) {
-      effects->adjust_transform(net_transform, transform, node);
+    PandaNode::CDReader node_cdata(node->_cycler, current_thread);
+    if (!node_cdata->_effects->has_adjust_transform()) {
+      if (node_cdata->_transform->is_identity()) {
+        return net_transform;
+      } else {
+        return net_transform->compose(node_cdata->_transform);
+      }
+    } else {
+      CPT(TransformState) transform = node_cdata->_transform.p();
+      node_cdata->_effects->adjust_transform(net_transform, transform, node);
+      return net_transform->compose(transform);
     }
-
-    return net_transform->compose(transform);
   }
 }
 
@@ -5814,16 +5826,21 @@ r_get_partial_transform(NodePathComponent *comp, int n,
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
-    if (comp->get_node()->get_effects(current_thread)->has_adjust_transform()) {
+    PandaNode *node = comp->get_node();
+    PandaNode::CDReader node_cdata(node->_cycler, current_thread);
+    if (node_cdata->_effects->has_adjust_transform()) {
       return NULL;
     }
-    CPT(TransformState) transform = comp->get_node()->get_transform(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
     CPT(TransformState) partial = r_get_partial_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread);
     if (partial == (const TransformState *)NULL) {
       return NULL;
     }
-    return partial->compose(transform);
+    if (node_cdata->_transform->is_identity()) {
+      return partial;
+    } else {
+      return partial->compose(node_cdata->_transform);
+    }
   }
 }
 

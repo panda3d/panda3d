@@ -341,6 +341,8 @@ get_root_class(int n) {
   TypeHandle handle;
   if (n >= 0 && n < (int)_root_classes.size()) {
     handle = _root_classes[n]->_handle;
+  } else {
+    handle = TypeHandle::none();
   }
   _lock->release();
 
@@ -380,6 +382,8 @@ get_parent_class(TypeHandle child, int index) const {
   assert(rnode != (TypeRegistryNode *)NULL);
   if (index >= 0 && index < (int)rnode->_parent_classes.size()) {
     handle = rnode->_parent_classes[index]->_handle;
+  } else {
+    handle = TypeHandle::none();
   }
   _lock->release();
   return handle;
@@ -415,6 +419,8 @@ get_child_class(TypeHandle child, int index) const {
   assert(rnode != (TypeRegistryNode *)NULL);
   if (index >= 0 && index < (int)rnode->_child_classes.size()) {
     handle = rnode->_child_classes[index]->_handle;
+  } else {
+    handle = TypeHandle::none();
   }
   _lock->release();
   return handle;
@@ -483,20 +489,6 @@ write(ostream &out) const {
 }
 
 /**
- * Returns the pointer to the global TypeRegistry object.
- */
-TypeRegistry *TypeRegistry::
-ptr() {
-  init_lock();
-  _lock->acquire();
-  if (_global_pointer == NULL) {
-    init_global_pointer();
-  }
-  _lock->release();
-  return _global_pointer;
-}
-
-/**
  *
  */
 TypeRegistry::
@@ -525,6 +517,7 @@ TypeRegistry() {
  */
 void TypeRegistry::
 init_global_pointer() {
+  init_lock();
   init_memory_hook();
   _global_pointer = new TypeRegistry;
 }

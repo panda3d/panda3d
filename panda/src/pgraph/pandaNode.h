@@ -200,12 +200,15 @@ PUBLISHED:
 
   EXTENSION(PyObject *get_tag_keys() const);
 
-  EXTENSION(void set_python_tag(const string &key, PyObject *value));
-  EXTENSION(PyObject *get_python_tag(const string &key) const);
-  EXTENSION(bool has_python_tag(const string &key) const);
-  EXTENSION(void clear_python_tag(const string &key));
-  EXTENSION(void get_python_tag_keys(vector_string &keys) const);
+  EXTENSION(PyObject *get_python_tags());
+  EXTENSION(void set_python_tag(PyObject *key, PyObject *value));
+  EXTENSION(PyObject *get_python_tag(PyObject *key) const);
+  EXTENSION(bool has_python_tag(PyObject *key) const);
+  EXTENSION(void clear_python_tag(PyObject *key));
   EXTENSION(PyObject *get_python_tag_keys() const);
+  MAKE_PROPERTY(python_tags, get_python_tags);
+
+  EXTENSION(int __traverse__(visitproc visit, void *arg));
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
@@ -507,9 +510,16 @@ private:
   // This is used to maintain a table of keyed data on each node, for the
   // user's purposes.
   typedef phash_map<string, string, string_hash> TagData;
-#ifdef HAVE_PYTHON
-  typedef phash_map<string, PyObject *, string_hash> PythonTagData;
-#endif  // HAVE_PYTHON
+
+  // This is actually implemented in pandaNode_ext.h, but defined here so
+  // that we can destruct it from the C++ side.  Note that it isn't cycled,
+  // because I imagine it's rare to see a Python thread on a stage other than
+  // stage 0, and let's not make things unnecessarily complicated.
+  class PythonTagData : public ReferenceCount {
+  public:
+    virtual ~PythonTagData() {};
+  };
+  PT(PythonTagData) _python_tag_data;
 
 #ifndef NDEBUG
   unsigned int _unexpected_change_flags;
@@ -555,9 +565,6 @@ private:
     CPT(RenderEffects) _effects;
 
     TagData _tag_data;
-#ifdef HAVE_PYTHON
-    PythonTagData _python_tag_data;
-#endif  // HAVE_PYTHON
 
     // These two together determine the per-camera visibility of this node.
     // See adjust_draw_mask() for details.
@@ -792,12 +799,10 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritable::init_type();
-    ReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     Namable::init_type();
     register_type(_type_handle, "PandaNode",
-                  TypedWritable::get_class_type(),
-                  ReferenceCount::get_class_type(),
+                  TypedWritableReferenceCount::get_class_type(),
                   Namable::get_class_type());
     CData::init_type();
     Down::init_type();
@@ -822,6 +827,7 @@ private:
   friend class PandaNodePipelineReader;
   friend class EggLoader;
   friend class Extension<PandaNode>;
+  friend class CullTraverserData;
 };
 
 /**
@@ -872,8 +878,8 @@ public:
   INLINE bool has_tag(const string &key) const;
 
   INLINE CollideMask get_net_collide_mask() const;
-  INLINE CPT(RenderAttrib) get_off_clip_planes() const;
-  INLINE CPT(BoundingVolume) get_bounds() const;
+  INLINE const RenderAttrib *get_off_clip_planes() const;
+  INLINE const BoundingVolume *get_bounds() const;
   INLINE int get_nested_vertices() const;
   INLINE bool is_final() const;
   INLINE int get_fancy_bits() const;
@@ -900,6 +906,12 @@ private:
   static TypeHandle _type_handle;
 
 };
+
+#ifdef DO_MEMORY_USAGE
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<PandaNode>::update_type(To *ptr) {}
+#endif
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {
   node.output(out);

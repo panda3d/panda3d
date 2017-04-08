@@ -424,8 +424,8 @@ get_sound(const string &file_name, bool positional, int) {
   vfs->resolve_filename(path, get_model_path());
 
   // Build a new AudioSound from the audio data.
-  PT(AudioSound) audioSound = 0;
-  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional );
+  PT(AudioSound) audioSound;
+  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional);
 
   _all_sounds.insert(fmodAudioSound);
 

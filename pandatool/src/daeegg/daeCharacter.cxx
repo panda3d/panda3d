@@ -177,7 +177,7 @@ influence_vertex(int index, EggVertex *vertex) {
   for (size_t pa = 0; pa < influence->GetPairCount(); ++pa) {
     const FCDJointWeightPair* jwpair = influence->GetPair(pa);
 
-    if (jwpair->jointIndex >= 0 && jwpair->jointIndex < _joints.size()) {
+    if (jwpair->jointIndex >= 0 && jwpair->jointIndex < (int)_joints.size()) {
       EggGroup *joint = _joints[jwpair->jointIndex]._group.p();
       if (joint != NULL) {
         joint->ref_vertex(vertex, jwpair->weight);

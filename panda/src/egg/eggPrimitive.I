@@ -27,6 +27,7 @@ INLINE EggPrimitive::
 EggPrimitive(const EggPrimitive &copy) :
   EggNode(copy),
   EggAttributes(copy),
+  EggRenderMode(copy),
   _textures(copy._textures),
   _material(copy._material),
   _bface(copy._bface)
@@ -42,6 +43,7 @@ INLINE EggPrimitive &EggPrimitive::
 operator = (const EggPrimitive &copy) {
   EggNode::operator = (copy);
   EggAttributes::operator = (copy);
+  EggRenderMode::operator = (copy);
   copy_vertices(copy);
   _textures = copy._textures;
   _material = copy._material;

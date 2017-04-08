@@ -40,7 +40,7 @@ CPPToken(int token, int line_number, int col_number,
  */
 CPPToken::
 CPPToken(int token, const YYLTYPE &loc, const string &str, const YYSTYPE &val) :
-  _token(token), _lloc(loc), _lval(val)
+  _token(token), _lval(val), _lloc(loc)
 {
   _lval.str = str;
 }
@@ -250,6 +250,14 @@ output(ostream &out) const {
 
   case RSHIFTEQUAL:
     out << "RSHIFTEQUAL";
+    break;
+
+  case ATTR_LEFT:
+    out << "ATTR_LEFT";
+    break;
+
+  case ATTR_RIGHT:
+    out << "ATTR_RIGHT";
     break;
 
   case KW_BOOL:

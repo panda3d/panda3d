@@ -791,6 +791,15 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _args_type = InterfaceMaker::AT_single_arg;
   } else {
     _args_type = InterfaceMaker::AT_varargs;
+
+    // If the arguments are named "args" and "kwargs", we will be directly
+    // passing the argument tuples to the function.
+    if (_parameters.size() == first_param + 2 &&
+        _parameters[first_param]._name == "args" &&
+        (_parameters[first_param + 1]._name == "kwargs" ||
+          _parameters[first_param + 1]._name == "kwds")) {
+      _flags |= F_explicit_args;
+    }
   }
 
   switch (_type) {
@@ -859,6 +868,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         _flags |= F_coerce_constructor;
       }
 
+      if (_args_type == InterfaceMaker::AT_varargs) {
+        // Of course methods named "make" can still take kwargs.
+        _args_type = InterfaceMaker::AT_keyword_args;
+      }
+
     } else if (fname == "operator /") {
       if (_has_this && _parameters.size() == 2 &&
           TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
@@ -885,7 +899,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       if (_args_type == InterfaceMaker::AT_varargs) {
         // Every other method can take keyword arguments, if they take more
         // than one argument.
-        _args_type = InterfaceMaker::AT_keyword_args;
+        _args_type |= InterfaceMaker::AT_keyword_args;
       }
     }
     break;

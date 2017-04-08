@@ -15,7 +15,6 @@
 
 #include "fltHeader.h"
 #include "indent.h"
-#include "pystub.h"
 
 /**
  *
@@ -91,9 +90,6 @@ handle_args(ProgramBase::Args &args) {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   FltInfo prog;
   prog.parse_command_line(argc, argv);
   prog.run();

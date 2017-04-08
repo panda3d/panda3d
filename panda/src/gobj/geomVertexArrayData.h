@@ -95,7 +95,7 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-  INLINE bool request_resident() const;
+  INLINE bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE CPT(GeomVertexArrayDataHandle) get_handle(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PT(GeomVertexArrayDataHandle) modify_handle(Thread *current_thread = Thread::get_current_thread());
@@ -113,7 +113,7 @@ PUBLISHED:
   static void lru_epoch();
   INLINE static VertexDataBook &get_book();
 
-#if PY_VERSION_HEX >= 0x02060000
+#ifdef HAVE_PYTHON
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
@@ -124,6 +124,7 @@ public:
 
 private:
   INLINE void set_lru_size(size_t lru_size);
+  INLINE void mark_used();
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   void reverse_data_endianness(unsigned char *dest,
@@ -230,6 +231,7 @@ private:
   friend class GeomVertexData;
   friend class PreparedGraphicsObjects;
   friend class GeomVertexArrayDataHandle;
+  friend class GeomPrimitivePipelineReader;
 };
 
 /**
@@ -246,10 +248,14 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
 private:
+  INLINE GeomVertexArrayDataHandle(CPT(GeomVertexArrayData) object,
+                                   Thread *current_thread);
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
-                                   Thread *current_thread,
-                                   const GeomVertexArrayData::CData *_cdata,
-                                   bool writable);
+                                   Thread *current_thread);
+  INLINE GeomVertexArrayDataHandle(PT(GeomVertexArrayData) object,
+                                   Thread *current_thread);
+  INLINE GeomVertexArrayDataHandle(GeomVertexArrayData *object,
+                                   Thread *current_thread);
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &);
   INLINE void operator = (const GeomVertexArrayDataHandle &);
 
@@ -261,8 +267,8 @@ public:
 
   INLINE Thread *get_current_thread() const;
 
-  INLINE const unsigned char *get_read_pointer(bool force) const;
-  unsigned char *get_write_pointer();
+  INLINE const unsigned char *get_read_pointer(bool force) const RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
+  unsigned char *get_write_pointer() RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
 
 PUBLISHED:
   INLINE const GeomVertexArrayData *get_object() const;
@@ -316,7 +322,7 @@ PUBLISHED:
 
 private:
   PT(GeomVertexArrayData) _object;
-  Thread *_current_thread;
+  Thread *const _current_thread;
   GeomVertexArrayData::CData *_cdata;
   bool _writable;
 
@@ -333,6 +339,11 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class Geom;
+  friend class GeomPrimitive;
+  friend class GeomVertexData;
+  friend class GeomVertexDataPipelineReader;
+  friend class GeomVertexDataPipelineWriter;
   friend class GeomVertexArrayData;
 };
 

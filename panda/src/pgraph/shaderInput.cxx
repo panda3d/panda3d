@@ -15,18 +15,13 @@
 #include "paramNodePath.h"
 #include "paramTexture.h"
 
-TypeHandle ShaderInput::_type_handle;
-
 /**
  * Returns a static ShaderInput object with name NULL, priority zero, type
  * INVALID, and all value-fields cleared.
  */
-const ShaderInput *ShaderInput::
+const ShaderInput &ShaderInput::
 get_blank() {
-  static CPT(ShaderInput) blank;
-  if (blank == 0) {
-    blank = new ShaderInput(NULL, 0);
-  }
+  static ShaderInput blank(nullptr, 0);
   return blank;
 }
 
@@ -67,6 +62,30 @@ ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, in
 }
 
 /**
+ *
+ */
+size_t ShaderInput::
+add_hash(size_t hash) const {
+  hash = int_hash::add_hash(hash, _type);
+  hash = pointer_hash::add_hash(hash, _name);
+  hash = int_hash::add_hash(hash, _priority);
+
+  switch (_type) {
+  case M_invalid:
+    return hash;
+
+  case M_vector:
+    return _stored_vector.add_hash(hash);
+
+  case M_numeric:
+    return pointer_hash::add_hash(hash, _stored_ptr._ptr);
+
+  default:
+    return pointer_hash::add_hash(hash, _value);
+  }
+}
+
+/**
  * Warning: no error checking is done.  This *will* crash if get_value_type()
  * is not M_nodepath.
  */
@@ -100,9 +119,15 @@ get_texture() const {
  */
 const SamplerState &ShaderInput::
 get_sampler() const {
-  return (_type == M_texture_sampler)
-    ? DCAST(ParamTextureSampler, _value)->get_sampler()
-    : get_texture()->get_default_sampler();
+  if (_type == M_texture_sampler) {
+    return DCAST(ParamTextureSampler, _value)->get_sampler();
+
+  } else if (!_value.is_null()) {
+    return get_texture()->get_default_sampler();
+
+  } else {
+    return SamplerState::get_default();
+  }
 }
 
 /**

@@ -24,7 +24,7 @@
 #include <hash_set>
 #endif
 
-#ifndef USE_STL_ALLOCATOR
+#if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define pset set
@@ -51,7 +51,6 @@ public:
   typedef pallocator_single<Key> allocator;
   typedef set<Key, Compare, allocator> base_class;
   pset(TypeHandle type_handle = pset_type_handle) : base_class(Compare(), allocator(type_handle)) { }
-  pset(const pset<Key, Compare> &copy) : base_class(copy) { }
   pset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : base_class(comp, type_handle) { }
 
 #ifdef USE_TAU
@@ -110,7 +109,6 @@ class pmultiset : public multiset<Key, Compare, pallocator_single<Key> > {
 public:
   typedef pallocator_single<Key> allocator;
   pmultiset(TypeHandle type_handle = pset_type_handle) : multiset<Key, Compare, allocator>(Compare(), allocator(type_handle)) { }
-  pmultiset(const pmultiset<Key, Compare> &copy) : multiset<Key, Compare, allocator>(copy) { }
   pmultiset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : multiset<Key, Compare, allocator>(comp, type_handle) { }
 };
 
@@ -124,7 +122,6 @@ template<class Key, class Compare = method_hash<Key, less<Key> > >
 class phash_set : public stdext::hash_set<Key, Compare, pallocator_array<Key> > {
 public:
   phash_set() : stdext::hash_set<Key, Compare, pallocator_array<Key> >() { }
-  phash_set(const phash_set<Key, Compare> &copy) : stdext::hash_set<Key, Compare, pallocator_array<Key> >(copy) { }
   phash_set(const Compare &comp) : stdext::hash_set<Key, Compare, pallocator_array<Key> >(comp) { }
 };
 
@@ -137,7 +134,6 @@ template<class Key, class Compare = method_hash<Key, less<Key> > >
 class phash_multiset : public stdext::hash_multiset<Key, Compare, pallocator_array<Key> > {
 public:
   phash_multiset() : stdext::hash_multiset<Key, Compare, pallocator_array<Key> >() { }
-  phash_multiset(const phash_multiset<Key, Compare> &copy) : stdext::hash_multiset<Key, Compare, pallocator_array<Key> >(copy) { }
   phash_multiset(const Compare &comp) : stdext::hash_multiset<Key, Compare, pallocator_array<Key> >(comp) { }
 };
 

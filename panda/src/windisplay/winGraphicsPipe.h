@@ -34,12 +34,6 @@ public:
 
   virtual void lookup_cpu_data();
 
-private:
-  HINSTANCE _hUser32;
-
-  typedef BOOL (WINAPI *PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
-  PFN_TRACKMOUSEEVENT _pfnTrackMouseEvent;
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -56,12 +50,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class WinGraphicsWindow;
 };
-
-extern EXPCL_PANDAWIN bool MyLoadLib(HINSTANCE &hDLL, const char *DLLname);
-extern EXPCL_PANDAWIN bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName);
 
 #include "winGraphicsPipe.I"
 

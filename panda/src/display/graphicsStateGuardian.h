@@ -88,6 +88,7 @@ PUBLISHED:
   INLINE int release_all_geoms();
   INLINE int release_all_vertex_buffers();
   INLINE int release_all_index_buffers();
+  INLINE int release_all_shader_buffers();
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -153,6 +154,7 @@ PUBLISHED:
   INLINE bool get_supports_generate_mipmap() const;
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_depth_stencil() const;
+  INLINE bool get_supports_luminance_texture() const;
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_sampler_objects() const;
   INLINE bool get_supports_basic_shaders() const;
@@ -202,6 +204,7 @@ PUBLISHED:
   MAKE_PROPERTY(supports_generate_mipmap, get_supports_generate_mipmap);
   MAKE_PROPERTY(supports_depth_texture, get_supports_depth_texture);
   MAKE_PROPERTY(supports_depth_stencil, get_supports_depth_stencil);
+  MAKE_PROPERTY(supports_luminance_texture, get_supports_luminance_texture);
   MAKE_PROPERTY(supports_shadow_filter, get_supports_shadow_filter);
   MAKE_PROPERTY(supports_sampler_objects, get_supports_sampler_objects);
   MAKE_PROPERTY(supports_basic_shaders, get_supports_basic_shaders);
@@ -283,7 +286,7 @@ PUBLISHED:
   MAKE_PROPERTY(driver_shader_version_minor, get_driver_shader_version_minor);
 
   bool set_scene(SceneSetup *scene_setup);
-  virtual SceneSetup *get_scene() const;
+  virtual SceneSetup *get_scene() const FINAL;
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
 public:
@@ -307,6 +310,9 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
+  virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
+  virtual void release_shader_buffer(BufferContext *ibc);
+
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
@@ -322,7 +328,7 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
-  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
+  PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
   virtual void clear(DrawableRegion *clearable);
 
@@ -593,6 +599,7 @@ protected:
   bool _supports_generate_mipmap;
   bool _supports_depth_texture;
   bool _supports_depth_stencil;
+  bool _supports_luminance_texture;
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
   bool _supports_basic_shaders;
@@ -640,10 +647,13 @@ public:
   // Statistics
   static PStatCollector _vertex_buffer_switch_pcollector;
   static PStatCollector _index_buffer_switch_pcollector;
+  static PStatCollector _shader_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
   static PStatCollector _load_index_buffer_pcollector;
+  static PStatCollector _load_shader_buffer_pcollector;
   static PStatCollector _create_vertex_buffer_pcollector;
   static PStatCollector _create_index_buffer_pcollector;
+  static PStatCollector _create_shader_buffer_pcollector;
   static PStatCollector _load_texture_pcollector;
   static PStatCollector _data_transferred_pcollector;
   static PStatCollector _texmgrmem_total_pcollector;
@@ -680,6 +690,7 @@ public:
   static PStatCollector _prepare_shader_pcollector;
   static PStatCollector _prepare_vertex_buffer_pcollector;
   static PStatCollector _prepare_index_buffer_pcollector;
+  static PStatCollector _prepare_shader_buffer_pcollector;
 
   // A whole slew of collectors to measure the cost of individual state
   // changes.  These are disabled by default.

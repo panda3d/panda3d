@@ -491,6 +491,12 @@ get_screenshot() {
     return NULL;
   }
 
+  {
+    // Make sure that the correct viewport is active.
+    DisplayRegionPipelineReader dr_reader(this, current_thread);
+    gsg->prepare_display_region(&dr_reader);
+  }
+
   PT(Texture) tex = new Texture;
 
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
@@ -637,9 +643,6 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
   }
 
   Region &region = cdata->_regions[i];
-
-  int old_w = region._pixels[1] - region._pixels[0];
-  int old_h = region._pixels[3] - region._pixels[2];
 
   region._pixels[0] = int((region._dimensions[0] * x_size) + 0.5);
   region._pixels[1] = int((region._dimensions[1] * x_size) + 0.5);

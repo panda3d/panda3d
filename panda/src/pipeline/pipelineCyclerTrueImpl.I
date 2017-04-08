@@ -231,6 +231,8 @@ read_stage_unlocked(int pipeline_stage) const {
   TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read_stage_unlocked(int)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+#elif defined(__has_builtin) && __has_builtin(__builtin_assume)
+  __builtin_assume(pipeline_stage >= 0);
 #endif
   return _data[pipeline_stage]._cdata;
 }
@@ -248,6 +250,8 @@ read_stage(int pipeline_stage, Thread *current_thread) const {
   TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read_stage(int, Thread *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+#elif defined(__has_builtin) && __has_builtin(__builtin_assume)
+  __builtin_assume(pipeline_stage >= 0);
 #endif
   _lock.acquire(current_thread);
   return _data[pipeline_stage]._cdata;
@@ -278,6 +282,8 @@ elevate_read_stage(int pipeline_stage, const CycleData *pointer,
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
   nassertr(_data[pipeline_stage]._cdata == pointer, NULL);
+#elif defined(__has_builtin) && __has_builtin(__builtin_assume)
+  __builtin_assume(pipeline_stage >= 0);
 #endif
   CycleData *new_pointer = write_stage(pipeline_stage, current_thread);
   _lock.release();
@@ -296,6 +302,8 @@ elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer,
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
   nassertr(_data[pipeline_stage]._cdata == pointer, NULL);
+#elif defined(__has_builtin) && __has_builtin(__builtin_assume)
+  __builtin_assume(pipeline_stage >= 0);
 #endif
   CycleData *new_pointer =
     write_stage_upstream(pipeline_stage, force_to_0, current_thread);
@@ -313,6 +321,8 @@ release_write_stage(int pipeline_stage, CycleData *pointer) {
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
   nassertv(_data[pipeline_stage]._cdata == pointer);
   nassertv(_data[pipeline_stage]._writes_outstanding > 0);
+#elif defined(__has_builtin) && __has_builtin(__builtin_assume)
+  __builtin_assume(pipeline_stage >= 0);
 #endif
   --(_data[pipeline_stage]._writes_outstanding);
   _lock.release();
@@ -368,7 +378,13 @@ get_write_count() const {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_2() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_2()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[1]._cdata.p();
+
+  // This trick moves an NPT into a PT without unnecessarily incrementing and
+  // subsequently decrementing the regular reference count.
+  PT(CycleData) last_val;
+  last_val.swap(_data[1]._cdata);
+  last_val->node_unref_only();
+
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 2, last_val);
@@ -389,7 +405,13 @@ cycle_2() {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_3() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_3()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[2]._cdata.p();
+
+  // This trick moves an NPT into a PT without unnecessarily incrementing and
+  // subsequently decrementing the regular reference count.
+  PT(CycleData) last_val;
+  last_val.swap(_data[2]._cdata);
+  last_val->node_unref_only();
+
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 3, last_val);

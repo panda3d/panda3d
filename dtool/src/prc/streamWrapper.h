@@ -25,6 +25,9 @@ class EXPCL_DTOOLCONFIG StreamWrapperBase {
 protected:
   INLINE StreamWrapperBase();
 
+private:
+  INLINE StreamWrapperBase(const StreamWrapperBase &copy) DELETED;
+
 PUBLISHED:
   INLINE void acquire();
   INLINE void release();

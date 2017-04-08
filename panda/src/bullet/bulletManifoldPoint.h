@@ -68,6 +68,30 @@ PUBLISHED:
   INLINE PN_stdfloat get_contact_cfm1() const;
   INLINE PN_stdfloat get_contact_cfm2() const;
 
+  MAKE_PROPERTY(life_time, get_life_time);
+  MAKE_PROPERTY(distance, get_distance);
+  MAKE_PROPERTY(applied_impulse, get_applied_impulse, set_applied_impulse);
+  MAKE_PROPERTY(position_world_on_a, get_position_world_on_a);
+  MAKE_PROPERTY(position_world_on_b, get_position_world_on_b);
+  MAKE_PROPERTY(normal_world_on_b, get_normal_world_on_b);
+  MAKE_PROPERTY(local_point_a, get_local_point_a);
+  MAKE_PROPERTY(local_point_b, get_local_point_b);
+  MAKE_PROPERTY(part_id0, get_part_id0);
+  MAKE_PROPERTY(part_id1, get_part_id1);
+  MAKE_PROPERTY(index0, get_index0);
+  MAKE_PROPERTY(index1, get_index1);
+  MAKE_PROPERTY(lateral_friction_initialized, get_lateral_friction_initialized, set_lateral_friction_initialized);
+  MAKE_PROPERTY(lateral_friction_dir1, get_lateral_friction_dir1, set_lateral_friction_dir1);
+  MAKE_PROPERTY(lateral_friction_dir2, get_lateral_friction_dir2, set_lateral_friction_dir2);
+  MAKE_PROPERTY(contact_motion1, get_contact_motion1, set_contact_motion1);
+  MAKE_PROPERTY(contact_motion2, get_contact_motion2, set_contact_motion2);
+  MAKE_PROPERTY(combined_friction, get_combined_friction, set_combined_friction);
+  MAKE_PROPERTY(combined_restitution, get_combined_restitution, set_combined_restitution);
+  MAKE_PROPERTY(applied_impulse_lateral1, get_applied_impulse_lateral1, set_applied_impulse_lateral1);
+  MAKE_PROPERTY(applied_impulse_lateral2, get_applied_impulse_lateral2, set_applied_impulse_lateral2);
+  MAKE_PROPERTY(contact_cfm1, get_contact_cfm1, set_contact_cfm1);
+  MAKE_PROPERTY(contact_cfm2, get_contact_cfm2, set_contact_cfm2);
+
 public:
   BulletManifoldPoint(btManifoldPoint &pt);
 

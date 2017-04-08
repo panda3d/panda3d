@@ -59,7 +59,20 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   if (_geom != (Geom *)NULL) {
     _munger = munger;
 
+    GraphicsStateGuardianBase *gsg = traverser->get_gsg();
+    int gsg_bits = gsg->get_supported_geom_rendering();
+    if (!hardware_point_sprites) {
+      // If support for hardware point sprites or perspective-scaled points is
+      // disabled, we don't allow the GSG to tell us it supports them.
+      gsg_bits &= ~(Geom::GR_point_perspective | Geom::GR_point_sprite);
+    }
+    if (!hardware_points) {
+      // If hardware-points is off, we don't allow any kind of point
+      // rendering, except plain old one-pixel points;
+      gsg_bits &= ~(Geom::GR_point_bits & ~Geom::GR_point);
+    }
     int geom_rendering;
+    int unsupported_bits;
 
     {
       GeomPipelineReader geom_reader(_geom, current_thread);
@@ -76,30 +89,23 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       geom_rendering = geom_reader.get_geom_rendering();
       geom_rendering = _state->get_geom_rendering(geom_rendering);
       geom_rendering = _internal_transform->get_geom_rendering(geom_rendering);
+      unsupported_bits = geom_rendering & ~gsg_bits;
 
       if (geom_rendering & Geom::GR_point_bits) {
         if (geom_reader.get_primitive_type() != Geom::PT_points) {
-          if (singular_points) {
+          if (singular_points ||
+              (unsupported_bits & Geom::GR_render_mode_point) != 0) {
             // Isolate the points so there's no unneeded overlap.
             _geom = _geom->make_points();
           }
         }
       }
+      if (unsupported_bits & Geom::GR_render_mode_wireframe) {
+        if (geom_reader.get_primitive_type() != Geom::PT_lines) {
+          _geom = _geom->make_lines();
+        }
+      }
     }
-
-    GraphicsStateGuardianBase *gsg = traverser->get_gsg();
-    int gsg_bits = gsg->get_supported_geom_rendering();
-    if (!hardware_point_sprites) {
-      // If support for hardware point sprites or perspective-scaled points is
-      // disabled, we don't allow the GSG to tell us it supports them.
-      gsg_bits &= ~(Geom::GR_point_perspective | Geom::GR_point_sprite);
-    }
-    if (!hardware_points) {
-      // If hardware-points is off, we don't allow any kind of point
-      // rendering, except plain old one-pixel points;
-      gsg_bits &= ~(Geom::GR_point_bits & ~Geom::GR_point);
-    }
-    int unsupported_bits = geom_rendering & ~gsg_bits;
 
     if ((unsupported_bits & Geom::GR_point_bits) != 0) {
       // The GSG doesn't support rendering these fancy points directly; we

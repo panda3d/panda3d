@@ -18,13 +18,20 @@
 
 TypeHandle EggTriangleStrip::_type_handle;
 
-
 /**
  *
  */
 EggTriangleStrip::
 ~EggTriangleStrip() {
   clear();
+}
+
+/**
+ * Makes a copy of this object.
+ */
+EggTriangleStrip *EggTriangleStrip::
+make_copy() const {
+  return new EggTriangleStrip(*this);
 }
 
 /**

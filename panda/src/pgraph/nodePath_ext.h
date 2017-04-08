@@ -35,15 +35,21 @@ public:
   PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
 
   INLINE PyObject *get_tag_keys() const;
-  INLINE void set_python_tag(const string &key, PyObject *value);
-  INLINE PyObject *get_python_tag(const string &key) const;
-  INLINE void get_python_tag_keys(vector_string &keys) const;
+
+  INLINE PyObject *get_python_tags();
+  INLINE void set_python_tag(PyObject *key, PyObject *value);
+  INLINE PyObject *get_python_tag(PyObject *key) const;
   INLINE PyObject *get_python_tag_keys() const;
-  INLINE bool has_python_tag(const string &key) const;
-  INLINE void clear_python_tag(const string &key);
-  INLINE PyObject *get_net_python_tag(const string &key) const;
-  INLINE bool has_net_python_tag(const string &key) const;
-  NodePath find_net_python_tag(const string &key) const;
+  INLINE bool has_python_tag(PyObject *key) const;
+  INLINE void clear_python_tag(PyObject *key);
+  INLINE PyObject *get_net_python_tag(PyObject *key) const;
+  INLINE bool has_net_python_tag(PyObject *key) const;
+  NodePath find_net_python_tag(PyObject *key) const;
+
+  // This is defined to implement cycle detection in Python tags.
+  INLINE int __traverse__(visitproc visit, void *arg);
+
+  void set_shader_inputs(PyObject *args, PyObject *kwargs);
 
   PyObject *get_tight_bounds(const NodePath &other = NodePath()) const;
 };

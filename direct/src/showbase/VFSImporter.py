@@ -2,6 +2,7 @@ __all__ = ['register', 'sharedPackages',
            'reloadSharedPackage', 'reloadSharedPackages']
 
 from panda3d.core import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
+from direct.stdpy.file import open
 import sys
 import marshal
 import imp
@@ -173,10 +174,7 @@ class VFSLoader:
         filename = Filename(self.filename)
         filename.setExtension('py')
         filename.setText()
-        vfile = vfs.getFile(filename)
-        if not vfile:
-            raise IOError("Could not find '%s'" % (filename))
-        return vfile.readFile(True)
+        return open(self.filename, self.desc[1]).read()
 
     def _import_extension_module(self, fullname):
         """ Loads the binary shared object as a Python module, and

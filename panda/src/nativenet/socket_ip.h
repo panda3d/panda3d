@@ -5,6 +5,7 @@
 #include "socket_portable.h"
 #include "socket_address.h"
 #include "typedObject.h"
+#include "config_downloader.h"
 
 // forward declarations for friends...
 class Socket_TCP;
@@ -35,6 +36,7 @@ PUBLISHED:
   inline int SetNonBlocking();
   inline int SetBlocking();
   inline bool SetReuseAddress(bool flag = true);
+  inline bool SetV6Only(bool flag);
   inline bool Active();
   inline int SetRecvBufferSize(int size);
   inline void SetSocket(SOCKET ins);
@@ -44,7 +46,6 @@ PUBLISHED:
 
   inline static int InitNetworkDriver() { return init_network(); };
 
-public:
 private:
   inline bool ErrorClose();
 
@@ -194,7 +195,7 @@ SetBlocking() {
   fcntl(_socket, F_SETFL, flags);
   return ALL_OK;
 #else
-  unsigned long  val = 0;
+  unsigned long val = 0;
   unsigned lanswer = 0;
   lanswer = SOCKIOCTL(_socket, LOCAL_FL_SET, &val);
   if (lanswer != 0) {
@@ -209,8 +210,21 @@ SetBlocking() {
  */
 inline bool Socket_IP::
 SetReuseAddress(bool flag) {
-  int bOption = flag;
-  if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&bOption, sizeof(bOption)) != 0) {
+  int value = flag;
+  if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&value, sizeof(value)) != 0) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Sets a flag indicating whether this IPv6 socket should operate in
+ * dual-stack mode or not.
+ */
+inline bool Socket_IP::
+SetV6Only(bool flag) {
+  int value = flag ? 1 : 0;
+  if (setsockopt(_socket, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&value, sizeof(value))) {
     return false;
   }
   return true;
@@ -237,7 +251,7 @@ GetSocket() const {
  */
 inline Socket_Address Socket_IP::
 GetPeerName(void) const {
-  sockaddr_in name;
+  sockaddr_storage name;
   socklen_t name_len = sizeof(name);
   memset(&name, 0, name_len);
 

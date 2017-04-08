@@ -14,35 +14,47 @@
 #ifndef POINTERTO_H
 #define POINTERTO_H
 
-/*
+/**
  * This file defines the classes PointerTo and ConstPointerTo (and their
  * abbreviations, PT and CPT).  These should be used in place of traditional
- * C-style pointers wherever implicit reference counting is desired.  The
- * syntax is:                     instead of: PointerTo<MyClass> p;
- * MyClass *p; PT(MyClass) p; ConstPointerTo<MyClass> p;       const MyClass
- * *p; CPT(MyClass) p; PointerTo and ConstPointerTo will automatically
- * increment the object's reference count while the pointer is kept.  When the
- * PointerTo object is reassigned or goes out of scope, the reference count is
- * automatically decremented.  If the reference count reaches zero, the object
- * is freed.  Note that const PointerTo<MyClass> is different from
+ * C-style pointers wherever implicit reference counting is desired.
+ *
+ * The syntax is:                     instead of:
+ *
+ *    PointerTo<MyClass> p;            MyClass *p;
+ *    PT(MyClass) p;
+ *
+ *    ConstPointerTo<MyClass> p;       const MyClass *p;
+ *    CPT(MyClass) p;
+ *
+ * PointerTo and ConstPointerTo will automatically increment the object's
+ * reference count while the pointer is kept.  When the PointerTo object is
+ * reassigned or goes out of scope, the reference count is automatically
+ * decremented.  If the reference count reaches zero, the object is freed.
+ *
+ * Note that const PointerTo<MyClass> is different from
  * ConstPointerTo<MyClass>.  A const PointerTo may not reassign its pointer,
  * but it may still modify the contents at that address.  On the other hand, a
  * ConstPointerTo may reassign its pointer at will, but may not modify the
- * contents.  It is like the difference between (MyClass * const) and (const
- * MyClass *). In order to use PointerTo, it is necessary that the thing
- * pointed to--MyClass in the above example--either inherits from
- * ReferenceCount, or is a proxy built with RefCountProxy or RefCountObj (see
- * referenceCount.h).  However, also see PointerToArray, which does not have
- * this restriction.  It is crucial that the PointerTo object is only used to
- * refer to objects allocated from the free store, for which delete is a
- * sensible thing to do.  If you assign a PointerTo to an automatic variable
- * (allocated from the stack, for instance), bad things will certainly happen
- * when the reference count reaches zero and it tries to delete it.  It's also
- * important to remember that, as always, a virtual destructor is required if
- * you plan to support polymorphism.  That is, if you define a PointerTo to
- * some base type, and assign to it instances of a class derived from that
- * base class, the base class must have a virtual destructor in order to
- * properly destruct the derived object when it is deleted.
+ * contents.  It is like the difference between (MyClass * const) and
+ * (const MyClass *).
+ *
+ * In order to use PointerTo, it is necessary that the thing pointed to
+ * --MyClass in the above example--either inherits from ReferenceCount, or is
+ * a proxy built with RefCountProxy or RefCountObj (see referenceCount.h).
+ * However, also see PointerToArray, which does not have this restriction.
+ *
+ * It is crucial that the PointerTo object is only used to refer to objects
+ * allocated from the free store, for which delete is a sensible thing to do.
+ * If you assign a PointerTo to an automatic variable (allocated from the
+ * stack, for instance), bad things will certainly happen when the reference
+ * count reaches zero and it tries to delete it.
+ *
+ * It's also important to remember that, as always, a virtual destructor is
+ * required if you plan to support polymorphism.  That is, if you define a
+ * PointerTo to some base type, and assign to it instances of a class derived
+ * from that base class, the base class must have a virtual destructor in
+ * order to properly destruct the derived object when it is deleted.
  */
 
 #include "pandabase.h"
@@ -58,9 +70,9 @@ class PointerTo : public PointerToBase<T> {
 public:
   typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
-  INLINE PointerTo(To *ptr = (To *)NULL);
+  CONSTEXPR PointerTo() NOEXCEPT DEFAULT_CTOR;
+  ALWAYS_INLINE PointerTo(To *ptr) NOEXCEPT;
   INLINE PointerTo(const PointerTo<T> &copy);
-  INLINE ~PointerTo();
 
 public:
 #ifdef USE_MOVE_SEMANTICS
@@ -68,10 +80,10 @@ public:
   INLINE PointerTo<T> &operator = (PointerTo<T> &&from) NOEXCEPT;
 #endif
 
-  INLINE To &operator *() const;
-  INLINE To *operator -> () const;
+  CONSTEXPR To &operator *() const NOEXCEPT;
+  CONSTEXPR To *operator -> () const NOEXCEPT;
   // MSVC.NET 2005 insists that we use T *, and not To *, here.
-  INLINE operator T *() const;
+  CONSTEXPR operator T *() const NOEXCEPT;
 
   INLINE T *&cheat();
 
@@ -88,7 +100,7 @@ PUBLISHED:
   // the DCAST macro defined in typedObject.h instead, e.g.  DCAST(MyType,
   // ptr).  This provides a clean downcast that doesn't require .p() or any
   // double-casting, and it can be run-time checked for correctness.
-  INLINE To *p() const;
+  CONSTEXPR To *p() const NOEXCEPT;
 
   INLINE PointerTo<T> &operator = (To *ptr);
   INLINE PointerTo<T> &operator = (const PointerTo<T> &copy);
@@ -97,8 +109,10 @@ PUBLISHED:
   // anyway just to help out interrogate (which doesn't seem to want to
   // automatically export the PointerToBase class).  When this works again in
   // interrogate, we can remove these.
-  INLINE bool is_null() const { return PointerToBase<T>::is_null(); }
-  INLINE void clear() { PointerToBase<T>::clear(); }
+#ifdef CPPPARSER
+  INLINE bool is_null() const;
+  INLINE void clear();
+#endif
 };
 
 
@@ -119,10 +133,10 @@ class ConstPointerTo : public PointerToBase<T> {
 public:
   typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
-  INLINE ConstPointerTo(const To *ptr = (const To *)NULL);
+  CONSTEXPR ConstPointerTo() NOEXCEPT DEFAULT_CTOR;
+  ALWAYS_INLINE ConstPointerTo(const To *ptr) NOEXCEPT;
   INLINE ConstPointerTo(const PointerTo<T> &copy);
   INLINE ConstPointerTo(const ConstPointerTo<T> &copy);
-  INLINE ~ConstPointerTo();
 
 public:
 #ifdef USE_MOVE_SEMANTICS
@@ -132,14 +146,14 @@ public:
   INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&from) NOEXCEPT;
 #endif
 
-  INLINE const To &operator *() const;
-  INLINE const To *operator -> () const;
-  INLINE operator const T *() const;
+  CONSTEXPR const To &operator *() const NOEXCEPT;
+  CONSTEXPR const To *operator -> () const NOEXCEPT;
+  CONSTEXPR operator const T *() const NOEXCEPT;
 
   INLINE const T *&cheat();
 
 PUBLISHED:
-  INLINE const To *p() const;
+  CONSTEXPR const To *p() const NOEXCEPT;
 
   INLINE ConstPointerTo<T> &operator = (const To *ptr);
   INLINE ConstPointerTo<T> &operator = (const PointerTo<T> &copy);
@@ -149,7 +163,9 @@ PUBLISHED:
   // anyway just to help out interrogate (which doesn't seem to want to
   // automatically export the PointerToBase class).  When this works again in
   // interrogate, we can remove this.
-  INLINE void clear() { PointerToBase<T>::clear(); }
+#ifdef CPPPARSER
+  INLINE void clear();
+#endif
 };
 
 

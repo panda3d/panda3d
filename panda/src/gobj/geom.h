@@ -75,9 +75,9 @@ PUBLISHED:
   MAKE_PROPERTY(shade_model, get_shade_model);
   MAKE_PROPERTY(geom_rendering, get_geom_rendering);
 
-  INLINE UsageHint get_usage_hint() const;
+  UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
-  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
+  //MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
 
   INLINE CPT(GeomVertexData) get_vertex_data(Thread *current_thread = Thread::get_current_thread()) const;
   PT(GeomVertexData) modify_vertex_data();
@@ -194,7 +194,6 @@ private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   bool check_will_be_valid(const GeomVertexData *vertex_data) const;
 
-  void reset_usage_hint(CData *cdata);
   void reset_geom_rendering(CData *cdata);
 
   void combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
@@ -318,8 +317,6 @@ private:
     PrimitiveType _primitive_type;
     ShadeModel _shade_model;
     int _geom_rendering;
-    UsageHint _usage_hint;
-    bool _got_usage_hint;
     UpdateSeq _modified;
 
     CPT(BoundingVolume) _internal_bounds;
@@ -404,24 +401,23 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
+  INLINE GeomPipelineReader(Thread *current_thread);
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
 private:
-  INLINE GeomPipelineReader(const GeomPipelineReader &copy);
-  INLINE void operator = (const GeomPipelineReader &copy);
+  GeomPipelineReader(const GeomPipelineReader &copy) DELETED;
+  GeomPipelineReader &operator = (const GeomPipelineReader &copy) DELETED_ASSIGN;
 
 public:
   INLINE ~GeomPipelineReader();
   ALLOC_DELETED_CHAIN(GeomPipelineReader);
 
+  INLINE void set_object(const Geom *object);
   INLINE const Geom *get_object() const;
   INLINE Thread *get_current_thread() const;
-
-  void check_usage_hint() const;
 
   INLINE PrimitiveType get_primitive_type() const;
   INLINE ShadeModel get_shade_model() const;
   INLINE int get_geom_rendering() const;
-  INLINE UsageHint get_usage_hint() const;
   INLINE CPT(GeomVertexData) get_vertex_data() const;
   INLINE int get_num_primitives() const;
   INLINE CPT(GeomPrimitive) get_primitive(int i) const;

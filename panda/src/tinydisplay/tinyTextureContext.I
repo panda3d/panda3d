@@ -22,11 +22,3 @@ TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
   _gltex.allocated_buffer = NULL;
   _gltex.total_bytecount = 0;
 }
-
-/**
- *
- */
-INLINE TinyTextureContext::
-~TinyTextureContext() {
-  nassertv(_gltex.num_levels == 0 && _gltex.allocated_buffer == NULL && _gltex.total_bytecount == 0);
-}

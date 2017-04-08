@@ -38,7 +38,6 @@ Filename(const char *filename) {
   (*this) = filename;
 }
 
-
 /**
  *
  */
@@ -83,6 +82,20 @@ Filename(Filename &&from) NOEXCEPT :
 {
 }
 #endif  // USE_MOVE_SEMANTICS
+
+/**
+ * Creates an empty Filename.
+ */
+INLINE Filename::
+Filename() :
+  _dirname_end(0),
+  _basename_start(0),
+  _basename_end(string::npos),
+  _extension_start(string::npos),
+  _hash_start(string::npos),
+  _hash_end(string::npos),
+  _flags(0) {
+}
 
 /**
  *
@@ -158,14 +171,6 @@ pattern_filename(const string &filename) {
 /**
  *
  */
-INLINE Filename::
-~Filename() {
-}
-
-
-/**
- *
- */
 INLINE Filename &Filename::
 operator = (const string &filename) {
   _filename = filename;
@@ -233,7 +238,7 @@ operator = (string &&filename) NOEXCEPT {
  */
 INLINE Filename &Filename::
 operator = (Filename &&from) NOEXCEPT {
-  _filename = MOVE(from._filename);
+  _filename = move(from._filename);
   _dirname_end = from._dirname_end;
   _basename_start = from._basename_start;
   _basename_end = from._basename_end;

@@ -119,7 +119,7 @@ private:
   LPoint2 _reduced_viewport_max;
   CPT(RenderState) _clip_state; // each portal node needs to know the clip state of its "parent" portal Node
 
-  PortalNode *_portal_node;  // current working portal for dereference ease
+  const PortalNode *_portal_node;  // current working portal for dereference ease
 
   // int _num_vert; LVertex _coords[4];
 

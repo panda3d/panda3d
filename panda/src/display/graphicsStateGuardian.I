@@ -63,6 +63,14 @@ release_all_index_buffers() {
 }
 
 /**
+ * Frees the resources for all index buffers associated with this GSG.
+ */
+INLINE int GraphicsStateGuardian::
+release_all_shader_buffers() {
+  return _prepared_objects->release_all_shader_buffers();
+}
+
+/**
  * Sets the active flag associated with the GraphicsStateGuardian.  If the
  * GraphicsStateGuardian is marked inactive, nothing is rendered.  This is not
  * normally turned off unless there is a problem with the rendering detected
@@ -528,6 +536,14 @@ get_supports_depth_texture() const {
 INLINE bool GraphicsStateGuardian::
 get_supports_depth_stencil() const {
   return _supports_depth_stencil;
+}
+
+/**
+ * Returns true if this particular GSG supports luminance textures.
+ */
+INLINE bool GraphicsStateGuardian::
+get_supports_luminance_texture() const {
+  return _supports_luminance_texture;
 }
 
 /**

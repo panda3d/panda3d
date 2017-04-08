@@ -37,6 +37,7 @@ PUBLISHED:
   int get_port() const;
   void set_port(int port);
   string get_ip_string() const;
+  bool is_any() const;
   uint32_t get_ip() const;
   uint8_t get_ip_component(int n) const;
 

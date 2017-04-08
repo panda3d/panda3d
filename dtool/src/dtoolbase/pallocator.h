@@ -32,7 +32,7 @@
  * can allocate arrays of objects.
  */
 
-#ifndef USE_STL_ALLOCATOR
+#if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not trying to make custom allocators (either we don't know what
 // kind of syntax this STL library wants, or we're compiling with OPTIMIZE 4),
 // then simply use the standard allocator.
@@ -52,14 +52,15 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_single(TypeHandle type_handle) throw();
+  INLINE pallocator_single(TypeHandle type_handle) NOEXCEPT;
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
-  INLINE pallocator_single(const pallocator_single<U> &copy) throw() :
+  INLINE pallocator_single(const pallocator_single<U> &copy) NOEXCEPT :
     _type_handle(copy._type_handle) { }
 
-  INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
+  INLINE Type *allocate(size_type n, allocator<void>::const_pointer hint = 0)
+    RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   INLINE void deallocate(pointer p, size_type n);
 
   template<class U> struct rebind {
@@ -80,14 +81,15 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_array(TypeHandle type_handle = TypeHandle::none()) throw();
+  INLINE pallocator_array(TypeHandle type_handle = TypeHandle::none()) NOEXCEPT;
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
-  INLINE pallocator_array(const pallocator_array<U> &copy) throw() :
+  INLINE pallocator_array(const pallocator_array<U> &copy) NOEXCEPT :
     _type_handle(copy._type_handle) { }
 
-  INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
+  INLINE Type *allocate(size_type n, allocator<void>::const_pointer hint = 0)
+    RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   INLINE void deallocate(pointer p, size_type n);
 
   template<class U> struct rebind {

@@ -27,9 +27,8 @@ TypeHandle DXIndexBufferContext9::_type_handle;
 DXIndexBufferContext9::
 DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
   IndexBufferContext(pgo, data),
-  _ibuffer(NULL)
-{
-  _managed = -1;
+  _ibuffer(NULL),
+  _managed(-1) {
 }
 
 /**
@@ -37,8 +36,7 @@ DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
  */
 DXIndexBufferContext9::
 ~DXIndexBufferContext9() {
-
-  this -> free_ibuffer ( );
+  free_ibuffer();
 }
 
 /**
@@ -70,13 +68,10 @@ free_ibuffer(void) {
         << "deleting index buffer " << _ibuffer << "\n";
     }
 
-    if (DEBUG_INDEX_BUFFER)
-    {
+    if (DEBUG_INDEX_BUFFER) {
       RELEASE(_ibuffer, dxgsg9, "index buffer", RELEASE_ONCE);
-    }
-    else
-    {
-      _ibuffer -> Release ( );
+    } else {
+      _ibuffer->Release();
     }
 
     _ibuffer = NULL;
@@ -98,6 +93,11 @@ allocate_ibuffer(DXScreenData &scrn,
   D3DPOOL pool;
 
   data_size = reader->get_data_size_bytes();
+
+  if (reader->get_index_type() == GeomEnums::NT_uint8) {
+    // We widen 8-bits indices to 16-bits.
+    data_size *= 2;
+  }
 
   _managed = scrn._managed_index_buffers;
   if (_managed)
@@ -132,8 +132,7 @@ allocate_ibuffer(DXScreenData &scrn,
       dxgsg9_cat.debug()
         << "creating index buffer " << _ibuffer << ": "
         << reader->get_num_vertices() << " indices ("
-        << reader->get_vertices_reader()->get_array_format()->get_column(0)->get_numeric_type()
-        << ")\n";
+        << reader->get_index_type() << ")\n";
     }
   }
 }
@@ -147,16 +146,12 @@ create_ibuffer(DXScreenData &scrn,
   nassertv(reader->get_object() == get_data());
   Thread *current_thread = reader->get_current_thread();
 
-  this -> free_ibuffer ( );
+  free_ibuffer();
 
   PStatTimer timer(GraphicsStateGuardian::_create_index_buffer_pcollector,
                    current_thread);
 
-  int data_size;
-
-  data_size = reader->get_data_size_bytes();
-
-  this -> allocate_ibuffer(scrn, reader);
+  allocate_ibuffer(scrn, reader);
 }
 
 /**
@@ -173,7 +168,12 @@ upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
   if (data_pointer == NULL) {
     return false;
   }
-  int data_size = reader->get_data_size_bytes();
+  size_t data_size = (size_t)reader->get_data_size_bytes();
+
+  if (reader->get_index_type() == GeomEnums::NT_uint8) {
+    // We widen 8-bits indices to 16-bits.
+    data_size *= 2;
+  }
 
   if (dxgsg9_cat.is_spam()) {
     dxgsg9_cat.spam()
@@ -186,12 +186,9 @@ upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
   HRESULT hr;
   BYTE *local_pointer;
 
-  if (_managed)
-  {
+  if (_managed) {
     hr = _ibuffer->Lock(0, data_size, (void **) &local_pointer, 0);
-  }
-  else
-  {
+  } else {
     hr = _ibuffer->Lock(0, data_size, (void **) &local_pointer, D3DLOCK_DISCARD);
   }
   if (FAILED(hr)) {
@@ -201,7 +198,16 @@ upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, data_pointer, data_size);
+
+  if (reader->get_index_type() == GeomEnums::NT_uint8) {
+    // Widen to 16-bits, as DirectX doesn't support 8-bits indices.
+    uint16_t *ptr = (uint16_t *)local_pointer;
+    for (size_t i = 0; i < data_size; i += 2) {
+      *ptr++ = (uint16_t)*data_pointer++;
+    }
+  } else {
+    memcpy(local_pointer, data_pointer, data_size);
+  }
 
   _ibuffer->Unlock();
   return true;

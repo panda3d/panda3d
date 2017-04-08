@@ -45,28 +45,13 @@ get_geom_rendering() const {
 }
 
 /**
- * Returns the minimum (i.e.  most dynamic) usage_hint among all of the
- * individual GeomPrimitives that have been added to the geom.
- */
-INLINE Geom::UsageHint Geom::
-get_usage_hint() const {
-  CDLockedReader cdata(_cycler);
-  if (!cdata->_got_usage_hint) {
-    CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
-    ((Geom *)this)->reset_usage_hint(cdataw);
-    return cdataw->_usage_hint;
-  }
-  return cdata->_usage_hint;
-}
-
-/**
  * Returns a const pointer to the GeomVertexData, for application code to
  * directly examine (but not modify) the geom's underlying data.
  */
 INLINE CPT(GeomVertexData) Geom::
 get_vertex_data(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_data.get_read_pointer();
+  return cdata->_data.get_read_pointer(current_thread);
 }
 
 /**
@@ -114,7 +99,6 @@ modify_primitive(int i) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
-  cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
   return cdata->_primitives[i].get_write_pointer();
@@ -505,8 +489,6 @@ CData() :
   _primitive_type(PT_none),
   _shade_model(SM_uniform),
   _geom_rendering(0),
-  _usage_hint(UH_unspecified),
-  _got_usage_hint(false),
   _nested_vertices(0),
   _internal_bounds_stale(true),
   _bounds_type(BoundingVolume::BT_default)
@@ -523,14 +505,24 @@ CData(const Geom::CData &copy) :
   _primitive_type(copy._primitive_type),
   _shade_model(copy._shade_model),
   _geom_rendering(copy._geom_rendering),
-  _usage_hint(copy._usage_hint),
-  _got_usage_hint(copy._got_usage_hint),
   _modified(copy._modified),
   _internal_bounds(copy._internal_bounds),
   _nested_vertices(copy._nested_vertices),
   _internal_bounds_stale(copy._internal_bounds_stale),
   _bounds_type(copy._bounds_type),
   _user_bounds(copy._user_bounds)
+{
+}
+
+
+/**
+ *
+ */
+INLINE GeomPipelineReader::
+GeomPipelineReader(Thread *current_thread) :
+  _object(nullptr),
+  _current_thread(current_thread),
+  _cdata(nullptr)
 {
 }
 
@@ -552,39 +544,51 @@ GeomPipelineReader(const Geom *object, Thread *current_thread) :
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE GeomPipelineReader::
-GeomPipelineReader(const GeomPipelineReader &) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomPipelineReader::
-operator = (const GeomPipelineReader &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE GeomPipelineReader::
 ~GeomPipelineReader() {
 #ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
+  if (_object != nullptr) {
+    nassertv(_object->test_ref_count_nonzero());
+  }
 #endif // _DEBUG
   // _object->_cycler.release_read(_cdata);
 
 #ifdef DO_PIPELINING
-  unref_delete((CycleData *)_cdata);
+  if (_cdata != nullptr) {
+    unref_delete((CycleData *)_cdata);
+  }
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
   _object = NULL;
   _cdata = NULL;
 #endif  // _DEBUG
+}
+
+/**
+ *
+ */
+INLINE void GeomPipelineReader::
+set_object(const Geom *object) {
+  if (object != _object) {
+    // _object->_cycler.release_read(_cdata);
+
+#ifdef DO_PIPELINING
+    if (_cdata != NULL) {
+      unref_delete((CycleData *)_cdata);
+    }
+#endif  // DO_PIPELINING
+
+    _cdata = object->_cycler.read_unlocked(_current_thread);
+
+#ifdef DO_PIPELINING
+    _cdata->ref();
+#endif  // DO_PIPELINING
+
+    _object = object;
+  }
 }
 
 /**
@@ -625,15 +629,6 @@ get_shade_model() const {
 INLINE int GeomPipelineReader::
 get_geom_rendering() const {
   return _cdata->_geom_rendering;
-}
-
-/**
- *
- */
-INLINE GeomPipelineReader::UsageHint GeomPipelineReader::
-get_usage_hint() const {
-  nassertr(_cdata->_got_usage_hint, UH_static);
-  return _cdata->_usage_hint;
 }
 
 /**

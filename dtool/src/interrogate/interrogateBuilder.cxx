@@ -1167,8 +1167,10 @@ scan_typedef_type(CPPTypedefType *type) {
     return;
   }
 
-  // A typedef cannot be a template declaration.
-  assert(!type->is_template());
+  if (type->is_template()) {
+    // The type is a template declaration, not a true type.
+    return;
+  }
 
   if (type->_file.is_c_file()) {
     // This type declaration appears in a .C file.  We can only export types
@@ -1849,9 +1851,9 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       }
 
       // The getter must either take no arguments, or all defaults.
-      if (ftype->_parameters->_parameters.size() == (int)is_seq ||
-          (ftype->_parameters->_parameters.size() > (int)is_seq &&
-           ftype->_parameters->_parameters[(int)is_seq]->_initializer != NULL)) {
+      if (ftype->_parameters->_parameters.size() == (size_t)is_seq ||
+          (ftype->_parameters->_parameters.size() > (size_t)is_seq &&
+           ftype->_parameters->_parameters[(size_t)is_seq]->_initializer != NULL)) {
         // If this is a sequence getter, it must take an index argument.
         if (is_seq && !TypeManager::is_integer(ftype->_parameters->_parameters[0]->_type)) {
           continue;
@@ -1907,7 +1909,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype = function->_type->as_function_type();
-      if (ftype != NULL && ftype->_parameters->_parameters.size() == (int)is_seq) {
+      if (ftype != NULL && ftype->_parameters->_parameters.size() == (size_t)is_seq) {
         deleter = function;
         break;
       }
@@ -2399,7 +2401,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   cpptype = TypeManager::resolve_type(cpptype)->as_struct_type();
   assert(cpptype != (CPPStructType *)NULL);
-  bool has_virt_methods = cpptype->check_virtual();
+  bool has_virt_methods = cpptype->is_polymorphic();
 
   switch (cpptype->_type) {
   case CPPExtensionType::T_class:
@@ -2499,7 +2501,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           // (For many compilers, this does not require a pointer change.)
           generate_casts = true;
 
-        } else if (has_virt_methods && (base_type->as_struct_type() == (CPPStructType *)NULL || !base_type->as_struct_type()->check_virtual())) {
+        } else if (has_virt_methods && (base_type->as_struct_type() == (CPPStructType *)NULL || !base_type->as_struct_type()->is_polymorphic())) {
           // Finally, if this class has virtual methods, but its parent
           // doesn't, then we have to upcast (because this class will require
           // space for a virtual function table pointer, while the parent
@@ -2649,7 +2651,11 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     }
   }
 
-  if ((itype._flags & InterrogateType::F_inherited_destructor) != 0) {
+  if (!cpptype->is_destructible()) {
+    // There's no way to destruct the type.
+    itype._destructor = 0;
+
+  } else if ((itype._flags & InterrogateType::F_inherited_destructor) != 0) {
     // If we have inherited our virtual destructor from our base class, go
     // ahead and assign the same function index.
     assert(!itype._derivations.empty());

@@ -21,6 +21,13 @@
 
 TypeHandle EggPolygon::_type_handle;
 
+/**
+ * Makes a copy of this object.
+ */
+EggPolygon *EggPolygon::
+make_copy() const {
+  return new EggPolygon(*this);
+}
 
 /**
  * Cleans up modeling errors in whatever context this makes sense.  For

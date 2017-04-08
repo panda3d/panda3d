@@ -14,6 +14,8 @@
 #include "cppTypedefType.h"
 #include "cppIdentifier.h"
 #include "cppInstanceIdentifier.h"
+#include "cppTemplateScope.h"
+#include "indent.h"
 
 /**
  *
@@ -156,11 +158,35 @@ is_tbd() const {
 }
 
 /**
+ * Returns true if the type is considered a fundamental type.
+ */
+bool CPPTypedefType::
+is_fundamental() const {
+  return _type->is_fundamental();
+}
+
+/**
+ * Returns true if the type is considered a standard layout type.
+ */
+bool CPPTypedefType::
+is_standard_layout() const {
+  return _type->is_standard_layout();
+}
+
+/**
  * Returns true if the type is considered a Plain Old Data (POD) type.
  */
 bool CPPTypedefType::
 is_trivial() const {
   return _type->is_trivial();
+}
+
+/**
+ * Returns true if the type can be constructed using the given argument.
+ */
+bool CPPTypedefType::
+is_constructible(const CPPType *given_type) const {
+  return _type->is_constructible(given_type);
 }
 
 /**
@@ -180,6 +206,14 @@ is_copy_constructible() const {
 }
 
 /**
+ * Returns true if the type is destructible.
+ */
+bool CPPTypedefType::
+is_destructible() const {
+  return _type->is_destructible();
+}
+
+/**
  * Returns true if this declaration is an actual, factual declaration, or
  * false if some part of the declaration depends on a template parameter which
  * has not yet been instantiated.
@@ -191,6 +225,17 @@ is_fully_specified() const {
   }
   return CPPDeclaration::is_fully_specified() &&
     _type->is_fully_specified();
+}
+
+/**
+ *
+ */
+CPPDeclaration *CPPTypedefType::
+instantiate(const CPPTemplateParameterList *actual_params,
+            CPPScope *current_scope, CPPScope *global_scope,
+            CPPPreprocessor *error_sink) const {
+
+  return _type->instantiate(actual_params, current_scope, global_scope, error_sink);
 }
 
 /**
@@ -288,6 +333,15 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
 }
 
 /**
+ * Returns true if variables of this type may be implicitly converted to
+ * the other type.
+ */
+bool CPPTypedefType::
+is_convertible_to(const CPPType *other) const {
+  return _type->is_convertible_to(other);
+}
+
+/**
  * This is a little more forgiving than is_equal(): it returns true if the
  * types appear to be referring to the same thing, even if they may have
  * different pointers or somewhat different definitions.  It's useful for
@@ -320,6 +374,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (complete) {
     if (_using) {
       // It was declared using the "using" keyword.
+      if (is_template()) {
+        get_template_scope()->_parameters.write_formal(out, scope);
+        indent(out, indent_level);
+      }
       out << "using " << name << " = ";
       _type->output(out, 0, scope, false);
     } else {

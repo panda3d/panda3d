@@ -12,28 +12,11 @@
  */
 
 /**
- * The default constructor must do nothing, because we can't guarantee
- * ordering of static initializers.  If the constructor tried to initialize
- * its value, it might happen after the value had already been set previously
- * by another static initializer!
- */
-INLINE ButtonHandle::
-ButtonHandle() {
-}
-
-/**
  * Constructs a ButtonHandle with the corresponding index number, which may
  * have been returned by an earlier call to ButtonHandle::get_index().
  */
 CONSTEXPR ButtonHandle::
 ButtonHandle(int index) : _index(index) {
-}
-
-/**
- *
- */
-INLINE ButtonHandle::
-ButtonHandle(const ButtonHandle &copy) : _index(copy._index) {
 }
 
 /**

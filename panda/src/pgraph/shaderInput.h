@@ -17,7 +17,6 @@
 #define SHADERINPUT_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "internalName.h"
 #include "paramValue.h"
@@ -31,15 +30,13 @@
 #include "samplerState.h"
 #include "shader.h"
 #include "texture.h"
+#include "shaderBuffer.h"
 
 /**
  * This is a small container class that can hold any one of the value types
  * that can be passed as input to a shader.
  */
-class EXPCL_PANDA_PGRAPH ShaderInput : public TypedWritableReferenceCount {
-public:
-  INLINE ~ShaderInput();
-
+class EXPCL_PANDA_PGRAPH ShaderInput {
 PUBLISHED:
   // Used when binding texture images.
   enum AccessFlags {
@@ -48,10 +45,11 @@ PUBLISHED:
     A_layered = 0x04,
   };
 
-  static const ShaderInput *get_blank();
+  static const ShaderInput &get_blank();
   INLINE ShaderInput(CPT_InternalName name, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, Texture *tex, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, ShaderBuffer *buf, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, const PTA_float &ptr, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase4f &ptr, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase3f &ptr, int priority=0);
@@ -96,8 +94,15 @@ PUBLISHED:
     M_numeric,
     M_texture_sampler,
     M_param,
-    M_texture_image
+    M_texture_image,
+    M_buffer,
   };
+
+  INLINE bool operator == (const ShaderInput &other) const;
+  INLINE bool operator != (const ShaderInput &other) const;
+  INLINE bool operator < (const ShaderInput &other) const;
+
+  size_t add_hash(size_t hash) const;
 
   INLINE const InternalName *get_name() const;
 
@@ -111,7 +116,10 @@ PUBLISHED:
   const SamplerState &get_sampler() const;
 
 public:
+  ShaderInput() DEFAULT_CTOR;
+
   INLINE ParamValueBase *get_param() const;
+  INLINE TypedWritableReferenceCount *get_value() const;
 
   static void register_with_read_factory();
 
@@ -123,24 +131,8 @@ private:
   int _priority;
   int _type;
 
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "ShaderInput",
-                  TypedWritableReferenceCount::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-
-private:
-  static TypeHandle _type_handle;
+  friend class ShaderAttrib;
 };
-
 
 #include "shaderInput.I"
 

@@ -201,7 +201,8 @@ public:
   bool DoesInheritFromIsClass(const CPPStructType * inclass, const std::string &name);
   bool IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
   void write_python_instance(ostream &out, int indent_level, const std::string &return_expr, bool owns_memory, const InterrogateType &itype, bool is_const);
-  bool HasAGetClassTypeFunction(CPPType *type);
+  bool has_get_class_type_function(CPPType *type);
+  bool has_init_type_function(CPPType *type);
   int NeedsAStrFunction(const InterrogateType &itype_class);
   int NeedsAReprFunction(const InterrogateType &itype_class);
   bool NeedsARichCompareFunction(const InterrogateType &itype_class);

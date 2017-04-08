@@ -31,6 +31,11 @@ public:
   MutexWin32Impl();
   INLINE ~MutexWin32Impl();
 
+private:
+  MutexWin32Impl(const MutexWin32Impl &copy) DELETED;
+  MutexWin32Impl &operator = (const MutexWin32Impl &copy) DELETED_ASSIGN;
+
+public:
   INLINE void acquire();
   INLINE bool try_acquire();
   INLINE void release();

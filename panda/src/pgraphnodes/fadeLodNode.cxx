@@ -93,7 +93,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   consider_verify_lods(trav, data);
 
   Camera *camera = trav->get_scene()->get_camera_node();
-  NodePath this_np = data._node_path.get_node_path();
+  NodePath this_np = data.get_node_path();
   FadeLODNodeData *ldata =
     DCAST(FadeLODNodeData, camera->get_aux_scene_data(this_np));
 

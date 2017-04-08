@@ -113,10 +113,6 @@ void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
            MultiplexStreamBuf::OutputType output_type,
            ostream *out, FILE *fout, bool owns_obj) {
-#ifdef OLD_HAVE_IPC
-  // Ensure that we have the mutex while we fiddle with the list of outputs.
-  mutex_lock m(_lock);
-#endif
 
   Output o;
   o._buffer_type = buffer_type;
@@ -124,7 +120,11 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
   o._out = out;
   o._fout = fout;
   o._owns_obj = owns_obj;
+
+  // Ensure that we have the mutex while we fiddle with the list of outputs.
+  _lock.acquire();
   _outputs.push_back(o);
+  _lock.release();
 }
 
 
@@ -133,11 +133,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
  */
 void MultiplexStreamBuf::
 flush() {
-#ifdef OLD_HAVE_IPC
-  mutex_lock m(_lock);
-#endif
-
+  _lock.acquire();
   write_chars("", 0, true);
+  _lock.release();
 }
 
 /**
@@ -146,9 +144,7 @@ flush() {
  */
 int MultiplexStreamBuf::
 overflow(int ch) {
-#ifdef OLD_HAVE_IPC
-  mutex_lock m(_lock);
-#endif
+  _lock.acquire();
 
   streamsize n = pptr() - pbase();
 
@@ -163,6 +159,7 @@ overflow(int ch) {
     write_chars(&c, 1, false);
   }
 
+  _lock.release();
   return 0;
 }
 
@@ -172,9 +169,7 @@ overflow(int ch) {
  */
 int MultiplexStreamBuf::
 sync() {
-#ifdef OLD_HAVE_IPC
-  mutex_lock m(_lock);
-#endif
+  _lock.acquire();
 
   streamsize n = pptr() - pbase();
 
@@ -186,6 +181,7 @@ sync() {
   write_chars(pbase(), n, false);
   pbump(-n);
 
+  _lock.release();
   return 0;  // Return 0 for success, EOF to indicate write full.
 }
 
@@ -242,5 +238,4 @@ write_chars(const char *start, int length, bool flush) {
       break;
     }
   }
-
 }

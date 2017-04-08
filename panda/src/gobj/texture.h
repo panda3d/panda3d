@@ -40,7 +40,6 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "samplerState.h"
-#include "pnmImage.h"
 #include "colorSpace.h"
 #include "geomEnums.h"
 #include "bamCacheRecord.h"
@@ -80,6 +79,7 @@ PUBLISHED:
     TT_cube_map,
     TT_buffer_texture,
     TT_cube_map_array,
+    TT_1d_texture_array,
   };
 
   enum ComponentType {
@@ -91,6 +91,7 @@ PUBLISHED:
     T_byte,
     T_short,
     T_half_float,
+    T_unsigned_int,
   };
 
   enum Format {
@@ -207,6 +208,9 @@ PUBLISHED:
     CM_pvr1_2bpp,
     CM_pvr1_4bpp,
     CM_rgtc, // BC4/BC5: 1 or 2 channels, individually compressed.
+    CM_etc1,
+    CM_etc2,
+    CM_eac, // EAC: 1 or 2 channels.
   };
 
   enum QualityLevel {
@@ -285,6 +289,7 @@ PUBLISHED:
   BLOCKING static PT(Texture) make_from_txo(istream &in, const string &filename = "");
   BLOCKING bool write_txo(ostream &out, const string &filename = "") const;
   BLOCKING bool read_dds(istream &in, const string &filename = "", bool header_only = false);
+  BLOCKING bool read_ktx(istream &in, const string &filename = "", bool header_only = false);
 
   BLOCKING INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
   BLOCKING INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
@@ -440,9 +445,15 @@ PUBLISHED:
   CPTA_uchar get_ram_image_as(const string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
+#ifndef CPPPARSER
   INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
   void set_ram_image_as(CPTA_uchar image, const string &provided_format);
+#else
+  EXTEND void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
+                            size_t page_size = 0);
+  EXTEND void set_ram_image_as(PyObject *image, const string &provided_format);
+#endif
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -658,6 +669,8 @@ protected:
   bool do_read_txo(CData *cdata, istream &in, const string &filename);
   bool do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only);
   bool do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only);
+  bool do_read_ktx_file(CData *cdata, const Filename &fullpath, bool header_only);
+  bool do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only);
 
   bool do_write(CData *cdata, const Filename &fullpath, int z, int n,
                 bool write_pages, bool write_mipmaps);
@@ -804,6 +817,8 @@ private:
                                          int n, istream &in);
   static PTA_uchar read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header,
                                          int n, istream &in);
+  static PTA_uchar read_dds_level_raw(Texture *tex, CData *cdata, const DDSHeader &header,
+                                      int n, istream &in);
   static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata,
                                                        const DDSHeader &header,
                                                        int n, istream &in);
@@ -841,6 +856,7 @@ private:
 
   INLINE static bool is_txo_filename(const Filename &fullpath);
   INLINE static bool is_dds_filename(const Filename &fullpath);
+  INLINE static bool is_ktx_filename(const Filename &fullpath);
 
   void do_filter_2d_mipmap_pages(const CData *cdata,
                                  RamImage &to, const RamImage &from,

@@ -29,8 +29,11 @@
 template<>
 class Extension<Filename> : public ExtensionBase<Filename> {
 public:
+  void __init__(PyObject *path);
+
   PyObject *__reduce__(PyObject *self) const;
   PyObject *__repr__() const;
+  PyObject *__fspath__() const;
   PyObject *scan_directory() const;
 };
 

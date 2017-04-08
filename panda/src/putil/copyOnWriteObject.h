@@ -48,6 +48,10 @@ PUBLISHED:
 #ifdef COW_THREADED
   virtual bool unref() const;
   INLINE void cache_ref() const;
+  INLINE bool cache_unref() const;
+
+public:
+  void cache_ref_only() const;
 #endif  // COW_THREADED
 
 protected:
@@ -156,6 +160,12 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#ifdef DO_MEMORY_USAGE
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<CopyOnWriteObject>::update_type(To *ptr) {}
+#endif
 
 #include "copyOnWriteObject.I"
 

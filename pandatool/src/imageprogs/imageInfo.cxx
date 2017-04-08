@@ -13,7 +13,6 @@
 
 #include "imageInfo.h"
 #include "pnmImageHeader.h"
-#include "pystub.h"
 
 /**
  *
@@ -88,9 +87,6 @@ is_power_2(int value) const {
 
 
 int main(int argc, char *argv[]) {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   ImageInfo prog;
   prog.parse_command_line(argc, argv);
   prog.run();

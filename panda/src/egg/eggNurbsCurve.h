@@ -29,6 +29,8 @@ PUBLISHED:
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);
   INLINE EggNurbsCurve &operator = (const EggNurbsCurve &copy);
 
+  virtual EggNurbsCurve *make_copy() const OVERRIDE;
+
   void setup(int order, int num_knots);
 
   INLINE void set_order(int order);

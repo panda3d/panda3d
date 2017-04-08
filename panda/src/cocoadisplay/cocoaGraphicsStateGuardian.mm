@@ -97,6 +97,26 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   }
   // TODO: add aux buffers
 
+  // Cocoa doesn't provide individual RGB bits.  Make assumptions.
+  // Note that color_size seems to be returning values like 32, which
+  // suggests that it contains the alpha size as well.
+
+  if (color_size == 24 || color_size == 32) {
+    properties.set_rgba_bits(8, 8, 8, alpha_size);
+
+  } else if (color_size == 64) {
+    properties.set_rgba_bits(16, 16, 16, alpha_size);
+
+  } else if (color_size == 128) {
+    properties.set_rgba_bits(32, 32, 32, alpha_size);
+
+  } else if (color_size >= 3) {
+    // Assume it's giving us at least one of each.
+    properties.set_red_bits(1);
+    properties.set_green_bits(1);
+    properties.set_blue_bits(1);
+  }
+
   // Extract the renderer ID bits and check if our renderer matches the known
   // software renderers.
   renderer_id &= kCGLRendererIDMatchingMask;

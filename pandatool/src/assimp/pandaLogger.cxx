@@ -13,7 +13,7 @@
 
 #include "pandaLogger.h"
 
-#include "assimp/DefaultLogger.hpp"
+#include "DefaultLogger.hpp"
 
 PandaLogger *PandaLogger::_ptr = NULL;
 

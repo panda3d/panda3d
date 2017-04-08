@@ -380,7 +380,10 @@ has_tags() const {
     return true;
   }
 #ifdef HAVE_PYTHON
-  if (!cdata->_python_tag_data.empty()) {
+  // This is a bit awkward, since it doesn't catch cases where the Python tags
+  // are cleared.  Maybe we should make this behavior deprecated, so that
+  // has_tags will not consider the Python tags.
+  if (!_python_tag_data.is_null()) {
     return true;
   }
 #endif  // HAVE_PYTHON
@@ -1479,7 +1482,7 @@ get_net_collide_mask() const {
  * Returns a ClipPlaneAttrib which represents the union of all of the clip
  * planes that have been turned *off* at this level and below.
  */
-INLINE CPT(RenderAttrib) PandaNodePipelineReader::
+INLINE const RenderAttrib *PandaNodePipelineReader::
 get_off_clip_planes() const {
   nassertr(_cdata->_last_update == _cdata->_next_update, _cdata->_off_clip_planes);
   return _cdata->_off_clip_planes;
@@ -1490,7 +1493,7 @@ get_off_clip_planes() const {
  * contains the user bounding volume, the internal bounding volume, and all of
  * the children's bounding volumes.
  */
-INLINE CPT(BoundingVolume) PandaNodePipelineReader::
+INLINE const BoundingVolume *PandaNodePipelineReader::
 get_bounds() const {
   nassertr(_cdata->_last_bounds_update == _cdata->_next_update, _cdata->_external_bounds);
   return _cdata->_external_bounds;

@@ -47,10 +47,6 @@ add_on_occluder(const NodePath &occluder) const {
   nassertr(!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type()), this);
   OccluderEffect *effect = new OccluderEffect(*this);
   effect->_on_occluders.insert(occluder);
-
-  pair<Occluders::iterator, bool> insert_result =
-    effect->_on_occluders.insert(Occluders::value_type(occluder));
-
   return return_new(effect);
 }
 
@@ -170,7 +166,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
   if (manager->get_file_minor_ver() >= 40) {
-    for (int i = 0; i < _on_occluders.size(); ++i) {
+    for (size_t i = 0; i < _on_occluders.size(); ++i) {
       pi += _on_occluders[i].complete_pointers(p_list + pi, manager);
 
       int n = areg->find_node(_on_occluders[i]);

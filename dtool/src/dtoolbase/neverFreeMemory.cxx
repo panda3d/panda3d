@@ -39,13 +39,9 @@ void *NeverFreeMemory::
 ns_alloc(size_t size) {
   _lock.acquire();
 
-  // We always allocate integer multiples of this many bytes, to guarantee
-  // this minimum alignment.
-  static const size_t alignment_size = MemoryHook::get_memory_alignment();
-
-  // Round up to the next alignment_size.
-  size = ((size + alignment_size - 1) / alignment_size) * alignment_size;
-
+  //NB: we no longer do alignment here.  The only class that uses this is
+  // DeletedBufferChain, and we can do the alignment potentially more
+  // efficiently there since we don't end up overallocating as much.
   _total_used += size;
 
   // Look for a page that has sufficient space remaining.

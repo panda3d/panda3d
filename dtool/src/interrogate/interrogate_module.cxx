@@ -380,7 +380,6 @@ int main(int argc, char *argv[]) {
   extern int optind;
   int flag;
 
-  // A call to pystub() to force libpystub.so to be linked in.
   pystub();
 
   preprocess_argv(argc, argv);

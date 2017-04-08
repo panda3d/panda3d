@@ -68,6 +68,7 @@ PUBLISHED:
   bool hash_stream(istream &stream);
   INLINE void hash_ramfile(const Ramfile &ramfile);
   INLINE void hash_string(const string &data);
+  INLINE void hash_bytes(const pvector<unsigned char> &data);
   void hash_buffer(const char *buffer, int length);
 #endif  // HAVE_OPENSSL
 
