@@ -1,2 +1,3 @@
 -f ./wheels
+--pre
 panda3d
