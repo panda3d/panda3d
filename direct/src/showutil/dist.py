@@ -156,21 +156,43 @@ class build_apps(distutils.core.Command):
                 create_runtime(appname, scriptname, True)
 
             # Copy extension modules
+            whl_modules = []
+            whl_modules_ext = ''
+            if use_wheels:
+                # Get the module libs
+                whl_modules = [
+                    i.replace('deploy_libs/', '') for i in p3dwhl.namelist() if i.startswith('deploy_libs/')
+                ]
+
+                # Pull off extension
+                if whl_modules:
+                    whl_modules_ext = '.'.join(whl_modules[0].split('.')[1:])
+                whl_modules = [i.split('.')[0] for i in whl_modules]
+
+
             for module, source_path in freezer_extras:
-                if source_path is None:
-                    # Built-in module.
-                    continue
+                if module == 'time':
+                    source_path = None
 
-                # Rename panda3d/core.pyd to panda3d.core.pyd
-                basename = os.path.basename(source_path)
-                if '.' in module:
-                    basename = module.rsplit('.', 1)[0] + '.' + basename
+                if source_path is not None:
+                    # Rename panda3d/core.pyd to panda3d.core.pyd
+                    basename = os.path.basename(source_path)
+                    if '.' in module:
+                        basename = module.rsplit('.', 1)[0] + '.' + basename
 
-                # Remove python version string
-                if sys.version_info >= (3, 0):
-                    parts = basename.split('.')
-                    parts = parts[:-2] + parts[-1:]
-                    basename = '.'.join(parts)
+                    # Remove python version string
+                    if sys.version_info >= (3, 0):
+                        parts = basename.split('.')
+                        parts = parts[:-2] + parts[-1:]
+                        basename = '.'.join(parts)
+                else:
+                    # Builtin module, but might not be builtin in wheel libs, so double check
+                    if module in whl_modules:
+                        source_path = '{}/deploy_libs/{}.{}'.format(p3dwhlfn, module, whl_modules_ext)
+                        basename = os.path.basename(source_path)
+                    else:
+                        continue
+
 
                 target_path = os.path.join(builddir, basename)
                 if '.whl/' in source_path:
