@@ -171,9 +171,6 @@ class build_apps(distutils.core.Command):
 
 
             for module, source_path in freezer_extras:
-                if module == 'time':
-                    source_path = None
-
                 if source_path is not None:
                     # Rename panda3d/core.pyd to panda3d.core.pyd
                     basename = os.path.basename(source_path)
