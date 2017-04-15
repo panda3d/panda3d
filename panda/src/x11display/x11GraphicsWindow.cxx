@@ -2051,7 +2051,7 @@ get_keyboard_map() const {
       continue;
     }
 
-    KeySym sym = XKeycodeToKeysym(_display, k, 0);
+    KeySym sym = XkbKeycodeToKeysym(_display, k, 0, 0);
     ButtonHandle button = map_button(sym);
     if (button == ButtonHandle::none()) {
       continue;

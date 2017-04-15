@@ -40,7 +40,7 @@ public:
   void reflect_uniform(int i, char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
 
-  INLINE bool valid(void);
+  INLINE bool valid(void) OVERRIDE;
   void bind() OVERRIDE;
   void unbind() OVERRIDE;
 
@@ -58,8 +58,8 @@ public:
   void update_shader_texture_bindings(ShaderContext *prev) OVERRIDE;
   void update_shader_buffer_bindings(ShaderContext *prev) OVERRIDE;
 
-  INLINE bool uses_standard_vertex_arrays(void);
-  INLINE bool uses_custom_vertex_arrays(void);
+  INLINE bool uses_standard_vertex_arrays(void) OVERRIDE;
+  INLINE bool uses_custom_vertex_arrays(void) OVERRIDE;
 
 private:
   bool _validated;
