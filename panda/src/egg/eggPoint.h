@@ -67,7 +67,7 @@ public:
   virtual TypeHandle get_type() const OVERRIDE {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() OVERRIDE{
+  virtual TypeHandle force_init_type() OVERRIDE {
     init_type();
     return get_class_type();
   }
