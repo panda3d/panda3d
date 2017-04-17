@@ -262,6 +262,15 @@ class Audio3DManager:
             tracked_sound = 0
             while tracked_sound < len(self.sound_dict[known_object]):
                 sound = self.sound_dict[known_object][tracked_sound]
+
+                if known_object.isEmpty():
+
+                    # remove the object from the sound dict since the object's
+                    # node path is empty; and it's no longer being used.
+                    del self.sound_dict[known_object]
+
+                    return Task.cont
+
                 pos = known_object.getPos(self.root)
                 vel = self.getSoundVelocity(sound)
                 sound.set3dAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
