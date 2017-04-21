@@ -245,8 +245,10 @@ class build_apps(distutils.core.Command):
                 dst = os.path.normpath(dst)
 
                 for pattern in ignore_copy_list:
-                    #print("check ignore:", pattern, src, pattern.matches(src))
-                    if pattern.matches(src):
+                    # Normalize file paths across platforms
+                    path = p3d.Filename.from_os_specific(src).get_fullpath()
+                    #print("check ignore:", pattern, src, pattern.matches(path))
+                    if pattern.matches(path):
                         print("skipping file", src)
                         return
 
