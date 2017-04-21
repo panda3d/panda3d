@@ -132,7 +132,7 @@ class build_apps(distutils.core.Command):
 
                 stub_name = 'deploy-stub'
                 if platform.startswith('win'):
-                    if use_console:
+                    if not use_console:
                         stub_name = 'deploy-stubw'
                     stub_name += '.exe'
 
