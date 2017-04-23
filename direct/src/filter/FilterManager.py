@@ -75,6 +75,17 @@ class FilterManager(DirectObject):
         self.accept("window-event", self.windowEvent)
 
 
+        render_quad_into = renderQuadInto
+        window_event = windowEvent
+        is_fullscreen = isFullscreen
+        set_stacked_clears = setStackedClears
+        get_scaled_size = getScaledSize
+        render_scene_into = renderSceneInto
+        create_buffer = createBuffer
+        resize_buffers = resizeBuffers
+        set_clears = setClears
+        get_clears = getClears
+
     def getClears(self,region):
         clears = []
         for i in range(GraphicsOutput.RTPCOUNT):
