@@ -11,9 +11,6 @@ class InputStateToken:
         self._id = InputStateToken._SerialGen.next()
         self._hash = self._id
         self._inputState = inputState
-
-        is_valid = isValid
-
     def release(self):
         # subclasses will override
         assert False
@@ -23,6 +20,9 @@ class InputStateToken:
         self._id = InputStateToken.Inval
     def __hash__(self):
         return self._hash
+
+    #snake_case alias:
+    is_valid = isValid
 
 class InputStateWatchToken(InputStateToken, DirectObject.DirectObject):
     def release(self):
@@ -35,14 +35,15 @@ class InputStateForceToken(InputStateToken):
 class InputStateTokenGroup:
     def __init__(self):
         self._tokens = []
-        add_token = addToken
-
     def addToken(self, token):
         self._tokens.append(token)
     def release(self):
         for token in self._tokens:
             token.release()
         self._tokens = []
+
+    #snake_case alias:
+    add_token = addToken
 
 class InputState(DirectObject.DirectObject):
     """
@@ -76,12 +77,6 @@ class InputState(DirectObject.DirectObject):
         # inputSource->token->(name, eventOn, eventOff)
         self._watching = {}
         assert self.debugPrint("InputState()")
-
-        watch_with_modifiers = watchWithModifiers
-        debug_print = debugPrint
-        release_inputs = releaseInputs
-        get_event_name = getEventName
-        is_set = isSet
 
     def delete(self):
         del self._watching
@@ -246,3 +241,11 @@ class InputState(DirectObject.DirectObject):
         """for debugging"""
         return self.notify.debug(
             "%s (%s) %s"%(id(self), len(self._state), message))
+
+    #snake_case alias:
+    watch_with_modifiers = watchWithModifiers
+    is_set = isSet
+    get_event_name = getEventName
+    debug_print = debugPrint
+    release_inputs = releaseInputs
+
