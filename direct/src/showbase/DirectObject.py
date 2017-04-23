@@ -20,17 +20,6 @@ class DirectObject:
     # Wrapper functions to have a cleaner, more object oriented approach to
     # the messenger functionality.
 
-        remove_task = removeTask
-        get_all_accepting = getAllAccepting
-        do_method_later = doMethodLater
-        is_ignoring = isIgnoring
-        ignore_all = ignoreAll
-        add_task = addTask
-        detect_leaks = detectLeaks
-        remove_all_tasks = removeAllTasks
-        accept_once = acceptOnce
-        is_accepting = isAccepting
-
     def accept(self, event, method, extraArgs=[]):
         return messenger.accept(event, self, method, extraArgs, 1)
 
@@ -111,3 +100,16 @@ class DirectObject:
             func = choice(getRepository()._crashOnProactiveLeakDetect,
                           self.notify.error, self.notify.warning)
             func('destroyed %s instance is still %s%s' % (self.__class__.__name__, estr, tstr))
+
+    #snake_case alias:
+    add_task = addTask
+    do_method_later = doMethodLater
+    detect_leaks = detectLeaks
+    accept_once = acceptOnce
+    ignore_all = ignoreAll
+    get_all_accepting = getAllAccepting
+    is_ignoring = isIgnoring
+    remove_all_tasks = removeAllTasks
+    remove_task = removeTask
+    is_accepting = isAccepting
+
