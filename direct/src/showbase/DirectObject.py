@@ -20,6 +20,17 @@ class DirectObject:
     # Wrapper functions to have a cleaner, more object oriented approach to
     # the messenger functionality.
 
+        remove_task = removeTask
+        get_all_accepting = getAllAccepting
+        do_method_later = doMethodLater
+        is_ignoring = isIgnoring
+        ignore_all = ignoreAll
+        add_task = addTask
+        detect_leaks = detectLeaks
+        remove_all_tasks = removeAllTasks
+        accept_once = acceptOnce
+        is_accepting = isAccepting
+
     def accept(self, event, method, extraArgs=[]):
         return messenger.accept(event, self, method, extraArgs, 1)
 
