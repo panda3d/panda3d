@@ -44,13 +44,15 @@ class Actor(DirectObject, NodePath):
             self.partBundleHandle = partBundleHandle
             self.partModel = partModel
 
-            get_bundle = getBundle
-
         def getBundle(self):
             return self.partBundleHandle.getBundle()
 
         def __repr__(self):
             return 'Actor.PartDef(%s, %s)' % (repr(self.partBundleNP), repr(self.partModel))
+
+
+        #snake_case alias:
+        get_bundle = getBundle
 
     class AnimDef:
 
@@ -68,13 +70,15 @@ class Actor(DirectObject, NodePath):
             self.animBundle = None
             self.animControl = None
 
-            make_copy = makeCopy
-
         def makeCopy(self):
             return Actor.AnimDef(self.filename, self.animBundle)
 
         def __repr__(self):
             return 'Actor.AnimDef(%s)' % (repr(self.filename))
+
+
+        #snake_case alias:
+        make_copy = makeCopy
 
     class SubpartDef:
 
@@ -335,93 +339,6 @@ class Actor(DirectObject, NodePath):
             # someone's hands disappear; better to cull the whole
             # object or none of it.
             self.__geomNode.node().setFinal(1)
-
-            get_joints = getJoints
-            get_anim_control_dict = getAnimControlDict
-            set_subparts_complete = setSubpartsComplete
-            sort_key = sortKey
-            enable_blend = enableBlend
-            anim_panel = animPanel
-            get_joint_transform = getJointTransform
-            wait_pending = waitPending
-            actor_interval = actorInterval
-            hide_all_bounds = hideAllBounds
-            control_joint = controlJoint
-            get_joint_transform_state = getJointTransformState
-            make_copy = makeCopy
-            set_center = setCenter
-            set_lod = setLOD
-            load_anims_on_all_lods = loadAnimsOnAllLODs
-            get_lodnode = getLODNode
-            clear_python_data = clearPythonData
-            print_anim_blends = printAnimBlends
-            set_lodanimation = setLODAnimation
-            show_all_parts = showAllParts
-            disable_blend = disableBlend
-            get_anim_blends = getAnimBlends
-            get_num_frames = getNumFrames
-            copy_actor = copyActor
-            show_part = showPart
-            get_lodindex = getLODIndex
-            rename_part_bundles = renamePartBundles
-            load_anims = loadAnims
-            get_play_rate = getPlayRate
-            show_all_bounds = showAllBounds
-            print_lod = printLOD
-            get_overlapping_joints = getOverlappingJoints
-            get_part = getPart
-            get_current_anim = getCurrentAnim
-            fix_bounds = fixBounds
-            get_duration = getDuration
-            init_anims_on_all_lods = initAnimsOnAllLODs
-            set_play_rate = setPlayRate
-            remove_anim_control_dict = removeAnimControlDict
-            get_lodnames = getLODNames
-            get_base_frame_rate = getBaseFrameRate
-            load_model = loadModel
-            get_part_bundle_dict = getPartBundleDict
-            list_joints = listJoints
-            freeze_joint = freezeJoint
-            make_subpart = makeSubpart
-            get_actor_info = getActorInfo
-            get_anim_controls = getAnimControls
-            get_anim_names = getAnimNames
-            face_away_from_viewer = faceAwayFromViewer
-            get_subparts_complete = getSubpartsComplete
-            post_flatten = postFlatten
-            get_frame_rate = getFrameRate
-            get_part_bundles = getPartBundles
-            get_frame_time = getFrameTime
-            release_joint = releaseJoint
-            get_anim_control = getAnimControl
-            has_lod = hasLOD
-            osd_anim_blends = osdAnimBlends
-            set_blend = setBlend
-            remove_node = removeNode
-            add_lod = addLOD
-            expose_joint = exposeJoint
-            verify_subparts_complete = verifySubpartsComplete
-            get_part_names = getPartNames
-            get_geom_node = getGeomNode
-            bind_all_anims = bindAllAnims
-            clear_lodanimation = clearLODAnimation
-            set_geom_node = setGeomNode
-            bind_anim = bindAnim
-            face_towards_viewer = faceTowardsViewer
-            get_lod = getLOD
-            unload_anims = unloadAnims
-            hide_part = hidePart
-            fix_bounds_old = fixBounds_old
-            get_anim_filename = getAnimFilename
-            set_lodnode = setLODNode
-            reset_lod = resetLOD
-            get_current_frame = getCurrentFrame
-            draw_in_front = drawInFront
-            get_part_bundle = getPartBundle
-            set_control_effect = setControlEffect
-            use_lod = useLOD
-            remove_part = removePart
-            stop_joint = stopJoint
 
     def delete(self):
         try:
@@ -2640,3 +2557,92 @@ class Actor(DirectObject, NodePath):
         for partBundleDict in self.__partBundleDict.values():
             partDef = partBundleDict.get(subpartDef.truePartName)
             partDef.getBundle().setName(newBundleName)
+
+    #snake_case alias:
+    control_joint = controlJoint
+    set_lodanimation = setLODAnimation
+    get_anim_control_dict = getAnimControlDict
+    get_actor_info = getActorInfo
+    clear_lodanimation = clearLODAnimation
+    reset_lod = resetLOD
+    fix_bounds = fixBounds
+    get_anim_filename = getAnimFilename
+    get_subparts_complete = getSubpartsComplete
+    verify_subparts_complete = verifySubpartsComplete
+    get_play_rate = getPlayRate
+    clear_python_data = clearPythonData
+    load_anims = loadAnims
+    set_subparts_complete = setSubpartsComplete
+    draw_in_front = drawInFront
+    get_lodnode = getLODNode
+    sort_key = sortKey
+    hide_part = hidePart
+    get_joint_transform_state = getJointTransformState
+    set_control_effect = setControlEffect
+    get_anim_controls = getAnimControls
+    release_joint = releaseJoint
+    print_anim_blends = printAnimBlends
+    get_lod = getLOD
+    disable_blend = disableBlend
+    show_part = showPart
+    get_joint_transform = getJointTransform
+    face_away_from_viewer = faceAwayFromViewer
+    set_lod = setLOD
+    osd_anim_blends = osdAnimBlends
+    get_current_frame = getCurrentFrame
+    set_play_rate = setPlayRate
+    bind_all_anims = bindAllAnims
+    unload_anims = unloadAnims
+    remove_part = removePart
+    use_lod = useLOD
+    get_anim_blends = getAnimBlends
+    get_lodindex = getLODIndex
+    get_num_frames = getNumFrames
+    post_flatten = postFlatten
+    get_lodnames = getLODNames
+    list_joints = listJoints
+    make_subpart = makeSubpart
+    get_anim_control = getAnimControl
+    get_part_bundle = getPartBundle
+    get_part_bundle_dict = getPartBundleDict
+    get_duration = getDuration
+    has_lod = hasLOD
+    print_lod = printLOD
+    fix_bounds_old = fixBounds_old
+    get_anim_names = getAnimNames
+    make_copy = makeCopy
+    get_part_bundles = getPartBundles
+    anim_panel = animPanel
+    stop_joint = stopJoint
+    actor_interval = actorInterval
+    hide_all_bounds = hideAllBounds
+    show_all_bounds = showAllBounds
+    init_anims_on_all_lods = initAnimsOnAllLODs
+    get_part = getPart
+    add_lod = addLOD
+    show_all_parts = showAllParts
+    get_joints = getJoints
+    get_overlapping_joints = getOverlappingJoints
+    enable_blend = enableBlend
+    face_towards_viewer = faceTowardsViewer
+    bind_anim = bindAnim
+    set_blend = setBlend
+    get_frame_time = getFrameTime
+    remove_node = removeNode
+    wait_pending = waitPending
+    expose_joint = exposeJoint
+    set_lodnode = setLODNode
+    get_frame_rate = getFrameRate
+    get_current_anim = getCurrentAnim
+    get_part_names = getPartNames
+    freeze_joint = freezeJoint
+    set_center = setCenter
+    rename_part_bundles = renamePartBundles
+    get_geom_node = getGeomNode
+    set_geom_node = setGeomNode
+    load_model = loadModel
+    copy_actor = copyActor
+    get_base_frame_rate = getBaseFrameRate
+    remove_anim_control_dict = removeAnimControlDict
+    load_anims_on_all_lods = loadAnimsOnAllLODs
+
