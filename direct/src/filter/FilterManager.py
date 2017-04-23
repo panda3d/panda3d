@@ -75,17 +75,6 @@ class FilterManager(DirectObject):
         self.accept("window-event", self.windowEvent)
 
 
-        render_quad_into = renderQuadInto
-        window_event = windowEvent
-        is_fullscreen = isFullscreen
-        set_stacked_clears = setStackedClears
-        get_scaled_size = getScaledSize
-        render_scene_into = renderSceneInto
-        create_buffer = createBuffer
-        resize_buffers = resizeBuffers
-        set_clears = setClears
-        get_clears = getClears
-
     def getClears(self,region):
         clears = []
         for i in range(GraphicsOutput.RTPCOUNT):
@@ -360,3 +349,16 @@ class FilterManager(DirectObject):
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0
+
+    #snake_case alias:
+    is_fullscreen = isFullscreen
+    resize_buffers = resizeBuffers
+    set_stacked_clears = setStackedClears
+    render_scene_into = renderSceneInto
+    get_scaled_size = getScaledSize
+    render_quad_into = renderQuadInto
+    get_clears = getClears
+    set_clears = setClears
+    create_buffer = createBuffer
+    window_event = windowEvent
+
