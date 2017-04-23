@@ -60,6 +60,18 @@ class Messenger:
                        'collisionLoopFinished':1,
                        } # see def quiet()
 
+        toggle_verbose = toggleVerbose
+        replace_method = replaceMethod
+        get_events = getEvents
+        get_all_accepting = getAllAccepting
+        detailed_repr = detailedRepr
+        is_accepting = isAccepting
+        who_accepts = whoAccepts
+        find_all = findAll
+        is_ignoring = isIgnoring
+        is_empty = isEmpty
+        ignore_all = ignoreAll
+
     def _getMessengerId(self, object):
         # TODO: allocate this id in DirectObject.__init__ and get derived
         # classes to call down (speed optimization, assuming objects
@@ -531,7 +543,6 @@ class Messenger:
         keys.sort()
         for event in keys:
             if repr(event).find(needle) >= 0:
-                print(self.__eventRepr(event))
                 return {event: self.__callbacks[event]}
 
     def findAll(self, needle, limit=None):
@@ -545,7 +556,6 @@ class Messenger:
         keys.sort()
         for event in keys:
             if repr(event).find(needle) >= 0:
-                print(self.__eventRepr(event))
                 matches[event] = self.__callbacks[event]
                 # if the limit is not None, decrement and
                 # check for break:
