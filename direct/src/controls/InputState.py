@@ -11,6 +11,9 @@ class InputStateToken:
         self._id = InputStateToken._SerialGen.next()
         self._hash = self._id
         self._inputState = inputState
+
+        is_valid = isValid
+
     def release(self):
         # subclasses will override
         assert False
@@ -32,6 +35,8 @@ class InputStateForceToken(InputStateToken):
 class InputStateTokenGroup:
     def __init__(self):
         self._tokens = []
+        add_token = addToken
+
     def addToken(self, token):
         self._tokens.append(token)
     def release(self):
@@ -71,6 +76,12 @@ class InputState(DirectObject.DirectObject):
         # inputSource->token->(name, eventOn, eventOff)
         self._watching = {}
         assert self.debugPrint("InputState()")
+
+        watch_with_modifiers = watchWithModifiers
+        debug_print = debugPrint
+        release_inputs = releaseInputs
+        get_event_name = getEventName
+        is_set = isSet
 
     def delete(self):
         del self._watching
