@@ -23,6 +23,29 @@ class Audio3DManager:
 
         taskMgr.add(self.update, "Audio3DManager-updateTask", taskPriority)
 
+        get_drop_off_factor = getDropOffFactor
+        detach_sound = detachSound
+        get_sound_max_distance = getSoundMaxDistance
+        set_distance_factor = setDistanceFactor
+        load_sfx = loadSfx
+        get_listener_velocity = getListenerVelocity
+        set_sound_velocity_auto = setSoundVelocityAuto
+        attach_listener = attachListener
+        get_doppler_factor = getDopplerFactor
+        set_listener_velocity_auto = setListenerVelocityAuto
+        get_sound_min_distance = getSoundMinDistance
+        detach_listener = detachListener
+        set_sound_max_distance = setSoundMaxDistance
+        attach_sound_to_object = attachSoundToObject
+        set_drop_off_factor = setDropOffFactor
+        set_sound_velocity = setSoundVelocity
+        set_sound_min_distance = setSoundMinDistance
+        get_sound_velocity = getSoundVelocity
+        set_listener_velocity = setListenerVelocity
+        set_doppler_factor = setDopplerFactor
+        get_sounds_on_object = getSoundsOnObject
+        get_distance_factor = getDistanceFactor
+
     def loadSfx(self, name):
         """
         Use Audio3DManager.loadSfx to load a sound with 3D positioning enabled
