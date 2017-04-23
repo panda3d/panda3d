@@ -102,26 +102,6 @@ class CommonFilters:
         self.task = None
         self.cleanup()
 
-        set_inverted = setInverted
-        del_view_glow = delViewGlow
-        del_ambient_occlusion = delAmbientOcclusion
-        del_volumetric_lighting = delVolumetricLighting
-        set_blur_sharpen = setBlurSharpen
-        set_gamma_adjust = setGammaAdjust
-        set_half_pixel_shift = setHalfPixelShift
-        set_view_glow = setViewGlow
-        set_volumetric_lighting = setVolumetricLighting
-        del_inverted = delInverted
-        del_half_pixel_shift = delHalfPixelShift
-        set_cartoon_ink = setCartoonInk
-        del_blur_sharpen = delBlurSharpen
-        del_gamma_adjust = delGammaAdjust
-        del_bloom = delBloom
-        load_shader = loadShader
-        del_cartoon_ink = delCartoonInk
-        set_bloom = setBloom
-        set_ambient_occlusion = setAmbientOcclusion
-
     def loadShader(self, name):
         fn = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
         fn = Filename.fromOsSpecific(fn)
@@ -556,3 +536,25 @@ class CommonFilters:
             del self.configuration["GammaAdjust"]
             return self.reconfigure((old_gamma != 1.0), "GammaAdjust")
         return True
+
+    #snake_case alias:
+    del_cartoon_ink = delCartoonInk
+    set_half_pixel_shift = setHalfPixelShift
+    del_half_pixel_shift = delHalfPixelShift
+    set_inverted = setInverted
+    del_inverted = delInverted
+    del_view_glow = delViewGlow
+    set_volumetric_lighting = setVolumetricLighting
+    del_gamma_adjust = delGammaAdjust
+    set_bloom = setBloom
+    set_view_glow = setViewGlow
+    set_ambient_occlusion = setAmbientOcclusion
+    set_cartoon_ink = setCartoonInk
+    del_bloom = delBloom
+    del_ambient_occlusion = delAmbientOcclusion
+    load_shader = loadShader
+    set_blur_sharpen = setBlurSharpen
+    del_blur_sharpen = delBlurSharpen
+    del_volumetric_lighting = delVolumetricLighting
+    set_gamma_adjust = setGammaAdjust
+
