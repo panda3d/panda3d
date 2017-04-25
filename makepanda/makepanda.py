@@ -3809,7 +3809,8 @@ if (PkgSkip("FREETYPE")==0 and not RUNTIME):
 #
 
 if (not RUNTIME):
-  DefSymbol("HARFBUZZ", "HAVE_HARFBUZZ")
+  if not PkgSkip("HARFBUZZ"):
+    DefSymbol("HARFBUZZ", "HAVE_HARFBUZZ")
 
   OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE', 'HARFBUZZ']
   TargetAdd('p3text_composite1.obj', opts=OPTS, input='p3text_composite1.cxx')
