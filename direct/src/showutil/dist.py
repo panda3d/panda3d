@@ -242,18 +242,29 @@ class build_apps(distutils.core.Command):
             ignore_copy_list += self.exclude_paths
             ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
 
+            def check_pattern(src):
+                for pattern in ignore_copy_list:
+                    # Normalize file paths across platforms
+                    path = p3d.Filename.from_os_specific(src).get_fullpath() 
+                    #print("check ignore:", pattern, src, pattern.matches(path))
+                    if pattern.matches(path):
+                        return True
+                return False
+
+            def dir_has_files(directory):
+                files = [
+                    i for i in os.listdir(directory)
+                    if not check_pattern(os.path.join(directory, i))
+                ]
+                return bool(files)
+
             def copy_file(src, dst):
                 src = os.path.normpath(src)
                 dst = os.path.normpath(dst)
 
-                for pattern in ignore_copy_list:
-                    # Normalize file paths across platforms
-                    path = p3d.Filename.from_os_specific(src).get_fullpath()
-                    #print("check ignore:", pattern, src, pattern.matches(path))
-                    if pattern.matches(path):
-                        print("skipping file", src)
-                        return
-
+                if check_pattern(src):
+                    print("skipping file", src)
+                    return
 
                 dst_dir = os.path.dirname(dst)
                 if not os.path.exists(dst_dir):
@@ -278,7 +289,7 @@ class build_apps(distutils.core.Command):
                     d = os.path.join(dst, item)
                     if os.path.isfile(s):
                         copy_file(s, d)
-                    else:
+                    elif dir_has_files(s):
                         copy_dir(s, d)
 
             for path in self.copy_paths:
