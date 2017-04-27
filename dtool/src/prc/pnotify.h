@@ -152,8 +152,6 @@ private:
 
 #define nassert_raise(message) Notify::write_string(message)
 
-#define enter_debugger_if(condition) ((void)0)
-
 #else   // NDEBUG
 
 #define nassertr(condition, return_value) \
@@ -182,13 +180,6 @@ private:
 #define nassertv_always(condition) nassertv(condition)
 
 #define nassert_raise(message) Notify::ptr()->assert_failure(message, __LINE__, __FILE__)
-
-#define enter_debugger_if(condition) \
-  if (_nassert_check(condition)) { \
-    Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__); \
-    __asm { int 3 } \
-  }
-
 
 #endif  // NDEBUG
 

@@ -31,9 +31,14 @@
 #include "geomVertexData.h"
 #include "geom.h"
 #include "modelNode.h"
+#include "dynamicTextFont.h"
 
 #include <ctype.h>
 #include <stdio.h>  // for sprintf
+
+#ifdef HAVE_HARFBUZZ
+#include <hb.h>
+#endif
 
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
@@ -1408,6 +1413,12 @@ assemble_row(TextAssembler::TextRow &row,
   PN_stdfloat underscore_start = 0.0f;
   const TextProperties *underscore_properties = NULL;
 
+  const ComputedProperties *prev_cprops;
+
+#ifdef HAVE_HARFBUZZ
+  hb_buffer_t *harfbuff = nullptr;
+#endif
+
   TextString::const_iterator si;
   for (si = row._string.begin(); si != row._string.end(); ++si) {
     const TextCharacter &tch = (*si);
@@ -1448,9 +1459,28 @@ assemble_row(TextAssembler::TextRow &row,
       LVecBase4 frame = graphic->get_frame();
       line_height = max(line_height, frame[3] - frame[2]);
     } else {
-      // [fabius] this is not the right place to calc line height (see below)
-      // line_height = max(line_height, font->get_line_height());
+      line_height = max(line_height, font->get_line_height() * properties->get_glyph_scale() * properties->get_text_scale());
     }
+
+#ifdef HAVE_HARFBUZZ
+    if (tch._cprops != prev_cprops || graphic != nullptr) {
+      if (harfbuff != nullptr && hb_buffer_get_length(harfbuff) > 0) {
+        // Shape the buffer accumulated so far.
+        shape_buffer(harfbuff, placed_glyphs, xpos, prev_cprops->_properties);
+        hb_buffer_reset(harfbuff);
+
+      } else if (harfbuff == nullptr && text_use_harfbuzz &&
+                 font->is_of_type(DynamicTextFont::get_class_type())) {
+        harfbuff = hb_buffer_create();
+      }
+      prev_cprops = tch._cprops;
+    }
+
+    if (graphic == nullptr && harfbuff != nullptr) {
+      hb_buffer_add(harfbuff, character, character);
+      continue;
+    }
+#endif
 
     if (character == ' ') {
       // A space is a special case.
@@ -1613,9 +1643,15 @@ assemble_row(TextAssembler::TextRow &row,
       }
 
       xpos += advance * glyph_scale;
-      line_height = max(line_height, font->get_line_height() * glyph_scale);
     }
   }
+
+#ifdef HAVE_HARFBUZZ
+  if (harfbuff != nullptr && hb_buffer_get_length(harfbuff) > 0) {
+    shape_buffer(harfbuff, placed_glyphs, xpos, prev_cprops->_properties);
+  }
+  hb_buffer_destroy(harfbuff);
+#endif
 
   if (underscore && underscore_start != xpos) {
     draw_underscore(placed_glyphs, underscore_start, xpos,
@@ -1638,6 +1674,88 @@ assemble_row(TextAssembler::TextRow &row,
       line_height = max(line_height, font->get_line_height() * glyph_scale);
     }
   }
+}
+
+/**
+ * Places the glyphs collected from a HarfBuzz buffer.
+ */
+void TextAssembler::
+shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
+             const TextProperties &properties) {
+
+#ifdef HAVE_HARFBUZZ
+  // If we did not specify a text direction, harfbuzz will guess it based on
+  // the script we are using.
+  hb_direction_t direction = HB_DIRECTION_INVALID;
+  if (properties.has_direction()) {
+    switch (properties.get_direction()) {
+    case TextProperties::D_ltr:
+      direction = HB_DIRECTION_LTR;
+      break;
+    case TextProperties::D_rtl:
+      direction = HB_DIRECTION_RTL;
+      break;
+    }
+  }
+  hb_buffer_set_direction(buf, direction);
+  hb_buffer_guess_segment_properties(buf);
+
+  DynamicTextFont *font = DCAST(DynamicTextFont, properties.get_font());
+  hb_font_t *hb_font = font->get_hb_font();
+  hb_shape(hb_font, buf, NULL, 0);
+
+  PN_stdfloat glyph_scale = properties.get_glyph_scale() * properties.get_text_scale();
+  PN_stdfloat scale = glyph_scale / (font->get_pixels_per_unit() * font->get_scale_factor() * 64.0);
+
+  unsigned int glyph_count;
+  hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(buf, &glyph_count);
+  hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
+
+  for (unsigned int i = 0; i < glyph_count; ++i) {
+    int character = glyph_info[i].cluster;
+    int glyph_index = glyph_info[i].codepoint;
+
+    CPT(TextGlyph) glyph;
+    if (!font->get_glyph_by_index(character, glyph_index, glyph)) {
+      char buffer[512];
+      sprintf(buffer, "U+%04x", character);
+      text_cat.warning()
+        << "No definition in " << font->get_name()
+        << " for character " << buffer;
+      if (character < 128 && isprint((unsigned int)character)) {
+        text_cat.warning(false)
+          << " ('" << (char)character << "')";
+      }
+      text_cat.warning(false)
+        << "\n";
+    }
+
+    PN_stdfloat advance = glyph_pos[i].x_advance * scale;
+    if (glyph->is_whitespace()) {
+      // A space is a special case.
+      xpos += advance;
+      continue;
+    }
+
+    PN_stdfloat x_offset = glyph_pos[i].x_offset * scale;
+    PN_stdfloat y_offset = glyph_pos[i].y_offset * scale;
+
+    // Build up a GlyphPlacement, indicating all of the Geoms that go into
+    // this character.  Normally, there is only one Geom per character, but
+    // it may involve multiple Geoms if we need to add cheesy accents or
+    // ligatures.
+    GlyphPlacement placement;
+    placement._glyph = move(glyph);
+    placement._scale = glyph_scale;
+    placement._xpos = xpos + x_offset;
+    placement._ypos = properties.get_glyph_shift() + y_offset;
+    placement._slant = properties.get_slant();
+    placement._properties = &properties;
+    placed_glyphs.push_back(placement);
+
+    xpos += advance;
+  }
+#endif
 }
 
 /**

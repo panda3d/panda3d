@@ -1139,7 +1139,7 @@ reset() {
   _supports_multisample = false;
 #else
   _supports_multisample =
-    has_extension("GL_ARB_multisample") || is_at_least_gl_version(1, 3);
+    is_at_least_gl_version(1, 3) || has_extension("GL_ARB_multisample");
 #endif
 
 #ifdef OPENGLES_1
@@ -1305,7 +1305,7 @@ reset() {
   if (gl_support_shadow_filter &&
       _supports_depth_texture &&
       (is_at_least_gl_version(1, 4) || has_extension("GL_ARB_shadow")) &&
-      has_extension("GL_ARB_fragment_program_shadow")) {
+      (is_at_least_gl_version(2, 0) || has_extension("GL_ARB_fragment_program_shadow"))) {
     _supports_shadow_filter = true;
   }
 #endif
@@ -2550,8 +2550,8 @@ reset() {
   _border_clamp = _edge_clamp;
 #ifndef OPENGLES
   if (gl_support_clamp_to_border &&
-      (has_extension("GL_ARB_texture_border_clamp") ||
-       is_at_least_gl_version(1, 3))) {
+      (is_at_least_gl_version(1, 3) ||
+       has_extension("GL_ARB_texture_border_clamp"))) {
     _border_clamp = GL_CLAMP_TO_BORDER;
   }
 #endif
@@ -2580,6 +2580,11 @@ reset() {
     _mirror_clamp = GL_MIRROR_CLAMP_EXT;
     _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE_EXT;
     _mirror_border_clamp = GL_MIRROR_CLAMP_TO_BORDER_EXT;
+
+  } else if (is_at_least_gl_version(4, 4) ||
+             has_extension("GL_ARB_texture_mirror_clamp_to_edge")) {
+    _mirror_clamp = GL_MIRROR_CLAMP_TO_EDGE;
+    _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE;
   }
 #endif
 

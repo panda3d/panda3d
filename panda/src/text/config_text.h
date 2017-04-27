@@ -31,6 +31,7 @@ NotifyCategoryDecl(text, EXPCL_PANDA_TEXT, EXPTP_PANDA_TEXT);
 extern ConfigVariableBool text_flatten;
 extern ConfigVariableBool text_dynamic_merge;
 extern ConfigVariableBool text_kerning;
+extern ConfigVariableBool text_use_harfbuzz;
 extern ConfigVariableInt text_anisotropic_degree;
 extern ConfigVariableInt text_texture_margin;
 extern ConfigVariableDouble text_poly_margin;

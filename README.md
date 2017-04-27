@@ -18,6 +18,23 @@ resources. If you get stuck, ask for help from our active
 Panda3D is licensed under the Modified BSD License.  See the LICENSE file for
 more details.
 
+Installing Panda3D
+==================
+
+By far, the easiest way to install the latest development build of Panda3D
+into an existing Python installation is using the following command:
+
+```bash
+pip install --pre --extra-index-url https://archive.panda3d.org/ panda3d
+```
+
+If you prefer to install the full SDK with all tools, the latest development
+builds can be obtained from this page:
+
+https://www.panda3d.org/download.php?sdk&version=devel
+
+These are automatically kept up-to-date with the latest GitHub version of Panda.
+
 Building Panda3D
 ================
 
@@ -64,7 +81,7 @@ for you to install, depending on your distribution).
 The following command illustrates how to build Panda3D with some common
 options:
 ```bash
-python2.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
 ```
 
 You will probably see some warnings saying that it's unable to find several
@@ -92,6 +109,9 @@ If you are not using a Linux distribution that supports .deb or .rpm packages, y
 may have to use the installpanda.py script instead, which will directly copy the
 files into the appropriate locations on your computer.  You may have to run the
 `ldconfig` tool in order to update your library cache after installing Panda3D.
+
+Alternatively, you can add the `--wheel` option, which will produce a .whl
+file that can be installed into a Python installation using `pip`.
 
 macOS
 -----
