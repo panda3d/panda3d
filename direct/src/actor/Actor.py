@@ -2609,7 +2609,6 @@ class Actor(DirectObject, NodePath):
     print_lod = printLOD
     fix_bounds_old = fixBounds_old
     get_anim_names = getAnimNames
-    make_copy = makeCopy
     get_part_bundles = getPartBundles
     anim_panel = animPanel
     stop_joint = stopJoint
