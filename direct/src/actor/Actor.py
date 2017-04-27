@@ -2575,7 +2575,6 @@ class Actor(DirectObject, NodePath):
     set_subparts_complete = setSubpartsComplete
     draw_in_front = drawInFront
     get_lod_node = getLODNode
-    sort_key = sortKey
     hide_part = hidePart
     get_joint_transform_state = getJointTransformState
     set_control_effect = setControlEffect
