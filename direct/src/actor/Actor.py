@@ -2560,10 +2560,10 @@ class Actor(DirectObject, NodePath):
 
     #snake_case alias:
     control_joint = controlJoint
-    set_lodanimation = setLODAnimation
+    set_lod_animation = setLODAnimation
     get_anim_control_dict = getAnimControlDict
     get_actor_info = getActorInfo
-    clear_lodanimation = clearLODAnimation
+    clear_lod_animation = clearLODAnimation
     reset_lod = resetLOD
     fix_bounds = fixBounds
     get_anim_filename = getAnimFilename
@@ -2574,7 +2574,7 @@ class Actor(DirectObject, NodePath):
     load_anims = loadAnims
     set_subparts_complete = setSubpartsComplete
     draw_in_front = drawInFront
-    get_lodnode = getLODNode
+    get_lod_node = getLODNode
     sort_key = sortKey
     hide_part = hidePart
     get_joint_transform_state = getJointTransformState
@@ -2596,10 +2596,10 @@ class Actor(DirectObject, NodePath):
     remove_part = removePart
     use_lod = useLOD
     get_anim_blends = getAnimBlends
-    get_lodindex = getLODIndex
+    get_lod_index = getLODIndex
     get_num_frames = getNumFrames
     post_flatten = postFlatten
-    get_lodnames = getLODNames
+    get_lod_names = getLODNames
     list_joints = listJoints
     make_subpart = makeSubpart
     get_anim_control = getAnimControl
@@ -2631,7 +2631,7 @@ class Actor(DirectObject, NodePath):
     remove_node = removeNode
     wait_pending = waitPending
     expose_joint = exposeJoint
-    set_lodnode = setLODNode
+    set_lod_node = setLODNode
     get_frame_rate = getFrameRate
     get_current_anim = getCurrentAnim
     get_part_names = getPartNames
