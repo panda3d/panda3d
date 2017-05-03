@@ -2533,6 +2533,7 @@ def SetupBuildEnvironment(compiler):
     # Setting it to UTF-8 is necessary for Python 3 modules to import
     # correctly.
     os.environ["LC_ALL"] = "en_US.UTF-8"
+    os.environ["LANGUAGE"] = "en"
 
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
