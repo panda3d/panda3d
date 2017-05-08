@@ -271,6 +271,8 @@ class build_apps(distutils.core.Command):
                     distutils.dir_util.mkpath(dst_dir)
 
                 ext = os.path.splitext(src)[1]
+                if not ext:
+                    ext = os.path.basename(src)
                 dst_root = os.path.splitext(dst)[0]
 
                 if ext in self.build_scripts:
