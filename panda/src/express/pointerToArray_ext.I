@@ -12,6 +12,64 @@
  */
 
 /**
+ * This is a helper function to set most attributes of a Py_buffer in a manner
+ * that accommodates square matrices (in accordance with PEP 3118). It is tested
+ * for use with NumPy. The resulting array will be of shape
+ * (num_matrices, size, size) where size is the number of matrix rows (=columns)
+ */
+INLINE void set_matrix_view(Py_buffer &view, int flags, int length, int size, bool double_prec, bool read_only) {
+  int item_size, mat_size;
+  const char *format;
+
+  if (double_prec) {
+    item_size = sizeof(double);
+    format = get_format_code(double);
+  } else {
+    item_size = sizeof(float);
+    format = get_format_code(float);
+  }
+
+  if (size == 3 && !double_prec) {
+    mat_size = sizeof(LMatrix3f);
+  } else if (size == 3 && double_prec) {
+    mat_size = sizeof(LMatrix3d);
+  } else if (size == 4 && !double_prec) {
+    mat_size = sizeof(UnalignedLMatrix4f);
+  } else if (size == 4 && double_prec) {
+    mat_size = sizeof(UnalignedLMatrix4d);
+  }
+
+  view.len = length * mat_size;
+  view.readonly = (read_only ? 1 : 0);
+  view.itemsize = item_size;
+  view.format = NULL;
+  if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
+    view.format = (char*) format;
+  }
+  view.ndim = 3;
+  view.shape = NULL;
+  if ((flags & PyBUF_ND) == PyBUF_ND) {
+    // This leaks, which sucks, but __releasebuffer__ doesn't give us the same
+    // pointer, so we would need to store it elsewhere if we wanted to delete
+    // it there.  Eh, it's just an int, who cares.
+    Py_ssize_t* shape = new Py_ssize_t[3];
+    shape[0] = length;
+    shape[1] = size;
+    shape[2] = size;
+    view.shape = shape;
+  }
+  view.strides = NULL;
+  if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
+    Py_ssize_t* strides = new Py_ssize_t[3];
+    strides[0] = mat_size;
+    strides[1] = item_size * size;
+    strides[2] = item_size;
+    view.strides = strides;
+  }
+  view.suboffsets = NULL;
+}
+
+/**
  * This special constructor accepts a Python list of elements, or a Python
  * string (or a bytes object, in Python 3), or any object that supports the
  * Python buffer protocol.
@@ -227,6 +285,110 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 }
 
 /**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python memoryview object.
+ */
+template<>
+INLINE int Extension<PointerToArray<LMatrix3f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) {
+#if PY_VERSION_HEX >= 0x02060000
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 3, false, false);
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python memoryview object.
+ */
+template<>
+INLINE int Extension<PointerToArray<LMatrix3d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) {
+#if PY_VERSION_HEX >= 0x02060000
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 3, true, false);
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python memoryview object.
+ */
+template<>
+INLINE int Extension<PointerToArray<UnalignedLMatrix4f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) {
+#if PY_VERSION_HEX >= 0x02060000
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 4, false, false);
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python memoryview object.
+ */
+template<>
+INLINE int Extension<PointerToArray<UnalignedLMatrix4d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) {
+#if PY_VERSION_HEX >= 0x02060000
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 4, true, false);
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+/**
  * Releases the buffer allocated by __getbuffer__.
  */
 template<class Element>
@@ -287,6 +449,114 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
     view->strides = &(view->itemsize);
   }
   view->suboffsets = NULL;
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+template<>
+INLINE int Extension<ConstPointerToArray<LMatrix3f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
+#if PY_VERSION_HEX >= 0x02060000
+  if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
+    PyErr_SetString(PyExc_BufferError,
+                    "Object is not writable.");
+    return -1;
+  }
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 3, false, true);
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+template<>
+INLINE int Extension<ConstPointerToArray<LMatrix3d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
+#if PY_VERSION_HEX >= 0x02060000
+  if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
+    PyErr_SetString(PyExc_BufferError,
+                    "Object is not writable.");
+    return -1;
+  }
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 3, true, true);
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+template<>
+INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
+#if PY_VERSION_HEX >= 0x02060000
+  if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
+    PyErr_SetString(PyExc_BufferError,
+                    "Object is not writable.");
+    return -1;
+  }
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 4, false, true);
+
+  // Store a reference to ourselves on the Py_buffer object as a reminder that
+  // we have increased our refcount.
+  this->_this->ref();
+  view->internal = (void*) this->_this;
+
+  return 0;
+#else
+  return -1;
+#endif
+}
+
+template<>
+INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
+#if PY_VERSION_HEX >= 0x02060000
+  if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
+    PyErr_SetString(PyExc_BufferError,
+                    "Object is not writable.");
+    return -1;
+  }
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) this->_this->p();
+  set_matrix_view(*view, flags, this->_this->size(), 4, true, true);
 
   // Store a reference to ourselves on the Py_buffer object as a reminder that
   // we have increased our refcount.
