@@ -200,7 +200,7 @@ private:
                             const unsigned char *from, int from_stride,
                             int num_records);
 
-  typedef pmap<const VertexTransform *, int> TransformMap;
+  typedef pmap<const VertexTransform *, size_t> TransformMap;
   INLINE static int
   add_transform(TransformTable *table, const VertexTransform *transform,
                 TransformMap &already_added);
