@@ -75,14 +75,14 @@ PUBLISHED:
   MAKE_SEQ(get_v_knots, get_num_v_knots, get_v_knot);
   INLINE EggVertex *get_cv(int ui, int vi) const;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const OVERRIDE;
 
 public:
   Curves _curves_on_surface;
   Trims _trims;
 
 protected:
-  virtual void r_apply_texmats(EggTextureCollection &textures);
+  virtual void r_apply_texmats(EggTextureCollection &textures) OVERRIDE;
 
 private:
   typedef vector_double Knots;
@@ -101,10 +101,13 @@ public:
     register_type(_type_handle, "EggNurbsSurface",
                   EggSurface::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const OVERRIDE {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() OVERRIDE {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;
