@@ -48,7 +48,7 @@ size_t PyLongOrInt_AsSize_t(PyObject *vv) {
   }
 
   if (!PyLong_Check(vv)) {
-    PyErr_BadInternalCall();
+    Dtool_Raise_TypeError("a long or int was expected");
     return (size_t)-1;
   }
 
@@ -950,7 +950,7 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
     if (kwds != NULL && ((PyDictObject *)kwds)->ma_used == 1 &&
         PyDict_Next(kwds, &ppos, &key, result)) {
       // We got the item, we just need to make sure that it had the right key.
-#if PY_VERSION_HEX >= 0x03050000
+#if PY_VERSION_HEX >= 0x03060000
       return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
 #elif PY_MAJOR_VERSION >= 3
       return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
@@ -999,7 +999,7 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
       }
 
       // We got the item, we just need to make sure that it had the right key.
-#if PY_VERSION_HEX >= 0x03050000
+#if PY_VERSION_HEX >= 0x03060000
       return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
 #elif PY_MAJOR_VERSION >= 3
       return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
