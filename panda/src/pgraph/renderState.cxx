@@ -947,8 +947,6 @@ garbage_collect() {
     return num_attribs;
   }
 
-  bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
-
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
@@ -961,10 +959,12 @@ garbage_collect() {
     return num_attribs;
   }
 
+  bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
+
   size_t si = _garbage_index;
 
   num_this_pass = min(num_this_pass, size);
-  size_t stop_at_element = (si + num_this_pass) % (size - 1);
+  size_t stop_at_element = (si + num_this_pass) & (size - 1);
 
   do {
     if (_states->has_element(si)) {

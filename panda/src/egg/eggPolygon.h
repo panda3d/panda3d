@@ -29,7 +29,7 @@ PUBLISHED:
 
   virtual EggPolygon *make_copy() const OVERRIDE;
 
-  virtual bool cleanup();
+  virtual bool cleanup() OVERRIDE;
 
   bool calculate_normal(LNormald &result, CoordinateSystem cs = CS_default) const;
   bool is_planar() const;
@@ -39,7 +39,7 @@ PUBLISHED:
   INLINE bool triangulate_into(EggGroupNode *container, bool convex_also) const;
   PT(EggPolygon) triangulate_in_place(bool convex_also);
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const OVERRIDE;
 
 private:
   bool decomp_concave(EggGroupNode *container, int asum, int x, int y) const;
@@ -55,10 +55,13 @@ public:
     register_type(_type_handle, "EggPolygon",
                   EggPrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const OVERRIDE {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() OVERRIDE {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

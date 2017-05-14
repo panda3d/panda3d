@@ -31,7 +31,7 @@ PUBLISHED:
 
   virtual EggLine *make_copy() const OVERRIDE;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const OVERRIDE;
 
   INLINE bool has_thick() const;
   INLINE double get_thick() const;
@@ -39,7 +39,7 @@ PUBLISHED:
   INLINE void clear_thick();
 
 protected:
-  virtual int get_num_lead_vertices() const;
+  virtual int get_num_lead_vertices() const OVERRIDE;
 
 private:
   double _thick;
@@ -54,10 +54,13 @@ public:
     register_type(_type_handle, "EggLine",
                   EggCompositePrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const OVERRIDE {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() OVERRIDE {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;
