@@ -869,8 +869,14 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
 
       if (_args_type == InterfaceMaker::AT_varargs) {
-        // Of course methods named "make" can still take kwargs.
-        _args_type = InterfaceMaker::AT_keyword_args;
+        // Of course methods named "make" can still take kwargs, if they are
+        // named.
+        for (int i = first_param; i < _parameters.size(); ++i) {
+          if (_parameters[i]._has_name) {
+            _args_type = InterfaceMaker::AT_keyword_args;
+            break;
+          }
+        }
       }
 
     } else if (fname == "operator /") {
@@ -898,8 +904,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     } else {
       if (_args_type == InterfaceMaker::AT_varargs) {
         // Every other method can take keyword arguments, if they take more
-        // than one argument.
-        _args_type |= InterfaceMaker::AT_keyword_args;
+        // than one argument, and the arguments are named.
+        for (int i = first_param; i < _parameters.size(); ++i) {
+          if (_parameters[i]._has_name) {
+            _args_type |= InterfaceMaker::AT_keyword_args;
+            break;
+          }
+        }
       }
     }
     break;
@@ -941,8 +952,14 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       _flags |= F_coerce_constructor;
     }
 
-    // Constructors always take varargs and keyword args.
-    _args_type = InterfaceMaker::AT_keyword_args;
+    // Constructors always take varargs, and possibly keyword args.
+    _args_type = InterfaceMaker::AT_varargs;
+    for (int i = first_param; i < _parameters.size(); ++i) {
+      if (_parameters[i]._has_name) {
+        _args_type = InterfaceMaker::AT_keyword_args;
+        break;
+      }
+    }
     break;
 
   default:

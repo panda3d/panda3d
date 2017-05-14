@@ -2346,6 +2346,10 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     itype._atomic_token = AT_void;
     break;
 
+  case CPPSimpleType::T_nullptr:
+    itype._atomic_token = AT_null;
+    break;
+
   default:
     nout << "Type \"" << *cpptype << "\" has invalid CPPSimpleType: "
          << (int)cpptype->_type << "\n";
