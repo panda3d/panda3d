@@ -424,6 +424,7 @@ public:
   static void create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
   PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=NULL);
+  PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
   PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
 
 #ifdef DO_PSTATS

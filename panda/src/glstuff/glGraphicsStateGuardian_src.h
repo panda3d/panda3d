@@ -567,7 +567,7 @@ protected:
   void update_shader_vertex_format(const GeomVertexFormat *format);
 #endif
 
-  void apply_white_texture();
+  void apply_white_texture(GLuint unit);
   GLuint get_white_texture();
 
 #ifndef NDEBUG

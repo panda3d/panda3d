@@ -2617,8 +2617,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
         textures[i] = _glgsg->get_white_texture();
         samplers[i] = 0;
       } else {
-        _glgsg->set_active_texture_stage(i);
-        _glgsg->apply_white_texture();
+        _glgsg->apply_white_texture(i);
       }
       continue;
     }

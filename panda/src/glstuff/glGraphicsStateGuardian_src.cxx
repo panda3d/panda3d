@@ -10906,25 +10906,20 @@ update_standard_texture_bindings() {
 
 /**
  * Applies a white dummy texture.  This is useful to bind to a texture slot
- * when a texture is missing.
+ * when a texture is missing.  Also binds the default sampler to the unit.
  */
 void CLP(GraphicsStateGuardian)::
-apply_white_texture() {
-  if (_white_texture != 0) {
-    glBindTexture(GL_TEXTURE_2D, _white_texture);
-    return;
+apply_white_texture(GLuint unit) {
+  set_active_texture_stage(unit);
+  glBindTexture(GL_TEXTURE_2D, get_white_texture());
+
+  // Also apply the default sampler, if there's a chance we'd applied anything
+  // else.
+#ifndef OPENGLES_1
+  if (_supports_sampler_objects) {
+    _glBindSampler(unit, 0);
   }
-
-  glGenTextures(1, &_white_texture);
-  glBindTexture(GL_TEXTURE_2D, _white_texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, data);
+#endif
 }
 
 /**
@@ -10934,7 +10929,16 @@ apply_white_texture() {
 GLuint CLP(GraphicsStateGuardian)::
 get_white_texture() {
   if (_white_texture == 0) {
-    apply_white_texture();
+    glGenTextures(1, &_white_texture);
+    glBindTexture(GL_TEXTURE_2D, _white_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, data);
   }
   return _white_texture;
 }

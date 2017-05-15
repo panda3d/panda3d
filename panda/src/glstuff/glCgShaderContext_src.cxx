@@ -1078,8 +1078,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     if (tex.is_null()) {
       // Apply a white texture in order to make it easier to use a shader that
       // takes a texture on a model that doesn't have a texture applied.
-      _glgsg->set_active_texture_stage(i);
-      _glgsg->apply_white_texture();
+      _glgsg->apply_white_texture(i);
       continue;
     }
 

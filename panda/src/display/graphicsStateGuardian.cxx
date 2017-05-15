@@ -1798,6 +1798,13 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
           }
         }
       }
+
+      // There is no such light assigned.  Bind a dummy shadow map.
+      PT(Texture) tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
+      if (tex != nullptr) {
+        sampler = tex->get_default_sampler();
+      }
+      return tex;
     }
     break;
 
@@ -3152,9 +3159,14 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
            node->is_of_type(Spotlight::get_class_type()), NULL);
 
   LightLensNode *light = (LightLensNode *)node;
-  if (light == NULL || !light->_shadow_caster) {
-    // TODO: return dummy shadow map (all white).
-    return NULL;
+  if (light == nullptr || !light->_shadow_caster) {
+    // This light does not have a shadow caster.  Return a dummy shadow map
+    // that is filled with a depth value of 1.
+    if (node->is_of_type(PointLight::get_class_type())) {
+      return get_dummy_shadow_map(Texture::TT_cube_map);
+    } else {
+      return get_dummy_shadow_map(Texture::TT_2d_texture);
+    }
   }
 
   // See if we already have a buffer.  If not, create one.
@@ -3170,6 +3182,42 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
   } else {
     // There's already a buffer - use that.
     return light->_sbuffers[this]->get_texture();
+  }
+}
+
+/**
+ * Returns a dummy shadow map that can be used for a light of the given type
+ * that does not cast shadows.
+ */
+PT(Texture) GraphicsStateGuardian::
+get_dummy_shadow_map(Texture::TextureType texture_type) const {
+  if (texture_type != Texture::TT_cube_map) {
+    static PT(Texture) dummy_2d;
+    if (dummy_2d == nullptr) {
+      dummy_2d = new Texture("dummy-shadow-2d");
+      dummy_2d->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_depth_component);
+      dummy_2d->set_clear_color(1);
+      if (get_supports_shadow_filter()) {
+        // If we have the ARB_shadow extension, enable shadow filtering.
+        dummy_2d->set_minfilter(SamplerState::FT_shadow);
+        dummy_2d->set_magfilter(SamplerState::FT_shadow);
+      } else {
+        dummy_2d->set_minfilter(SamplerState::FT_linear);
+        dummy_2d->set_magfilter(SamplerState::FT_linear);
+      }
+    }
+    return dummy_2d;
+  } else {
+    static PT(Texture) dummy_cube;
+    if (dummy_cube == nullptr) {
+      dummy_cube = new Texture("dummy-shadow-cube");
+      dummy_cube->setup_cube_map(1, Texture::T_unsigned_byte, Texture::F_depth_component);
+      dummy_cube->set_clear_color(1);
+      // Note: cube map shadow filtering doesn't seem to work in Cg.
+      dummy_cube->set_minfilter(SamplerState::FT_linear);
+      dummy_cube->set_magfilter(SamplerState::FT_linear);
+    }
+    return dummy_cube;
   }
 }
 
