@@ -864,7 +864,7 @@ if (COMPILER=="GCC"):
         if not PkgSkip("NVIDIACG") and not RUNTIME:
             SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         if not RUNTIME:
-            SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
+            SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h", "X11/XKBlib.h"))
 
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
@@ -7216,8 +7216,8 @@ def MakeInstallerFreeBSD():
             plist_txt += os.path.join(root, f)[21:] + "\n"
 
     if not RUNTIME:
-        plist_txt += "@exec /sbin/ldconfig -m /usr/local/lib\n"
-        plist_txt += "@unexec /sbin/ldconfig -R\n"
+        plist_txt += "@postexec /sbin/ldconfig -m /usr/local/lib\n"
+        plist_txt += "@postunexec /sbin/ldconfig -R\n"
 
         for remdir in ("lib/panda3d", "share/panda3d", "include/panda3d"):
             for root, dirs, files in os.walk("targetroot/usr/local/" + remdir, False):

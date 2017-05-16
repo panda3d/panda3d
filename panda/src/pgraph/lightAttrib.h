@@ -67,13 +67,15 @@ PUBLISHED:
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_all_off();
 
-  INLINE int get_num_on_lights() const;
-  INLINE NodePath get_on_light(int n) const;
+  INLINE size_t get_num_on_lights() const;
+  INLINE size_t get_num_non_ambient_lights() const;
+  INLINE NodePath get_on_light(size_t n) const;
   MAKE_SEQ(get_on_lights, get_num_on_lights, get_on_light);
   INLINE bool has_on_light(const NodePath &light) const;
+  INLINE bool has_any_on_light() const;
 
-  INLINE int get_num_off_lights() const;
-  INLINE NodePath get_off_light(int n) const;
+  INLINE size_t get_num_off_lights() const;
+  INLINE NodePath get_off_light(size_t n) const;
   MAKE_SEQ(get_off_lights, get_num_off_lights, get_off_light);
   INLINE bool has_off_light(const NodePath &light) const;
   INLINE bool has_all_off() const;
@@ -85,8 +87,11 @@ PUBLISHED:
   CPT(RenderAttrib) add_off_light(const NodePath &light) const;
   CPT(RenderAttrib) remove_off_light(const NodePath &light) const;
 
-  CPT(LightAttrib) filter_to_max(int max_lights) const;
   NodePath get_most_important_light() const;
+  LColor get_ambient_contribution() const;
+
+  MAKE_SEQ_PROPERTY(on_lights, get_num_on_lights, get_on_light);
+  MAKE_SEQ_PROPERTY(off_lights, get_num_off_lights, get_off_light);
 
 public:
   virtual void output(ostream &out) const;
@@ -100,7 +105,7 @@ protected:
   virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
-  INLINE void check_filtered() const;
+  INLINE void check_sorted() const;
   void sort_on_lights();
 
 private:
@@ -108,8 +113,11 @@ private:
   Lights _on_lights, _off_lights;
   bool _off_all_lights;
 
-  typedef pmap< int, CPT(LightAttrib) > Filtered;
-  Filtered _filtered;
+  // These are sorted in descending order of priority, with the ambient lights
+  // sorted last.
+  typedef pvector<NodePath> OrderedLights;
+  OrderedLights _sorted_on_lights;
+  size_t _num_non_ambient_lights;
 
   UpdateSeq _sort_seq;
 

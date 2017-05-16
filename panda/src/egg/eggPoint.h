@@ -40,9 +40,9 @@ PUBLISHED:
   INLINE void set_perspective(bool perspective);
   INLINE void clear_perspective();
 
-  virtual bool cleanup();
+  virtual bool cleanup() OVERRIDE;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const OVERRIDE;
 
 private:
   enum Flags {
@@ -64,10 +64,13 @@ public:
     register_type(_type_handle, "EggPoint",
                   EggPrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const OVERRIDE {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() OVERRIDE {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

@@ -60,6 +60,23 @@ DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
 }
 
 /**
+ * Checks that the tuple is empty.
+ */
+ALWAYS_INLINE bool
+Dtool_CheckNoArgs(PyObject *args) {
+  return PyTuple_GET_SIZE(args) == 0;
+}
+
+/**
+ * Checks that the tuple is empty, and that the dict is empty or NULL.
+ */
+ALWAYS_INLINE bool
+Dtool_CheckNoArgs(PyObject *args, PyObject *kwds) {
+  return PyTuple_GET_SIZE(args) == 0 &&
+    (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0);
+}
+
+/**
  * The following functions wrap an arbitrary C++ value into a PyObject.
  */
 ALWAYS_INLINE PyObject *Dtool_WrapValue(int value) {
@@ -194,6 +211,11 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(char value) {
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value) {
   return PyUnicode_FromWideChar(&value, 1);
+}
+
+ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t) {
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value) {

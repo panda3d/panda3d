@@ -30,10 +30,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
-
 PUBLISHED:
   BulletTriangleMesh();
-  INLINE ~BulletTriangleMesh();
+  ~BulletTriangleMesh() DEFAULT_DTOR;
 
   void add_triangle(const LPoint3 &p0,
                     const LPoint3 &p1,
@@ -59,10 +58,15 @@ PUBLISHED:
   MAKE_PROPERTY(welding_distance, get_welding_distance, set_welding_distance);
 
 public:
-  INLINE btTriangleMesh *ptr() const;
+  INLINE btStridingMeshInterface *ptr() const;
 
 private:
-  btTriangleMesh *_mesh;
+  unsigned int find_or_add_vertex(const LVecBase3 &p);
+
+  btTriangleIndexVertexArray _mesh;
+  btAlignedObjectArray<btVector3> _vertices;
+  btAlignedObjectArray<unsigned int> _indices;
+  PN_stdfloat _welding_distance;
 
 public:
   static void register_with_read_factory();

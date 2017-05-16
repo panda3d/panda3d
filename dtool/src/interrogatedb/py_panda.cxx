@@ -31,6 +31,49 @@ static RuntimeTypeMap runtime_type_map;
 static RuntimeTypeSet runtime_type_set;
 static NamedTypeMap named_type_map;
 
+#if PY_MAJOR_VERSION < 3
+/**
+ * Given a long or int, returns a size_t, or raises an OverflowError if it is
+ * out of range.
+ */
+size_t PyLongOrInt_AsSize_t(PyObject *vv) {
+  if (PyInt_Check(vv)) {
+    long value = PyInt_AS_LONG(vv);
+    if (value < 0) {
+      PyErr_SetString(PyExc_OverflowError,
+                      "can't convert negative value to size_t");
+      return (size_t)-1;
+    }
+    return (size_t)value;
+  }
+
+  if (!PyLong_Check(vv)) {
+    Dtool_Raise_TypeError("a long or int was expected");
+    return (size_t)-1;
+  }
+
+  size_t bytes;
+  int one = 1;
+  int res = _PyLong_AsByteArray((PyLongObject *)vv, (unsigned char *)&bytes,
+                                SIZEOF_SIZE_T, (int)*(unsigned char*)&one, 0);
+
+  if (res < 0) {
+    return (size_t)res;
+  } else {
+    return bytes;
+  }
+}
+#endif
+
+#if PY_VERSION_HEX < 0x03060000
+INLINE static PyObject *_PyObject_CallNoArg(PyObject *func) {
+  PyObject *args = PyTuple_New(0);
+  PyObject *result = PyObject_Call(func, args, NULL);
+  Py_DECREF(args);
+  return result;
+}
+#endif
+
 /**
  * Given a valid (non-NULL) PyObject, does a simple check to see if it might
  * be an instance of a Panda type.  It does this using a signature that is
@@ -767,12 +810,16 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
   if (func == NULL) {
     PyErr_Clear();
   } else {
+#if PY_VERSION_HEX >= 0x03060000
+    PyObject *res = _PyObject_FastCall(func, &v2, 1);
+#else
     PyObject *res = NULL;
     PyObject *args = PyTuple_Pack(1, v2);
     if (args != NULL) {
       res = PyObject_Call(func, args, NULL);
       Py_DECREF(args);
     }
+#endif
     Py_DECREF(func);
     PyErr_Clear(); // just in case the function threw an error
     // only use if the function returns an INT... hmm
@@ -844,7 +891,13 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
  * make_copy() method.
  */
 PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
-  return PyObject_CallMethod(self, (char *)"make_copy", (char *)"()");
+  PyObject *callable = PyObject_GetAttrString(self, "make_copy");
+  if (callable == NULL) {
+    return NULL;
+  }
+  PyObject *result = _PyObject_CallNoArg(callable);
+  Py_DECREF(callable);
+  return result;
 }
 
 /**
@@ -852,13 +905,15 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
  * copy constructor.
  */
 PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
-  PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
-  }
+  PyObject *callable = (PyObject *)Py_TYPE(self);
 
-  PyObject *result = PyObject_CallFunction(this_class, (char *)"(O)", self);
-  Py_DECREF(this_class);
+#if PY_VERSION_HEX >= 0x03060000
+  PyObject *result = _PyObject_FastCall(callable, &self, 1);
+#else
+  PyObject *args = PyTuple_Pack(1, self);
+  PyObject *result = PyObject_Call(callable, args, NULL);
+  Py_DECREF(args);
+#endif
   return result;
 }
 
@@ -868,7 +923,109 @@ PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
  * __copy__().
  */
 PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
-  return PyObject_CallMethod(self, (char *)"__copy__", (char *)"()");
+  PyObject *callable = PyObject_GetAttrString(self, "__copy__");
+  if (callable == NULL) {
+    return NULL;
+  }
+  PyObject *result = _PyObject_CallNoArg(callable);
+  Py_DECREF(callable);
+  return result;
+}
+
+/**
+ * A more efficient version of PyArg_ParseTupleAndKeywords for the special
+ * case where there is only a single PyObject argument.
+ */
+bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
+                      const char *keyword) {
+
+  if (PyTuple_GET_SIZE(args) == 1) {
+    if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {
+      *result = PyTuple_GET_ITEM(args, 0);
+      return true;
+    }
+  } else if (PyTuple_GET_SIZE(args) == 0) {
+    PyObject *key;
+    Py_ssize_t ppos = 0;
+    if (kwds != NULL && ((PyDictObject *)kwds)->ma_used == 1 &&
+        PyDict_Next(kwds, &ppos, &key, result)) {
+      // We got the item, we just need to make sure that it had the right key.
+#if PY_VERSION_HEX >= 0x03060000
+      return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
+#elif PY_MAJOR_VERSION >= 3
+      return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
+#else
+      return PyString_CheckExact(key) && strcmp(PyString_AS_STRING(key), keyword) == 0;
+#endif
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Variant of Dtool_ExtractArg that does not accept a keyword argument.
+ */
+bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds) {
+  if (PyTuple_GET_SIZE(args) == 1 &&
+      (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0)) {
+    *result = PyTuple_GET_ITEM(args, 0);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * A more efficient version of PyArg_ParseTupleAndKeywords for the special
+ * case where there is only a single optional PyObject argument.
+ *
+ * Returns true if valid (including if there were 0 items), false if there was
+ * an error, such as an invalid number of parameters.
+ */
+bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
+                              const char *keyword) {
+
+  if (PyTuple_GET_SIZE(args) == 1) {
+    if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {
+      *result = PyTuple_GET_ITEM(args, 0);
+      return true;
+    }
+  } else if (PyTuple_GET_SIZE(args) == 0) {
+    if (kwds != NULL && ((PyDictObject *)kwds)->ma_used == 1) {
+      PyObject *key;
+      Py_ssize_t ppos = 0;
+      if (!PyDict_Next(kwds, &ppos, &key, result)) {
+        return true;
+      }
+
+      // We got the item, we just need to make sure that it had the right key.
+#if PY_VERSION_HEX >= 0x03060000
+      return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
+#elif PY_MAJOR_VERSION >= 3
+      return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
+#else
+      return PyString_CheckExact(key) && strcmp(PyString_AS_STRING(key), keyword) == 0;
+#endif
+    } else {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Variant of Dtool_ExtractOptionalArg that does not accept a keyword argument.
+ */
+bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds) {
+  if (kwds != NULL && ((PyDictObject *)kwds)->ma_used != 0) {
+    return false;
+  }
+  if (PyTuple_GET_SIZE(args) == 1) {
+    *result = PyTuple_GET_ITEM(args, 0);
+    return true;
+  }
+  return (PyTuple_GET_SIZE(args) == 0);
 }
 
 /**

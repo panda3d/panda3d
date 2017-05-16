@@ -365,6 +365,27 @@ is_const_ref_to_enum(CPPType *type) {
 }
 
 /**
+ * Returns true if the indicated type is nullptr_t, possibly const or a
+ * typedef to it.
+ */
+bool TypeManager::
+is_nullptr(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_simple:
+    return type->as_simple_type()->_type == CPPSimpleType::T_nullptr;
+
+  case CPPDeclaration::ST_const:
+    return is_nullptr(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_nullptr(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
  * Returns true if the indicated type is something that a scripting language
  * can handle directly as a concrete, like an int or float, either const or
  * non-const.

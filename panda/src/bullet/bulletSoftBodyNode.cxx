@@ -197,7 +197,7 @@ transform_changed() {
       _soft->scale(new_scale);
     }
 
-    _sync = ts;
+    _sync = move(ts);
   }
 }
 

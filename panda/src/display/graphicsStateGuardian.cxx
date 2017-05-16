@@ -1092,23 +1092,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LightAttrib *target_light = (const LightAttrib *)
       _target_rs->get_attrib_def(LightAttrib::get_class_slot());
 
-    int num_on_lights = target_light->get_num_on_lights();
-    if (num_on_lights == 0) {
+    if (!target_light->has_any_on_light()) {
       // There are no lights at all.  This means, to follow the fixed-
       // function model, we pretend there is an all-white ambient light.
       t.set_row(3, LVecBase4(1, 1, 1, 1));
     } else {
-      for (int li = 0; li < num_on_lights; li++) {
-        NodePath light = target_light->get_on_light(li);
-        nassertr(!light.is_empty(), &LMatrix4::zeros_mat());
-        Light *light_obj = light.node()->as_light();
-        nassertr(light_obj != (Light *)NULL, &LMatrix4::zeros_mat());
-
-        if (light_obj->is_ambient_light()) {
-          cur_ambient_light += light_obj->get_color();
-        }
-      }
-      t.set_row(3, cur_ambient_light);
+      t.set_row(3, target_light->get_ambient_contribution());
     }
     return &t;
   }
@@ -1374,28 +1363,20 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LightAttrib *target_light;
     _target_rs->get_attrib_def(target_light);
 
-    // We want to ignore ambient lights.  To that effect, iterate through the
-    // list of lights.  In the future, we will improve this system, by also
-    // filtering down to the number of lights specified by the shader.
-    int i = 0;
-
-    int num_on_lights = target_light->get_num_on_lights();
-    for (int li = 0; li < num_on_lights; li++) {
-      NodePath light = target_light->get_on_light(li);
+    // We don't count ambient lights, which would be pretty silly to handle
+    // via this mechanism.
+    size_t num_lights = target_light->get_num_non_ambient_lights();
+    if (index >= 0 && (size_t)index < num_lights) {
+      NodePath light = target_light->get_on_light((size_t)index);
       nassertr(!light.is_empty(), &LMatrix4::ident_mat());
       Light *light_obj = light.node()->as_light();
-      nassertr(light_obj != (Light *)NULL, &LMatrix4::ident_mat());
+      nassertr(light_obj != nullptr, &LMatrix4::ident_mat());
 
-      if (!light_obj->is_ambient_light()) {
-        if (i++ == index) {
-          return fetch_specified_member(light, name, t);
-        }
-      }
-    }
+      return fetch_specified_member(light, name, t);
 
-    // Apply the default OpenGL lights otherwise.
-    // Special exception for light 0, which defaults to white.
-    if (index == 0) {
+    } else if (index == 0) {
+      // Apply the default OpenGL lights otherwise.
+      // Special exception for light 0, which defaults to white.
       string basename = name->get_basename();
       if (basename == "color" || basename == "diffuse") {
         t.set_row(3, _light_color_scale);
@@ -1776,27 +1757,27 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       const LightAttrib *target_light;
       _target_rs->get_attrib_def(target_light);
 
-      // We want to ignore ambient lights.  To that effect, iterate through
-      // the list of lights.  In the future, we will improve this system, by
-      // also filtering down to the number of lights specified by the shader.
-      int i = 0;
-
-      int num_on_lights = target_light->get_num_on_lights();
-      for (int li = 0; li < num_on_lights; li++) {
-        NodePath light = target_light->get_on_light(li);
-        nassertr(!light.is_empty(), NULL);
+      // We don't count ambient lights, which would be pretty silly to handle
+      // via this mechanism.
+      size_t num_lights = target_light->get_num_non_ambient_lights();
+      if (spec._stage >= 0 && (size_t)spec._stage < num_lights) {
+        NodePath light = target_light->get_on_light((size_t)spec._stage);
+        nassertr(!light.is_empty(), nullptr);
         Light *light_obj = light.node()->as_light();
-        nassertr(light_obj != (Light *)NULL, NULL);
+        nassertr(light_obj != nullptr, nullptr);
 
-        if (!light_obj->is_ambient_light()) {
-          if (i++ == spec._stage) {
-            PT(Texture) tex = get_shadow_map(light);
-            if (tex != (Texture *)NULL) {
-              sampler = tex->get_default_sampler();
-            }
-            return tex;
-          }
+        PT(Texture) tex = get_shadow_map(light);
+        if (tex != nullptr) {
+          sampler = tex->get_default_sampler();
         }
+        return tex;
+      } else {
+        // There is no such light assigned.  Bind a dummy shadow map.
+        PT(Texture) tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
+        if (tex != nullptr) {
+          sampler = tex->get_default_sampler();
+        }
+        return tex;
       }
     }
     break;
@@ -2638,7 +2619,7 @@ do_issue_light() {
   int i;
 
   int num_enabled = 0;
-  int num_on_lights = 0;
+  bool any_on_lights = false;
 
   const LightAttrib *target_light;
   _target_rs->get_attrib_def(target_light);
@@ -2647,18 +2628,16 @@ do_issue_light() {
     display_cat.spam()
       << "do_issue_light: " << target_light << "\n";
   }
-  if (target_light != (LightAttrib *)NULL) {
-    CPT(LightAttrib) new_light = target_light->filter_to_max(_max_lights);
-    if (display_cat.is_spam()) {
-      new_light->write(display_cat.spam(false), 2);
-    }
-
-    num_on_lights = new_light->get_num_on_lights();
-    for (int li = 0; li < num_on_lights; li++) {
-      NodePath light = new_light->get_on_light(li);
+  if (target_light != nullptr) {
+    // LightAttrib guarantees that the on lights are sorted, and that
+    // non-ambient lights come before ambient lights.
+    any_on_lights = target_light->has_any_on_light();
+    size_t filtered_lights = min((size_t)_max_lights, target_light->get_num_non_ambient_lights());
+    for (size_t li = 0; li < filtered_lights; ++li) {
+      NodePath light = target_light->get_on_light(li);
       nassertv(!light.is_empty());
       Light *light_obj = light.node()->as_light();
-      nassertv(light_obj != (Light *)NULL);
+      nassertv(light_obj != nullptr);
 
       // Lighting should be enabled before we apply any lights.
       if (!_lighting_enabled) {
@@ -2666,23 +2645,16 @@ do_issue_light() {
         _lighting_enabled = true;
       }
 
-      if (light_obj->is_ambient_light()) {
-        // Ambient lights don't require specific light ids; simply add in the
-        // ambient contribution to the current total
-        cur_ambient_light += light_obj->get_color();
-
-      } else {
-        const LColor &color = light_obj->get_color();
-        // Don't bother binding the light if it has no color to contribute.
-        if (color[0] != 0.0 || color[1] != 0.0 || color[2] != 0.0) {
-          enable_light(num_enabled, true);
-          if (num_enabled == 0) {
-            begin_bind_lights();
-          }
-
-          light_obj->bind(this, light, num_enabled);
-          num_enabled++;
+      const LColor &color = light_obj->get_color();
+      // Don't bother binding the light if it has no color to contribute.
+      if (color[0] != 0.0 || color[1] != 0.0 || color[2] != 0.0) {
+        enable_light(num_enabled, true);
+        if (num_enabled == 0) {
+          begin_bind_lights();
         }
+
+        light_obj->bind(this, light, num_enabled);
+        num_enabled++;
       }
     }
   }
@@ -2693,7 +2665,7 @@ do_issue_light() {
   _num_lights_enabled = num_enabled;
 
   // If no lights were set, disable lighting
-  if (num_on_lights == 0) {
+  if (!any_on_lights) {
     if (_color_scale_via_lighting && (_has_material_force_color || _light_color_scale != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f))) {
       // Unless we need lighting anyway to apply a color or color scale.
       if (!_lighting_enabled) {
@@ -2710,7 +2682,7 @@ do_issue_light() {
     }
 
   } else {
-    set_ambient_light(cur_ambient_light);
+    set_ambient_light(target_light->get_ambient_contribution());
   }
 
   if (num_enabled != 0) {
@@ -3152,9 +3124,14 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
            node->is_of_type(Spotlight::get_class_type()), NULL);
 
   LightLensNode *light = (LightLensNode *)node;
-  if (light == NULL || !light->_shadow_caster) {
-    // TODO: return dummy shadow map (all white).
-    return NULL;
+  if (light == nullptr || !light->_shadow_caster) {
+    // This light does not have a shadow caster.  Return a dummy shadow map
+    // that is filled with a depth value of 1.
+    if (node->is_of_type(PointLight::get_class_type())) {
+      return get_dummy_shadow_map(Texture::TT_cube_map);
+    } else {
+      return get_dummy_shadow_map(Texture::TT_2d_texture);
+    }
   }
 
   // See if we already have a buffer.  If not, create one.
@@ -3170,6 +3147,42 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
   } else {
     // There's already a buffer - use that.
     return light->_sbuffers[this]->get_texture();
+  }
+}
+
+/**
+ * Returns a dummy shadow map that can be used for a light of the given type
+ * that does not cast shadows.
+ */
+PT(Texture) GraphicsStateGuardian::
+get_dummy_shadow_map(Texture::TextureType texture_type) const {
+  if (texture_type != Texture::TT_cube_map) {
+    static PT(Texture) dummy_2d;
+    if (dummy_2d == nullptr) {
+      dummy_2d = new Texture("dummy-shadow-2d");
+      dummy_2d->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_depth_component);
+      dummy_2d->set_clear_color(1);
+      if (get_supports_shadow_filter()) {
+        // If we have the ARB_shadow extension, enable shadow filtering.
+        dummy_2d->set_minfilter(SamplerState::FT_shadow);
+        dummy_2d->set_magfilter(SamplerState::FT_shadow);
+      } else {
+        dummy_2d->set_minfilter(SamplerState::FT_linear);
+        dummy_2d->set_magfilter(SamplerState::FT_linear);
+      }
+    }
+    return dummy_2d;
+  } else {
+    static PT(Texture) dummy_cube;
+    if (dummy_cube == nullptr) {
+      dummy_cube = new Texture("dummy-shadow-cube");
+      dummy_cube->setup_cube_map(1, Texture::T_unsigned_byte, Texture::F_depth_component);
+      dummy_cube->set_clear_color(1);
+      // Note: cube map shadow filtering doesn't seem to work in Cg.
+      dummy_cube->set_minfilter(SamplerState::FT_linear);
+      dummy_cube->set_magfilter(SamplerState::FT_linear);
+    }
+    return dummy_cube;
   }
 }
 

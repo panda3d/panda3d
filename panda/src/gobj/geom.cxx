@@ -1257,15 +1257,15 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
                        InternalName::get_vertex(),
                        cdata, current_thread);
 
-  nassertv(!pmin.is_nan());
-  nassertv(!pmax.is_nan());
-
   BoundingVolume::BoundsType btype = cdata->_bounds_type;
   if (btype == BoundingVolume::BT_default) {
     btype = bounds_type;
   }
 
   if (found_any) {
+    nassertv(!pmin.is_nan());
+    nassertv(!pmax.is_nan());
+
     // Then we put the bounding volume around both of those points.
     PN_stdfloat avg_box_area;
     switch (btype) {

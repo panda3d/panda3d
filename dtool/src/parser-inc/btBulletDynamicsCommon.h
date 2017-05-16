@@ -76,6 +76,7 @@ class btStaticPlaneShape;
 class btStridingMeshInterface;
 class btTransform;
 class btTranslationalLimitMotor;
+class btTriangleIndexVertexArray;
 class btTriangleMesh;
 class btTypedConstraint;
 class btTypedObject;
