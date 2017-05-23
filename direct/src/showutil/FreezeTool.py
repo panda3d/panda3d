@@ -713,7 +713,7 @@ class Freezer:
         # special path mangling.)
         for moduleName, module in list(sys.modules.items()):
             if module and hasattr(module, '__path__'):
-                path = getattr(module, '__path__')
+                path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
 
