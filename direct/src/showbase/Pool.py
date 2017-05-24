@@ -1,9 +1,4 @@
-"""Undocumented Module"""
-
-__all__ = ['Pool']
-
 """
-
 Pool is a collection of python objects that you can checkin and
 checkout. This is useful for a cache of objects that are expensive to load
 and can be reused over and over, like splashes on cannonballs, or
@@ -12,11 +7,15 @@ or be the same type.
 
 Internally the pool is implemented with 2 lists, free items and used items.
 
-p = Pool([1, 2, 3, 4, 5])
-x = p.checkout()
-p.checkin(x)
+Example::
+
+   p = Pool([1, 2, 3, 4, 5])
+   x = p.checkout()
+   p.checkin(x)
 
 """
+
+__all__ = ['Pool']
 
 
 from direct.directnotify import DirectNotifyGlobal
@@ -116,5 +115,3 @@ class Pool:
 
     def __repr__(self):
         return "free = %s\nused = %s" % (self.__free, self.__used)
-
-

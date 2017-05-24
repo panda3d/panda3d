@@ -13,11 +13,11 @@ Python code into a standalone executable.  It also uses Python's
 built-in modulefinder module, which it uses to find all of the modules
 imported directly or indirectly by the original startfile.py.
 
-Usage:
+Usage::
 
   pfreeze.py [opts] [startfile]
 
-Options:
+Options::
 
   -o output
      Specifies the name of the resulting executable file to produce.
@@ -67,88 +67,95 @@ def usage(code, msg = ''):
     sys.stderr.write(str(msg) + '\n')
     sys.exit(code)
 
-# We're not protecting the next part under a __name__ == __main__
-# check, just so we can import this file directly in ppython.cxx.
 
-freezer = FreezeTool.Freezer()
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
 
-basename = None
-addStartupModules = False
+    freezer = FreezeTool.Freezer()
 
-try:
-    opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:P:slkh')
-except getopt.error as msg:
-    usage(1, msg)
+    basename = None
+    addStartupModules = False
 
-for opt, arg in opts:
-    if opt == '-o':
-        basename = arg
-    elif opt == '-i':
-        for module in arg.split(','):
-            freezer.addModule(module)
-    elif opt == '-x':
-        for module in arg.split(','):
-            freezer.excludeModule(module)
-    elif opt == '-p':
-        for module in arg.split(','):
-            freezer.handleCustomPath(module)
-    elif opt == '-P':
-        sys.path.append(arg)
-    elif opt == '-s':
-        addStartupModules = True
-    elif opt == '-l':
-        freezer.linkExtensionModules = True
-    elif opt == '-k':
-        freezer.keepTemporaryFiles = True
-    elif opt == '-h':
-        usage(0)
+    try:
+        opts, args = getopt.getopt(args, 'o:i:x:p:P:slkh')
+    except getopt.error as msg:
+        usage(1, msg)
+
+    for opt, arg in opts:
+        if opt == '-o':
+            basename = arg
+        elif opt == '-i':
+            for module in arg.split(','):
+                freezer.addModule(module)
+        elif opt == '-x':
+            for module in arg.split(','):
+                freezer.excludeModule(module)
+        elif opt == '-p':
+            for module in arg.split(','):
+                freezer.handleCustomPath(module)
+        elif opt == '-P':
+            sys.path.append(arg)
+        elif opt == '-s':
+            addStartupModules = True
+        elif opt == '-l':
+            freezer.linkExtensionModules = True
+        elif opt == '-k':
+            freezer.keepTemporaryFiles = True
+        elif opt == '-h':
+            usage(0)
+        else:
+            print('illegal option: ' + flag)
+            sys.exit(1)
+
+    if not basename:
+        usage(1, 'You did not specify an output file.')
+
+    if len(args) > 1:
+        usage(1, 'Only one main file may be specified.')
+
+    outputType = 'exe'
+    bl = basename.lower()
+    if bl.endswith('.mf'):
+        outputType = 'mf'
+    elif bl.endswith('.c'):
+        outputType = 'c'
+    elif bl.endswith('.dll') or bl.endswith('.pyd') or bl.endswith('.so'):
+        basename = os.path.splitext(basename)[0]
+        outputType = 'dll'
+    elif bl.endswith('.exe'):
+        basename = os.path.splitext(basename)[0]
+
+    compileToExe = False
+    if args:
+        startfile = args[0]
+        startmod = startfile
+        if startfile.endswith('.py') or startfile.endswith('.pyw') or \
+        startfile.endswith('.pyc') or startfile.endswith('.pyo'):
+            startmod = os.path.splitext(startfile)[0]
+
+        if outputType == 'dll' or outputType == 'c':
+            freezer.addModule(startmod, filename = startfile)
+        else:
+            freezer.addModule('__main__', filename = startfile)
+            compileToExe = True
+            addStartupModules = True
+
+    elif outputType == 'exe':
+        # We must have a main module when making an executable.
+        usage(1, 'A main file needs to be specified when creating an executable.')
+
+    freezer.done(addStartupModules = addStartupModules)
+
+    if outputType == 'mf':
+        freezer.writeMultifile(basename)
+    elif outputType == 'c':
+        freezer.writeCode(basename)
     else:
-        print('illegal option: ' + flag)
-        sys.exit(1)
+        freezer.generateCode(basename, compileToExe = compileToExe)
 
-if not basename:
-    usage(1, 'You did not specify an output file.')
+    return 0
 
-if len(args) > 1:
-    usage(1, 'Only one main file may be specified.')
 
-outputType = 'exe'
-bl = basename.lower()
-if bl.endswith('.mf'):
-    outputType = 'mf'
-elif bl.endswith('.c'):
-    outputType = 'c'
-elif bl.endswith('.dll') or bl.endswith('.pyd') or bl.endswith('.so'):
-    basename = os.path.splitext(basename)[0]
-    outputType = 'dll'
-elif bl.endswith('.exe'):
-    basename = os.path.splitext(basename)[0]
-
-compileToExe = False
-if args:
-    startfile = args[0]
-    startmod = startfile
-    if startfile.endswith('.py') or startfile.endswith('.pyw') or \
-       startfile.endswith('.pyc') or startfile.endswith('.pyo'):
-        startmod = os.path.splitext(startfile)[0]
-
-    if outputType == 'dll' or outputType == 'c':
-        freezer.addModule(startmod, filename = startfile)
-    else:
-        freezer.addModule('__main__', filename = startfile)
-        compileToExe = True
-        addStartupModules = True
-
-elif outputType == 'exe':
-    # We must have a main module when making an executable.
-    usage(1, 'A main file needs to be specified when creating an executable.')
-
-freezer.done(addStartupModules = addStartupModules)
-
-if outputType == 'mf':
-    freezer.writeMultifile(basename)
-elif outputType == 'c':
-    freezer.writeCode(basename)
-else:
-    freezer.generateCode(basename, compileToExe = compileToExe)
-
+if __name__ == '__main__':
+    sys.exit(main())

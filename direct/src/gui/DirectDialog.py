@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""This module defines various dialog windows for the DirectGUI system."""
 
 __all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
 

@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the DirectScrolledList class."""
 
 __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 

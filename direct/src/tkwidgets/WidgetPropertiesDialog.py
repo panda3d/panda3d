@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the WidgetPropertiesDialog class."""
 
 __all__ = ['WidgetPropertiesDialog']
 

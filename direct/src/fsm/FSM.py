@@ -1,5 +1,5 @@
 """The new Finite State Machine module. This replaces the module
-previously called FSM.py (now called ClassicFSM.py).
+previously called FSM (now called :mod:`.ClassicFSM`).
 """
 
 __all__ = ['FSMException', 'FSM']

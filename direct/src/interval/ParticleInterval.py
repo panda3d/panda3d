@@ -1,10 +1,8 @@
-"""Undocumented Module"""
-
-__all__ = ['ParticleInterval']
-
 """
 Contains the ParticleInterval class
 """
+
+__all__ = ['ParticleInterval']
 
 from panda3d.core import *
 from panda3d.direct import *
