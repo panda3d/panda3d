@@ -38,6 +38,15 @@ PhysicalNode(const PhysicalNode &copy) :
  */
 PhysicalNode::
 ~PhysicalNode() {
+  PhysicalsVector::iterator it;
+  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
+    Physical *physical = *it;
+    nassertd(physical->_physical_node == this) continue;
+    physical->_physical_node = nullptr;
+    if (physical->_physics_manager != nullptr) {
+      physical->_physics_manager->remove_physical(physical);
+    }
+  }
 }
 
 /**
@@ -83,9 +92,13 @@ remove_physical(Physical *physical) {
   pvector< PT(Physical) >::iterator found;
   PT(Physical) ptp = physical;
   found = find(_physicals.begin(), _physicals.end(), ptp);
-  if (found == _physicals.end())
+  if (found == _physicals.end()) {
     return;
+  }
   _physicals.erase(found);
+
+  nassertv(ptp->_physical_node == this);
+  ptp->_physical_node = nullptr;
 }
 
 /**

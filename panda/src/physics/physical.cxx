@@ -30,10 +30,10 @@ TypeHandle Physical::_type_handle;
  * the speed-vs-overhead deal.
  */
 Physical::
-Physical(int total_objects, bool pre_alloc) {
-  _viscosity=0.0;
-  _physical_node = (PhysicalNode *) NULL;
-  _physics_manager = (PhysicsManager *) NULL;
+Physical(int total_objects, bool pre_alloc) :
+  _viscosity(0.0),
+  _physics_manager(nullptr),
+  _physical_node(nullptr) {
 
   if (total_objects == 1) {
     _phys_body = new PhysicsObject;
@@ -55,8 +55,9 @@ Physical(int total_objects, bool pre_alloc) {
  * to its template's physicsmanager.
  */
 Physical::
-Physical(const Physical& copy) {
-  _physics_manager = (PhysicsManager *) NULL;
+Physical(const Physical& copy) :
+  _physics_manager(nullptr),
+  _physical_node(nullptr) {
 
   // copy the forces.
   LinearForceVector::const_iterator lf_cur;
