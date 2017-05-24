@@ -77,7 +77,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "EGL",                                               # OpenGL (ES) integration
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
-  "VORBIS", "FFMPEG", "SWSCALE", "SWRESAMPLE",         # Audio decoding
+  "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
   "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH",  # 2D Formats support
@@ -700,6 +700,10 @@ if (COMPILER == "MSVC"):
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libogg_static.lib")
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbis_static.lib")
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbisfile_static.lib")
+    if (PkgSkip("OPUS")==0):
+        LibName("OPUS", GetThirdpartyDir() + "opus/lib/libogg_static.lib")
+        LibName("OPUS", GetThirdpartyDir() + "opus/lib/libopus_static.lib")
+        LibName("OPUS", GetThirdpartyDir() + "opus/lib/libopusfile_static.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
@@ -819,6 +823,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
+        SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h"))
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
@@ -2236,6 +2241,7 @@ DTOOL_CONFIG=[
     ("HAVE_PNM",                       '1',                      '1'),
     ("HAVE_STB_IMAGE",                 '1',                      '1'),
     ("HAVE_VORBIS",                    'UNDEF',                  'UNDEF'),
+    ("HAVE_OPUS",                      'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
     ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
@@ -3880,10 +3886,10 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'VORBIS']
+  OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'VORBIS', 'OPUS']
   TargetAdd('p3movies_composite1.obj', opts=OPTS, input='p3movies_composite1.cxx')
 
-  OPTS=['DIR:panda/src/movies', 'VORBIS', 'PYTHON']
+  OPTS=['DIR:panda/src/movies', 'VORBIS', 'OPUS', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3movies.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3movies.in', opts=['IMOD:panda3d.core', 'ILIB:libp3movies', 'SRCDIR:panda/src/movies'])
@@ -4017,7 +4023,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
       'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
-      'SQUISH', 'NVIDIACG', 'VORBIS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI']
+      'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
@@ -7226,10 +7232,14 @@ def MakeInstallerOSX():
 
     if not PkgSkip("FFMPEG"):
         dist.write('    <choice id="ffmpeg" title="FFMpeg Plug-In" tooltip="FFMpeg video and audio decoding plug-in" description="This package contains the FFMpeg plug-in, which is used for decoding video and audio files with OpenAL.')
-        if PkgSkip("VORBIS"):
+        if PkgSkip("VORBIS") and PkgSkip("OPUS"):
             dist.write('  It is not required for loading .wav files, which Panda3D can read out of the box.">\n')
-        else:
+        elif PkgSkip("VORBIS"):
+            dist.write('  It is not required for loading .wav or .opus files, which Panda3D can read out of the box.">\n')
+        elif PkgSkip("OPUS"):
             dist.write('  It is not required for loading .wav or .ogg files, which Panda3D can read out of the box.">\n')
+        else:
+            dist.write('  It is not required for loading .wav, .ogg or .opus files, which Panda3D can read out of the box.">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.ffmpeg.pkg"/>\n')
         dist.write('    </choice>\n')
 
