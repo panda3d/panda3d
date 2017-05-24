@@ -3408,6 +3408,59 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
+# DIRECTORY: dtool/src/dtoolbase/
+#
+
+OPTS=['DIR:dtool/src/dtoolbase', 'PYTHON']
+IGATEFILES=GetDirectoryContents('dtool/src/dtoolbase', ["*_composite*.cxx"])
+IGATEFILES += [
+    "typeHandle.h",
+    "typeHandle_ext.h",
+    "typeRegistry.h",
+    "typedObject.h",
+    "neverFreeMemory.h",
+]
+TargetAdd('libp3dtoolbase.in', opts=OPTS, input=IGATEFILES)
+TargetAdd('libp3dtoolbase.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dtoolbase', 'SRCDIR:dtool/src/dtoolbase'])
+TargetAdd('libp3dtoolbase_igate.obj', input='libp3dtoolbase.in', opts=["DEPENDENCYONLY"])
+TargetAdd('p3dtoolbase_typeHandle_ext.obj', opts=OPTS, input='typeHandle_ext.cxx')
+
+#
+# DIRECTORY: dtool/src/dtoolutil/
+#
+
+OPTS=['DIR:dtool/src/dtoolutil', 'PYTHON']
+IGATEFILES=GetDirectoryContents('dtool/src/dtoolutil', ["*_composite*.cxx"])
+IGATEFILES += [
+    "config_dtoolutil.h",
+    "pandaSystem.h",
+    "dSearchPath.h",
+    "executionEnvironment.h",
+    "textEncoder.h",
+    "filename.h",
+    "filename_ext.h",
+    "globPattern.h",
+    "globPattern_ext.h",
+    "pandaFileStream.h",
+    "lineStream.h",
+]
+TargetAdd('libp3dtoolutil.in', opts=OPTS, input=IGATEFILES)
+TargetAdd('libp3dtoolutil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dtoolutil', 'SRCDIR:dtool/src/dtoolutil'])
+TargetAdd('libp3dtoolutil_igate.obj', input='libp3dtoolutil.in', opts=["DEPENDENCYONLY"])
+TargetAdd('p3dtoolutil_ext_composite.obj', opts=OPTS, input='p3dtoolutil_ext_composite.cxx')
+
+#
+# DIRECTORY: dtool/src/prc/
+#
+
+OPTS=['DIR:dtool/src/prc', 'PYTHON']
+IGATEFILES=GetDirectoryContents('dtool/src/prc', ["*.h", "*_composite*.cxx"])
+TargetAdd('libp3prc.in', opts=OPTS, input=IGATEFILES)
+TargetAdd('libp3prc.in', opts=['IMOD:panda3d.core', 'ILIB:libp3prc', 'SRCDIR:dtool/src/prc'])
+TargetAdd('libp3prc_igate.obj', input='libp3prc.in', opts=["DEPENDENCYONLY"])
+TargetAdd('p3prc_ext_composite.obj', opts=OPTS, input='p3prc_ext_composite.cxx')
+
+#
 # DIRECTORY: panda/src/pandabase/
 #
 
@@ -4041,6 +4094,10 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', dep='dtool_have_freetype.dat')
   TargetAdd('libpanda.dll', opts=OPTS)
 
+  TargetAdd('core_module.obj', input='libp3dtoolbase.in')
+  TargetAdd('core_module.obj', input='libp3dtoolutil.in')
+  TargetAdd('core_module.obj', input='libp3prc.in')
+
   TargetAdd('core_module.obj', input='libp3downloader.in')
   TargetAdd('core_module.obj', input='libp3express.in')
 
@@ -4079,6 +4136,13 @@ if (not RUNTIME):
 
   TargetAdd('core_module.obj', opts=['PYTHON'])
   TargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core'])
+
+  TargetAdd('core.pyd', input='libp3dtoolbase_igate.obj')
+  TargetAdd('core.pyd', input='p3dtoolbase_typeHandle_ext.obj')
+  TargetAdd('core.pyd', input='libp3dtoolutil_igate.obj')
+  TargetAdd('core.pyd', input='p3dtoolutil_ext_composite.obj')
+  TargetAdd('core.pyd', input='libp3prc_igate.obj')
+  TargetAdd('core.pyd', input='p3prc_ext_composite.obj')
 
   TargetAdd('core.pyd', input='libp3downloader_igate.obj')
   TargetAdd('core.pyd', input='p3downloader_stringStream_ext.obj')
