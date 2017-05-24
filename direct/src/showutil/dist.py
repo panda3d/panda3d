@@ -169,7 +169,12 @@ class build_apps(distutils.core.Command):
                     whl_modules_ext = '.'.join(whl_modules[0].split('.')[1:])
                 whl_modules = [i.split('.')[0] for i in whl_modules]
 
+            # Make sure to copy any builtins that have shared objects in the deploy libs
+            for mod in freezer_modules:
+                if mod in whl_modules:
+                    freezer_extras.add((mod, None))
 
+            # Copy any shared objects we need
             for module, source_path in freezer_extras:
                 if source_path is not None:
                     # Rename panda3d/core.pyd to panda3d.core.pyd
