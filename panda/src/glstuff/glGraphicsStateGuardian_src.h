@@ -399,6 +399,7 @@ public:
   INLINE const string &get_gl_version() const;
   INLINE int get_gl_version_major() const;
   INLINE int get_gl_version_minor() const;
+  INLINE bool has_fixed_function_pipeline() const;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -566,7 +567,7 @@ protected:
   void update_shader_vertex_format(const GeomVertexFormat *format);
 #endif
 
-  void apply_white_texture();
+  void apply_white_texture(GLuint unit);
   GLuint get_white_texture();
 
 #ifndef NDEBUG
@@ -718,6 +719,11 @@ protected:
   int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
 
   pset<string> _extensions;
+
+#ifndef OPENGLES
+  // True for non-compatibility GL 3.2+ contexts.
+  bool _core_profile;
+#endif
 
 public:
   bool _supports_point_parameters;

@@ -1,4 +1,7 @@
-"""Undocumented Module"""
+"""A DirectRadioButton is a type of button that, similar to a
+DirectCheckButton, has a separate indicator and can be toggled between
+two states.  However, only one DirectRadioButton in a group can be enabled
+at a particular time."""
 
 __all__ = ['DirectRadioButton']
 

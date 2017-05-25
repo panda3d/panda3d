@@ -1,4 +1,7 @@
-"""Undocumented Module"""
+"""This module defines a widget used to display a graphical overview of the
+scene graph using the tkinter GUI system.
+
+Requires Pmw."""
 
 __all__ = ['SceneGraphExplorer', 'SceneGraphExplorerItem', 'explore']
 

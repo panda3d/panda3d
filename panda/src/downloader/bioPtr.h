@@ -19,13 +19,7 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
 
-#ifndef OPENSSL_NO_KRB5
-#define OPENSSL_NO_KRB5
-#endif
-
 #include "referenceCount.h"
-#include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -34,6 +28,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #endif
+
+typedef struct bio_st BIO;
 
 class URLSpec;
 
@@ -52,7 +48,7 @@ public:
   void set_nbio(bool nbio);
   bool connect();
 
-  INLINE bool should_retry() const;
+  bool should_retry() const;
 
   INLINE BIO &operator *() const;
   INLINE BIO *operator -> () const;

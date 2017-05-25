@@ -161,6 +161,12 @@ private:
   static TypeHandle _type_handle;
 };
 
+#ifdef DO_MEMORY_USAGE
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<CopyOnWriteObject>::update_type(To *ptr) {}
+#endif
+
 #include "copyOnWriteObject.I"
 
 #endif

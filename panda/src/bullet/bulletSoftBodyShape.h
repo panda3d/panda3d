@@ -31,6 +31,8 @@ PUBLISHED:
 
   BulletSoftBodyNode *get_body() const;
 
+  MAKE_PROPERTY(body, get_body);
+
 public:
   BulletSoftBodyShape(btSoftBodyCollisionShape *shapePtr);
 

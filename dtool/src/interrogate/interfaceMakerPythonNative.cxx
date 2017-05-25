@@ -1133,7 +1133,8 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   // to a macro function.
   out << "typedef " << c_class_name << " " << class_name << "_localtype;\n";
   if (obj->_itype.has_destructor() ||
-      obj->_itype.destructor_is_inherited()) {
+      obj->_itype.destructor_is_inherited() ||
+      obj->_itype.destructor_is_implicit()) {
 
     if (TypeManager::is_reference_count(type)) {
       out << "Define_Module_ClassRef";
@@ -3388,6 +3389,7 @@ write_function_for_name(ostream &out, Object *obj,
   FunctionRemap *remap = NULL;
   int max_required_args = 0;
   bool all_nonconst = true;
+  bool has_keywords = false;
 
   out << "/**\n * Python function wrapper for:\n";
   for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
@@ -3401,6 +3403,10 @@ write_function_for_name(ostream &out, Object *obj,
 
       if (!remap->_has_this || remap->_const_method) {
         all_nonconst = false;
+      }
+
+      if (remap->_args_type == AT_keyword_args) {
+        has_keywords = true;
       }
 
       max_required_args = max(max_num_args, max_required_args);
@@ -3449,11 +3455,31 @@ write_function_for_name(ostream &out, Object *obj,
     return;
   }
 
+  if (args_type == AT_keyword_args && !has_keywords) {
+    // We don't actually take keyword arguments.  Make sure we didn't get any.
+    out << "  if (kwds != NULL && PyDict_Size(kwds) > 0) {\n";
+    out << "#ifdef NDEBUG\n";
+    error_raise_return(out, 4, return_flags, "TypeError", "function takes no keyword arguments");
+    out << "#else\n";
+    error_raise_return(out, 4, return_flags, "TypeError",
+      methodNameFromCppName(remap, "", false) + "() takes no keyword arguments");
+    out << "#endif\n";
+    out << "  }\n";
+    args_type = AT_varargs;
+  }
+
   if (args_type == AT_keyword_args || args_type == AT_varargs) {
     max_required_args = collapse_default_remaps(map_sets, max_required_args);
   }
 
-  if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
+  if (remap->_flags & FunctionRemap::F_explicit_args) {
+    // We have a remap that wants to handle the wrapper itself.
+    string expected_params;
+    write_function_instance(out, remap, 0, 0, expected_params, 2, true, true,
+                            args_type, return_flags);
+
+  } else if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
+    // We have more than one remap.
     switch (args_type) {
     case AT_keyword_args:
       indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
@@ -3491,16 +3517,50 @@ write_function_for_name(ostream &out, Object *obj,
         indent(out, 2) << "case " << i << ":\n";
         num_args.insert(i + add_self);
       }
-      indent(out, 4) << "{\n";
       num_args.insert(max_args + add_self);
 
-      if (min_args == 1 && max_args == 1 && args_type == AT_varargs) {
-        // Might as well, since we already checked the number of args.
-        indent(out, 6) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+      bool strip_keyword_args = false;
+
+      // Check whether any remap actually takes keyword arguments.  If not,
+      // then we don't have to bother checking that for every remap.
+      if (args_type == AT_keyword_args && max_args > 0) {
+        strip_keyword_args = true;
+
+        std::set<FunctionRemap *>::iterator sii;
+        for (sii = mii->second.begin(); sii != mii->second.end(); ++sii) {
+          remap = (*sii);
+          int first_param = remap->_has_this ? 1 : 0;
+          for (int i = first_param; i < remap->_parameters.size(); ++i) {
+            if (remap->_parameters[i]._has_name) {
+              strip_keyword_args = false;
+              break;
+            }
+          }
+        }
+      }
+
+      if (strip_keyword_args) {
+        // None of the remaps take any keyword arguments, so let's check that
+        // we take none.  This saves some checks later on.
+        indent(out, 4) << "if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {\n";
+        if (min_args == 1 && min_args == 1) {
+          indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+          write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
+                coercion_allowed, true, AT_single_arg, return_flags, true, !all_nonconst);
+        } else {
+          write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
+                coercion_allowed, true, AT_varargs, return_flags, true, !all_nonconst);
+        }
+      } else if (min_args == 1 && max_args == 1 && args_type == AT_varargs) {
+        // We already checked that the args tuple has only one argument, so
+        // we might as well extract that from the tuple now.
+        indent(out, 4) << "{\n";
+        indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
 
         write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
                       coercion_allowed, true, AT_single_arg, return_flags, true, !all_nonconst);
       } else {
+        indent(out, 4) << "{\n";
         write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
                       coercion_allowed, true, args_type, return_flags, true, !all_nonconst);
       }
@@ -3567,14 +3627,14 @@ write_function_for_name(ostream &out, Object *obj,
     if (mii->first == 0 && args_type != AT_no_args) {
       switch (args_type) {
       case AT_keyword_args:
-        out << "  if (PyTuple_Size(args) > 0 || (kwds != NULL && PyDict_Size(kwds) > 0)) {\n";
+        out << "  if (!Dtool_CheckNoArgs(args, kwds)) {\n";
         out << "    int parameter_count = (int)PyTuple_Size(args);\n";
         out << "    if (kwds != NULL) {\n";
         out << "      parameter_count += (int)PyDict_Size(kwds);\n";
         out << "    }\n";
         break;
       case AT_varargs:
-        out << "  if (PyTuple_Size(args) > 0) {\n";
+        out << "  if (!Dtool_CheckNoArgs(args)) {\n";
         out << "    const int parameter_count = (int)PyTuple_GET_SIZE(args);\n";
         break;
       case AT_single_arg:
@@ -3600,14 +3660,14 @@ write_function_for_name(ostream &out, Object *obj,
     } else if (args_type == AT_keyword_args && max_required_args == 1 && mii->first == 1) {
       // Check this to be sure, as we handle the case of only 1 keyword arg in
       // write_function_forset (not using ParseTupleAndKeywords).
-      out << "    int parameter_count = (int)PyTuple_Size(args);\n"
-             "    if (kwds != NULL) {\n"
-             "      parameter_count += (int)PyDict_Size(kwds);\n"
-             "    }\n"
+      out << "  int parameter_count = (int)PyTuple_Size(args);\n"
+             "  if (kwds != NULL) {\n"
+             "    parameter_count += (int)PyDict_Size(kwds);\n"
+             "  }\n"
              "  if (parameter_count != 1) {\n"
              "#ifdef NDEBUG\n";
       error_raise_return(out, 4, return_flags, "TypeError",
-                         "function takes exactly 1 argument");
+                        "function takes exactly 1 argument");
       out << "#else\n";
       error_raise_return(out, 4, return_flags, "TypeError",
         methodNameFromCppName(remap, "", false) + "() takes exactly 1 argument (%d given)",
@@ -4060,7 +4120,9 @@ int get_type_sort(CPPType *type) {
 // printf("    %s\n",type->get_local_name().c_str());
 
   // The highest numbered one will be checked first.
-  if (TypeManager::is_pointer_to_Py_buffer(type)) {
+  if (TypeManager::is_nullptr(type)) {
+    return 15;
+  } else if (TypeManager::is_pointer_to_Py_buffer(type)) {
     return 14;
   } else if (TypeManager::is_pointer_to_PyTypeObject(type)) {
     return 13;
@@ -4240,14 +4302,16 @@ write_function_forset(ostream &out,
       args_type == AT_keyword_args) {
     sii = remapsin.begin();
     remap = (*sii);
-    first_param_name = remap->_parameters[(int)remap->_has_this]._name;
-    same_first_param = true;
+    if (remap->_parameters[(int)remap->_has_this]._has_name) {
+      first_param_name = remap->_parameters[(int)remap->_has_this]._name;
+      same_first_param = true;
 
-    for (++sii; sii != remapsin.end(); ++sii) {
-      remap = (*sii);
-      if (remap->_parameters[(int)remap->_has_this]._name != first_param_name) {
-        same_first_param = false;
-        break;
+      for (++sii; sii != remapsin.end(); ++sii) {
+        remap = (*sii);
+        if (remap->_parameters[(int)remap->_has_this]._name != first_param_name) {
+          same_first_param = false;
+          break;
+        }
       }
     }
   }
@@ -4256,21 +4320,9 @@ write_function_forset(ostream &out,
     // Yes, they all have the same argument name (or there is only one remap).
     // Extract it from the dict so we don't have to call
     // ParseTupleAndKeywords.
-    indent(out, indent_level) << "PyObject *arg = NULL;\n";
-    indent(out, indent_level) << "if (PyTuple_GET_SIZE(args) == 1) {\n";
-    indent(out, indent_level) << "  arg = PyTuple_GET_ITEM(args, 0);\n";
-    indent(out, indent_level) << "} else if (kwds != NULL) {\n";
-    indent(out, indent_level) << "  arg = PyDict_GetItemString(kwds, \"" << first_param_name << "\");\n";
-    indent(out, indent_level) << "}\n";
-    if (report_errors) {
-      indent(out, indent_level) << "if (arg == (PyObject *)NULL) {\n";
-      error_raise_return(out, indent_level + 2, return_flags, "TypeError",
-        "Required argument '" + first_param_name + "' (pos 1) not found");
-      indent(out, indent_level) << "}\n";
-    } else {
-      indent(out, indent_level) << "if (arg != (PyObject *)NULL) {\n";
-      indent_level += 2;
-    }
+    indent(out, indent_level) << "PyObject *arg;\n";
+    indent(out, indent_level) << "if (Dtool_ExtractArg(&arg, args, kwds, \"" << first_param_name << "\")) {\n";
+    indent_level += 2;
     args_type = AT_single_arg;
   }
 
@@ -4441,7 +4493,7 @@ write_function_forset(ostream &out,
   }
 
   // Close the brace we opened earlier.
-  if (same_first_param && !report_errors) {
+  if (same_first_param) {
     indent_level -= 2;
     indent(out, indent_level) << "}\n";
   }
@@ -4510,6 +4562,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   string parameter_list;
   string container;
   string type_check;
+  string param_name;
+  bool has_keywords = false;
   vector_string pexprs;
   LineStream extra_convert;
   ostringstream extra_param_check;
@@ -4536,19 +4590,23 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   expected_params += methodNameFromCppName(remap, "", false);
   expected_params += "(";
 
-  int num_params = max_num_args;
-  if (remap->_has_this) {
-    num_params += 1;
-  }
-  if (num_params > (int)remap->_parameters.size()) {
-    // Limit to how many parameters this remap actually has.
-    num_params = (int)remap->_parameters.size();
-    max_num_args = num_params;
+  int num_params = 0;
+
+  if ((remap->_flags & FunctionRemap::F_explicit_args) == 0) {
+    num_params = max_num_args;
     if (remap->_has_this) {
-      --max_num_args;
+      num_params += 1;
     }
+    if (num_params > (int)remap->_parameters.size()) {
+      // Limit to how many parameters this remap actually has.
+      num_params = (int)remap->_parameters.size();
+      max_num_args = num_params;
+      if (remap->_has_this) {
+        --max_num_args;
+      }
+    }
+    nassertv(num_params <= (int)remap->_parameters.size());
   }
-  nassertv(num_params <= (int)remap->_parameters.size());
 
   bool only_pyobjects = true;
 
@@ -4584,13 +4642,24 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
   }
 
+  if (remap->_flags & FunctionRemap::F_explicit_args) {
+    // The function handles the arguments by itself.
+    expected_params += "*args";
+    pexprs.push_back("args");
+    if (args_type == AT_keyword_args) {
+      expected_params += ", **kwargs";
+      pexprs.push_back("kwds");
+    }
+    num_params = 0;
+  }
+
   // Now convert (the rest of the) actual arguments, one by one.
   for (; pn < num_params; ++pn) {
     ParameterRemap *param = remap->_parameters[pn]._remap;
     CPPType *orig_type = param->get_orig_type();
     CPPType *type = param->get_new_type();
     CPPExpression *default_value = param->get_default_value();
-    string param_name = remap->get_parameter_name(pn);
+    param_name = remap->get_parameter_name(pn);
 
     if (!is_cpp_type_legal(orig_type)) {
       // We can't wrap this.  We sometimes get here for default arguments.
@@ -4645,7 +4714,14 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
     string reported_name = remap->_parameters[pn]._name;
-    keyword_list += "\"" + reported_name + "\", ";
+    if (!keyword_list.empty()) {
+      keyword_list += ", \"" + reported_name + "\"";
+    } else {
+      keyword_list = "\"" + reported_name + "\"";
+    }
+    if (remap->_parameters[pn]._has_name) {
+      has_keywords = true;
+    }
 
     if (param->new_type_is_atomic_string()) {
 
@@ -4847,6 +4923,19 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       pexpr_string = "(PyObject_IsTrue(" + param_name + ") != 0)";
       expected_params += "bool";
 
+    } else if (TypeManager::is_nullptr(type)) {
+      if (args_type == AT_single_arg) {
+        type_check = "arg == Py_None";
+        param_name = "arg";
+      } else {
+        indent(out, indent_level) << "PyObject *" << param_name << default_expr << ";\n";
+        extra_param_check << " && " << param_name << " == Py_None";
+        format_specifiers += "O";
+        parameter_list += ", &" + param_name;
+      }
+      pexpr_string = "NULL";
+      expected_params += "NoneType";
+
     } else if (TypeManager::is_char(type)) {
       indent(out, indent_level) << "char " << param_name << default_expr << ";\n";
 
@@ -4885,26 +4974,42 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       only_pyobjects = false;
 
     } else if (TypeManager::is_size(type)) {
-      // It certainly isn't the exact same thing as size_t, but Py_ssize_t
-      // should at least be the same size.  The problem with mapping this to
-      // unsigned int is that that doesn't work well on 64-bit systems, on
-      // which size_t is a 64-bit integer.
-      indent(out, indent_level) << "Py_ssize_t " << param_name << default_expr << ";\n";
-      format_specifiers += "n";
-      parameter_list += ", &" + param_name;
+      if (args_type == AT_single_arg) {
+        type_check = "PyLongOrInt_Check(arg)";
+
+        extra_convert <<
+          "size_t arg_val = PyLongOrInt_AsSize_t(arg);\n"
+          "#ifndef NDEBUG\n"
+          "if (arg_val == (size_t)-1 && _PyErr_OCCURRED()) {\n";
+        error_return(extra_convert, 2, return_flags);
+        extra_convert <<
+          "}\n"
+          "#endif\n";
+
+        pexpr_string = "arg_val";
+
+      } else {
+        // It certainly isn't the exact same thing as size_t, but Py_ssize_t
+        // should at least be the same size.  The problem with mapping this to
+        // unsigned int is that that doesn't work well on 64-bit systems, on
+        // which size_t is a 64-bit integer.
+        indent(out, indent_level) << "Py_ssize_t " << param_name << default_expr << ";\n";
+        format_specifiers += "n";
+        parameter_list += ", &" + param_name;
+
+        extra_convert
+          << "#ifndef NDEBUG\n"
+          << "if (" << param_name << " < 0) {\n";
+
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                          "can't convert negative value %zd to size_t",
+                          param_name);
+        extra_convert
+          << "}\n"
+          << "#endif\n";
+      }
       expected_params += "int";
       only_pyobjects = false;
-
-      extra_convert
-        << "#ifndef NDEBUG\n"
-        << "if (" << param_name << " < 0) {\n";
-
-      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
-                         "can't convert negative value %zd to size_t",
-                         param_name);
-      extra_convert
-        << "}\n"
-        << "#endif\n";
 
     } else if (TypeManager::is_longlong(type)) {
       // It's not trivial to do overflow checking for a long long, so we
@@ -5533,15 +5638,60 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     switch (args_type) {
     case AT_keyword_args:
       // Wrapper takes a varargs tuple and a keyword args dict.
-      indent(out, indent_level)
-        << "static const char *keyword_list[] = {" << keyword_list << "NULL};\n";
-      indent(out, indent_level)
-        << "if (PyArg_ParseTupleAndKeywords(args, kwds, \""
-        << format_specifiers << ":" << method_name
-        << "\", (char **)keyword_list" << parameter_list << ")) {\n";
+      if (has_keywords) {
+        if (only_pyobjects && max_num_args == 1) {
+          // But we are only expecting one object arg, which is an easy common
+          // case we have implemented ourselves.
+          if (min_num_args == 1) {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractArg(&" << param_name << ", args, kwds, " << keyword_list << ")) {\n";
+          } else {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", args, kwds, " << keyword_list << ")) {\n";
+          }
+        } else {
+          // We have to use the more expensive PyArg_ParseTupleAndKeywords.
+          clear_error = true;
+          indent(out, indent_level)
+            << "static const char *keyword_list[] = {" << keyword_list << ", NULL};\n";
+          indent(out, indent_level)
+            << "if (PyArg_ParseTupleAndKeywords(args, kwds, \""
+            << format_specifiers << ":" << method_name
+            << "\", (char **)keyword_list" << parameter_list << ")) {\n";
+        }
+
+      } else if (only_pyobjects) {
+        // This function actually has no named parameters, so let's not take
+        // any keyword arguments.
+        if (max_num_args == 1) {
+          if (min_num_args == 1) {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractArg(&" << param_name << ", args, kwds)) {\n";
+          } else {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", args, kwds)) {\n";
+          }
+        } else if (max_num_args == 0) {
+          indent(out, indent_level)
+            << "if (Dtool_CheckNoArgs(args, kwds)) {\n";
+        } else {
+          clear_error = true;
+          indent(out, indent_level)
+            << "if ((kwds == NULL || PyDict_Size(kwds) == 0) && PyArg_UnpackTuple(args, \""
+            << methodNameFromCppName(remap, "", false)
+            << "\", " << min_num_args << ", " << max_num_args
+            << parameter_list << ")) {\n";
+        }
+
+      } else {
+        clear_error = true;
+        indent(out, indent_level)
+          << "if ((kwds == NULL || PyDict_Size(kwds) == 0) && PyArg_ParseTuple(args, \""
+          << format_specifiers << ":" << method_name
+          << "\"" << parameter_list << ")) {\n";
+      }
 
       ++open_scopes;
-      clear_error = true;
       indent_level += 2;
       break;
 
@@ -5550,20 +5700,28 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       if (only_pyobjects) {
         // All parameters are PyObject*, so we can use the slightly more
         // efficient PyArg_UnpackTuple function instead.
-        indent(out, indent_level)
-          << "if (PyArg_UnpackTuple(args, \""
-          << methodNameFromCppName(remap, "", false)
-          << "\", " << min_num_args << ", " << max_num_args
-          << parameter_list << ")) {\n";
+        if (min_num_args == 1 && max_num_args == 1) {
+          indent(out, indent_level)
+            << "if (PyTuple_GET_SIZE(args) == 1) {\n";
+          indent(out, indent_level + 2)
+            << param_name << " = PyTuple_GET_ITEM(args, 0);\n";
+        } else {
+          clear_error = true;
+          indent(out, indent_level)
+            << "if (PyArg_UnpackTuple(args, \""
+            << methodNameFromCppName(remap, "", false)
+            << "\", " << min_num_args << ", " << max_num_args
+            << parameter_list << ")) {\n";
+        }
 
       } else {
+        clear_error = true;
         indent(out, indent_level)
           << "if (PyArg_ParseTuple(args, \""
           << format_specifiers << ":" << method_name
           << "\"" << parameter_list << ")) {\n";
       }
       ++open_scopes;
-      clear_error = true;
       indent_level += 2;
       break;
 
@@ -6198,7 +6356,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     // the assumption that the called method doesn't do anything with this
     // tuple other than unpack it (which is a fairly safe assumption to make).
     out << "  PyTupleObject args;\n";
-    out << "  (void)PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
+    out << "  (void)PyObject_INIT_VAR((PyVarObject *)&args, &PyTuple_Type, 1);\n";
   }
 
   out <<

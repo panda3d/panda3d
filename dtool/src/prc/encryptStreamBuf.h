@@ -19,7 +19,7 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
 
-#include "openssl/evp.h"
+typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
 
 /**
  * The streambuf object that implements IDecompressStream and OCompressStream.

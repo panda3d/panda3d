@@ -6,20 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file displayRegionBase.I
- * @author drose
- * @date 2009-02-20
+ * @file opusAudioCursor.I
+ * @author rdb
+ * @date 2017-05-24
  */
-
-/**
- *
- */
-INLINE DisplayRegionBase::
-DisplayRegionBase() {
-}
-
-INLINE ostream &
-operator << (ostream &out, const DisplayRegionBase &dr) {
-  dr.output(out);
-  return out;
-}

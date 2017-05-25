@@ -18,6 +18,9 @@
 #include "urlSpec.h"
 #include "config_downloader.h"
 
+#include "openSSLWrapper.h"  // must be included before any other openssl.
+#include "openssl/ssl.h"
+
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -199,7 +202,7 @@ connect() {
 
     if (result != 0 && BIO_sock_should_retry(-1)) {
       // It's still in progress; we should retry later.  This causes
-      // should_reply() to return true.
+      // should_retry() to return true.
       BIO_set_flags(_bio, BIO_FLAGS_SHOULD_RETRY);
       _connecting = true;
       return false;
@@ -216,6 +219,14 @@ connect() {
   }
 
   return true;
+}
+
+/**
+ *
+ */
+bool BioPtr::
+should_retry() const {
+  return (_bio != NULL) && BIO_should_retry(_bio);
 }
 
 /**

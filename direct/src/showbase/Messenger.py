@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""This defines the Messenger class, which is responsible for most of the
+event handling that happens on the Python side."""
 
 __all__ = ['Messenger']
 
@@ -531,7 +532,6 @@ class Messenger:
         keys.sort()
         for event in keys:
             if repr(event).find(needle) >= 0:
-                print(self.__eventRepr(event))
                 return {event: self.__callbacks[event]}
 
     def findAll(self, needle, limit=None):
@@ -545,7 +545,6 @@ class Messenger:
         keys.sort()
         for event in keys:
             if repr(event).find(needle) >= 0:
-                print(self.__eventRepr(event))
                 matches[event] = self.__callbacks[event]
                 # if the limit is not None, decrement and
                 # check for break:

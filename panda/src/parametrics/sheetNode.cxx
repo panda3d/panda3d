@@ -129,7 +129,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (get_num_u_subdiv() > 0 && get_num_v_subdiv() > 0) {
     NurbsSurfaceEvaluator *surface = get_surface();
     if (surface != (NurbsSurfaceEvaluator *)NULL) {
-      PT(NurbsSurfaceResult) result = surface->evaluate(data._node_path.get_node_path());
+      PT(NurbsSurfaceResult) result = surface->evaluate(data.get_node_path());
 
       if (result->get_num_u_segments() > 0 && result->get_num_v_segments() > 0) {
         render_sheet(trav, data, result);

@@ -131,6 +131,33 @@ get_gl_version_minor() const {
 }
 
 /**
+ * Returns whether a core profile or a compatibility mode is considered.
+ */
+/*INLINE bool CLP(GraphicsStateGuardian)::
+has_core_profile() const {
+  return _core_profile;
+}*/
+
+/**
+ * Returns whether the fixed function pipeline is supported.
+ */
+INLINE bool CLP(GraphicsStateGuardian)::
+has_fixed_function_pipeline() const {
+#ifndef SUPPORT_FIXED_FUNCTION
+  return false;
+#elif defined(OPENGLES_1)
+  return true;
+#elif defined(OPENGLES)
+  return false;
+#else
+  // Otherwise, we can just check whether we are using a core profile or a
+  // compatibility mode. The variable _core_profile is already taking into
+  // account if a GL < 3.2 is considered (becoming false)
+  return !_core_profile;
+#endif
+}
+
+/**
  * Calls glFinish() if the config variable gl-finish is set True.
  */
 INLINE void CLP(GraphicsStateGuardian)::
@@ -363,7 +390,7 @@ enable_line_smooth(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
 #ifdef SUPPORT_FIXED_FUNCTION
-  if (_point_smooth_enabled != val) {
+  if (has_fixed_function_pipeline() && _point_smooth_enabled != val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
     if (val) {

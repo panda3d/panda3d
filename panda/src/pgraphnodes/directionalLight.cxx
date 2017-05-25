@@ -59,6 +59,7 @@ DirectionalLight(const string &name) :
   LightLensNode(name, new OrthographicLens()),
   _has_specular_color(false)
 {
+  _lenses[0]._lens->set_interocular_distance(0);
 }
 
 /**

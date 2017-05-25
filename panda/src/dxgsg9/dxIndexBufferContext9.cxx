@@ -132,8 +132,7 @@ allocate_ibuffer(DXScreenData &scrn,
       dxgsg9_cat.debug()
         << "creating index buffer " << _ibuffer << ": "
         << reader->get_num_vertices() << " indices ("
-        << reader->get_vertices_reader()->get_array_format()->get_column(0)->get_numeric_type()
-        << ")\n";
+        << reader->get_index_type() << ")\n";
     }
   }
 }
@@ -169,7 +168,7 @@ upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
   if (data_pointer == NULL) {
     return false;
   }
-  int data_size = reader->get_data_size_bytes();
+  size_t data_size = (size_t)reader->get_data_size_bytes();
 
   if (reader->get_index_type() == GeomEnums::NT_uint8) {
     // We widen 8-bits indices to 16-bits.

@@ -863,7 +863,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   dr->get_region_pixels_i(l, u, w, h);
 
   // Create the viewport
-  D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
+  D3DVIEWPORT9 vp = { (DWORD)l, (DWORD)u, (DWORD)w, (DWORD)h, 0.0f, 1.0f };
   _current_viewport = vp;
   HRESULT hr = _d3d_device->SetViewport(&_current_viewport);
   if (FAILED(hr)) {
@@ -1185,7 +1185,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     const TransformTable *table = data_reader->get_transform_table();
     if (table != (TransformTable *)NULL) {
-      for (int i = 0; i < table->get_num_transforms(); i++) {
+      for (size_t i = 0; i < table->get_num_transforms(); ++i) {
         LMatrix4 mat;
         table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
         const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();

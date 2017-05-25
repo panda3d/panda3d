@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""Defines the DirectObject class, a convenient class to inherit from if the
+object needs to be able to respond to events."""
 
 __all__ = ['DirectObject']
 

@@ -1544,7 +1544,14 @@ INLINE size_t Texture::
 get_ram_mipmap_image_size(int n) const {
   CDReader cdata(_cycler);
   if (n >= 0 && n < (int)cdata->_ram_images.size()) {
-    return cdata->_ram_images[n]._image.size();
+    if (cdata->_ram_images[n]._pointer_image == nullptr) {
+      return cdata->_ram_images[n]._image.size();
+    } else {
+      // Calculate it based on the given page size.
+      return do_get_ram_mipmap_page_size(cdata, n) *
+             do_get_expected_mipmap_z_size(cdata, n) *
+             cdata->_num_views;
+    }
   }
   return 0;
 }

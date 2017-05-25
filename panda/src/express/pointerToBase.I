@@ -21,9 +21,7 @@ PointerToBase(To *ptr) {
   if (ptr != (To *)NULL) {
     ptr->ref();
 #ifdef DO_MEMORY_USAGE
-    if (MemoryUsage::get_track_memory_usage()) {
-      update_type(ptr);
-    }
+    update_type(ptr);
 #endif
   }
 }
@@ -38,11 +36,6 @@ PointerToBase(const PointerToBase<T> &copy) {
   if (_void_ptr != NULL) {
     To *ptr = (To *)_void_ptr;
     ptr->ref();
-#ifdef DO_MEMORY_USAGE
-    if (MemoryUsage::get_track_memory_usage()) {
-      update_type(ptr);
-    }
-#endif
   }
 }
 
@@ -108,17 +101,15 @@ reassign(To *ptr) {
     To *old_ptr = (To *)_void_ptr;
 
     _void_ptr = (void *)ptr;
-    if (ptr != (To *)NULL) {
+    if (ptr != nullptr) {
       ptr->ref();
 #ifdef DO_MEMORY_USAGE
-      if (MemoryUsage::get_track_memory_usage()) {
-        update_type(ptr);
-      }
+      update_type(ptr);
 #endif
     }
 
     // Now delete the old pointer.
-    if (old_ptr != (To *)NULL) {
+    if (old_ptr != nullptr) {
       unref_delete(old_ptr);
     }
   }
@@ -130,7 +121,24 @@ reassign(To *ptr) {
 template<class T>
 INLINE void PointerToBase<T>::
 reassign(const PointerToBase<To> &copy) {
-  reassign((To *)copy._void_ptr);
+  if (copy._void_ptr != _void_ptr) {
+    // First save the old pointer; we won't delete it until we have assigned
+    // the new one.  We do this just in case there are cascading effects from
+    // deleting this pointer that might inadvertently delete the new one.
+    // (Don't laugh--it's happened!)
+    To *old_ptr = (To *)_void_ptr;
+    To *new_ptr = (To *)copy._void_ptr;
+
+    _void_ptr = copy._void_ptr;
+    if (new_ptr != nullptr) {
+      new_ptr->ref();
+    }
+
+    // Now delete the old pointer.
+    if (old_ptr != nullptr) {
+      unref_delete(old_ptr);
+    }
+  }
 }
 
 #ifdef DO_MEMORY_USAGE
@@ -139,15 +147,17 @@ reassign(const PointerToBase<To> &copy) {
  * object, if we know the type ourselves.
  */
 template<class T>
-void PointerToBase<T>::
+INLINE void PointerToBase<T>::
 update_type(To *ptr) {
-  TypeHandle type = get_type_handle(To);
-  if (type == TypeHandle::none()) {
-    do_init_type(To);
-    type = get_type_handle(To);
-  }
-  if (type != TypeHandle::none()) {
-    MemoryUsage::update_type(ptr, type);
+  if (MemoryUsage::get_track_memory_usage()) {
+    TypeHandle type = get_type_handle(To);
+    if (type == TypeHandle::none()) {
+      do_init_type(To);
+      type = get_type_handle(To);
+    }
+    if (type != TypeHandle::none()) {
+      MemoryUsage::update_type(ptr, type);
+    }
   }
 }
 #endif  // DO_MEMORY_USAGE

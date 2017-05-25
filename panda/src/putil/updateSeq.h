@@ -35,13 +35,17 @@
  * sequences are numeric and are monotonically increasing.
  */
 class EXPCL_PANDA_PUTIL UpdateSeq {
+private:
+  CONSTEXPR UpdateSeq(unsigned int seq);
+
 PUBLISHED:
-  INLINE UpdateSeq();
-  INLINE static UpdateSeq initial();
-  INLINE static UpdateSeq old();
-  INLINE static UpdateSeq fresh();
+  CONSTEXPR UpdateSeq();
+  CONSTEXPR static UpdateSeq initial();
+  CONSTEXPR static UpdateSeq old();
+  CONSTEXPR static UpdateSeq fresh();
 
   INLINE UpdateSeq(const UpdateSeq &copy);
+  CONSTEXPR UpdateSeq(const UpdateSeq &&from) NOEXCEPT;
   INLINE UpdateSeq &operator = (const UpdateSeq &copy);
 
   INLINE void clear();

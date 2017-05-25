@@ -12,7 +12,6 @@
  */
 
 #include "config_gsgbase.h"
-#include "displayRegionBase.h"
 #include "graphicsOutputBase.h"
 #include "graphicsStateGuardianBase.h"
 
@@ -21,7 +20,6 @@
 Configure(config_gsgbase);
 
 ConfigureFn(config_gsgbase) {
-  DisplayRegionBase::init_type();
   GraphicsOutputBase::init_type();
   GraphicsStateGuardianBase::init_type();
 }

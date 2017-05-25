@@ -255,6 +255,9 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_geometry_instancing = false;
   _supports_indirect_draw = false;
 
+  // We are safe assuming it has luminance support
+  _supports_luminance_texture = true;
+
   // Assume a maximum of 1 render target in absence of MRT.
   _max_color_targets = 1;
   _supports_dual_source_blending = false;
@@ -909,16 +912,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_identity: {
     return &LMatrix4::ident_mat();
   }
-  case Shader::SMO_window_size: {
-    t = LMatrix4::translate_mat(_current_display_region->get_pixel_width(),
-                                 _current_display_region->get_pixel_height(),
-                                 0.0);
-    return &t;
-  }
+  case Shader::SMO_window_size:
   case Shader::SMO_pixel_size: {
-    t = LMatrix4::translate_mat(_current_display_region->get_pixel_width(),
-                                 _current_display_region->get_pixel_height(),
-                                 0.0);
+    LVecBase2i pixel_size = _current_display_region->get_pixel_size();
+    t = LMatrix4::translate_mat(pixel_size[0], pixel_size[1], 0);
     return &t;
   }
   case Shader::SMO_frame_time: {
@@ -1055,7 +1052,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     LColor const &c = lt->get_color();
     LColor const &s = lt->get_specular_color();
     t = np.get_net_transform()->get_mat() *
-      get_scene()->get_world_transform()->get_mat();
+      _scene_setup->get_world_transform()->get_mat();
     LVecBase3 d = -(t.xform_vec(lt->get_direction()));
     d.normalize();
     LVecBase3 h = d + LVecBase3(0,-1,0);
@@ -1072,11 +1069,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     LColor const &c = lt->get_color();
     LColor const &s = lt->get_specular_color();
     t = np.get_net_transform()->get_mat() *
-      get_scene()->get_world_transform()->get_mat();
+      _scene_setup->get_world_transform()->get_mat();
     LVecBase3 p = (t.xform_point(lt->get_point()));
     LVecBase3 a = lt->get_attenuation();
-    PN_stdfloat lnear = lt->get_lens(0)->get_near();
-    PN_stdfloat lfar = lt->get_lens(0)->get_far();
+    Lens *lens = lt->get_lens(0);
+    PN_stdfloat lnear = lens->get_near();
+    PN_stdfloat lfar = lens->get_far();
     t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],lnear,a[0],a[1],a[2],lfar);
     return &t;
   }
@@ -1092,7 +1090,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     LColor const &s = lt->get_specular_color();
     PN_stdfloat cutoff = ccos(deg_2_rad(lens->get_hfov() * 0.5f));
     t = np.get_net_transform()->get_mat() *
-      get_scene()->get_world_transform()->get_mat();
+      _scene_setup->get_world_transform()->get_mat();
     LVecBase3 p = t.xform_point(lens->get_nodal_point());
     LVecBase3 d = -(t.xform_vec(lens->get_view_vector()));
     t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,d[0],d[1],d[2],cutoff);
@@ -1103,23 +1101,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LightAttrib *target_light = (const LightAttrib *)
       _target_rs->get_attrib_def(LightAttrib::get_class_slot());
 
-    int num_on_lights = target_light->get_num_on_lights();
-    if (num_on_lights == 0) {
+    if (!target_light->has_any_on_light()) {
       // There are no lights at all.  This means, to follow the fixed-
       // function model, we pretend there is an all-white ambient light.
       t.set_row(3, LVecBase4(1, 1, 1, 1));
     } else {
-      for (int li = 0; li < num_on_lights; li++) {
-        NodePath light = target_light->get_on_light(li);
-        nassertr(!light.is_empty(), &LMatrix4::zeros_mat());
-        Light *light_obj = light.node()->as_light();
-        nassertr(light_obj != (Light *)NULL, &LMatrix4::zeros_mat());
-
-        if (light_obj->get_type() == AmbientLight::get_class_type()) {
-          cur_ambient_light += light_obj->get_color();
-        }
-      }
-      t.set_row(3, cur_ambient_light);
+      t.set_row(3, target_light->get_ambient_contribution());
     }
     return &t;
   }
@@ -1161,27 +1148,31 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_plane_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::zeros_mat());
-    nassertr(np.node()->is_of_type(PlaneNode::get_class_type()), &LMatrix4::zeros_mat());
-    LPlane p = DCAST(PlaneNode, np.node())->get_plane();
+    const PlaneNode *plane_node;
+    DCAST_INTO_R(plane_node, np.node(), &LMatrix4::zeros_mat());
+    LPlane p = plane_node->get_plane();
     t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
     return &t;
   }
   case Shader::SMO_clipplane_x: {
-    const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+    const ClipPlaneAttrib *cpa;
+    _target_rs->get_attrib_def(cpa);
     int planenr = atoi(name->get_name().c_str());
     if (planenr >= cpa->get_num_on_planes()) {
       return &LMatrix4::zeros_mat();
     }
     const NodePath &np = cpa->get_on_plane(planenr);
     nassertr(!np.is_empty(), &LMatrix4::zeros_mat());
-    nassertr(np.node()->is_of_type(PlaneNode::get_class_type()), &LMatrix4::zeros_mat());
-    LPlane p (DCAST(PlaneNode, np.node())->get_plane());
+    const PlaneNode *plane_node;
+    DCAST_INTO_R(plane_node, np.node(), &LMatrix4::zeros_mat());
+    LPlane p (plane_node->get_plane());
     p.xform(np.get_net_transform()->get_mat()); // World-space
     t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
     return &t;
   }
   case Shader::SMO_apiview_clipplane_i: {
-    const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+    const ClipPlaneAttrib *cpa;
+    _target_rs->get_attrib_def(cpa);
     if (index >= cpa->get_num_on_planes()) {
       return &LMatrix4::zeros_mat();
     }
@@ -1192,7 +1183,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     DCAST_INTO_R(plane_node, plane.node(), &LMatrix4::zeros_mat());
 
     CPT(TransformState) transform =
-      get_scene()->get_cs_world_transform()->compose(
+      _scene_setup->get_cs_world_transform()->compose(
         plane.get_transform(_scene_setup->get_scene_root().get_parent()));
 
     LPlane xformed_plane = plane_node->get_plane() * transform->get_mat();
@@ -1212,24 +1203,24 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     return &t;
   }
   case Shader::SMO_world_to_view: {
-    return &(get_scene()->get_world_transform()->get_mat());
+    return &(_scene_setup->get_world_transform()->get_mat());
     break;
   }
   case Shader::SMO_view_to_world: {
-    return &(get_scene()->get_camera_transform()->get_mat());
+    return &(_scene_setup->get_camera_transform()->get_mat());
   }
   case Shader::SMO_model_to_view: {
-    return &(get_external_transform()->get_mat());
+    return &(_inv_cs_transform->compose(_internal_transform)->get_mat());
   }
   case Shader::SMO_model_to_apiview: {
-    return &(get_internal_transform()->get_mat());
+    return &(_internal_transform->get_mat());
   }
   case Shader::SMO_view_to_model: {
-    t = get_external_transform()->get_inverse()->get_mat();
+    t = _internal_transform->invert_compose(_cs_transform)->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_to_model: {
-    t = get_internal_transform()->get_inverse()->get_mat();
+    t = _internal_transform->get_inverse()->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_to_view: {
@@ -1274,13 +1265,13 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
     t = np.get_net_transform()->get_mat() *
-      get_scene()->get_world_transform()->get_mat();
+      _scene_setup->get_world_transform()->get_mat();
     return &t;
   }
   case Shader::SMO_view_to_view_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    t = get_scene()->get_camera_transform()->get_mat() *
+    t = _scene_setup->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat();
     return &t;
   }
@@ -1289,13 +1280,13 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
     t = LMatrix4::convert_mat(_internal_coordinate_system, _coordinate_system) *
       np.get_net_transform()->get_mat() *
-      get_scene()->get_world_transform()->get_mat();
+      _scene_setup->get_world_transform()->get_mat();
     return &t;
   }
   case Shader::SMO_view_to_apiview_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    t = (get_scene()->get_camera_transform()->get_mat() *
+    t = (_scene_setup->get_camera_transform()->get_mat() *
          np.get_net_transform()->get_inverse()->get_mat() *
          LMatrix4::convert_mat(_coordinate_system, _internal_coordinate_system));
     return &t;
@@ -1303,20 +1294,22 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_clip_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
-    Lens *lens = DCAST(LensNode, np.node())->get_lens();
+    const LensNode *node;
+    DCAST_INTO_R(node, np.node(), &LMatrix4::ident_mat());
+    const Lens *lens = node->get_lens();
     t = lens->get_projection_mat_inv(_current_stereo_channel) *
       LMatrix4::convert_mat(lens->get_coordinate_system(), _coordinate_system) *
       np.get_net_transform()->get_mat() *
-      get_scene()->get_world_transform()->get_mat();
+      _scene_setup->get_world_transform()->get_mat();
     return &t;
   }
   case Shader::SMO_view_to_clip_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
-    Lens *lens = DCAST(LensNode, np.node())->get_lens();
-    t = get_scene()->get_camera_transform()->get_mat() *
+    const LensNode *node;
+    DCAST_INTO_R(node, np.node(), &LMatrix4::ident_mat());
+    const Lens *lens = node->get_lens();
+    t = _scene_setup->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat() *
       LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system()) *
       lens->get_projection_mat(_current_stereo_channel);
@@ -1325,20 +1318,22 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_apiclip_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
-    Lens *lens = DCAST(LensNode, np.node())->get_lens();
+    const LensNode *node;
+    DCAST_INTO_R(node, np.node(), &LMatrix4::ident_mat());
+    const Lens *lens = node->get_lens();
     t = calc_projection_mat(lens)->get_inverse()->get_mat() *
       get_cs_transform_for(lens->get_coordinate_system())->get_inverse()->get_mat() *
       np.get_net_transform()->get_mat() *
-      get_scene()->get_world_transform()->get_mat();
+      _scene_setup->get_world_transform()->get_mat();
     return &t;
   }
   case Shader::SMO_view_to_apiclip_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
-    Lens *lens = DCAST(LensNode, np.node())->get_lens();
-    t = get_scene()->get_camera_transform()->get_mat() *
+    const LensNode *node;
+    DCAST_INTO_R(node, np.node(), &LMatrix4::ident_mat());
+    const Lens *lens = node->get_lens();
+    t = _scene_setup->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat() *
       get_cs_transform_for(lens->get_coordinate_system())->get_mat() *
       calc_projection_mat(lens)->get_mat();
@@ -1377,28 +1372,20 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LightAttrib *target_light;
     _target_rs->get_attrib_def(target_light);
 
-    // We want to ignore ambient lights.  To that effect, iterate through the
-    // list of lights.  In the future, we will improve this system, by also
-    // filtering down to the number of lights specified by the shader.
-    int i = 0;
-
-    int num_on_lights = target_light->get_num_on_lights();
-    for (int li = 0; li < num_on_lights; li++) {
-      NodePath light = target_light->get_on_light(li);
+    // We don't count ambient lights, which would be pretty silly to handle
+    // via this mechanism.
+    size_t num_lights = target_light->get_num_non_ambient_lights();
+    if (index >= 0 && (size_t)index < num_lights) {
+      NodePath light = target_light->get_on_light((size_t)index);
       nassertr(!light.is_empty(), &LMatrix4::ident_mat());
       Light *light_obj = light.node()->as_light();
-      nassertr(light_obj != (Light *)NULL, &LMatrix4::ident_mat());
+      nassertr(light_obj != nullptr, &LMatrix4::ident_mat());
 
-      if (light_obj->get_type() != AmbientLight::get_class_type()) {
-        if (i++ == index) {
-          return fetch_specified_member(light, name, t);
-        }
-      }
-    }
+      return fetch_specified_member(light, name, t);
 
-    // Apply the default OpenGL lights otherwise.
-    // Special exception for light 0, which defaults to white.
-    if (index == 0) {
+    } else if (index == 0) {
+      // Apply the default OpenGL lights otherwise.
+      // Special exception for light 0, which defaults to white.
       string basename = name->get_basename();
       if (basename == "color" || basename == "diffuse") {
         t.set_row(3, _light_color_scale);
@@ -1436,7 +1423,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   static const CPT_InternalName IN_constantAttenuation("constantAttenuation");
   static const CPT_InternalName IN_linearAttenuation("linearAttenuation");
   static const CPT_InternalName IN_quadraticAttenuation("quadraticAttenuation");
-  static const CPT_InternalName IN_shadowMatrix("shadowMatrix");
+  static const CPT_InternalName IN_shadowViewMatrix("shadowViewMatrix");
 
   PandaNode *node = NULL;
   if (!np.is_empty()) {
@@ -1460,7 +1447,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     }
     Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
-    if (node->is_of_type(AmbientLight::get_class_type())) {
+    if (node->is_ambient_light()) {
       LColor c = light->get_color();
       c.componentwise_mult(_light_color_scale);
       t.set_row(3, c);
@@ -1476,7 +1463,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     }
     Light *light = node->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
-    if (node->is_of_type(AmbientLight::get_class_type())) {
+    if (node->is_ambient_light()) {
       // Ambient light has no diffuse color.
       t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
     } else {
@@ -1499,7 +1486,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     if (np.is_empty()) {
       t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0);
       return &t;
-    } else if (node->is_of_type(AmbientLight::get_class_type())) {
+    } else if (node->is_ambient_light()) {
       // Ambient light has no position.
       t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
       return &t;
@@ -1509,7 +1496,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
 
       CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
       LVector3 dir = -(light->get_direction() * transform->get_mat());
-      dir *= get_scene()->get_cs_world_transform()->get_mat();
+      dir *= _scene_setup->get_cs_world_transform()->get_mat();
       t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],0);
       return &t;
     } else {
@@ -1519,7 +1506,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
       CPT(TransformState) transform =
-        get_scene()->get_cs_world_transform()->compose(
+        _scene_setup->get_cs_world_transform()->compose(
           np.get_transform(_scene_setup->get_scene_root().get_parent()));
 
       const LMatrix4 &light_mat = transform->get_mat();
@@ -1532,7 +1519,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     if (np.is_empty()) {
       t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0);
       return &t;
-    } else if (node->is_of_type(AmbientLight::get_class_type())) {
+    } else if (node->is_ambient_light()) {
       // Ambient light has no half-vector.
       t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
       return &t;
@@ -1542,7 +1529,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
 
       CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
       LVector3 dir = -(light->get_direction() * transform->get_mat());
-      dir *= get_scene()->get_cs_world_transform()->get_mat();
+      dir *= _scene_setup->get_cs_world_transform()->get_mat();
       dir.normalize();
       dir += LVector3(0, 0, 1);
       dir.normalize();
@@ -1555,7 +1542,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
       CPT(TransformState) transform =
-        get_scene()->get_cs_world_transform()->compose(
+        _scene_setup->get_cs_world_transform()->compose(
           np.get_transform(_scene_setup->get_scene_root().get_parent()));
 
       const LMatrix4 &light_mat = transform->get_mat();
@@ -1571,7 +1558,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     if (node == (PandaNode *)NULL) {
       t.set_row(3, LVector3(0.0f, 0.0f, -1.0f));
       return &t;
-    } else if (node->is_of_type(AmbientLight::get_class_type())) {
+    } else if (node->is_ambient_light()) {
       // Ambient light has no spot direction.
       t.set_row(3, LVector3(0.0f, 0.0f, 0.0f));
       return &t;
@@ -1582,7 +1569,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
       CPT(TransformState) transform =
-        get_scene()->get_cs_world_transform()->compose(
+        _scene_setup->get_cs_world_transform()->compose(
           np.get_transform(_scene_setup->get_scene_root().get_parent()));
 
       const LMatrix4 &light_mat = transform->get_mat();
@@ -1676,7 +1663,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     t.set_row(3, LVecBase4(light->get_attenuation()[2]));
     return &t;
 
-  } else if (attrib == IN_shadowMatrix) {
+  } else if (attrib == IN_shadowViewMatrix) {
     static const LMatrix4 biasmat(0.5f, 0.0f, 0.0f, 0.0f,
                                   0.0f, 0.5f, 0.0f, 0.0f,
                                   0.0f, 0.0f, 0.5f, 0.0f,
@@ -1690,8 +1677,8 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     DCAST_INTO_R(lnode, node, &LMatrix4::ident_mat());
     Lens *lens = lnode->get_lens();
 
-    t = get_external_transform()->get_mat() *
-      get_scene()->get_camera_transform()->get_mat() *
+    t = _inv_cs_transform->get_mat() *
+      _scene_setup->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat() *
       LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
 
@@ -1779,27 +1766,27 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       const LightAttrib *target_light;
       _target_rs->get_attrib_def(target_light);
 
-      // We want to ignore ambient lights.  To that effect, iterate through
-      // the list of lights.  In the future, we will improve this system, by
-      // also filtering down to the number of lights specified by the shader.
-      int i = 0;
-
-      int num_on_lights = target_light->get_num_on_lights();
-      for (int li = 0; li < num_on_lights; li++) {
-        NodePath light = target_light->get_on_light(li);
-        nassertr(!light.is_empty(), NULL);
+      // We don't count ambient lights, which would be pretty silly to handle
+      // via this mechanism.
+      size_t num_lights = target_light->get_num_non_ambient_lights();
+      if (spec._stage >= 0 && (size_t)spec._stage < num_lights) {
+        NodePath light = target_light->get_on_light((size_t)spec._stage);
+        nassertr(!light.is_empty(), nullptr);
         Light *light_obj = light.node()->as_light();
-        nassertr(light_obj != (Light *)NULL, NULL);
+        nassertr(light_obj != nullptr, nullptr);
 
-        if (light_obj->get_type() != AmbientLight::get_class_type()) {
-          if (i++ == spec._stage) {
-            PT(Texture) tex = get_shadow_map(light);
-            if (tex != (Texture *)NULL) {
-              sampler = tex->get_default_sampler();
-            }
-            return tex;
-          }
+        PT(Texture) tex = get_shadow_map(light);
+        if (tex != nullptr) {
+          sampler = tex->get_default_sampler();
         }
+        return tex;
+      } else {
+        // There is no such light assigned.  Bind a dummy shadow map.
+        PT(Texture) tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
+        if (tex != nullptr) {
+          sampler = tex->get_default_sampler();
+        }
+        return tex;
       }
     }
     break;
@@ -2641,7 +2628,7 @@ do_issue_light() {
   int i;
 
   int num_enabled = 0;
-  int num_on_lights = 0;
+  bool any_on_lights = false;
 
   const LightAttrib *target_light;
   _target_rs->get_attrib_def(target_light);
@@ -2650,18 +2637,16 @@ do_issue_light() {
     display_cat.spam()
       << "do_issue_light: " << target_light << "\n";
   }
-  if (target_light != (LightAttrib *)NULL) {
-    CPT(LightAttrib) new_light = target_light->filter_to_max(_max_lights);
-    if (display_cat.is_spam()) {
-      new_light->write(display_cat.spam(false), 2);
-    }
-
-    num_on_lights = new_light->get_num_on_lights();
-    for (int li = 0; li < num_on_lights; li++) {
-      NodePath light = new_light->get_on_light(li);
+  if (target_light != nullptr) {
+    // LightAttrib guarantees that the on lights are sorted, and that
+    // non-ambient lights come before ambient lights.
+    any_on_lights = target_light->has_any_on_light();
+    size_t filtered_lights = min((size_t)_max_lights, target_light->get_num_non_ambient_lights());
+    for (size_t li = 0; li < filtered_lights; ++li) {
+      NodePath light = target_light->get_on_light(li);
       nassertv(!light.is_empty());
       Light *light_obj = light.node()->as_light();
-      nassertv(light_obj != (Light *)NULL);
+      nassertv(light_obj != nullptr);
 
       // Lighting should be enabled before we apply any lights.
       if (!_lighting_enabled) {
@@ -2669,23 +2654,16 @@ do_issue_light() {
         _lighting_enabled = true;
       }
 
-      if (light_obj->get_type() == AmbientLight::get_class_type()) {
-        // Ambient lights don't require specific light ids; simply add in the
-        // ambient contribution to the current total
-        cur_ambient_light += light_obj->get_color();
-
-      } else {
-        const LColor &color = light_obj->get_color();
-        // Don't bother binding the light if it has no color to contribute.
-        if (color[0] != 0.0 || color[1] != 0.0 || color[2] != 0.0) {
-          enable_light(num_enabled, true);
-          if (num_enabled == 0) {
-            begin_bind_lights();
-          }
-
-          light_obj->bind(this, light, num_enabled);
-          num_enabled++;
+      const LColor &color = light_obj->get_color();
+      // Don't bother binding the light if it has no color to contribute.
+      if (color[0] != 0.0 || color[1] != 0.0 || color[2] != 0.0) {
+        enable_light(num_enabled, true);
+        if (num_enabled == 0) {
+          begin_bind_lights();
         }
+
+        light_obj->bind(this, light, num_enabled);
+        num_enabled++;
       }
     }
   }
@@ -2696,7 +2674,7 @@ do_issue_light() {
   _num_lights_enabled = num_enabled;
 
   // If no lights were set, disable lighting
-  if (num_on_lights == 0) {
+  if (!any_on_lights) {
     if (_color_scale_via_lighting && (_has_material_force_color || _light_color_scale != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f))) {
       // Unless we need lighting anyway to apply a color or color scale.
       if (!_lighting_enabled) {
@@ -2713,7 +2691,7 @@ do_issue_light() {
     }
 
   } else {
-    set_ambient_light(cur_ambient_light);
+    set_ambient_light(target_light->get_ambient_contribution());
   }
 
   if (num_enabled != 0) {
@@ -3159,14 +3137,20 @@ async_reload_texture(TextureContext *tc) {
  */
 PT(Texture) GraphicsStateGuardian::
 get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
-  nassertr(light_np.node()->is_of_type(DirectionalLight::get_class_type()) ||
-           light_np.node()->is_of_type(PointLight::get_class_type()) ||
-           light_np.node()->is_of_type(Spotlight::get_class_type()), NULL);
+  PandaNode *node = light_np.node();
+  nassertr(node->is_of_type(DirectionalLight::get_class_type()) ||
+           node->is_of_type(PointLight::get_class_type()) ||
+           node->is_of_type(Spotlight::get_class_type()), NULL);
 
-  PT(LightLensNode) light = DCAST(LightLensNode, light_np.node());
-  if (light == NULL || !light->_shadow_caster) {
-    // TODO: return dummy shadow map (all white).
-    return NULL;
+  LightLensNode *light = (LightLensNode *)node;
+  if (light == nullptr || !light->_shadow_caster) {
+    // This light does not have a shadow caster.  Return a dummy shadow map
+    // that is filled with a depth value of 1.
+    if (node->is_of_type(PointLight::get_class_type())) {
+      return get_dummy_shadow_map(Texture::TT_cube_map);
+    } else {
+      return get_dummy_shadow_map(Texture::TT_2d_texture);
+    }
   }
 
   // See if we already have a buffer.  If not, create one.
@@ -3186,6 +3170,42 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
 }
 
 /**
+ * Returns a dummy shadow map that can be used for a light of the given type
+ * that does not cast shadows.
+ */
+PT(Texture) GraphicsStateGuardian::
+get_dummy_shadow_map(Texture::TextureType texture_type) const {
+  if (texture_type != Texture::TT_cube_map) {
+    static PT(Texture) dummy_2d;
+    if (dummy_2d == nullptr) {
+      dummy_2d = new Texture("dummy-shadow-2d");
+      dummy_2d->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_depth_component);
+      dummy_2d->set_clear_color(1);
+      if (get_supports_shadow_filter()) {
+        // If we have the ARB_shadow extension, enable shadow filtering.
+        dummy_2d->set_minfilter(SamplerState::FT_shadow);
+        dummy_2d->set_magfilter(SamplerState::FT_shadow);
+      } else {
+        dummy_2d->set_minfilter(SamplerState::FT_linear);
+        dummy_2d->set_magfilter(SamplerState::FT_linear);
+      }
+    }
+    return dummy_2d;
+  } else {
+    static PT(Texture) dummy_cube;
+    if (dummy_cube == nullptr) {
+      dummy_cube = new Texture("dummy-shadow-cube");
+      dummy_cube->setup_cube_map(1, Texture::T_unsigned_byte, Texture::F_depth_component);
+      dummy_cube->set_clear_color(1);
+      // Note: cube map shadow filtering doesn't seem to work in Cg.
+      dummy_cube->set_minfilter(SamplerState::FT_linear);
+      dummy_cube->set_magfilter(SamplerState::FT_linear);
+    }
+    return dummy_cube;
+  }
+}
+
+/**
  * Creates a depth buffer for shadow mapping.  This is a convenience function
  * for the ShaderGenerator; putting this directly in the ShaderGenerator would
  * cause circular dependency issues.  Returns the depth texture.
@@ -3193,11 +3213,12 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
 PT(Texture) GraphicsStateGuardian::
 make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   // Make sure everything is valid.
-  nassertr(light_np.node()->is_of_type(DirectionalLight::get_class_type()) ||
-           light_np.node()->is_of_type(PointLight::get_class_type()) ||
-           light_np.node()->is_of_type(Spotlight::get_class_type()), NULL);
+  PandaNode *node = light_np.node();
+  nassertr(node->is_of_type(DirectionalLight::get_class_type()) ||
+           node->is_of_type(PointLight::get_class_type()) ||
+           node->is_of_type(Spotlight::get_class_type()), NULL);
 
-  PT(LightLensNode) light = DCAST(LightLensNode, light_np.node());
+  LightLensNode *light = (LightLensNode *)node;
   if (light == NULL || !light->_shadow_caster) {
     return NULL;
   }

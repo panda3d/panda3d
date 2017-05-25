@@ -42,6 +42,9 @@ PUBLISHED:
 
   static BulletPlaneShape *make_from_solid(const CollisionPlane *solid);
 
+  MAKE_PROPERTY(plane_normal, get_plane_normal);
+  MAKE_PROPERTY(plane_constant, get_plane_constant);
+
 public:
   virtual btCollisionShape *ptr() const;
 

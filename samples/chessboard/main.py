@@ -20,7 +20,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.task.Task import Task
 import sys
 
-# First we define some contants for the colors
+# First we define some constants for the colors
 BLACK = (0, 0, 0, 1)
 WHITE = (1, 1, 1, 1)
 HIGHLIGHT = (0, 1, 1, 1)
@@ -33,7 +33,7 @@ PIECEBLACK = (.15, .15, .15, 1)
 # This is how we know where to position an object in 3D space based on a 2D mouse
 # position. It also assumes that we are dragging in the XY plane.
 #
-# This is derived from the mathmatical of a plane, solved for a given point
+# This is derived from the mathematical of a plane, solved for a given point
 def PointAtZ(z, point, vec):
     return point + vec * ((z - point.getZ()) / vec.getZ())
 
@@ -41,7 +41,7 @@ def PointAtZ(z, point, vec):
 def SquarePos(i):
     return LPoint3((i % 8) - 3.5, int(i // 8) - 3.5, 0)
 
-# Helper function for determining wheter a square should be white or black
+# Helper function for determining whether a square should be white or black
 # The modulo operations (%) generate the every-other pattern of a chess-board
 def SquareColor(i):
     if (i + ((i // 8) % 2)) % 2:
@@ -84,7 +84,7 @@ class ChessboardDemo(ShowBase):
         # relative to it
         self.pickerNP = camera.attachNewNode(self.pickerNode)
         # Everything to be picked will use bit 1. This way if we were doing other
-        # collision we could seperate it
+        # collision we could separate it
         self.pickerNode.setFromCollideMask(BitMask32.bit(1))
         self.pickerRay = CollisionRay()  # Make our ray
         # Add it to the collision node
@@ -96,7 +96,7 @@ class ChessboardDemo(ShowBase):
         # Now we create the chess board and its pieces
 
         # We will attach all of the squares to their own root. This way we can do the
-        # collision pass just on the sqaures and save the time of checking the rest
+        # collision pass just on the squares and save the time of checking the rest
         # of the scene
         self.squareRoot = render.attachNewNode("squareRoot")
 
@@ -240,7 +240,7 @@ class ChessboardDemo(ShowBase):
         render.setLight(render.attachNewNode(ambientLight))
 
 
-# Class for a piece. This just handels loading the model and setting initial
+# Class for a piece. This just handles loading the model and setting initial
 # position and color
 class Piece(object):
     def __init__(self, square, color):

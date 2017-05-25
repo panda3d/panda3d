@@ -61,6 +61,11 @@ private:
   static TypeHandle _type_handle;
 };
 
+#ifdef DO_MEMORY_USAGE
+template<>
+INLINE void PointerToBase<TypedWritableReferenceCount>::update_type(To *ptr) {}
+#endif
+
 #include "typedWritableReferenceCount.I"
 
 #endif

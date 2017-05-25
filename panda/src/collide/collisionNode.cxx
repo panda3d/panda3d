@@ -196,7 +196,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (respect_prev_transform) {
     // Determine the previous frame's position, relative to the current
     // position.
-    NodePath node_path = data._node_path.get_node_path();
+    NodePath node_path = data.get_node_path();
     CPT(TransformState) transform = node_path.get_net_transform()->invert_compose(node_path.get_net_prev_transform());
 
     if (!transform->is_identity()) {

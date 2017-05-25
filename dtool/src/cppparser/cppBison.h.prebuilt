@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 2.7.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-      Copyright (C) 1984, 1989-1990, 2000-2012 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,9 +30,9 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_CPPYY_BUILT_X64_TMP_CPPBISON_YXX_H_INCLUDED
-# define YY_CPPYY_BUILT_X64_TMP_CPPBISON_YXX_H_INCLUDED
-/* Enabling traces.  */
+#ifndef YY_CPPYY_BUILT_TMP_CPPBISON_YXX_H_INCLUDED
+# define YY_CPPYY_BUILT_TMP_CPPBISON_YXX_H_INCLUDED
+/* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
 #endif
@@ -40,156 +40,155 @@
 extern int cppyydebug;
 #endif
 
-/* Tokens.  */
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     REAL = 258,
-     INTEGER = 259,
-     CHAR_TOK = 260,
-     SIMPLE_STRING = 261,
-     SIMPLE_IDENTIFIER = 262,
-     STRING_LITERAL = 263,
-     CUSTOM_LITERAL = 264,
-     IDENTIFIER = 265,
-     TYPENAME_IDENTIFIER = 266,
-     TYPEPACK_IDENTIFIER = 267,
-     SCOPING = 268,
-     TYPEDEFNAME = 269,
-     ELLIPSIS = 270,
-     OROR = 271,
-     ANDAND = 272,
-     EQCOMPARE = 273,
-     NECOMPARE = 274,
-     LECOMPARE = 275,
-     GECOMPARE = 276,
-     LSHIFT = 277,
-     RSHIFT = 278,
-     POINTSAT_STAR = 279,
-     DOT_STAR = 280,
-     UNARY = 281,
-     UNARY_NOT = 282,
-     UNARY_NEGATE = 283,
-     UNARY_MINUS = 284,
-     UNARY_PLUS = 285,
-     UNARY_STAR = 286,
-     UNARY_REF = 287,
-     POINTSAT = 288,
-     SCOPE = 289,
-     PLUSPLUS = 290,
-     MINUSMINUS = 291,
-     TIMESEQUAL = 292,
-     DIVIDEEQUAL = 293,
-     MODEQUAL = 294,
-     PLUSEQUAL = 295,
-     MINUSEQUAL = 296,
-     OREQUAL = 297,
-     ANDEQUAL = 298,
-     XOREQUAL = 299,
-     LSHIFTEQUAL = 300,
-     RSHIFTEQUAL = 301,
-     ATTR_LEFT = 302,
-     ATTR_RIGHT = 303,
-     KW_ALIGNAS = 304,
-     KW_ALIGNOF = 305,
-     KW_AUTO = 306,
-     KW_BEGIN_PUBLISH = 307,
-     KW_BLOCKING = 308,
-     KW_BOOL = 309,
-     KW_CATCH = 310,
-     KW_CHAR = 311,
-     KW_CHAR16_T = 312,
-     KW_CHAR32_T = 313,
-     KW_CLASS = 314,
-     KW_CONST = 315,
-     KW_CONSTEXPR = 316,
-     KW_CONST_CAST = 317,
-     KW_DECLTYPE = 318,
-     KW_DEFAULT = 319,
-     KW_DELETE = 320,
-     KW_DOUBLE = 321,
-     KW_DYNAMIC_CAST = 322,
-     KW_ELSE = 323,
-     KW_END_PUBLISH = 324,
-     KW_ENUM = 325,
-     KW_EXTENSION = 326,
-     KW_EXTERN = 327,
-     KW_EXPLICIT = 328,
-     KW_PUBLISHED = 329,
-     KW_FALSE = 330,
-     KW_FINAL = 331,
-     KW_FLOAT = 332,
-     KW_FRIEND = 333,
-     KW_FOR = 334,
-     KW_GOTO = 335,
-     KW_HAS_VIRTUAL_DESTRUCTOR = 336,
-     KW_IF = 337,
-     KW_INLINE = 338,
-     KW_INT = 339,
-     KW_IS_ABSTRACT = 340,
-     KW_IS_BASE_OF = 341,
-     KW_IS_CLASS = 342,
-     KW_IS_CONSTRUCTIBLE = 343,
-     KW_IS_CONVERTIBLE_TO = 344,
-     KW_IS_DESTRUCTIBLE = 345,
-     KW_IS_EMPTY = 346,
-     KW_IS_ENUM = 347,
-     KW_IS_FINAL = 348,
-     KW_IS_FUNDAMENTAL = 349,
-     KW_IS_POD = 350,
-     KW_IS_POLYMORPHIC = 351,
-     KW_IS_STANDARD_LAYOUT = 352,
-     KW_IS_TRIVIAL = 353,
-     KW_IS_UNION = 354,
-     KW_LONG = 355,
-     KW_MAKE_MAP_PROPERTY = 356,
-     KW_MAKE_PROPERTY = 357,
-     KW_MAKE_PROPERTY2 = 358,
-     KW_MAKE_SEQ = 359,
-     KW_MAKE_SEQ_PROPERTY = 360,
-     KW_MUTABLE = 361,
-     KW_NAMESPACE = 362,
-     KW_NEW = 363,
-     KW_NOEXCEPT = 364,
-     KW_NULLPTR = 365,
-     KW_OPERATOR = 366,
-     KW_OVERRIDE = 367,
-     KW_PRIVATE = 368,
-     KW_PROTECTED = 369,
-     KW_PUBLIC = 370,
-     KW_REGISTER = 371,
-     KW_REINTERPRET_CAST = 372,
-     KW_RETURN = 373,
-     KW_SHORT = 374,
-     KW_SIGNED = 375,
-     KW_SIZEOF = 376,
-     KW_STATIC = 377,
-     KW_STATIC_ASSERT = 378,
-     KW_STATIC_CAST = 379,
-     KW_STRUCT = 380,
-     KW_TEMPLATE = 381,
-     KW_THREAD_LOCAL = 382,
-     KW_THROW = 383,
-     KW_TRUE = 384,
-     KW_TRY = 385,
-     KW_TYPEDEF = 386,
-     KW_TYPEID = 387,
-     KW_TYPENAME = 388,
-     KW_UNDERLYING_TYPE = 389,
-     KW_UNION = 390,
-     KW_UNSIGNED = 391,
-     KW_USING = 392,
-     KW_VIRTUAL = 393,
-     KW_VOID = 394,
-     KW_VOLATILE = 395,
-     KW_WCHAR_T = 396,
-     KW_WHILE = 397,
-     START_CPP = 398,
-     START_CONST_EXPR = 399,
-     START_TYPE = 400
-   };
+  enum yytokentype
+  {
+    REAL = 258,
+    INTEGER = 259,
+    CHAR_TOK = 260,
+    SIMPLE_STRING = 261,
+    SIMPLE_IDENTIFIER = 262,
+    STRING_LITERAL = 263,
+    CUSTOM_LITERAL = 264,
+    IDENTIFIER = 265,
+    TYPENAME_IDENTIFIER = 266,
+    TYPEPACK_IDENTIFIER = 267,
+    SCOPING = 268,
+    TYPEDEFNAME = 269,
+    ELLIPSIS = 270,
+    OROR = 271,
+    ANDAND = 272,
+    EQCOMPARE = 273,
+    NECOMPARE = 274,
+    LECOMPARE = 275,
+    GECOMPARE = 276,
+    LSHIFT = 277,
+    RSHIFT = 278,
+    POINTSAT_STAR = 279,
+    DOT_STAR = 280,
+    UNARY = 281,
+    UNARY_NOT = 282,
+    UNARY_NEGATE = 283,
+    UNARY_MINUS = 284,
+    UNARY_PLUS = 285,
+    UNARY_STAR = 286,
+    UNARY_REF = 287,
+    POINTSAT = 288,
+    SCOPE = 289,
+    PLUSPLUS = 290,
+    MINUSMINUS = 291,
+    TIMESEQUAL = 292,
+    DIVIDEEQUAL = 293,
+    MODEQUAL = 294,
+    PLUSEQUAL = 295,
+    MINUSEQUAL = 296,
+    OREQUAL = 297,
+    ANDEQUAL = 298,
+    XOREQUAL = 299,
+    LSHIFTEQUAL = 300,
+    RSHIFTEQUAL = 301,
+    ATTR_LEFT = 302,
+    ATTR_RIGHT = 303,
+    KW_ALIGNAS = 304,
+    KW_ALIGNOF = 305,
+    KW_AUTO = 306,
+    KW_BEGIN_PUBLISH = 307,
+    KW_BLOCKING = 308,
+    KW_BOOL = 309,
+    KW_CATCH = 310,
+    KW_CHAR = 311,
+    KW_CHAR16_T = 312,
+    KW_CHAR32_T = 313,
+    KW_CLASS = 314,
+    KW_CONST = 315,
+    KW_CONSTEXPR = 316,
+    KW_CONST_CAST = 317,
+    KW_DECLTYPE = 318,
+    KW_DEFAULT = 319,
+    KW_DELETE = 320,
+    KW_DOUBLE = 321,
+    KW_DYNAMIC_CAST = 322,
+    KW_ELSE = 323,
+    KW_END_PUBLISH = 324,
+    KW_ENUM = 325,
+    KW_EXTENSION = 326,
+    KW_EXTERN = 327,
+    KW_EXPLICIT = 328,
+    KW_PUBLISHED = 329,
+    KW_FALSE = 330,
+    KW_FINAL = 331,
+    KW_FLOAT = 332,
+    KW_FRIEND = 333,
+    KW_FOR = 334,
+    KW_GOTO = 335,
+    KW_HAS_VIRTUAL_DESTRUCTOR = 336,
+    KW_IF = 337,
+    KW_INLINE = 338,
+    KW_INT = 339,
+    KW_IS_ABSTRACT = 340,
+    KW_IS_BASE_OF = 341,
+    KW_IS_CLASS = 342,
+    KW_IS_CONSTRUCTIBLE = 343,
+    KW_IS_CONVERTIBLE_TO = 344,
+    KW_IS_DESTRUCTIBLE = 345,
+    KW_IS_EMPTY = 346,
+    KW_IS_ENUM = 347,
+    KW_IS_FINAL = 348,
+    KW_IS_FUNDAMENTAL = 349,
+    KW_IS_POD = 350,
+    KW_IS_POLYMORPHIC = 351,
+    KW_IS_STANDARD_LAYOUT = 352,
+    KW_IS_TRIVIAL = 353,
+    KW_IS_UNION = 354,
+    KW_LONG = 355,
+    KW_MAKE_MAP_PROPERTY = 356,
+    KW_MAKE_PROPERTY = 357,
+    KW_MAKE_PROPERTY2 = 358,
+    KW_MAKE_SEQ = 359,
+    KW_MAKE_SEQ_PROPERTY = 360,
+    KW_MUTABLE = 361,
+    KW_NAMESPACE = 362,
+    KW_NEW = 363,
+    KW_NOEXCEPT = 364,
+    KW_NULLPTR = 365,
+    KW_OPERATOR = 366,
+    KW_OVERRIDE = 367,
+    KW_PRIVATE = 368,
+    KW_PROTECTED = 369,
+    KW_PUBLIC = 370,
+    KW_REGISTER = 371,
+    KW_REINTERPRET_CAST = 372,
+    KW_RETURN = 373,
+    KW_SHORT = 374,
+    KW_SIGNED = 375,
+    KW_SIZEOF = 376,
+    KW_STATIC = 377,
+    KW_STATIC_ASSERT = 378,
+    KW_STATIC_CAST = 379,
+    KW_STRUCT = 380,
+    KW_TEMPLATE = 381,
+    KW_THREAD_LOCAL = 382,
+    KW_THROW = 383,
+    KW_TRUE = 384,
+    KW_TRY = 385,
+    KW_TYPEDEF = 386,
+    KW_TYPEID = 387,
+    KW_TYPENAME = 388,
+    KW_UNDERLYING_TYPE = 389,
+    KW_UNION = 390,
+    KW_UNSIGNED = 391,
+    KW_USING = 392,
+    KW_VIRTUAL = 393,
+    KW_VOID = 394,
+    KW_VOLATILE = 395,
+    KW_WCHAR_T = 396,
+    KW_WHILE = 397,
+    START_CPP = 398,
+    START_CONST_EXPR = 399,
+    START_TYPE = 400
+  };
 #endif
 /* Tokens.  */
 #define REAL 258
@@ -336,40 +335,24 @@ extern int cppyydebug;
 #define START_CONST_EXPR 399
 #define START_TYPE 400
 
+/* Value type.  */
 
-
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
-#endif
-
+/* Location type.  */
 #if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
-typedef struct YYLTYPE
+typedef struct YYLTYPE YYLTYPE;
+struct YYLTYPE
 {
   int first_line;
   int first_column;
   int last_line;
   int last_column;
-} YYLTYPE;
-# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
+};
 # define YYLTYPE_IS_DECLARED 1
 # define YYLTYPE_IS_TRIVIAL 1
 #endif
 
 
-#ifdef YYPARSE_PARAM
-#if defined __STDC__ || defined __cplusplus
-int cppyyparse (void *YYPARSE_PARAM);
-#else
-int cppyyparse ();
-#endif
-#else /* ! YYPARSE_PARAM */
-#if defined __STDC__ || defined __cplusplus
-int cppyyparse (void);
-#else
-int cppyyparse ();
-#endif
-#endif /* ! YYPARSE_PARAM */
 
-#endif /* !YY_CPPYY_BUILT_X64_TMP_CPPBISON_YXX_H_INCLUDED  */
+int cppyyparse (void);
+
+#endif /* !YY_CPPYY_BUILT_TMP_CPPBISON_YXX_H_INCLUDED  */

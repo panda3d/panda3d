@@ -31,12 +31,12 @@ PUBLISHED:
 
   virtual EggTriangleFan *make_copy() const OVERRIDE;
 
-  virtual void write(ostream &out, int indent_level) const;
-  virtual void apply_first_attribute();
+  virtual void write(ostream &out, int indent_level) const OVERRIDE;
+  virtual void apply_first_attribute() OVERRIDE;
 
 protected:
-  virtual int get_num_lead_vertices() const;
-  virtual bool do_triangulate(EggGroupNode *container) const;
+  virtual int get_num_lead_vertices() const OVERRIDE;
+  virtual bool do_triangulate(EggGroupNode *container) const OVERRIDE;
 
 public:
   static TypeHandle get_class_type() {
@@ -47,10 +47,13 @@ public:
     register_type(_type_handle, "EggTriangleFan",
                   EggCompositePrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const OVERRIDE {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() OVERRIDE {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

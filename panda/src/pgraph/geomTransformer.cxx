@@ -151,7 +151,7 @@ transform_vertices(GeomNode *node, const LMatrix4 &mat) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
-        entry._geom = new_geom;
+        entry._geom = move(new_geom);
         any_changed = true;
       }
     }
@@ -1243,16 +1243,14 @@ apply_collect_changes() {
 void GeomTransformer::NewCollectedData::
 append_vdata(const GeomVertexData *vdata, int vertex_offset) {
   for (int i = 0; i < vdata->get_num_arrays(); ++i) {
-    PT(GeomVertexArrayData) new_array = _new_data->modify_array(i);
-    CPT(GeomVertexArrayData) old_array = vdata->get_array(i);
+    PT(GeomVertexArrayDataHandle) new_handle = _new_data->modify_array_handle(i);
+    CPT(GeomVertexArrayDataHandle) old_handle = vdata->get_array_handle(i);
     size_t stride = (size_t)_new_format->get_array(i)->get_stride();
     size_t start_byte = (size_t)vertex_offset * stride;
-    size_t copy_bytes = old_array->get_data_size_bytes();
-    nassertv(start_byte + copy_bytes <= new_array->get_data_size_bytes());
+    size_t copy_bytes = old_handle->get_data_size_bytes();
+    nassertv(start_byte + copy_bytes <= new_handle->get_data_size_bytes());
 
-    new_array->modify_handle()->copy_subdata_from
-      (start_byte, copy_bytes,
-       old_array->get_handle(), 0, copy_bytes);
+    new_handle->copy_subdata_from(start_byte, copy_bytes, old_handle, 0, copy_bytes);
   }
 
   // Also, copy the animation data (if any).  This means combining transform
@@ -1441,13 +1439,8 @@ remove_unused_vertices(const GeomVertexData *vdata) {
     any_referenced = true;
     int num_primitives = geom->get_num_primitives();
     for (int i = 0; i < num_primitives; ++i) {
-      CPT(GeomPrimitive) prim = geom->get_primitive(i);
-
-      GeomPrimitivePipelineReader reader(prim, current_thread);
-      int num_vertices = reader.get_num_vertices();
-      for (int vi = 0; vi < num_vertices; ++vi) {
-        referenced_vertices.set_bit(reader.get_vertex(vi));
-      }
+      GeomPrimitivePipelineReader reader(geom->get_primitive(i), current_thread);
+      reader.get_referenced_vertices(referenced_vertices);
     }
   }
 

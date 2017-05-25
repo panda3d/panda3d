@@ -145,7 +145,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   _mesh = DCAST(BulletTriangleMesh, p_list[pi++]);
 
-  btTriangleMesh *mesh_ptr = _mesh->ptr();
+  btStridingMeshInterface *mesh_ptr = _mesh->ptr();
   nassertr(mesh_ptr != NULL, pi);
 
   if (_dynamic) {

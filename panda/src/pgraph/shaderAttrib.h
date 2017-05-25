@@ -31,6 +31,7 @@
 #include "pta_LVecBase4.h"
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
+#include "extension.h"
 
 /**
  *
@@ -70,7 +71,7 @@ PUBLISHED:
 
   CPT(RenderAttrib) clear_shader() const;
   // Shader Inputs
-  CPT(RenderAttrib) set_shader_input(const ShaderInput *inp) const;
+  CPT(RenderAttrib) set_shader_input(ShaderInput input) const;
 
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, Texture *tex,       int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0) const;
@@ -103,8 +104,8 @@ PUBLISHED:
   INLINE bool has_shader_input(CPT_InternalName id) const;
 
   const Shader *get_shader() const;
-  const ShaderInput *get_shader_input(const InternalName *id) const;
-  const ShaderInput *get_shader_input(const string &id) const;
+  const ShaderInput &get_shader_input(const InternalName *id) const;
+  const ShaderInput &get_shader_input(const string &id) const;
 
   const NodePath &get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(InternalName *id) const;
@@ -144,8 +145,12 @@ private:
   bool        _auto_ramp_on;
   bool        _auto_shadow_on;
 
-  typedef pmap<CPT_InternalName, CPT(ShaderInput)> Inputs;
+  // We don't keep a reference to the InternalName, since this is also already
+  // stored on the ShaderInput object.
+  typedef pmap<const InternalName *, ShaderInput> Inputs;
   Inputs _inputs;
+
+  friend class Extension<NodePath>;
 
 PUBLISHED:
   static int get_class_slot() {

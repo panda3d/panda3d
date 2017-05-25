@@ -48,10 +48,10 @@ public:
   INLINE bool operator < (const CopyOnWritePointer &other) const;
 
 #ifdef COW_THREADED
-  CPT(CopyOnWriteObject) get_read_pointer() const;
+  CPT(CopyOnWriteObject) get_read_pointer(Thread *current_thread) const;
   PT(CopyOnWriteObject) get_write_pointer();
 #else
-  INLINE const CopyOnWriteObject *get_read_pointer() const;
+  INLINE const CopyOnWriteObject *get_read_pointer(Thread *current_thread) const;
   INLINE CopyOnWriteObject *get_write_pointer();
 #endif  // COW_THREADED
 
@@ -93,10 +93,10 @@ public:
 #endif
 
 #ifdef COW_THREADED
-  INLINE CPT(To) get_read_pointer() const;
+  INLINE CPT(To) get_read_pointer(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PT(To) get_write_pointer();
 #else
-  INLINE const To *get_read_pointer() const;
+  INLINE const To *get_read_pointer(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE To *get_write_pointer();
 #endif  // COW_THREADED
 

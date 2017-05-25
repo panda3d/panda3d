@@ -122,8 +122,10 @@ void CharacterJointEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &) const {
-  CPT(TransformState) dummy_transform = TransformState::make_identity();
-  adjust_transform(dummy_transform, node_transform, data.node());
+  if (_character.is_valid_pointer()) {
+    _character->update();
+  }
+  node_transform = data.node()->get_transform();
 }
 
 /**
@@ -147,7 +149,7 @@ has_adjust_transform() const {
 void CharacterJointEffect::
 adjust_transform(CPT(TransformState) &net_transform,
                  CPT(TransformState) &node_transform,
-                 PandaNode *node) const {
+                 const PandaNode *node) const {
   if (_character.is_valid_pointer()) {
     _character->update();
   }

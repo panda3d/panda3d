@@ -401,15 +401,17 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
+  INLINE GeomPipelineReader(Thread *current_thread);
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
 private:
-  INLINE GeomPipelineReader(const GeomPipelineReader &copy);
-  INLINE void operator = (const GeomPipelineReader &copy);
+  GeomPipelineReader(const GeomPipelineReader &copy) DELETED;
+  GeomPipelineReader &operator = (const GeomPipelineReader &copy) DELETED_ASSIGN;
 
 public:
   INLINE ~GeomPipelineReader();
   ALLOC_DELETED_CHAIN(GeomPipelineReader);
 
+  INLINE void set_object(const Geom *object);
   INLINE const Geom *get_object() const;
   INLINE Thread *get_current_thread() const;
 

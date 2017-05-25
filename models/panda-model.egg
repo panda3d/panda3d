@@ -12381,11 +12381,6 @@
       <Polygon> {
         <RGBA> { 1 1 1 1 }
         <TRef> { Tex1 }
-        <VertexRef> { 602 674 627 <Ref> { panda_mesh.verts } }
-      }
-      <Polygon> {
-        <RGBA> { 1 1 1 1 }
-        <TRef> { Tex1 }
         <VertexRef> { 600 628 675 <Ref> { panda_mesh.verts } }
       }
       <Polygon> {
@@ -12397,16 +12392,6 @@
         <RGBA> { 1 1 1 1 }
         <TRef> { Tex1 }
         <VertexRef> { 628 630 676 <Ref> { panda_mesh.verts } }
-      }
-      <Polygon> {
-        <RGBA> { 1 1 1 1 }
-        <TRef> { Tex1 }
-        <VertexRef> { 674 676 630 <Ref> { panda_mesh.verts } }
-      }
-      <Polygon> {
-        <RGBA> { 1 1 1 1 }
-        <TRef> { Tex1 }
-        <VertexRef> { 630 627 674 <Ref> { panda_mesh.verts } }
       }
       <Polygon> {
         <RGBA> { 1 1 1 1 }
@@ -16891,11 +16876,6 @@
       <Polygon> {
         <RGBA> { 1 1 1 1 }
         <TRef> { Tex1 }
-        <VertexRef> { 674 602 627 <Ref> { panda_mesh.verts } }
-      }
-      <Polygon> {
-        <RGBA> { 1 1 1 1 }
-        <TRef> { Tex1 }
         <VertexRef> { 1283 1258 1325 <Ref> { panda_mesh.verts } }
       }
       <Polygon> {
@@ -16907,16 +16887,6 @@
         <RGBA> { 1 1 1 1 }
         <TRef> { Tex1 }
         <VertexRef> { 630 1283 676 <Ref> { panda_mesh.verts } }
-      }
-      <Polygon> {
-        <RGBA> { 1 1 1 1 }
-        <TRef> { Tex1 }
-        <VertexRef> { 676 674 630 <Ref> { panda_mesh.verts } }
-      }
-      <Polygon> {
-        <RGBA> { 1 1 1 1 }
-        <TRef> { Tex1 }
-        <VertexRef> { 627 630 674 <Ref> { panda_mesh.verts } }
       }
       <Polygon> {
         <RGBA> { 1 1 1 1 }
@@ -24400,7 +24370,7 @@
     }
     <VertexRef> {
       294 295 593 595 597 600 602 624 625 626 627 628 629 630 631 632
-      633 634 635 636 637 638 649 650 651 653 656 657 658 659 674 675
+      633 634 635 636 637 638 649 650 651 653 656 657 658 659 675
       676 956 957 1251 1254 1256 1258 1279 1280 1281 1282 1283 1284 1285
       1286 1287 1288 1289 1290 1301 1302 1303 1305 1308 1309 1310 1311
       1325

@@ -928,12 +928,21 @@ type_like_declaration:
 
   current_scope->add_declaration($2, global_scope, current_lexer, @2);
 }
-        | storage_class constructor_prototype maybe_initialize_or_constructor_body
+        | storage_class constructor_prototype
 {
   if ($2 != (CPPInstance *)NULL) {
+    // Push the scope so that the initializers can make use of things defined
+    // in the class body.
+    push_scope($2->get_scope(current_scope, global_scope));
     $2->_storage_class |= (current_storage_class | $1);
+  }
+}
+        maybe_initialize_or_constructor_body
+{
+  if ($2 != (CPPInstance *)NULL) {
+    pop_scope();
     current_scope->add_declaration($2, global_scope, current_lexer, @2);
-    $2->set_initializer($3);
+    $2->set_initializer($4);
   }
 }
         | storage_class function_prototype maybe_initialize_or_function_body
@@ -1451,6 +1460,7 @@ function_operator:
 more_template_declaration:
         type_like_declaration
         | template_declaration
+        | friend_declaration
         ;
 
 template_declaration:
@@ -1464,6 +1474,7 @@ template_declaration:
   pop_scope();
 }
         | KW_TEMPLATE type_like_declaration
+        | KW_TEMPLATE friend_declaration
         ;
 
 template_formal_parameters:

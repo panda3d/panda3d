@@ -77,6 +77,8 @@ public:
   void unregister_shared_depth_buffer(GraphicsOutput *graphics_output);
 
 protected:
+  virtual GraphicsOutput *get_host();
+
   virtual void close_buffer();
   virtual bool open_buffer();
 

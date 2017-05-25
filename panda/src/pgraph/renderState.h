@@ -278,7 +278,7 @@ private:
 
   // This keeps track of our current position through the garbage collection
   // cycle.
-  static int _garbage_index;
+  static size_t _garbage_index;
 
   static PStatCollector _cache_update_pcollector;
   static PStatCollector _garbage_collect_pcollector;
@@ -367,6 +367,12 @@ private:
   friend class RenderAttribRegistry;
   friend class Extension<RenderState>;
 };
+
+#ifdef DO_MEMORY_USAGE
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<RenderState>::update_type(To *ptr) {}
+#endif
 
 INLINE ostream &operator << (ostream &out, const RenderState &state) {
   state.output(out);

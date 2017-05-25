@@ -72,10 +72,8 @@
 #define DTOOL_PLATFORM "linux_ppc"
 #endif
 
-#ifndef DTOOL_PLATFORM
+#if !defined(DTOOL_PLATFORM) && !defined(CPPPARSER)
 #error "Can't determine platform; please define DTOOL_PLATFORM in Config.pp file."
 #endif
-
-
 
 #endif

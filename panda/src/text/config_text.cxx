@@ -48,6 +48,18 @@ ConfigVariableBool text_dynamic_merge
           "operation.  Usually it's a performance "
           "advantage to keep this true.  See TextNode::set_flatten_flags()."));
 
+ConfigVariableBool text_kerning
+("text-kerning", false,
+ PRC_DESC("Set this true to enable kerning when the font provides kerning "
+          "tables.  This can result in more aesthetically pleasing spacing "
+          "between individual glyphs.  Has no effect when text-use-harfbuzz "
+          "is true, since HarfBuzz offers superior kerning support."));
+
+ConfigVariableBool text_use_harfbuzz
+("text-use-harfbuzz", false,
+ PRC_DESC("Set this true to enable HarfBuzz support, which offers superior "
+          "text shaping and better support for non-Latin text."));
+
 ConfigVariableInt text_anisotropic_degree
 ("text-anisotropic-degree", 1,
  PRC_DESC("This is the default anisotropic-degree that is set on dynamic "

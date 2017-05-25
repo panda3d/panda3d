@@ -629,7 +629,7 @@ PUBLISHED:
   void set_shader_auto(BitMask32 shader_switch, int priority=0);
   void clear_shader();
 
-  void set_shader_input(const ShaderInput *inp);
+  void set_shader_input(ShaderInput input);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
@@ -659,11 +659,13 @@ PUBLISHED:
   INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
                                PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
+  EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
+
   void clear_shader_input(CPT_InternalName id);
   void set_instance_count(int instance_count);
 
   const Shader *get_shader() const;
-  const ShaderInput *get_shader_input(CPT_InternalName id) const;
+  ShaderInput get_shader_input(CPT_InternalName id) const;
   int get_instance_count() const;
 
   void set_tex_transform(TextureStage *stage, const TransformState *transform);
@@ -1027,6 +1029,7 @@ private:
   friend class NodePathCollection;
   friend class WorkingNodePath;
   friend class WeakNodePath;
+  friend class CullTraverserData;
 };
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path);

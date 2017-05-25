@@ -82,6 +82,7 @@ public:
   INLINE FunctionIndex get_constructor(int n) const;
   INLINE bool has_destructor() const;
   INLINE bool destructor_is_inherited() const;
+  INLINE bool destructor_is_implicit() const;
   INLINE FunctionIndex get_destructor() const;
   INLINE int number_of_elements() const;
   INLINE ElementIndex get_element(int n) const;
