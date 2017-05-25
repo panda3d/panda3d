@@ -77,6 +77,7 @@ private:
   typedef pvector<SwapBuffer> SwapBuffers;
   SwapBuffers _swap_buffers;
   uint32_t _image_index;
+  VkImageLayout _final_layout;
 
   VulkanTextureContext *_depth_stencil_tc;
   VkFormat _depth_stencil_format;

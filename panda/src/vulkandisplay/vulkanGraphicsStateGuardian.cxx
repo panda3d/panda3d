@@ -153,7 +153,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   // Create a pipeline layout.  We'll do that here for now.
   VkPushConstantRange ranges[2];
-  ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+  ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   ranges[0].offset = 0;
   ranges[0].size = 64;
   ranges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -410,7 +410,7 @@ prepare_texture(Texture *texture, int view) {
   image_info.arrayLayers = num_layers;
   image_info.samples = VK_SAMPLE_COUNT_1_BIT;
   image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-  image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+  image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
   image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   image_info.queueFamilyIndexCount = 0;
   image_info.pQueueFamilyIndices = NULL;
@@ -509,7 +509,7 @@ prepare_texture(Texture *texture, int view) {
       generate_mipmaps = false;
     } else {
       // We'll be generating mipmaps from it, so mark it as transfer source.
-      image_info.usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+      image_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     }
   }
 
@@ -668,6 +668,11 @@ prepare_texture(Texture *texture, int view) {
     vkDestroyImage(_device, image, NULL);
     vkFreeMemory(_device, device_mem, NULL);
     return (TextureContext *)NULL;
+  }
+
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Created image " << image << " and view " << image_view << " for texture " << *texture << "\n";
   }
 
   VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
@@ -1021,8 +1026,8 @@ prepare_sampler(const SamplerState &sampler) {
   sampler_info.addressModeV = wrap_map[sampler.get_wrap_v()];
   sampler_info.addressModeW = wrap_map[sampler.get_wrap_w()];
   sampler_info.mipLodBias = sampler.get_lod_bias();
-  sampler_info.anisotropyEnable = VK_FALSE;
-  sampler_info.maxAnisotropy = sampler.get_anisotropic_degree();
+  sampler_info.anisotropyEnable = (sampler.get_effective_anisotropic_degree() > 1);
+  sampler_info.maxAnisotropy = sampler.get_effective_anisotropic_degree();
   sampler_info.compareEnable = VK_FALSE;
   sampler_info.compareOp = VK_COMPARE_OP_NEVER;
   sampler_info.minLod = sampler.get_min_lod();
@@ -1400,7 +1405,7 @@ set_state_and_transform(const RenderState *state,
   // Put the modelview projection matrix in the push constants.
   CPT(TransformState) combined = _projection_mat->compose(trans);
   LMatrix4f matrix = LCAST(float, combined->get_mat());
-  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 64, matrix.get_data());
+  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, matrix.get_data());
 
   const ColorScaleAttrib *color_scale_attrib;
   state->get_attrib_def(color_scale_attrib);
@@ -2389,7 +2394,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   raster_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   raster_info.pNext = NULL;
   raster_info.flags = 0;
-  raster_info.depthClampEnable = VK_TRUE;
+  raster_info.depthClampEnable = VK_FALSE;
   raster_info.rasterizerDiscardEnable = VK_FALSE;
 
   if (_supported_geom_rendering & Geom::GR_render_mode_wireframe) {

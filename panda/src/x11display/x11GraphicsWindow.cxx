@@ -992,6 +992,9 @@ open_window() {
     _parent_window_handle->attach_child(_window_handle);
   }
 
+  // Before we start rendering, we wait for the final dimensions from the
+  // window manager.
+  _awaiting_configure = true;
   return true;
 }
 

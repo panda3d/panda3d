@@ -80,6 +80,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
+#ifdef HAVE_X11
+  if (_awaiting_configure) {
+    return false;
+  }
+#endif
+
   if (vulkandisplay_cat.is_spam()) {
     vulkandisplay_cat.spam()
       << "Drawing " << this << ": exposed.\n";
@@ -150,11 +156,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   VkCommandBuffer cmd = vkgsg->_cmd;
 
   VkClearValue clears[2];
-  LColor clear_color = get_clear_color();
-  clears[0].color.float32[0] = clear_color[0];
-  clears[0].color.float32[1] = clear_color[1];
-  clears[0].color.float32[2] = clear_color[2];
-  clears[0].color.float32[3] = clear_color[3];
 
   VkRenderPassBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -165,7 +166,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_info.renderArea.offset.y = 0;
   begin_info.renderArea.extent.width = _size[0];
   begin_info.renderArea.extent.height = _size[1];
-  begin_info.clearValueCount = 1;
+  begin_info.clearValueCount = 0;
   begin_info.pClearValues = clears;
 
   if (!get_clear_color_active()) {
@@ -176,7 +177,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       // time if we don't want the validation layer to yell at us.
       // We clear it to an arbitrary arbitrary color.  We'll just pick the
       // color returned by get_clear_color(), even if it is meaningless.
-      buffer._tc->clear_color_image(cmd, clears[0].color);
+
+      // Actually, doing this causes the validation layer to yell even louder
+      // because the image has no VK_IMAGE_USAGE_TRANSFER_DST_BIT.
+      //buffer._tc->clear_color_image(cmd, clears[0].color);
     }
 
     buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
@@ -188,13 +192,16 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     buffer._tc->_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     buffer._tc->_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     buffer._tc->_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    LColor clear_color = get_clear_color();
+    clears[begin_info.clearValueCount].color.float32[0] = clear_color[0];
+    clears[begin_info.clearValueCount].color.float32[1] = clear_color[1];
+    clears[begin_info.clearValueCount].color.float32[2] = clear_color[2];
+    clears[begin_info.clearValueCount].color.float32[3] = clear_color[3];
+    ++begin_info.clearValueCount;
   }
 
   if (_depth_stencil_tc != NULL) {
-    begin_info.clearValueCount++;
-    clears[1].depthStencil.depth = get_clear_depth();
-    clears[1].depthStencil.stencil = get_clear_stencil();
-
     // Transition the depth-stencil image to a consistent state.
     if (!get_clear_depth_active() || !get_clear_stencil_active()) {
       _depth_stencil_tc->transition(cmd, vkgsg->_graphics_queue_family_index,
@@ -207,6 +214,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       _depth_stencil_tc->_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       _depth_stencil_tc->_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                                        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    }
+
+    if (get_clear_depth_active() || get_clear_stencil_active()) {
+      clears[begin_info.clearValueCount].depthStencil.depth = get_clear_depth();
+      clears[begin_info.clearValueCount].depthStencil.stencil = get_clear_stencil();
+      ++begin_info.clearValueCount;
     }
   }
 
@@ -238,10 +251,18 @@ end_frame(FrameMode mode, Thread *current_thread) {
     vkgsg->_render_pass = VK_NULL_HANDLE;
 
     // The driver implicitly transitioned this to the final layout.
-    _swap_buffers[_image_index]._tc->_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    SwapBuffer &buffer = _swap_buffers[_image_index];
+    buffer._tc->_layout = _final_layout;
+    buffer._tc->_access_mask = VK_ACCESS_MEMORY_READ_BIT;
 
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
+
+    // If we copied the textures, transition it back to the present state.
+    buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
+                           VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                           VK_ACCESS_MEMORY_READ_BIT);
   }
 
   // Note: this will close the command buffer.
@@ -300,6 +321,8 @@ end_flip() {
   VkResult err;
 
   SwapBuffer &buffer = _swap_buffers[_image_index];
+
+  // Make sure it is in the state we expect it to be.
   nassertv(buffer._tc->_layout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
   VkResult results[1];
@@ -526,7 +549,14 @@ open_window() {
     _depth_stencil_aspect_mask |= 0;
   }
 
+  // Don't create the swapchain yet if we haven't yet gotten the configure
+  // notify event, since we don't know the final size yet.
+#ifdef HAVE_X11
+  _swapchain_size.set(-1, -1);
+  return setup_render_pass() && (_awaiting_configure || create_swapchain());
+#else
   return setup_render_pass() && create_swapchain();
+#endif
 }
 
 /**
@@ -546,6 +576,22 @@ setup_render_pass() {
       << "Creating render pass for VulkanGraphicsWindow " << this << "\n";
   }
 
+  {
+    // Do we intend to copy the framebuffer to a texture?
+    _final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    CDReader cdata(_cycler);
+    RenderTextures::const_iterator ri;
+    for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
+      if ((*ri)._plane == RTP_color) {
+        RenderTextureMode mode = (*ri)._rtm_mode;
+        if (mode == RTM_copy_texture || mode == RTM_copy_ram) {
+          _final_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+          break;
+        }
+      }
+    }
+  }
+
   // Now we want to create a render pass, and for that we need to describe the
   // framebuffer attachments as well as any subpasses we'd like to use.
   VkAttachmentDescription attachments[2];
@@ -557,7 +603,7 @@ setup_render_pass() {
   attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  attachments[0].finalLayout = _final_layout;
 
   attachments[1].flags = 0;
   attachments[1].format = _depth_stencil_format;
@@ -732,6 +778,10 @@ create_swapchain() {
   num_images = min(surf_caps.maxImageCount, num_images);
   num_images = max(surf_caps.minImageCount, num_images);
 
+  _swapchain_size.set(
+    max(min((uint32_t)_size[0], surf_caps.maxImageExtent.width), surf_caps.minImageExtent.width),
+    max(min((uint32_t)_size[1], surf_caps.maxImageExtent.height), surf_caps.minImageExtent.height));
+
   // Get the supported presentation modes for this surface.
   uint32_t num_present_modes = 0;
   err = vkGetPhysicalDeviceSurfacePresentModesKHR(vkpipe->_gpu, _surface, &num_present_modes, NULL);
@@ -744,12 +794,13 @@ create_swapchain() {
   VkSwapchainCreateInfoKHR swapchain_info;
   swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swapchain_info.pNext = NULL;
+  swapchain_info.flags = 0;
   swapchain_info.surface = _surface;
   swapchain_info.minImageCount = num_images;
   swapchain_info.imageFormat = _surface_format.format;
   swapchain_info.imageColorSpace = _surface_format.colorSpace;
-  swapchain_info.imageExtent.width = _size[0];
-  swapchain_info.imageExtent.height = _size[1];
+  swapchain_info.imageExtent.width = _swapchain_size[0];
+  swapchain_info.imageExtent.height = _swapchain_size[1];
   swapchain_info.imageArrayLayers = 1;
   swapchain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
   swapchain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -842,8 +893,8 @@ create_swapchain() {
     depth_img_info.flags = 0;
     depth_img_info.imageType = VK_IMAGE_TYPE_2D;
     depth_img_info.format = _depth_stencil_format;
-    depth_img_info.extent.width = _size[0];
-    depth_img_info.extent.height = _size[1];
+    depth_img_info.extent.width = swapchain_info.imageExtent.width;
+    depth_img_info.extent.height = swapchain_info.imageExtent.height;
     depth_img_info.extent.depth = 1;
     depth_img_info.mipLevels = 1;
     depth_img_info.arrayLayers = 1;
@@ -940,8 +991,8 @@ create_swapchain() {
   fb_info.renderPass = _render_pass;
   fb_info.attachmentCount = 1 + (int)have_ds;
   fb_info.pAttachments = attach_views;
-  fb_info.width = _size[0];
-  fb_info.height = _size[1];
+  fb_info.width = swapchain_info.imageExtent.width;
+  fb_info.height = swapchain_info.imageExtent.height;
   fb_info.layers = 1;
 
   for (uint32_t i = 0; i < num_images; ++i) {
@@ -954,6 +1005,5 @@ create_swapchain() {
     }
   }
 
-  _swapchain_size = _size;
   return true;
 }
