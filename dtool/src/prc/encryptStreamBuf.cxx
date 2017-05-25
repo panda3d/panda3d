@@ -236,7 +236,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   // Generate a random IV.  It doesn't need to be cryptographically secure,
   // just unique.
   unsigned char *iv = (unsigned char *)alloca(iv_length);
-  RAND_pseudo_bytes(iv, iv_length);
+  RAND_bytes(iv, iv_length);
 
   _write_ctx = EVP_CIPHER_CTX_new();
   nassertv(_write_ctx != NULL);
