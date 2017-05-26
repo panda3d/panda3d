@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""Contains the EventManager class.  See :mod:`.EventManagerGlobal` for the
+global eventMgr instance."""
 
 __all__ = ['EventManager']
 

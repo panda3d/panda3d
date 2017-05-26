@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Defines the DirectSlider class."""
 
 __all__ = ['DirectSlider']
 

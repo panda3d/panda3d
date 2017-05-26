@@ -1,32 +1,7 @@
-"""Undocumented Module"""
-
-__all__ = ['DirectGuiBase', 'DirectGuiWidget']
-
-
-from panda3d.core import *
-from panda3d.direct import get_config_showbase
-from . import DirectGuiGlobals as DGG
-from .OnscreenText import *
-from .OnscreenGeom import *
-from .OnscreenImage import *
-from direct.directtools.DirectUtil import ROUND_TO
-from direct.showbase import DirectObject
-from direct.task import Task
-import sys
-
-if sys.version_info >= (3, 0):
-    stringType = str
-else:
-    stringType = basestring
-
-guiObjectCollector = PStatCollector("Client::GuiObjects")
-
 """
 Base class for all Direct Gui items.  Handles composite widgets and
 command line argument parsing.
-"""
 
-"""
 Code Overview:
 
 1   Each widget defines a set of options (optiondefs) as a list of tuples
@@ -101,7 +76,31 @@ Code Overview:
     are left unused.  If so, an error is raised.
 """
 
+__all__ = ['DirectGuiBase', 'DirectGuiWidget']
+
+
+from panda3d.core import *
+from panda3d.direct import get_config_showbase
+from . import DirectGuiGlobals as DGG
+from .OnscreenText import *
+from .OnscreenGeom import *
+from .OnscreenImage import *
+from direct.directtools.DirectUtil import ROUND_TO
+from direct.showbase import DirectObject
+from direct.task import Task
+import sys
+
+if sys.version_info >= (3, 0):
+    stringType = str
+else:
+    stringType = basestring
+
+guiObjectCollector = PStatCollector("Client::GuiObjects")
+
+
 class DirectGuiBase(DirectObject.DirectObject):
+    """Base class of all DirectGUI widgets."""
+
     def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'

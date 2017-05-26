@@ -25,7 +25,8 @@
 #include "pointerTo.h"
 #include "pmap.h"
 #include "auxSceneData.h"
-#include "displayRegionBase.h"
+
+class DisplayRegion;
 
 /**
  * A node that can be positioned around in the scene graph to represent a
@@ -52,8 +53,8 @@ PUBLISHED:
   INLINE const NodePath &get_scene() const;
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
-  INLINE int get_num_display_regions() const;
-  INLINE DisplayRegionBase *get_display_region(int n) const;
+  INLINE size_t get_num_display_regions() const;
+  INLINE DisplayRegion *get_display_region(size_t n) const;
   MAKE_SEQ(get_display_regions, get_num_display_regions, get_display_region);
   MAKE_SEQ_PROPERTY(display_regions, get_num_display_regions, get_display_region);
 
@@ -98,8 +99,8 @@ PUBLISHED:
   int cleanup_aux_scene_data(Thread *current_thread = Thread::get_current_thread());
 
 private:
-  void add_display_region(DisplayRegionBase *display_region);
-  void remove_display_region(DisplayRegionBase *display_region);
+  void add_display_region(DisplayRegion *display_region);
+  void remove_display_region(DisplayRegion *display_region);
 
   bool _active;
   NodePath _scene;
@@ -110,7 +111,7 @@ private:
   DrawMask _camera_mask;
   PN_stdfloat _lod_scale;
 
-  typedef pvector<DisplayRegionBase *> DisplayRegions;
+  typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;
 
   CPT(RenderState) _initial_state;

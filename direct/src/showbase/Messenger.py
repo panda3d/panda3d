@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""This defines the Messenger class, which is responsible for most of the
+event handling that happens on the Python side."""
 
 __all__ = ['Messenger']
 

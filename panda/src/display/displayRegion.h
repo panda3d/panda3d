@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 
-#include "displayRegionBase.h"
+#include "typedReferenceCount.h"
 #include "drawableRegion.h"
 #include "referenceCount.h"
 #include "nodePath.h"
@@ -54,7 +54,7 @@ class CullTraverser;
  * DisplayRegions like panes of glass, usually for layering 2-d interfaces on
  * top of a 3-d scene.
  */
-class EXPCL_PANDA_DISPLAY DisplayRegion : public DisplayRegionBase, public DrawableRegion {
+class EXPCL_PANDA_DISPLAY DisplayRegion : public TypedReferenceCount, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
 
@@ -285,9 +285,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    DisplayRegionBase::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "DisplayRegion",
-                  DisplayRegionBase::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -373,6 +373,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);
 
 #include "displayRegion.I"
 
