@@ -1966,6 +1966,10 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   // See if there happens to be a comment before the MAKE_PROPERTY macro.
   if (make_property->_leading_comment != (CPPCommentBlock *)NULL) {
     iproperty._comment = trim_blanks(make_property->_leading_comment->_comment);
+
+  } else if (getter->_leading_comment != (CPPCommentBlock *)NULL) {
+    // Take the comment from the getter.
+    iproperty._comment = trim_blanks(getter->_leading_comment->_comment);
   }
 
   // Now look for setters.
@@ -2344,6 +2348,10 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
 
   case CPPSimpleType::T_void:
     itype._atomic_token = AT_void;
+    break;
+
+  case CPPSimpleType::T_nullptr:
+    itype._atomic_token = AT_null;
     break;
 
   default:

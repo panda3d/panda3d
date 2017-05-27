@@ -17,7 +17,7 @@
 #include "pfstreamBuf.h"
 
 class EXPCL_DTOOL IPipeStream : public istream {
-PUBLISHED:
+public:
   INLINE IPipeStream(const std::string);
 
 #if _MSC_VER >= 1800
@@ -33,7 +33,7 @@ private:
 };
 
 class EXPCL_DTOOL OPipeStream : public ostream {
-PUBLISHED:
+public:
   INLINE OPipeStream(const std::string);
 
 #if _MSC_VER >= 1800

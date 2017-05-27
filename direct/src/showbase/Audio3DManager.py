@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the Audio3DManager class."""
 
 __all__ = ['Audio3DManager']
 

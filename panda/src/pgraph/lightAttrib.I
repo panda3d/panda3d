@@ -15,8 +15,7 @@
  * Use LightAttrib::make() to construct a new LightAttrib object.
  */
 INLINE LightAttrib::
-LightAttrib() {
-  _off_all_lights = false;
+LightAttrib() : _off_all_lights(false), _num_non_ambient_lights(0) {
 }
 
 /**
@@ -27,25 +26,37 @@ INLINE LightAttrib::
 LightAttrib(const LightAttrib &copy) :
   _on_lights(copy._on_lights),
   _off_lights(copy._off_lights),
-  _off_all_lights(copy._off_all_lights)
+  _off_all_lights(copy._off_all_lights),
+  _sort_seq(UpdateSeq::old())
 {
 }
 
 /**
  * Returns the number of lights that are turned on by the attribute.
  */
-INLINE int LightAttrib::
+INLINE size_t LightAttrib::
 get_num_on_lights() const {
-  return _on_lights.size();
+  check_sorted();
+  return _sorted_on_lights.size();
+}
+
+/**
+ * Returns the number of non-ambient lights that are turned on by this
+ * attribute.
+ */
+INLINE size_t LightAttrib::
+get_num_non_ambient_lights() const {
+  check_sorted();
+  return _num_non_ambient_lights;
 }
 
 /**
  * Returns the nth light turned on by the attribute, sorted in render order.
  */
 INLINE NodePath LightAttrib::
-get_on_light(int n) const {
-  nassertr(n >= 0 && n < (int)_on_lights.size(), NodePath::fail());
-  return _on_lights[n];
+get_on_light(size_t n) const {
+  nassertr(n < _sorted_on_lights.size(), NodePath::fail());
+  return _sorted_on_lights[n];
 }
 
 /**
@@ -58,9 +69,17 @@ has_on_light(const NodePath &light) const {
 }
 
 /**
+ * Returns true if any light is turned on by the attrib, false otherwise.
+ */
+INLINE bool LightAttrib::
+has_any_on_light() const {
+  return !_on_lights.empty();
+}
+
+/**
  * Returns the number of lights that are turned off by the attribute.
  */
-INLINE int LightAttrib::
+INLINE size_t LightAttrib::
 get_num_off_lights() const {
   return _off_lights.size();
 }
@@ -70,8 +89,8 @@ get_num_off_lights() const {
  * (pointer) order.
  */
 INLINE NodePath LightAttrib::
-get_off_light(int n) const {
-  nassertr(n >= 0 && n < (int)_off_lights.size(), NodePath::fail());
+get_off_light(size_t n) const {
+  nassertr(n < _off_lights.size(), NodePath::fail());
   return _off_lights[n];
 }
 
@@ -104,13 +123,11 @@ is_identity() const {
 }
 
 /**
- * Confirms whether the _filtered table is still valid.  It may become invalid
- * if someone calls Light::set_priority().
- *
- * If the table is invalid, transparently empties it before returning.
+ * Makes sure that the on lights are still sorted by priority.  It may become
+ * invalid if someone calls Light::set_priority().
  */
 INLINE void LightAttrib::
-check_filtered() const {
+check_sorted() const {
   if (_sort_seq != Light::get_sort_seq()) {
     ((LightAttrib *)this)->sort_on_lights();
   }

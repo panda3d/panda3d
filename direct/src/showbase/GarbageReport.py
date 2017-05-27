@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains utility classes for debugging memory leaks."""
 
 __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 

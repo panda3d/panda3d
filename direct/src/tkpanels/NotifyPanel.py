@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the NotifyPanel class."""
 
 __all__ = ['NotifyPanel']
 

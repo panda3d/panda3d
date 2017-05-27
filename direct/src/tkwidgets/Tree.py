@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Defines tree widgets for the tkinter GUI system."""
 
 __all__ = ['TreeNode', 'TreeItem']
 

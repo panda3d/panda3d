@@ -1,7 +1,3 @@
-"""Undocumented Module"""
-
-__all__ = ['ShadowPlacer']
-
 """
 ShadowPlacer.py places a shadow.
 
@@ -9,6 +5,8 @@ It traces a line from a light source to the opposing surface.
 Or it may do that later, right now it puts a node on the surface under
 the its parent node.
 """
+
+__all__ = ['ShadowPlacer']
 
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.directnotify import DirectNotifyGlobal
