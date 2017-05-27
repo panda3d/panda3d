@@ -31,11 +31,16 @@ isDebugBuild = (python.lower().endswith('_d'))
 # These are modules that Python always tries to import up-front.  They
 # must be frozen in any main.exe.
 startupModules = [
+    'encodings', 'encodings.aliases', 'encodings.undefined', 'encodings.ascii',
     'encodings.cp1252', 'encodings.latin_1', 'encodings.utf_8',
     'encodings.mbcs', 'encodings.cp850', 'encodings.cp437', 'imp',
     ]
 if sys.version_info >= (3, 0):
+    # Modules specific to Python 3
     startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
+else:
+    # Modules specific to Python 2
+    startupModules += ['encodings.string_escape']
 
 # These are some special init functions for some built-in Python modules that
 # deviate from the standard naming convention.  A value of None means that a
