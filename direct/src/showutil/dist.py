@@ -82,6 +82,10 @@ class build_apps(distutils.core.Command):
 
             if use_wheels:
                 whldir = os.path.join(self.build_base, '__whl_cache__')
+                abi_tag = pip.pep425tags.get_abi_tag()
+
+                if 'u' in abi_tag and not platform.startswith('manylinux'):
+                    abi_tag = abi_tag.replace('u', '')
 
                 pip_args = [
                     'download',
@@ -89,6 +93,7 @@ class build_apps(distutils.core.Command):
                     '-r', self.requirements_path,
                     '--only-binary', ':all:',
                     '--platform', platform,
+                    '--abi', abi_tag
                 ]
 
                 for index in self.pypi_extra_indexes:
