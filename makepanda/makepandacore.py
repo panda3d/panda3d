@@ -397,13 +397,13 @@ def CrossCompiling():
     return GetTarget() != GetHost()
 
 def GetCC():
-    if TARGET == 'darwin':
+    if TARGET == 'darwin' or TARGET == 'freebsd':
         return os.environ.get('CC', TOOLCHAIN_PREFIX + 'clang')
     else:
         return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
 
 def GetCXX():
-    if TARGET == 'darwin':
+    if TARGET == 'darwin' or TARGET == 'freebsd':
         return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'clang++')
     else:
         return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
