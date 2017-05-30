@@ -2760,6 +2760,36 @@ if not PkgSkip("PYTHON"):
 
 ##########################################################################################
 #
+# Write the dist-info directory.
+#
+##########################################################################################
+
+# This is just some basic stuff since setuptools just needs this file to
+# exist, otherwise it will not read the entry_points.txt file.  Maybe we will
+# eventually want to merge this with the metadata generator in makewheel.py.
+METADATA = """Metadata-Version: 2.0
+Name: Panda3D
+Version: {version}
+License: BSD
+Home-page: https://www.panda3d.org/
+Author: Panda3D Team
+Author-email: etc-panda3d@lists.andrew.cmu.edu
+"""
+
+ENTRY_POINTS = """[distutils.commands]
+build_apps = direct.showutil.dist:build_apps
+bdist_apps = direct.showutil.dist:bdist_apps
+"""
+
+if not PkgSkip("DIRECT"):
+    dist_dir = os.path.join(GetOutputDir(), 'panda3d.dist-info')
+    MakeDirectory(dist_dir)
+
+    ConditionalWriteFile(os.path.join(dist_dir, 'METADATA'), METADATA.format(version=VERSION))
+    ConditionalWriteFile(os.path.join(dist_dir, 'entry_points.txt'), ENTRY_POINTS)
+
+##########################################################################################
+#
 # Generate the PRC files into the ETC directory.
 #
 ##########################################################################################
