@@ -731,7 +731,7 @@ class Freezer:
                 self.moduleSuffixes += [
                     ('.cpython-{0}{1}m-x86_64-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
                     ('.cpython-{0}{1}m-i686-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
-                    ('.abi{}.so'.format(sys.version_info[0]), 'rb', 3),
+                    ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
             elif 'win' in self.platform:
@@ -743,6 +743,8 @@ class Freezer:
             elif 'mac' in self.platform:
                 self.moduleSuffixes += [
                     ('.cpython-{0}{1}m-darwin.so'.format(*sys.version_info), 'rb', 3),
+                    ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
+                    ('.so', 'rb', 3),
                 ]
             else:
                 print("Unknown platform %s" % (self.platform))
