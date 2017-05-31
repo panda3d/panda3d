@@ -652,7 +652,7 @@ class Freezer:
             return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0,
-                 platform = None):
+                 platform = None, path=None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
         self.platform = platform or PandaSystem.getPlatform()
@@ -662,6 +662,10 @@ class Freezer:
         # cross-compiler or something).  If this is None, then a
         # default object will be created when it is needed.
         self.cenv = None
+
+        # This is the search path to use for Python modules.  Leave it
+        # to the default value of None to use sys.path.
+        self.path = path
 
         # The filename extension to append to the source file before
         # compiling.
@@ -999,7 +1003,7 @@ class Freezer:
             else:
                 includes.append(mdef)
 
-        self.mf = PandaModuleFinder(excludes = list(excludeDict.keys()), suffixes=self.moduleSuffixes)
+        self.mf = PandaModuleFinder(excludes=list(excludeDict.keys()), suffixes=self.moduleSuffixes, path=self.path)
 
         # Attempt to import the explicit modules into the modulefinder.
 
@@ -1672,6 +1676,7 @@ class Freezer:
             f.write(struct.pack('<I', modsoffset))
             f.write(struct.pack('<I', len(moduleList)))
         os.chmod(target, 0o755)
+        return target
 
     def makeModuleDef(self, mangledName, code):
         result = ''
