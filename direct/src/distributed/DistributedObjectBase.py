@@ -92,4 +92,4 @@ class DistributedObjectBase(DirectObject):
         return self.cr.doId2do.get(self.parentId)
 
     def hasParentingRules(self):
-        return self.dclass.getFieldByName('setParentingRules') != None
+        return self.dclass.getFieldByName('setParentingRules') is not None

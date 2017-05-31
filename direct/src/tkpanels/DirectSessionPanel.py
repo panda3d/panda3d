@@ -532,7 +532,7 @@ class DirectSessionPanel(AppShell):
         Label(devicePage, text = 'DEVICES',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
-        if base.direct.joybox != None:
+        if base.direct.joybox is not None:
             joyboxFrame = Frame(devicePage, borderwidth = 2, relief = 'sunken')
             Label(joyboxFrame, text = 'Joybox',
                   font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
@@ -637,7 +637,7 @@ class DirectSessionPanel(AppShell):
         # See if node path has already been selected
         nodePath = self.nodePathDict.get(name, None)
         # If not, see if listbox evals into a node path
-        if (nodePath == None):
+        if (nodePath is None):
             # See if this evaluates into a node path
             try:
                 nodePath = eval(name)
@@ -653,7 +653,7 @@ class DirectSessionPanel(AppShell):
                 listbox = self.nodePathMenu.component('scrolledlist')
                 listbox.setlist(self.nodePathNames)
         # Did we finally get something?
-        if (nodePath != None):
+        if (nodePath is not None):
             # Yes, select it!
             base.direct.select(nodePath)
 
@@ -687,7 +687,7 @@ class DirectSessionPanel(AppShell):
         else:
             # See if node path has already been selected
             nodePath = self.jbNodePathDict.get(name, None)
-            if (nodePath == None):
+            if (nodePath is None):
                 # If not, see if listbox evals into a node path
                 try:
                     nodePath = eval(name)
@@ -703,7 +703,7 @@ class DirectSessionPanel(AppShell):
                     listbox = self.jbNodePathMenu.component('scrolledlist')
                     listbox.setlist(self.jbNodePathNames)
         # Did we finally get something?
-        if (nodePath != None):
+        if (nodePath is not None):
             # Yes, select it!
             if (nodePath == 'No Node Path'):
                 base.direct.joybox.setNodePath(None)
@@ -801,7 +801,7 @@ class DirectSessionPanel(AppShell):
         # See if light exists
         self.activeLight = base.direct.lights[name]
         # If not...create new one
-        if self.activeLight == None:
+        if self.activeLight is None:
             self.activeLight = base.direct.lights.create(name)
         # Do we have a valid light at this point?
         if self.activeLight:

@@ -42,7 +42,7 @@ class DirectJoybox(DirectObject):
     def __init__(self, device = 'CerealBox', nodePath = base.direct.camera,
                  headingNP = base.direct.camera):
         # See if device manager has been initialized
-        if base.direct.deviceManager == None:
+        if base.direct.deviceManager is None:
             base.direct.deviceManager = DirectDeviceManager()
         # Set name
         DirectJoybox.joyboxCount += 1
@@ -240,7 +240,7 @@ class DirectJoybox(DirectObject):
 
     def joyboxFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = ((self.aList[L_SLIDE] + 1.0) *
                     50.0 * DirectJoybox.hprMultiplier)
@@ -264,7 +264,7 @@ class DirectJoybox(DirectObject):
         # if we are using a heading nodepath, we want
         # to drive in the direction we are facing,
         # however, we don't want the z component to change
-        if (self.useHeadingNP and self.headingNP != None):
+        if (self.useHeadingNP and self.headingNP is not None):
             oldZ = pos.getZ()
             pos = self.nodePath.getRelativeVector(self.headingNP,
                                                   pos)
@@ -389,7 +389,7 @@ class DirectJoybox(DirectObject):
 
     def spaceFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
@@ -408,7 +408,7 @@ class DirectJoybox(DirectObject):
 
     def planetFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
@@ -459,7 +459,7 @@ class DirectJoybox(DirectObject):
 
     def orbitFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)

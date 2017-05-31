@@ -13,14 +13,14 @@ class DistributedNodeUD(DistributedObjectUD):
                 name = self.__class__.__name__
 
     def b_setParent(self, parentToken):
-        if type(parentToken) == str:
+        if type(parentToken) is str:
             self.setParentStr(parentToken)
         else:
             self.setParent(parentToken)
         self.d_setParent(parentToken)
 
     def d_setParent(self, parentToken):
-        if type(parentToken) == type(''):
+        if type(parentToken) is type(''):
             self.sendUpdate("setParentStr", [parentToken])
         else:
             self.sendUpdate("setParent", [parentToken])

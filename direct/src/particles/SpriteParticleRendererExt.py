@@ -17,7 +17,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     sourceNodeName = None
 
     def getSourceTextureName(self):
-        if self.sourceTextureName == None:
+        if self.sourceTextureName is None:
             SpriteParticleRendererExt.sourceTextureName = base.config.GetString(
                 'particle-sprite-texture', 'maps/lightbulb.rgb')
         # Return instance copy of class variable
@@ -28,11 +28,11 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         self.sourceTextureName = name
 
     def setTextureFromFile(self, fileName = None):
-        if fileName == None:
+        if fileName is None:
             fileName = self.getSourceTextureName()
 
         t = loader.loadTexture(fileName)
-        if (t != None):
+        if (t is not None):
             self.setTexture(t, t.getYSize())
             self.setSourceTextureName(fileName)
             return True
@@ -44,11 +44,11 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         if(self.getNumAnims() == 0):
             return self.setTextureFromFile(fileName)
 
-        if fileName == None:
+        if fileName is None:
             fileName = self.getSourceTextureName()
 
         t = loader.loadTexture(fileName)
-        if (t != None):
+        if (t is not None):
             self.addTexture(t, t.getYSize())
             return True
         else:
@@ -56,7 +56,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             return False
 
     def getSourceFileName(self):
-        if self.sourceFileName == None:
+        if self.sourceFileName is None:
             SpriteParticleRendererExt.sourceFileName = base.config.GetString(
                 'particle-sprite-model', 'models/misc/smiley')
         # Return instance copy of class variable
@@ -67,7 +67,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         self.sourceFileName = name
 
     def getSourceNodeName(self):
-        if self.sourceNodeName == None:
+        if self.sourceNodeName is None:
             SpriteParticleRendererExt.sourceNodeName = base.config.GetString(
                 'particle-sprite-node', '**/*')
         # Return instance copy of class variable
@@ -78,9 +78,9 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         self.sourceNodeName = name
 
     def setTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = False):
-        if modelName == None:
+        if modelName is None:
             modelName = self.getSourceFileName()
-            if nodeName == None:
+            if nodeName is None:
                 nodeName = self.getSourceNodeName()
 
         # Load model and get texture
@@ -105,14 +105,14 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         if(self.getNumAnims() == 0):
             return self.setTextureFromNode(modelName, nodeName, sizeFromTexels)
 
-        if modelName == None:
+        if modelName is None:
             modelName = self.getSourceFileName()
-            if nodeName == None:
+            if nodeName is None:
                 nodeName = self.getSourceNodeName()
 
         # Load model and get texture
         m = loader.loadModel(modelName)
-        if (m == None):
+        if (m is None):
             print("SpriteParticleRendererExt: Couldn't find model: %s!" % modelName)
             return False
 

@@ -76,7 +76,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
     ### setParent ###
 
     def b_setParent(self, parentToken):
-        if type(parentToken) == str:
+        if type(parentToken) is str:
             self.setParentStr(parentToken)
         else:
             self.setParent(parentToken)
@@ -84,7 +84,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
         self.d_setParent(parentToken)
 
     def d_setParent(self, parentToken):
-        if type(parentToken) == str:
+        if type(parentToken) is str:
             self.sendUpdate("setParentStr", [parentToken])
         else:
             self.sendUpdate("setParent", [parentToken])

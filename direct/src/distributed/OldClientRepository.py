@@ -49,7 +49,7 @@ class OldClientRepository(ClientRepositoryBase):
         self.DOIDnext = self.DOIDnext + 1
         dclass = self.dclassesByName[className]
         classDef = dclass.getClassDef()
-        if classDef == None:
+        if classDef is None:
             self.notify.error("Could not create an undefined %s object." % (
                 dclass.getName()))
         obj = classDef(self)
@@ -191,7 +191,7 @@ class OldClientRepository(ClientRepositoryBase):
             # ...it is not in the dictionary or the cache.
             # Construct a new one
             classDef = dclass.getClassDef()
-            if classDef == None:
+            if classDef is None:
                 self.notify.error("Could not create an undefined %s object." % (
                     dclass.getName()))
             distObj = classDef(self)

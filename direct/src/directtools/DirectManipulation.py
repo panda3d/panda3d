@@ -1043,7 +1043,7 @@ class DirectManipulationControl(DirectObject):
         entry = base.direct.iRay.pickGeom(
             skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA)
         # MRM: Need to handle moving COA
-        if (entry != None) and (base.direct.selected.last != None):
+        if (entry is not None) and (base.direct.selected.last is not None):
             # Record undo point
             base.direct.pushUndo(base.direct.selected)
             # Record wrt matrix
@@ -1206,7 +1206,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.reparentTo(hidden)
 
     def enableHandles(self, handles):
-        if type(handles) == list:
+        if type(handles) is list:
             for handle in handles:
                 self.enableHandle(handle)
         elif handles == 'x':
@@ -1255,7 +1255,7 @@ class ObjectHandles(NodePath, DirectObject):
             self.zScaleGroup.reparentTo(self.zHandles)
 
     def disableHandles(self, handles):
-        if type(handles) == list:
+        if type(handles) is list:
             for handle in handles:
                 self.disableHandle(handle)
         elif handles == 'x':

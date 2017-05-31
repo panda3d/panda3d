@@ -120,7 +120,7 @@ def setDefaultClickSound(newSound):
 
 def getDefaultFont():
     global defaultFont
-    if defaultFont == None:
+    if defaultFont is None:
         defaultFont = defaultFontFunc()
     return defaultFont
 

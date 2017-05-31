@@ -66,7 +66,7 @@ class DistributedObjectAI(DistributedObjectBase):
                 flags = []
                 if self.__generated:
                     flags.append("generated")
-                if self.air == None:
+                if self.air is None:
                     flags.append("deleted")
 
                 flagStr = ""
@@ -170,7 +170,7 @@ class DistributedObjectAI(DistributedObjectBase):
         Returns true if the object has been deleted,
         or if it is brand new and hasnt yet been generated.
         """
-        return self.air == None
+        return self.air is None
 
     def isGenerated(self):
         """
@@ -552,7 +552,7 @@ class DistributedObjectAI(DistributedObjectBase):
         avId = self.air.getAvatarIdFromSender()
         assert self.notify.debug('setBarrierReady(%s, %s)' % (context, avId))
         barrier = self.__barriers.get(context)
-        if barrier == None:
+        if barrier is None:
             # This may be None if a client was slow and missed an
             # earlier timeout.  Too bad.
             return

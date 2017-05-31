@@ -78,7 +78,7 @@ class ClockDelta(DirectObject.DirectObject):
         # representing infinite uncertainty, if we have never received
         # a time measurement.
 
-        if self.uncertainty == None:
+        if self.uncertainty is None:
             return None
 
         now = self.globalClock.getRealTime()
@@ -190,7 +190,7 @@ class ClockDelta(DirectObject.DirectObject):
         the new measurement was used, false if it was discarded.
         """
         oldUncertainty = self.getUncertainty()
-        if oldUncertainty != None:
+        if oldUncertainty is not None:
             self.notify.info(
                 'previous delta at %.3f s, +/- %.3f s.' %
                 (self.delta, oldUncertainty))
@@ -241,7 +241,7 @@ class ClockDelta(DirectObject.DirectObject):
         minutes of the current local time given in now, or
         getRealTime() if now is not specified.
         """
-        if now == None:
+        if now is None:
             now = self.globalClock.getRealTime()
 
         # Are we in non-real-time mode (i.e. filming a movie)?  If you

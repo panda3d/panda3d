@@ -65,7 +65,7 @@ class InterestHandle:
     def asInt(self):
         return self._id
     def __eq__(self, other):
-        if type(self) == type(other):
+        if type(self) is type(other):
             return self._id == other._id
         return self._id == other
     def __repr__(self):

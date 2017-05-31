@@ -442,7 +442,7 @@ class Messenger:
             for objectEntry in list(objectDict.items()):
                 object, params = objectEntry
                 method = params[0]
-                if (type(method) == types.MethodType):
+                if (type(method) is types.MethodType):
                     function = method.__func__
                 else:
                     function = method
@@ -558,7 +558,7 @@ class Messenger:
         """
         return string version of class.method or method.
         """
-        if (type(method) == types.MethodType):
+        if (type(method) is types.MethodType):
             functionName = method.__self__.__class__.__name__ + '.' + \
                 method.__func__.__name__
         else:
@@ -614,7 +614,7 @@ class Messenger:
             for key in list(acceptorDict.keys()):
                 function, extraArgs, persistent = acceptorDict[key]
                 object = self._getObject(key)
-                if (type(object) == types.InstanceType):
+                if (type(object) is types.InstanceType):
                     className = object.__class__.__name__
                 else:
                     className = "Not a class"
@@ -625,7 +625,7 @@ class Messenger:
                        'Extra Args:   ' + repr(extraArgs) + '\n\t' +
                        'Persistent:   ' + repr(persistent) + '\n')
                 # If this is a class method, get its actual function
-                if (type(function) == types.MethodType):
+                if (type(function) is types.MethodType):
                     str = (str + '\t' +
                            'Method:       ' + repr(function) + '\n\t' +
                            'Function:     ' + repr(function.__func__) + '\n')
