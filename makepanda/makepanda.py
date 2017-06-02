@@ -6879,7 +6879,7 @@ Panda3D's intended game-development language is Python. The engine itself is wri
 
 This package contains the SDK for development with Panda3D, install panda3d-runtime for the runtime files.
 
-WWW: http://www.panda3d.org/
+WWW: https://www.panda3d.org/
 """
 
 # FreeBSD pkg-descr
@@ -6888,7 +6888,7 @@ Runtime binary and browser plugin for the Panda3D Game Engine
 
 This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
 
-WWW: http://www.panda3d.org/
+WWW: https://www.panda3d.org/
 """
 
 # FreeBSD PKG Manifest template file
@@ -6897,8 +6897,8 @@ name: NAME
 version: VERSION
 arch: ARCH
 origin: ORIGIN
-comment: "Panda 3D Engine"
-www: http://www.panda3d.org
+comment: "Panda3D free 3D engine SDK"
+www: https://www.panda3d.org
 maintainer: rdb <me@rdb.name>
 prefix: /usr/local
 flatsize: INSTSIZEMB
@@ -7290,7 +7290,7 @@ def MakeInstallerFreeBSD():
             plist_txt += os.path.join(root, f)[21:] + "\n"
 
     if not RUNTIME:
-        plist_txt += "@postexec /sbin/ldconfig -m /usr/local/lib\n"
+        plist_txt += "@postexec /sbin/ldconfig -m /usr/local/lib/panda3d\n"
         plist_txt += "@postunexec /sbin/ldconfig -R\n"
 
         for remdir in ("lib/panda3d", "share/panda3d", "include/panda3d"):
@@ -7312,7 +7312,7 @@ def MakeInstallerFreeBSD():
             if python_pkg:
                 dependencies += python_pkg
 
-    manifest_txt = INSTALLER_PKG_MANIFEST_FILE[1:].replace("NAME", 'Panda3D' if not RUNTIME else 'Panda3D-Runtime')
+    manifest_txt = INSTALLER_PKG_MANIFEST_FILE[1:].replace("NAME", 'panda3d' if not RUNTIME else 'panda3d-runtime')
     manifest_txt = manifest_txt.replace("VERSION", VERSION)
     manifest_txt = manifest_txt.replace("ARCH", pkg_arch)
     manifest_txt = manifest_txt.replace("ORIGIN", 'devel/panda3d' if not RUNTIME else 'graphics/panda3d-runtime')
