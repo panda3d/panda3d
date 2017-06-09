@@ -255,6 +255,10 @@ garbage_collect() {
   nassertr(_attribs->validate(), 0);
 #endif
 
+  // If we just cleaned up a lot of attribs, see if we can reduce the table in
+  // size.  This will help reduce iteration overhead in the future.
+  _attribs->consider_shrink_table();
+
   size_t new_size = _attribs->get_num_entries();
   return orig_size - new_size;
 }

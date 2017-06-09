@@ -1001,6 +1001,10 @@ garbage_collect() {
   nassertr(_states->validate(), 0);
 #endif
 
+  // If we just cleaned up a lot of states, see if we can reduce the table in
+  // size.  This will help reduce iteration overhead in the future.
+  _states->consider_shrink_table();
+
   int new_size = _states->get_num_entries();
   return orig_size - new_size + num_attribs;
 }
