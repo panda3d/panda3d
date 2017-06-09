@@ -1145,7 +1145,10 @@ def GetThirdpartyDir():
     target_arch = GetTargetArch()
 
     if (target == 'windows'):
-        vc = SDK["VISUALSTUDIO_VERSION"].split('.')[0]
+        if ("VCTOOLSVERSION" in SDK):
+            vc = SDK["VCTOOLSVERSION"].split('.')[0]
+        else:
+            vc = SDK["VISUALSTUDIO_VERSION"].split('.')[0]
 
         if target_arch == 'x64':
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-x64/"
@@ -2046,9 +2049,18 @@ def SdkLocateVisualStudio(version=10):
     version = str(version) + '.0'
 
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", version)
+    vsdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7", version)
     if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
+
+    elif (vsdir != 0):
+        SDK["VISUALSTUDIO"] = vsdir
+        try:
+            vsver_file = open(os.path.join(vsdir, "VC\\Auxiliary\\Build\\Microsoft.VCToolsVersion.default.txt"), "r")
+            SDK["VCTOOLSVERSION"] = vsver_file.readline().strip()
+        except:
+            exit("Couldn't find tool version of Visual Studio %s." % version)
 
     elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
         SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio %s\\" % (version)
@@ -2074,6 +2086,9 @@ def SdkLocateVisualStudio(version=10):
         print("Using Visual Studio %s located at %s" % (version, SDK["VISUALSTUDIO"]))
     else:
         print("Using Visual Studio %s" % (version))
+
+    if ("VCTOOLSVERSION" in SDK):
+        print("Using MSVC %s" % (SDK["VCTOOLSVERSION"]))
 
 def SdkLocateWindows(version = '7.1'):
     if GetTarget() != "windows" or GetHost() != "windows":
@@ -2381,7 +2396,13 @@ def SetupVisualStudioEnviron():
         exit("Could not find Visual Studio install directory")
     if ("MSPLATFORM" not in SDK):
         exit("Could not find the Microsoft Platform SDK")
-    os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
+
+    if ("VCTOOLSVERSION" in SDK):
+        vcdir_suffix = "VC\\Tools\\MSVC\\%s\\" % SDK["VCTOOLSVERSION"]
+    else:
+        vcdir_suffix = "VC\\"
+
+    os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + vcdir_suffix
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
 
     winsdk_ver = SDK["MSPLATFORM_VERSION"]
@@ -2390,18 +2411,22 @@ def SetupVisualStudioEnviron():
     arch = GetTargetArch()
     bindir = ""
     libdir = ""
-    if (arch == 'x64'):
-        bindir = 'amd64'
-        libdir = 'amd64'
-    elif (arch != 'x86'):
-        bindir = arch
+    if ("VCTOOLSVERSION" in SDK):
+        bindir = "Host" + GetHostArch().upper() + "\\" + arch
         libdir = arch
+    else:
+        if (arch == 'x64'):
+            bindir = 'amd64'
+            libdir = 'amd64'
+        elif (arch != 'x86'):
+            bindir = arch
+            libdir = arch
 
-    if (arch != 'x86' and GetHostArch() == 'x86'):
-        # Special version of the tools that run on x86.
-        bindir = 'x86_' + bindir
+        if (arch != 'x86' and GetHostArch() == 'x86'):
+            # Special version of the tools that run on x86.
+            bindir = 'x86_' + bindir
 
-    vc_binpath = SDK["VISUALSTUDIO"] + "VC\\bin"
+    vc_binpath = SDK["VISUALSTUDIO"] + vcdir_suffix + "bin"
     binpath = os.path.join(vc_binpath, bindir)
     if not os.path.isfile(binpath + "\\cl.exe"):
         # Try the x86 tools, those should work just as well.
@@ -2414,10 +2439,10 @@ def SetupVisualStudioEnviron():
 
     AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
-    AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
-    AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib\\" + libdir)
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib\\" + libdir)
+    AddToPathEnv("INCLUDE", os.environ["VCINSTALLDIR"] + "include")
+    AddToPathEnv("INCLUDE", os.environ["VCINSTALLDIR"] + "atlmfc\\include")
+    AddToPathEnv("LIB",     os.environ["VCINSTALLDIR"] + "lib\\" + libdir)
+    AddToPathEnv("LIB",     os.environ["VCINSTALLDIR"] + "atlmfc\\lib\\" + libdir)
 
     winsdk_ver = SDK["MSPLATFORM_VERSION"]
     if winsdk_ver.startswith('10.'):
@@ -2426,6 +2451,16 @@ def SetupVisualStudioEnviron():
         # Windows Kit 10 introduces the "universal CRT".
         inc_dir = SDK["MSPLATFORM"] + "Include\\" + winsdk_ver + "\\"
         lib_dir = SDK["MSPLATFORM"] + "Lib\\" + winsdk_ver + "\\"
+        AddToPathEnv("INCLUDE", inc_dir + "shared")
+        AddToPathEnv("INCLUDE", inc_dir + "ucrt")
+        AddToPathEnv("INCLUDE", inc_dir + "um")
+        AddToPathEnv("LIB", lib_dir + "ucrt\\" + arch)
+        AddToPathEnv("LIB", lib_dir + "um\\" + arch)
+    elif winsdk_ver == '8.1':
+        AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
+
+        inc_dir = SDK["MSPLATFORM"] + "Include\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\winv6.3\\"
         AddToPathEnv("INCLUDE", inc_dir + "shared")
         AddToPathEnv("INCLUDE", inc_dir + "ucrt")
         AddToPathEnv("INCLUDE", inc_dir + "um")
