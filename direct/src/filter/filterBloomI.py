@@ -1,3 +1,4 @@
+BLOOM_I = """
 //Cg
 //
 // blend.rgb
@@ -23,7 +24,7 @@
 // trigger.y
 //
 //   Must be equal to (1.0/(maxtrigger-mintrigger)) where
-//   
+//
 //   mintrigger is the minimum brightness to trigger a bloom,
 //   and maxtrigger is the brightness at which the bloom
 //   reaches maximum intensity.
@@ -83,3 +84,4 @@ void fshader(float2 l_texcoordNW : TEXCOORD0,
   o_color = (colorNW + colorNE + colorSW + colorSE) * 0.25;
 }
 
+"""

@@ -1,3 +1,4 @@
+BLOOM_Y = """
 //Cg
 
 void vshader(float4 vtx_position : POSITION,
@@ -36,3 +37,4 @@ void fshader(float4 l_texcoord0 : TEXCOORD0,
   o_color = color / 1200.0;
   o_color = o_color * k_intensity;
 }
+"""

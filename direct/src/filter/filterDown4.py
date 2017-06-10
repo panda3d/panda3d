@@ -1,3 +1,4 @@
+DOWN_4 = """
 //Cg
 
 void vshader(float4 vtx_position : POSITION,
@@ -30,4 +31,4 @@ void fshader(float2 l_texcoordNW : TEXCOORD0,
   float4 colorSE = tex2D(k_src, l_texcoordSE);
   o_color = (colorNW + colorNE + colorSW + colorSE);
 }
-
+"""

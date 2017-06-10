@@ -1,8 +1,9 @@
+BLUR_Y = """
 //Cg
 //
 //Cg profile arbvp1 arbfp1
 
-void vshader(float4 vtx_position : POSITION, 
+void vshader(float4 vtx_position : POSITION,
              float2 vtx_texcoord0 : TEXCOORD0,
              out float4 l_position : POSITION,
       	     out float2 l_texcoord0 : TEXCOORD0,
@@ -30,4 +31,4 @@ void fshader(float2 l_texcoord0 : TEXCOORD0,
   o_color /= 7;
   o_color.w = 1;
 }
-
+"""

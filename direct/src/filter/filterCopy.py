@@ -1,3 +1,4 @@
+COPY = """
 //Cg
 
 
@@ -17,4 +18,4 @@ void fshader(float2 l_texcoord : TEXCOORD0,
 {
   o_color = tex2D(k_src, l_texcoord);
 }
-
+"""
