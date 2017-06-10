@@ -522,27 +522,48 @@ new_table() {
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 consider_expand_table() {
-  if (_num_entries >= (_table_size >> 1)) {
-    expand_table();
+  if (_num_entries < (_table_size >> 1)) {
+    return false;
+  } else {
+    resize_table(_table_size << 1);
     return true;
   }
-  return false;
 }
 
 /**
- * Doubles the size of the existing table.
+ * Shrinks the table if the allocated storage is significantly larger than the
+ * number of elements in it.  Returns true if shrunk, false otherwise.
+ */
+template<class Key, class Value, class Compare>
+INLINE bool SimpleHashMap<Key, Value, Compare>::
+consider_shrink_table() {
+  // If the number of elements gets less than an eighth of the table size, we
+  // know it's probably time to shrink it down, lest it hurt iteration time.
+  if (_table_size <= 8 || (_table_size >> 3) < _num_entries) {
+    return false;
+  } else {
+    size_t new_size = _table_size;
+    do {
+      new_size >>= 1;
+    } while ((new_size >> 3) >= _num_entries);
+    resize_table(new_size);
+    return true;
+  }
+}
+
+/**
+ * Resizes the existing table.
  */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
-expand_table() {
+resize_table(size_t new_size) {
   nassertv(_table_size != 0);
 
   SimpleHashMap<Key, Value, Compare> old_map(_comp);
   swap(old_map);
 
-  // Double the table size.
   size_t old_table_size = old_map._table_size;
-  _table_size = (old_table_size << 1);
+  _table_size = new_size;
   nassertv(_table == NULL);
 
   // We allocate enough bytes for _table_size elements of TableEntry, plus

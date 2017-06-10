@@ -70,7 +70,7 @@ class PointerTo : public PointerToBase<T> {
 public:
   typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
-  CONSTEXPR PointerTo() NOEXCEPT DEFAULT_CTOR;
+  ALWAYS_INLINE CONSTEXPR PointerTo() NOEXCEPT DEFAULT_CTOR;
   ALWAYS_INLINE PointerTo(To *ptr) NOEXCEPT;
   INLINE PointerTo(const PointerTo<T> &copy);
 
@@ -133,7 +133,7 @@ class ConstPointerTo : public PointerToBase<T> {
 public:
   typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
-  CONSTEXPR ConstPointerTo() NOEXCEPT DEFAULT_CTOR;
+  ALWAYS_INLINE CONSTEXPR ConstPointerTo() NOEXCEPT DEFAULT_CTOR;
   ALWAYS_INLINE ConstPointerTo(const To *ptr) NOEXCEPT;
   INLINE ConstPointerTo(const PointerTo<T> &copy);
   INLINE ConstPointerTo(const ConstPointerTo<T> &copy);

@@ -56,6 +56,8 @@ public:
   void write(ostream &out) const;
   bool validate() const;
 
+  INLINE bool consider_shrink_table();
+
 private:
   class TableEntry;
 
@@ -68,7 +70,7 @@ private:
 
   void new_table();
   INLINE bool consider_expand_table();
-  void expand_table();
+  void resize_table(size_t new_size);
 
   class TableEntry {
   public:
