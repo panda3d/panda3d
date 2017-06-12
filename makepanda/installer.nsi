@@ -318,8 +318,6 @@ SectionGroup "Python support"
 
         SetOutPath $INSTDIR\direct\directscripts
         File /r /x CVS /x Opt?-Win32 "${BUILT}\direct\directscripts\*"
-        SetOutPath $INSTDIR\direct\filter
-        File /r /x CVS /x Opt?-Win32 "${BUILT}\direct\filter\*.sha"
         SetOutPath $INSTDIR\direct
         File /r /x CVS /x Opt?-Win32 "${BUILT}\direct\*.py"
 

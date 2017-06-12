@@ -71,10 +71,6 @@ class panda3d(package):
     if sys.version_info < (3, 0):
         module('encodings.string_escape')
 
-    # Pick up the shader files that appear in direct/src/filter.
-    import direct
-    file(Filename(direct.__path__[0], 'filter/*.sha'), newDir = 'direct/filter')
-
     # pandac.PandaModules pulls in other Panda3D libs automatically.
     # Exclude these Panda3D libs; they are big and many applications don't
     # use them.  We define them as separate, optional packages, below,
