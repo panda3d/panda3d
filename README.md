@@ -134,6 +134,28 @@ If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
 package file in order to install the SDK onto your system.
 
+FreeBSD
+-------
+
+Building on FreeBSD is very similar to building on Linux.  You will need to
+install the requisite packages using the system package manager.  To install
+the recommended set of dependencies, you can use this command:
+
+```bash
+pkg install pkgconf png jpeg-turbo tiff freetype2 eigen squish openal opusfile libvorbis libX11 libGL ode bullet assimp openexr
+```
+
+You will also need to choose which version of Python you want to use.
+Install the appropriate package for it (such as `python2` or `python36`) and
+run the makepanda script with your chosen Python version:
+
+```bash
+python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+```
+
+If successful, this will produce a .pkg file in the root of the source
+directory which you can install using `pkg install`.
+
 Reporting Issues
 ================
 

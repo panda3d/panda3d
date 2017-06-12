@@ -656,13 +656,13 @@ compose(const TransformState *other) const {
   // The cache entry in this object is the only one that indicates the result;
   // the other will be NULL for now.
   _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
+  _cache_stats.inc_adds(_composition_cache.is_empty());
 
   _composition_cache[other]._result = result;
 
   if (other != this) {
     _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
+    _cache_stats.inc_adds(other->_composition_cache.is_empty());
     other->_composition_cache[this]._result = NULL;
   }
 
@@ -763,12 +763,12 @@ invert_compose(const TransformState *other) const {
   // The cache entry in this object is the only one that indicates the result;
   // the other will be NULL for now.
   _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
+  _cache_stats.inc_adds(_invert_composition_cache.is_empty());
   _invert_composition_cache[other]._result = result;
 
   if (other != this) {
     _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
+    _cache_stats.inc_adds(other->_invert_composition_cache.is_empty());
     other->_invert_composition_cache[this]._result = NULL;
   }
 
@@ -842,11 +842,8 @@ bool TransformState::
 validate_composition_cache() const {
   LightReMutexHolder holder(*_states_lock);
 
-  size_t size = _composition_cache.get_size();
+  size_t size = _composition_cache.get_num_entries();
   for (size_t i = 0; i < size; ++i) {
-    if (!_composition_cache.has_element(i)) {
-      continue;
-    }
     const TransformState *source = _composition_cache.get_key(i);
     if (source != (TransformState *)NULL) {
       // Check that the source also has a pointer back to this one.  We always
@@ -865,11 +862,8 @@ validate_composition_cache() const {
     }
   }
 
-  size = _invert_composition_cache.get_size();
-  for (int i = 0; i < size; ++i) {
-    if (!_invert_composition_cache.has_element(i)) {
-      continue;
-    }
+  size = _invert_composition_cache.get_num_entries();
+  for (size_t i = 0; i < size; ++i) {
     const TransformState *source = _invert_composition_cache.get_key(i);
     if (source != (TransformState *)NULL) {
       // Check that the source also has a pointer back to this one.  We always
@@ -1037,40 +1031,33 @@ get_num_unused_states() {
   typedef pmap<const TransformState *, int> StateCount;
   StateCount state_count;
 
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
     const TransformState *state = _states->get_key(si);
 
     size_t i;
-    size_t cache_size = state->_composition_cache.get_size();
+    size_t cache_size = state->_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_composition_cache.has_element(i)) {
-        const TransformState *result = state->_composition_cache.get_data(i)._result;
-        if (result != (const TransformState *)NULL && result != state) {
-          // Here's a TransformState that's recorded in the cache.  Count it.
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            // If the above insert operation fails, then it's already in the
-            // cache; increment its value.
-            (*(ir.first)).second++;
-          }
+      const TransformState *result = state->_composition_cache.get_data(i)._result;
+      if (result != (const TransformState *)NULL && result != state) {
+        // Here's a TransformState that's recorded in the cache.  Count it.
+        pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          // If the above insert operation fails, then it's already in the
+          // cache; increment its value.
+          (*(ir.first)).second++;
         }
       }
     }
-    cache_size = state->_invert_composition_cache.get_size();
+    cache_size = state->_invert_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_invert_composition_cache.has_element(i)) {
-        const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
-        if (result != (const TransformState *)NULL && result != state) {
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            (*(ir.first)).second++;
-          }
+      const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
+      if (result != (const TransformState *)NULL && result != state) {
+        pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          (*(ir.first)).second++;
         }
       }
     }
@@ -1135,11 +1122,8 @@ clear_cache() {
     TempStates temp_states;
     temp_states.reserve(orig_size);
 
-    size_t size = _states->get_size();
+    size_t size = _states->get_num_entries();
     for (size_t si = 0; si < size; ++si) {
-      if (!_states->has_element(si)) {
-        continue;
-      }
       const TransformState *state = _states->get_key(si);
       temp_states.push_back(state);
     }
@@ -1150,28 +1134,24 @@ clear_cache() {
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       TransformState *state = (TransformState *)(*ti).p();
 
-      int i;
-      int cache_size = (int)state->_composition_cache.get_size();
+      size_t i;
+      size_t cache_size = state->_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_composition_cache.has_element(i)) {
-          const TransformState *result = state->_composition_cache.get_data(i)._result;
-          if (result != (const TransformState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const TransformState *result = state->_composition_cache.get_data(i)._result;
+        if (result != (const TransformState *)NULL && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
-      cache_size = state->_invert_composition_cache.get_size();
+      cache_size = state->_invert_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_invert_composition_cache.has_element(i)) {
-          const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
-          if (result != (const TransformState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
+        if (result != (const TransformState *)NULL && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_invert_composition_cache.get_num_entries());
@@ -1199,62 +1179,74 @@ garbage_collect() {
     return 0;
   }
 
-  bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
-
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
   size_t orig_size = _states->get_num_entries();
 
   // How many elements to process this pass?
-  size_t size = _states->get_size();
-  size_t num_this_pass = int(size * garbage_collect_states_rate);
-  if (size <= 0 || num_this_pass <= 0) {
+  size_t size = orig_size;
+  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
+  if (num_this_pass <= 0) {
     return 0;
   }
 
+  bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
+
   size_t si = _garbage_index;
+  if (si >= size) {
+    si = 0;
+  }
 
   num_this_pass = min(num_this_pass, size);
-  size_t stop_at_element = (si + num_this_pass) & (size - 1);
+  size_t stop_at_element = (si + num_this_pass) % size;
 
   do {
-    if (_states->has_element(si)) {
-      TransformState *state = (TransformState *)_states->get_key(si);
-      if (break_and_uniquify) {
-        if (state->get_cache_ref_count() > 0 &&
-            state->get_ref_count() == state->get_cache_ref_count()) {
-          // If we have removed all the references to this state not in the
-          // cache, leaving only references in the cache, then we need to
-          // check for a cycle involving this TransformState and break it if
-          // it exists.
-          state->detect_and_break_cycles();
-        }
-      }
-
-      if (state->get_ref_count() == 1) {
-        // This state has recently been unreffed to 1 (the one we added when
-        // we stored it in the cache).  Now it's time to delete it.  This is
-        // safe, because we're holding the _states_lock, so it's not possible
-        // for some other thread to find the state in the cache and ref it
-        // while we're doing this.
-        state->release_new();
-        state->remove_cache_pointers();
-        state->cache_unref();
-        delete state;
+    TransformState *state = (TransformState *)_states->get_key(si);
+    if (break_and_uniquify) {
+      if (state->get_cache_ref_count() > 0 &&
+          state->get_ref_count() == state->get_cache_ref_count()) {
+        // If we have removed all the references to this state not in the
+        // cache, leaving only references in the cache, then we need to
+        // check for a cycle involving this TransformState and break it if
+        // it exists.
+        state->detect_and_break_cycles();
       }
     }
 
-    si = (si + 1) & (size - 1);
+    if (state->get_ref_count() == 1) {
+      // This state has recently been unreffed to 1 (the one we added when
+      // we stored it in the cache).  Now it's time to delete it.  This is
+      // safe, because we're holding the _states_lock, so it's not possible
+      // for some other thread to find the state in the cache and ref it
+      // while we're doing this.
+      state->release_new();
+      state->remove_cache_pointers();
+      state->cache_unref();
+      delete state;
+
+      // When we removed it from the hash map, it swapped the last element
+      // with the one we just removed.  So the current index contains one we
+      // still need to visit.
+      --size;
+      --si;
+    }
+
+    si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
+
+  nassertr(_states->get_num_entries() == size, 0);
 
 #ifdef _DEBUG
   nassertr(_states->validate(), 0);
 #endif
 
-  int new_size = _states->get_num_entries();
-  return orig_size - new_size;
+  // If we just cleaned up a lot of states, see if we can reduce the table in
+  // size.  This will help reduce iteration overhead in the future.
+  _states->consider_shrink_table();
+
+  return (int)orig_size - (int)size;
 }
 
 /**
@@ -1281,11 +1273,8 @@ list_cycles(ostream &out) {
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
 
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
     const TransformState *state = _states->get_key(si);
 
     bool inserted = visited.insert(state).second;
@@ -1358,13 +1347,9 @@ list_states(ostream &out) {
   }
   LightReMutexHolder holder(*_states_lock);
 
-  out << _states->get_num_entries() << " states:\n";
-
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
+  out << size << " states:\n";
   for (size_t si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
     const TransformState *state = _states->get_key(si);
     state->write(out, 2);
   }
@@ -1395,18 +1380,12 @@ validate_states() {
     return false;
   }
 
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
   size_t si = 0;
-  while (si < size && !_states->has_element(si)) {
-    ++si;
-  }
   nassertr(si < size, false);
   nassertr(_states->get_key(si)->get_ref_count() >= 0, false);
   size_t snext = si;
   ++snext;
-  while (snext < size && !_states->has_element(snext)) {
-    ++snext;
-  }
   while (snext < size) {
     nassertr(_states->get_key(snext)->get_ref_count() >= 0, false);
     const TransformState *ssi = _states->get_key(si);
@@ -1429,9 +1408,6 @@ validate_states() {
     }
     si = snext;
     ++snext;
-    while (snext < size && !_states->has_element(snext)) {
-      ++snext;
-    }
   }
 
   return true;
@@ -1801,41 +1777,37 @@ r_detect_cycles(const TransformState *start_state,
   }
   ((TransformState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const TransformState *result = current_state->_composition_cache.get_data(i)._result;
-      if (result != (const TransformState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const TransformState *other = current_state->_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, false);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const TransformState *result = current_state->_composition_cache.get_data(i)._result;
+    if (result != (const TransformState *)NULL) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != (CompositionCycleDesc *)NULL) {
+          const TransformState *other = current_state->_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, false);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const TransformState *result = current_state->_invert_composition_cache.get_data(i)._result;
-      if (result != (const TransformState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const TransformState *other = current_state->_invert_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, true);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const TransformState *result = current_state->_invert_composition_cache.get_data(i)._result;
+    if (result != (const TransformState *)NULL) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != (CompositionCycleDesc *)NULL) {
+          const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, true);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
@@ -1864,52 +1836,48 @@ r_detect_reverse_cycles(const TransformState *start_state,
   }
   ((TransformState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const TransformState *other = current_state->_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const TransformState *other = current_state->_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const TransformState *result = other->_composition_cache.get_data(oi)._result;
-        if (result != (const TransformState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const TransformState *other = current_state->_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const TransformState *result = other->_composition_cache.get_data(oi)._result;
+      if (result != (const TransformState *)NULL) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+            const TransformState *other = current_state->_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const TransformState *other = current_state->_invert_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_invert_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_invert_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const TransformState *result = other->_invert_composition_cache.get_data(oi)._result;
-        if (result != (const TransformState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const TransformState *other = current_state->_invert_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const TransformState *result = other->_invert_composition_cache.get_data(oi)._result;
+      if (result != (const TransformState *)NULL) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+            const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
@@ -1931,10 +1899,8 @@ release_new() {
   nassertv(_states_lock->debug_is_locked());
 
   if (_saved_entry != -1) {
-    // nassertv(_states->find(this) == _saved_entry);
-    _saved_entry = _states->find(this);
-    _states->remove_element(_saved_entry);
     _saved_entry = -1;
+    nassertv(_states->remove(this));
   }
 }
 
@@ -1973,13 +1939,8 @@ remove_cache_pointers() {
 
   // There are lots of ways to do this loop wrong.  Be very careful if you
   // need to modify it for any reason.
-  int i = 0;
+  size_t i = 0;
   while (!_composition_cache.is_empty()) {
-    // Scan for the next used slot in the table.
-    while (!_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     // It is possible that the "other" TransformState object is currently
     // within its own destructor.  We therefore can't use a PT() to hold its
     // pointer; that could end up calling its destructor twice.  Fortunately,
@@ -2032,10 +1993,6 @@ remove_cache_pointers() {
   // A similar bit of code for the invert cache.
   i = 0;
   while (!_invert_composition_cache.is_empty()) {
-    while (!_invert_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     TransformState *other = (TransformState *)_invert_composition_cache.get_key(i);
     nassertv(other != this);
     Composition comp = _invert_composition_cache.get_data(i);

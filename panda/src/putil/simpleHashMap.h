@@ -20,16 +20,25 @@
 
 /**
  * This template class implements an unordered map of keys to data,
- * implemented as a hashtable.  It is similar to STL's hash_map, but (a) it
- * has a simpler interface (we don't mess around with iterators), (b) it wants
- * an additional method on the Compare object, Compare::is_equal(a, b), and
- * (c) it doesn't depend on the system STL providing hash_map.
+ * implemented as a hashtable.  It is similar to STL's hash_map, but
+ * (a) it has a simpler interface (we don't mess around with iterators),
+ * (b) it wants an additional method on the Compare object,
+       Compare::is_equal(a, b),
+ * (c) it doesn't depend on the system STL providing hash_map,
+ * (d) it allows for efficient iteration over the entries,
+ * (e) permits removal and resizing during forward iteration, and
+ * (f) it has a constexpr constructor.
  */
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class SimpleHashMap {
+  // Per-entry overhead is determined by sizeof(int) * sparsity.  Should be a
+  // power of two.
+  static const unsigned int sparsity = 2u;
+
 public:
 #ifndef CPPPARSER
-  INLINE SimpleHashMap(const Compare &comp = Compare());
+  CONSTEXPR SimpleHashMap(const Compare &comp = Compare());
+  INLINE SimpleHashMap(SimpleHashMap &&from) NOEXCEPT;
   INLINE ~SimpleHashMap();
 
   INLINE void swap(SimpleHashMap &other);
@@ -40,9 +49,8 @@ public:
   void clear();
 
   INLINE Value &operator [] (const Key &key);
+  CONSTEXPR size_t size() const;
 
-  INLINE size_t get_size() const;
-  INLINE bool has_element(size_t n) const;
   INLINE const Key &get_key(size_t n) const;
   INLINE const Value &get_data(size_t n) const;
   INLINE Value &modify_data(size_t n);
@@ -56,19 +64,23 @@ public:
   void write(ostream &out) const;
   bool validate() const;
 
+  INLINE bool consider_shrink_table();
+
 private:
   class TableEntry;
 
   INLINE size_t get_hash(const Key &key) const;
+  INLINE size_t next_hash(size_t hash) const;
 
+  INLINE int find_slot(const Key &key) const;
+  INLINE bool has_slot(size_t slot) const;
   INLINE bool is_element(size_t n, const Key &key) const;
-  INLINE void store_new_element(size_t n, const Key &key, const Value &data);
-  INLINE void clear_element(size_t n);
-  INLINE unsigned char *get_exists_array() const;
+  INLINE size_t store_new_element(size_t n, const Key &key, const Value &data);
+  INLINE int *get_index_array() const;
 
   void new_table();
   INLINE bool consider_expand_table();
-  void expand_table();
+  void resize_table(size_t new_size);
 
   class TableEntry {
   public:

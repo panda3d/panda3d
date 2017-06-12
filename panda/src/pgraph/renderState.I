@@ -237,7 +237,7 @@ get_invert_composition_cache_num_entries() const {
 INLINE size_t RenderState::
 get_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
-  return _composition_cache.get_size();
+  return _composition_cache.get_num_entries();
 }
 
 /**
@@ -251,9 +251,6 @@ get_composition_cache_size() const {
 INLINE const RenderState *RenderState::
 get_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _composition_cache.get_key(n);
 }
 
@@ -270,9 +267,6 @@ get_composition_cache_source(size_t n) const {
 INLINE const RenderState *RenderState::
 get_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _composition_cache.get_data(n)._result;
 }
 
@@ -288,7 +282,7 @@ get_composition_cache_result(size_t n) const {
 INLINE size_t RenderState::
 get_invert_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
-  return _invert_composition_cache.get_size();
+  return _invert_composition_cache.get_num_entries();
 }
 
 /**
@@ -302,9 +296,6 @@ get_invert_composition_cache_size() const {
 INLINE const RenderState *RenderState::
 get_invert_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_invert_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _invert_composition_cache.get_key(n);
 }
 
@@ -322,9 +313,6 @@ get_invert_composition_cache_source(size_t n) const {
 INLINE const RenderState *RenderState::
 get_invert_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_invert_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _invert_composition_cache.get_data(n)._result;
 }
 

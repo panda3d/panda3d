@@ -176,13 +176,7 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  if __has_extension(cxx_deleted_functions)
 #     define DELETED = delete
 #  endif
-#elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
-
-// GCC defines several macros which we can query.  List of all supported
-// builtin macros: https://gcc.gnu.org/projects/cxx-status.html
-#  if __cpp_constexpr >= 200704
-#    define CONSTEXPR constexpr
-#  endif
+#elif defined(__GNUC__) // GCC
 
 // Starting at GCC 4.4
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
@@ -194,15 +188,22 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 
 // Starting at GCC 4.6
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#    define CONSTEXPR constexpr
 #    define NOEXCEPT noexcept
 #    define USE_MOVE_SEMANTICS
-#    define FINAL final
 #    define MOVE(x) move(x)
 #  endif
 
 // Starting at GCC 4.7
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+#    define FINAL final
 #    define OVERRIDE override
+#  endif
+
+// GCC defines several macros which we can query.  List of all supported
+// builtin macros: https://gcc.gnu.org/projects/cxx-status.html
+#  if !defined(CONSTEXPR) && __cpp_constexpr >= 200704
+#    define CONSTEXPR constexpr
 #  endif
 
 #elif defined(_MSC_VER) && _MSC_VER >= 1900 // Visual Studio 2015

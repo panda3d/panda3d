@@ -30,36 +30,29 @@ PyObject *Extension<RenderState>::
 get_composition_cache() const {
   extern struct Dtool_PyTypedObject Dtool_RenderState;
   LightReMutexHolder holder(*RenderState::_states_lock);
-  size_t cache_size = _this->_composition_cache.get_size();
+  size_t cache_size = _this->_composition_cache.get_num_entries();
   PyObject *list = PyList_New(cache_size);
 
   for (size_t i = 0; i < cache_size; ++i) {
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
-    if (!_this->_composition_cache.has_element(i)) {
+    const RenderState *source = _this->_composition_cache.get_key(i);
+    if (source == (RenderState *)NULL) {
       a = Py_None;
       Py_INCREF(a);
+    } else {
+      source->ref();
+      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState,
+                                      true, true, source->get_type_index());
+    }
+    const RenderState *result = _this->_composition_cache.get_data(i)._result;
+    if (result == (RenderState *)NULL) {
       b = Py_None;
       Py_INCREF(b);
     } else {
-      const RenderState *source = _this->_composition_cache.get_key(i);
-      if (source == (RenderState *)NULL) {
-        a = Py_None;
-        Py_INCREF(a);
-      } else {
-        source->ref();
-        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState,
-                                        true, true, source->get_type_index());
-      }
-      const RenderState *result = _this->_composition_cache.get_data(i)._result;
-      if (result == (RenderState *)NULL) {
-        b = Py_None;
-        Py_INCREF(b);
-      } else {
-        result->ref();
-        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState,
-                                        true, true, result->get_type_index());
-      }
+      result->ref();
+      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState,
+                                      true, true, result->get_type_index());
     }
     PyTuple_SET_ITEM(tuple, 0, a);
     PyTuple_SET_ITEM(tuple, 1, b);
@@ -85,36 +78,29 @@ PyObject *Extension<RenderState>::
 get_invert_composition_cache() const {
   extern struct Dtool_PyTypedObject Dtool_RenderState;
   LightReMutexHolder holder(*RenderState::_states_lock);
-  size_t cache_size = _this->_invert_composition_cache.get_size();
+  size_t cache_size = _this->_invert_composition_cache.get_num_entries();
   PyObject *list = PyList_New(cache_size);
 
   for (size_t i = 0; i < cache_size; ++i) {
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
-    if (!_this->_invert_composition_cache.has_element(i)) {
+    const RenderState *source = _this->_invert_composition_cache.get_key(i);
+    if (source == (RenderState *)NULL) {
       a = Py_None;
       Py_INCREF(a);
+    } else {
+      source->ref();
+      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState,
+                                      true, true, source->get_type_index());
+    }
+    const RenderState *result = _this->_invert_composition_cache.get_data(i)._result;
+    if (result == (RenderState *)NULL) {
       b = Py_None;
       Py_INCREF(b);
     } else {
-      const RenderState *source = _this->_invert_composition_cache.get_key(i);
-      if (source == (RenderState *)NULL) {
-        a = Py_None;
-        Py_INCREF(a);
-      } else {
-        source->ref();
-        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState,
-                                        true, true, source->get_type_index());
-      }
-      const RenderState *result = _this->_invert_composition_cache.get_data(i)._result;
-      if (result == (RenderState *)NULL) {
-        b = Py_None;
-        Py_INCREF(b);
-      } else {
-        result->ref();
-        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState,
-                                        true, true, result->get_type_index());
-      }
+      result->ref();
+      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState,
+                                      true, true, result->get_type_index());
     }
     PyTuple_SET_ITEM(tuple, 0, a);
     PyTuple_SET_ITEM(tuple, 1, b);
@@ -141,11 +127,8 @@ get_states() {
   PyObject *list = PyList_New(num_states);
   size_t i = 0;
 
-  int size = RenderState::_states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!RenderState::_states->has_element(si)) {
-      continue;
-    }
+  size_t size = RenderState::_states->get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
     const RenderState *state = RenderState::_states->get_key(si);
     state->ref();
     PyObject *a =
