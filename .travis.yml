@@ -2,15 +2,22 @@ language: cpp
 sudo: false
 matrix:
   include:
-    - compiler: gcc
-      env: PYTHONV=python2.7 FLAGS=--optimize=4
     - compiler: clang
       env: PYTHONV=python3 FLAGS=--installer
     - compiler: clang
       env: PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
+    - compiler: gcc
+      env: PYTHONV=python2.7 FLAGS=--optimize=4
+      before_install:
+        - export CC=gcc-4.7
+        - export CXX=g++-4.7
 addons:
   apt:
+    sources:
+    - ubuntu-toolchain-r-test
     packages:
+    - gcc-4.7
+    - g++-4.7
     - bison
     - flex
     - libfreetype6-dev
