@@ -408,13 +408,13 @@ compose(const RenderState *other) const {
   CPT(RenderState) result = do_compose(other);
 
   _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
+  _cache_stats.inc_adds(_composition_cache.is_empty());
 
   ((RenderState *)this)->_composition_cache[other]._result = result;
 
   if (other != this) {
     _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
+    _cache_stats.inc_adds(other->_composition_cache.is_empty());
     ((RenderState *)other)->_composition_cache[this]._result = NULL;
   }
 
@@ -497,12 +497,12 @@ invert_compose(const RenderState *other) const {
   CPT(RenderState) result = do_invert_compose(other);
 
   _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
+  _cache_stats.inc_adds(_invert_composition_cache.is_empty());
   ((RenderState *)this)->_invert_composition_cache[other]._result = result;
 
   if (other != this) {
     _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
+    _cache_stats.inc_adds(other->_invert_composition_cache.is_empty());
     ((RenderState *)other)->_invert_composition_cache[this]._result = NULL;
   }
 
@@ -782,40 +782,33 @@ get_num_unused_states() {
   typedef pmap<const RenderState *, int> StateCount;
   StateCount state_count;
 
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
     const RenderState *state = _states->get_key(si);
 
-    int i;
-    int cache_size = state->_composition_cache.get_size();
+    size_t i;
+    size_t cache_size = state->_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_composition_cache.has_element(i)) {
-        const RenderState *result = state->_composition_cache.get_data(i)._result;
-        if (result != (const RenderState *)NULL && result != state) {
-          // Here's a RenderState that's recorded in the cache.  Count it.
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            // If the above insert operation fails, then it's already in the
-            // cache; increment its value.
-            (*(ir.first)).second++;
-          }
+      const RenderState *result = state->_composition_cache.get_data(i)._result;
+      if (result != (const RenderState *)NULL && result != state) {
+        // Here's a RenderState that's recorded in the cache.  Count it.
+        pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          // If the above insert operation fails, then it's already in the
+          // cache; increment its value.
+          (*(ir.first)).second++;
         }
       }
     }
-    cache_size = state->_invert_composition_cache.get_size();
+    cache_size = state->_invert_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_invert_composition_cache.has_element(i)) {
-        const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
-        if (result != (const RenderState *)NULL && result != state) {
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            (*(ir.first)).second++;
-          }
+      const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
+      if (result != (const RenderState *)NULL && result != state) {
+        pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          (*(ir.first)).second++;
         }
       }
     }
@@ -879,11 +872,8 @@ clear_cache() {
     TempStates temp_states;
     temp_states.reserve(orig_size);
 
-    size_t size = _states->get_size();
+    size_t size = _states->get_num_entries();
     for (size_t si = 0; si < size; ++si) {
-      if (!_states->has_element(si)) {
-        continue;
-      }
       const RenderState *state = _states->get_key(si);
       temp_states.push_back(state);
     }
@@ -894,28 +884,24 @@ clear_cache() {
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       RenderState *state = (RenderState *)(*ti).p();
 
-      int i;
-      int cache_size = (int)state->_composition_cache.get_size();
+      size_t i;
+      size_t cache_size = (int)state->_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_composition_cache.has_element(i)) {
-          const RenderState *result = state->_composition_cache.get_data(i)._result;
-          if (result != (const RenderState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const RenderState *result = state->_composition_cache.get_data(i)._result;
+        if (result != (const RenderState *)NULL && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
-      cache_size = (int)state->_invert_composition_cache.get_size();
+      cache_size = (int)state->_invert_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_invert_composition_cache.has_element(i)) {
-          const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
-          if (result != (const RenderState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
+        if (result != (const RenderState *)NULL && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_invert_composition_cache.get_num_entries());
@@ -950,52 +936,61 @@ garbage_collect() {
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
-  int orig_size = _states->get_num_entries();
+  size_t orig_size = _states->get_num_entries();
 
   // How many elements to process this pass?
-  size_t size = _states->get_size();
-  size_t num_this_pass = int((int)size * garbage_collect_states_rate);
-  if (size <= 0 || num_this_pass <= 0) {
+  size_t size = orig_size;
+  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
+  if (num_this_pass <= 0) {
     return num_attribs;
   }
 
   bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
 
   size_t si = _garbage_index;
+  if (si >= size) {
+    si = 0;
+  }
 
   num_this_pass = min(num_this_pass, size);
-  size_t stop_at_element = (si + num_this_pass) & (size - 1);
+  size_t stop_at_element = (si + num_this_pass) % size;
 
   do {
-    if (_states->has_element(si)) {
-      RenderState *state = (RenderState *)_states->get_key(si);
-      if (break_and_uniquify) {
-        if (state->get_cache_ref_count() > 0 &&
-            state->get_ref_count() == state->get_cache_ref_count()) {
-          // If we have removed all the references to this state not in the
-          // cache, leaving only references in the cache, then we need to
-          // check for a cycle involving this RenderState and break it if it
-          // exists.
-          state->detect_and_break_cycles();
-        }
-      }
-
-      if (state->get_ref_count() == 1) {
-        // This state has recently been unreffed to 1 (the one we added when
-        // we stored it in the cache).  Now it's time to delete it.  This is
-        // safe, because we're holding the _states_lock, so it's not possible
-        // for some other thread to find the state in the cache and ref it
-        // while we're doing this.
-        state->release_new();
-        state->remove_cache_pointers();
-        state->cache_unref();
-        delete state;
+    RenderState *state = (RenderState *)_states->get_key(si);
+    if (break_and_uniquify) {
+      if (state->get_cache_ref_count() > 0 &&
+          state->get_ref_count() == state->get_cache_ref_count()) {
+        // If we have removed all the references to this state not in the
+        // cache, leaving only references in the cache, then we need to
+        // check for a cycle involving this RenderState and break it if it
+        // exists.
+        state->detect_and_break_cycles();
       }
     }
 
-    si = (si + 1) & (size - 1);
+    if (state->get_ref_count() == 1) {
+      // This state has recently been unreffed to 1 (the one we added when
+      // we stored it in the cache).  Now it's time to delete it.  This is
+      // safe, because we're holding the _states_lock, so it's not possible
+      // for some other thread to find the state in the cache and ref it
+      // while we're doing this.
+      state->release_new();
+      state->remove_cache_pointers();
+      state->cache_unref();
+      delete state;
+
+      // When we removed it from the hash map, it swapped the last element
+      // with the one we just removed.  So the current index contains one we
+      // still need to visit.
+      --size;
+      --si;
+    }
+
+    si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
+
+  nassertr(_states->get_num_entries() == size, 0);
 
 #ifdef _DEBUG
   nassertr(_states->validate(), 0);
@@ -1005,8 +1000,7 @@ garbage_collect() {
   // size.  This will help reduce iteration overhead in the future.
   _states->consider_shrink_table();
 
-  int new_size = _states->get_num_entries();
-  return orig_size - new_size + num_attribs;
+  return (int)orig_size - (int)size + num_attribs;
 }
 
 /**
@@ -1017,11 +1011,8 @@ void RenderState::
 clear_munger_cache() {
   LightReMutexHolder holder(*_states_lock);
 
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
     RenderState *state = (RenderState *)(_states->get_key(si));
     state->_mungers.clear();
     state->_last_mi = -1;
@@ -1052,11 +1043,8 @@ list_cycles(ostream &out) {
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
 
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
     const RenderState *state = _states->get_key(si);
 
     bool inserted = visited.insert(state).second;
@@ -1129,13 +1117,9 @@ list_states(ostream &out) {
   }
   LightReMutexHolder holder(*_states_lock);
 
-  out << _states->get_num_entries() << " states:\n";
-
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
+  out << size << " states:\n";
   for (size_t si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
     const RenderState *state = _states->get_key(si);
     state->write(out, 2);
   }
@@ -1166,18 +1150,12 @@ validate_states() {
     return false;
   }
 
-  size_t size = _states->get_size();
+  size_t size = _states->get_num_entries();
   size_t si = 0;
-  while (si < size && !_states->has_element(si)) {
-    ++si;
-  }
   nassertr(si < size, false);
   nassertr(_states->get_key(si)->get_ref_count() >= 0, false);
   size_t snext = si;
   ++snext;
-  while (snext < size && !_states->has_element(snext)) {
-    ++snext;
-  }
   while (snext < size) {
     nassertr(_states->get_key(snext)->get_ref_count() >= 0, false);
     const RenderState *ssi = _states->get_key(si);
@@ -1199,9 +1177,6 @@ validate_states() {
     }
     si = snext;
     ++snext;
-    while (snext < size && !_states->has_element(snext)) {
-      ++snext;
-    }
   }
 
   return true;
@@ -1593,41 +1568,37 @@ r_detect_cycles(const RenderState *start_state,
   }
   ((RenderState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const RenderState *result = current_state->_composition_cache.get_data(i)._result;
-      if (result != (const RenderState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const RenderState *other = current_state->_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, false);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const RenderState *result = current_state->_composition_cache.get_data(i)._result;
+    if (result != (const RenderState *)NULL) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != (CompositionCycleDesc *)NULL) {
+          const RenderState *other = current_state->_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, false);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const RenderState *result = current_state->_invert_composition_cache.get_data(i)._result;
-      if (result != (const RenderState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const RenderState *other = current_state->_invert_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, true);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const RenderState *result = current_state->_invert_composition_cache.get_data(i)._result;
+    if (result != (const RenderState *)NULL) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != (CompositionCycleDesc *)NULL) {
+          const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, true);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
@@ -1656,52 +1627,48 @@ r_detect_reverse_cycles(const RenderState *start_state,
   }
   ((RenderState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const RenderState *other = current_state->_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const RenderState *other = current_state->_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const RenderState *result = other->_composition_cache.get_data(oi)._result;
-        if (result != (const RenderState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const RenderState *other = current_state->_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const RenderState *result = other->_composition_cache.get_data(oi)._result;
+      if (result != (const RenderState *)NULL) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+            const RenderState *other = current_state->_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const RenderState *other = current_state->_invert_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_invert_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_invert_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const RenderState *result = other->_invert_composition_cache.get_data(oi)._result;
-        if (result != (const RenderState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const RenderState *other = current_state->_invert_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const RenderState *result = other->_invert_composition_cache.get_data(oi)._result;
+      if (result != (const RenderState *)NULL) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+            const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
@@ -1722,10 +1689,8 @@ release_new() {
   nassertv(_states_lock->debug_is_locked());
 
   if (_saved_entry != -1) {
-    // nassertv(_states->find(this) == _saved_entry);
-    _saved_entry = _states->find(this);
-    _states->remove_element(_saved_entry);
     _saved_entry = -1;
+    nassertv(_states->remove(this));
   }
 }
 
@@ -1771,13 +1736,8 @@ remove_cache_pointers() {
 
   // There are lots of ways to do this loop wrong.  Be very careful if you
   // need to modify it for any reason.
-  int i = 0;
+  size_t i = 0;
   while (!_composition_cache.is_empty()) {
-    // Scan for the next used slot in the table.
-    while (!_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     // It is possible that the "other" RenderState object is currently within
     // its own destructor.  We therefore can't use a PT() to hold its pointer;
     // that could end up calling its destructor twice.  Fortunately, we don't
@@ -1829,10 +1789,6 @@ remove_cache_pointers() {
   // A similar bit of code for the invert cache.
   i = 0;
   while (!_invert_composition_cache.is_empty()) {
-    while (!_invert_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     RenderState *other = (RenderState *)_invert_composition_cache.get_key(i);
     nassertv(other != this);
     Composition comp = _invert_composition_cache.get_data(i);
