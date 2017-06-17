@@ -314,10 +314,10 @@ def parseopts(args):
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
             print("No MSVC version specified. Defaulting to 10 (Visual Studio 2010).")
-            MSVC_VERSION = 10
+            MSVC_VERSION = 10.0
 
         try:
-            MSVC_VERSION = int(MSVC_VERSION)
+            MSVC_VERSION = float(MSVC_VERSION)
         except:
             usage("Invalid setting for --msvc-version")
 
