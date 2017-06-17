@@ -62,11 +62,11 @@ else:
 ########################################################################
 
 MSVCVERSIONINFO = {
-    10.0: {"vsversion":10.0, "vsname":"Visual Studio 2010"},
-    11.0: {"vsversion":11.0, "vsname":"Visual Studio 2012"},
-    12.0: {"vsversion":12.0, "vsname":"Visual Studio 2013"},
-    14.0: {"vsversion":14.0, "vsname":"Visual Studio 2015"},
-    14.1: {"vsversion":15.0, "vsname":"Visual Studio 2017"},
+    10.0: {"vsversion":10, "vsname":"Visual Studio 2010"},
+    11.0: {"vsversion":11, "vsname":"Visual Studio 2012"},
+    12.0: {"vsversion":12, "vsname":"Visual Studio 2013"},
+    14.0: {"vsversion":14, "vsname":"Visual Studio 2015"},
+    14.1: {"vsversion":15, "vsname":"Visual Studio 2017"},
 }
 
 ########################################################################
@@ -2063,24 +2063,42 @@ def SdkLocateVisualStudio(version=10.0):
     try:
         msvcinfo = MSVCVERSIONINFO[version]
     except:
-        exit("Couldn't find MSVC %s version." % version)
+        exit("Couldn't get Visual Studio infomation with MSVC %s version." % version)
 
-    vsversion = "{:.1f}".format(msvcinfo["vsversion"])
-    version = str(version)
-    vsdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7", vsversion)
+    vsversion = msvcinfo["vsversion"]
+
+    # try to use vswhere.exe
+    vswhere_path = None
+    if LocateBinary("vswhere"):
+        vswhere_path = "vswhere.exe"
+    else:
+        vswhere_path = "%s\\Microsoft Visual Studio\\Installer\\vswhere.exe" % os.environ["ProgramFiles(x86)"]
+        if not os.path.isfile(vswhere_path):
+            vswhere_path = None
+
+    vsdir = None
+    if vswhere_path:
+        vswhere_cmd = [vswhere_path, "-legacy", "-property", "installationPath",
+            "-version", "[{},{})".format(vsversion, vsversion+1)]
+        handle = subprocess.Popen(vswhere_cmd, shell=True, stdout=subprocess.PIPE)
+        vsdir = handle.communicate()[0].splitlines()[0].decode("utf-8") + "\\"
+
+    vsversion = str(vsversion)
+    version = "{:.1f}".format(version)
+
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", version)
-    if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
+    if vsdir:
+        SDK["VISUALSTUDIO"] = vsdir
+
+    elif (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
 
-    elif (vsdir != 0):
-        SDK["VISUALSTUDIO"] = vsdir
+    elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio %s\\" % (version)
 
-    elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (vsversion))):
-        SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio %s\\" % (vsversion)
-
-    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (vsversion))):
-        SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio %s\\" % (vsversion)
+    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio %s\\" % (version)
 
     elif "VCINSTALLDIR" in os.environ:
         vcdir = os.environ["VCINSTALLDIR"]
@@ -2094,6 +2112,7 @@ def SdkLocateVisualStudio(version=10.0):
     else:
         exit("Couldn't find %s.  To use a different version, use the --msvc-version option." % msvcinfo["vsname"])
 
+    SDK["MSVC_VERSION"] = version
     SDK["VISUALSTUDIO_VERSION"] = vsversion
 
     if GetVerbose():
@@ -2410,15 +2429,14 @@ def SetupVisualStudioEnviron():
     if ("MSPLATFORM" not in SDK):
         exit("Could not find the Microsoft Platform SDK")
 
-    vsversion = float(SDK["VISUALSTUDIO_VERSION"])
-    if (vsversion >= 15.0):
+    if (int(SDK["VISUALSTUDIO_VERSION"]) >= 15):
         try:
             vsver_file = open(os.path.join(SDK["VISUALSTUDIO"],
                 "VC\\Auxiliary\\Build\\Microsoft.VCToolsVersion.default.txt"), "r")
             SDK["VCTOOLSVERSION"] = vsver_file.readline().strip()
             vcdir_suffix = "VC\\Tools\\MSVC\\%s\\" % SDK["VCTOOLSVERSION"]
         except:
-            exit("Couldn't find tool version of %s." % MSVCVERSIONINFO[vsversion]["vsname"])
+            exit("Couldn't find tool version of %s." % MSVCVERSIONINFO[SDK["MSVC_VERSION"]]["vsname"])
     else:
         vcdir_suffix = "VC\\"
 
