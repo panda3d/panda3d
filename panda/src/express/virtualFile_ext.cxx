@@ -26,9 +26,23 @@
  */
 PyObject *Extension<VirtualFile>::
 read_file(bool auto_unwrap) const {
+  // Release the GIL while we do this potentially slow operation.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyThreadState *_save;
+  Py_UNBLOCK_THREADS
+#endif
+
   vector_uchar pv;
   bool okflag = _this->read_file(pv, auto_unwrap);
-  nassertr(okflag, NULL);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  Py_BLOCK_THREADS
+#endif
+
+  if (!okflag) {
+    Filename fn = _this->get_filename();
+    return PyErr_Format(PyExc_IOError, "Failed to read file: '%s'", fn.c_str());
+  }
 
 #if PY_MAJOR_VERSION >= 3
   if (pv.empty()) {
@@ -68,7 +82,18 @@ write_file(PyObject *data, bool auto_wrap) {
   }
 #endif
 
+  // Release the GIL while we do this potentially slow operation.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyThreadState *_save;
+  Py_UNBLOCK_THREADS
+#endif
+
   bool result = _this->write_file((const unsigned char *)buffer, length, auto_wrap);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  Py_BLOCK_THREADS
+#endif
+
   return PyBool_FromLong(result);
 }
 
