@@ -21,6 +21,9 @@ class InputStateToken:
     def __hash__(self):
         return self._hash
 
+    #snake_case alias:
+    is_valid = isValid
+
 class InputStateWatchToken(InputStateToken, DirectObject.DirectObject):
     def release(self):
         self._inputState._ignore(self)
@@ -38,6 +41,9 @@ class InputStateTokenGroup:
         for token in self._tokens:
             token.release()
         self._tokens = []
+
+    #snake_case alias:
+    add_token = addToken
 
 class InputState(DirectObject.DirectObject):
     """
@@ -235,3 +241,11 @@ class InputState(DirectObject.DirectObject):
         """for debugging"""
         return self.notify.debug(
             "%s (%s) %s"%(id(self), len(self._state), message))
+
+    #snake_case alias:
+    watch_with_modifiers = watchWithModifiers
+    is_set = isSet
+    get_event_name = getEventName
+    debug_print = debugPrint
+    release_inputs = releaseInputs
+

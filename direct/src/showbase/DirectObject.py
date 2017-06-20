@@ -101,3 +101,16 @@ class DirectObject:
             func = choice(getRepository()._crashOnProactiveLeakDetect,
                           self.notify.error, self.notify.warning)
             func('destroyed %s instance is still %s%s' % (self.__class__.__name__, estr, tstr))
+
+    #snake_case alias:
+    add_task = addTask
+    do_method_later = doMethodLater
+    detect_leaks = detectLeaks
+    accept_once = acceptOnce
+    ignore_all = ignoreAll
+    get_all_accepting = getAllAccepting
+    is_ignoring = isIgnoring
+    remove_all_tasks = removeAllTasks
+    remove_task = removeTask
+    is_accepting = isAccepting
+

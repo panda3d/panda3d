@@ -349,3 +349,16 @@ class FilterManager(DirectObject):
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0
+
+    #snake_case alias:
+    is_fullscreen = isFullscreen
+    resize_buffers = resizeBuffers
+    set_stacked_clears = setStackedClears
+    render_scene_into = renderSceneInto
+    get_scaled_size = getScaledSize
+    render_quad_into = renderQuadInto
+    get_clears = getClears
+    set_clears = setClears
+    create_buffer = createBuffer
+    window_event = windowEvent
+

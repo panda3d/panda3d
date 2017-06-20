@@ -536,3 +536,25 @@ class CommonFilters:
             del self.configuration["GammaAdjust"]
             return self.reconfigure((old_gamma != 1.0), "GammaAdjust")
         return True
+
+    #snake_case alias:
+    del_cartoon_ink = delCartoonInk
+    set_half_pixel_shift = setHalfPixelShift
+    del_half_pixel_shift = delHalfPixelShift
+    set_inverted = setInverted
+    del_inverted = delInverted
+    del_view_glow = delViewGlow
+    set_volumetric_lighting = setVolumetricLighting
+    del_gamma_adjust = delGammaAdjust
+    set_bloom = setBloom
+    set_view_glow = setViewGlow
+    set_ambient_occlusion = setAmbientOcclusion
+    set_cartoon_ink = setCartoonInk
+    del_bloom = delBloom
+    del_ambient_occlusion = delAmbientOcclusion
+    load_shader = loadShader
+    set_blur_sharpen = setBlurSharpen
+    del_blur_sharpen = delBlurSharpen
+    del_volumetric_lighting = delVolumetricLighting
+    set_gamma_adjust = setGammaAdjust
+
