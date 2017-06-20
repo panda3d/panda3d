@@ -835,13 +835,16 @@ if (COMPILER=="GCC"):
                 # Needed when linking ffmpeg statically on Linux.
                 LibName("FFMPEG", "-Wl,-Bsymbolic")
 
-        cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
-        if cv_lib == "opencv_core":
-            OPENCV_VER_23 = True
-            SmartPkgEnable("OPENCV", "opencv",   ("opencv_core", "opencv_highgui"), ("opencv2/core/core.hpp"))
+        if PkgSkip("FFMPEG") or GetTarget() == "darwin":
+            cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
+            if cv_lib == "opencv_core":
+                OPENCV_VER_23 = True
+                SmartPkgEnable("OPENCV", "opencv",   ("opencv_core", "opencv_highgui"), ("opencv2/core/core.hpp"))
+            else:
+                SmartPkgEnable("OPENCV", "opencv",   ("cv", "highgui", "cvaux", "ml", "cxcore"),
+                               ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
         else:
-            SmartPkgEnable("OPENCV", "opencv",   ("cv", "highgui", "cvaux", "ml", "cxcore"),
-                           ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
+            PkgDisable("OPENCV")
 
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
