@@ -344,11 +344,11 @@ munge_state_impl(const RenderState *state) {
 #ifdef HAVE_CG
   if (_auto_shader) {
     CPT(RenderState) shader_state = munged_state->get_auto_shader_state();
-    ShaderGenerator *shader_generator = get_gsg()->get_shader_generator();
-    if (shader_generator == NULL) {
-      pgraph_cat.error()
-        << "auto_shader enabled, but GSG has no shader generator assigned!\n";
-      return munged_state;
+    GraphicsStateGuardian *gsg = get_gsg();
+    ShaderGenerator *shader_generator = gsg->get_shader_generator();
+    if (shader_generator == nullptr) {
+      shader_generator = new ShaderGenerator(gsg);
+      gsg->set_shader_generator(shader_generator);
     }
     if (shader_state->_generated_shader == NULL) {
       // Cache the generated ShaderAttrib on the shader state.

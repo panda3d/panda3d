@@ -55,8 +55,8 @@ TypeHandle ShaderGenerator::_type_handle;
  * shader generator belongs.
  */
 ShaderGenerator::
-ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host) :
-  _gsg(gsg), _host(host) {
+ShaderGenerator(GraphicsStateGuardianBase *gsg) :
+  _gsg(gsg) {
 
   // The ATTR# input semantics seem to map to generic vertex attributes in
   // both arbvp1 and glslv, which behave more consistently.  However, they

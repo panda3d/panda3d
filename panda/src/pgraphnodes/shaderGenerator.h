@@ -60,7 +60,7 @@ class GeomVertexAnimationSpec;
  */
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
-  ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host);
+  ShaderGenerator(GraphicsStateGuardianBase *gsg);
   virtual ~ShaderGenerator();
   virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
                                               const GeomVertexAnimationSpec &anim);
@@ -144,7 +144,6 @@ protected:
 
   // This is not a PT() to prevent a circular reference.
   GraphicsStateGuardianBase *_gsg;
-  GraphicsOutputBase *_host;
 
 public:
   static TypeHandle get_class_type() {
