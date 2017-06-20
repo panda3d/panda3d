@@ -357,10 +357,14 @@ analyze_renderstate(const RenderState *rs) {
   }
 
   // Determine whether we should normalize the normals.
-  const RescaleNormalAttrib *rescale;
+  /*const RescaleNormalAttrib *rescale;
   rs->get_attrib_def(rescale);
 
   _normalize_normals = (rescale->get_mode() != RescaleNormalAttrib::M_none);
+  */
+  // Actually, let's always normalize the normals for now.  This helps to
+  // reduce combinatoric explosion of shaders.
+  _normalize_normals = true;
 
   // Decide which material modes need to be calculated.
 
@@ -823,11 +827,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t in float4 l_" << it->first->join("_") << " : " << it->second << ",\n";
   }
   const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
-  for (int i=0; i<_num_textures; i++) {
+  for (int i = 0; i < _num_textures; ++i) {
     TextureStage *stage = texture->get_on_stage(i);
-    Texture *tex = texture->get_on_texture(stage);
-    nassertr(tex != NULL, NULL);
-    text << "\t uniform sampler" << texture_type_as_string(tex->get_texture_type()) << " tex_" << i << ",\n";
+    Texture::TextureType type = texture->get_on_texture_type(stage);
+    text << "\t uniform sampler" << texture_type_as_string(type) << " tex_" << i << ",\n";
     if (tex_matrix->has_stage(stage)) {
       text << "\t uniform float4x4 texmat_" << i << ",\n";
     }
@@ -935,11 +938,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   text << "\t // Fetch all textures.\n";
   if (_map_index_height >= 0 && parallax_mapping_samples > 0) {
-    Texture *tex = texture->get_on_texture(texture->get_on_stage(_map_index_height));
-    nassertr(tex != NULL, NULL);
-    text << "\t float4 tex" << _map_index_height << " = tex" << texture_type_as_string(tex->get_texture_type());
+    Texture::TextureType type = texture->get_on_texture_type(texture->get_on_stage(_map_index_height));
+    text << "\t float4 tex" << _map_index_height << " = tex" << texture_type_as_string(type);
     text << "(tex_" << _map_index_height << ", texcoord" << _map_index_height << ".";
-    switch (tex->get_texture_type()) {
+    switch (type) {
     case Texture::TT_cube_map:
     case Texture::TT_3d_texture:
     case Texture::TT_2d_texture_array:
@@ -972,18 +974,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << " * 2.0 - 1.0)) * " << 0.5 * parallax_mapping_scale << ";\n";
     }
   }
-  for (int i=0; i<_num_textures; i++) {
+  for (int i = 0; i < _num_textures; ++i) {
     if (i != _map_index_height) {
-      Texture *tex = texture->get_on_texture(texture->get_on_stage(i));
-      nassertr(tex != NULL, NULL);
+      Texture::TextureType type = texture->get_on_texture_type(texture->get_on_stage(i));
       // Parallax mapping pushes the texture coordinates of the other textures
       // away from the camera.
       if (_map_index_height >= 0 && parallax_mapping_samples > 0) {
         text << "\t texcoord" << i << ".xyz -= parallax_offset;\n";
       }
-      text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex->get_texture_type());
+      text << "\t float4 tex" << i << " = tex" << texture_type_as_string(type);
       text << "(tex_" << i << ", texcoord" << i << ".";
-      switch(tex->get_texture_type()) {
+      switch (type) {
       case Texture::TT_cube_map:
       case Texture::TT_3d_texture:
       case Texture::TT_2d_texture_array:
@@ -1263,20 +1264,20 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   // Now loop through the textures to compose our magic blending formulas.
-  for (int i=0; i<_num_textures; i++) {
+  for (int i = 0; i < _num_textures; ++i) {
     TextureStage *stage = texture->get_on_stage(i);
     switch (stage->get_mode()) {
     case TextureStage::M_modulate: {
-      int num_components = texture->get_on_texture(texture->get_on_stage(i))->get_num_components();
+      bool affects_rgb = texture->on_stage_affects_rgb(i);
+      bool affects_alpha = texture->on_stage_affects_alpha(i);
 
-      if (num_components == 1) {
-        text << "\t result.a *= tex" << i << ".a;\n";
-      } else if (num_components == 3) {
-        text << "\t result.rgb *= tex" << i << ".rgb;\n";
-      } else {
+      if (affects_rgb && affects_alpha) {
         text << "\t result.rgba *= tex" << i << ".rgba;\n";
+      } else if (affects_alpha) {
+        text << "\t result.a *= tex" << i << ".a;\n";
+      } else if (affects_rgb) {
+        text << "\t result.rgb *= tex" << i << ".rgb;\n";
       }
-
       break; }
     case TextureStage::M_modulate_glow:
     case TextureStage::M_modulate_gloss:

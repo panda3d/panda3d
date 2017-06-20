@@ -114,7 +114,14 @@ get_hash_impl() const {
  */
 CPT(RenderAttrib) TransparencyAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
+  if (_mode == TransparencyAttrib::M_alpha) {
+    return this;
+  } else if (_mode == TransparencyAttrib::M_premultiplied_alpha ||
+             _mode == TransparencyAttrib::M_dual) {
+    return return_new(new TransparencyAttrib(M_alpha));
+  } else {
+    return nullptr;
+  }
 }
 
 /**

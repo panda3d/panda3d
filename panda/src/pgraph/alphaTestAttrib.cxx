@@ -18,6 +18,7 @@
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "auxBitplaneAttrib.h"
 
 TypeHandle AlphaTestAttrib::_type_handle;
 int AlphaTestAttrib::_attrib_slot;
@@ -98,7 +99,15 @@ get_hash_impl() const {
  */
 CPT(RenderAttrib) AlphaTestAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
+  // This is only important if the shader subsumes the alpha test, which only
+  // happens if there is an AuxBitplaneAttrib with ABO_glow.
+  const AuxBitplaneAttrib *aux;
+  if (!state->get_attrib(aux) ||
+      (aux->get_outputs() & AuxBitplaneAttrib::ABO_glow) == 0) {
+    return nullptr;
+  } else {
+    return this;
+  }
 }
 
 /**
