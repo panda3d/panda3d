@@ -482,7 +482,6 @@ class DistributedObjectAI(DistributedObjectBase):
                 (self.__class__, doId))
             return
         self.air.requestDelete(self)
-        self.air.startTrackRequestDeletedDO(self)
         self._DOAI_requestedDelete = True
 
     def taskName(self, taskString):
