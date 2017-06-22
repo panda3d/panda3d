@@ -1849,16 +1849,6 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
   scene_setup->set_cs_world_transform(cs_world_transform);
 
-  // Make sure that the GSG has a ShaderGenerator for the munger to use.  We
-  // have to do this here because the ShaderGenerator needs a host window
-  // pointer.  Hopefully we'll be able to eliminate that requirement in the
-  // future.
-#ifdef HAVE_CG
-  if (gsg->get_shader_generator() == NULL) {
-    gsg->set_shader_generator(new ShaderGenerator(gsg, window));
-  }
-#endif
-
   return scene_setup;
 }
 

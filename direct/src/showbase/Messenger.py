@@ -635,3 +635,16 @@ class Messenger:
         str = str + '='*50 + '\n'
         return str
 
+    #snake_case alias:
+    get_events = getEvents
+    is_ignoring = isIgnoring
+    who_accepts = whoAccepts
+    find_all = findAll
+    replace_method = replaceMethod
+    ignore_all = ignoreAll
+    is_accepting = isAccepting
+    is_empty = isEmpty
+    detailed_repr = detailedRepr
+    get_all_accepting = getAllAccepting
+    toggle_verbose = toggleVerbose
+
