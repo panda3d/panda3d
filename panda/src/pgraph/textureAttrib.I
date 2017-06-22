@@ -263,7 +263,7 @@ on_stage_affects_alpha(size_t n) const {
  */
 INLINE void TextureAttrib::
 check_sorted() const {
-  if (_sort_seq != TextureStage::get_sort_seq()) {
+  if (_sort_seq != TextureStage::get_sort_seq() && !_sort_seq.is_fresh()) {
     ((TextureAttrib *)this)->sort_on_stages();
   }
 }
