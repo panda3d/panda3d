@@ -36,6 +36,9 @@ PUBLISHED:
   INLINE bool is_off() const;
   INLINE Material *get_material() const;
 
+public:
+  INLINE int get_material_flags() const;
+
 PUBLISHED:
   MAKE_PROPERTY(material, get_material);
 
@@ -49,6 +52,7 @@ protected:
 
 private:
   PT(Material) _material;
+  int _flags;
 
 PUBLISHED:
   static int get_class_slot() {

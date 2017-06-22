@@ -265,12 +265,7 @@ analyze_renderstate(const RenderState *rs) {
 
   const MaterialAttrib *material;
   rs->get_attrib_def(material);
-
-  if (!material->is_off()) {
-    _material = material->get_material();
-  } else {
-    _material = Material::get_default();
-  }
+  _material_flags = material->get_material_flags();
 
   // Break out the lights by type.
 
@@ -285,14 +280,7 @@ analyze_renderstate(const RenderState *rs) {
     nassertv(light_obj != (PandaNode *)NULL);
 
     if (light_obj->is_ambient_light()) {
-      if (_material->has_ambient()) {
-        LColor a = _material->get_ambient();
-        if ((a[0]!=0.0)||(a[1]!=0.0)||(a[2]!=0.0)) {
-          _have_ambient = true;
-        }
-      } else {
-        _have_ambient = true;
-      }
+      _have_ambient = true;
       _lighting = true;
 
     } else if (light_obj->is_of_type(LightLensNode::get_class_type())) {
@@ -369,29 +357,16 @@ analyze_renderstate(const RenderState *rs) {
   // Decide which material modes need to be calculated.
 
   if (_lighting) {
-    if (_material->has_diffuse()) {
-      LColor d = _material->get_diffuse();
-      if ((d[0]!=0.0)||(d[1]!=0.0)||(d[2]!=0.0)) {
-        _have_diffuse = true;
-      }
-    } else {
-      _have_diffuse = true;
-    }
+    _have_diffuse = true;
   }
 
-  if (_lighting && (_material->has_emission())) {
-    LColor e = _material->get_emission();
-    if ((e[0]!=0.0)||(e[1]!=0.0)||(e[2]!=0.0)) {
-      _have_emission = true;
-    }
+  if (_lighting && (_material_flags & Material::F_emission) != 0) {
+    _have_emission = true;
   }
 
   if (_lighting) {
-    if (_material->has_specular()) {
-      LColor s = _material->get_specular();
-      if ((s[0]!=0.0)||(s[1]!=0.0)||(s[2]!=0.0)) {
-        _have_specular = true;
-      }
+    if (_material_flags & Material::F_specular) {
+      _have_specular = true;
     } else if (_map_index_gloss >= 0) {
       _have_specular = true;
     }
@@ -402,14 +377,10 @@ analyze_renderstate(const RenderState *rs) {
   // Decide whether to separate ambient and diffuse calculations.
 
   if (_have_ambient && _have_diffuse) {
-    if (_material->has_ambient()) {
-      if (_material->has_diffuse()) {
-        _separate_ambient_diffuse = _material->get_ambient() != _material->get_diffuse();
-      } else {
-        _separate_ambient_diffuse = true;
-      }
+    if (_material_flags & Material::F_ambient) {
+      _separate_ambient_diffuse = true;
     } else {
-      if (_material->has_diffuse()) {
+      if (_material_flags & Material::F_diffuse) {
         _separate_ambient_diffuse = true;
       } else {
         _separate_ambient_diffuse = false;
@@ -431,10 +402,10 @@ analyze_renderstate(const RenderState *rs) {
   // Does the shader need material properties as input?
 
   _need_material_props =
-    (_have_ambient  && (_material->has_ambient()))||
-    (_have_diffuse  && (_material->has_diffuse()))||
-    (_have_emission && (_material->has_emission()))||
-    (_have_specular && (_material->has_specular()));
+    (_have_ambient  && (_material_flags & Material::F_ambient) != 0) ||
+    (_have_diffuse  && (_material_flags & Material::F_diffuse) != 0) ||
+    (_have_emission && (_material_flags & Material::F_emission) != 0) ||
+    (_have_specular && (_material_flags & Material::F_specular) != 0);
 
   // Check for clip planes.
 
@@ -494,7 +465,7 @@ clear_analysis() {
   _out_aux_normal   = false;
   _out_aux_glow     = false;
   _out_aux_any      = false;
-  _material = (Material*)NULL;
+  _material_flags = 0;
   _need_material_props = false;
   _need_world_position = false;
   _need_world_normal = false;
@@ -867,7 +838,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t uniform float4x4 attr_material,\n";
     }
     if (_have_specular) {
-      if (_material->get_local()) {
+      if (_material_flags & Material::F_local) {
         text << "\t uniform float4 mspos_view,\n";
       } else {
         text << "\t uniform float4 row1_view_to_model,\n";
@@ -1041,7 +1012,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     if (_have_specular) {
       text << "\t float4 tot_specular = float4(0,0,0,0);\n";
-      if (_material->has_specular()) {
+      if (_material_flags & Material::F_specular) {
         text << "\t float shininess = attr_material[3].w;\n";
       } else {
         text << "\t float shininess = 50; // no shininess specified, using default\n";
@@ -1073,7 +1044,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t tot_diffuse += lcolor;\n";
       }
       if (_have_specular) {
-        if (_material->get_local()) {
+        if (_material_flags & Material::F_local) {
           text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
           text << "\t lhalf = dlight_light" << i << "_rel_view[3].xyz;\n";
@@ -1103,7 +1074,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t tot_diffuse += lcolor;\n";
       }
       if (_have_specular) {
-        if (_material->get_local()) {
+        if (_material_flags & Material::F_local) {
           text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
@@ -1141,7 +1112,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t tot_diffuse += lcolor;\n";
       }
       if (_have_specular) {
-        if (_material->get_local()) {
+        if (_material_flags & Material::F_local) {
           text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0,1,0));\n";
@@ -1199,7 +1170,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
     }
     if ((_have_ambient)&&(_separate_ambient_diffuse)) {
-      if (_material->has_ambient()) {
+      if (_material_flags & Material::F_ambient) {
         text << "\t result += tot_ambient * attr_material[0];\n";
       } else if (_vertex_colors) {
         text << "\t result += tot_ambient * l_color;\n";
@@ -1210,7 +1181,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
     }
     if (_have_diffuse) {
-      if (_material->has_diffuse()) {
+      if (_material_flags & Material::F_diffuse) {
         text << "\t result += tot_diffuse * attr_material[1];\n";
       } else if (_vertex_colors) {
         text << "\t result += tot_diffuse * l_color;\n";
@@ -1389,7 +1360,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   if (_lighting) {
     if (_have_specular) {
-      if (_material->has_specular()) {
+      if (_material_flags & Material::F_specular) {
         text << "\t tot_specular *= attr_material[3];\n";
       }
       if (_map_index_gloss >= 0 && _auto_gloss_on) {
