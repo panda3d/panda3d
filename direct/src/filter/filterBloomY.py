@@ -13,8 +13,9 @@ void vshader(float4 vtx_position : POSITION,
   l_position=mul(mat_modelproj, vtx_position);
   float2 c=(vtx_position.xz * texpad_src.xy) + texpad_src.xy;
   float offset = texpix_src.y;
-  l_texcoord0 = float4(c.y-offset* -4, c.y-offset* -3, c.y-offset* -2, c.x);
-  l_texcoord1 = float4(c.y-offset* -1, c.y-offset*  0, c.y-offset*  1, c.x);
+  float pad = texpad_src.y * 2;
+  l_texcoord0 = float4(min(c.y-offset* -4, pad), min(c.y-offset* -3, pad), min(c.y-offset* -2, pad), c.x);
+  l_texcoord1 = float4(min(c.y-offset* -1, pad), c.y-offset*  0, c.y-offset*  1, c.x);
   l_texcoord2 = float4(c.y-offset*  2, c.y-offset*  3, c.y-offset*  4, c.x);
 }
 

@@ -428,7 +428,9 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_shaderinputs;
 
-    if ((inp == SMO_alight_x) ||
+    if ((inp == SMO_texpad_x) ||
+        (inp == SMO_texpix_x) ||
+        (inp == SMO_alight_x) ||
         (inp == SMO_dlight_x) ||
         (inp == SMO_plight_x) ||
         (inp == SMO_slight_x) ||

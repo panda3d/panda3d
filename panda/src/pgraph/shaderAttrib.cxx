@@ -523,14 +523,15 @@ void ShaderAttrib::
 output(ostream &out) const {
   out << "ShaderAttrib:";
 
-  if (_has_shader) {
-    if (_shader == NULL) {
+  if (_auto_shader) {
+    out << "auto";
+    return;
+  } else if (_has_shader) {
+    if (_shader == nullptr) {
       out << "off";
     } else {
       out << _shader->get_filename().get_basename();
     }
-  } else if (_auto_shader) {
-    out << "auto";
   }
 
   out << "," << _inputs.size() << " inputs";

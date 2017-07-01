@@ -141,6 +141,26 @@ get_on_texture(TextureStage *stage) const {
 }
 
 /**
+ * Returns the type of the texture associated with the indicated stage.  It is
+ * an error to call this if has_on_stage(stage) returns false.
+ *
+ * This method is no different than get_on_texture(stage)->get_texture_type();
+ * it merely exists to address a corner case for the shader generator.
+ */
+INLINE Texture::TextureType TextureAttrib::
+get_on_texture_type(TextureStage *stage) const {
+  Stages::const_iterator si;
+  si = _on_stages.find(StageNode(stage));
+  nassertr(si != _on_stages.end(), Texture::TT_2d_texture);
+
+  if ((*si)._texture == nullptr) {
+    return (*si)._texture_type;
+  } else {
+    return (*si)._texture->get_texture_type();
+  }
+}
+
+/**
  * Returns the sampler associated with the indicated stage, or the one
  * associated with its texture if no custom stage has been specified.  It is
  * an error to call this if the stage does not exist.
@@ -216,6 +236,26 @@ is_identity() const {
 }
 
 /**
+ * Call only on a state returned by get_auto_shader_attrib.
+ */
+bool TextureAttrib::
+on_stage_affects_rgb(size_t n) const {
+  nassertr(n < _render_stages.size(), false);
+  StageNode *stage = _render_stages[n];
+  return stage->_texture_affects_rgb;
+}
+
+/**
+ * Call only on a state returned by get_auto_shader_attrib.
+ */
+bool TextureAttrib::
+on_stage_affects_alpha(size_t n) const {
+  nassertr(n < _render_stages.size(), false);
+  StageNode *stage = _render_stages[n];
+  return stage->_texture_affects_alpha;
+}
+
+/**
  * Confirms whether the _on_stages list is still sorted.  It will become
  * unsorted if someone calls TextureStage::set_sort().
  *
@@ -223,7 +263,7 @@ is_identity() const {
  */
 INLINE void TextureAttrib::
 check_sorted() const {
-  if (_sort_seq != TextureStage::get_sort_seq()) {
+  if (_sort_seq != TextureStage::get_sort_seq() && !_sort_seq.is_fresh()) {
     ((TextureAttrib *)this)->sort_on_stages();
   }
 }

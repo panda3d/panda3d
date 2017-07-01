@@ -127,19 +127,7 @@ PUBLISHED:
   MAKE_PROPERTY(local, get_local, set_local);
   MAKE_PROPERTY(twoside, get_twoside, set_twoside);
 
-private:
-  LColor _base_color;
-  LColor _ambient;
-  LColor _diffuse;
-  LColor _specular;
-  LColor _emission;
-  PN_stdfloat _shininess;
-  PN_stdfloat _roughness;
-  PN_stdfloat _metallic;
-  PN_stdfloat _refractive_index;
-
-  static PT(Material) _default;
-
+public:
   enum Flags {
     F_ambient     = 0x001,
     F_diffuse     = 0x002,
@@ -153,7 +141,23 @@ private:
     F_base_color  = 0x200,
     F_refractive_index = 0x400,
   };
+
+private:
+  LColor _base_color;
+  LColor _ambient;
+  LColor _diffuse;
+  LColor _specular;
+  LColor _emission;
+  PN_stdfloat _shininess;
+  PN_stdfloat _roughness;
+  PN_stdfloat _metallic;
+  PN_stdfloat _refractive_index;
+
+  static PT(Material) _default;
+
   int _flags;
+
+  friend class MaterialAttrib;
 
 public:
   static void register_with_read_factory();
