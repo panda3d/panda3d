@@ -209,7 +209,7 @@ class build_apps(distutils.core.Command):
             else:
                 # Builtin module, but might not be builtin in wheel libs, so double check
                 if module in whl_modules:
-                    source_path = '{0}/deploy_libs/{1}.{2}'.format(p3dwhlfn, module, whl_modules_ext)
+                    source_path = os.path.join(p3dwhlfn, 'deploy_libs/{}.{}'.format(module, whl_modules_ext))
                     basename = os.path.basename(source_path)
                 else:
                     continue
@@ -339,11 +339,14 @@ class build_apps(distutils.core.Command):
                 self.copy_with_dependencies(source_path, target_path, search_path)
                 return
 
-            elif '.whl/' in source_path:
+            elif '.whl' in source_path:
                 # Check whether the file exists inside the wheel.
-                whl, wf = source_path.split('.whl/')
+                whl, wf = source_path.split('.whl' + os.path.sep)
                 whl += '.whl'
                 whlfile = self._get_zip_file(whl)
+
+                # Normalize the path separator
+                wf = wf.replace(os.path.sep, '/')
 
                 # Look case-insensitively.
                 namelist = whlfile.namelist()
@@ -352,7 +355,7 @@ class build_apps(distutils.core.Command):
                 if wf.lower() in namelist_lower:
                     # We have a match.  Change it to the correct case.
                     wf = namelist[namelist_lower.index(wf.lower())]
-                    source_path = '/'.join((whl, wf))
+                    source_path = os.path.join(whl, wf)
                     target_path = os.path.join(target_dir, os.path.basename(wf))
                     self.copy_with_dependencies(source_path, target_path, search_path)
                     return
@@ -382,12 +385,16 @@ class build_apps(distutils.core.Command):
 
         source_path may be located inside a .whl file. """
 
-        print("copying {0} -> {1}".format(os.path.relpath(source_path, self.build_base), os.path.relpath(target_path, self.build_base)))
+        try:
+            print("copying {0} -> {1}".format(os.path.relpath(source_path, self.build_base), os.path.relpath(target_path, self.build_base)))
+        except ValueError:
+            # No relative path (e.g., files on different drives in Windows), just print absolute paths instead
+            print("copying {0} -> {1}".format(source_path, target_path))
 
         # Copy the file, and open it for analysis.
-        if '.whl/' in source_path:
+        if '.whl' in source_path:
             # This was found in a wheel, extract it
-            whl, wf = source_path.split('.whl/')
+            whl, wf = source_path.split('.whl' + os.path.sep)
             whl += '.whl'
             whlfile = self._get_zip_file(whl)
             data = whlfile.read(wf)
