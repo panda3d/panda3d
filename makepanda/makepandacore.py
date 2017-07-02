@@ -62,11 +62,11 @@ else:
 ########################################################################
 
 MSVCVERSIONINFO = {
-    10.0: {"vsversion":10, "vsname":"Visual Studio 2010"},
-    11.0: {"vsversion":11, "vsname":"Visual Studio 2012"},
-    12.0: {"vsversion":12, "vsname":"Visual Studio 2013"},
-    14.0: {"vsversion":14, "vsname":"Visual Studio 2015"},
-    14.1: {"vsversion":15, "vsname":"Visual Studio 2017"},
+    10.0: {"vsversion":10.0, "vsname":"Visual Studio 2010"},
+    11.0: {"vsversion":11.0, "vsname":"Visual Studio 2012"},
+    12.0: {"vsversion":12.0, "vsname":"Visual Studio 2013"},
+    14.0: {"vsversion":14.0, "vsname":"Visual Studio 2015"},
+    14.1: {"vsversion":15.0, "vsname":"Visual Studio 2017"},
 }
 
 ########################################################################
@@ -2076,18 +2076,24 @@ def SdkLocateVisualStudio(version=10.0):
         if not os.path.isfile(vswhere_path):
             vswhere_path = None
 
-    vsdir = None
+    vsdir = 0
     if vswhere_path:
         vswhere_cmd = [vswhere_path, "-legacy", "-property", "installationPath",
             "-version", "[{},{})".format(vsversion, vsversion+1)]
         handle = subprocess.Popen(vswhere_cmd, shell=True, stdout=subprocess.PIPE)
-        vsdir = handle.communicate()[0].splitlines()[0].decode("utf-8") + "\\"
+        found_paths = handle.communicate()[0].splitlines()
+        if found_paths:
+            vsdir = found_paths[0].decode("utf-8") + "\\"
 
     vsversion = str(vsversion)
     version = "{:.1f}".format(version)
 
+    # try to use registry
+    if (vsdir == 0):
+        vsdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7", vsversion)
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", version)
-    if vsdir:
+
+    if (vsdir != 0):
         SDK["VISUALSTUDIO"] = vsdir
 
     elif (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
@@ -2429,7 +2435,7 @@ def SetupVisualStudioEnviron():
     if ("MSPLATFORM" not in SDK):
         exit("Could not find the Microsoft Platform SDK")
 
-    if (int(SDK["VISUALSTUDIO_VERSION"]) >= 15):
+    if (float(SDK["VISUALSTUDIO_VERSION"]) >= 15):
         try:
             vsver_file = open(os.path.join(SDK["VISUALSTUDIO"],
                 "VC\\Auxiliary\\Build\\Microsoft.VCToolsVersion.default.txt"), "r")
