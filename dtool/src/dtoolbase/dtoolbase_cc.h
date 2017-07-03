@@ -37,7 +37,6 @@ using namespace std;
 #define ALWAYS_INLINE_CONSTEXPR constexpr
 #define NOEXCEPT noexcept
 #define FINAL final
-#define OVERRIDE override
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
 #define DEFAULT_DTOR = default
@@ -167,7 +166,6 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  endif
 #  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
 #    define FINAL final
-#    define OVERRIDE override
 #  endif
 #  if __has_extension(cxx_defaulted_functions)
 #     define DEFAULT_CTOR = default
@@ -198,7 +196,6 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 // Starting at GCC 4.7
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
 #    define FINAL final
-#    define OVERRIDE override
 #  endif
 
 // GCC defines several macros which we can query.  List of all supported
@@ -212,11 +209,9 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #  define NOEXCEPT noexcept
 #  define USE_MOVE_SEMANTICS
 #  define FINAL final
-#  define OVERRIDE override
 #  define MOVE(x) move(x)
 #elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
 #  define NOEXCEPT throw()
-#  define OVERRIDE override
 #  define USE_MOVE_SEMANTICS
 #  define FINAL sealed
 #  define MOVE(x) move(x)
@@ -244,9 +239,6 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #endif
 #ifndef FINAL
 #  define FINAL
-#endif
-#ifndef OVERRIDE
-#  define OVERRIDE
 #endif
 #ifndef DEFAULT_CTOR
 #  define DEFAULT_CTOR {}
