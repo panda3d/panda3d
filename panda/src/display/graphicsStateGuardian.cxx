@@ -2263,10 +2263,8 @@ finish_decal() {
  */
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
-  _munger = munger;
   _data_reader = data_reader;
 
   // Always draw if we have a shader, since the shader might use a different
@@ -2337,7 +2335,6 @@ draw_points(const GeomPrimitivePipelineReader *, bool) {
  */
 void GraphicsStateGuardian::
 end_draw_primitives() {
-  _munger = NULL;
   _data_reader = NULL;
 }
 

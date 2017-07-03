@@ -153,7 +153,6 @@ PUBLISHED:
 
 public:
   bool draw(GraphicsStateGuardianBase *gsg,
-            const GeomMunger *munger,
             const GeomVertexData *vertex_data,
             bool force, Thread *current_thread) const;
 
@@ -429,7 +428,7 @@ public:
   INLINE GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                   GraphicsStateGuardianBase *gsg) const;
 
-  bool draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+  bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexDataPipelineReader *data_reader,
             bool force) const;
 
