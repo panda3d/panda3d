@@ -95,6 +95,7 @@ PUBLISHED:
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4f &range) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4d &range) const;
+  BLOCKING INLINE bool calc_autocrop(LVecBase4i &range) const;
 
   bool is_row_empty(int y, int x_begin, int x_end) const;
   bool is_column_empty(int x, int y_begin, int y_end) const;
@@ -118,6 +119,7 @@ PUBLISHED:
 
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
+  BLOCKING void rotate_from(const PfmFile &other, float angle, LPoint4f fill = LPoint4f(0.0));
   BLOCKING void xform(const LMatrix4f &transform);
   INLINE BLOCKING void xform(const LMatrix4d &transform);
   BLOCKING void forward_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);

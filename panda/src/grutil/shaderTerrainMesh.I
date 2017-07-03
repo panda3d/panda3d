@@ -30,10 +30,25 @@ INLINE void ShaderTerrainMesh::set_heightfield(Texture* heightfield) {
  * @details This returns the terrain heightfield, previously set with
  *   set_heightfield()
  *
- * @return Path to the heightfield
+ * @return Heightfield texture
  */
 INLINE Texture* ShaderTerrainMesh::get_heightfield() const {
   return _heightfield_tex;
+}
+
+/**
+ * @brief Sets a DynamicHeightfield which will propagate changes made to it to this ShaderTerrainMesh.
+ * @details It's recommended to construct ShaderTerrainMesh, set a heightfield 
+ *   and call generate() first. Then construct DynamicHeightfield, call read() 
+ *   and use this method to hook them up.
+ */
+INLINE void ShaderTerrainMesh::set_dynamic_heightfield(DynamicHeightfield* dynamic_hf) {
+  if (_size != dynamic_hf->get_x_size() || _size != dynamic_hf->get_y_size()) {
+    shader_terrain_cat.error() << "Size mismatch between ShaderTerrainMesh and DynamicHeightfield! DynamicHeightfield was not set." << endl;
+    return;
+  }
+  _dynamic_hf = dynamic_hf;
+  _dynamic_hf->add_observer(this);
 }
 
 /**
@@ -179,4 +194,20 @@ INLINE ShaderTerrainMesh::Chunk::~Chunk() {
  */
 INLINE LPoint3 ShaderTerrainMesh::uv_to_world(PN_stdfloat u, PN_stdfloat v) const {
   return uv_to_world(LTexCoord(u, v));
+}
+
+/**
+ * @brief This reads a texel from the RAM image.
+ */
+INLINE PN_stdfloat ShaderTerrainMesh::get_texel(size_t x, size_t y) {
+  const unsigned char *p = _tex_read_ptr + (y * _size + x) * _pixel_width;
+  return (PN_stdfloat)*(uint16_t*)p / 65535.0f;
+}
+
+/**
+ * @brief Write a float as two unsigned chars at the indicated memory address.
+ */
+INLINE void ShaderTerrainMesh::set_texel(size_t x, size_t y, PN_stdfloat value) {
+  unsigned char *p = _tex_write_ptr + (y * _size + x) * _pixel_width;
+  *(uint16_t*)p = (uint16_t)(value * 65535.0f + 0.5f);
 }
