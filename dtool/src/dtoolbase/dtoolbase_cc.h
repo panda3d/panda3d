@@ -34,6 +34,7 @@ using namespace std;
 #define ALWAYS_INLINE inline
 #define TYPENAME typename
 #define CONSTEXPR constexpr
+#define ALWAYS_INLINE_CONSTEXPR constexpr
 #define NOEXCEPT noexcept
 #define FINAL final
 #define OVERRIDE override
@@ -231,6 +232,9 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 // Fallbacks if features are not supported
 #ifndef CONSTEXPR
 #  define CONSTEXPR INLINE
+#  define ALWAYS_INLINE_CONSTEXPR ALWAYS_INLINE
+#else
+#  define ALWAYS_INLINE_CONSTEXPR ALWAYS_INLINE CONSTEXPR
 #endif
 #ifndef NOEXCEPT
 #  define NOEXCEPT
