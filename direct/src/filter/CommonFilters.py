@@ -553,7 +553,6 @@ class CommonFilters:
     set_cartoon_ink = setCartoonInk
     del_bloom = delBloom
     del_ambient_occlusion = delAmbientOcclusion
-    load_shader = loadShader
     set_blur_sharpen = setBlurSharpen
     del_blur_sharpen = delBlurSharpen
     del_volumetric_lighting = delVolumetricLighting
