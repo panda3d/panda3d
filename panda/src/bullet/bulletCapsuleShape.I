@@ -25,7 +25,7 @@ INLINE BulletCapsuleShape::
  */
 INLINE BulletCapsuleShape::
 BulletCapsuleShape(const BulletCapsuleShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape), _radius(copy._radius), _height(copy._height) {
 }
 
 /**
@@ -34,6 +34,8 @@ BulletCapsuleShape(const BulletCapsuleShape &copy) :
 INLINE void BulletCapsuleShape::
 operator = (const BulletCapsuleShape &copy) {
   _shape = copy._shape;
+  _radius = copy._radius;
+  _height = copy._height;
 }
 
 /**

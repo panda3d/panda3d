@@ -25,7 +25,7 @@ INLINE BulletCylinderShape::
  */
 INLINE BulletCylinderShape::
 BulletCylinderShape(const BulletCylinderShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape), _half_extents(copy._half_extents) {
 }
 
 /**
@@ -34,6 +34,7 @@ BulletCylinderShape(const BulletCylinderShape &copy) :
 INLINE void BulletCylinderShape::
 operator = (const BulletCylinderShape &copy) {
   _shape = copy._shape;
+  _half_extents = copy._half_extents;
 }
 
 /**

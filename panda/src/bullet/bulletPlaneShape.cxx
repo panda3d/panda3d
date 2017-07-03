@@ -62,6 +62,8 @@ register_with_read_factory() {
  */
 void BulletPlaneShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
   dg.add_stdfloat(get_margin());
   get_plane_normal().write_datagram(dg);
   dg.add_stdfloat(get_plane_constant());
@@ -91,6 +93,7 @@ make_from_bam(const FactoryParams &params) {
 void BulletPlaneShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
   nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
 
   PN_stdfloat margin = scan.get_stdfloat();
 

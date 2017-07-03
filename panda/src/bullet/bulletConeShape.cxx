@@ -19,7 +19,8 @@ TypeHandle BulletConeShape::_type_handle;
  *
  */
 BulletConeShape::
-BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
+BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up):
+  _radius(radius), _height(height){
 
   switch (up) {
   case X_up:
@@ -46,4 +47,76 @@ btCollisionShape *BulletConeShape::
 ptr() const {
 
   return _shape;
+}
+
+/**
+ * Tells the BamReader how to create objects of type BulletShape.
+ */
+void BulletConeShape::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void BulletConeShape::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
+  // parameters to serialize: radius, height, upIndex
+  dg.add_stdfloat(_radius);
+  dg.add_stdfloat(_height);
+  dg.add_int8((int8_t)_shape->getConeUpIndex());
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BulletShape is encountered in the Bam file.  It should create the
+ * BulletShape and extract its information from the file.
+ */
+TypedWritable *BulletConeShape::
+make_from_bam(const FactoryParams &params) {
+  // create a default BulletConeShape
+  BulletConeShape *param = new BulletConeShape;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletShape.
+ */
+void BulletConeShape::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
+
+  // parameters to serialize: radius, height, up
+  _radius = scan.get_stdfloat();
+  _height = scan.get_stdfloat();
+  int upIndex = (int) scan.get_int8();
+
+  switch (upIndex) {
+  case 0:
+    _shape = new btConeShapeX((btScalar)_radius, (btScalar)_height);
+    break;
+  case 1:
+    _shape = new btConeShape((btScalar)_radius, (btScalar)_height);
+    break;
+  case 2:
+    _shape = new btConeShapeZ((btScalar)_radius, (btScalar)_height);
+    break;
+  default:
+    bullet_cat.error() << "invalid up-axis:" << upIndex << endl;
+    break;
+  }
+
+  _shape->setUserPointer(this);
 }

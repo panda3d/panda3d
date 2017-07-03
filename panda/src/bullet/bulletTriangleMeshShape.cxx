@@ -124,6 +124,8 @@ register_with_read_factory() {
  */
 void BulletTriangleMeshShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
   dg.add_stdfloat(get_margin());
 
   manager->write_pointer(dg, _mesh);
@@ -183,6 +185,8 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletTriangleMeshShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  BulletShape::fillin(scan, manager);
+
   PN_stdfloat margin = scan.get_stdfloat();
 
   manager->read_pointer(scan);

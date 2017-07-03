@@ -28,6 +28,12 @@
  *
  */
 class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletHeightfieldShape(): _num_rows(0),_num_cols(0),_data(NULL),
+                            _max_height(0.0),_up(Z_up),_shape(NULL){}
+  PN_stdfloat _max_height;
+  BulletUpAxis _up;
 
 PUBLISHED:
   BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
@@ -46,6 +52,14 @@ private:
   int _num_cols;
   float *_data;
   btHeightfieldTerrainShape *_shape;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

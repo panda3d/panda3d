@@ -21,7 +21,8 @@ TypeHandle BulletHeightfieldShape::_type_handle;
  *   while rotating it 90 degrees to the right.
  */
 BulletHeightfieldShape::
-BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) {
+BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) :
+  _max_height(max_height), _up(up) {
 
   _num_rows = image.get_x_size();
   _num_cols = image.get_y_size();
@@ -71,7 +72,8 @@ set_use_diamond_subdivision(bool flag) {
  *   that are non-power-of-two and/or rectangular.
  */
 BulletHeightfieldShape::
-BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
+BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) :
+  _max_height(max_height), _up(up) {
 
   _num_rows = tex->get_x_size() + 1;
   _num_cols = tex->get_y_size() + 1;
@@ -98,6 +100,82 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
                                          _data,
                                          max_height,
                                          up,
+                                         true, false);
+  _shape->setUserPointer(this);
+}
+
+/**
+ * Tells the BamReader how to create objects of type BulletShape.
+ */
+void BulletHeightfieldShape::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void BulletHeightfieldShape::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
+  // parameters to serialize:_num_rows,_num_cols,_data,max_height,up,
+  dg.add_int32(_num_rows);
+  dg.add_int32(_num_cols);
+  for (int i = 0; i < (_num_rows * _num_cols); ++i)
+  {
+	dg.add_stdfloat(_data[i]);
+  }
+  dg.add_stdfloat(_max_height);
+  dg.add_int8((int8_t)_up);
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BulletShape is encountered in the Bam file.  It should create the
+ * BulletShape and extract its information from the file.
+ */
+TypedWritable *BulletHeightfieldShape::
+make_from_bam(const FactoryParams &params) {
+  // create a default BulletHeightfieldShape
+  BulletHeightfieldShape *param = new BulletHeightfieldShape;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletShape.
+ */
+void BulletHeightfieldShape::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  nassertv(_shape == NULL);
+  nassertv(_data == NULL);
+  BulletShape::fillin(scan, manager);
+
+  // parameters to serialize: radius, height, up
+  _num_rows = scan.get_int32();
+  _num_cols = scan.get_int32();
+
+  _data = new float[_num_rows * _num_cols];
+  for (int i = 0; i < (_num_rows * _num_cols); ++i)
+  {
+    _data[i]  = scan.get_stdfloat();
+  }
+  _max_height = scan.get_stdfloat();
+  _up = (BulletUpAxis) scan.get_int8();
+
+  _shape = new btHeightfieldTerrainShape(_num_rows,
+                                         _num_cols,
+                                         _data,
+                                         _max_height,
+                                         _up,
                                          true, false);
   _shape->setUserPointer(this);
 }

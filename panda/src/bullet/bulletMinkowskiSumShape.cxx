@@ -42,3 +42,90 @@ ptr() const {
 
   return _shape;
 }
+
+/**
+ * Tells the BamReader how to create objects of type BulletShape.
+ */
+void BulletMinkowskiSumShape::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void BulletMinkowskiSumShape::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
+  // parameters to serialize: _shape_a, _shape_b
+  manager->write_pointer(dg, _shape_a);
+  manager->write_pointer(dg, _shape_b);
+}
+
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
+int BulletMinkowskiSumShape::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = BulletShape::complete_pointers(p_list, manager);
+
+  _shape_a = DCAST(BulletShape, p_list[pi++]);
+  _shape_b = DCAST(BulletShape, p_list[pi++]);
+
+  const btConvexShape *ptr_a = (const btConvexShape *)_shape_a->ptr();
+  const btConvexShape *ptr_b = (const btConvexShape *)_shape_b->ptr();
+
+  _shape = new btMinkowskiSumShape(ptr_a, ptr_b);
+  _shape->setUserPointer(this);
+
+  return pi;
+}
+
+/**
+ * Some objects require all of their nested pointers to have been completed
+ * before the objects themselves can be completed.  If this is the case,
+ * override this method to return true, and be careful with circular
+ * references (which would make the object unreadable from a bam file).
+ */
+bool BulletMinkowskiSumShape::
+require_fully_complete() const {
+  // We require the shape pointers to be complete before we add them.
+  return true;
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BulletShape is encountered in the Bam file.  It should create the
+ * BulletShape and extract its information from the file.
+ */
+TypedWritable *BulletMinkowskiSumShape::
+make_from_bam(const FactoryParams &params) {
+  // create a default BulletMinkowskiSumShape
+  BulletMinkowskiSumShape *param = new BulletMinkowskiSumShape;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletShape.
+ */
+void BulletMinkowskiSumShape::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  nassertv(_shape == NULL);
+  nassertv(_shape_a == NULL);
+  nassertv(_shape_b == NULL);
+  BulletShape::fillin(scan, manager);
+
+  // parameters to serialize: _shape_a, _shape_b
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
+}

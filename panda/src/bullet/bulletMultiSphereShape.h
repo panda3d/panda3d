@@ -26,6 +26,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletMultiSphereShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletMultiSphereShape(): _shape(NULL) {}
 
 PUBLISHED:
   BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii);
@@ -46,6 +49,14 @@ public:
 
 private:
   btMultiSphereShape *_shape;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

@@ -25,7 +25,7 @@ INLINE BulletConvexPointCloudShape::
  */
 INLINE BulletConvexPointCloudShape::
 BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape), _scale(copy._scale) {
 }
 
 /**
@@ -34,6 +34,7 @@ BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy) :
 INLINE void BulletConvexPointCloudShape::
 operator = (const BulletConvexPointCloudShape &copy) {
   _shape = copy._shape;
+  _scale = copy._scale;
 }
 
 /**

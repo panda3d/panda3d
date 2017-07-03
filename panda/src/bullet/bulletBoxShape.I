@@ -25,7 +25,7 @@ INLINE BulletBoxShape::
  */
 INLINE BulletBoxShape::
 BulletBoxShape(const BulletBoxShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape), _half_extents(copy._half_extents) {
 }
 
 /**
@@ -34,4 +34,5 @@ BulletBoxShape(const BulletBoxShape &copy) :
 INLINE void BulletBoxShape::
 operator = (const BulletBoxShape &copy) {
   _shape = copy._shape;
+  _half_extents = copy._half_extents;
 }
