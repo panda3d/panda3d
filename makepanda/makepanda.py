@@ -1515,7 +1515,9 @@ def CompileLib(lib, obj, opts):
             if HasTargetArch():
                 cmd += " /MACHINE:" + GetTargetArch().upper()
             cmd += ' /OUT:' + BracketNameWithQuotes(lib)
-            for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
+            for x in obj:
+                if not x.endswith('.lib'):
+                    cmd += ' ' + BracketNameWithQuotes(x)
             oscmd(cmd)
         else:
             # Choose Intel linker; from Jean-Claude
@@ -1567,6 +1569,21 @@ def CompileLink(dll, obj, opts):
                 else: cmd += " /NOD:MSVCRT.LIB mfcs100.lib MSVCRT.lib"
             cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
             cmd += ' /OUT:' + BracketNameWithQuotes(dll)
+
+            if not PkgSkip("PYTHON"):
+                # If we're building without Python, don't pick it up implicitly.
+                if "PYTHON" not in opts:
+                    pythonv = SDK["PYTHONVERSION"].replace('.', '')
+                    if optlevel <= 2:
+                        cmd += ' /NOD:{}d.lib'.format(pythonv)
+                    else:
+                        cmd += ' /NOD:{}.lib'.format(pythonv)
+
+                # Yes, we know we are importing "locally defined symbols".
+                for x in obj:
+                    if x.endswith('libp3pystub.lib'):
+                        cmd += ' /ignore:4049,4217'
+                        break
 
             # Set the subsystem.  Specify that we want to target Windows XP.
             subsystem = GetValueOption(opts, "SUBSYSTEM:") or "CONSOLE"
@@ -2691,7 +2708,7 @@ if GetTarget() == 'windows':
 import os
 
 bindir = os.path.join(os.path.dirname(__file__), '..', 'bin')
-if os.path.isfile(os.path.join(bindir, 'libpanda.dll')):
+if os.path.isdir(bindir):
     if not os.environ.get('PATH'):
         os.environ['PATH'] = bindir
     else:
