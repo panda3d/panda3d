@@ -88,7 +88,9 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _last_frame_count(-1),
   _target_triangle_width(10.0f),
   _update_enabled(true),
-  _heightfield_tex(NULL)
+  _heightfield_tex(NULL),
+  _tex_read_ptr(NULL),
+  _tex_write_ptr(NULL)
 {
   set_final(true);
   set_bounds(new OmniBoundingVolume());
@@ -106,8 +108,9 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
  * @return true if the terrain was initialized, false if an error occured
  */
 bool ShaderTerrainMesh::generate() {
-  if (!do_check_heightfield())
+  if (!do_check_heightfield()) {
     return false;
+  }
 
   if (_chunk_size < 8 || !check_power_of_two(_chunk_size)) {
     shader_terrain_cat.error() << "Invalid chunk size! Has to be >= 8 and a power of two!" << endl;
@@ -119,50 +122,102 @@ bool ShaderTerrainMesh::generate() {
     return false;
   }
 
-  do_extract_heightfield();
+  if (!bind_heightfield(false)) {
+    shader_terrain_cat.error() << "Couldn't bind heightfield!" << endl;
+    return false;    
+  }
+
   do_create_chunks();
   do_compute_bounds(&_base_chunk);
   do_create_chunk_geom();
   do_init_data_texture();
 
-  // Clear image after using it, otherwise we have two copies of the heightfield
-  // in memory.
-  _heightfield.clear();
-
+  unbind_heightfield();
   return true;
 }
 
 /**
- * @brief Converts the internal used Texture to a PNMImage
- * @details This converts the texture passed with set_heightfield to a PNMImage,
- *   so we can read the pixels in a fast way. This is only used while generating
- *   the chunks, and the PNMImage is destroyed afterwards.
+ * @brief Will fetch the heightfield texture's RAM image and validate it to ensure access with get/set_texel is safe.
  */
-void ShaderTerrainMesh::do_extract_heightfield() {
-  nassertv(_heightfield_tex->has_ram_image()); // Heightfield not in RAM, extract ram image first
-
-  _heightfield_tex->store(_heightfield);
-
-  if (_heightfield.get_maxval() != 65535) {
-    shader_terrain_cat.warning() << "Using non 16-bit heightfield!" << endl;
+bool ShaderTerrainMesh::bind_heightfield(bool write=false) {
+  // the ram image must be at least the size of the area we will access.
+  nassertr(_heightfield_tex->get_ram_image_size() >= _heightfield_tex->get_num_components() * _heightfield_tex->get_component_width() * _heightfield_tex->get_x_size() * _heightfield_tex->get_y_size(), false);
+  if (write) {
+    _tex_write_ptr = _heightfield_tex->modify_ram_image().p();
+    nassertr(_tex_write_ptr, false);
   } else {
-    _heightfield_tex->set_format(Texture::F_r16);
+    _tex_read_ptr = _heightfield_tex->get_ram_image().p();
+    nassertr(_tex_read_ptr, false);
   }
-  _heightfield_tex->set_minfilter(SamplerState::FT_linear);
-  _heightfield_tex->set_magfilter(SamplerState::FT_linear);
+  nassertr(_heightfield_tex->has_ram_image() && _heightfield_tex->get_ram_image_compression() == Texture::CM_off, false); // Heightfield not in RAM, extract ram image first. and turn off compression.
+  return true;
 }
 
 /**
- * @brief Intermal method to check the heightfield
- * @details This method cecks the heightfield generated from the heightfield texture,
+ * @brief Resets pointers to the heightfield RAM image to null.
+ */
+void ShaderTerrainMesh::unbind_heightfield() {
+  _tex_write_ptr = NULL;
+  _tex_read_ptr = NULL;
+}
+
+/**
+ * @brief Updates a region of the heightfield texture. 
+ * @details This does selective recomputation of bounds. This is called by 
+ *  DynamicHeightfield when it propagates changes.
+ */
+void ShaderTerrainMesh::on_change() {
+  if (!bind_heightfield(true)) {
+    shader_terrain_cat.error() << "Couldn't bind heightfield for writing! Update failed." << endl;
+    return;
+  }
+
+  for (int row = _dynamic_hf->region_corners.get_w(); row >= _dynamic_hf->region_corners.get_z(); row--) {
+    for (int col = _dynamic_hf->region_corners.get_x(); col <= _dynamic_hf->region_corners.get_y(); col++) {
+      set_texel(col, _size - 1 - row, _dynamic_hf->get_point1(col, row));
+    }
+  }
+
+  bind_heightfield(false);  
+  // tests showed that recalculating every chunk's bounds is about 2% slower when using this compared to do_compute_bounds().
+  // recompute bounds of all leaf chunks intersecting the region, and of their parents.
+  pmap< int, pvector<Chunk*> > chunks2update;
+  recompute_intersecting_chunk_bounds(&_base_chunk, _dynamic_hf->region_corners, chunks2update);
+
+  int max_depth = 0;
+  for (pmap< int, pvector<Chunk*> >::iterator it = chunks2update.begin(); it != chunks2update.end(); ++it) {
+    max_depth = max(it->first, max_depth);
+  }
+
+  // recalculate bounds from children for chunks at one depth at a time, then decrement depth.
+  for (int depth = max_depth; depth >= 1; --depth) {
+    // shader_terrain_cat.debug() << "Recalculating " << chunks2update[depth].size() << " chunks at depth " << depth << endl;
+    for (pvector<Chunk*>::iterator it = chunks2update[depth].begin(); it != chunks2update[depth].end(); ++it) {
+      compute_bounds_from_children(*it);
+    }
+  }
+
+  // finally recompute base_chunk bounds.
+  compute_bounds_from_children(&_base_chunk);
+  unbind_heightfield();
+}
+
+/**
+ * @brief Internal method to check the heightfield
+ * @details This method checks the heightfield generated from the heightfield texture,
  *   and performs some basic checks, including a check for a power of two,
- *   and same width and height.
+ *   and squareness.
  *
  * @return true if the heightfield meets the requirements
  */
 bool ShaderTerrainMesh::do_check_heightfield() {
+  if (!_heightfield_tex) {
+    shader_terrain_cat.error() << "No heightfield set! Call set_heightfield() first!" << endl;
+    return false;
+  }
+
   if (_heightfield_tex->get_x_size() != _heightfield_tex->get_y_size()) {
-    shader_terrain_cat.error() << "Only square heightfields are supported!";
+    shader_terrain_cat.error() << "Only square heightfields are supported!" << endl;
     return false;
   }
 
@@ -173,6 +228,22 @@ bool ShaderTerrainMesh::do_check_heightfield() {
     return false;
   }
 
+  if (_heightfield_tex->get_format() != Texture::F_r16 && _heightfield_tex->get_format() != Texture::F_luminance) {
+    shader_terrain_cat.warning() << "Trying to use texture with format " << _heightfield_tex->get_format() << ". Format was set to r16 (=27)." << endl;
+    _heightfield_tex->set_format(Texture::F_r16);
+  }
+  
+  _heightfield_tex->set_minfilter(SamplerState::FT_linear);
+  _heightfield_tex->set_magfilter(SamplerState::FT_linear);
+
+  // check texture for 16bit depth etc.
+  nassertr(_heightfield_tex->get_texture_type() == Texture::TT_2d_texture, false);
+  nassertr(_heightfield_tex->get_pad_x_size() == 0, false);
+  nassertr(_heightfield_tex->get_pad_y_size() == 0, false);
+  nassertr(_heightfield_tex->get_component_type() == Texture::T_unsigned_short, false);
+  nassertr(_heightfield_tex->get_component_width() == 2, false);
+
+  _pixel_width = _heightfield_tex->get_component_width() * _heightfield_tex->get_num_components();
   return true;
 }
 
@@ -253,6 +324,26 @@ void ShaderTerrainMesh::do_init_chunk(Chunk* chunk) {
 }
 
 /**
+ * @brief Will recursively find intersecting chunks. If it is a leaf this calculates its bounds, if not, the chunk is stored in a map for later processing.
+ */
+void ShaderTerrainMesh::recompute_intersecting_chunk_bounds(Chunk* top, const LVector4i& corners, pmap< int, pvector<Chunk*> >& chunks2update) {
+  for (size_t i = 0; i < 4; ++i) {
+    Chunk* child = top->children[i];
+    if (child && child->x <= corners.get_y() && child->x + child->size >= corners.get_x() &&
+        child->y <= _size - 1 - corners.get_z() && child->y + child->size >= _size - 1 - corners.get_w()) {
+      if (child->size == _chunk_size) {  // intersecting leaf chunk
+        // shader_terrain_cat.debug() << "Intersecting leaf. Depth:" << child->depth << " X/Y " << child->x << "/" << child->y << endl;
+        do_compute_bounds(child);
+      } else {  // intersecting non-leaf chunk
+        // shader_terrain_cat.debug() << "Intersecting chunk. Depth:" << child->depth << " X/Y " << child->x << "/" << child->y << endl;
+        chunks2update[child->depth].push_back(child);
+        recompute_intersecting_chunk_bounds(child, corners, chunks2update);
+      }
+    }
+  }
+}
+
+/**
  * @brief Recursively computes the bounds for a given chunk
  * @details This method takes a parent chunk, and computes the bounds recursively,
  *   depending on whether the chunk is a leaf or a node.
@@ -268,19 +359,11 @@ void ShaderTerrainMesh::do_init_chunk(Chunk* chunk) {
  *
  * @param chunk The parent chunk
  */
+
 void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk) {
 
   // Final chunk (Leaf)
   if (chunk->size == _chunk_size) {
-
-    // Get a pointer to the PNMImage data, this is faster than using get_xel()
-    // for all pixels, since get_xel() also includes bounds checks and so on.
-    xel* data = _heightfield.get_array();
-
-    // Pixel getter function. Note that we have to flip the Y-component, since
-    // panda itself also flips it
-    // auto get_xel = [&](size_t x, size_t y){ return data[x + (_size - 1 - y) * _size].b / (PN_stdfloat)PGM_MAXMAXVAL; };
-    #define get_xel(x, y) (data[(x) + (_size - 1 - (y)) * _size].b / (PN_stdfloat)PGM_MAXMAXVAL)
 
     // Iterate over all pixels
     PN_stdfloat avg_height = 0.0, min_height = 1.0, max_height = 0.0;
@@ -288,7 +371,7 @@ void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk) {
       for (size_t y = 0; y < _chunk_size; ++y) {
 
         // Access data directly, to improve performance
-        PN_stdfloat height = get_xel(chunk->x + x, chunk->y + y);
+        PN_stdfloat height = get_texel(chunk->x + x, chunk->y + y);
         avg_height += height;
         min_height = min(min_height, height);
         max_height = max(max_height, height);
@@ -306,25 +389,34 @@ void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk) {
     // Get edges in the order (0, 0) (1, 0) (0, 1) (1, 1)
     for (size_t y = 0; y < 2; ++y) {
       for (size_t x = 0; x < 2; ++x) {
-        chunk->edges.set_cell(x + 2 * y, get_xel(
+        chunk->edges.set_cell(x + 2 * y, get_texel(
             chunk->x + x * (_chunk_size - 1),
             chunk->y + y * (_chunk_size - 1)
           ));
       }
     }
 
-    #undef get_xel
-
   } else {
 
+    // Perform bounds computation for every child.
+    for (size_t i = 0; i < 4; ++i) {
+      do_compute_bounds(chunk->children[i]);
+    }
+    compute_bounds_from_children(chunk);
+  }
+}
+
+/**
+* @brief Computes the bounds for a given chunk, assuming its children are up-to-date.
+*/
+void ShaderTerrainMesh::compute_bounds_from_children(Chunk* chunk) {
     // Reset heights
     chunk->avg_height = 0.0;
     chunk->min_height = 1.0;
     chunk->max_height = 0.0;
 
-    // Perform bounds computation for every children and merge the children values
+    // Merge the children values
     for (size_t i = 0; i < 4; ++i) {
-      do_compute_bounds(chunk->children[i]);
       chunk->avg_height += chunk->children[i]->avg_height / 4.0;
       chunk->min_height = min(chunk->min_height, chunk->children[i]->min_height);
       chunk->max_height = max(chunk->max_height, chunk->children[i]->max_height);
@@ -335,7 +427,6 @@ void ShaderTerrainMesh::do_compute_bounds(Chunk* chunk) {
     chunk->edges.set_y(chunk->children[1]->edges.get_y());
     chunk->edges.set_z(chunk->children[2]->edges.get_z());
     chunk->edges.set_w(chunk->children[3]->edges.get_w());
-  }
 }
 
 /**
@@ -372,7 +463,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
   for (int y = -1; y <= size + 1; ++y) {
     for (int x = -1; x <= size + 1; ++x) {
       LVector3 vtx_pos(x / (PN_stdfloat)size, y / (PN_stdfloat)size, 0.0f);
-      // Stitched vertices at the cornders
+      // Stitched vertices at the corners
       if (x == -1 || y == -1 || x == size + 1 || y == size + 1) {
         vtx_pos.set_z(-1.0f / (PN_stdfloat)size);
         vtx_pos.set_x(max((PN_stdfloat)0, min((PN_stdfloat)1, vtx_pos.get_x())));
@@ -684,13 +775,13 @@ void ShaderTerrainMesh::do_emit_chunk(Chunk* chunk, TraversalData* data) {
 }
 
 /**
- * @brief Transforms a texture coordinate to world space
- * @details This transforms a texture coordinatefrom uv-space (0 to 1) to world
- *   space. This takes the terrains transform into account, and also samples the
- *   heightmap. This method should be called after generate().
+ * @brief Transforms a texture coordinate to world-space
+ * @details This transforms a texture coordinate from uv-space (0 to 1) to world
+ *   space. It takes the terrain's transform into account, and also samples the
+ *   heightfield. This method should be called after generate().
  *
- * @param coord Coordinate in uv-space from 0, 0 to 1, 1
- * @return World-Space point
+ * @param coord Coordinate in UV-space from 0, 0 to 1, 1
+ * @return World-space point
  */
 LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
   nassertr(_heightfield_tex != NULL, LPoint3(0)); // Heightfield not set yet
@@ -701,9 +792,77 @@ LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
 
   LColor result;
   if (!peeker->lookup_bilinear(result, coord.get_x(), coord.get_y())) {
-    shader_terrain_cat.error() << "UV out of range, cant transform to world!" << endl;
+    shader_terrain_cat.error() << "UV out of range, can't transform to world!" << endl;
     return LPoint3(0);
   }
   LPoint3 unit_point(coord.get_x(), coord.get_y(), result.get_x());
   return get_transform()->get_mat().xform_point_general(unit_point);
+}
+
+/**
+ * @brief Transforms a point in heightfield-space (=PfmFile) to world-space.
+ * @details The returned point's X and Y may be used as arguments to most 
+ *   DynamicHeightfield (or PfmFile) methods. The Z component is 
+ *   the interpolated value of the heightfield. This will return LPoint3(-1.0) 
+ *   if the queried point is not above/on/below the terrain.
+ *
+ * @param heightfield_pos Point in heightfield-space.
+ * @return World-space point
+ */
+LPoint3 ShaderTerrainMesh::heightfield_to_world(const LPoint2 &heightfield_pos) const {
+  LTexCoord uv_pos(heightfield_pos.get_x() / (PN_stdfloat)_size, 1.0 - (heightfield_pos.get_y() / (PN_stdfloat)_size));
+  return uv_to_world(uv_pos);
+}
+
+/**
+ * @brief Transforms a point in world space to texture coordinates
+ *
+ * @param world_pos Point in world-space.
+ * @return Texture coordinate in UV-space
+ */
+LTexCoord ShaderTerrainMesh::world_to_uv(const LPoint3 &world_pos) const {
+  LPoint3 uv_pos = get_transform()->get_inverse()->get_mat().xform_point_general(world_pos);
+  return LTexCoord(uv_pos.get_x(), uv_pos.get_y());
+}
+
+/**
+ * @brief Transforms a point in world space to heightfield-space (=PfmFile)
+ * @details The returned point's X and Y may be used as arguments to most 
+ *   PfmFile methods. The Z component is the interpolated value in the heightfield.
+ *   This will return LPoint3(-1.0) if the queried point is not above/on/below 
+ *   the terrain.
+ *
+ * @param world_pos Point in world space, whose X and Y are in terrain range.
+ * @return Heightfield-space point
+ */
+LPoint3 ShaderTerrainMesh::world_to_heightfield(const LPoint3 &world_pos) const {
+  LPoint2 uv_pos = world_to_uv(world_pos);
+
+  nassertr(_heightfield_tex != NULL, LPoint3(0)); // Heightfield not set yet
+  nassertr(_heightfield_tex->has_ram_image(), LPoint3(0)); // Heightfield not in memory
+
+  PT(TexturePeeker) peeker = _heightfield_tex->peek();
+  nassertr(peeker != NULL, LPoint3(0));
+
+  LColor result;
+  if (!peeker->lookup_bilinear(result, uv_pos.get_x(), uv_pos.get_y())) {
+    shader_terrain_cat.error() << "UV out of range, can't transform to world!" << endl;
+    return LPoint3(0);
+  }
+
+  LPoint3 hf_pos;
+  hf_pos.set_x(uv_pos.get_x() * (PN_stdfloat)_size);
+  hf_pos.set_y((1.0 - uv_pos.get_y()) * (PN_stdfloat)_size);
+  hf_pos.set_z(result.get_x());
+  return hf_pos;
+}
+
+void ShaderTerrainMesh::list_chunks(Chunk* chunk) {
+  if (chunk->children[0]) {
+    for (size_t i = 0; i < 4; i++) {
+      // shader_terrain_cat.debug() << "Update check" << endl;
+      shader_terrain_cat.debug() << "Chunk at depth " << chunk->children[i]->depth << " with size " << chunk->children[i]->size << " (" << chunk->children[i]->x << " / " << chunk->children[i]->y << ") heights min/max/avg: " << chunk->children[i]->min_height << " / " << chunk->children[i]->max_height << " / " << chunk->children[i]->avg_height << endl;
+      list_chunks(chunk->children[i]);
+    }
+  }
 }
