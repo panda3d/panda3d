@@ -514,7 +514,7 @@ release_new() {
 
   if (_saved_entry != -1) {
     _saved_entry = -1;
-    nassertv(_attribs->remove(this));
+    nassertv_always(_attribs->remove(this));
   }
 }
 
