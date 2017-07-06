@@ -1760,7 +1760,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                     return None
 
                 try:
-                    fp = zip.open(fn, 'r')
+                    fp = zip.open(fn.replace(os.path.sep, '/'), 'r')
                 except KeyError:
                     return None
 
@@ -1803,13 +1803,13 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
             # Look for recognized extensions.
             for stuff in self.suffixes:
-                suffix, mode, type = stuff
+                suffix, mode, _ = stuff
                 fp = self._open_file(basename + suffix, mode)
                 if fp:
                     return (fp, basename + suffix, stuff)
 
             # Consider a package, i.e. a directory containing __init__.py.
-            for suffix, mode, type in self.suffixes:
+            for suffix, mode, _ in self.suffixes:
                 init = os.path.join(basename, '__init__' + suffix)
                 if self._open_file(init, mode):
                     return (None, basename, ('', '', imp.PKG_DIRECTORY))

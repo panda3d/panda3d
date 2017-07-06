@@ -209,7 +209,7 @@ class build_apps(distutils.core.Command):
             else:
                 # Builtin module, but might not be builtin in wheel libs, so double check
                 if module in whl_modules:
-                    source_path = os.path.join(p3dwhlfn, 'deploy_libs/{}.{}'.format(module, whl_modules_ext))
+                    source_path = os.path.join(p3dwhlfn, 'deploy_libs/{}.{}'.format(module, whl_modules_ext))#'{0}/deploy_libs/{1}.{2}'.format(p3dwhlfn, module, whl_modules_ext)
                     basename = os.path.basename(source_path)
                 else:
                     continue
