@@ -34,6 +34,7 @@ class build_apps(distutils.core.Command):
         self.include_modules = {}
         self.exclude_modules = {}
         self.deploy_platforms = []
+        self.plugins = []
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
         self.build_scripts= {
@@ -186,8 +187,10 @@ class build_apps(distutils.core.Command):
                 freezer_extras.add((mod, None))
 
         #FIXME: this is a temporary hack to pick up libpandagl.
+        plugin_list = ['panda3d/lib{}'.format(i) for i in self.plugins]
         for lib in p3dwhl.namelist():
-            if lib.startswith('panda3d/libpandagl.'):
+            plugname = os.path.splitext(lib)[0]
+            if plugname in plugin_list:
                 source_path = os.path.join(p3dwhlfn, lib)
                 target_path = os.path.join(builddir, os.path.basename(lib))
                 search_path = [os.path.dirname(source_path)]
