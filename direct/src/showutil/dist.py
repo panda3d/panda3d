@@ -271,7 +271,7 @@ class build_apps(distutils.core.Command):
         def dir_has_files(directory):
             files = [
                 i for i in os.listdir(directory)
-                if not check_pattern(os.path.join(directory, i))
+                if check_pattern(os.path.join(directory, i))
             ]
             return bool(files)
 
@@ -308,7 +308,9 @@ class build_apps(distutils.core.Command):
                 d = os.path.join(dst, item)
                 if os.path.isfile(s):
                     copy_file(s, d)
-                elif dir_has_files(s):
+                elif not dir_has_files(s):
+                    print("skipping directory", os.path.normpath(s))
+                else:
                     copy_dir(s, d)
 
         for path in self.copy_paths:
