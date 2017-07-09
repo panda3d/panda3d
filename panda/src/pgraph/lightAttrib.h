@@ -30,9 +30,10 @@
 class EXPCL_PANDA_PGRAPH LightAttrib : public RenderAttrib {
 protected:
   INLINE LightAttrib();
-  INLINE LightAttrib(const LightAttrib &copy);
+  LightAttrib(const LightAttrib &copy);
 
 PUBLISHED:
+  virtual ~LightAttrib();
 
   // This is the old, deprecated interface to LightAttrib.  Do not use any of
   // these methods for new code; these methods will be removed soon.

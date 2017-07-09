@@ -27,7 +27,8 @@ TypeHandle LightLensNode::_type_handle;
  */
 LightLensNode::
 LightLensNode(const string &name, Lens *lens) :
-  Camera(name, lens)
+  Camera(name, lens),
+  _attrib_count(0)
 {
   set_active(false);
   _shadow_caster = false;
@@ -46,6 +47,10 @@ LightLensNode::
 ~LightLensNode() {
   set_active(false);
   clear_shadow_buffers();
+
+  // If this triggers, the number of attrib_ref() didn't match the number of
+  // attrib_unref() calls, probably indicating a bug in LightAttrib.
+  nassertv(AtomicAdjust::get(_attrib_count) == 0);
 }
 
 /**
@@ -57,7 +62,8 @@ LightLensNode(const LightLensNode &copy) :
   Camera(copy),
   _shadow_caster(copy._shadow_caster),
   _sb_size(copy._sb_size),
-  _sb_sort(-10)
+  _sb_sort(-10),
+  _attrib_count(0)
 {
 }
 
@@ -79,6 +85,28 @@ clear_shadow_buffers() {
     (*it).first->remove_window((*it).second);
   }
   _sbuffers.clear();
+}
+
+
+/**
+ * This is called when the light is added to a LightAttrib.
+ */
+void LightLensNode::
+attrib_ref() {
+  AtomicAdjust::inc(_attrib_count);
+}
+
+/**
+ * This is called when the light is removed from a LightAttrib.
+ */
+void LightLensNode::
+attrib_unref() {
+  // When it is removed from the last LightAttrib, destroy the shadow buffers.
+  // This is necessary to break the circular reference that the buffer holds
+  // on this node, via the display region's camera.
+  if (!AtomicAdjust::dec(_attrib_count)) {
+    clear_shadow_buffers();
+  }
 }
 
 /**
