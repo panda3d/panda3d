@@ -2135,7 +2135,7 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
       get_extension_func("glGenerateMipmap");
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
-      get_extension_func("glRenderbufferStorageMultisampleEXT");
+      get_extension_func("glRenderbufferStorageMultisample");
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)
       get_extension_func("glBlitFramebuffer");
 
