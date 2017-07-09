@@ -807,6 +807,9 @@ get_auto_shader_attrib_impl(const RenderState *state) const {
     }
   }
 
+  // Prevent check_sorted() from being called on this state.
+  attrib->_sort_seq = UpdateSeq::fresh();
+
   return return_new(attrib);
 }
 

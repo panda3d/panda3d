@@ -87,7 +87,7 @@ protected:
   // RenderState analysis information.  Created by analyze_renderstate:
 
   CPT(RenderState) _state;
-  Material *_material;
+  int _material_flags;
   int _num_textures;
 
   pvector<LightLensNode *> _lights;

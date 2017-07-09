@@ -30,6 +30,8 @@ make(Material *material) {
   MaterialAttrib *attrib = new MaterialAttrib;
   attrib->_material = material;
   material->set_attrib_lock();
+  attrib->_flags = material->_flags;
+  nassertr(attrib->_flags & Material::F_attrib_lock, nullptr);
   return return_new(attrib);
 }
 
@@ -58,10 +60,34 @@ make_default() {
 void MaterialAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  if (is_off()) {
+  if (_material != nullptr) {
+    out << *_material;
+  } else if (is_off()) {
     out << "(off)";
   } else {
-    out << *_material;
+    // This is a state returned from get_auto_shader_attrib().
+    out << "(on";
+#ifndef NDEBUG
+    if (_flags & Material::F_ambient) {
+      out << " amb";
+    }
+    if (_flags & Material::F_diffuse) {
+      out << " diff";
+    }
+    if (_flags & Material::F_specular) {
+      out << " spec";
+    }
+    if (_flags & Material::F_emission) {
+      out << " emit";
+    }
+    if (_flags & Material::F_local) {
+      out << " local";
+    }
+    if (_flags & Material::F_twoside) {
+      out << " twoside";
+    }
+#endif
+    out << ")";
   }
 }
 
@@ -87,7 +113,7 @@ compare_to_impl(const RenderAttrib *other) const {
   if (_material != ta->_material) {
     return _material < ta->_material ? -1 : 1;
   }
-  return 0;
+  return _flags < ta->_flags;
 }
 
 /**
@@ -100,6 +126,7 @@ size_t MaterialAttrib::
 get_hash_impl() const {
   size_t hash = 0;
   hash = pointer_hash::add_hash(hash, _material);
+  hash = int_hash::add_hash(hash, _flags);
   return hash;
 }
 
@@ -108,7 +135,15 @@ get_hash_impl() const {
  */
 CPT(RenderAttrib) MaterialAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
+  if (_material == nullptr) {
+    return this;
+  } else {
+    // Make a copy, but only with the flags, not with the material itself.
+    MaterialAttrib *attrib = new MaterialAttrib();
+    attrib->_material = nullptr;
+    attrib->_flags = _flags;
+    return return_new(attrib);
+  }
 }
 
 /**
@@ -139,8 +174,12 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
 
   TypedWritable *material = p_list[pi++];
-  if (material != (TypedWritable *)NULL) {
+  if (material != nullptr) {
     _material = DCAST(Material, material);
+    _flags = _material->_flags | Material::F_attrib_lock;
+  } else {
+    _material = nullptr;
+    _flags = 0;
   }
 
   return pi;

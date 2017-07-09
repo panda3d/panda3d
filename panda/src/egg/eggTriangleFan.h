@@ -29,14 +29,14 @@ PUBLISHED:
   INLINE EggTriangleFan &operator = (const EggTriangleFan &copy);
   virtual ~EggTriangleFan();
 
-  virtual EggTriangleFan *make_copy() const OVERRIDE;
+  virtual EggTriangleFan *make_copy() const override;
 
-  virtual void write(ostream &out, int indent_level) const OVERRIDE;
-  virtual void apply_first_attribute() OVERRIDE;
+  virtual void write(ostream &out, int indent_level) const override;
+  virtual void apply_first_attribute() override;
 
 protected:
-  virtual int get_num_lead_vertices() const OVERRIDE;
-  virtual bool do_triangulate(EggGroupNode *container) const OVERRIDE;
+  virtual int get_num_lead_vertices() const override;
+  virtual bool do_triangulate(EggGroupNode *container) const override;
 
 public:
   static TypeHandle get_class_type() {
@@ -47,10 +47,10 @@ public:
     register_type(_type_handle, "EggTriangleFan",
                   EggCompositePrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const OVERRIDE {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() OVERRIDE {
+  virtual TypeHandle force_init_type() override {
     init_type();
     return get_class_type();
   }

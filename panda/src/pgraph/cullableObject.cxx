@@ -50,15 +50,13 @@ TypeHandle CullableObject::_type_handle;
  * have to block while the vertex data is paged in.
  */
 bool CullableObject::
-munge_geom(GraphicsStateGuardianBase *gsg,
-           GeomMunger *munger, const CullTraverser *traverser,
-           bool force) {
-  nassertr(munger != (GeomMunger *)NULL, false);
+munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
+           const CullTraverser *traverser, bool force) {
+  nassertr(munger != nullptr, false);
+
   Thread *current_thread = traverser->get_current_thread();
   PStatTimer timer(_munge_geom_pcollector, current_thread);
-  if (_geom != (Geom *)NULL) {
-    _munger = munger;
-
+  if (_geom != nullptr) {
     GraphicsStateGuardianBase *gsg = traverser->get_gsg();
     int gsg_bits = gsg->get_supported_geom_rendering();
     if (!hardware_point_sprites) {

@@ -18,7 +18,6 @@
 
 #include "geom.h"
 #include "geomVertexData.h"
-#include "geomMunger.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "pointerTo.h"
@@ -34,6 +33,7 @@
 #include "geomDrawCallbackData.h"
 
 class CullTraverser;
+class GeomMunger;
 
 /**
  * The smallest atom of cull.  This is normally just a Geom and its associated
@@ -52,9 +52,8 @@ public:
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
 
-  bool munge_geom(GraphicsStateGuardianBase *gsg,
-                  GeomMunger *munger, const CullTraverser *traverser,
-                  bool force);
+  bool munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
+                  const CullTraverser *traverser, bool force);
   INLINE void draw(GraphicsStateGuardianBase *gsg,
                    bool force, Thread *current_thread);
 
@@ -75,7 +74,6 @@ public:
 
 public:
   CPT(Geom) _geom;
-  PT(GeomMunger) _munger;
   CPT(GeomVertexData) _munged_data;
   CPT(RenderState) _state;
   CPT(TransformState) _internal_transform;

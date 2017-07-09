@@ -1690,7 +1690,7 @@ release_new() {
 
   if (_saved_entry != -1) {
     _saved_entry = -1;
-    nassertv(_states->remove(this));
+    nassertv_always(_states->remove(this));
   }
 }
 

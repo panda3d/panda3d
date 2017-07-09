@@ -43,7 +43,6 @@ CullableObject(CPT(Geom) geom, CPT(RenderState) state,
 INLINE CullableObject::
 CullableObject(const CullableObject &copy) :
   _geom(copy._geom),
-  _munger(copy._munger),
   _munged_data(copy._munged_data),
   _state(copy._state),
   _internal_transform(copy._internal_transform)
@@ -59,7 +58,6 @@ CullableObject(const CullableObject &copy) :
 INLINE void CullableObject::
 operator = (const CullableObject &copy) {
   _geom = copy._geom;
-  _munger = copy._munger;
   _munged_data = copy._munged_data;
   _state = copy._state;
   _internal_transform = copy._internal_transform;
@@ -132,7 +130,7 @@ flush_level() {
  */
 INLINE void CullableObject::
 draw_inline(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
-  _geom->draw(gsg, _munger, _munged_data, force, current_thread);
+  _geom->draw(gsg, _munged_data, force, current_thread);
 }
 
 /**
