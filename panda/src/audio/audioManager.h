@@ -62,8 +62,8 @@ PUBLISHED:
     SM_stream,
   };
 
-  virtual int getSpeakerSetup();
-  virtual void setSpeakerSetup(SpeakerModeCategory cat);
+  virtual int get_speaker_setup();
+  virtual void set_speaker_setup(SpeakerModeCategory cat);
   virtual bool configure_filters(FilterProperties *config);
 
   // Create an AudioManager for each category of sounds you have.  E.g.
