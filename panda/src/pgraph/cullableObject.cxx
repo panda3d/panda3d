@@ -34,6 +34,7 @@
 CullableObject::FormatMap CullableObject::_format_map;
 LightMutex CullableObject::_format_lock;
 
+PStatCollector CullableObject::_munge_pcollector("*:Munge");
 PStatCollector CullableObject::_munge_geom_pcollector("*:Munge:Geom");
 PStatCollector CullableObject::_munge_sprites_pcollector("*:Munge:Sprites");
 PStatCollector CullableObject::_munge_sprites_verts_pcollector("*:Munge:Sprites:Verts");
@@ -55,7 +56,7 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
   nassertr(munger != nullptr, false);
 
   Thread *current_thread = traverser->get_current_thread();
-  PStatTimer timer(_munge_geom_pcollector, current_thread);
+  PStatTimer timer(_munge_pcollector, current_thread);
   if (_geom != nullptr) {
     GraphicsStateGuardianBase *gsg = traverser->get_gsg();
     int gsg_bits = gsg->get_supported_geom_rendering();
@@ -123,8 +124,11 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
 
     // Now invoke the munger to ensure the resulting geometry is in a GSG-
     // friendly form.
-    if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
-      return false;
+    {
+      PStatTimer timer(_munge_geom_pcollector, current_thread);
+      if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
+        return false;
+      }
     }
 
     // If we have prepared it for skinning via the shader generator, mark a

@@ -81,22 +81,6 @@ get_hash_impl() const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) RescaleNormalAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // We currently only support M_normalize in the ShaderGenerator.
-  /*if (_mode == M_none || _mode == M_normalize) {
-    return this;
-  } else {
-    return RescaleNormalAttrib::make(M_normalize);
-  }*/
-  // Actually, we currently ignore this attribute in the shader generator,
-  // and always normalize the normals.  It's too much of a bother.
-  return nullptr;
-}
-
-/**
  * Tells the BamReader how to create objects of type RescaleNormalAttrib.
  */
 void RescaleNormalAttrib::

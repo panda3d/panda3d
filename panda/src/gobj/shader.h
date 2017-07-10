@@ -202,6 +202,17 @@ public:
     // Hack for text rendering.  Don't use in user shaders.
     SMO_tex_is_alpha_i,
 
+    SMO_transform_i,
+    SMO_slider_i,
+
+    SMO_light_source_i_packed,
+
+    // Texture scale component of texture matrix.
+    SMO_texscale_i,
+
+    // Color of an M_blend texture stage.
+    SMO_texcolor_i,
+
     SMO_INVALID
   };
 

@@ -433,14 +433,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) TexGenAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
  * This method is to be called after the _stages map has been built up
  * internally through some artificial means; it copies the appropriate
  * settings to _no_texcoords and updates other internal cache values

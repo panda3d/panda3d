@@ -36,9 +36,6 @@ PUBLISHED:
   INLINE bool is_off() const;
   INLINE Material *get_material() const;
 
-public:
-  INLINE int get_material_flags() const;
-
 PUBLISHED:
   MAKE_PROPERTY(material, get_material);
 
@@ -48,11 +45,9 @@ public:
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
   PT(Material) _material;
-  int _flags;
 
 PUBLISHED:
   static int get_class_slot() {

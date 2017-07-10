@@ -108,6 +108,7 @@ private:
   static FormatMap _format_map;
   static LightMutex _format_lock;
 
+  static PStatCollector _munge_pcollector;
   static PStatCollector _munge_geom_pcollector;
   static PStatCollector _munge_sprites_pcollector;
   static PStatCollector _munge_sprites_verts_pcollector;

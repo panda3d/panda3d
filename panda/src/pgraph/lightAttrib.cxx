@@ -851,14 +851,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) LightAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
  * Makes sure the lights are sorted in order of priority.  Also counts the
  * number of non-ambient lights.
  */

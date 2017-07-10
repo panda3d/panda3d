@@ -95,22 +95,6 @@ get_hash_impl() const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) AlphaTestAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // This is only important if the shader subsumes the alpha test, which only
-  // happens if there is an AuxBitplaneAttrib with ABO_glow.
-  const AuxBitplaneAttrib *aux;
-  if (!state->get_attrib(aux) ||
-      (aux->get_outputs() & AuxBitplaneAttrib::ABO_glow) == 0) {
-    return nullptr;
-  } else {
-    return this;
-  }
-}
-
-/**
  * Tells the BamReader how to create objects of type AlphaTestAttrib.
  */
 void AlphaTestAttrib::

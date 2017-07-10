@@ -28,6 +28,7 @@ TypeHandle LightLensNode::_type_handle;
 LightLensNode::
 LightLensNode(const string &name, Lens *lens) :
   Camera(name, lens),
+  _has_specular_color(false),
   _attrib_count(0)
 {
   set_active(false);
@@ -63,6 +64,7 @@ LightLensNode(const LightLensNode &copy) :
   _shadow_caster(copy._shadow_caster),
   _sb_size(copy._sb_size),
   _sb_sort(-10),
+  _has_specular_color(copy._has_specular_color),
   _attrib_count(0)
 {
 }
