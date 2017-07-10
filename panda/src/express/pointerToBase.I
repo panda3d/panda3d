@@ -141,7 +141,6 @@ reassign(const PointerToBase<To> &copy) {
   }
 }
 
-#ifdef DO_MEMORY_USAGE
 /**
  * Ensures that the MemoryUsage record for the pointer has the right type of
  * object, if we know the type ourselves.
@@ -149,6 +148,7 @@ reassign(const PointerToBase<To> &copy) {
 template<class T>
 INLINE void PointerToBase<T>::
 update_type(To *ptr) {
+#ifdef DO_MEMORY_USAGE
   if (MemoryUsage::get_track_memory_usage()) {
     TypeHandle type = get_type_handle(To);
     if (type == TypeHandle::none()) {
@@ -159,9 +159,8 @@ update_type(To *ptr) {
       MemoryUsage::update_type(ptr, type);
     }
   }
-}
 #endif  // DO_MEMORY_USAGE
-
+}
 
 /**
  * A convenient way to set the PointerTo object to NULL. (Assignment to a NULL

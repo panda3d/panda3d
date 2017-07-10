@@ -202,13 +202,11 @@ MemoryHook() {
 
 #endif  // WIN32
 
-#ifdef DO_MEMORY_USAGE
   _total_heap_single_size = 0;
   _total_heap_array_size = 0;
   _requested_heap_size = 0;
   _total_mmap_size = 0;
   _max_heap_size = ~(size_t)0;
-#endif
 }
 
 /**
@@ -216,19 +214,16 @@ MemoryHook() {
  */
 MemoryHook::
 MemoryHook(const MemoryHook &copy) :
-  _page_size(copy._page_size)
-{
-#ifdef DO_MEMORY_USAGE
-  _total_heap_single_size = copy._total_heap_single_size;
-  _total_heap_array_size = copy._total_heap_array_size;
-  _requested_heap_size = copy._requested_heap_size;
-  _total_mmap_size = copy._total_mmap_size;
-  _max_heap_size = copy._max_heap_size;
-#endif
+  _page_size(copy._page_size),
+  _total_heap_single_size(copy._total_heap_single_size),
+  _total_heap_array_size(copy._total_heap_array_size),
+  _requested_heap_size(copy._requested_heap_size),
+  _total_mmap_size(copy._total_mmap_size),
+  _max_heap_size(copy._max_heap_size) {
 
-  ((MutexImpl &)copy._lock).acquire();
+  copy._lock.acquire();
   _deleted_chains = copy._deleted_chains;
-  ((MutexImpl &)copy._lock).release();
+  copy._lock.release();
 }
 
 /**
@@ -631,7 +626,6 @@ alloc_fail(size_t attempted_size) {
   abort();
 }
 
-#ifdef DO_MEMORY_USAGE
 /**
  * This callback method is called whenever the total allocated heap size
  * exceeds _max_heap_size.  It's mainly intended for reporting memory leaks,
@@ -642,6 +636,7 @@ alloc_fail(size_t attempted_size) {
  */
 void MemoryHook::
 overflow_heap_size() {
+#ifdef DO_MEMORY_USAGE
   _max_heap_size = ~(size_t)0;
-}
 #endif  // DO_MEMORY_USAGE
+}

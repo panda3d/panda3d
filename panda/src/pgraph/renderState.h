@@ -368,11 +368,9 @@ private:
   friend class Extension<RenderState>;
 };
 
-#ifdef DO_MEMORY_USAGE
 // We can safely redefine this as a no-op.
 template<>
 INLINE void PointerToBase<RenderState>::update_type(To *ptr) {}
-#endif
 
 INLINE ostream &operator << (ostream &out, const RenderState &state) {
   state.output(out);

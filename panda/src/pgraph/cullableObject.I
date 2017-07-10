@@ -17,7 +17,7 @@
 INLINE CullableObject::
 CullableObject() {
 #ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
+  MemoryUsage::record_pointer(this, get_class_type());
 #endif
 }
 
@@ -33,7 +33,7 @@ CullableObject(CPT(Geom) geom, CPT(RenderState) state,
   _internal_transform(move(internal_transform))
 {
 #ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
+  MemoryUsage::record_pointer(this, get_class_type());
 #endif
 }
 
@@ -48,7 +48,7 @@ CullableObject(const CullableObject &copy) :
   _internal_transform(copy._internal_transform)
 {
 #ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
+  MemoryUsage::record_pointer(this, get_class_type());
 #endif
 }
 

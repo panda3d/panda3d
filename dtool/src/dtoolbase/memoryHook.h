@@ -67,7 +67,6 @@ public:
 
   INLINE static size_t get_ptr_size(void *ptr);
 
-#ifdef DO_MEMORY_USAGE
 protected:
   TVOLATILE AtomicAdjust::Integer _total_heap_single_size;
   TVOLATILE AtomicAdjust::Integer _total_heap_array_size;
@@ -79,7 +78,6 @@ protected:
   size_t _max_heap_size;
 
   virtual void overflow_heap_size();
-#endif  // DO_MEMORY_USAGE
 
 private:
   size_t _page_size;
@@ -87,7 +85,7 @@ private:
   typedef map<size_t, DeletedBufferChain *> DeletedChains;
   DeletedChains _deleted_chains;
 
-  MutexImpl _lock;
+  mutable MutexImpl _lock;
 };
 
 #include "memoryHook.I"

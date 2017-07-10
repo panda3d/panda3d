@@ -21,7 +21,6 @@
 #include "renderState.h"
 #include "transformState.h"
 #include "pointerTo.h"
-#include "referenceCount.h"
 #include "geomNode.h"
 #include "cullTraverserData.h"
 #include "pStatCollector.h"
@@ -39,11 +38,7 @@ class GeomMunger;
  * The smallest atom of cull.  This is normally just a Geom and its associated
  * state, but it also contain a draw callback.
  */
-class EXPCL_PANDA_PGRAPH CullableObject
-#ifdef DO_MEMORY_USAGE
-  : public ReferenceCount   // We inherit from ReferenceCount just to get the memory type tracking that MemoryUsage provides.
-#endif  // DO_MEMORY_USAGE
-{
+class EXPCL_PANDA_PGRAPH CullableObject {
 public:
   INLINE CullableObject();
   INLINE CullableObject(CPT(Geom) geom, CPT(RenderState) state,
@@ -124,13 +119,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
-#ifdef DO_MEMORY_USAGE
-    ReferenceCount::init_type();
-    register_type(_type_handle, "CullableObject",
-                  ReferenceCount::get_class_type());
-#else
     register_type(_type_handle, "CullableObject");
-#endif  // DO_MEMORY_USAGE
   }
 
 private:

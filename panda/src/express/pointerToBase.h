@@ -44,9 +44,7 @@ protected:
   INLINE void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
 
-#ifdef DO_MEMORY_USAGE
   INLINE void update_type(To *ptr);
-#endif  // DO_MEMORY_USAGE
 
   // No assignment or retrieval functions are declared in PointerToBase,
   // because we will have to specialize on const vs.  non-const later.
