@@ -472,7 +472,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
  * - flat colors
  * - vertex colors
  * - lighting
- * - normal maps, but not multiple
+ * - normal maps, even multiple
  * - gloss maps, but not multiple
  * - glow maps, but not multiple
  * - materials, but not updates to materials
@@ -569,7 +569,6 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   rs->write(text, 2);
   text << "*/\n";
 
-  int map_index_normal = -1;
   int map_index_glow = -1;
   int map_index_gloss = -1;
 
@@ -620,7 +619,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
     }
 
-    if (tex._flags & (ShaderKey::TF_map_normal | ShaderKey::TF_map_height)) {
+    if (tangent_input.empty() &&
+        (tex._flags & (ShaderKey::TF_map_normal | ShaderKey::TF_map_height)) != 0) {
       PT(InternalName) tangent_name = InternalName::get_tangent();
       PT(InternalName) binormal_name = InternalName::get_binormal();
 
@@ -629,19 +629,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         tangent_name = tangent_name->append(tex._texcoord_name->get_basename());
         binormal_name = binormal_name->append(tex._texcoord_name->get_basename());
       }
+
       tangent_input = tangent_name->join("_");
       binormal_input = binormal_name->join("_");
 
       text << "\t in float4 vtx_" << tangent_input << " : " << alloc_vreg() << ",\n";
       text << "\t in float4 vtx_" << binormal_input << " : " << alloc_vreg() << ",\n";
-
-      if (tex._flags & ShaderKey::TF_map_normal) {
-        map_index_normal = i;
-        tangent_freg = alloc_freg();
-        binormal_freg = alloc_freg();
-        text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
-        text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
-      }
     }
 
     if (tex._flags & ShaderKey::TF_map_glow) {
@@ -650,6 +643,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     if (tex._flags & ShaderKey::TF_map_gloss) {
       map_index_gloss = i;
     }
+  }
+  if (key._texture_flags & ShaderKey::TF_map_normal) {
+    tangent_freg = alloc_freg();
+    binormal_freg = alloc_freg();
+    text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
+    text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
   }
   if (key._color_type == ColorAttrib::T_vertex) {
     text << "\t in float4 vtx_color : " << color_vreg << ",\n";
@@ -1000,7 +999,22 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   if (key._texture_flags & ShaderKey::TF_map_normal) {
     text << "\t // Translate tangent-space normal in map to view-space.\n";
-    text << "\t float3 tsnormal = ((float3)tex" << map_index_normal << " * 2) - 1;\n";
+
+    // Use Reoriented Normal Mapping to blend additional normal maps.
+    bool is_first = true;
+    for (size_t i = 0; i < key._textures.size(); ++i) {
+      const ShaderKey::TextureInfo &tex = key._textures[i];
+      if (tex._flags & ShaderKey::TF_map_normal) {
+        if (is_first) {
+          text << "\t float3 tsnormal = (tex" << i << ".xyz * 2) - 1;\n";
+          is_first = false;
+          continue;
+        }
+        text << "\t tsnormal.z += 1;\n";
+        text << "\t float3 tmp" << i << " = tex" << i << ".xyz * float3(-2, -2, 2) + float3(1, 1, -1);\n";
+        text << "\t tsnormal = normalize(tsnormal * dot(tsnormal, tmp" << i << ") - tmp" << i << " * tsnormal.z);\n";
+      }
+    }
     text << "\t l_eye_normal.xyz *= tsnormal.z;\n";
     text << "\t l_eye_normal.xyz += l_tangent * tsnormal.x;\n";
     text << "\t l_eye_normal.xyz += l_binormal * tsnormal.y;\n";
