@@ -147,9 +147,20 @@ public:
   INLINE CONST_REVERSE_ITERATOR rbegin() const;
   INLINE CONST_REVERSE_ITERATOR rend() const;
 
+  INLINE CONST_ITERATOR cbegin() const;
+  INLINE CONST_ITERATOR cend() const;
+  INLINE CONST_REVERSE_ITERATOR crbegin() const;
+  INLINE CONST_REVERSE_ITERATOR crend() const;
+
   // Random access.
   INLINE reference operator [] (SIZE_TYPE n);
   INLINE const_reference operator [] (SIZE_TYPE n) const;
+
+  INLINE reference front();
+  INLINE const_reference front() const;
+
+  INLINE reference back();
+  INLINE const_reference back() const;
 
   // Size information.
   INLINE SIZE_TYPE size() const;
@@ -201,6 +212,7 @@ public:
   bool verify_list_nonunique() const;
 
   INLINE void push_back(const VALUE_TYPE &key);
+  INLINE void push_back(VALUE_TYPE &&key);
   INLINE void pop_back();
   INLINE void resize(SIZE_TYPE n);
   INLINE void resize(SIZE_TYPE n, const VALUE_TYPE &value);

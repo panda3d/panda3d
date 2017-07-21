@@ -15,9 +15,6 @@
 #define MEMORYUSAGE_H
 
 #include "pandabase.h"
-
-#ifdef DO_MEMORY_USAGE
-
 #include "typedObject.h"
 #include "memoryInfo.h"
 #include "memoryUsagePointerCounts.h"
@@ -33,18 +30,22 @@ class MemoryUsagePointers;
  * every such object currently allocated.
  *
  * When compiled with NDEBUG set, this entire class does nothing and compiles
- * to nothing.
+ * to a stub.
  */
 class EXPCL_PANDAEXPRESS MemoryUsage : public MemoryHook {
 public:
-  INLINE static bool get_track_memory_usage();
+  ALWAYS_INLINE static bool get_track_memory_usage();
 
   INLINE static void record_pointer(ReferenceCount *ptr);
+  INLINE static void record_pointer(void *ptr, TypeHandle type);
   INLINE static void update_type(ReferenceCount *ptr, TypeHandle type);
   INLINE static void update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
+  INLINE static void update_type(void *ptr, TypeHandle type);
   INLINE static void remove_pointer(ReferenceCount *ptr);
 
-public:
+protected:
+  // These are not marked public, but they can be accessed via the MemoryHook
+  // base class.
   virtual void *heap_alloc_single(size_t size);
   virtual void heap_free_single(void *ptr);
 
@@ -98,8 +99,9 @@ private:
   static void init_memory_usage();
 
   void ns_record_pointer(ReferenceCount *ptr);
-  void ns_update_type(ReferenceCount *ptr, TypeHandle type);
-  void ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
+  void ns_record_pointer(void *ptr, TypeHandle type);
+  void ns_update_type(void *ptr, TypeHandle type);
+  void ns_update_type(void *ptr, TypedObject *typed_ptr);
   void ns_remove_pointer(ReferenceCount *ptr);
 
   void ns_record_void_pointer(void *ptr, size_t size);
@@ -120,8 +122,10 @@ private:
   void ns_show_current_ages();
   void ns_show_trend_ages();
 
+#ifdef DO_MEMORY_USAGE
   void consolidate_void_ptr(MemoryInfo *info);
   void refresh_info_set();
+#endif
 
   static MemoryUsage *_global_ptr;
 
@@ -195,7 +199,5 @@ private:
 };
 
 #include "memoryUsage.I"
-
-#endif  // DO_MEMORY_USAGE
 
 #endif

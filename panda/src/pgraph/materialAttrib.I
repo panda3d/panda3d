@@ -15,7 +15,7 @@
  * Use MaterialAttrib::make() to construct a new MaterialAttrib object.
  */
 INLINE MaterialAttrib::
-MaterialAttrib() : _flags(0) {
+MaterialAttrib() {
 }
 
 /**
@@ -24,7 +24,7 @@ MaterialAttrib() : _flags(0) {
  */
 INLINE bool MaterialAttrib::
 is_off() const {
-  return _flags == 0;
+  return _material == nullptr;
 }
 
 /**
@@ -34,12 +34,4 @@ is_off() const {
 INLINE Material *MaterialAttrib::
 get_material() const {
   return _material;
-}
-
-/**
- * Equivalent to get_material()->get_flags().
- */
-INLINE int MaterialAttrib::
-get_material_flags() const {
-  return _flags;
 }

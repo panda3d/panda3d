@@ -89,7 +89,6 @@ reassign(const ThreadSafePointerToBase<To> &copy) {
   reassign((To *)copy._void_ptr);
 }
 
-#ifdef DO_MEMORY_USAGE
 /**
  * Ensures that the MemoryUsage record for the pointer has the right type of
  * object, if we know the type ourselves.
@@ -97,6 +96,7 @@ reassign(const ThreadSafePointerToBase<To> &copy) {
 template<class T>
 void ThreadSafePointerToBase<T>::
 update_type(To *ptr) {
+#ifdef DO_MEMORY_USAGE
   TypeHandle type = get_type_handle(To);
   if (type == TypeHandle::none()) {
     do_init_type(To);
@@ -105,9 +105,8 @@ update_type(To *ptr) {
   if (type != TypeHandle::none()) {
     MemoryUsage::update_type(ptr, type);
   }
-}
 #endif  // DO_MEMORY_USAGE
-
+}
 
 /**
  * A convenient way to set the ThreadSafePointerTo object to NULL. (Assignment

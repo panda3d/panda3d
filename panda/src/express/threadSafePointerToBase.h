@@ -40,9 +40,7 @@ protected:
   INLINE void reassign(To *ptr);
   INLINE void reassign(const ThreadSafePointerToBase<To> &copy);
 
-#ifdef DO_MEMORY_USAGE
   void update_type(To *ptr);
-#endif  // DO_MEMORY_USAGE
 
   // No assignment or retrieval functions are declared in
   // ThreadSafePointerToBase, because we will have to specialize on const vs.

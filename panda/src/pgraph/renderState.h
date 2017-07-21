@@ -130,8 +130,6 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  const RenderState *get_auto_shader_state() const;
-
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
@@ -173,8 +171,6 @@ private:
   INLINE bool do_node_unref() const;
   INLINE void calc_hash();
   void do_calc_hash();
-  void assign_auto_shader_state();
-  CPT(RenderState) do_calc_auto_shader_state();
 
   class CompositionCycleDescEntry {
   public:
@@ -317,8 +313,6 @@ private:
   int _draw_order;
   size_t _hash;
 
-  const RenderState *_auto_shader_state;
-
   enum Flags {
     F_checked_bin_index       = 0x000001,
     F_checked_cull_callback   = 0x000002,
@@ -368,11 +362,9 @@ private:
   friend class Extension<RenderState>;
 };
 
-#ifdef DO_MEMORY_USAGE
 // We can safely redefine this as a no-op.
 template<>
 INLINE void PointerToBase<RenderState>::update_type(To *ptr) {}
-#endif
 
 INLINE ostream &operator << (ostream &out, const RenderState &state) {
   state.output(out);

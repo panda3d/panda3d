@@ -30,9 +30,10 @@
 class EXPCL_PANDA_PGRAPH LightAttrib : public RenderAttrib {
 protected:
   INLINE LightAttrib();
-  INLINE LightAttrib(const LightAttrib &copy);
+  LightAttrib(const LightAttrib &copy);
 
 PUBLISHED:
+  virtual ~LightAttrib();
 
   // This is the old, deprecated interface to LightAttrib.  Do not use any of
   // these methods for new code; these methods will be removed soon.
@@ -102,7 +103,6 @@ protected:
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
   INLINE void check_sorted() const;

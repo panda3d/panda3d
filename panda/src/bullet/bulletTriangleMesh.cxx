@@ -53,6 +53,10 @@ void BulletTriangleMesh::
 preallocate(int num_verts, int num_indices) {
   _vertices.reserve(num_verts);
   _indices.reserve(num_indices);
+
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
+  mesh.m_vertexBase = (unsigned char*)&_vertices[0];
+  mesh.m_triangleIndexBase = (unsigned char *)&_indices[0];
 }
 
 /**
@@ -160,12 +164,22 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
         _indices.reserve(_indices.size() + num_vertices);
         mesh.m_numTriangles += num_vertices / 3;
 
-        GeomVertexReader index(prim->get_vertices(), 0);
-        while (!index.is_at_end()) {
-          _indices.push_back(index_offset + index.get_data1i());
+        CPT(GeomVertexArrayData) vertices = prim->get_vertices();
+        if (vertices != nullptr) {
+          GeomVertexReader index(move(vertices), 0);
+          while (!index.is_at_end()) {
+            _indices.push_back(index_offset + index.get_data1i());
+          }
+        } else {
+          int index = index_offset + prim->get_first_vertex();
+          int end_index = index + num_vertices;
+          while (index < end_index) {
+            _indices.push_back(index++);
+          }
         }
       }
     }
+    nassertv(mesh.m_numTriangles * 3 == _indices.size());
 
   } else {
     // Collect points
@@ -193,12 +207,22 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
         _indices.reserve(_indices.size() + num_vertices);
         mesh.m_numTriangles += num_vertices / 3;
 
-        GeomVertexReader index(prim->get_vertices(), 0);
-        while (!index.is_at_end()) {
-          _indices.push_back(find_or_add_vertex(points[index.get_data1i()]));
+        CPT(GeomVertexArrayData) vertices = prim->get_vertices();
+        if (vertices != nullptr) {
+          GeomVertexReader index(move(vertices), 0);
+          while (!index.is_at_end()) {
+            _indices.push_back(find_or_add_vertex(points[index.get_data1i()]));
+          }
+        } else {
+          int index = prim->get_first_vertex();
+          int end_index = index + num_vertices;
+          while (index < end_index) {
+            _indices.push_back(find_or_add_vertex(points[index]));
+          }
         }
       }
     }
+    nassertv(mesh.m_numTriangles * 3 == _indices.size());
   }
 
   // Reset the pointers, since the vectors may have been reallocated.
@@ -282,7 +306,7 @@ unsigned int BulletTriangleMesh::
 find_or_add_vertex(const LVecBase3 &p) {
   btVector3 vertex = LVecBase3_to_btVector3(p);
 
-  for (unsigned int i = 0; i < _vertices.size(); ++i) {
+  for (int i = 0; i < _vertices.size(); ++i) {
     if ((_vertices[i] - vertex).length2() <= _welding_distance) {
       return i;
     }

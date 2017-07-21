@@ -406,11 +406,9 @@ private:
   friend class Extension<TransformState>;
 };
 
-#ifdef DO_MEMORY_USAGE
 // We can safely redefine this as a no-op.
 template<>
 INLINE void PointerToBase<TransformState>::update_type(To *ptr) {}
-#endif
 
 INLINE ostream &operator << (ostream &out, const TransformState &state) {
   state.output(out);

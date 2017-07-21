@@ -447,7 +447,7 @@ get_sound(MovieAudio *source, bool positional, int) {
  * This is to query if you are using a MultiChannel Setup.
  */
 int FmodAudioManager::
-getSpeakerSetup() {
+get_speaker_setup() {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerMode;
@@ -502,7 +502,7 @@ getSpeakerSetup() {
  * init or re-init the AudioManagers after Panda is running.
  */
 void FmodAudioManager::
-setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
+set_speaker_setup(AudioManager::SpeakerModeCategory cat) {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;

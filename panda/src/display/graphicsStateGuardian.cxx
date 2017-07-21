@@ -44,6 +44,7 @@
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
+#include "sphereLight.h"
 #include "spotlight.h"
 #include "textureReloadRequest.h"
 #include "shaderAttrib.h"
@@ -1122,6 +1123,28 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &LMatrix4::ident_mat();
     }
   }
+  case Shader::SMO_texscale_i: {
+    const TexMatrixAttrib *tma;
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma) &&
+        index < ta->get_num_on_stages()) {
+      LVecBase3 scale = tma->get_transform(ta->get_on_stage(index))->get_scale();
+      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,scale[0],scale[1],scale[2],0);
+      return &t;
+    } else {
+      return &LMatrix4::ident_mat();
+    }
+  }
+  case Shader::SMO_texcolor_i: {
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && index < ta->get_num_on_stages()) {
+      TextureStage *ts = ta->get_on_stage(index);
+      t.set_row(3, ts->get_color());
+      return &t;
+    } else {
+      return &LMatrix4::zeros_mat();
+    }
+  }
   case Shader::SMO_tex_is_alpha_i: {
     // This is a hack so we can support both F_alpha and other formats in the
     // default shader, to fix font rendering in GLES2
@@ -1156,9 +1179,14 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     nassertr(!np.is_empty(), &LMatrix4::zeros_mat());
     const PlaneNode *plane_node;
     DCAST_INTO_R(plane_node, np.node(), &LMatrix4::zeros_mat());
-    LPlane p (plane_node->get_plane());
-    p.xform(np.get_net_transform()->get_mat()); // World-space
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
+
+    // Transform plane to world space
+    CPT(TransformState) transform = np.get_net_transform();
+    LPlane plane = plane_node->get_plane();
+    if (!transform->is_identity()) {
+      plane.xform(transform->get_mat());
+    }
+    t.set_row(3, plane);
     return &t;
   }
   case Shader::SMO_apiview_clipplane_i: {
@@ -1195,7 +1223,6 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_world_to_view: {
     return &(_scene_setup->get_world_transform()->get_mat());
-    break;
   }
   case Shader::SMO_view_to_world: {
     return &(_scene_setup->get_camera_transform()->get_mat());
@@ -1386,6 +1413,62 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       }
     }
     return fetch_specified_member(NodePath(), name, t);
+  }
+  case Shader::SMO_light_source_i_packed: {
+    // The light matrix contains COLOR, ATTENUATION, POSITION, VIEWVECTOR
+    const LightAttrib *target_light;
+    _target_rs->get_attrib_def(target_light);
+
+    // We don't count ambient lights, which would be pretty silly to handle
+    // via this mechanism.
+    size_t num_lights = target_light->get_num_non_ambient_lights();
+    if (index >= 0 && (size_t)index < num_lights) {
+      NodePath np = target_light->get_on_light((size_t)index);
+      nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+      PandaNode *node = np.node();
+      Light *light = node->as_light();
+      nassertr(light != nullptr, &LMatrix4::zeros_mat());
+      t.set_row(0, light->get_color());
+      t.set_row(1, light->get_attenuation());
+
+      LMatrix4 mat = np.get_net_transform()->get_mat() *
+        _scene_setup->get_world_transform()->get_mat();
+
+      if (node->is_of_type(DirectionalLight::get_class_type())) {
+        LVecBase3 d = mat.xform_vec(((const DirectionalLight *)node)->get_direction());
+        d.normalize();
+        t.set_row(2, LVecBase4(d, 0));
+        t.set_row(3, LVecBase4(-d, 0));
+
+      } else if (node->is_of_type(LightLensNode::get_class_type())) {
+        const Lens *lens = ((const LightLensNode *)node)->get_lens();
+
+        LPoint3 p = mat.xform_point(lens->get_nodal_point());
+        t.set_row(3, LVecBase4(p));
+
+        // For shadowed point light we need to store near/far.
+        // For spotlight we need to store cutoff angle.
+        if (node->is_of_type(Spotlight::get_class_type())) {
+          PN_stdfloat cutoff = ccos(deg_2_rad(lens->get_hfov() * 0.5f));
+          LVecBase3 d = -(mat.xform_vec(lens->get_view_vector()));
+          t.set_cell(1, 3, ((const Spotlight *)node)->get_exponent());
+          t.set_row(2, LVecBase4(d, cutoff));
+
+        } else if (node->is_of_type(PointLight::get_class_type())) {
+          t.set_cell(1, 3, lens->get_near());
+          t.set_cell(3, 3, lens->get_far());
+
+          if (node->is_of_type(SphereLight::get_class_type())) {
+            t.set_cell(2, 3, ((const SphereLight *)node)->get_radius());
+          }
+        }
+      }
+    } else if (index == 0) {
+      // Apply the default OpenGL lights otherwise.
+      // Special exception for light 0, which defaults to white.
+      t.set_row(0, _light_color_scale);
+    }
+    return &t;
   }
   default:
     nassertr(false /*should never get here*/, &LMatrix4::ident_mat());

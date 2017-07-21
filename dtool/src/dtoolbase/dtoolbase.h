@@ -332,7 +332,7 @@ typedef struct _object PyObject;
 
 #ifdef __WORDSIZE
 #define NATIVE_WORDSIZE __WORDSIZE
-#elif defined(_LP64)
+#elif defined(_LP64) || defined(_WIN64)
 #define NATIVE_WORDSIZE 64
 #else
 #define NATIVE_WORDSIZE 32

@@ -91,8 +91,8 @@ public:
   virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
 
-  virtual int getSpeakerSetup();
-  virtual void setSpeakerSetup(SpeakerModeCategory cat);
+  virtual int get_speaker_setup();
+  virtual void set_speaker_setup(SpeakerModeCategory cat);
 
   virtual void set_volume(PN_stdfloat);
   virtual PN_stdfloat get_volume() const;
