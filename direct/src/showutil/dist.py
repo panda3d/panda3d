@@ -271,7 +271,7 @@ class build_apps(distutils.core.Command):
         def dir_has_files(directory):
             files = [
                 i for i in os.listdir(directory)
-                if check_pattern(os.path.join(directory, i))
+                if not check_pattern(os.path.join(directory, i))
             ]
             return bool(files)
 
