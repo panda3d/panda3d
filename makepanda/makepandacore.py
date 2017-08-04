@@ -2422,6 +2422,7 @@ def SetupVisualStudioEnviron():
     winsdk_ver = SDK["MSPLATFORM_VERSION"]
     if winsdk_ver.startswith('10.'):
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
+        AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + winsdk_ver + "\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
         inc_dir = SDK["MSPLATFORM"] + "Include\\" + winsdk_ver + "\\"
