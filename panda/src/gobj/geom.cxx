@@ -683,6 +683,7 @@ unify_in_place(int max_indices, bool preserve_order) {
           int num_vertices = copy_primitives * total_vertices_per_primitive;
           nassertv(num_vertices > 0);
           {
+            smaller->set_index_type(reader.get_index_type());
             GeomVertexArrayDataHandle writer(smaller->modify_vertices(), current_thread);
             writer.unclean_set_num_rows(num_vertices);
             memcpy(writer.get_write_pointer(), ptr, stride * (size_t)(num_vertices - num_unused_vertices_per_primitive));
