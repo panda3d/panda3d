@@ -1148,7 +1148,9 @@ Dtool_NewStaticProperty(PyTypeObject *type, const PyGetSetDef *getset) {
 #if PY_MAJOR_VERSION >= 3
     descr->d_common.d_type = type;
     descr->d_common.d_name = PyUnicode_InternFromString(getset->name);
+#if PY_VERSION_HEX >= 0x03030000
     descr->d_common.d_qualname = nullptr;
+#endif
 #else
     descr->d_type = type;
     descr->d_name = PyString_InternFromString(getset->name);
