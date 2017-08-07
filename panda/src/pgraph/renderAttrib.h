@@ -83,6 +83,7 @@ PUBLISHED:
   static bool validate_attribs();
 
   virtual int get_slot() const=0;
+  MAKE_PROPERTY(slot, get_slot);
 
   enum PandaCompareFunc {   // intentionally defined to match D3DCMPFUNC
     M_none=0,           // alpha-test disabled (always-draw)

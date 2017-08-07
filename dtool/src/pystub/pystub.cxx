@@ -105,6 +105,7 @@ extern "C" {
   EXPCL_PYSTUB int PyObject_Cmp(...);
   EXPCL_PYSTUB int PyObject_Compare(...);
   EXPCL_PYSTUB int PyObject_Free(...);
+  EXPCL_PYSTUB int PyObject_GC_Del(...);
   EXPCL_PYSTUB int PyObject_GenericGetAttr(...);
   EXPCL_PYSTUB int PyObject_GenericSetAttr(...);
   EXPCL_PYSTUB int PyObject_GetAttrString(...);
@@ -223,6 +224,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_SystemExit;
   EXPCL_PYSTUB extern void *PyExc_TypeError;
   EXPCL_PYSTUB extern void *PyExc_ValueError;
+  EXPCL_PYSTUB extern void *PyType_Type;
   EXPCL_PYSTUB extern void *_PyThreadState_Current;
   EXPCL_PYSTUB extern void *_Py_FalseStruct;
   EXPCL_PYSTUB extern void *_Py_NoneStruct;
@@ -324,6 +326,7 @@ int PyObject_CallObject(...) { return 0; }
 int PyObject_Cmp(...) { return 0; }
 int PyObject_Compare(...) { return 0; }
 int PyObject_Free(...) { return 0; }
+int PyObject_GC_Del(...) { return 0; }
 int PyObject_GenericGetAttr(...) { return 0; };
 int PyObject_GenericSetAttr(...) { return 0; };
 int PyObject_GetAttrString(...) { return 0; }
@@ -448,6 +451,7 @@ void *PyExc_StopIteration = (void *)NULL;
 void *PyExc_SystemExit = (void *)NULL;
 void *PyExc_TypeError = (void *)NULL;
 void *PyExc_ValueError = (void *)NULL;
+void *PyType_Type = (void *)NULL;
 void *_PyThreadState_Current = (void *)NULL;
 void *_Py_FalseStruct = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;

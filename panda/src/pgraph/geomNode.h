@@ -89,6 +89,7 @@ PUBLISHED:
   void write_verbose(ostream &out, int indent_level) const;
 
   INLINE static CollideMask get_default_collide_mask();
+  MAKE_PROPERTY(default_collide_mask, get_default_collide_mask);
 
 public:
   virtual void output(ostream &out) const;

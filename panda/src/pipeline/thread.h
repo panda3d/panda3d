@@ -100,6 +100,16 @@ PUBLISHED:
   MAKE_PROPERTY(python_index, get_python_index);
   MAKE_PROPERTY(unique_id, get_unique_id);
   MAKE_PROPERTY(pipeline_stage, get_pipeline_stage, set_pipeline_stage);
+
+  MAKE_PROPERTY(main_thread, get_main_thread);
+  MAKE_PROPERTY(external_thread, get_external_thread);
+  MAKE_PROPERTY(current_thread, get_current_thread);
+  MAKE_PROPERTY(current_pipeline_stage, get_current_pipeline_stage);
+
+  MAKE_PROPERTY(threading_supported, is_threading_supported);
+  MAKE_PROPERTY(true_threads, is_true_threads);
+  MAKE_PROPERTY(simple_threads, is_simple_threads);
+
   MAKE_PROPERTY(started, is_started);
   MAKE_PROPERTY(joinable, is_joinable);
   MAKE_PROPERTY(current_task, get_current_task);

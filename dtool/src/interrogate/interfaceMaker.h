@@ -132,6 +132,7 @@ public:
     Function *_has_function;
     Function *_clear_function;
     Function *_deleter;
+    bool _has_this;
   };
   typedef vector<Property *> Properties;
 
