@@ -89,6 +89,19 @@ PUBLISHED:
   INLINE static void show_current_ages();
   INLINE static void show_trend_ages();
 
+PUBLISHED:
+  MAKE_PROPERTY(tracking, is_tracking);
+  MAKE_PROPERTY(counting, is_counting);
+  MAKE_PROPERTY(current_cpp_size, get_current_cpp_size);
+  MAKE_PROPERTY(total_cpp_size, get_total_cpp_size);
+
+  MAKE_PROPERTY(panda_heap_single_size, get_panda_heap_single_size);
+  MAKE_PROPERTY(panda_heap_array_size, get_panda_heap_array_size);
+  MAKE_PROPERTY(panda_heap_overhead, get_panda_heap_overhead);
+  MAKE_PROPERTY(panda_mmap_size, get_panda_mmap_size);
+  MAKE_PROPERTY(external_size, get_external_size);
+  MAKE_PROPERTY(total_size, get_total_size);
+
 protected:
   virtual void overflow_heap_size();
 

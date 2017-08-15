@@ -131,6 +131,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
+  MAKE_PROPERTY(class_slot, get_class_slot);
 
 public:
   // This data is only needed when reading from a bam file.

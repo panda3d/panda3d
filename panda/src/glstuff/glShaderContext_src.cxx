@@ -1431,7 +1431,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             bind._arg[0] = NULL;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
             bind._part[1] = Shader::SMO_mat_constant_x_attrib;
-            bind._arg[1] = InternalName::make("shadowViewMatrix");
+            bind._arg[1] = iname->get_parent()->append("shadowViewMatrix");
             bind._dep[1] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
           } else {
             bind._part[0] = Shader::SMO_mat_constant_x_attrib;

@@ -172,6 +172,7 @@ PUBLISHED:
   virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
 
   static Filename get_dls_pathname();
+  MAKE_PROPERTY(dls_pathname, get_dls_pathname);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out) const;
