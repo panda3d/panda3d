@@ -47,20 +47,20 @@ load_dso(const DSearchPath &path, const Filename &filename) {
   if (!abspath.is_regular_file()) {
     return NULL;
   }
-  string os_specific = abspath.to_os_specific();
+  wstring os_specific_w = abspath.to_os_specific_w();
 
   // Try using LoadLibraryEx, if possible.
-  typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCTSTR, HANDLE, DWORD);
+  typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCWSTR, HANDLE, DWORD);
   tLoadLibraryEx pLoadLibraryEx;
   HINSTANCE hLib = LoadLibrary("kernel32.dll");
   if (hLib) {
-    pLoadLibraryEx = (tLoadLibraryEx)GetProcAddress(hLib, "LoadLibraryExA");
+    pLoadLibraryEx = (tLoadLibraryEx)GetProcAddress(hLib, "LoadLibraryExW");
     if (pLoadLibraryEx) {
-      return pLoadLibraryEx(os_specific.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+      return pLoadLibraryEx(os_specific_w.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
     }
   }
 
-  return LoadLibrary(os_specific.c_str());
+  return LoadLibraryW(os_specific_w.c_str());
 }
 
 bool
