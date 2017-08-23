@@ -124,8 +124,8 @@ PUBLISHED:
   void make_grayscale(float rc, float gc, float bc);
   INLINE void make_rgb();
 
-  void premultiply_alpha();
-  void unpremultiply_alpha();
+  BLOCKING void premultiply_alpha();
+  BLOCKING void unpremultiply_alpha();
 
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
@@ -244,27 +244,27 @@ PUBLISHED:
   // The bodies for the non-inline *_filter() functions can be found in the
   // file pnm-image-filter.cxx.
 
-  INLINE void box_filter(float radius = 1.0);
-  INLINE void gaussian_filter(float radius = 1.0);
+  BLOCKING INLINE void box_filter(float radius = 1.0);
+  BLOCKING INLINE void gaussian_filter(float radius = 1.0);
 
-  void unfiltered_stretch_from(const PNMImage &copy);
-  void box_filter_from(float radius, const PNMImage &copy);
-  void gaussian_filter_from(float radius, const PNMImage &copy);
-  void quick_filter_from(const PNMImage &copy,
-                         int xborder = 0, int yborder = 0);
+  BLOCKING void unfiltered_stretch_from(const PNMImage &copy);
+  BLOCKING void box_filter_from(float radius, const PNMImage &copy);
+  BLOCKING void gaussian_filter_from(float radius, const PNMImage &copy);
+  BLOCKING void quick_filter_from(const PNMImage &copy,
+                                  int xborder = 0, int yborder = 0);
 
   void make_histogram(Histogram &hist);
-  void perlin_noise_fill(float sx, float sy, int table_size = 256,
-                         unsigned long seed = 0);
+  BLOCKING void perlin_noise_fill(float sx, float sy, int table_size = 256,
+                                  unsigned long seed = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
   void remix_channels(const LMatrix4 &conv);
-  INLINE void gamma_correct(float from_gamma, float to_gamma);
-  INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);
-  INLINE void apply_exponent(float gray_exponent);
-  INLINE void apply_exponent(float gray_exponent, float alpha_exponent);
-  INLINE void apply_exponent(float red_exponent, float green_exponent, float blue_exponent);
-  void apply_exponent(float red_exponent, float green_exponent, float blue_exponent, float alpha_exponent);
+  BLOCKING INLINE void gamma_correct(float from_gamma, float to_gamma);
+  BLOCKING INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);
+  BLOCKING INLINE void apply_exponent(float gray_exponent);
+  BLOCKING INLINE void apply_exponent(float gray_exponent, float alpha_exponent);
+  BLOCKING INLINE void apply_exponent(float red_exponent, float green_exponent, float blue_exponent);
+  BLOCKING void apply_exponent(float red_exponent, float green_exponent, float blue_exponent, float alpha_exponent);
 
   LRGBColorf get_average_xel() const;
   LColorf get_average_xel_a() const;
