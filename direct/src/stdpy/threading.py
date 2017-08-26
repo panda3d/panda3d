@@ -394,6 +394,7 @@ def enumerate():
 
 def active_count():
     return len(enumerate())
+
 activeCount = active_count
 
 _settrace_func = None
