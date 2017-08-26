@@ -590,6 +590,10 @@ class Thread(_Verbose):
         assert self.__initialized, "Thread.__init__() not called"
         self.__name = str(name)
 
+    def is_alive(self):
+        assert self.__initialized, "Thread.__init__() not called"
+        return self.__started and not self.__stopped
+
     def isAlive(self):
         assert self.__initialized, "Thread.__init__() not called"
         return self.__started and not self.__stopped
