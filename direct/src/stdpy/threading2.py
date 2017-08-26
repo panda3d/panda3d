@@ -24,9 +24,18 @@ from time import time as _time
 from traceback import format_exc as _format_exc
 
 # Rename some stuff so "from threading import *" is safe
-__all__ = ['activeCount', 'Condition', 'currentThread', 'enumerate', 'Event',
-           'Lock', 'RLock', 'Semaphore', 'BoundedSemaphore', 'Thread',
-           'Timer', 'setprofile', 'settrace', 'local', 'stack_size']
+__all__ = [
+    'enumerate', 'active_count', 'activeCount',
+    'Condition',
+    'current_thread', 'currentThread',
+    'Event',
+    'Lock', 'RLock',
+    'Semaphore', 'BoundedSemaphore',
+    'Thread',
+    'Timer',
+    'local',
+    'setprofile', 'settrace', 'stack_size'
+    ]
 
 _start_new_thread = thread.start_new_thread
 _allocate_lock = thread.allocate_lock
@@ -581,9 +590,11 @@ class Thread(_Verbose):
         assert self.__initialized, "Thread.__init__() not called"
         self.__name = str(name)
 
-    def isAlive(self):
+    def is_alive(self):
         assert self.__initialized, "Thread.__init__() not called"
         return self.__started and not self.__stopped
+
+    isAlive = is_alive
 
     def isDaemon(self):
         assert self.__initialized, "Thread.__init__() not called"
@@ -692,18 +703,22 @@ class _DummyThread(Thread):
 
 # Global API functions
 
-def currentThread():
+def current_thread():
     try:
         return _active[_get_ident()]
     except KeyError:
-        ##print "currentThread(): no current thread for", _get_ident()
+        ##print "current_thread(): no current thread for", _get_ident()
         return _DummyThread()
 
-def activeCount():
+currentThread = current_thread
+
+def active_count():
     _active_limbo_lock.acquire()
     count = len(_active) + len(_limbo)
     _active_limbo_lock.release()
     return count
+
+activeCount = active_count
 
 def enumerate():
     _active_limbo_lock.acquire()
