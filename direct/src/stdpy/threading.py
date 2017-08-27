@@ -35,10 +35,14 @@ __all__ = [
     'Event',
     'Timer',
     'local',
-    'current_thread', 'currentThread',
-    'enumerate', 'active_count', 'activeCount',
+    'current_thread',
+    'main_thread',
+    'enumerate', 'active_count',
     'settrace', 'setprofile', 'stack_size',
+    'TIMEOUT_MAX',
     ]
+
+TIMEOUT_MAX = _thread.TIMEOUT_MAX
 
 local = _thread._local
 _newname = _thread._newname
@@ -111,8 +115,7 @@ class Thread(ThreadBase):
     def is_alive(self):
         return self.__thread.isStarted()
 
-    def isAlive(self):
-        return self.__thread.isStarted()
+    isAlive = is_alive
 
     def start(self):
         if self.__thread.isStarted():
@@ -379,6 +382,10 @@ def current_thread():
     t = core.Thread.getCurrentThread()
     return _thread._get_thread_wrapper(t, _create_thread_wrapper)
 
+def main_thread():
+    t = core.Thread.getMainThread()
+    return _thread._get_thread_wrapper(t, _create_thread_wrapper)
+
 currentThread = current_thread
 
 def enumerate():
@@ -394,6 +401,7 @@ def enumerate():
 
 def active_count():
     return len(enumerate())
+
 activeCount = active_count
 
 _settrace_func = None
