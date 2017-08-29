@@ -2280,9 +2280,11 @@ read_ico(istream &ico) {
       if (!ico.good()) goto cleanup;
     }
 
+    int and_stride = ((infoHeader.width >> 3) + 3) & ~0x03;
+
     // Read in the pixel data.
     xorBmpSize = (infoHeader.width * (infoHeader.height / 2) * bitsPerPixel) / 8;
-    andBmpSize = (infoHeader.width * (infoHeader.height / 2)) / 8;
+    andBmpSize = and_stride * (infoHeader.height / 2);
     curXor = xorBmp = new char[xorBmpSize];
     curAnd = andBmp = new char[andBmpSize];
     ico.read(xorBmp, xorBmpSize);
@@ -2330,21 +2332,15 @@ read_ico(istream &ico) {
       // Pack each of the three bytes into a single color, BGR -> 0RGB
       for (i = image->height - 1; i >= 0; i--) {
         for (j = 0; j < image->width; j++) {
-          image->pixels[(i * image->width) + j] = (*(curXor + 2) << 16) +
-                                                  (*(curXor + 1) << 8) + (*curXor);
+          shift = 7 - (j & 0x7);
+          uint32_t alpha = (curAnd[j >> 3] & (1 << shift)) ? 0 : 0xff000000U;
+          image->pixels[(i * image->width) + j] = (uint8_t)curXor[0]
+                                                | ((uint8_t)curXor[1] << 8u)
+                                                | ((uint8_t)curXor[2] << 16u)
+                                                | alpha;
           curXor += 3;
         }
-
-        // Set the alpha byte properly according to the andBmp.
-        for (j = 0; j < image->width; j += 8) {
-          for (k = 0; k < 8; k++) {
-            shift = 7 - k;
-            image->pixels[(i * image->width) + j + k] |=
-              ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
-          }
-
-          curAnd++;
-        }
+        curAnd += and_stride;
       }
       break;
 
