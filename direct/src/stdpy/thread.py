@@ -11,18 +11,32 @@ __all__ = [
     'interrupt_main',
     'exit', 'allocate_lock', 'get_ident',
     'stack_size',
+    'force_yield', 'consider_yield',
     'forceYield', 'considerYield',
+    'TIMEOUT_MAX'
     ]
 
 from panda3d import core
+import sys
+
+if sys.platform == "win32":
+    TIMEOUT_MAX = float(0xffffffff // 1000)
+else:
+    TIMEOUT_MAX = float(0x7fffffffffffffff // 1000000000)
 
 # These methods are defined in Panda, and are particularly useful if
 # you may be running in Panda's SIMPLE_THREADS compilation mode.
-forceYield = core.Thread.forceYield
-considerYield = core.Thread.considerYield
+force_yield = core.Thread.force_yield
+consider_yield = core.Thread.consider_yield
 
-class error(Exception):
-    pass
+forceYield = force_yield
+considerYield = consider_yield
+
+if sys.version_info >= (3, 3):
+    error = RuntimeError
+else:
+    class error(Exception):
+        pass
 
 class LockType:
     """ Implements a mutex lock.  Instead of directly subclassing
@@ -36,13 +50,18 @@ class LockType:
         self.__cvar = core.ConditionVar(self.__lock)
         self.__locked = False
 
-    def acquire(self, waitflag = 1):
+    def acquire(self, waitflag = 1, timeout = -1):
         self.__lock.acquire()
         try:
             if self.__locked and not waitflag:
                 return False
-            while self.__locked:
-                self.__cvar.wait()
+
+            if timeout >= 0:
+                while self.__locked:
+                    self.__cvar.wait(timeout)
+            else:
+                while self.__locked:
+                    self.__cvar.wait()
 
             self.__locked = True
             return True

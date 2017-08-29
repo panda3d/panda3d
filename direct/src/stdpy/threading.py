@@ -35,10 +35,14 @@ __all__ = [
     'Event',
     'Timer',
     'local',
-    'current_thread', 'currentThread',
-    'enumerate', 'active_count', 'activeCount',
+    'current_thread',
+    'main_thread',
+    'enumerate', 'active_count',
     'settrace', 'setprofile', 'stack_size',
+    'TIMEOUT_MAX',
     ]
+
+TIMEOUT_MAX = _thread.TIMEOUT_MAX
 
 local = _thread._local
 _newname = _thread._newname
@@ -98,7 +102,14 @@ class Thread(ThreadBase):
         self.__dict__['daemon'] = current.daemon
         self.__dict__['name'] = name
 
-        self.__thread = core.PythonThread(self.run, None, name, name)
+        def call_run():
+            # As soon as the thread is done, break the circular reference.
+            try:
+                self.run()
+            finally:
+                self.__thread = None
+
+        self.__thread = core.PythonThread(call_run, None, name, name)
         threadId = _thread._add_thread(self.__thread, weakref.proxy(self))
         self.__dict__['ident'] = threadId
 
@@ -109,13 +120,12 @@ class Thread(ThreadBase):
             _thread._remove_thread_id(self.ident)
 
     def is_alive(self):
-        return self.__thread.isStarted()
+        return self.__thread is not None and self.__thread.is_started()
 
-    def isAlive(self):
-        return self.__thread.isStarted()
+    isAlive = is_alive
 
     def start(self):
-        if self.__thread.isStarted():
+        if self.__thread is None or self.__thread.is_started():
             raise RuntimeError
 
         if not self.__thread.start(core.TPNormal, True):
@@ -379,6 +389,10 @@ def current_thread():
     t = core.Thread.getCurrentThread()
     return _thread._get_thread_wrapper(t, _create_thread_wrapper)
 
+def main_thread():
+    t = core.Thread.getMainThread()
+    return _thread._get_thread_wrapper(t, _create_thread_wrapper)
+
 currentThread = current_thread
 
 def enumerate():
@@ -386,7 +400,7 @@ def enumerate():
     _thread._threadsLock.acquire()
     try:
         for thread, locals, wrapper in list(_thread._threads.values()):
-            if wrapper and thread.isStarted():
+            if wrapper and wrapper.is_alive():
                 tlist.append(wrapper)
         return tlist
     finally:
@@ -394,6 +408,7 @@ def enumerate():
 
 def active_count():
     return len(enumerate())
+
 activeCount = active_count
 
 _settrace_func = None
