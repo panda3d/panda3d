@@ -108,6 +108,7 @@ class Thread(ThreadBase):
                 self.run()
             finally:
                 self.__thread = None
+                _thread._remove_thread_id(self.ident)
 
         self.__thread = core.PythonThread(call_run, None, name, name)
         threadId = _thread._add_thread(self.__thread, weakref.proxy(self))
@@ -120,15 +121,17 @@ class Thread(ThreadBase):
             _thread._remove_thread_id(self.ident)
 
     def is_alive(self):
-        return self.__thread is not None and self.__thread.is_started()
+        thread = self.__thread
+        return thread is not None and thread.is_started()
 
     isAlive = is_alive
 
     def start(self):
-        if self.__thread is None or self.__thread.is_started():
+        thread = self.__thread
+        if thread is None or thread.is_started():
             raise RuntimeError
 
-        if not self.__thread.start(core.TPNormal, True):
+        if not thread.start(core.TPNormal, True):
             raise RuntimeError
 
     def run(self):
@@ -142,8 +145,12 @@ class Thread(ThreadBase):
     def join(self, timeout = None):
         # We don't support a timed join here, sorry.
         assert timeout is None
-        self.__thread.join()
-        self.__thread = None
+        thread = self.__thread
+        if thread is not None:
+            thread.join()
+            # Clear the circular reference.
+            self.__thread = None
+            _thread._remove_thread_id(self.ident)
 
     def setName(self, name):
         self.__dict__['name'] = name

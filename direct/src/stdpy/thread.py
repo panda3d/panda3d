@@ -227,10 +227,11 @@ def _remove_thread_id(threadId):
 
     _threadsLock.acquire()
     try:
-        thread, locals, wrapper = _threads[threadId]
-        assert thread.getPythonIndex() == threadId
-        del _threads[threadId]
-        thread.setPythonIndex(-1)
+        if threadId in _threads:
+            thread, locals, wrapper = _threads[threadId]
+            assert thread.getPythonIndex() == threadId
+            del _threads[threadId]
+            thread.setPythonIndex(-1)
 
     finally:
         _threadsLock.release()
