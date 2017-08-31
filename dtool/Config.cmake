@@ -327,6 +327,11 @@ overhead to have this option available even if it is unused, it is
 by default enabled only in a development build.  This has no effect
 on DirectX rendering." ${IS_DEBUG_BUILD})
 
+option(NOTIFY_DEBUG
+  "Do you want to include the 'debug' and 'spam' Notify messages?
+Normally, these are stripped out when we build for release, but sometimes it's
+useful to keep them around. Turn this setting on to achieve that." ${IS_DEBUG_BUILD})
+
 option(SUPPORT_FIXED_FUNCTION
   "This option compiles in support for the fixed-function OpenGL
 pipeline.  It is only really useful to turn this off if you are targeting
