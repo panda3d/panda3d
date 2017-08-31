@@ -528,7 +528,7 @@ write_data(xel *array, xelval *alpha_data) {
 
   // The compression level corresponds directly to the compression levels for
   // zlib.
-  png_set_compression_level(png_compression_level);
+  png_set_compression_level(_png, png_compression_level);
 
   // First, write the header.
 
