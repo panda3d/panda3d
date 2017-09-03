@@ -58,7 +58,7 @@ _dcast(WantType *, TypedObject *ptr) {
     return (WantType *)NULL;
   }
 #endif
-  return (WantType *)ptr;
+  return dynamic_cast<WantType *>(ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
