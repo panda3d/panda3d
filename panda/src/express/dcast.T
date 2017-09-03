@@ -58,7 +58,7 @@ _dcast(WantType *, TypedObject *ptr) {
     return (WantType *)NULL;
   }
 #endif
-  return dynamic_cast<WantType *>(ptr);
+  return static_cast<WantType *>(ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ _dcast(WantType *, const TypedObject *ptr) {
     return (const WantType *)NULL;
   }
 #endif
-  return (const WantType *)ptr;
+  return static_cast<const WantType *>(ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
