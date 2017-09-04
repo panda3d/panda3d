@@ -1455,8 +1455,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
           t.set_row(2, LVecBase4(d, cutoff));
 
         } else if (node->is_of_type(PointLight::get_class_type())) {
-          t.set_cell(1, 3, lens->get_near());
-          t.set_cell(3, 3, lens->get_far());
+          t.set_cell(1, 3, lens->get_far());
+          t.set_cell(3, 3, lens->get_near());
 
           if (node->is_of_type(SphereLight::get_class_type())) {
             t.set_cell(2, 3, ((const SphereLight *)node)->get_radius());
