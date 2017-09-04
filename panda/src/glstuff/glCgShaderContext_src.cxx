@@ -358,6 +358,20 @@ release_resources() {
 }
 
 /**
+ * Returns true if the shader is "valid", ie, if the compilation was
+ * successful.  The compilation could fail if there is a syntax error in the
+ * shader, or if the current video card isn't shader-capable, or if no shader
+ * languages are compiled into panda.
+ */
+bool CLP(CgShaderContext)::
+valid() {
+  if (_shader == nullptr || _shader->get_error_flag()) {
+    return false;
+  }
+  return (_cg_program != 0);
+}
+
+/**
  * This function is to be called to enable a new shader.  It also initializes
  * all of the shader's input parameters.
  */

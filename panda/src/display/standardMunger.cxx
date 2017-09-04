@@ -343,28 +343,29 @@ munge_state_impl(const RenderState *state) {
 
 #ifdef HAVE_CG
   if (_auto_shader) {
-    CPT(RenderState) shader_state = munged_state->get_auto_shader_state();
     GraphicsStateGuardian *gsg = get_gsg();
     ShaderGenerator *shader_generator = gsg->get_shader_generator();
     if (shader_generator == nullptr) {
       shader_generator = new ShaderGenerator(gsg);
       gsg->set_shader_generator(shader_generator);
     }
-    if (shader_state->_generated_shader == NULL) {
+    if (munged_state->_generated_shader == nullptr) {
       // Cache the generated ShaderAttrib on the shader state.
       GeomVertexAnimationSpec spec;
 
       // Currently we overload this flag to request vertex animation for the
       // shader generator.
       const ShaderAttrib *sattr;
-      shader_state->get_attrib_def(sattr);
+      munged_state->get_attrib_def(sattr);
       if (sattr->get_flag(ShaderAttrib::F_hardware_skinning)) {
         spec.set_hardware(4, true);
       }
 
-      shader_state->_generated_shader = shader_generator->synthesize_shader(shader_state, spec);
+      munged_state->_generated_shader = shader_generator->synthesize_shader(munged_state, spec);
     }
-    munged_state = munged_state->set_attrib(shader_state->_generated_shader);
+    if (munged_state->_generated_shader != nullptr) {
+      munged_state = munged_state->set_attrib(munged_state->_generated_shader);
+    }
   }
 #endif
 

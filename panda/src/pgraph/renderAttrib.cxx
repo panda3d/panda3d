@@ -113,14 +113,6 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) RenderAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return NULL;
-}
-
-/**
  * This method overrides ReferenceCount::unref() to clear the pointer from the
  * global object pool when its reference count goes to zero.
  */
@@ -514,7 +506,7 @@ release_new() {
 
   if (_saved_entry != -1) {
     _saved_entry = -1;
-    nassertv(_attribs->remove(this));
+    nassertv_always(_attribs->remove(this));
   }
 }
 

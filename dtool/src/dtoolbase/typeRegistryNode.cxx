@@ -26,9 +26,7 @@ TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref) :
   _handle(handle), _name(name), _ref(ref)
 {
   clear_subtree();
-#ifdef DO_MEMORY_USAGE
   memset(_memory_usage, 0, sizeof(_memory_usage));
-#endif
 }
 
 /**

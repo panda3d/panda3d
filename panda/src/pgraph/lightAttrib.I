@@ -19,19 +19,6 @@ LightAttrib() : _off_all_lights(false), _num_non_ambient_lights(0) {
 }
 
 /**
- * Use LightAttrib::make() to construct a new LightAttrib object.  The copy
- * constructor is only defined to facilitate methods like add_on_light().
- */
-INLINE LightAttrib::
-LightAttrib(const LightAttrib &copy) :
-  _on_lights(copy._on_lights),
-  _off_lights(copy._off_lights),
-  _off_all_lights(copy._off_all_lights),
-  _sort_seq(UpdateSeq::old())
-{
-}
-
-/**
  * Returns the number of lights that are turned on by the attribute.
  */
 INLINE size_t LightAttrib::

@@ -471,6 +471,9 @@ struct Dtool_SequenceWrapper {
 };
 
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SequenceWrapper_Type;
+EXPCL_INTERROGATEDB extern PyTypeObject Dtool_StaticProperty_Type;
+
+EXPCL_INTERROGATEDB PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
 
 /**
  * These functions check whether the arguments passed to a function conform to

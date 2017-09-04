@@ -12,9 +12,6 @@
  */
 
 #include "memoryUsage.h"
-
-#ifdef DO_MEMORY_USAGE
-
 #include "memoryUsagePointers.h"
 #include "trueClock.h"
 #include "typedReferenceCount.h"
@@ -45,16 +42,17 @@ double MemoryUsage::AgeHistogram::_cutoff[MemoryUsage::AgeHistogram::num_buckets
   60.0,
 };
 
-
 /**
  * Adds a single entry to the histogram.
  */
 void MemoryUsage::TypeHistogram::
 add_info(TypeHandle type, MemoryInfo *info) {
+#ifdef DO_MEMORY_USAGE
   _counts[type].add_info(info);
+#endif
 }
 
-
+#ifdef DO_MEMORY_USAGE
 // This class is a temporary class used only in TypeHistogram::show(), below,
 // to sort the types in descending order by counts.
 class TypeHistogramCountSorter {
@@ -71,12 +69,14 @@ public:
   MemoryUsagePointerCounts _count;
   TypeHandle _type;
 };
+#endif
 
 /**
  * Shows the contents of the histogram to nout.
  */
 void MemoryUsage::TypeHistogram::
 show() const {
+#ifdef DO_MEMORY_USAGE
   // First, copy the relevant information to a vector so we can sort by
   // counts.  Don't use a pvector.
   typedef vector<TypeHistogramCountSorter> CountSorter;
@@ -99,6 +99,7 @@ show() const {
     }
     nout << " : " << (*vi)._count << "\n";
   }
+#endif
 }
 
 /**
@@ -122,9 +123,11 @@ AgeHistogram() {
  */
 void MemoryUsage::AgeHistogram::
 add_info(double age, MemoryInfo *info) {
+#ifdef DO_MEMORY_USAGE
   int bucket = choose_bucket(age);
   nassertv(bucket >= 0 && bucket < num_buckets);
   _counts[bucket].add_info(info);
+#endif
 }
 
 /**
@@ -132,6 +135,7 @@ add_info(double age, MemoryInfo *info) {
  */
 void MemoryUsage::AgeHistogram::
 show() const {
+#ifdef DO_MEMORY_USAGE
   for (int i = 0; i < num_buckets - 1; i++) {
     nout << _cutoff[i] << " to " << _cutoff[i + 1] << " seconds old : ";
     _counts[i].output(nout);
@@ -140,6 +144,7 @@ show() const {
   nout << _cutoff[num_buckets - 1] << " seconds old and up : ";
   _counts[num_buckets - 1].output(nout);
   nout << "\n";
+#endif
 }
 
 /**
@@ -147,9 +152,11 @@ show() const {
  */
 void MemoryUsage::AgeHistogram::
 clear() {
+#ifdef DO_MEMORY_USAGE
   for (int i = 0; i < num_buckets; i++) {
     _counts[i].clear();
   }
+#endif
 }
 
 /**
@@ -157,6 +164,7 @@ clear() {
  */
 int MemoryUsage::AgeHistogram::
 choose_bucket(double age) const {
+#ifdef DO_MEMORY_USAGE
   for (int i = num_buckets - 1; i >= 0; i--) {
     if (age >= _cutoff[i]) {
       return i;
@@ -164,6 +172,7 @@ choose_bucket(double age) const {
   }
   express_cat.error()
     << "No suitable bucket for age " << age << "\n";
+#endif
   return 0;
 }
 
@@ -173,6 +182,7 @@ choose_bucket(double age) const {
  */
 void *MemoryUsage::
 heap_alloc_single(size_t size) {
+#ifdef DO_MEMORY_USAGE
   void *ptr;
 
   if (_recursion_protect) {
@@ -202,6 +212,9 @@ heap_alloc_single(size_t size) {
   }
 
   return ptr;
+#else
+  return MemoryHook::heap_alloc_single(size);
+#endif
 }
 
 /**
@@ -209,6 +222,7 @@ heap_alloc_single(size_t size) {
  */
 void MemoryUsage::
 heap_free_single(void *ptr) {
+#ifdef DO_MEMORY_USAGE
   if (_recursion_protect) {
     if (express_cat.is_spam()) {
       express_cat.spam()
@@ -231,6 +245,9 @@ heap_free_single(void *ptr) {
       MemoryHook::heap_free_single(ptr);
     }
   }
+#else
+  MemoryHook::heap_free_single(ptr);
+#endif
 }
 
 /**
@@ -239,6 +256,7 @@ heap_free_single(void *ptr) {
  */
 void *MemoryUsage::
 heap_alloc_array(size_t size) {
+#ifdef DO_MEMORY_USAGE
   void *ptr;
 
   if (_recursion_protect) {
@@ -268,6 +286,9 @@ heap_alloc_array(size_t size) {
   }
 
   return ptr;
+#else
+  return MemoryHook::heap_alloc_array(size);
+#endif
 }
 
 /**
@@ -275,6 +296,7 @@ heap_alloc_array(size_t size) {
  */
 void *MemoryUsage::
 heap_realloc_array(void *ptr, size_t size) {
+#ifdef DO_MEMORY_USAGE
   if (_recursion_protect) {
     ptr = MemoryHook::heap_realloc_array(ptr, size);
     if (express_cat.is_spam()) {
@@ -303,6 +325,9 @@ heap_realloc_array(void *ptr, size_t size) {
   }
 
   return ptr;
+#else
+  return MemoryHook::heap_realloc_array(ptr, size);
+#endif
 }
 
 /**
@@ -310,6 +335,7 @@ heap_realloc_array(void *ptr, size_t size) {
  */
 void MemoryUsage::
 heap_free_array(void *ptr) {
+#ifdef DO_MEMORY_USAGE
   if (_recursion_protect) {
     if (express_cat.is_spam()) {
       express_cat.spam()
@@ -332,6 +358,9 @@ heap_free_array(void *ptr) {
       MemoryHook::heap_free_array(ptr);
     }
   }
+#else
+  MemoryHook::heap_free_array(ptr);
+#endif
 }
 
 /**
@@ -343,6 +372,7 @@ heap_free_array(void *ptr) {
  */
 void MemoryUsage::
 mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
+#ifdef DO_MEMORY_USAGE
   if (_recursion_protect || !_track_memory_usage) {
     return;
   }
@@ -391,6 +421,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
     // We're removing this pointer from use.
     ns_remove_void_pointer(ptr);
   }
+#endif
 }
 
 #if (defined(WIN32_VC) || defined (WIN64_VC))&& defined(_DEBUG)
@@ -430,7 +461,23 @@ win32_malloc_hook(int alloc_type, void *ptr,
  *
  */
 MemoryUsage::
-MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
+MemoryUsage(const MemoryHook &copy) :
+  MemoryHook(copy),
+  _info_set_dirty(false),
+  _freeze_index(0),
+  _count(0),
+  _current_cpp_size(0),
+  _total_cpp_size(0),
+  _total_size(0),
+
+  _track_memory_usage(false),
+  _startup_track_memory_usage(false),
+  _count_memory_usage(false),
+  _report_memory_usage(false),
+  _report_memory_interval(0.0),
+  _last_report_time(0.0) {
+
+#ifdef DO_MEMORY_USAGE
   // We must get these variables here instead of in config_express.cxx,
   // because we need to know it at static init time, and who knows when the
   // code in config_express will be executed.
@@ -456,9 +503,6 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
     ("report-memory-interval", 5.0,
      PRC_DESC("This is the interval, in seconds, for reports of currently allocated "
               "memory, when report-memory-usage is true."));
-  _last_report_time = 0.0;
-
-  _count_memory_usage = false;
 
   int64_t max_heap_size = ConfigVariableInt64
     ("max-heap-size", 0,
@@ -480,13 +524,7 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
   _CrtSetAllocHook(&win32_malloc_hook);
   _count_memory_usage = true;
 #endif
-
-  _info_set_dirty = false;
-  _freeze_index = 0;
-  _count = 0;
-  _current_cpp_size = 0;
-  _total_cpp_size = 0;
-  _total_size = 0;
+#endif  // DO_MEMORY_USAGE
 }
 
 /**
@@ -494,9 +532,16 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
  */
 void MemoryUsage::
 init_memory_usage() {
+#ifdef DO_MEMORY_USAGE
   init_memory_hook();
   _global_ptr = new MemoryUsage(*memory_hook);
   memory_hook = _global_ptr;
+#else
+  // If this gets called, we still need to initialize the global_ptr with a
+  // stub even if we don't compile with memory usage tracking enabled, for ABI
+  // stability.  However, we won't replace the memory hook.
+  _global_ptr = new MemoryUsage(*memory_hook);
+#endif
 }
 
 /**
@@ -507,6 +552,7 @@ init_memory_usage() {
  */
 void MemoryUsage::
 overflow_heap_size() {
+#ifdef DO_MEMORY_USAGE
   MemoryHook::overflow_heap_size();
 
   express_cat.error()
@@ -524,6 +570,7 @@ overflow_heap_size() {
   // Turn on spamful debugging.
   _track_memory_usage = true;
   _report_memory_usage = true;
+#endif
 }
 
 /**
@@ -531,12 +578,13 @@ overflow_heap_size() {
  */
 void MemoryUsage::
 ns_record_pointer(ReferenceCount *ptr) {
+#ifdef DO_MEMORY_USAGE
   if (_track_memory_usage) {
     // We have to protect modifications to the table from recursive calls by
     // toggling _recursion_protect while we adjust it.
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
-      _table.insert(Table::value_type((void *)ptr, (MemoryInfo *)NULL));
+      _table.insert(Table::value_type((void *)ptr, nullptr));
 
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
@@ -575,6 +623,61 @@ ns_record_pointer(ReferenceCount *ptr) {
       }
     }
   }
+#endif
+}
+
+
+/**
+ * Indicates that the given pointer has been recently allocated.
+ */
+void MemoryUsage::
+ns_record_pointer(void *ptr, TypeHandle type) {
+#ifdef DO_MEMORY_USAGE
+  if (_track_memory_usage) {
+    // We have to protect modifications to the table from recursive calls by
+    // toggling _recursion_protect while we adjust it.
+    _recursion_protect = true;
+    pair<Table::iterator, bool> insert_result =
+      _table.insert(Table::value_type(ptr, nullptr));
+
+    // This shouldn't fail.
+    assert(insert_result.first != _table.end());
+
+    if (insert_result.second) {
+      (*insert_result.first).second = new MemoryInfo;
+      _info_set_dirty = true;
+      ++_count;
+    }
+
+    MemoryInfo *info = (*insert_result.first).second;
+
+    // We should already have a pointer, thanks to a previous call to
+    // mark_pointer().
+    nassertv(info->_void_ptr == ptr && info->_ref_ptr == nullptr);
+
+    info->_void_ptr = ptr;
+    info->_static_type = type;
+    info->_dynamic_type = type;
+    info->_time = TrueClock::get_global_ptr()->get_long_time();
+    info->_freeze_index = _freeze_index;
+    info->_flags |= MemoryInfo::F_reconsider_dynamic_type;
+
+    // We close the recursion_protect flag all the way down here, so that we
+    // also protect ourselves against a possible recursive call in
+    // TrueClock::get_global_ptr().
+    _recursion_protect = false;
+
+    if (_report_memory_usage) {
+      double now = TrueClock::get_global_ptr()->get_long_time();
+      if (now - _last_report_time > _report_memory_interval) {
+        _last_report_time = now;
+        express_cat.info()
+          << "*** Current memory usage: " << get_total_size() << "\n";
+        show_current_types();
+      }
+    }
+  }
+#endif
 }
 
 /**
@@ -584,7 +687,8 @@ ns_record_pointer(ReferenceCount *ptr) {
  * only that it's a "ReferenceCount".
  */
 void MemoryUsage::
-ns_update_type(ReferenceCount *ptr, TypeHandle type) {
+ns_update_type(void *ptr, TypeHandle type) {
+#ifdef DO_MEMORY_USAGE
   if (_track_memory_usage) {
     Table::iterator ti;
     ti = _table.find(ptr);
@@ -592,7 +696,7 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
       if (_startup_track_memory_usage) {
         express_cat.error()
           << "Attempt to update type to " << type << " for unrecorded pointer "
-          << (void *)ptr << "!\n";
+          << ptr << "!\n";
         nassertv(false);
       }
       return;
@@ -605,6 +709,7 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
 
     consolidate_void_ptr(info);
   }
+#endif
 }
 
 /**
@@ -614,7 +719,8 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
  * the pointer as a TypedObject it doesn't need any more help.
  */
 void MemoryUsage::
-ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
+ns_update_type(void *ptr, TypedObject *typed_ptr) {
+#ifdef DO_MEMORY_USAGE
   if (_track_memory_usage) {
     Table::iterator ti;
     ti = _table.find(ptr);
@@ -623,7 +729,7 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
         express_cat.error()
           << "Attempt to update type to " << typed_ptr->get_type()
           << " for unrecorded pointer "
-          << (void *)ptr << "!\n";
+          << ptr << "!\n";
       }
       return;
     }
@@ -634,6 +740,7 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
 
     consolidate_void_ptr(info);
   }
+#endif
 }
 
 /**
@@ -641,6 +748,7 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
  */
 void MemoryUsage::
 ns_remove_pointer(ReferenceCount *ptr) {
+#ifdef DO_MEMORY_USAGE
   if (_track_memory_usage) {
     Table::iterator ti;
     ti = _table.find(ptr);
@@ -705,6 +813,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
       }
     }
   }
+#endif
 }
 
 /**
@@ -713,6 +822,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
  */
 void MemoryUsage::
 ns_record_void_pointer(void *ptr, size_t size) {
+#ifdef DO_MEMORY_USAGE
   if (_track_memory_usage) {
     if (express_cat.is_spam()) {
       express_cat.spam()
@@ -724,7 +834,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
 
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
-      _table.insert(Table::value_type((void *)ptr, (MemoryInfo *)NULL));
+      _table.insert(Table::value_type((void *)ptr, nullptr));
 
     assert(insert_result.first != _table.end());
 
@@ -761,6 +871,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
     // TrueClock::get_global_ptr().
     _recursion_protect = false;
   }
+#endif
 }
 
 /**
@@ -768,6 +879,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
  */
 void MemoryUsage::
 ns_remove_void_pointer(void *ptr) {
+#ifdef DO_MEMORY_USAGE
   if (_track_memory_usage) {
     if (express_cat.is_spam()) {
       express_cat.spam()
@@ -823,6 +935,7 @@ ns_remove_void_pointer(void *ptr) {
     _info_set_dirty = true;
     delete info;
   }
+#endif
 }
 
 /**
@@ -830,8 +943,12 @@ ns_remove_void_pointer(void *ptr) {
  */
 int MemoryUsage::
 ns_get_num_pointers() {
+#ifdef DO_MEMORY_USAGE
   nassertr(_track_memory_usage, 0);
   return _count;
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -840,6 +957,7 @@ ns_get_num_pointers() {
  */
 void MemoryUsage::
 ns_get_pointers(MemoryUsagePointers &result) {
+#ifdef DO_MEMORY_USAGE
   nassertv(_track_memory_usage);
   result.clear();
 
@@ -857,6 +975,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
                        now - info->_time);
     }
   }
+#endif
 }
 
 /**
@@ -865,6 +984,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
  */
 void MemoryUsage::
 ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
+#ifdef DO_MEMORY_USAGE
   nassertv(_track_memory_usage);
   result.clear();
 
@@ -886,6 +1006,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
       }
     }
   }
+#endif
 }
 
 /**
@@ -895,6 +1016,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
 void MemoryUsage::
 ns_get_pointers_of_age(MemoryUsagePointers &result,
                        double from, double to) {
+#ifdef DO_MEMORY_USAGE
   nassertv(_track_memory_usage);
   result.clear();
 
@@ -915,6 +1037,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
       }
     }
   }
+#endif
 }
 
 /**
@@ -935,6 +1058,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
  */
 void MemoryUsage::
 ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
+#ifdef DO_MEMORY_USAGE
   nassertv(_track_memory_usage);
   result.clear();
 
@@ -955,6 +1079,7 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
       }
     }
   }
+#endif
 }
 
 /**
@@ -965,11 +1090,13 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
  */
 void MemoryUsage::
 ns_freeze() {
+#ifdef DO_MEMORY_USAGE
   _count = 0;
   _current_cpp_size = 0;
   _trend_types.clear();
   _trend_ages.clear();
   _freeze_index++;
+#endif
 }
 
 /**
@@ -977,6 +1104,7 @@ ns_freeze() {
  */
 void MemoryUsage::
 ns_show_current_types() {
+#ifdef DO_MEMORY_USAGE
   nassertv(_track_memory_usage);
   TypeHistogram hist;
 
@@ -994,6 +1122,7 @@ ns_show_current_types() {
   }
   hist.show();
   _recursion_protect = false;
+#endif
 }
 
 /**
@@ -1002,7 +1131,9 @@ ns_show_current_types() {
  */
 void MemoryUsage::
 ns_show_trend_types() {
+#ifdef DO_MEMORY_USAGE
   _trend_types.show();
+#endif
 }
 
 /**
@@ -1010,6 +1141,7 @@ ns_show_trend_types() {
  */
 void MemoryUsage::
 ns_show_current_ages() {
+#ifdef DO_MEMORY_USAGE
   nassertv(_track_memory_usage);
 
   AgeHistogram hist;
@@ -1026,6 +1158,7 @@ ns_show_current_ages() {
 
   hist.show();
   _recursion_protect = false;
+#endif
 }
 
 /**
@@ -1036,6 +1169,8 @@ void MemoryUsage::
 ns_show_trend_ages() {
   _trend_ages.show();
 }
+
+#ifdef DO_MEMORY_USAGE
 
 /**
  * If the size information has not yet been determined for this pointer,
@@ -1125,6 +1260,5 @@ refresh_info_set() {
 
   _info_set_dirty = false;
 }
-
 
 #endif  // DO_MEMORY_USAGE

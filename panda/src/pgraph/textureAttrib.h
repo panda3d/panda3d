@@ -59,7 +59,6 @@ PUBLISHED:
   INLINE int get_ff_tc_index(int n) const;
   INLINE bool has_on_stage(TextureStage *stage) const;
   INLINE Texture *get_on_texture(TextureStage *stage) const;
-  INLINE Texture::TextureType get_on_texture_type(TextureStage *stage) const;
   INLINE const SamplerState &get_on_sampler(TextureStage *stage) const;
   INLINE int get_on_stage_override(TextureStage *stage) const;
 
@@ -82,8 +81,6 @@ PUBLISHED:
   CPT(RenderAttrib) unify_texture_stages(TextureStage *stage) const;
 
 public:
-  INLINE bool on_stage_affects_rgb(size_t n) const;
-  INLINE bool on_stage_affects_alpha(size_t n) const;
   CPT(TextureAttrib) filter_to_max(int max_texture_stages) const;
 
   virtual bool lower_attrib_can_override() const;
@@ -97,7 +94,6 @@ protected:
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
   INLINE void check_sorted() const;
@@ -117,11 +113,6 @@ private:
     int _ff_tc_index;
     unsigned int _implicit_sort;
     int _override;
-
-    // These fields are used by the shader generator.
-    Texture::TextureType _texture_type : 16;
-    bool _texture_affects_rgb : 8;
-    bool _texture_affects_alpha : 8;
   };
 
   class CompareTextureStagePriorities {
@@ -166,6 +157,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
+  MAKE_PROPERTY(class_slot, get_class_slot);
 
 public:
   static void register_with_read_factory();

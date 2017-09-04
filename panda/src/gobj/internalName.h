@@ -178,11 +178,9 @@ private:
   static TypeHandle _texcoord_type_handle;
 };
 
-#ifdef DO_MEMORY_USAGE
 // We can safely redefine this as a no-op.
 template<>
 INLINE void PointerToBase<InternalName>::update_type(To *ptr) {}
-#endif
 
 INLINE ostream &operator << (ostream &out, const InternalName &tcn);
 

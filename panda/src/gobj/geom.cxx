@@ -683,6 +683,7 @@ unify_in_place(int max_indices, bool preserve_order) {
           int num_vertices = copy_primitives * total_vertices_per_primitive;
           nassertv(num_vertices > 0);
           {
+            smaller->set_index_type(reader.get_index_type());
             GeomVertexArrayDataHandle writer(smaller->modify_vertices(), current_thread);
             writer.unclean_set_num_rows(num_vertices);
             memcpy(writer.get_write_pointer(), ptr, stride * (size_t)(num_vertices - num_unused_vertices_per_primitive));
@@ -1211,14 +1212,13 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
  * is passed true, it will wait for the data to become resident if necessary.
  */
 bool Geom::
-draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
-     const GeomVertexData *vertex_data, bool force,
-     Thread *current_thread) const {
+draw(GraphicsStateGuardianBase *gsg, const GeomVertexData *vertex_data,
+     bool force, Thread *current_thread) const {
   GeomPipelineReader geom_reader(this, current_thread);
   GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
 
-  return geom_reader.draw(gsg, munger, &data_reader, force);
+  return geom_reader.draw(gsg, &data_reader, force);
 }
 
 /**
@@ -1749,10 +1749,10 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
  * The implementation of Geom::draw().
  */
 bool GeomPipelineReader::
-draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+draw(GraphicsStateGuardianBase *gsg,
      const GeomVertexDataPipelineReader *data_reader, bool force) const {
   PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
-  bool all_ok = gsg->begin_draw_primitives(this, munger, data_reader, force);
+  bool all_ok = gsg->begin_draw_primitives(this, data_reader, force);
   if (all_ok) {
     Geom::Primitives::const_iterator pi;
     for (pi = _cdata->_primitives.begin();

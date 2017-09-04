@@ -43,6 +43,7 @@ PUBLISHED:
 
   INLINE static void set_mode(Mode mode);
   INLINE static Mode get_mode();
+  MAKE_PROPERTY(mode, get_mode, set_mode);
 
   INLINE static int garbage_collect();
   INLINE static void list_contents(ostream &out);

@@ -327,3 +327,11 @@ INLINE void Material::
 set_attrib_lock() {
   _flags |= F_attrib_lock;
 }
+
+/**
+ *
+ */
+INLINE int Material::
+get_flags() const {
+  return _flags;
+}

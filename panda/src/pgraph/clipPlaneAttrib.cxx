@@ -834,14 +834,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) ClipPlaneAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
  * This is patterned after TextureAttrib::sort_on_stages(), but since
  * planeNodes don't actually require sorting, this only empties the _filtered
  * map.

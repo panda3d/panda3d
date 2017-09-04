@@ -618,8 +618,11 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     dtool_inited = true;
 
     if (PyType_Ready(&Dtool_SequenceWrapper_Type) < 0) {
-      PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_SequenceWrapper)");
-      return NULL;
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_SequenceWrapper)");
+    }
+
+    if (PyType_Ready(&Dtool_StaticProperty_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
     }
 
     // Initialize the base class of everything.
@@ -1035,7 +1038,7 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds)
 static void Dtool_SequenceWrapper_dealloc(PyObject *self) {
   Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
   nassertv(wrap);
-  Py_DECREF(wrap->_base);
+  Py_XDECREF(wrap->_base);
 }
 
 static Py_ssize_t Dtool_SequenceWrapper_length(PyObject *self) {
@@ -1116,6 +1119,138 @@ PyTypeObject Dtool_SequenceWrapper_Type = {
   PyType_GenericAlloc,
   0, // tp_new
   PyObject_Del,
+  0, // tp_is_gc
+  0, // tp_bases
+  0, // tp_mro
+  0, // tp_cache
+  0, // tp_subclasses
+  0, // tp_weaklist
+  0, // tp_del
+#if PY_VERSION_HEX >= 0x02060000
+  0, // tp_version_tag
+#endif
+#if PY_VERSION_HEX >= 0x03040000
+  0, // tp_finalize
+#endif
+};
+
+/**
+ * This is a variant of the Python getset mechanism that permits static
+ * properties.
+ */
+PyObject *
+Dtool_NewStaticProperty(PyTypeObject *type, const PyGetSetDef *getset) {
+  PyGetSetDescrObject *descr;
+  descr = (PyGetSetDescrObject *)PyType_GenericAlloc(&Dtool_StaticProperty_Type, 0);
+  if (descr != nullptr) {
+    Py_XINCREF(type);
+    descr->d_getset = (PyGetSetDef *)getset;
+#if PY_MAJOR_VERSION >= 3
+    descr->d_common.d_type = type;
+    descr->d_common.d_name = PyUnicode_InternFromString(getset->name);
+#if PY_VERSION_HEX >= 0x03030000
+    descr->d_common.d_qualname = nullptr;
+#endif
+#else
+    descr->d_type = type;
+    descr->d_name = PyString_InternFromString(getset->name);
+#endif
+  }
+  return (PyObject *)descr;
+}
+
+static void
+Dtool_StaticProperty_dealloc(PyDescrObject *descr) {
+  _PyObject_GC_UNTRACK(descr);
+  Py_XDECREF(descr->d_type);
+  Py_XDECREF(descr->d_name);
+//#if PY_MAJOR_VERSION >= 3
+//  Py_XDECREF(descr->d_qualname);
+//#endif
+  PyObject_GC_Del(descr);
+}
+
+static PyObject *
+Dtool_StaticProperty_repr(PyDescrObject *descr, const char *format) {
+#if PY_MAJOR_VERSION >= 3
+  return PyUnicode_FromFormat("<attribute '%V' of '%s'>", descr->d_name, "?", descr->d_type->tp_name);
+#else
+  return PyString_FromFormat("<attribute '%V' of '%s'>", descr->d_name, "?", descr->d_type->tp_name);
+#endif
+}
+
+static int
+Dtool_StaticProperty_traverse(PyObject *self, visitproc visit, void *arg) {
+  PyDescrObject *descr = (PyDescrObject *)self;
+  Py_VISIT(descr->d_type);
+  return 0;
+}
+
+static PyObject *
+Dtool_StaticProperty_get(PyGetSetDescrObject *descr, PyObject *obj, PyObject *type) {
+  if (descr->d_getset->get != nullptr) {
+    return descr->d_getset->get(obj, descr->d_getset->closure);
+  } else {
+    return PyErr_Format(PyExc_AttributeError,
+                        "attribute '%V' of type '%.100s' is not readable",
+                        ((PyDescrObject *)descr)->d_name, "?",
+                        ((PyDescrObject *)descr)->d_type->tp_name);
+  }
+}
+
+static int
+Dtool_StaticProperty_set(PyGetSetDescrObject *descr, PyObject *obj, PyObject *value) {
+  if (descr->d_getset->set != nullptr) {
+    return descr->d_getset->set(obj, value, descr->d_getset->closure);
+  } else {
+    PyErr_Format(PyExc_AttributeError,
+                 "attribute '%V' of type '%.100s' is not writable",
+                 ((PyDescrObject *)descr)->d_name, "?",
+                 ((PyDescrObject *)descr)->d_type->tp_name);
+    return -1;
+  }
+}
+
+PyTypeObject Dtool_StaticProperty_Type = {
+  PyVarObject_HEAD_INIT(&PyType_Type, 0)
+  "getset_descriptor",
+  sizeof(PyGetSetDescrObject),
+  0, // tp_itemsize
+  (destructor)Dtool_StaticProperty_dealloc,
+  0, // tp_print
+  0, // tp_getattr
+  0, // tp_setattr
+  0, // tp_reserved
+  (reprfunc)Dtool_StaticProperty_repr,
+  0, // tp_as_number
+  0, // tp_as_sequence
+  0, // tp_as_mapping
+  0, // tp_hash
+  0, // tp_call
+  0, // tp_str
+  PyObject_GenericGetAttr,
+  0, // tp_setattro
+  0, // tp_as_buffer
+  Py_TPFLAGS_DEFAULT,
+  0, // tp_doc
+  Dtool_StaticProperty_traverse,
+  0, // tp_clear
+  0, // tp_richcompare
+  0, // tp_weaklistoffset
+  0, // tp_iter
+  0, // tp_iternext
+  0, // tp_methods
+  0, // tp_members
+  0, // tp_getset
+  0, // tp_base
+  0, // tp_dict
+  (descrgetfunc)Dtool_StaticProperty_get,
+  (descrsetfunc)Dtool_StaticProperty_set,
+  0, // tp_dictoffset
+  0, // tp_init
+  0, // tp_alloc
+  0, // tp_new
+  0, // tp_del
   0, // tp_is_gc
   0, // tp_bases
   0, // tp_mro

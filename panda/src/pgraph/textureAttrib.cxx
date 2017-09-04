@@ -385,19 +385,9 @@ output(ostream &out) const {
     const StageNode &sn = *(*ri);
     TextureStage *stage = sn._stage;
     Texture *tex = sn._texture;
+    out << " " << stage->get_name();
     if (tex != nullptr) {
-      out << " " << stage->get_name() << ":" << tex->get_name();
-    } else {
-      out << " " << stage->get_name() << ":(" << sn._texture_type;
-      if (sn._texture_affects_rgb) {
-        out << " rgb";
-        if (sn._texture_affects_alpha) {
-          out << "a";
-        }
-      } else if (sn._texture_affects_alpha) {
-        out << " alpha";
-      }
-      out << ")";
+      out << ":" << tex->get_name();
     }
     if (sn._override != 0) {
       out << "^" << sn._override;
@@ -513,19 +503,6 @@ compare_to_impl(const RenderAttrib *other) const {
       }
     }
 
-    if (texture == nullptr) {
-      // This is an attribute returned by get_auto_shader_attrib_impl.
-      if ((*si)._texture_type != (*osi)._texture_type) {
-        return (*si)._texture_type < (*osi)._texture_type ? -1 : 1;
-      }
-      if ((*si)._texture_affects_rgb != (*osi)._texture_affects_rgb) {
-        return (*si)._texture_affects_rgb < (*osi)._texture_affects_rgb ? -1 : 1;
-      }
-      if ((*si)._texture_affects_alpha != (*osi)._texture_affects_alpha) {
-        return (*si)._texture_affects_alpha < (*osi)._texture_affects_alpha ? -1 : 1;
-      }
-    }
-
     ++si;
     ++osi;
   }
@@ -589,13 +566,6 @@ get_hash_impl() const {
     hash = pointer_hash::add_hash(hash, sn._texture);
     hash = int_hash::add_hash(hash, (int)sn._implicit_sort);
     hash = int_hash::add_hash(hash, sn._override);
-
-    if (sn._texture == nullptr) {
-      // This is an attribute returned by get_auto_shader_attrib_impl.
-      hash = int_hash::add_hash(hash, (int)sn._texture_type);
-      hash = int_hash::add_hash(hash, (int)sn._texture_affects_rgb);
-      hash = int_hash::add_hash(hash, (int)sn._texture_affects_alpha);
-    }
   }
 
   // This bool value goes here, between the two lists, to differentiate
@@ -765,52 +735,6 @@ invert_compose_impl(const RenderAttrib *other) const {
   // bit more thought.  It's hard to imagine that it's even important to
   // compute this properly.
   return other;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) TextureAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  if (_on_stages.empty()) {
-    // Having no stages is the same as not applying a texture attribute.
-    return nullptr;
-  }
-
-  // We make a texture attribute that does not store the texture and sampler,
-  // so that we don't have to generate a shader for every possible texture.
-  // We do have to store the few texture properties that do affect the
-  // generated shader.
-  PT(TextureAttrib) attrib = new TextureAttrib;
-  attrib->_on_stages = _on_stages;
-  attrib->sort_on_stages();
-
-  Stages::iterator si;
-  for (si = attrib->_on_stages.begin(); si != attrib->_on_stages.end(); ++si) {
-    Texture::Format format = (*si)._texture->get_format();
-    (*si)._texture_type = (*si)._texture->get_texture_type();
-    (*si)._texture_affects_rgb = (format != Texture::F_alpha);
-    (*si)._texture_affects_alpha = Texture::has_alpha(format);
-    (*si)._texture = nullptr;
-    (*si)._has_sampler = false;
-
-    // We will no longer be composing or sorting this state so we can get rid
-    // of these values.
-    (*si)._override = 0;
-    (*si)._implicit_sort = 0;
-
-    // Exception to optimize a common case: if the first texture is an RGB
-    // texture, we don't care about whether it affects the alpha channel.
-    if (attrib->_render_stages[0] == &(*si) &&
-        (*si)._texture_affects_rgb && !(*si)._texture_affects_alpha) {
-      (*si)._texture_affects_alpha = true;
-    }
-  }
-
-  // Prevent check_sorted() from being called on this state.
-  attrib->_sort_seq = UpdateSeq::fresh();
-
-  return return_new(attrib);
 }
 
 /**

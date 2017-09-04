@@ -28,6 +28,11 @@
 #include "renderState.h"
 #include "renderAttrib.h"
 
+#include "colorAttrib.h"
+#include "lightRampAttrib.h"
+#include "texGenAttrib.h"
+#include "textureAttrib.h"
+
 class AmbientLight;
 class DirectionalLight;
 class PointLight;
@@ -66,7 +71,6 @@ PUBLISHED:
                                               const GeomVertexAnimationSpec &anim);
 
 protected:
-  CPT(RenderAttrib) create_shader_attrib(const string &txt);
   static const string combine_mode_as_string(CPT(TextureStage) stage,
                       TextureStage::CombineMode c_mode, bool alpha, short texindex);
   static const string combine_source_as_string(CPT(TextureStage) stage,
@@ -84,66 +88,76 @@ protected:
   const char *alloc_vreg();
   const char *alloc_freg();
 
+  bool _use_shadow_filter;
+
   // RenderState analysis information.  Created by analyze_renderstate:
 
   CPT(RenderState) _state;
-  int _material_flags;
-  int _num_textures;
+  struct ShaderKey {
+    ShaderKey();
+    bool operator < (const ShaderKey &other) const;
+    bool operator == (const ShaderKey &other) const;
+    bool operator != (const ShaderKey &other) const { return !operator ==(other); }
 
-  pvector<LightLensNode *> _lights;
-  pvector<NodePath> _lights_np;
+    GeomVertexAnimationSpec _anim_spec;
+    enum TextureFlags {
+      TF_has_rgb = 1,
+      TF_has_alpha = 2,
+      TF_has_texscale = 4,
+      TF_has_texmat = 8,
+      TF_saved_result = 16,
+      TF_map_normal = 32,
+      TF_map_height = 64,
+      TF_map_glow = 128,
+      TF_map_gloss = 256,
+    };
 
-  bool _vertex_colors;
-  bool _flat_colors;
+    ColorAttrib::Type _color_type;
+    int _material_flags;
+    int _texture_flags;
 
-  bool _lighting;
-  bool _shadows;
-  bool _fog;
+    struct TextureInfo {
+      CPT_InternalName _texcoord_name;
+      Texture::TextureType _type;
+      TextureStage::Mode _mode;
+      TexGenAttrib::Mode _gen_mode;
+      int _flags;
 
-  bool _have_ambient;
-  bool _have_diffuse;
-  bool _have_emission;
-  bool _have_specular;
+      // Stored only if combine modes / blend color is used
+      CPT(TextureStage) _stage;
+    };
+    pvector<TextureInfo> _textures;
 
-  bool _separate_ambient_diffuse;
+    enum LightFlags {
+      LF_has_shadows = 1,
+      LF_has_specular_color = 2,
+    };
 
-  int _map_index_normal;
-  int _map_index_height;
-  int _map_index_glow;
-  int _map_index_gloss;
-  bool _map_height_in_alpha;
+    struct LightInfo {
+      TypeHandle _type;
+      int _flags;
+    };
+    pvector<LightInfo> _lights;
+    bool _lighting;
+    bool _have_separate_ambient;
 
-  bool _out_primary_glow;
-  bool _out_aux_normal;
-  bool _out_aux_glow;
-  bool _out_aux_any;
+    int _fog_mode;
 
-  bool _have_alpha_test;
-  bool _have_alpha_blend;
-  bool _calc_primary_alpha;
-  bool _subsume_alpha_test;
-  bool _disable_alpha_write;
+    int _outputs;
+    bool _calc_primary_alpha;
+    bool _disable_alpha_write;
+    RenderAttrib::PandaCompareFunc _alpha_test_mode;
+    PN_stdfloat _alpha_test_ref;
 
-  int _num_clip_planes;
-  bool _use_shadow_filter;
+    int _num_clip_planes;
 
-  bool _need_material_props;
-  bool _need_world_position;
-  bool _need_world_normal;
-  bool _need_eye_position;
-  bool _need_eye_normal;
-  bool _normalize_normals;
-  bool _auto_normal_on;
-  bool _auto_glow_on;
-  bool _auto_gloss_on;
-  bool _auto_ramp_on;
-  bool _auto_shadow_on;
+    CPT(LightRampAttrib) _light_ramp;
+  };
 
-  void analyze_renderstate(const RenderState *rs);
-  void clear_analysis();
+  typedef phash_map<ShaderKey, CPT(ShaderAttrib)> GeneratedShaders;
+  GeneratedShaders _generated_shaders;
 
-  // This is not a PT() to prevent a circular reference.
-  GraphicsStateGuardianBase *_gsg;
+  void analyze_renderstate(ShaderKey &key, const RenderState *rs);
 
 public:
   static TypeHandle get_class_type() {

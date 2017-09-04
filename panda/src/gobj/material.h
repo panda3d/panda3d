@@ -128,6 +128,8 @@ PUBLISHED:
   MAKE_PROPERTY(twoside, get_twoside, set_twoside);
 
 public:
+  INLINE int get_flags() const;
+
   enum Flags {
     F_ambient     = 0x001,
     F_diffuse     = 0x002,
@@ -156,8 +158,6 @@ private:
   static PT(Material) _default;
 
   int _flags;
-
-  friend class MaterialAttrib;
 
 public:
   static void register_with_read_factory();

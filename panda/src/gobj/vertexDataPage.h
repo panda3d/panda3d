@@ -64,6 +64,7 @@ PUBLISHED:
   INLINE static SimpleLru *get_global_lru(RamClass rclass);
   INLINE static SimpleLru *get_pending_lru();
   INLINE static VertexDataSaveFile *get_save_file();
+  MAKE_PROPERTY(save_file, get_save_file);
 
   INLINE bool save_to_disk();
 

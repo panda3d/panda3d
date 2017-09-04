@@ -2422,6 +2422,7 @@ def SetupVisualStudioEnviron():
     winsdk_ver = SDK["MSPLATFORM_VERSION"]
     if winsdk_ver.startswith('10.'):
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
+        AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + winsdk_ver + "\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
         inc_dir = SDK["MSPLATFORM"] + "Include\\" + winsdk_ver + "\\"
@@ -3156,6 +3157,17 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
             if (SUFFIX_INC.count(suffix)):
                 for d in CxxCalcDependencies(fullinput, ipath, []):
                     t.deps[d] = 1
+
+        # If we are linking statically, add the source DLL's dynamic dependencies.
+        if GetLinkAllStatic() and ORIG_EXT[fullinput] == '.lib' and fullinput in TARGET_TABLE:
+            tdep = TARGET_TABLE[fullinput]
+            for y in tdep.inputs:
+                if ORIG_EXT[y] == '.lib':
+                    t.inputs.append(y)
+
+            for opt, _ in LIBNAMES + LIBDIRECTORIES + FRAMEWORKDIRECTORIES:
+                if opt in tdep.opts and opt not in t.opts:
+                    t.opts.append(opt)
 
         if x.endswith(".in"):
             # Mark the _igate.cxx file as a dependency also.

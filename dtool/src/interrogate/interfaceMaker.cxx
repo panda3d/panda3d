@@ -91,7 +91,8 @@ Property(const InterrogateElement &ielement) :
   _setter(NULL),
   _has_function(NULL),
   _clear_function(NULL),
-  _deleter(NULL)
+  _deleter(NULL),
+  _has_this(false)
 {
 }
 

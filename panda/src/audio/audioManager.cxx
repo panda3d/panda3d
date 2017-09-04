@@ -170,7 +170,7 @@ get_null_sound() {
  *
  */
 int AudioManager::
-getSpeakerSetup() {
+get_speaker_setup() {
   // intentionally blank
   return 0;
 }
@@ -179,7 +179,7 @@ getSpeakerSetup() {
  *
  */
 void AudioManager::
-setSpeakerSetup(SpeakerModeCategory cat) {
+set_speaker_setup(SpeakerModeCategory cat) {
   // intentionally blank
 }
 

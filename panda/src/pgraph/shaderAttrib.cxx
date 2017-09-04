@@ -696,26 +696,6 @@ compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) ShaderAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // For a ShaderAttrib, we only need to preserve the auto-shader flags.
-  // Custom shaders, and custom shader inputs, aren't relevant to the shader
-  // generator.
-  ShaderAttrib *attrib = new ShaderAttrib;
-  attrib->_auto_shader = _auto_shader;
-  attrib->_has_shader = _has_shader;
-  attrib->_auto_normal_on = _auto_normal_on;
-  attrib->_auto_glow_on = _auto_glow_on;
-  attrib->_auto_gloss_on = _auto_gloss_on;
-  attrib->_auto_ramp_on = _auto_ramp_on;
-  attrib->_auto_shadow_on = _auto_shadow_on;
-  attrib->_flags = _flags;
-  return return_new(attrib);
-}
-
-/**
  * Factory method to generate a Shader object
  */
 void ShaderAttrib::

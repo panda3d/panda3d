@@ -416,28 +416,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) TexMatrixAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // For a TexMatrixAttrib, the particular matrix per TextureStage isn't
-  // important, just whether there is a matrix at all.  So we create a new
-  // state with an identity matrix everywhere there is a matrix at all in the
-  // original.
-
-  TexMatrixAttrib *attrib = new TexMatrixAttrib;
-
-  Stages::const_iterator ai;
-  for (ai = _stages.begin(); ai != _stages.end(); ++ai) {
-    StageNode sn((*ai)._stage);
-    sn._transform = TransformState::make_identity();
-    attrib->_stages.insert(attrib->_stages.end(), sn);
-  }
-
-  return return_new(attrib);
-}
-
-/**
  * Tells the BamReader how to create objects of type TexMatrixAttrib.
  */
 void TexMatrixAttrib::

@@ -48,6 +48,44 @@ public:
 };
 
 /**
+ * Use LightAttrib::make() to construct a new LightAttrib object.  The copy
+ * constructor is only defined to facilitate methods like add_on_light().
+ */
+LightAttrib::
+LightAttrib(const LightAttrib &copy) :
+  _on_lights(copy._on_lights),
+  _off_lights(copy._off_lights),
+  _off_all_lights(copy._off_all_lights),
+  _sort_seq(UpdateSeq::old())
+{
+  // Increase the attrib_ref of all the lights in this attribute.
+  Lights::const_iterator it;
+  for (it = _on_lights.begin(); it != _on_lights.end(); ++it) {
+    Light *lobj = (*it).node()->as_light();
+    nassertd(lobj != nullptr) continue;
+    lobj->attrib_ref();
+  }
+}
+
+/**
+ * Destructor.
+ */
+LightAttrib::
+~LightAttrib() {
+  // Call attrib_unref() on all on lights.
+  Lights::const_iterator it;
+  for (it = _on_lights.begin(); it != _on_lights.end(); ++it) {
+    const NodePath &np = *it;
+    if (!np.is_empty()) {
+      Light *lobj = np.node()->as_light();
+      if (lobj != nullptr) {
+        lobj->attrib_unref();
+      }
+    }
+  }
+}
+
+/**
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicated light(s).
  *
@@ -376,14 +414,17 @@ make_all_off() {
  */
 CPT(RenderAttrib) LightAttrib::
 add_on_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty(), this);
+  Light *lobj = light.node()->as_light();
+  nassertr(lobj != nullptr, this);
+
   LightAttrib *attrib = new LightAttrib(*this);
-  attrib->_on_lights.insert(light);
-  attrib->_off_lights.erase(light);
 
   pair<Lights::iterator, bool> insert_result =
     attrib->_on_lights.insert(Lights::value_type(light));
   if (insert_result.second) {
+    lobj->attrib_ref();
+
     // Also ensure it is removed from the off_lights list.
     attrib->_off_lights.erase(light);
   }
@@ -397,9 +438,14 @@ add_on_light(const NodePath &light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 remove_on_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty(), this);
+  Light *lobj = light.node()->as_light();
+  nassertr(lobj != nullptr, this);
+
   LightAttrib *attrib = new LightAttrib(*this);
-  attrib->_on_lights.erase(light);
+  if (attrib->_on_lights.erase(light)) {
+    lobj->attrib_unref();
+  }
   return return_new(attrib);
 }
 
@@ -409,12 +455,17 @@ remove_on_light(const NodePath &light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 add_off_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty(), this);
+  Light *lobj = light.node()->as_light();
+  nassertr(lobj != nullptr, this);
+
   LightAttrib *attrib = new LightAttrib(*this);
   if (!_off_all_lights) {
     attrib->_off_lights.insert(light);
   }
-  attrib->_on_lights.erase(light);
+  if (attrib->_on_lights.erase(light)) {
+    lobj->attrib_unref();
+  }
   return return_new(attrib);
 }
 
@@ -800,14 +851,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) LightAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
  * Makes sure the lights are sorted in order of priority.  Also counts the
  * number of non-ambient lights.
  */
@@ -960,6 +1003,10 @@ finalize(BamReader *manager) {
         // If it's in the registry, replace it.
         _on_lights[i] = areg->get_node(n);
       }
+
+      Light *lobj = _on_lights[i].node()->as_light();
+      nassertd(lobj != nullptr) continue;
+      lobj->attrib_ref();
     }
 
   } else {
@@ -992,10 +1039,15 @@ finalize(BamReader *manager) {
       if (n != -1) {
         // If it's in the registry, add that NodePath.
         _on_lights.push_back(areg->get_node(n));
+        node = _on_lights.back().node();
       } else {
         // Otherwise, add any arbitrary NodePath.  Complain if it's ambiguous.
         _on_lights.push_back(NodePath(node));
       }
+
+      Light *lobj = node->as_light();
+      nassertd(lobj != nullptr) continue;
+      lobj->attrib_ref();
     }
   }
 

@@ -2623,7 +2623,8 @@ write_module_class(ostream &out, Object *obj) {
     for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
       Property *property = (*pit);
       const InterrogateElement &ielem = property->_ielement;
-      if (property->_getter == NULL || !is_function_legal(property->_getter)) {
+      if (!property->_has_this ||
+          property->_getter == NULL || !is_function_legal(property->_getter)) {
         continue;
       }
 
@@ -3167,6 +3168,45 @@ write_module_class(ostream &out, Object *obj) {
         }
       }
     }
+  }
+
+  // Also add the static properties, which can't be added via getset.
+  Properties::const_iterator pit;
+  for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
+    Property *property = (*pit);
+    const InterrogateElement &ielem = property->_ielement;
+    if (property->_has_this ||
+        property->_getter == NULL || !is_function_legal(property->_getter)) {
+      continue;
+    }
+
+    string name1 = methodNameFromCppName(ielem.get_name(), "", false);
+    // string name2 = methodNameFromCppName(ielem.get_name(), "", true);
+
+    string getter = "&Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter";
+    string setter = "NULL";
+    if (property->_length_function == NULL &&
+        property->_setter != NULL && is_function_legal(property->_setter)) {
+      setter = "&Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter";
+    }
+
+    out << "    static const PyGetSetDef def_" << name1 << " = {(char *)\"" << name1 << "\", " << getter << ", " << setter;
+
+    if (ielem.has_comment()) {
+      out << ", (char *)\n";
+      output_quoted(out, 4, ielem.get_comment());
+      out << ",\n    ";
+    } else {
+      out << ", NULL, ";
+    }
+
+    // Extra void* argument; we don't make use of it.
+    out << "NULL};\n";
+
+    out << "    PyDict_SetItemString(dict, \"" << name1 << "\", Dtool_NewStaticProperty(&Dtool_" << ClassName << "._PyType, &def_" << name1 << "));\n";
+    /* Alternative spelling:
+    out << "    PyDict_SetItemString(\"" << name2 << "\", &def_" << name1 << ");\n";
+    */
   }
 
   out << "    if (PyType_Ready((PyTypeObject *)&Dtool_" << ClassName << ") < 0) {\n"
@@ -6443,11 +6483,15 @@ write_getset(ostream &out, Object *obj, Property *property) {
         "/**\n"
         " * sequence getter for property " << cClassName << "::" << ielem.get_name() << "\n"
         " */\n"
-        "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getitem(PyObject *self, Py_ssize_t index) {\n"
-        "  " << cClassName << " *local_this = NULL;\n"
-        "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
-        "    return NULL;\n"
-        "  }\n";
+        "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getitem(PyObject *self, Py_ssize_t index) {\n";
+      if (property->_getter->_has_this ||
+          (property->_has_function && property->_has_function->_has_this)) {
+        out <<
+          "  " << cClassName << " *local_this = NULL;\n"
+          "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+          "    return NULL;\n"
+          "  }\n";
+      }
 
       // This is a getitem of a sequence type.  This means we *need* to raise
       // IndexError if we're out of bounds.
@@ -6458,8 +6502,12 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  }\n";
 
       if (property->_has_function != NULL) {
-        out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "(index)) {\n"
-            << "    Py_INCREF(Py_None);\n"
+        if (property->_has_function->_has_this) {
+          out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "(index)) {\n";
+        } else {
+          out << "  if (!" << cClassName << "::" << property->_has_function->_ifunc.get_name() << "(index)) {\n";
+        }
+        out << "    Py_INCREF(Py_None);\n"
             << "    return Py_None;\n"
             << "  }\n";
       }
@@ -6494,16 +6542,22 @@ write_getset(ostream &out, Object *obj, Property *property) {
     // Write out a setitem if this is not a read-only property.
     if (property->_setter != NULL) {
       out << "static int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setitem(PyObject *self, Py_ssize_t index, PyObject *arg) {\n";
-      out << "  " << cClassName  << " *local_this = NULL;\n";
-      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
-          << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
-      out << "    return -1;\n";
-      out << "  }\n\n";
+      if (property->_has_this) {
+        out << "  " << cClassName  << " *local_this = NULL;\n";
+        out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+            << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+        out << "    return -1;\n";
+        out << "  }\n\n";
+      }
 
       out << "  if (arg == (PyObject *)NULL) {\n";
       if (property->_deleter != NULL) {
-        out << "    local_this->" << property->_deleter->_ifunc.get_name() << "(index);\n"
-            << "    return 0;\n";
+        if (property->_deleter->_has_this) {
+          out << "    local_this->" << property->_deleter->_ifunc.get_name() << "(index);\n";
+        } else {
+          out << "    " << cClassName << "::" << property->_deleter->_ifunc.get_name() << "(index);\n";
+        }
+        out << "    return 0;\n";
       } else {
         out << "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << "[] attribute\");\n"
                "    return -1;\n";
@@ -6511,9 +6565,13 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  }\n";
 
       if (property->_clear_function != NULL) {
-        out << "  if (arg == Py_None) {\n"
-            << "    local_this->" << property->_clear_function->_ifunc.get_name() << "(index);\n"
-            << "    return 0;\n"
+        out << "  if (arg == Py_None) {\n";
+        if (property->_clear_function->_has_this) {
+          out << "    local_this->" << property->_clear_function->_ifunc.get_name() << "(index);\n";
+        } else {
+          out << "    " << cClassName << "::" << property->_clear_function->_ifunc.get_name() << "(index);\n";
+        }
+        out << "    return 0;\n"
             << "  }\n";
       }
 
@@ -6547,9 +6605,14 @@ write_getset(ostream &out, Object *obj, Property *property) {
     }
 
     // Now write the getter, which returns a special wrapper object.
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n"
-           "  Py_INCREF(self);\n"
-           "  Dtool_SequenceWrapper *wrap = PyObject_New(Dtool_SequenceWrapper, &Dtool_SequenceWrapper_Type);\n"
+    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
+    if (property->_has_this) {
+      out << "  nassertr(self != NULL, NULL);\n"
+             "  Py_INCREF(self);\n";
+    } else {
+      out << "  Py_XINCREF(self);\n";
+    }
+    out << "  Dtool_SequenceWrapper *wrap = PyObject_New(Dtool_SequenceWrapper, &Dtool_SequenceWrapper_Type);\n"
            "  wrap->_base = self;\n"
            "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
            "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Getitem;\n";
@@ -6566,20 +6629,26 @@ write_getset(ostream &out, Object *obj, Property *property) {
     out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     FunctionRemap *remap = property->_getter->_remaps.front();
 
-    if (remap->_const_method) {
-      out << "  const " << cClassName  << " *local_this = NULL;\n";
-      out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
-    } else {
-      out << "  " << cClassName  << " *local_this = NULL;\n";
-      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
-          << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+    if (remap->_has_this) {
+      if (remap->_const_method) {
+        out << "  const " << cClassName  << " *local_this = NULL;\n";
+        out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+      } else {
+        out << "  " << cClassName  << " *local_this = NULL;\n";
+        out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+            << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+      }
+      out << "    return NULL;\n";
+      out << "  }\n\n";
     }
-    out << "    return NULL;\n";
-    out << "  }\n\n";
 
     if (property->_has_function != NULL) {
-      out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "()) {\n"
-          << "    Py_INCREF(Py_None);\n"
+      if (remap->_has_this) {
+        out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "()) {\n";
+      } else {
+        out << "  if (!" << cClassName << "::" << property->_has_function->_ifunc.get_name() << "()) {\n";
+      }
+      out << "    Py_INCREF(Py_None);\n"
           << "    return Py_None;\n"
           << "  }\n";
     }
@@ -6596,15 +6665,20 @@ write_getset(ostream &out, Object *obj, Property *property) {
     // Write out a setter if this is not a read-only property.
     if (property->_setter != NULL) {
       out << "static int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *) {\n";
-      out << "  " << cClassName  << " *local_this = NULL;\n";
-      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
-          << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
-      out << "    return -1;\n";
-      out << "  }\n\n";
+      if (remap->_has_this) {
+        out << "  " << cClassName  << " *local_this = NULL;\n";
+        out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+            << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+        out << "    return -1;\n";
+        out << "  }\n\n";
+      }
 
       out << "  if (arg == (PyObject *)NULL) {\n";
-      if (property->_deleter != NULL) {
+      if (property->_deleter != NULL && remap->_has_this) {
         out << "    local_this->" << property->_deleter->_ifunc.get_name() << "();\n"
+            << "    return 0;\n";
+      } else if (property->_deleter != NULL) {
+        out << "    " << cClassName << "::" << property->_deleter->_ifunc.get_name() << "();\n"
             << "    return 0;\n";
       } else {
         out << "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << " attribute\");\n"
@@ -6613,9 +6687,13 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  }\n";
 
       if (property->_clear_function != NULL) {
-        out << "  if (arg == Py_None) {\n"
-            << "    local_this->" << property->_clear_function->_ifunc.get_name() << "();\n"
-            << "    return 0;\n"
+        out << "  if (arg == Py_None) {\n";
+        if (remap->_has_this) {
+          out << "    local_this->" << property->_clear_function->_ifunc.get_name() << "();\n";
+        } else {
+          out << "    " << cClassName << "::" << property->_clear_function->_ifunc.get_name() << "();\n";
+        }
+        out << "    return 0;\n"
             << "  }\n";
       }
 
@@ -6744,6 +6822,7 @@ record_object(TypeIndex type_index) {
       Function *setter = record_function(itype, func_index);
       if (is_function_legal(setter)) {
         property->_setter = setter;
+        property->_has_this |= setter->_has_this;
       }
     }
 
@@ -6752,6 +6831,7 @@ record_object(TypeIndex type_index) {
       Function *getter = record_function(itype, func_index);
       if (is_function_legal(getter)) {
         property->_getter = getter;
+        property->_has_this |= getter->_has_this;
       }
     }
 
@@ -6760,6 +6840,7 @@ record_object(TypeIndex type_index) {
       Function *has_function = record_function(itype, func_index);
       if (is_function_legal(has_function)) {
         property->_has_function = has_function;
+        property->_has_this |= has_function->_has_this;
       }
     }
 
@@ -6768,6 +6849,7 @@ record_object(TypeIndex type_index) {
       Function *clear_function = record_function(itype, func_index);
       if (is_function_legal(clear_function)) {
         property->_clear_function = clear_function;
+        property->_has_this |= clear_function->_has_this;
       }
     }
 
@@ -6776,12 +6858,16 @@ record_object(TypeIndex type_index) {
       Function *del_function = record_function(itype, func_index);
       if (is_function_legal(del_function)) {
         property->_deleter = del_function;
+        property->_has_this |= del_function->_has_this;
       }
     }
 
     if (ielement.is_sequence()) {
       FunctionIndex func_index = ielement.get_length_function();
       property->_length_function = record_function(itype, func_index);
+      if (property->_length_function != nullptr) {
+        property->_has_this |= property->_length_function->_has_this;
+      }
     }
 
     if (property->_getter != NULL) {

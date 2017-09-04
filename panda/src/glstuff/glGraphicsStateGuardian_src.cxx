@@ -2135,7 +2135,7 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
       get_extension_func("glGenerateMipmap");
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
-      get_extension_func("glRenderbufferStorageMultisampleEXT");
+      get_extension_func("glRenderbufferStorageMultisample");
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)
       get_extension_func("glBlitFramebuffer");
 
@@ -3934,7 +3934,6 @@ end_frame(Thread *current_thread) {
  */
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
 #ifndef NDEBUG
@@ -3953,7 +3952,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -4018,10 +4017,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
+    //const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
 
     UpdateSeq modified = max(geom_reader->get_modified(), _data_reader->get_modified());
-    if (ggc->get_display_list(_geom_display_list, gmunger, modified)) {
+    if (ggc->get_display_list(_geom_display_list, nullptr, modified)) {
       // If it hasn't been modified, just play the display list again.
       if (GLCAT.is_spam()) {
         GLCAT.spam()

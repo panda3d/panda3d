@@ -277,7 +277,21 @@ process_events() {
       break;
     }
 
-    [NSApp sendEvent: event];
+    // If we're in fullscreen mode, send mouse events directly to the window.
+    NSEventType type = [event type];
+    if (_properties.get_fullscreen() && (
+        type == NSLeftMouseDown || type == NSLeftMouseUp ||
+        type == NSRightMouseDown || type == NSRightMouseUp ||
+        type == NSOtherMouseDown || type == NSOtherMouseUp ||
+        type == NSLeftMouseDragged ||
+        type == NSRightMouseDragged ||
+        type == NSOtherMouseDragged ||
+        type == NSMouseMoved ||
+        type == NSScrollWheel)) {
+      [_window sendEvent: event];
+    } else {
+      [NSApp sendEvent: event];
+    }
   }
 
   if (_window != nil) {

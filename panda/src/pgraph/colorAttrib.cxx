@@ -133,19 +133,6 @@ get_hash_impl() const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) ColorAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // For a ColorAttrib, the only relevant information is the type: is it flat-
-  // shaded or vertex-shaded?  The actual color value is read by the shader
-  // from the graphics state.
-
-  ColorAttrib *attrib = new ColorAttrib(_type, LColor(1.0f, 1.0f, 1.0f, 1.0f));
-  return return_new(attrib);
-}
-
-/**
  * Quantizes the color color to the nearest multiple of 1000, just to prevent
  * runaway accumulation of only slightly-different ColorAttribs.
  */
