@@ -221,12 +221,17 @@ def _get_thread_locals(thread, i):
 def _remove_thread_id(threadId):
     """ Removes the thread with the indicated ID from the thread list. """
 
+    # On interpreter shutdown, Python may set module globals to None.
+    if _threadsLock is None or _threads is None:
+        return
+
     _threadsLock.acquire()
     try:
-        thread, locals, wrapper = _threads[threadId]
-        assert thread.getPythonIndex() == threadId
-        del _threads[threadId]
-        thread.setPythonIndex(-1)
+        if threadId in _threads:
+            thread, locals, wrapper = _threads[threadId]
+            assert thread.getPythonIndex() == threadId
+            del _threads[threadId]
+            thread.setPythonIndex(-1)
 
     finally:
         _threadsLock.release()

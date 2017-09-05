@@ -81,6 +81,7 @@ ConfigVariableInt img_size
 ("img-size", 0,
  PRC_DESC("If an IMG file without a header is loaded (e.g. img-header-type "
           "is set to 'none', this specifies the fixed x y size of the image."));
+
 ConfigVariableInt jpeg_quality
 ("jpeg-quality", 95,
  PRC_DESC("Set this to the quality percentage for writing JPEG files.  95 is "
@@ -88,10 +89,17 @@ ConfigVariableInt jpeg_quality
           "significantly better quality, but do lead to significantly greater "
           "size)."));
 
+ConfigVariableInt png_compression_level
+("png-compression-level", 6,
+ PRC_DESC("Set this to the desired compression level for writing PNG images.  "
+          "Valid values are 0 (no compression), or 1 (compression, best "
+          "speed) to 9 (best compression).  Default is 6.  PNG compression is "
+          "lossless."));
+
 ConfigVariableBool png_palette
 ("png-palette", true,
- PRC_DESC("Set this true to allow writing palette-based PNG images when possible."));
-
+ PRC_DESC("Set this true to allow writing palette-based PNG images when "
+          "possible."));
 
 ConfigVariableInt bmp_bpp
 ("bmp-bpp", 0,
