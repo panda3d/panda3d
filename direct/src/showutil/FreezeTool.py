@@ -742,7 +742,7 @@ class Freezer:
                 self.moduleSuffixes += [
                     ('.cp{0}{1}-win_amd64.pyd'.format(*sys.version_info), 'rb', 3),
                     ('.cp{0}{1}-win32.pyd'.format(*sys.version_info), 'rb', 3),
-                    ('.dll', 'rb', 3),
+                    ('.pyd', 'rb', 3),
                 ]
             elif 'mac' in self.platform:
                 self.moduleSuffixes += [
@@ -1658,7 +1658,7 @@ class Freezer:
             # trouble importing it as a builtin module.  Synthesize a frozen
             # module that loads it dynamically.
             if '.' in moduleName:
-                code = 'import sys;import os;del sys.modules["%s"];import imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
+                code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 code = compile(code, moduleName, 'exec')
                 code = marshal.dumps(code)
                 moduleList.append(make_module_list_entry(code, codeOffset, moduleName, module))
