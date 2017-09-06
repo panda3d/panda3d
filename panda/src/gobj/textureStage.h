@@ -201,6 +201,8 @@ PUBLISHED:
 
   MAKE_PROPERTY(tex_view_offset, get_tex_view_offset, set_tex_view_offset);
 
+  MAKE_PROPERTY(default, get_default);
+
 public:
   INLINE static UpdateSeq get_sort_seq();
 

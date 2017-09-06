@@ -19,6 +19,7 @@
 #include "extension.h"
 #include "py_panda.h"
 #include "pointerToArray.h"
+#include "luse.h"
 
 /**
  * This class defines the extension methods for PointerToArray, which are
@@ -39,6 +40,15 @@ public:
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
 };
 
+template<>
+  INLINE int Extension<PointerToArray<LMatrix3f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+template<>
+  INLINE int Extension<PointerToArray<LMatrix3d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+template<>
+  INLINE int Extension<PointerToArray<UnalignedLMatrix4f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+template<>
+  INLINE int Extension<PointerToArray<UnalignedLMatrix4d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+
 /**
  * This class defines the extension methods for ConstPointerToArray, which are
  * called instead of any C++ methods with the same prototype.
@@ -56,6 +66,15 @@ public:
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
 };
+
+template<>
+  INLINE int Extension<ConstPointerToArray<LMatrix3f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+template<>
+  INLINE int Extension<ConstPointerToArray<LMatrix3d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+template<>
+  INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+template<>
+  INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
 
 #ifdef _MSC_VER
 // Ugh... MSVC needs this because they still don't have a decent linker.
@@ -103,6 +122,20 @@ define_format_code("q", long long);
 define_format_code("Q", unsigned long long);
 define_format_code("f", float);
 define_format_code("d", double);
+
+define_format_code("2f", LVecBase2f);
+define_format_code("2d", LVecBase2d);
+define_format_code("2i", LVecBase2i);
+define_format_code("3f", LVecBase3f);
+define_format_code("3d", LVecBase3d);
+define_format_code("3i", LVecBase3i);
+define_format_code("4f", UnalignedLVecBase4f);
+define_format_code("4d", UnalignedLVecBase4d);
+define_format_code("4i", UnalignedLVecBase4i);
+// define_format_code("9f", LMatrix3f);
+// define_format_code("9d", LMatrix3d);
+// define_format_code("16f", UnalignedLMatrix4f);
+// define_format_code("16d", UnalignedLMatrix4d);
 
 #include "pointerToArray_ext.I"
 

@@ -10,37 +10,3 @@
  * @author rdb
  * @date 2014-06-27
  */
-
-#ifndef OPENGLES_1
-
-/**
- * Returns true if the shader is "valid", ie, if the compilation was
- * successful.  The compilation could fail if there is a syntax error in the
- * shader, or if the current video card isn't shader-capable, or if no shader
- * languages are compiled into panda.
- */
-INLINE bool CLP(CgShaderContext)::
-valid() {
-  if (_shader->get_error_flag()) return false;
-  if (_shader->get_language() != Shader::SL_Cg) return false;
-  return (_cg_program != 0);
-}
-
-/**
- * Returns true if the shader may need to access standard vertex attributes as
- * passed by glVertexPointer and the like.
- */
-INLINE bool CLP(CgShaderContext)::
-uses_standard_vertex_arrays() {
-  return false;
-}
-
-/**
- * Always true, for now.
- */
-INLINE bool CLP(CgShaderContext)::
-uses_custom_vertex_arrays() {
-  return true;
-}
-
-#endif  // OPENGLES_1

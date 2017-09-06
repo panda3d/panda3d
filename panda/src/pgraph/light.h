@@ -64,6 +64,9 @@ PUBLISHED:
   MAKE_PROPERTY(priority, get_priority, set_priority);
 
 public:
+  virtual void attrib_ref();
+  virtual void attrib_unref();
+
   virtual void output(ostream &out) const=0;
   virtual void write(ostream &out, int indent_level) const=0;
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,

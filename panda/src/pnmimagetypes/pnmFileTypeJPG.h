@@ -36,12 +36,21 @@
 #include <png.h>
 #endif
 
+// jconfig.h overrides our INLINE definition.
+#ifdef __GNUC__
+#pragma push_macro("INLINE")
+#endif
 
 extern "C" {
 #include <stdio.h>  // jpeglib requires this to be included first.
 #include <jpeglib.h>
 #include <setjmp.h>
 }
+
+// Restore our own INLINE definition.
+#ifdef __GNUC__
+#pragma pop_macro("INLINE")
+#endif
 
 /**
  * For reading and writing Jpeg files.

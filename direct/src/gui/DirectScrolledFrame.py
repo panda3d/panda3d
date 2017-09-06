@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the DirectScrolledFrame class."""
 
 __all__ = ['DirectScrolledFrame']
 

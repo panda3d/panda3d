@@ -1,4 +1,6 @@
-"""Undocumented Module"""
+"""This module defines various transition effects that can be used to
+graphically transition between two scenes, such as by fading the screen to
+a particular color."""
 
 __all__ = ['Transitions']
 

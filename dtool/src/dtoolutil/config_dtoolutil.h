@@ -16,4 +16,7 @@
 
 #include "dtoolbase.h"
 
+// Include this so interrogate can find it.
+#include <iostream>
+
 #endif

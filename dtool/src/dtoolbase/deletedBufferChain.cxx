@@ -106,8 +106,8 @@ deallocate(void *ptr, TypeHandle type_handle) {
   assert(ptr != (void *)NULL);
 
 #ifdef DO_MEMORY_USAGE
-  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active,
-                               _buffer_size + flag_reserved_bytes);
+  const size_t alloc_size = _buffer_size + flag_reserved_bytes + MEMORY_HOOK_ALIGNMENT - 1;
+  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
   // type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_inactive,
   // _buffer_size + flag_reserved_bytes);
 

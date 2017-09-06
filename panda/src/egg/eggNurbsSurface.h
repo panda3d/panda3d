@@ -36,7 +36,7 @@ PUBLISHED:
   INLINE EggNurbsSurface(const EggNurbsSurface &copy);
   INLINE EggNurbsSurface &operator = (const EggNurbsSurface &copy);
 
-  virtual EggNurbsSurface *make_copy() const OVERRIDE;
+  virtual EggNurbsSurface *make_copy() const override;
 
   void setup(int u_order, int v_order,
              int num_u_knots, int num_v_knots);
@@ -75,14 +75,14 @@ PUBLISHED:
   MAKE_SEQ(get_v_knots, get_num_v_knots, get_v_knot);
   INLINE EggVertex *get_cv(int ui, int vi) const;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const override;
 
 public:
   Curves _curves_on_surface;
   Trims _trims;
 
 protected:
-  virtual void r_apply_texmats(EggTextureCollection &textures);
+  virtual void r_apply_texmats(EggTextureCollection &textures) override;
 
 private:
   typedef vector_double Knots;
@@ -101,10 +101,13 @@ public:
     register_type(_type_handle, "EggNurbsSurface",
                   EggSurface::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

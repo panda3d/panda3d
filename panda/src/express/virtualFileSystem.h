@@ -95,11 +95,11 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
-  EXTENSION(BLOCKING PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
+  EXTENSION(PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
   BLOCKING istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING static void close_read_file(istream *stream);
 
-  EXTENSION(BLOCKING PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
+  EXTENSION(PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
   BLOCKING ostream *open_write_file(const Filename &filename, bool auto_wrap, bool truncate);
   BLOCKING ostream *open_append_file(const Filename &filename);
   BLOCKING static void close_write_file(ostream *stream);

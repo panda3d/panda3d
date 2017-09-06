@@ -8,6 +8,7 @@
 core
 core.*
 vgcore.*
+*.core
 
 # Editor files/directories
 *.save
@@ -22,6 +23,9 @@ vgcore.*
 *.o
 *.gch
 *.pch
+/+DESC
+/+MANIFEST
+/pkg-plist
 
 # Produced installer/executables
 /*.exe
@@ -31,6 +35,7 @@ vgcore.*
 /*.pkg
 /*.dmg
 /*.whl
+/*.txz
 
 # CMake
 /build/

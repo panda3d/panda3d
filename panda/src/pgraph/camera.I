@@ -54,7 +54,7 @@ get_scene() const {
 /**
  * Returns the number of display regions associated with the camera.
  */
-INLINE int Camera::
+INLINE size_t Camera::
 get_num_display_regions() const {
   return _display_regions.size();
 }
@@ -62,9 +62,9 @@ get_num_display_regions() const {
 /**
  * Returns the nth display region associated with the camera.
  */
-INLINE DisplayRegionBase *Camera::
-get_display_region(int n) const {
-  nassertr(n >= 0 && n < (int)_display_regions.size(), (DisplayRegionBase *)NULL);
+INLINE DisplayRegion *Camera::
+get_display_region(size_t n) const {
+  nassertr(n < (int)_display_regions.size(), nullptr);
   return _display_regions[n];
 }
 

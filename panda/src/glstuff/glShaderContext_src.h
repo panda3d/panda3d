@@ -40,26 +40,30 @@ public:
   void reflect_uniform(int i, char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
 
-  INLINE bool valid(void);
-  void bind() OVERRIDE;
-  void unbind() OVERRIDE;
+  bool valid(void) override;
+  void bind() override;
+  void unbind() override;
 
   void set_state_and_transform(const RenderState *state,
                                const TransformState *modelview_transform,
                                const TransformState *camera_transform,
-                               const TransformState *projection_transform) OVERRIDE;
+                               const TransformState *projection_transform) override;
 
-  void issue_parameters(int altered) OVERRIDE;
+  void issue_parameters(int altered) override;
   void update_transform_table(const TransformTable *table);
   void update_slider_table(const SliderTable *table);
-  void disable_shader_vertex_arrays() OVERRIDE;
-  bool update_shader_vertex_arrays(ShaderContext *prev, bool force) OVERRIDE;
-  void disable_shader_texture_bindings() OVERRIDE;
-  void update_shader_texture_bindings(ShaderContext *prev) OVERRIDE;
-  void update_shader_buffer_bindings(ShaderContext *prev) OVERRIDE;
+  void disable_shader_vertex_arrays() override;
+  bool update_shader_vertex_arrays(ShaderContext *prev, bool force) override;
+  void disable_shader_texture_bindings() override;
+  void update_shader_texture_bindings(ShaderContext *prev) override;
+  void update_shader_buffer_bindings(ShaderContext *prev) override;
 
-  INLINE bool uses_standard_vertex_arrays(void);
-  INLINE bool uses_custom_vertex_arrays(void);
+  bool uses_standard_vertex_arrays(void) override {
+    return _uses_standard_vertex_arrays;
+  }
+  bool uses_custom_vertex_arrays(void) override {
+    return true;
+  }
 
 private:
   bool _validated;
@@ -128,10 +132,10 @@ public:
     register_type(_type_handle, CLASSPREFIX_QUOTED "ShaderContext",
                   ShaderContext::get_class_type());
   }
-  virtual TypeHandle get_type() const OVERRIDE {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() OVERRIDE {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

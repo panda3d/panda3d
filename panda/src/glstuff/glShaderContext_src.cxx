@@ -1431,7 +1431,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             bind._arg[0] = NULL;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
             bind._part[1] = Shader::SMO_mat_constant_x_attrib;
-            bind._arg[1] = InternalName::make("shadowViewMatrix");
+            bind._arg[1] = iname->get_parent()->append("shadowViewMatrix");
             bind._dep[1] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
           } else {
             bind._part[0] = Shader::SMO_mat_constant_x_attrib;
@@ -1822,6 +1822,20 @@ release_resources() {
 }
 
 /**
+ * Returns true if the shader is "valid", ie, if the compilation was
+ * successful.  The compilation could fail if there is a syntax error in the
+ * shader, or if the current video card isn't shader-capable, or if no shader
+ * languages are compiled into panda.
+ */
+bool CLP(ShaderContext)::
+valid() {
+  if (_shader->get_error_flag()) {
+    return false;
+  }
+  return (_glsl_program != 0);
+}
+
+/**
  * This function is to be called to enable a new shader.  It also initializes
  * all of the shader's input parameters.
  */
@@ -2177,7 +2191,7 @@ update_slider_table(const SliderTable *table) {
  */
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays() {
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return;
   }
 
@@ -2200,7 +2214,7 @@ disable_shader_vertex_arrays() {
  */
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return true;
   }
 
@@ -2373,7 +2387,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
  */
 void CLP(ShaderContext)::
 disable_shader_texture_bindings() {
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return;
   }
 
@@ -2473,7 +2487,7 @@ void CLP(ShaderContext)::
 update_shader_texture_bindings(ShaderContext *prev) {
   // if (prev) { prev->disable_shader_texture_bindings(); }
 
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return;
   }
 
@@ -2617,8 +2631,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
         textures[i] = _glgsg->get_white_texture();
         samplers[i] = 0;
       } else {
-        _glgsg->set_active_texture_stage(i);
-        _glgsg->apply_white_texture();
+        _glgsg->apply_white_texture(i);
       }
       continue;
     }

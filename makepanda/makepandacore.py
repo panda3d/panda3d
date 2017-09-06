@@ -371,6 +371,10 @@ def SetTarget(target, arch=None):
         DEFAULT_RANLIB = "emranlib"
 
     elif target == host:
+        if target == 'freebsd':
+            DEFAULT_CC = "clang"
+            DEFAULT_CXX = "clang++"
+
         if arch is None or arch == host_arch:
             # Not a cross build.
             pass
@@ -2433,6 +2437,7 @@ def SetupVisualStudioEnviron():
     winsdk_ver = SDK["MSPLATFORM_VERSION"]
     if winsdk_ver.startswith('10.'):
         AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
+        AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + winsdk_ver + "\\" + arch)
 
         # Windows Kit 10 introduces the "universal CRT".
         inc_dir = SDK["MSPLATFORM"] + "Include\\" + winsdk_ver + "\\"
@@ -2544,6 +2549,7 @@ def SetupBuildEnvironment(compiler):
     # Setting it to UTF-8 is necessary for Python 3 modules to import
     # correctly.
     os.environ["LC_ALL"] = "en_US.UTF-8"
+    os.environ["LANGUAGE"] = "en"
 
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
@@ -3180,11 +3186,29 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
                 for d in CxxCalcDependencies(fullinput, ipath, []):
                     t.deps[d] = 1
 
+        # If we are linking statically, add the source DLL's dynamic dependencies.
+        if GetLinkAllStatic() and ORIG_EXT[fullinput] == '.lib' and fullinput in TARGET_TABLE:
+            tdep = TARGET_TABLE[fullinput]
+            for y in tdep.inputs:
+                if ORIG_EXT[y] == '.lib':
+                    t.inputs.append(y)
+
+            for opt, _ in LIBNAMES + LIBDIRECTORIES + FRAMEWORKDIRECTORIES:
+                if opt in tdep.opts and opt not in t.opts:
+                    t.opts.append(opt)
+
         if x.endswith(".in"):
             # Mark the _igate.cxx file as a dependency also.
             outbase = os.path.basename(x)[:-3]
             woutc = GetOutputDir()+"/tmp/"+outbase+"_igate.cxx"
             t.deps[woutc] = 1
+
+        if target.endswith(".in"):
+            # Add any .N files.
+            base, ext = os.path.splitext(fullinput)
+            fulln = base + ".N"
+            if os.path.isfile(fulln):
+                t.deps[fulln] = 1
 
     for x in dep:
         fulldep = FindLocation(x, ipath)

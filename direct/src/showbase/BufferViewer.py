@@ -1,4 +1,6 @@
-"""Undocumented Module"""
+"""Contains the BufferViewer class, which is used as a debugging aid
+when debugging render-to-texture effects.  It shows different views at
+the bottom of the screen showing the various render targets."""
 
 __all__ = ['BufferViewer']
 

@@ -113,14 +113,6 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) RenderAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return NULL;
-}
-
-/**
  * This method overrides ReferenceCount::unref() to clear the pointer from the
  * global object pool when its reference count goes to zero.
  */
@@ -194,12 +186,9 @@ void RenderAttrib::
 list_attribs(ostream &out) {
   LightReMutexHolder holder(*_attribs_lock);
 
-  out << _attribs->get_num_entries() << " attribs:\n";
-  size_t size = _attribs->get_size();
+  size_t size = _attribs->get_num_entries();
+  out << size << " attribs:\n";
   for (size_t si = 0; si < size; ++si) {
-    if (!_attribs->has_element(si)) {
-      continue;
-    }
     const RenderAttrib *attrib = _attribs->get_key(si);
     attrib->write(out, 2);
   }
@@ -217,46 +206,60 @@ garbage_collect() {
   LightReMutexHolder holder(*_attribs_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
-  int orig_size = _attribs->get_num_entries();
+  size_t orig_size = _attribs->get_num_entries();
 
 #ifdef _DEBUG
   nassertr(_attribs->validate(), 0);
 #endif
 
   // How many elements to process this pass?
-  int size = _attribs->get_size();
-  int num_this_pass = int(size * garbage_collect_states_rate);
+  size_t size = orig_size;
+  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return 0;
   }
-  num_this_pass = min(num_this_pass, size);
-  int stop_at_element = (_garbage_index + num_this_pass) % size;
 
   size_t si = _garbage_index;
+  if (si >= size) {
+    si = 0;
+  }
+
+  num_this_pass = min(num_this_pass, size);
+  size_t stop_at_element = (_garbage_index + num_this_pass) % size;
+
   do {
-    if (_attribs->has_element(si)) {
-      RenderAttrib *attrib = (RenderAttrib *)_attribs->get_key(si);
-      if (attrib->get_ref_count() == 1) {
-        // This attrib has recently been unreffed to 1 (the one we added when
-        // we stored it in the cache).  Now it's time to delete it.  This is
-        // safe, because we're holding the _attribs_lock, so it's not possible
-        // for some other thread to find the attrib in the cache and ref it
-        // while we're doing this.
-        attrib->release_new();
-        unref_delete(attrib);
-      }
+    RenderAttrib *attrib = (RenderAttrib *)_attribs->get_key(si);
+    if (attrib->get_ref_count() == 1) {
+      // This attrib has recently been unreffed to 1 (the one we added when
+      // we stored it in the cache).  Now it's time to delete it.  This is
+      // safe, because we're holding the _attribs_lock, so it's not possible
+      // for some other thread to find the attrib in the cache and ref it
+      // while we're doing this.
+      attrib->release_new();
+      unref_delete(attrib);
+
+      // When we removed it from the hash map, it swapped the last element
+      // with the one we just removed.  So the current index contains one we
+      // still need to visit.
+      --size;
+      --si;
     }
 
     si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
 
+  nassertr(_attribs->get_num_entries() == size, 0);
+
 #ifdef _DEBUG
   nassertr(_attribs->validate(), 0);
 #endif
 
-  size_t new_size = _attribs->get_num_entries();
-  return orig_size - new_size;
+  // If we just cleaned up a lot of attribs, see if we can reduce the table in
+  // size.  This will help reduce iteration overhead in the future.
+  _attribs->consider_shrink_table();
+
+  return (int)orig_size - (int)size;
 }
 
 /**
@@ -275,31 +278,22 @@ validate_attribs() {
     pgraph_cat.error()
       << "RenderAttrib::_attribs cache is invalid!\n";
 
-    size_t size = _attribs->get_size();
+    size_t size = _attribs->get_num_entries();
     for (size_t si = 0; si < size; ++si) {
-      if (!_attribs->has_element(si)) {
-        continue;
-      }
       const RenderAttrib *attrib = _attribs->get_key(si);
-      cerr << si << ": " << attrib << "\n";
+      //cerr << si << ": " << attrib << "\n";
       attrib->write(cerr, 2);
     }
 
     return false;
   }
 
-  size_t size = _attribs->get_size();
+  size_t size = _attribs->get_num_entries();
   size_t si = 0;
-  while (si < size && !_attribs->has_element(si)) {
-    ++si;
-  }
   nassertr(si < size, false);
   nassertr(_attribs->get_key(si)->get_ref_count() >= 0, false);
   size_t snext = si;
   ++snext;
-  while (snext < size && !_attribs->has_element(snext)) {
-    ++snext;
-  }
   while (snext < size) {
     nassertr(_attribs->get_key(snext)->get_ref_count() >= 0, false);
     const RenderAttrib *ssi = _attribs->get_key(si);
@@ -321,9 +315,6 @@ validate_attribs() {
     }
     si = snext;
     ++snext;
-    while (snext < size && !_attribs->has_element(snext)) {
-      ++snext;
-    }
   }
 
   return true;
@@ -514,10 +505,8 @@ release_new() {
   nassertv(_attribs_lock->debug_is_locked());
 
   if (_saved_entry != -1) {
-    // nassertv(_attribs->find(this) == _saved_entry);
-    _saved_entry = _attribs->find(this);
-    _attribs->remove_element(_saved_entry);
     _saved_entry = -1;
+    nassertv_always(_attribs->remove(this));
   }
 }
 

@@ -141,6 +141,9 @@ PUBLISHED:
   INLINE double get_time_delta() const;
   INLINE static void set_global_time_delta(double delta);
   INLINE static double get_global_time_delta();
+  MAKE_PROPERTY(time_delta, get_time_delta, set_time_delta);
+  MAKE_PROPERTY(global_time_delta, get_global_time_delta,
+                                   set_global_time_delta);
 
   static bool authorize(const string &license = "");
 

@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""This module contains the DirectButton class."""
 
 __all__ = ['DirectButton']
 

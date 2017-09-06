@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the DirectLabel class."""
 
 __all__ = ['DirectLabel']
 

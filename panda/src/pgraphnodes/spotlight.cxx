@@ -65,9 +65,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  */
 Spotlight::
 Spotlight(const string &name) :
-  LightLensNode(name),
-  _has_specular_color(false)
-{
+  LightLensNode(name) {
   _lenses[0]._lens->set_interocular_distance(0);
 }
 
@@ -78,7 +76,6 @@ Spotlight(const string &name) :
 Spotlight::
 Spotlight(const Spotlight &copy) :
   LightLensNode(copy),
-  _has_specular_color(copy._has_specular_color),
   _cycler(copy._cycler)
 {
 }

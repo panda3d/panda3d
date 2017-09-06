@@ -1502,6 +1502,16 @@ open_buffer() {
 }
 
 /**
+ * This is normally called only from within make_texture_buffer().  When
+ * called on a ParasiteBuffer, it returns the host of that buffer; but when
+ * called on some other buffer, it returns the buffer itself.
+ */
+GraphicsOutput *CLP(GraphicsBuffer)::
+get_host() {
+  return _host;
+}
+
+/**
  * Closes the buffer right now.  Called from the window thread.
  */
 void CLP(GraphicsBuffer)::

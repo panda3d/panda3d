@@ -1,7 +1,3 @@
-"""Undocumented Module"""
-
-__all__ = ['setupMirror', 'showFrustum']
-
 """This file demonstrates one way to create a mirror effect in Panda.
 Call setupMirror() to create a mirror in the world that reflects
 everything in front of it.
@@ -22,6 +18,8 @@ a single polygon, after all--but small distortions of the mirror
 surface are possible, like a funhouse mirror.  However, the reflection
 itself is always basically planar; for more accurate convex
 reflections, you will need to use a sphere map or a cube map."""
+
+__all__ = ['setupMirror', 'showFrustum']
 
 from panda3d.core import *
 from direct.task import Task

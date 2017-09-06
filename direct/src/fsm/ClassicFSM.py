@@ -1,12 +1,12 @@
-"""Undocumented Module"""
-
-__all__ = ['ClassicFSM']
-
 """Finite State Machine module: contains the ClassicFSM class.
 
-This module and class exist only for backward compatibility with
-existing code.  New code should use the FSM module instead.
+.. note::
+
+   This module and class exist only for backward compatibility with
+   existing code.  New code should use the :mod:`.FSM` module instead.
 """
+
+__all__ = ['ClassicFSM']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject

@@ -29,7 +29,7 @@ PUBLISHED:
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);
   INLINE EggNurbsCurve &operator = (const EggNurbsCurve &copy);
 
-  virtual EggNurbsCurve *make_copy() const OVERRIDE;
+  virtual EggNurbsCurve *make_copy() const override;
 
   void setup(int order, int num_knots);
 
@@ -50,7 +50,7 @@ PUBLISHED:
   INLINE double get_knot(int k) const;
   MAKE_SEQ(get_knots, get_num_knots, get_knot);
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const override;
 
   MAKE_PROPERTY(order, get_order, set_order);
   MAKE_PROPERTY(degree, get_degree);
@@ -72,10 +72,13 @@ public:
     register_type(_type_handle, "EggNurbsCurve",
                   EggCurve::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

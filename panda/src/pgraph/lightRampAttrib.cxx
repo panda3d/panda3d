@@ -51,8 +51,14 @@ make_identity() {
 /**
  * Constructs a new LightRampAttrib object.  This causes the luminance of the
  * diffuse lighting contribution to be quantized using a single threshold:
- * @code if (original_luminance > threshold0) { luminance = level0; } else {
- * luminance = 0.0; } @endcode
+ *
+ * @code
+ * if (original_luminance > threshold0) {
+ *   luminance = level0;
+ * } else {
+ *   luminance = 0.0;
+ * }
+ * @endcode
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_single_threshold(PN_stdfloat thresh0, PN_stdfloat val0) {
@@ -65,10 +71,17 @@ make_single_threshold(PN_stdfloat thresh0, PN_stdfloat val0) {
 
 /**
  * Constructs a new LightRampAttrib object.  This causes the luminance of the
- * diffuse lighting contribution to be quantized using two thresholds: @code
- * if (original_luminance > threshold1) { luminance = level1; } else if
- * (original_luminance > threshold0) { luminance = level0; } else { luminance
- * = 0.0; } @endcode
+ * diffuse lighting contribution to be quantized using two thresholds:
+ *
+ * @code
+ * if (original_luminance > threshold1) {
+ *   luminance = level1;
+ * } else if (original_luminance > threshold0) {
+ *   luminance = level0;
+ * } else {
+ *   luminance = 0.0;
+ * }
+ * @endcode
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_double_threshold(PN_stdfloat thresh0, PN_stdfloat val0, PN_stdfloat thresh1, PN_stdfloat val1) {
@@ -94,8 +107,11 @@ make_double_threshold(PN_stdfloat thresh0, PN_stdfloat val0, PN_stdfloat thresh1
  * However, the monitor has finite contrast.  Normally, all of that contrast
  * is used to represent brightnesses in the range 0-1.  The HDR0 tone mapping
  * operator 'steals' one quarter of that contrast to represent brightnesses in
- * the range 1-infinity.  @code FINAL_RGB = (RGB^3 + RGB^2 + RGB) / (RGB^3 +
- * RGB^2 + RGB + 1) @endcode
+ * the range 1-infinity.
+ *
+ * @code
+ * FINAL_RGB = (RGB^3 + RGB^2 + RGB) / (RGB^3 + RGB^2 + RGB + 1)
+ * @endcode
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr0() {
@@ -117,7 +133,10 @@ make_hdr0() {
  * However, the monitor has finite contrast.  Normally, all of that contrast
  * is used to represent brightnesses in the range 0-1.  The HDR1 tone mapping
  * operator 'steals' one third of that contrast to represent brightnesses in
- * the range 1-infinity.  @code FINAL_RGB = (RGB^2 + RGB) / (RGB^2 + RGB + 1)
+ * the range 1-infinity.
+ *
+ * @code
+ * FINAL_RGB = (RGB^2 + RGB) / (RGB^2 + RGB + 1)
  * @endcode
  */
 CPT(RenderAttrib) LightRampAttrib::
@@ -140,7 +159,11 @@ make_hdr1() {
  * However, the monitor has finite contrast.  Normally, all of that contrast
  * is used to represent brightnesses in the range 0-1.  The HDR2 tone mapping
  * operator 'steals' one half of that contrast to represent brightnesses in
- * the range 1-infinity.  @code FINAL_RGB = (RGB) / (RGB + 1) @endcode
+ * the range 1-infinity.
+ *
+ * @code
+ * FINAL_RGB = (RGB) / (RGB + 1)
+ * @endcode
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr2() {
@@ -229,14 +252,6 @@ get_hash_impl() const {
     hash = fh.add_hash(hash, _threshold[i]);
   }
   return hash;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) LightRampAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
 }
 
 /**

@@ -1,12 +1,15 @@
-
 """
-
 This module is intended to be compiled into the Panda3D runtime
 distributable, to execute a packaged p3d application, but it can also
 be run directly via the Python interpreter (if the current Panda3D and
 Python versions match the version expected by the application).  See
 runp3d.py for a command-line tool to invoke this module.
 
+The global AppRunner instance may be imported as follows::
+
+   from direct.showbase.AppRunnerGlobal import appRunner
+
+This will be None if Panda was not run from the runtime environment.
 """
 
 __all__ = ["AppRunner", "dummyAppRunner", "ArgumentError"]

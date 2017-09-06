@@ -74,11 +74,9 @@ private:
   Occluders _occluders;
 };
 
-#ifdef DO_MEMORY_USAGE
 // We can safely redefine this as a no-op.
 template<>
 INLINE void PointerToBase<CullPlanes>::update_type(To *ptr) {}
-#endif
 
 #include "cullPlanes.I"
 

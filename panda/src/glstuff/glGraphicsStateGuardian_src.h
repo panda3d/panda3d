@@ -284,7 +284,6 @@ public:
   virtual void end_frame(Thread *current_thread);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                                     const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader,
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
@@ -567,7 +566,7 @@ protected:
   void update_shader_vertex_format(const GeomVertexFormat *format);
 #endif
 
-  void apply_white_texture();
+  void apply_white_texture(GLuint unit);
   GLuint get_white_texture();
 
 #ifndef NDEBUG

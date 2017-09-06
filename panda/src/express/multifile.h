@@ -136,6 +136,7 @@ PUBLISHED:
   void ls(ostream &out = cout) const;
 
   static INLINE string get_magic_number();
+  MAKE_PROPERTY(magic_number, get_magic_number);
 
   void set_header_prefix(const string &header_prefix);
   INLINE const string &get_header_prefix() const;

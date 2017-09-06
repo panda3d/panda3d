@@ -1146,7 +1146,7 @@ reset() {
   _supports_multisample = false;
 #else
   _supports_multisample =
-    has_extension("GL_ARB_multisample") || is_at_least_gl_version(1, 3);
+    is_at_least_gl_version(1, 3) || has_extension("GL_ARB_multisample");
 #endif
 
 #ifdef OPENGLES_1
@@ -1317,7 +1317,7 @@ reset() {
   if (gl_support_shadow_filter &&
       _supports_depth_texture &&
       (is_at_least_gl_version(1, 4) || has_extension("GL_ARB_shadow")) &&
-      has_extension("GL_ARB_fragment_program_shadow")) {
+      (is_at_least_gl_version(2, 0) || has_extension("GL_ARB_fragment_program_shadow"))) {
     _supports_shadow_filter = true;
   }
 #endif
@@ -2147,7 +2147,7 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
       get_extension_func("glGenerateMipmap");
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
-      get_extension_func("glRenderbufferStorageMultisampleEXT");
+      get_extension_func("glRenderbufferStorageMultisample");
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)
       get_extension_func("glBlitFramebuffer");
 
@@ -2568,8 +2568,8 @@ reset() {
   _border_clamp = _edge_clamp;
 #ifndef OPENGLES
   if (gl_support_clamp_to_border &&
-      (has_extension("GL_ARB_texture_border_clamp") ||
-       is_at_least_gl_version(1, 3))) {
+      (is_at_least_gl_version(1, 3) ||
+       has_extension("GL_ARB_texture_border_clamp"))) {
     _border_clamp = GL_CLAMP_TO_BORDER;
   }
 #endif
@@ -2598,6 +2598,11 @@ reset() {
     _mirror_clamp = GL_MIRROR_CLAMP_EXT;
     _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE_EXT;
     _mirror_border_clamp = GL_MIRROR_CLAMP_TO_BORDER_EXT;
+
+  } else if (is_at_least_gl_version(4, 4) ||
+             has_extension("GL_ARB_texture_mirror_clamp_to_edge")) {
+    _mirror_clamp = GL_MIRROR_CLAMP_TO_EDGE;
+    _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE;
   }
 #endif
 
@@ -3947,7 +3952,6 @@ end_frame(Thread *current_thread) {
  */
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
 #ifndef NDEBUG
@@ -3966,7 +3970,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -4031,10 +4035,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
+    //const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
 
     UpdateSeq modified = max(geom_reader->get_modified(), _data_reader->get_modified());
-    if (ggc->get_display_list(_geom_display_list, gmunger, modified)) {
+    if (ggc->get_display_list(_geom_display_list, nullptr, modified)) {
       // If it hasn't been modified, just play the display list again.
       if (GLCAT.is_spam()) {
         GLCAT.spam()
@@ -10928,25 +10932,20 @@ update_standard_texture_bindings() {
 
 /**
  * Applies a white dummy texture.  This is useful to bind to a texture slot
- * when a texture is missing.
+ * when a texture is missing.  Also binds the default sampler to the unit.
  */
 void CLP(GraphicsStateGuardian)::
-apply_white_texture() {
-  if (_white_texture != 0) {
-    glBindTexture(GL_TEXTURE_2D, _white_texture);
-    return;
+apply_white_texture(GLuint unit) {
+  set_active_texture_stage(unit);
+  glBindTexture(GL_TEXTURE_2D, get_white_texture());
+
+  // Also apply the default sampler, if there's a chance we'd applied anything
+  // else.
+#ifndef OPENGLES_1
+  if (_supports_sampler_objects) {
+    _glBindSampler(unit, 0);
   }
-
-  glGenTextures(1, &_white_texture);
-  glBindTexture(GL_TEXTURE_2D, _white_texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, data);
+#endif
 }
 
 /**
@@ -10956,7 +10955,16 @@ apply_white_texture() {
 GLuint CLP(GraphicsStateGuardian)::
 get_white_texture() {
   if (_white_texture == 0) {
-    apply_white_texture();
+    glGenTextures(1, &_white_texture);
+    glBindTexture(GL_TEXTURE_2D, _white_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, data);
   }
   return _white_texture;
 }

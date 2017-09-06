@@ -107,10 +107,13 @@ inline PyObject* doPy_RETURN_FALSE()
 #define PyInt_Check PyLong_Check
 #define PyInt_AsLong PyLong_AsLong
 #define PyInt_AS_LONG PyLong_AS_LONG
+#define PyLongOrInt_AsSize_t PyLong_AsSize_t
 #else
 #define PyLongOrInt_Check(x) (PyInt_Check(x) || PyLong_Check(x))
 // PyInt_FromSize_t automatically picks the right type.
 #define PyLongOrInt_AS_LONG PyInt_AsLong
+
+EXPCL_INTERROGATEDB size_t PyLongOrInt_AsSize_t(PyObject *);
 
 // For more portably defining hash functions.
 typedef long Py_hash_t;
@@ -468,6 +471,24 @@ struct Dtool_SequenceWrapper {
 };
 
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SequenceWrapper_Type;
+EXPCL_INTERROGATEDB extern PyTypeObject Dtool_StaticProperty_Type;
+
+EXPCL_INTERROGATEDB PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
+
+/**
+ * These functions check whether the arguments passed to a function conform to
+ * certain expectations.
+ */
+ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args);
+ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args, PyObject *kwds);
+EXPCL_INTERROGATEDB bool Dtool_ExtractArg(PyObject **result, PyObject *args,
+                                          PyObject *kwds, const char *keyword);
+EXPCL_INTERROGATEDB bool Dtool_ExtractArg(PyObject **result, PyObject *args,
+                                          PyObject *kwds);
+EXPCL_INTERROGATEDB bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
+                                                  PyObject *kwds, const char *keyword);
+EXPCL_INTERROGATEDB bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
+                                                  PyObject *kwds);
 
 /**
  * These functions convert a C++ value into the corresponding Python object.
@@ -491,6 +512,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(char value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::vector<unsigned char> &value);
 
