@@ -897,7 +897,7 @@ class Actor(DirectObject, NodePath):
         return ((toFrame+1)-fromFrame) / animControl.getFrameRate()
 
     def getNumFrames(self, animName=None, partName=None):
-        lodName = next(iter(self.__animControlDict))
+        #lodName = next(iter(self.__animControlDict))
         controls = self.getAnimControls(animName, partName)
         if len(controls) == 0:
             return None
