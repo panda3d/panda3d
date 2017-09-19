@@ -142,7 +142,6 @@ extern "C" {
   EXPCL_PYSTUB int PyTuple_New(...);
   EXPCL_PYSTUB int PyTuple_Pack(...);
   EXPCL_PYSTUB int PyTuple_Size(...);
-  EXPCL_PYSTUB int PyTuple_Type(...);
   EXPCL_PYSTUB int PyType_GenericAlloc(...);
   EXPCL_PYSTUB int PyType_IsSubtype(...);
   EXPCL_PYSTUB int PyType_Ready(...);
@@ -224,6 +223,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_SystemExit;
   EXPCL_PYSTUB extern void *PyExc_TypeError;
   EXPCL_PYSTUB extern void *PyExc_ValueError;
+  EXPCL_PYSTUB extern void *PyTuple_Type;
   EXPCL_PYSTUB extern void *PyType_Type;
   EXPCL_PYSTUB extern void *_PyThreadState_Current;
   EXPCL_PYSTUB extern void *_Py_FalseStruct;
@@ -363,7 +363,6 @@ int PyTuple_GetItem(...) { return 0; }
 int PyTuple_New(...) { return 0; }
 int PyTuple_Pack(...) { return 0; }
 int PyTuple_Size(...) { return 0; };
-int PyTuple_Type(...) { return 0; };
 int PyType_GenericAlloc(...) { return 0; };
 int PyType_IsSubtype(...) { return 0; }
 int PyType_Ready(...) { return 0; };
@@ -451,6 +450,7 @@ void *PyExc_StopIteration = (void *)NULL;
 void *PyExc_SystemExit = (void *)NULL;
 void *PyExc_TypeError = (void *)NULL;
 void *PyExc_ValueError = (void *)NULL;
+void *PyTuple_Type = (void *)NULL;
 void *PyType_Type = (void *)NULL;
 void *_PyThreadState_Current = (void *)NULL;
 void *_Py_FalseStruct = (void *)NULL;
