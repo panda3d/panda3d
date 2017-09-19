@@ -189,7 +189,7 @@ class build_apps(distutils.core.Command):
         #FIXME: this is a temporary hack to pick up libpandagl.
         plugin_list = ['panda3d/lib{}'.format(i) for i in self.plugins]
         for lib in p3dwhl.namelist():
-            plugname = os.path.splitext(lib)[0]
+            plugname = lib.split('.', 1)[0]
             if plugname in plugin_list:
                 source_path = os.path.join(p3dwhlfn, lib)
                 target_path = os.path.join(builddir, os.path.basename(lib))
@@ -402,7 +402,7 @@ class build_apps(distutils.core.Command):
             whl, wf = source_path.split('.whl' + os.path.sep)
             whl += '.whl'
             whlfile = self._get_zip_file(whl)
-            data = whlfile.read(wf)
+            data = whlfile.read(wf.replace(os.path.sep, '/'))
             with open(target_path, 'wb') as f:
                 f.write(data)
             # Wrap the data in a BytesIO, since we need to be able to seek in
