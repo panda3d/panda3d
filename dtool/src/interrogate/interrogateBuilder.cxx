@@ -1850,12 +1850,24 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
         continue;
       }
 
+      const CPPParameterList::Parameters &params = ftype->_parameters->_parameters;
+
+      size_t expected_num_args = (size_t)is_seq;
+      size_t index_arg = 0;
+
+      if (!params.empty() && params[0]->get_simple_name() == "self" &&
+          TypeManager::is_pointer_to_PyObject(params[0]->_type)) {
+        // Taking a PyObject *self argument.
+        expected_num_args += 1;
+        index_arg += 1;
+      }
+
       // The getter must either take no arguments, or all defaults.
-      if (ftype->_parameters->_parameters.size() == (size_t)is_seq ||
-          (ftype->_parameters->_parameters.size() > (size_t)is_seq &&
-           ftype->_parameters->_parameters[(size_t)is_seq]->_initializer != NULL)) {
+      if (params.size() == expected_num_args ||
+          (params.size() > expected_num_args &&
+           params[expected_num_args]->_initializer != NULL)) {
         // If this is a sequence getter, it must take an index argument.
-        if (is_seq && !TypeManager::is_integer(ftype->_parameters->_parameters[0]->_type)) {
+        if (is_seq && !TypeManager::is_integer(params[index_arg]->_type)) {
           continue;
         }
 
@@ -2426,6 +2438,10 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   default:
     break;
+  }
+
+  if (cpptype->is_final()) {
+    itype._flags |= InterrogateType::F_final;
   }
 
   if (cpptype->_file.is_c_file()) {

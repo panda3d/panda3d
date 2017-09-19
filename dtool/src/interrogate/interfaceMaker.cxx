@@ -616,7 +616,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
 
           // If *any* of the variants of this function has a "this" pointer,
           // the entire set of functions is deemed to have a "this" pointer.
-          if (remap->_has_this) {
+          if (remap->_has_this || (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
             func->_has_this = true;
           }
 

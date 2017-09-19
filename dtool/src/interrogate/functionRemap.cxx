@@ -772,16 +772,14 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     first_param = 1;
   }
 
-  if (_has_this || _type == T_constructor) {
-    if (_parameters.size() > (size_t)first_param && _parameters[first_param]._name == "self" &&
-        TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
-      // Here's a special case.  If the first parameter of a nonstatic method
-      // is a PyObject * called "self", then we will automatically fill it in
-      // from the this pointer, and remove it from the generated parameter
-      // list.
-      _parameters.erase(_parameters.begin() + first_param);
-      _flags |= F_explicit_self;
-    }
+  if (_parameters.size() > (size_t)first_param && _parameters[first_param]._name == "self" &&
+      TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
+    // Here's a special case.  If the first parameter of a nonstatic method
+    // is a PyObject * called "self", then we will automatically fill it in
+    // from the this pointer, and remove it from the generated parameter
+    // list.
+    _parameters.erase(_parameters.begin() + first_param);
+    _flags |= F_explicit_self;
   }
 
   if ((int)_parameters.size() == first_param) {

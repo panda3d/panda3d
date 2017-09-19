@@ -17,6 +17,8 @@
 
 #ifdef HAVE_PYTHON
 
+PyTupleObject Dtool_EmptyTuple;
+
 PyMemberDef standard_type_members[] = {
   {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
   {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
@@ -62,15 +64,6 @@ size_t PyLongOrInt_AsSize_t(PyObject *vv) {
   } else {
     return bytes;
   }
-}
-#endif
-
-#if PY_VERSION_HEX < 0x03060000
-INLINE static PyObject *_PyObject_CallNoArg(PyObject *func) {
-  PyObject *args = PyTuple_New(0);
-  PyObject *result = PyObject_Call(func, args, NULL);
-  Py_DECREF(args);
-  return result;
 }
 #endif
 
@@ -624,6 +617,9 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     if (PyType_Ready(&Dtool_StaticProperty_Type) < 0) {
       return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
     }
+
+    // Initialize the "empty tuple".
+    (void)PyObject_INIT_VAR((PyObject *)&Dtool_EmptyTuple, &PyTuple_Type, 0);
 
     // Initialize the base class of everything.
     Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(NULL);
