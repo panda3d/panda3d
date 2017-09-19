@@ -1588,32 +1588,6 @@ class Freezer:
         return target
 
     def generateRuntimeFromStub(self, basename, stub_file):
-        def make_module_list_entry(code, offset, modulename, module):
-            size = len(code)
-            if getattr(module, "__path__", None):
-                # Indicate package by negative size
-                size = -size
-            modname = modulename.encode('ascii')
-            modnamelen = len(modulename)
-            return struct.pack(
-                '<b{0}sIi'.format(modnamelen),
-                modnamelen,
-                modname,
-                offset,
-                size
-            )
-
-        def make_forbidden_module_list_entry(modulename):
-            modname = modulename.encode('ascii')
-            modnamelen = len(modulename)
-            return struct.pack(
-                '<b{0}sIi'.format(modnamelen),
-                modnamelen,
-                modname,
-                0,
-                0
-            )
-
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
@@ -1626,17 +1600,42 @@ class Freezer:
             target = basename
             modext = '.so'
 
+        address_offset = 0
+
+        # First gather up the strings for all the module names.
+        blob = b""
+        strings = set()
+
+        for moduleName, mdef in self.getModuleDefs():
+            strings.add(moduleName.encode('ascii'))
+
+        # Sort by length descending, allowing reuse of partial strings.
+        strings = sorted(strings, key=lambda str:-len(str))
+        string_offsets = {}
+
+        for string in strings:
+            # First check whether it's already in there; it could be part of
+            # a longer string.
+            offset = blob.find(string + b'\0')
+            if offset < 0:
+                offset = len(blob)
+                blob += string + b'\0'
+            string_offsets[string] = offset
+
         # Generate export table.
-        moduleBlob = bytes()
-        codeOffset = 0
         moduleList = []
 
         for moduleName, mdef in self.getModuleDefs():
             origName = mdef.moduleName
             if mdef.forbid:
                 # Explicitly disallow importing this module.
-                moduleList.append(make_forbidden_module_list_entry(moduleName))
+                moduleList.append((moduleName, 0, 0))
                 continue
+
+            # For whatever it's worth, align the code blocks.
+            if len(blob) & 3 != 0:
+                pad = (4 - (len(blob) & 3))
+                blob += b'\0' * pad
 
             assert not mdef.exclude
             # Allow importing this module.
@@ -1644,9 +1643,12 @@ class Freezer:
             code = getattr(module, "__code__", None)
             if code:
                 code = marshal.dumps(code)
-                moduleList.append(make_module_list_entry(code, codeOffset, moduleName, module))
-                moduleBlob += code
-                codeOffset += len(code)
+                size = len(code)
+                if getattr(module, "__path__", None):
+                    # Indicate package by negative size
+                    size = -size
+                moduleList.append((moduleName, len(blob), size))
+                blob += code
                 continue
 
             # This is a module with no associated Python code.  It is either
@@ -1664,21 +1666,52 @@ class Freezer:
                 code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 code = compile(code, moduleName, 'exec')
                 code = marshal.dumps(code)
-                moduleList.append(make_module_list_entry(code, codeOffset, moduleName, module))
-                moduleBlob += code
-                codeOffset += len(code)
+                moduleList.append((moduleName, len(blob), len(code)))
+                blob += code
+
+        # Now compose the final blob.
+        if '64' in self.platform:
+            layout = '<QQixxxx'
+        else:
+            layout = '<IIi'
+
+        blob2 = bytes()
+        blobOffset = (len(moduleList) + 1) * struct.calcsize(layout)
+        blobOffset += address_offset
+
+        for moduleName, offset, size in moduleList:
+            encoded = moduleName.encode('ascii')
+            stringOffset = blobOffset + string_offsets[encoded]
+            if size != 0:
+                offset += blobOffset
+            blob2 += struct.pack(layout, stringOffset, offset, size)
+
+        blob2 += struct.pack(layout, 0, 0, 0)
+        assert len(blob2) + address_offset == blobOffset
+
+        blob = blob2 + blob
+        del blob2
+
+        # Total blob length should be aligned to 8 bytes.
+        if len(blob) & 7 != 0:
+            pad = (8 - (len(blob) & 7))
+            blob += b'\0' * pad
 
         # Build from pre-built binary stub
         with open(target, 'wb') as f:
             f.write(stub_file.read())
-            listoffset = f.tell()
-            for mod in moduleList:
-                f.write(mod)
-            modsoffset = f.tell()
-            f.write(moduleBlob)
-            f.write(struct.pack('<I', listoffset))
-            f.write(struct.pack('<I', modsoffset))
-            f.write(struct.pack('<I', len(moduleList)))
+            offset = f.tell()
+
+            # Add padding to align to the page size, so it can be mmapped.
+            if offset % 4095 != 0:
+                pad = (4096 - (offset & 4095))
+                f.write(b'\0' * pad)
+                offset += pad
+
+            f.write(blob)
+            # And tack on the offset of the blob to the end.
+            f.write(struct.pack('<Q', offset))
+
         os.chmod(target, 0o755)
         return target
 

@@ -3,12 +3,16 @@
 #include "Python.h"
 #ifdef _WIN32
 #include "malloc.h"
+#else
+#include <sys/mman.h>
+#endif
 
 #ifdef __FreeBSD__
 #include <sys/sysctl.h>
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 
 #if PY_MAJOR_VERSION >= 3
 #include <locale.h>
@@ -33,8 +37,6 @@ static struct _inittab extensions[] = {
 #define WIN_UNICODE
 #endif
 #endif
-
-static unsigned char *modblob = NULL;
 
 /* Main program */
 
@@ -159,8 +161,8 @@ int wmain(int argc, wchar_t *argv[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif
-  struct _frozen *_PyImport_FrozenModules;
-  unsigned int listoff, modsoff, fsize, modsize, listsize, nummods, modidx;
+  struct _frozen *blob, *moddef;
+  uint64_t begin, end, size;
   int retval;
   FILE *runtime;
 
@@ -184,66 +186,46 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Get offsets
-  fseek(runtime, -12, SEEK_END);
-  fsize = ftell(runtime);
-  fread(&listoff, 4, 1, runtime);
-  fread(&modsoff, 4, 1, runtime);
-  fread(&nummods, 4, 1, runtime);
-  modsize = fsize - modsoff;
-  listsize = modsoff - listoff;
+  fseek(runtime, -8, SEEK_END);
+  end = ftell(runtime);
+  fread(&begin, 8, 1, runtime);
+  size = end - begin;
 
-  // Read module blob
-  modblob = malloc(modsize);
-  fseek(runtime, modsoff, SEEK_SET);
-  fread(modblob, modsize, 1, runtime);
-
-  // Read module list
-  _PyImport_FrozenModules = calloc(nummods + 1, sizeof(struct _frozen));
-  fseek(runtime, listoff, SEEK_SET);
-  for (modidx = 0; modidx < nummods; ++modidx) {
-    struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
-    unsigned char name_size;
-    char *name = NULL, namebuf[256] = {0};
-    size_t nsize;
-    unsigned int codeptr;
-    int codesize;
-
-    // Name
-    fread(&name_size, 1, 1, runtime);
-    fread(namebuf, 1, name_size, runtime);
-    nsize = strlen(namebuf) + 1;
-    name = malloc(nsize);
-    memcpy(name, namebuf, nsize);
-    moddef->name = name;
-
-    // Pointer
-    fread(&codeptr, 4, 1, runtime);
-    moddef->code = modblob + codeptr;
-
-    // Size
-    fread(&codesize, 4, 1, runtime);
-    moddef->size = codesize;
-  }
+  // mmap the section indicated by the offset (or malloc/fread on windows)
+#ifdef _WIN32
+  blob = (struct _frozen *)malloc(size);
+  assert(blob != NULL);
+  fseek(runtime, (long)begin, SEEK_SET);
+  fread(blob, size, 1, runtime);
+#else
+  blob = (struct _frozen *)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fileno(runtime), begin);
+  assert(blob != NULL);
+#endif
 
   fclose(runtime);
 
-  // Uncomment this to print out the read in module list
-  //for (modidx = 0; modidx < nummods; ++modidx) {
-  //  struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
-  //  printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
-  //}
+  // Offset the pointers in the table using the base mmap address.
+  moddef = blob;
+  while (moddef->name) {
+    moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
+    if (moddef->code != 0) {
+      moddef->code = (unsigned char *)((uintptr_t)moddef->code + (uintptr_t)blob);
+    }
+    //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
+    moddef++;
+  }
 
   // Run frozen application
-  PyImport_FrozenModules = _PyImport_FrozenModules;
+  PyImport_FrozenModules = blob;
   retval = Py_FrozenMain(argc, argv);
 
   // Free resources
-  free(modblob);
-  for (modidx = 0; modidx < nummods; ++modidx) {
-    struct _frozen *moddef = &_PyImport_FrozenModules[modidx];
-    free((void*)moddef->name);
-  }
-  free(_PyImport_FrozenModules);
+#ifdef _WIN32
+  free(blob);
+#else
+  munmap(blob, size);
+#endif
+  return retval;
 }
 
 #ifdef WIN_UNICODE
