@@ -750,9 +750,12 @@ class Freezer:
                     ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
-            else:
-                print("Unknown platform %s" % (self.platform))
-                self.moduleSuffixes = imp.get_suffixes()
+            else: # FreeBSD et al.
+                self.moduleSuffixes += [
+                    ('.cpython-{0}{1}m.so'.format(*sys.version_info), 'rb', 3),
+                    ('.abi{0}.so'.format(*sys.version_info), 'rb', 3),
+                    ('.so', 'rb', 3),
+                ]
 
     def excludeFrom(self, freezer):
         """ Excludes all modules that have already been processed by

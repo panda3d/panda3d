@@ -78,7 +78,7 @@ class build_apps(distutils.core.Command):
         whldir = os.path.join(self.build_base, '__whl_cache__')
         abi_tag = pip.pep425tags.get_abi_tag()
 
-        if 'u' in abi_tag and not platform.startswith('manylinux'):
+        if 'u' in abi_tag and (platform.startswith('win') or platform.startswith('macosx')):
             abi_tag = abi_tag.replace('u', '')
 
         pip_args = [

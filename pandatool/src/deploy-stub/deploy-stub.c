@@ -3,6 +3,9 @@
 #include "Python.h"
 #ifdef _WIN32
 #include "malloc.h"
+
+#ifdef __FreeBSD__
+#include <sys/sysctl.h>
 #endif
 
 #include <stdio.h>
@@ -165,7 +168,18 @@ int main(int argc, char *argv[]) {
   wchar_t buffer[2048];
   GetModuleFileNameW(NULL, buffer, 2048);
   runtime = _wfopen(buffer, L"rb");
+#elif defined(__FreeBSD__)
+  size_t bufsize = 4096;
+  char buffer[4096];
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  mib[3] = getpid();
+  if (sysctl(mib, 4, (void *)buffer, &bufsize, NULL, 0) == -1) {
+    perror("sysctl");
+    return 1;
+  }
+  runtime = fopen(buffer, "rb");
 #else
+  // Let's hope that it was invoked with the executable name as first arg.
   runtime = fopen(argv[0], "rb");
 #endif
 
