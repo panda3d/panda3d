@@ -478,6 +478,11 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
       def._wrapper_type = WT_mapping_setitem;
       return true;
     }
+    if (remap->_flags & FunctionRemap::F_size) {
+      def._answer_location = "mp_length";
+      def._wrapper_type = WT_sequence_size;
+      return true;
+    }
   }
 
   if (obj->_protocol_types & Object::PT_iter) {
@@ -707,7 +712,10 @@ write_python_instance(ostream &out, int indent_level, const string &return_expr,
 
   string class_name = itype.get_scoped_name();
 
-  if (IsPandaTypedObject(itype._cpptype->as_struct_type())) {
+  // We don't handle final classes via DTool_CreatePyInstanceTyped since we
+  // know it can't be of a subclass type, so we don't need to do the downcast.
+  CPPStructType *struct_type = itype._cpptype->as_struct_type();
+  if (IsPandaTypedObject(struct_type) && !struct_type->is_final()) {
     // We can't let DTool_CreatePyInstanceTyped do the NULL check since we
     // will be grabbing the type index (which would obviously crash when
     // called on a NULL pointer), so we do it here.
@@ -2100,10 +2108,10 @@ write_module_class(ostream &out, Object *obj) {
           for (ri = def._remaps.begin(); ri != def._remaps.end(); ++ri) {
             FunctionRemap *remap = (*ri);
 
-            if (remap->_flags & FunctionRemap::F_setitem_int) {
+            if (remap->_flags & FunctionRemap::F_setitem) {
               setitem_remaps.insert(remap);
 
-            } else if (remap->_flags & FunctionRemap::F_delitem_int) {
+            } else if (remap->_flags & FunctionRemap::F_delitem) {
               delitem_remaps.insert(remap);
             }
           }
@@ -2137,14 +2145,21 @@ write_module_class(ostream &out, Object *obj) {
           out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self) {\n";
-          out << "  " << cClassName  << " *local_this = NULL;\n";
-          out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
-          out << "    return -1;\n";
-          out << "  }\n\n";
 
+          // Find the remap.  There should be only one.
           FunctionRemap *remap = *def._remaps.begin();
+          const char *container = "";
+
+          if (remap->_has_this) {
+            out << "  " << cClassName  << " *local_this = NULL;\n";
+            out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+            out << "    return -1;\n";
+            out << "  }\n\n";
+            container = "local_this";
+          }
+
           vector_string params;
-          out << "  return (int) " << remap->call_function(out, 4, false, "local_this", params) << ";\n";
+          out << "  return (int) " << remap->call_function(out, 4, false, container, params) << ";\n";
           out << "}\n\n";
         }
         break;
@@ -2374,23 +2389,25 @@ write_module_class(ostream &out, Object *obj) {
           out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self, visitproc visit, void *arg) {\n";
-          out << "  " << cClassName << " *local_this = NULL;\n";
-          out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **) &local_this);\n";
-          out << "  if (local_this == NULL) {\n";
-          out << "    return 0;\n";
-          out << "  }\n\n";
 
           // Find the remap.  There should be only one.
           FunctionRemap *remap = *def._remaps.begin();
+          const char *container = "";
 
-          vector_string params(1);
-          if (remap->_flags & FunctionRemap::F_explicit_self) {
-            params.push_back("self");
+          if (remap->_has_this) {
+            out << "  " << cClassName << " *local_this = NULL;\n";
+            out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **) &local_this);\n";
+            out << "  if (local_this == NULL) {\n";
+            out << "    return 0;\n";
+            out << "  }\n\n";
+            container = "local_this";
           }
+
+          vector_string params((int)remap->_has_this);
           params.push_back("visit");
           params.push_back("arg");
 
-          out << "  return " << remap->call_function(out, 2, false, "local_this", params) << ";\n";
+          out << "  return " << remap->call_function(out, 2, false, container, params) << ";\n";
           out << "}\n\n";
         }
         break;
@@ -2857,11 +2874,9 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   // getattrofunc tp_getattro;
-  write_function_slot(out, 4, slots, "tp_getattro",
-                      "PyObject_GenericGetAttr");
+  write_function_slot(out, 4, slots, "tp_getattro");
   // setattrofunc tp_setattro;
-  write_function_slot(out, 4, slots, "tp_setattro",
-                      "PyObject_GenericSetAttr");
+  write_function_slot(out, 4, slots, "tp_setattro");
 
   // PyBufferProcs *tp_as_buffer;
   if (has_parent_class || has_local_getbuffer) {
@@ -4180,7 +4195,7 @@ int get_type_sort(CPPType *type) {
     return 7;
   } else if (TypeManager::is_longlong(type)) {
     return 6;
-  } else if (TypeManager::is_integer(type)) {
+  } else if (TypeManager::is_integer(type) && !TypeManager::is_bool(type)) {
     return 5;
   } else if (TypeManager::is_double(type)) {
     return 4;
@@ -4973,7 +4988,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         format_specifiers += "O";
         parameter_list += ", &" + param_name;
       }
-      pexpr_string = "NULL";
+      pexpr_string = "nullptr";
       expected_params += "NoneType";
 
     } else if (TypeManager::is_char(type)) {
@@ -5800,7 +5815,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     indent_level += 2;
   }
 
-  if (!remap->_has_this && (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
+  if (is_constructor && !remap->_has_this &&
+      (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
     // If we'll be passing "self" to the constructor, we need to pre-
     // initialize it here.  Unfortunately, we can't pre-load the "this"
     // pointer, but the constructor itself can do this.

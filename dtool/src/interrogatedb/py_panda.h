@@ -138,6 +138,12 @@ typedef long Py_hash_t;
 #define FMTCHAR_BYTES "s"
 #endif
 
+extern EXPCL_INTERROGATEDB PyTupleObject Dtool_EmptyTuple;
+
+#ifndef _PyObject_CallNoArg
+#define _PyObject_CallNoArg(func) PyObject_Call((func), (PyObject *)&Dtool_EmptyTuple, NULL)
+#endif
+
 using namespace std;
 
 // this is tempory .. untill this is glued better into the panda build system

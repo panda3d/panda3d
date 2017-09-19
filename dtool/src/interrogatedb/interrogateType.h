@@ -75,6 +75,7 @@ public:
   INLINE bool is_struct() const;
   INLINE bool is_class() const;
   INLINE bool is_union() const;
+  INLINE bool is_final() const;
 
   INLINE bool is_fully_defined() const;
   INLINE bool is_unpublished() const;
@@ -139,6 +140,7 @@ private:
     F_typedef              = 0x200000,
     F_array                = 0x400000,
     F_scoped_enum          = 0x800000,
+    F_final                =0x1000000,
   };
 
 public:
