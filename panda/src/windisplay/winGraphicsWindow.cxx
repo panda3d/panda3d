@@ -1440,14 +1440,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_SIZE:
+    // Actually, since we don't return in WM_WINDOWPOSCHANGED, WM_SIZE won't
+    // end up being called at all.  This is more efficient according to MSDN.
     if (windisplay_cat.is_debug()) {
       windisplay_cat.debug()
         << "WM_SIZE: " << hwnd << ", " << wparam << "\n";
-    }
-
-    // Resist calling handle_reshape before the window has opened.
-    if (_hWnd != NULL) {
-      handle_reshape();
     }
     break;
 
@@ -1456,8 +1453,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_WINDOWPOSCHANGED:
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "WM_WINDOWPOSCHANGED: " << hwnd << ", " << wparam << "\n";
+    }
+    if (_hWnd != NULL) {
+      handle_reshape();
+    }
     adjust_z_order();
-    break;
+    return 0;
 
   case WM_PAINT:
     // In response to WM_PAINT, we check to see if there are any update
