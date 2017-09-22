@@ -7,13 +7,19 @@ import os, importlib
 import direct.showbase.VerboseImport
 
 
+import imp
 import panda3d
 dir = os.path.dirname(panda3d.__file__)
 
-for basename in os.listdir(dir):
-    module, ext = os.path.splitext(basename)
+extensions = set()
+for suffix in imp.get_suffixes():
+    extensions.add(suffix[0])
 
-    if ext in ('.pyd', '.so'):
+for basename in os.listdir(dir):
+    module = basename.split('.', 1)[0]
+    ext = basename[len(module):]
+
+    if ext in extensions:
         importlib.import_module('panda3d.%s' % (module))
 
 

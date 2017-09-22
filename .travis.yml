@@ -35,6 +35,7 @@ addons:
     - python-dev
     - python3-dev
     - zlib1g-dev
+    - fakeroot
 script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
 notifications:
   irc:
