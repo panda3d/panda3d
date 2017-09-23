@@ -183,6 +183,46 @@ has_hook(const string &event_name) const {
 
 
 /**
+ * Returns true if there is the hook added on the indicated event name and
+ * function pointer, false otherwise.
+ */
+bool EventHandler::
+has_hook(const string &event_name, EventFunction *function) const {
+  assert(!event_name.empty());
+  Hooks::const_iterator hi;
+  hi = _hooks.find(event_name);
+  if (hi != _hooks.end()) {
+    const Functions& functions = (*hi).second;
+    if (functions.find(function) != functions.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/**
+ * Returns true if there is the hook added on the indicated event name,
+ * function pointer and callback data, false otherwise.
+ */
+bool EventHandler::
+has_hook(const string &event_name, EventCallbackFunction *function, void *data) const {
+  assert(!event_name.empty());
+  CallbackHooks::const_iterator chi;
+  chi = _cbhooks.find(event_name);
+  if (chi != _cbhooks.end()) {
+    const CallbackFunctions& cbfunctions = (*chi).second;
+    if (cbfunctions.find(CallbackFunction(function, data)) != cbfunctions.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/**
  * Removes the indicated function from the named event hook.  Returns true if
  * the hook was removed, false if it wasn't there in the first place.
  */
