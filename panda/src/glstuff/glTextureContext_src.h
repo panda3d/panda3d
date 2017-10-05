@@ -33,6 +33,9 @@ public:
   virtual void evict_lru();
   void reset_data();
 
+  virtual uint64_t get_native_id() const;
+  virtual uint64_t get_native_buffer_id() const;
+
 #ifndef OPENGLES
   void make_handle_resident();
   GLuint64 get_handle();

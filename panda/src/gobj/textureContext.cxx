@@ -16,6 +16,27 @@
 TypeHandle TextureContext::_type_handle;
 
 /**
+ * Returns an implementation-defined handle or pointer that can be used
+ * to interface directly with the underlying API.
+ * Returns 0 if the underlying implementation does not support this.
+ */
+uint64_t TextureContext::
+get_native_id() const {
+  return 0;
+}
+
+/**
+ * Similar to get_native_id, but some implementations use a separate
+ * identifier for the buffer object associated with buffer textures.
+ * Returns 0 if the underlying implementation does not support this, or
+ * if this is not a buffer texture.
+ */
+uint64_t TextureContext::
+get_native_buffer_id() const {
+  return 0;
+}
+
+/**
  *
  */
 void TextureContext::
