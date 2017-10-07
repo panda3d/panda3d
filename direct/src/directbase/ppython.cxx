@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 
   int sts = 0;
   PyObject* m = PyImport_ImportModule(IMPORT_MODULE_STR);
-  if (m <= 0) {
+  if (m == 0) {
     PyErr_Print();
     sts = 1;
   }
