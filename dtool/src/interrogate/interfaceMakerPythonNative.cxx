@@ -4389,57 +4389,6 @@ write_function_forset(ostream &out,
     std::sort(remaps.begin(), remaps.end(), RemapCompareLess);
     std::vector<FunctionRemap *>::const_iterator sii;
 
-    // Check if all of them have an InternalName pointer as first parameter.
-    // This is a dirty hack, of course, to work around an awkward overload
-    // resolution problem in NodePath::set_shader_input() (while perhaps also
-    // improving its performance).  If I had more time I'd create a better
-    // solution.
-    bool first_internalname = false;
-    string first_pexpr2(first_pexpr);
-    if (first_pexpr.empty() && args_type != AT_no_args) {
-      first_internalname = true;
-
-      for (sii = remaps.begin(); sii != remaps.end(); ++sii) {
-        remap = (*sii);
-        if (remap->_parameters.size() > (size_t)remap->_has_this) {
-          ParameterRemap *param = remap->_parameters[(size_t)remap->_has_this]._remap;
-          string param_name = param->get_orig_type()->get_local_name(&parser);
-
-          if (param_name != "CPT_InternalName" &&
-              param_name != "InternalName const *" &&
-              param_name != "InternalName *") {
-            // Aw.
-            first_internalname = false;
-            break;
-          }
-        } else {
-          first_internalname = false;
-          break;
-        }
-      }
-      if (first_internalname) {
-        // Yeah, all remaps have a first InternalName parameter, so process
-        // that and remove it from the args tuple.
-        if (args_type == AT_single_arg) {
-          // Bit of a weird case, but whatever.
-          indent(out, indent_level) << "PyObject *name_obj = arg;\n";
-          args_type = AT_no_args;
-        } else if (min_num_args == 2 && max_num_args == 2) {
-          indent(out, indent_level) << "PyObject *name_obj = PyTuple_GET_ITEM(args, 0);\n";
-          indent(out, indent_level) << "PyObject *arg = PyTuple_GET_ITEM(args, 1);\n";
-          args_type = AT_single_arg;
-        } else {
-          indent(out, indent_level) << "PyObject *name_obj = PyTuple_GET_ITEM(args, 0);\n";
-          indent(out, indent_level) << "args = PyTuple_GetSlice(args, 1, PyTuple_GET_SIZE(args));\n";
-          return_flags |= RF_decref_args;
-        }
-        indent(out, indent_level) << "PT(InternalName) name;\n";
-        indent(out, indent_level) << "if (Dtool_Coerce_InternalName(name_obj, name)) {\n";
-        indent_level += 2;
-        first_pexpr2 = "name";
-      }
-    }
-
     int num_coercion_possible = 0;
     sii = remaps.begin();
     while (sii != remaps.end()) {
@@ -4474,7 +4423,7 @@ write_function_forset(ostream &out,
       write_function_instance(out, remap, min_num_args, max_num_args,
                               expected_params, indent_level + 2,
                               false, false, args_type, return_flags,
-                              check_exceptions, first_pexpr2);
+                              check_exceptions, first_pexpr);
 
       indent(out, indent_level) << "}\n\n";
     }
@@ -4507,27 +4456,10 @@ write_function_forset(ostream &out,
         write_function_instance(out, remap, min_num_args, max_num_args,
                                 ignore_expected_params, indent_level + 2,
                                 true, false, args_type, return_flags,
-                                check_exceptions, first_pexpr2);
+                                check_exceptions, first_pexpr);
 
         indent(out, indent_level) << "}\n\n";
       }
-    }
-
-    if (first_internalname) {
-      indent_level -= 2;
-      if (report_errors) {
-        indent(out, indent_level) << "} else {\n";
-
-        string class_name = remap->_cpptype->get_simple_name();
-        ostringstream msg;
-        msg << classNameFromCppName(class_name, false) << "."
-            << methodNameFromCppName(remap, class_name, false)
-            << "() first argument must be str or InternalName";
-
-        error_raise_return(out, indent_level + 2, return_flags,
-                           "TypeError", msg.str());
-      }
-      indent(out, indent_level) << "}\n";
     }
   } else {
     // There is only one possible overload with this number of parameters.
