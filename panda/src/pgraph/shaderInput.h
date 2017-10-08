@@ -104,6 +104,7 @@ PUBLISHED:
     M_buffer,
   };
 
+  INLINE operator bool() const;
   INLINE bool operator == (const ShaderInput &other) const;
   INLINE bool operator != (const ShaderInput &other) const;
   INLINE bool operator < (const ShaderInput &other) const;

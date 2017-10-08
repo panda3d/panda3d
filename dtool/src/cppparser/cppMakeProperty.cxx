@@ -18,37 +18,17 @@
  *
  */
 CPPMakeProperty::
-CPPMakeProperty(CPPIdentifier *ident,
-                CPPFunctionGroup *getter, CPPFunctionGroup *setter,
+CPPMakeProperty(CPPIdentifier *ident, Type type,
                 CPPScope *current_scope, const CPPFile &file) :
   CPPDeclaration(file),
   _ident(ident),
-  _length_function(NULL),
-  _has_function(NULL),
-  _get_function(getter),
-  _set_function(setter),
-  _clear_function(NULL),
-  _del_function(NULL)
-{
-  _ident->_native_scope = current_scope;
-}
-
-/**
- *
- */
-CPPMakeProperty::
-CPPMakeProperty(CPPIdentifier *ident,
-                CPPFunctionGroup *hasser, CPPFunctionGroup *getter,
-                CPPFunctionGroup *setter, CPPFunctionGroup *clearer,
-                CPPScope *current_scope, const CPPFile &file) :
-  CPPDeclaration(file),
-  _ident(ident),
-  _length_function(NULL),
-  _has_function(hasser),
-  _get_function(getter),
-  _set_function(setter),
-  _clear_function(clearer),
-  _del_function(NULL)
+  _type(type),
+  _length_function(nullptr),
+  _has_function(nullptr),
+  _get_function(nullptr),
+  _set_function(nullptr),
+  _clear_function(nullptr),
+  _del_function(nullptr)
 {
   _ident->_native_scope = current_scope;
 }

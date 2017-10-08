@@ -339,6 +339,9 @@ EXPCL_INTERROGATEDB PyObject *_Dtool_Raise_BadArgumentsError();
 #define Dtool_Raise_BadArgumentsError(x) Dtool_Raise_TypeError("Arguments must match:\n" x)
 #endif
 
+// These functions are similar to Dtool_WrapValue, except that they also
+// contain code for checking assertions and exceptions when compiling with
+// NDEBUG mode on.
 EXPCL_INTERROGATEDB PyObject *_Dtool_Return_None();
 EXPCL_INTERROGATEDB PyObject *Dtool_Return_Bool(bool value);
 EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
@@ -465,18 +468,36 @@ EXPCL_INTERROGATEDB PyObject *
 map_deepcopy_to_copy(PyObject *self, PyObject *args);
 
 /**
- * This class is returned from properties that require a settable interface,
- * ie. something.children[i] = 3.
+ * These classes are returned from properties that require a subscript
+ * interface, ie. something.children[i] = 3.
  */
+struct Dtool_WrapperBase {
+  PyObject_HEAD;
+  PyObject *_self;
+};
+
 struct Dtool_SequenceWrapper {
-  PyObject_HEAD
-  PyObject *_base;
+  Dtool_WrapperBase _base;
   lenfunc _len_func;
   ssizeargfunc _getitem_func;
   ssizeobjargproc _setitem_func;
 };
 
+struct Dtool_MappingWrapper {
+  Dtool_WrapperBase _base;
+  binaryfunc _getitem_func;
+  objobjargproc _setitem_func;
+};
+
+struct Dtool_SeqMapWrapper {
+  Dtool_SequenceWrapper _seq;
+  binaryfunc _map_getitem_func;
+  objobjargproc _map_setitem_func;
+};
+
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SequenceWrapper_Type;
+EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MappingWrapper_Type;
+EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SeqMapWrapper_Type;
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_StaticProperty_Type;
 
 EXPCL_INTERROGATEDB PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);

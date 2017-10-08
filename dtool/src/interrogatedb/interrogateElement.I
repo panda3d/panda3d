@@ -26,6 +26,7 @@ InterrogateElement(InterrogateModuleDef *def) :
   _clear_function = 0;
   _del_function = 0;
   _length_function = 0;
+  _make_property = nullptr;
 }
 
 /**
@@ -52,6 +53,7 @@ operator = (const InterrogateElement &copy) {
   _clear_function = copy._clear_function;
   _del_function = copy._del_function;
   _length_function = copy._length_function;
+  _make_property = copy._make_property;
 }
 
 /**
@@ -197,6 +199,14 @@ is_sequence() const {
 INLINE FunctionIndex InterrogateElement::
 get_length_function() const {
   return _length_function;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateElement::
+is_mapping() const {
+  return (_flags & F_mapping) != 0;
 }
 
 

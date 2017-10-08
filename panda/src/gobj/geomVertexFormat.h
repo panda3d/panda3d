@@ -125,6 +125,9 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
   MAKE_SEQ_PROPERTY(vectors, get_num_vectors, get_vector);
 
+  // We also define this as a mapping interface, for lookups by name.
+  MAKE_MAP_PROPERTY(columns, has_column, get_column);
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
   void write_with_data(ostream &out, int indent_level,

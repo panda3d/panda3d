@@ -539,6 +539,8 @@ PUBLISHED:
   void set_aux_data(const string &key, TypedReferenceCount *aux_data);
   void clear_aux_data(const string &key);
   TypedReferenceCount *get_aux_data(const string &key) const;
+  MAKE_MAP_PROPERTY(aux_data, get_aux_data, get_aux_data,
+                    set_aux_data, clear_aux_data);
 
   INLINE static void set_textures_power_2(AutoTextureScale scale);
   INLINE static AutoTextureScale get_textures_power_2();
