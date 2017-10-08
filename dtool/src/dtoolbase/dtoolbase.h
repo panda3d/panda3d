@@ -94,6 +94,14 @@
 #define RETURNS_ALIGNED(x)
 #endif
 
+#ifdef __GNUC__
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define LIKELY(x) (x)
+#define UNLIKELY(x) (x)
+#endif
+
 /*
   include win32 defns for everything up to WinServer2003, and assume
   I'm smart enough to use GetProcAddress for backward compat on

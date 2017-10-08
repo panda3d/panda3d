@@ -320,9 +320,9 @@ EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
 #endif
 
 #ifdef NDEBUG
-#define Dtool_CheckErrorOccurred() (_PyErr_OCCURRED() != NULL)
+#define Dtool_CheckErrorOccurred() (UNLIKELY(_PyErr_OCCURRED() != NULL))
 #else
-#define Dtool_CheckErrorOccurred() _Dtool_CheckErrorOccurred()
+#define Dtool_CheckErrorOccurred() (UNLIKELY(_Dtool_CheckErrorOccurred()))
 #endif
 
 EXPCL_INTERROGATEDB PyObject *Dtool_Raise_AssertionError();

@@ -322,11 +322,11 @@ PyObject *_Dtool_Raise_BadArgumentsError() {
  * NULL, otherwise Py_None.
  */
 PyObject *_Dtool_Return_None() {
-  if (_PyErr_OCCURRED()) {
+  if (UNLIKELY(_PyErr_OCCURRED())) {
     return NULL;
   }
 #ifndef NDEBUG
-  if (Notify::ptr()->has_assert_failed()) {
+  if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
     return Dtool_Raise_AssertionError();
   }
 #endif
@@ -339,11 +339,11 @@ PyObject *_Dtool_Return_None() {
  * NULL, otherwise the given boolean value as a PyObject *.
  */
 PyObject *Dtool_Return_Bool(bool value) {
-  if (_PyErr_OCCURRED()) {
+  if (UNLIKELY(_PyErr_OCCURRED())) {
     return NULL;
   }
 #ifndef NDEBUG
-  if (Notify::ptr()->has_assert_failed()) {
+  if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
     return Dtool_Raise_AssertionError();
   }
 #endif
@@ -358,11 +358,11 @@ PyObject *Dtool_Return_Bool(bool value) {
  * increased.
  */
 PyObject *_Dtool_Return(PyObject *value) {
-  if (_PyErr_OCCURRED()) {
+  if (UNLIKELY(_PyErr_OCCURRED())) {
     return NULL;
   }
 #ifndef NDEBUG
-  if (Notify::ptr()->has_assert_failed()) {
+  if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
     return Dtool_Raise_AssertionError();
   }
 #endif

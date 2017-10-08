@@ -6000,7 +6000,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level)
         << "Notify *notify = Notify::ptr();\n";
       indent(out, indent_level)
-        << "if (notify->has_assert_failed()) {\n";
+        << "if (UNLIKELY(notify->has_assert_failed())) {\n";
 
       if (manage_return) {
         // Output code to delete any temporary object we may have allocated.
