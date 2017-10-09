@@ -213,7 +213,7 @@ make_default() {
 /**
  * Returns the basic operation type of the ClipPlaneAttrib.  If this is O_set,
  * the planes listed here completely replace any planes that were already on.
- * If this is O_add, the planes here are added to the set of of planes that
+ * If this is O_add, the planes here are added to the set of planes that
  * were already on, and if O_remove, the planes here are removed from the set
  * of planes that were on.
  *

@@ -257,7 +257,7 @@ make_default() {
 /**
  * Returns the basic operation type of the LightAttrib.  If this is O_set, the
  * lights listed here completely replace any lights that were already on.  If
- * this is O_add, the lights here are added to the set of of lights that were
+ * this is O_add, the lights here are added to the set of lights that were
  * already on, and if O_remove, the lights here are removed from the set of
  * lights that were on.
  *
