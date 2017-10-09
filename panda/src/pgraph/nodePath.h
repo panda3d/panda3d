@@ -630,9 +630,12 @@ PUBLISHED:
   void clear_shader();
 
   void set_shader_input(ShaderInput input);
-  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
+
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+
+public:
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, ShaderBuffer *buf, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0);
@@ -659,6 +662,8 @@ PUBLISHED:
   INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
                                PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
+PUBLISHED:
+  EXTENSION(void set_shader_input(CPT_InternalName, PyObject *, int priority=0));
   EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
 
   void clear_shader_input(CPT_InternalName id);
@@ -907,6 +912,9 @@ PUBLISHED:
   INLINE string get_net_tag(const string &key) const;
   INLINE bool has_net_tag(const string &key) const;
   NodePath find_net_tag(const string &key) const;
+
+  MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
+  MAKE_MAP_PROPERTY(net_tags, has_net_tag, get_net_tag);
 
   EXTENSION(INLINE PyObject *get_tag_keys() const);
 

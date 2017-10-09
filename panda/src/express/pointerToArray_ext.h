@@ -36,18 +36,29 @@ public:
   INLINE const Element &__getitem__(size_t n) const;
   INLINE void __setitem__(size_t n, const Element &value);
 
+  INLINE PyObject *get_data() const;
+  INLINE void set_data(PyObject *data);
+  INLINE PyObject *get_subdata(size_t n, size_t count) const;
+
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
 };
 
 template<>
-  INLINE int Extension<PointerToArray<LMatrix3f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+INLINE int Extension<PointerToArray<LMatrix3f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+
 template<>
-  INLINE int Extension<PointerToArray<LMatrix3d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+INLINE int Extension<PointerToArray<LMatrix3d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+
 template<>
-  INLINE int Extension<PointerToArray<UnalignedLMatrix4f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+INLINE int Extension<PointerToArray<UnalignedLMatrix4f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+
 template<>
-  INLINE int Extension<PointerToArray<UnalignedLMatrix4d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags);
+INLINE int Extension<PointerToArray<UnalignedLMatrix4d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags);
 
 /**
  * This class defines the extension methods for ConstPointerToArray, which are
@@ -59,22 +70,30 @@ template<>
 template<class Element>
 class Extension<ConstPointerToArray<Element> > : public ExtensionBase<ConstPointerToArray<Element> > {
 public:
-  INLINE void __init__(PyObject *self, PyObject *source);
-
   INLINE const Element &__getitem__(size_t n) const;
+
+  INLINE PyObject *get_data() const;
+  INLINE PyObject *get_subdata(size_t n, size_t count) const;
 
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
 };
 
 template<>
-  INLINE int Extension<ConstPointerToArray<LMatrix3f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+INLINE int Extension<ConstPointerToArray<LMatrix3f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+
 template<>
-  INLINE int Extension<ConstPointerToArray<LMatrix3d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+INLINE int Extension<ConstPointerToArray<LMatrix3d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+
 template<>
-  INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4f> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4f> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+
 template<>
-  INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4d> >::__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4d> >::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
 
 #ifdef _MSC_VER
 // Ugh... MSVC needs this because they still don't have a decent linker.

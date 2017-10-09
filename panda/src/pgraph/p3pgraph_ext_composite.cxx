@@ -2,4 +2,6 @@
 #include "nodePathCollection_ext.cxx"
 #include "pandaNode_ext.cxx"
 #include "renderState_ext.cxx"
+#include "shaderAttrib_ext.cxx"
+#include "shaderInput_ext.cxx"
 #include "transformState_ext.cxx"

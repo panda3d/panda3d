@@ -109,6 +109,8 @@ PUBLISHED:
   INLINE int get_override(TypeHandle type) const;
   INLINE int get_override(int slot) const;
 
+  MAKE_MAP_PROPERTY(attribs, has_attrib, get_attrib);
+
   INLINE CPT(RenderState) get_unique() const;
 
   virtual bool unref() const;

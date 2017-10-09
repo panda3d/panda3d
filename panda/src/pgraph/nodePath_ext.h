@@ -49,6 +49,7 @@ public:
   // This is defined to implement cycle detection in Python tags.
   INLINE int __traverse__(visitproc visit, void *arg);
 
+  void set_shader_input(CPT_InternalName id, PyObject *value, int priority=0);
   void set_shader_inputs(PyObject *args, PyObject *kwargs);
 
   PyObject *get_tight_bounds(const NodePath &other = NodePath()) const;

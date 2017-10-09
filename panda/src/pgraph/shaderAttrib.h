@@ -73,6 +73,7 @@ PUBLISHED:
   // Shader Inputs
   CPT(RenderAttrib) set_shader_input(ShaderInput input) const;
 
+public:
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, Texture *tex,       int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0) const;
@@ -89,6 +90,10 @@ PUBLISHED:
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, double n1=0, double n2=0, double n3=0, double n4=1,
                                             int priority=0) const;
+
+PUBLISHED:
+  EXTENSION(CPT(RenderAttrib) set_shader_input(CPT_InternalName, PyObject *, int priority=0) const);
+  EXTENSION(CPT(RenderAttrib) set_shader_inputs(PyObject *args, PyObject *kwargs) const);
 
   CPT(RenderAttrib) set_instance_count(int instance_count) const;
 
@@ -150,6 +155,7 @@ private:
   Inputs _inputs;
 
   friend class Extension<NodePath>;
+  friend class Extension<ShaderAttrib>;
 
 PUBLISHED:
   static int get_class_slot() {

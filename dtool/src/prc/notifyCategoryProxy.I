@@ -70,11 +70,7 @@ template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_spam() {
   // Instruct the compiler to optimize for the usual case.
-#ifdef __GNUC__
-  return __builtin_expect(get_unsafe_ptr()->is_spam(), 0);
-#else
-  return get_unsafe_ptr()->is_spam();
-#endif
+  return UNLIKELY(get_unsafe_ptr()->is_spam());
 }
 #else
 template<class GetCategory>
@@ -92,11 +88,7 @@ template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
   // Instruct the compiler to optimize for the usual case.
-#ifdef __GNUC__
-  return __builtin_expect(get_unsafe_ptr()->is_debug(), 0);
-#else
-  return get_unsafe_ptr()->is_debug();
-#endif
+  return UNLIKELY(get_unsafe_ptr()->is_debug());
 }
 #else
 template<class GetCategory>
