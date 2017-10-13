@@ -4671,7 +4671,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
                                       << default_value->_str.size() << ";\n";
           }
         } else {
-          indent(out, indent_level) << "char *" << param_name << "_str = NULL;\n";
+          indent(out, indent_level) << "const char *" << param_name << "_str = NULL;\n";
           indent(out, indent_level) << "Py_ssize_t " << param_name << "_len;\n";
         }
 
@@ -4681,7 +4681,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
             << param_name << "_str = PyUnicode_AsUTF8AndSize(arg, &"
             << param_name << "_len);\n";
           out << "#else\n"; // NB. PyString_AsStringAndSize also accepts a PyUnicode.
-          indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, &"
+          indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, (char **)&"
             << param_name << "_str, &" << param_name << "_len) == -1) {\n";
           indent(out, indent_level + 2) << param_name << "_str = NULL;\n";
           indent(out, indent_level) << "}\n";

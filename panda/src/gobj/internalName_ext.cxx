@@ -30,7 +30,7 @@ make(PyUnicodeObject *str) {
   if (!PyUnicode_CHECK_INTERNED(str)) {
     // Not an interned string; don't bother.
     Py_ssize_t len = 0;
-    char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
+    const char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
     if (c_str == NULL) {
       return NULL;
     }
@@ -47,7 +47,7 @@ make(PyUnicodeObject *str) {
 
   } else {
     Py_ssize_t len = 0;
-    char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
+    const char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
     string name(c_str, len);
 
 #else
