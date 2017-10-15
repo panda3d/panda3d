@@ -110,6 +110,7 @@ protected:
       TF_map_height = 64,
       TF_map_glow = 128,
       TF_map_gloss = 256,
+      TF_uses_color = 512,
     };
 
     ColorAttrib::Type _color_type;

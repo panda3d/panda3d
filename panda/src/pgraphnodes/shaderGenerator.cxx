@@ -424,6 +424,11 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       info._stage = stage;
     }
 
+    // Does this stage need a texcolor_# input?
+    if (stage->uses_color()) {
+      info._flags |= ShaderKey::TF_uses_color;
+    }
+
     key._textures.push_back(info);
     key._texture_flags |= info._flags;
   }
@@ -827,7 +832,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t uniform float4x4 texmat_" << i << ",\n";
     }
 
-    if (tex._mode == TextureStage::M_blend) {
+    if (tex._flags & ShaderKey::TF_uses_color) {
       text << "\t uniform float4 texcolor_" << i << ",\n";
     }
   }
@@ -1562,10 +1567,9 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool si
     case TextureStage::CS_texture:
       csource << "tex" << texindex;
       break;
-    case TextureStage::CS_constant: {
-      LVecBase4 c = stage->get_color();
-      csource << "float4(" << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << ")";
-      break; }
+    case TextureStage::CS_constant:
+      csource << "texcolor_" << texindex;
+      break;
     case TextureStage::CS_primary_color:
       csource << "primary_color";
       break;

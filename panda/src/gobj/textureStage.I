@@ -658,8 +658,7 @@ update_color_flags() {
        _combine_alpha_source2 == CS_constant_color_scale)));
 
   _uses_color =
-    (_involves_color_scale ||
-     _mode == M_blend ||
+    (_mode == M_blend ||
      (_mode == M_combine &&
       (_combine_rgb_source0 == CS_constant ||
        _combine_rgb_source1 == CS_constant ||

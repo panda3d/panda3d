@@ -4438,7 +4438,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     set_texture_stage_state(i, D3DTSS_RESULTARG, D3DTA_CURRENT);
   }
 
-  if (stage->uses_color()) {
+  if (stage->uses_color() || stage->involves_color_scale()) {
     // Set up the constant color for this stage.
 
     D3DCOLOR constant_color;
