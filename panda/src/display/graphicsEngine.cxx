@@ -1271,7 +1271,7 @@ set_window_sort(GraphicsOutput *window, int sort) {
  * model begins with the "-" character.
  */
 void GraphicsEngine::
-cull_and_draw_together(const GraphicsEngine::Windows &wlist,
+cull_and_draw_together(GraphicsEngine::Windows wlist,
                        Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
 
@@ -1380,7 +1380,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
  * drawing.
  */
 void GraphicsEngine::
-cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
+cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
 
   _singular_warning_last_frame = _singular_warning_this_frame;
