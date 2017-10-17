@@ -793,9 +793,9 @@ declaration:
       make_property->_has_function = hasser->as_function_group();
     }
 
-    CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
+    CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
     if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
-      yyerror("reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @7);
+      yyerror("reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
     } else {
       make_property->_set_function = setter->as_function_group();
     }
