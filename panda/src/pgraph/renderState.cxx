@@ -987,6 +987,7 @@ clear_munger_cache() {
   for (size_t si = 0; si < size; ++si) {
     RenderState *state = (RenderState *)(_states->get_key(si));
     state->_mungers.clear();
+    state->_munged_states.clear();
     state->_last_mi = -1;
   }
 }

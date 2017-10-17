@@ -235,6 +235,8 @@ public:
   static void add_gsg(GraphicsStateGuardianBase *gsg);
   static void remove_gsg(GraphicsStateGuardianBase *gsg);
 
+  size_t _id;
+
 private:
   struct GSGList {
     LightMutex _lock;

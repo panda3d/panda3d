@@ -33,8 +33,6 @@ public:
 protected:
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
-  typedef WeakKeyHashMap<RenderState, WCPT(RenderState) > StateMap;
-  StateMap _state_map;
 
 public:
   static TypeHandle get_class_type() {

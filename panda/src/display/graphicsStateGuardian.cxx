@@ -281,6 +281,11 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
+
+  // Give it a unique identifier.  Unlike a pointer, we can guarantee that
+  // this value will never be reused.
+  static size_t next_index = 0;
+  _id = next_index++;
 }
 
 /**
@@ -290,6 +295,19 @@ GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
   GeomMunger::unregister_mungers_for_gsg(this);
+
+  // Remove the munged states for this GSG.  This requires going through all
+  // states, although destructing a GSG should be rare enough for this not to
+  // matter too much.
+  // Note that if uniquify-states is false, we can't iterate over all the
+  // states, and some GSGs will linger.  Let's hope this isn't a problem.
+  LightReMutexHolder holder(*RenderState::_states_lock);
+  size_t size = RenderState::_states->get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const RenderState *state = RenderState::_states->get_key(si);
+    state->_mungers.remove(_id);
+    state->_munged_states.remove(_id);
+  }
 }
 
 /**
@@ -743,7 +761,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
     // multiple times during a frame.  Also, this might well be the only GSG
     // in the world anyway.
     int mi = state->_last_mi;
-    if (mi >= 0 && mungers.has_element(mi) && mungers.get_key(mi) == this) {
+    if (mi >= 0 && mi < mungers.get_num_entries() && mungers.get_key(mi) == _id) {
       PT(GeomMunger) munger = mungers.get_data(mi);
       if (munger->is_registered()) {
         return munger;
@@ -751,7 +769,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
     }
 
     // Nope, we have to look it up in the map.
-    mi = mungers.find(this);
+    mi = mungers.find(_id);
     if (mi >= 0) {
       PT(GeomMunger) munger = mungers.get_data(mi);
       if (munger->is_registered()) {
@@ -769,7 +787,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
   nassertr(munger != (GeomMunger *)NULL && munger->is_registered(), munger);
   nassertr(munger->is_of_type(StateMunger::get_class_type()), munger);
 
-  state->_last_mi = mungers.store(this, munger);
+  state->_last_mi = mungers.store(_id, munger);
   return munger;
 }
 
