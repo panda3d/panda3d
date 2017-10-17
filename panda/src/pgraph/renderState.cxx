@@ -1338,7 +1338,7 @@ return_unique(RenderState *state) {
     // deleted while it's in it.
     state->cache_ref();
   }
-  si = _states->store(state, Empty());
+  si = _states->store(state, nullptr);
 
   // Save the index and return the input state.
   state->_saved_entry = si;
@@ -1865,7 +1865,7 @@ init_states() {
   // is declared globally, and lives forever.
   RenderState *state = new RenderState;
   state->local_object();
-  state->_saved_entry = _states->store(state, Empty());
+  state->_saved_entry = _states->store(state, nullptr);
   _empty_state = state;
 }
 

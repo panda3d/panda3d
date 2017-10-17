@@ -227,9 +227,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const RenderState *, Empty, indirect_compare_to_hash<const RenderState *> > States;
+  typedef SimpleHashMap<const RenderState *, nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
   static States *_states;
   static const RenderState *_empty_state;
 

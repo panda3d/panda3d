@@ -389,7 +389,7 @@ return_unique(RenderAttrib *attrib) {
     // deleted while it's in it.
     attrib->ref();
   }
-  si = _attribs->store(attrib, Empty());
+  si = _attribs->store(attrib, nullptr);
 
   // Save the index and return the input attrib.
   attrib->_saved_entry = si;
