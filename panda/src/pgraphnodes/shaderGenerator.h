@@ -70,8 +70,8 @@ PUBLISHED:
   virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
                                               const GeomVertexAnimationSpec &anim);
 
-  INLINE void rehash_generated_shaders();
-  INLINE void clear_generated_shaders();
+  void rehash_generated_shaders();
+  void clear_generated_shaders();
 
 protected:
   // Shader register allocation:

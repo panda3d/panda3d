@@ -534,7 +534,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
  * of the shader generator.  This should be rare because in most cases, the
  * shader generator will automatically regenerate shaders as necessary.
  */
-INLINE void ShaderGenerator::
+void ShaderGenerator::
 rehash_generated_shaders() {
   LightReMutexHolder holder(*RenderState::_states_lock);
 
@@ -575,7 +575,7 @@ rehash_generated_shaders() {
  * Removes all previously generated shaders, requiring all shaders to be
  * regenerated.  Does not clear cache of compiled shaders.
  */
-INLINE void ShaderGenerator::
+void ShaderGenerator::
 clear_generated_shaders() {
   LightReMutexHolder holder(*RenderState::_states_lock);
 
