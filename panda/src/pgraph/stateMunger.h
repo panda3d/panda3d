@@ -30,9 +30,12 @@ public:
   virtual ~StateMunger();
   CPT(RenderState) munge_state(const RenderState *state);
 
+  INLINE bool should_munge_state() const;
+
 protected:
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
+  bool _should_munge_state;
 
 public:
   static TypeHandle get_class_type() {

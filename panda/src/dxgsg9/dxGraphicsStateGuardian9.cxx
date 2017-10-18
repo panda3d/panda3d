@@ -3074,7 +3074,7 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
-  _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  determine_target_shader();
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||

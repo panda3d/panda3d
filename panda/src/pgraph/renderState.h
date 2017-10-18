@@ -219,6 +219,7 @@ public:
   // declare this as a ShaderAttrib because that would create a circular
   // include-file dependency problem.  Aaargh.
   mutable CPT(RenderAttrib) _generated_shader;
+  mutable UpdateSeq _generated_shader_seq;
 
 private:
   // This mutex protects _states.  It also protects any modification to the
@@ -363,6 +364,7 @@ private:
   friend class GraphicsStateGuardian;
   friend class RenderAttribRegistry;
   friend class Extension<RenderState>;
+  friend class ShaderGenerator;
   friend class StateMunger;
 };
 

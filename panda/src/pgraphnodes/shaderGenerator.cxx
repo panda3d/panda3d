@@ -51,6 +51,14 @@ TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG
 
+#define PACK_COMBINE(src0, op0, src1, op1, src2, op2) ( \
+  ((uint16_t)src0) | ((((uint16_t)op0 - 1u) & 3u) << 3u) | \
+  ((uint16_t)src1 << 5u) | ((((uint16_t)op1 - 1u) & 3u) << 8u) | \
+  ((uint16_t)src2 << 10u) | ((((uint16_t)op2 - 1u) & 3u) << 13u))
+
+#define UNPACK_COMBINE_SRC(from, n) (TextureStage::CombineSource)((from >> ((uint16_t)n * 5u)) & 7u)
+#define UNPACK_COMBINE_OP(from, n) (TextureStage::CombineOperand)(((from >> (((uint16_t)n * 5u) + 3u)) & 3u) + 1u)
+
 static PStatCollector lookup_collector("*:Munge:ShaderGen:Lookup");
 static PStatCollector synthesize_collector("*:Munge:ShaderGen:Synthesize");
 
@@ -60,7 +68,7 @@ static PStatCollector synthesize_collector("*:Munge:ShaderGen:Synthesize");
  * shader generator belongs.
  */
 ShaderGenerator::
-ShaderGenerator(GraphicsStateGuardianBase *gsg) {
+ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
   // The ATTR# input semantics seem to map to generic vertex attributes in
   // both arbvp1 and glslv, which behave more consistently.  However, they
   // don't exist in Direct3D 9.  Use this silly little check for now.
@@ -298,10 +306,17 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     Texture *tex = texture->get_on_texture(stage);
     nassertd(tex != nullptr) continue;
 
+    // Mark this TextureStage as having been used by the shader generator, so
+    // that the next time its properties change, it will cause the state to be
+    // rehashed to ensure that the shader is regenerated if needed.
+    stage->mark_used_by_auto_shader();
+
     ShaderKey::TextureInfo info;
     info._type = tex->get_texture_type();
     info._mode = stage->get_mode();
     info._flags = 0;
+    info._combine_rgb = 0u;
+    info._combine_alpha = 0u;
 
     // While we look at the mode, determine whether we need to change the mode
     // in order to reflect disabled features.
@@ -355,6 +370,40 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         info._mode = TextureStage::M_gloss;
       } else {
         info._flags = ShaderKey::TF_map_normal | ShaderKey::TF_map_gloss;
+      }
+      break;
+
+    case TextureStage::M_combine:
+      // If we have this rare, special mode, we encode all these extra
+      // parameters as flags to prevent bloating the shader key.
+      info._flags |= (uint32_t)stage->get_combine_rgb_mode() << ShaderKey::TF_COMBINE_RGB_MODE_SHIFT;
+      info._flags |= (uint32_t)stage->get_combine_alpha_mode() << ShaderKey::TF_COMBINE_ALPHA_MODE_SHIFT;
+      if (stage->get_rgb_scale() == 2) {
+        info._flags |= ShaderKey::TF_rgb_scale_2;
+      }
+      if (stage->get_rgb_scale() == 4) {
+        info._flags |= ShaderKey::TF_rgb_scale_4;
+      }
+      if (stage->get_alpha_scale() == 2) {
+        info._flags |= ShaderKey::TF_alpha_scale_2;
+      }
+      if (stage->get_alpha_scale() == 4) {
+        info._flags |= ShaderKey::TF_alpha_scale_4;
+      }
+      info._combine_rgb = PACK_COMBINE(
+        stage->get_combine_rgb_source0(), stage->get_combine_rgb_operand0(),
+        stage->get_combine_rgb_source1(), stage->get_combine_rgb_operand1(),
+        stage->get_combine_rgb_source2(), stage->get_combine_rgb_operand2());
+      info._combine_alpha = PACK_COMBINE(
+        stage->get_combine_alpha_source0(), stage->get_combine_alpha_operand0(),
+        stage->get_combine_alpha_source1(), stage->get_combine_alpha_operand1(),
+        stage->get_combine_alpha_source2(), stage->get_combine_alpha_operand2());
+
+      if (stage->uses_primary_color()) {
+        info._flags |= ShaderKey::TF_uses_primary_color;
+      }
+      if (stage->uses_last_saved_result()) {
+        info._flags |= ShaderKey::TF_uses_last_saved_result;
       }
       break;
     }
@@ -417,11 +466,9 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       info._gen_mode = TexGenAttrib::M_off;
     }
 
-    // If we have this rare, special mode, just include a pointer to the
-    // TextureStage object, because I can't be bothered to bloat the shader
-    // key with all these extra relevant properties.
-    if (stage->get_mode() == TextureStage::M_combine) {
-      info._stage = stage;
+    // Does this stage require saving its result?
+    if (stage->get_saved_result()) {
+      info._flags |= ShaderKey::TF_saved_result;
     }
 
     // Does this stage need a texcolor_# input?
@@ -431,6 +478,17 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
     key._textures.push_back(info);
     key._texture_flags |= info._flags;
+  }
+
+  // Does nothing use the saved result?  If so, don't bother saving it.
+  if ((key._texture_flags & ShaderKey::TF_uses_last_saved_result) == 0 &&
+      (key._texture_flags & ShaderKey::TF_saved_result) != 0) {
+
+    pvector<ShaderKey::TextureInfo>::iterator it;
+    for (it = key._textures.begin(); it != key._textures.end(); ++it) {
+      (*it)._flags &= ~ShaderKey::TF_saved_result;
+    }
+    key._texture_flags &= ~ShaderKey::TF_saved_result;
   }
 
   // Decide whether to separate ambient and diffuse calculations.
@@ -465,6 +523,74 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   const FogAttrib *fog;
   if (rs->get_attrib(fog) && !fog->is_off()) {
     key._fog_mode = (int)fog->get_fog()->get_mode() + 1;
+  }
+}
+
+/**
+ * Rehashes all the states with generated shaders, removing the ones that are
+ * no longer fresh.
+ *
+ * Call this if certain state has changed in such a way as to require a rerun
+ * of the shader generator.  This should be rare because in most cases, the
+ * shader generator will automatically regenerate shaders as necessary.
+ */
+INLINE void ShaderGenerator::
+rehash_generated_shaders() {
+  LightReMutexHolder holder(*RenderState::_states_lock);
+
+  // With uniquify-states turned on, we can actually go through all the states
+  // and check whether their generated shader is still OK.
+  size_t size = RenderState::_states->get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const RenderState *state = RenderState::_states->get_key(si);
+
+    if (state->_generated_shader != nullptr) {
+      ShaderKey key;
+      analyze_renderstate(key, state);
+
+      GeneratedShaders::const_iterator si;
+      si = _generated_shaders.find(key);
+      if (si != _generated_shaders.end()) {
+        if (si->second != state->_generated_shader) {
+          state->_generated_shader = si->second;
+          state->_munged_states.clear();
+        }
+      } else {
+        // We have not yet generated a shader for this modified state.
+        state->_generated_shader.clear();
+        state->_munged_states.clear();
+      }
+    }
+  }
+
+  // If we don't have uniquify-states, however, the above list won't contain
+  // all the state.  We can change a global seq value to require Panda to
+  // rehash the states the next time it tries to render an object with it.
+  if (!uniquify_states) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+  }
+}
+
+/**
+ * Removes all previously generated shaders, requiring all shaders to be
+ * regenerated.  Does not clear cache of compiled shaders.
+ */
+INLINE void ShaderGenerator::
+clear_generated_shaders() {
+  LightReMutexHolder holder(*RenderState::_states_lock);
+
+  size_t size = RenderState::_states->get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const RenderState *state = RenderState::_states->get_key(si);
+    state->_generated_shader.clear();
+  }
+
+  _generated_shaders.clear();
+
+  // If we don't have uniquify-states, we can't clear all the ShaderAttribs
+  // that are cached on the states, but we can simulate the effect of that.
+  if (!uniquify_states) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
 }
 
@@ -1256,24 +1382,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
-  // Loop first to see if something is using primary_color or
-  // last_saved_result.
-  bool have_saved_result = false;
-  bool have_primary_color = false;
-  for (size_t i = 0; i < key._textures.size(); ++i) {
-    const ShaderKey::TextureInfo &tex = key._textures[i];
-    if (tex._stage == nullptr) {
-      continue;
-    }
-
-    if (tex._stage->uses_primary_color() && !have_primary_color) {
-      text << "\t float4 primary_color = result;\n";
-      have_primary_color = true;
-    }
-    if (tex._stage->uses_last_saved_result() && !have_saved_result) {
-      text << "\t float4 last_saved_result = result;\n";
-      have_saved_result = true;
-    }
+  // Store these if any stages will use it.
+  if (key._texture_flags & ShaderKey::TF_uses_primary_color) {
+    text << "\t float4 primary_color = result;\n";
+  }
+  if (key._texture_flags & ShaderKey::TF_uses_last_saved_result) {
+    text << "\t float4 last_saved_result = result;\n";
   }
 
   // Now loop through the textures to compose our magic blending formulas.
@@ -1315,24 +1429,21 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       break;
     case TextureStage::M_combine:
-      // Only in the case of M_combine have we filled in the _stage pointer.
       text << "\t result.rgb = ";
-      if (tex._stage->get_combine_rgb_mode() != TextureStage::CM_undefined) {
-        text << combine_mode_as_string(tex._stage, tex._stage->get_combine_rgb_mode(), false, i);
-      } else {
-        text << "tex" << i << ".rgb";
+      text << combine_mode_as_string(tex, (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_RGB_MODE_MASK) >> ShaderKey::TF_COMBINE_RGB_MODE_SHIFT), false, i);
+      if (tex._flags & ShaderKey::TF_rgb_scale_2) {
+        text << " * 2";
       }
-      if (tex._stage->get_rgb_scale() != 1) {
-        text << " * " << tex._stage->get_rgb_scale();
+      if (tex._flags & ShaderKey::TF_rgb_scale_4) {
+        text << " * 4";
       }
       text << ";\n\t result.a = ";
-      if (tex._stage->get_combine_alpha_mode() != TextureStage::CM_undefined) {
-        text << combine_mode_as_string(tex._stage, tex._stage->get_combine_alpha_mode(), true, i);
-      } else {
-        text << "tex" << i << ".a";
+      text << combine_mode_as_string(tex, (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_ALPHA_MODE_MASK) >> ShaderKey::TF_COMBINE_ALPHA_MODE_SHIFT), false, i);
+      if (tex._flags & ShaderKey::TF_alpha_scale_2) {
+        text << " * 2";
       }
-      if (tex._stage->get_alpha_scale() != 1) {
-        text << " * " << tex._stage->get_alpha_scale();
+      if (tex._flags & ShaderKey::TF_alpha_scale_4) {
+        text << " * 4";
       }
       text << ";\n";
       break;
@@ -1342,7 +1453,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     default:
       break;
     }
-    if ((tex._flags & ShaderKey::TF_saved_result) != 0 && have_saved_result) {
+    if (tex._flags & ShaderKey::TF_saved_result) {
       text << "\t last_saved_result = result;\n";
     }
   }
@@ -1469,53 +1580,53 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
  * This 'synthesizes' a combine mode into a string.
  */
 const string ShaderGenerator::
-combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
+combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
   ostringstream text;
   switch (c_mode) {
-    case TextureStage::CM_modulate:
-      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
-      text << " * ";
-      text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
-      break;
-    case TextureStage::CM_add:
-      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
-      text << " + ";
-      text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
-      break;
-    case TextureStage::CM_add_signed:
-      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
-      text << " + ";
-      text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
-      if (alpha) {
-        text << " - 0.5";
-      } else {
-        text << " - float3(0.5, 0.5, 0.5)";
-      }
-      break;
-    case TextureStage::CM_interpolate:
-      text << "lerp(";
-      text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
-      text << ", ";
-      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
-      text << ", ";
-      text << combine_source_as_string(stage, 2, alpha, true, texindex);
-      text << ")";
-      break;
-    case TextureStage::CM_subtract:
-      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
-      text << " + ";
-      text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
-      break;
-    case TextureStage::CM_dot3_rgb:
-      pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGB not yet supported in per-pixel mode.\n";
-      break;
-    case TextureStage::CM_dot3_rgba:
-      pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGBA not yet supported in per-pixel mode.\n";
-      break;
-    case TextureStage::CM_replace:
-    default: // Not sure if this is correct as default value.
-      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
-      break;
+  case TextureStage::CM_modulate:
+    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << " * ";
+    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    break;
+  case TextureStage::CM_add:
+    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << " + ";
+    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    break;
+  case TextureStage::CM_add_signed:
+    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << " + ";
+    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    if (alpha) {
+      text << " - 0.5";
+    } else {
+      text << " - float3(0.5, 0.5, 0.5)";
+    }
+    break;
+  case TextureStage::CM_interpolate:
+    text << "lerp(";
+    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    text << ", ";
+    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << ", ";
+    text << combine_source_as_string(info, 2, alpha, true, texindex);
+    text << ")";
+    break;
+  case TextureStage::CM_subtract:
+    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << " + ";
+    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    break;
+  case TextureStage::CM_dot3_rgb:
+    pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGB not yet supported in per-pixel mode.\n";
+    break;
+  case TextureStage::CM_dot3_rgba:
+    pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGBA not yet supported in per-pixel mode.\n";
+    break;
+  case TextureStage::CM_replace:
+  default: // Not sure if this is correct as default value.
+    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    break;
   }
   return text.str();
 }
@@ -1524,39 +1635,15 @@ combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode
  * This 'synthesizes' a combine source into a string.
  */
 const string ShaderGenerator::
-combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool single_value, short texindex) {
-  TextureStage::CombineSource c_src = TextureStage::CS_undefined;
-  TextureStage::CombineOperand c_op = TextureStage::CO_undefined;
-  if (alpha) {
-    switch (num) {
-      case 0:
-        c_src = stage->get_combine_alpha_source0();
-        c_op = stage->get_combine_alpha_operand0();
-        break;
-      case 1:
-        c_src = stage->get_combine_alpha_source1();
-        c_op = stage->get_combine_alpha_operand1();
-        break;
-      case 2:
-        c_src = stage->get_combine_alpha_source2();
-        c_op = stage->get_combine_alpha_operand2();
-        break;
-    }
+combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alpha, bool single_value, short texindex) {
+  TextureStage::CombineSource c_src;
+  TextureStage::CombineOperand c_op;
+  if (!alpha) {
+    c_src = UNPACK_COMBINE_SRC(info._combine_rgb, num);
+    c_op = UNPACK_COMBINE_OP(info._combine_rgb, num);
   } else {
-    switch (num) {
-      case 0:
-        c_src = stage->get_combine_rgb_source0();
-        c_op = stage->get_combine_rgb_operand0();
-        break;
-      case 1:
-        c_src = stage->get_combine_rgb_source1();
-        c_op = stage->get_combine_rgb_operand1();
-        break;
-      case 2:
-        c_src = stage->get_combine_rgb_source2();
-        c_op = stage->get_combine_rgb_operand2();
-        break;
-    }
+    c_src = UNPACK_COMBINE_SRC(info._combine_alpha, num);
+    c_op = UNPACK_COMBINE_OP(info._combine_alpha, num);
   }
   ostringstream csource;
   if (c_op == TextureStage::CO_one_minus_src_color ||
@@ -1688,8 +1775,11 @@ operator < (const ShaderKey &other) const {
     if (tex._flags != other_tex._flags) {
       return tex._flags < other_tex._flags;
     }
-    if (tex._stage != other_tex._stage) {
-      return tex._stage < other_tex._stage;
+    if (tex._combine_rgb != other_tex._combine_rgb) {
+      return tex._combine_rgb < other_tex._combine_rgb;
+    }
+    if (tex._combine_alpha != other_tex._combine_alpha) {
+      return tex._combine_alpha < other_tex._combine_alpha;
     }
   }
   if (_lights.size() != other._lights.size()) {
@@ -1763,7 +1853,8 @@ operator == (const ShaderKey &other) const {
         tex._mode != other_tex._mode ||
         tex._gen_mode != other_tex._gen_mode ||
         tex._flags != other_tex._flags ||
-        tex._stage != other_tex._stage) {
+        tex._combine_rgb != other_tex._combine_rgb ||
+        tex._combine_alpha != other_tex._combine_alpha) {
       return false;
     }
   }

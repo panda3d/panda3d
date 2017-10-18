@@ -3040,6 +3040,19 @@ determine_target_texture() {
 }
 
 /**
+ * Assigns _target_shader based on the _target_rs.
+ */
+void GraphicsStateGuardian::
+determine_target_shader() {
+  if (_target_rs->_generated_shader != nullptr) {
+    _target_shader = (const ShaderAttrib *)_target_rs->_generated_shader.p();
+  } else {
+    _target_shader = (const ShaderAttrib *)
+      _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
+  }
+}
+
+/**
  * Frees some memory that was explicitly allocated within the glgsg.
  */
 void GraphicsStateGuardian::
@@ -3380,6 +3393,43 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   light->_sbuffers[this] = sbuffer;
 
   return tex;
+}
+
+/**
+ * Ensures that an appropriate shader has been generated for the given state.
+ * This is stored in the _generated_shader field on the RenderState.
+ */
+void GraphicsStateGuardian::
+ensure_generated_shader(const RenderState *state) {
+#ifdef HAVE_CG
+  const ShaderAttrib *shader_attrib;
+  state->get_attrib_def(shader_attrib);
+
+  if (shader_attrib->auto_shader()) {
+    if (_shader_generator == nullptr) {
+      if (!_supports_basic_shaders) {
+        return;
+      }
+      _shader_generator = new ShaderGenerator(this);
+    }
+    if (state->_generated_shader == nullptr ||
+        state->_generated_shader_seq != _generated_shader_seq) {
+      GeomVertexAnimationSpec spec;
+
+      // Currently we overload this flag to request vertex animation for the
+      // shader generator.
+      const ShaderAttrib *sattr;
+      state->get_attrib_def(sattr);
+      if (sattr->get_flag(ShaderAttrib::F_hardware_skinning)) {
+        spec.set_hardware(4, true);
+      }
+
+      // Cache the generated ShaderAttrib on the shader state.
+      state->_generated_shader = _shader_generator->synthesize_shader(state, spec);
+      state->_generated_shader_seq = _generated_shader_seq;
+    }
+  }
+#endif
 }
 
 /**
