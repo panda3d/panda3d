@@ -657,12 +657,12 @@ public:
   INLINE void set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority=0);
-  INLINE void set_shader_input(CPT_InternalName id, int n1, int n2=0, int n3=0,
+PUBLISHED:
+  INLINE void set_shader_input(CPT_InternalName id, int n1, int n2, int n3=0,
                                                     int n4=0, int priority=0);
-  INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
+  INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2,
                                PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
-PUBLISHED:
   EXTENSION(void set_shader_input(CPT_InternalName, PyObject *, int priority=0));
   EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
 
