@@ -39,7 +39,7 @@ BulletTriangleMesh()
 /**
  * Returns the number of triangles in this triangle mesh.
  */
-int BulletTriangleMesh::
+size_t BulletTriangleMesh::
 get_num_triangles() const {
   return _indices.size() / 3;
 }
