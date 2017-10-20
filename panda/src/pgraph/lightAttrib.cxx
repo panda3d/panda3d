@@ -833,6 +833,14 @@ compose_impl(const RenderAttrib *other) const {
     ++result;
   }
 
+  // Increase the attrib_ref of all the lights in this new attribute.
+  Lights::const_iterator it;
+  for (it = new_attrib->_on_lights.begin(); it != new_attrib->_on_lights.end(); ++it) {
+    Light *lobj = (*it).node()->as_light();
+    nassertd(lobj != nullptr) continue;
+    lobj->attrib_ref();
+  }
+
   return return_new(new_attrib);
 }
 
