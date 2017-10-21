@@ -25,7 +25,7 @@ TypeHandle TextureStage::_type_handle;
  * Initialize the texture stage at construction
  */
 TextureStage::
-TextureStage(const string &name) {
+TextureStage(const string &name) : _used_by_auto_shader(false) {
   _name = name;
   _sort = 0;
   _priority = 0;
@@ -90,6 +90,8 @@ operator = (const TextureStage &other) {
 
   _uses_color = other._uses_color;
   _involves_color_scale = other._involves_color_scale;
+
+  _used_by_auto_shader = false;
 }
 
 /**

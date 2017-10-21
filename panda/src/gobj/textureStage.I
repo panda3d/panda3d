@@ -15,7 +15,7 @@
  * Initialize the texture stage from other
  */
 INLINE TextureStage::
-TextureStage(TextureStage &copy) {
+TextureStage(const TextureStage &copy) {
   (*this) = copy;
 }
 
@@ -52,6 +52,10 @@ set_sort(int sort) {
   // Update the global flag to indicate that all TextureAttribs in the world
   // must now re-sort their lists.
   _sort_seq++;
+
+  if (_used_by_auto_shader) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+  }
 }
 
 /**
@@ -80,6 +84,10 @@ set_priority(int priority) {
   // Update the global flag to indicate that all TextureAttribs in the world
   // must now re-sort their lists.
   _sort_seq++;
+
+  if (_used_by_auto_shader) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+  }
 }
 
 /**
@@ -99,7 +107,13 @@ get_priority() const {
  */
 INLINE void TextureStage::
 set_texcoord_name(InternalName *name) {
-  _texcoord_name = name;
+  if (name != _texcoord_name) {
+    _texcoord_name = name;
+
+    if (_used_by_auto_shader) {
+      GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+    }
+  }
 }
 
 /**
@@ -108,7 +122,7 @@ set_texcoord_name(InternalName *name) {
  */
 INLINE void TextureStage::
 set_texcoord_name(const string &name) {
-  _texcoord_name = InternalName::get_texcoord_name(name);
+  set_texcoord_name(InternalName::get_texcoord_name(name));
 }
 
 /**
@@ -150,13 +164,16 @@ get_binormal_name() const {
  */
 INLINE void TextureStage::
 set_mode(TextureStage::Mode mode) {
-  _mode = mode;
+  if (mode != _mode) {
+    _mode = mode;
 
-  if (_mode != M_combine) {
-    _num_combine_rgb_operands = 0;
-    _num_combine_alpha_operands = 0;
+    if (_mode != M_combine) {
+      _num_combine_rgb_operands = 0;
+      _num_combine_alpha_operands = 0;
+    }
+
+    update_color_flags();
   }
-  update_color_flags();
 }
 
 /**
@@ -202,8 +219,14 @@ get_color() const {
  */
 INLINE void TextureStage::
 set_rgb_scale(int rgb_scale) {
-  nassertv(rgb_scale == 1 || rgb_scale == 2 || rgb_scale == 4);
-  _rgb_scale = rgb_scale;
+  if (rgb_scale != _rgb_scale) {
+    nassertv(rgb_scale == 1 || rgb_scale == 2 || rgb_scale == 4);
+    _rgb_scale = rgb_scale;
+
+    if (_used_by_auto_shader) {
+      GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+    }
+  }
 }
 
 /**
@@ -222,8 +245,14 @@ get_rgb_scale() const {
  */
 INLINE void TextureStage::
 set_alpha_scale(int alpha_scale) {
-  nassertv(alpha_scale == 1 || alpha_scale == 2 || alpha_scale == 4);
-  _alpha_scale = alpha_scale;
+  if (alpha_scale != _alpha_scale) {
+    nassertv(alpha_scale == 1 || alpha_scale == 2 || alpha_scale == 4);
+    _alpha_scale = alpha_scale;
+
+    if (_used_by_auto_shader) {
+      GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+    }
+  }
 }
 
 /**
@@ -247,7 +276,13 @@ get_alpha_scale() const {
  */
 INLINE void TextureStage::
 set_saved_result(bool saved_result) {
-  _saved_result = saved_result;
+  if (saved_result != _saved_result) {
+    _saved_result = saved_result;
+
+    if (_used_by_auto_shader) {
+      GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+    }
+  }
 }
 
 /**
@@ -642,6 +677,14 @@ get_sort_seq() {
 }
 
 /**
+ * Marks this TextureStage as having been used by the auto shader.
+ */
+INLINE void TextureStage::
+mark_used_by_auto_shader() const {
+  _used_by_auto_shader = true;
+}
+
+/**
  * Updates _uses_color, _involves_color_scale, _uses_primary_color and
  * _uses_last_saved_result appropriately.
  */
@@ -658,8 +701,7 @@ update_color_flags() {
        _combine_alpha_source2 == CS_constant_color_scale)));
 
   _uses_color =
-    (_involves_color_scale ||
-     _mode == M_blend ||
+    (_mode == M_blend ||
      (_mode == M_combine &&
       (_combine_rgb_source0 == CS_constant ||
        _combine_rgb_source1 == CS_constant ||
@@ -685,6 +727,10 @@ update_color_flags() {
        _combine_alpha_source0 == CS_last_saved_result ||
        _combine_alpha_source1 == CS_last_saved_result ||
        _combine_alpha_source2 == CS_last_saved_result));
+
+  if (_used_by_auto_shader) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+  }
 }
 
 INLINE ostream &

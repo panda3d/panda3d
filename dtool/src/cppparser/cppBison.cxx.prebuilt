@@ -4420,9 +4420,9 @@ yyreduce:
       make_property->_has_function = hasser->as_function_group();
     }
 
-    CPPDeclaration *setter = (yyvsp[-6].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
+    CPPDeclaration *setter = (yyvsp[-4].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
     if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
-      yyerror("reference to non-existent or invalid setter: " + (yyvsp[-6].u.identifier)->get_fully_scoped_name(), (yylsp[-6]));
+      yyerror("reference to non-existent or invalid setter: " + (yyvsp[-4].u.identifier)->get_fully_scoped_name(), (yylsp[-4]));
     } else {
       make_property->_set_function = setter->as_function_group();
     }

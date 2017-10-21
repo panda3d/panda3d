@@ -987,6 +987,7 @@ clear_munger_cache() {
   for (size_t si = 0; si < size; ++si) {
     RenderState *state = (RenderState *)(_states->get_key(si));
     state->_mungers.clear();
+    state->_munged_states.clear();
     state->_last_mi = -1;
   }
 }
@@ -1338,7 +1339,7 @@ return_unique(RenderState *state) {
     // deleted while it's in it.
     state->cache_ref();
   }
-  si = _states->store(state, Empty());
+  si = _states->store(state, nullptr);
 
   // Save the index and return the input state.
   state->_saved_entry = si;
@@ -1865,7 +1866,7 @@ init_states() {
   // is declared globally, and lives forever.
   RenderState *state = new RenderState;
   state->local_object();
-  state->_saved_entry = _states->store(state, Empty());
+  state->_saved_entry = _states->store(state, nullptr);
   _empty_state = state;
 }
 

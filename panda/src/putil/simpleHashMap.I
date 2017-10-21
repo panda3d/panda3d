@@ -128,7 +128,7 @@ store(const Key &key, const Value &data) {
   }
   if (is_element(index, key)) {
     // This element is already in the map; replace the data at that key.
-    _table[index]._data = data;
+    set_data(index, data);
 #ifdef _DEBUG
     nassertr(validate(), index);
 #endif
@@ -151,7 +151,7 @@ store(const Key &key, const Value &data) {
       return index;
     }
     if (is_element(index, key)) {
-      _table[index]._data = data;
+      set_data(index, data);
 #ifdef _DEBUG
       nassertr(validate(), index);
 #endif
@@ -200,8 +200,7 @@ remove(const Key &key) {
 
     // Swap it with the last one, so that we don't get any gaps in the table
     // of entries.
-    _table[index]._key = move(_table[last]._key);
-    _table[index]._data = move(_table[last]._data);
+    _table[index] = move(_table[last]);
     index_array[(size_t)other_slot] = index;
   }
 
@@ -311,8 +310,8 @@ get_key(size_t n) const {
 template<class Key, class Value, class Compare>
 INLINE const Value &SimpleHashMap<Key, Value, Compare>::
 get_data(size_t n) const {
-  nassertr(n < _num_entries, _table[n]._data);
-  return _table[n]._data;
+  nassertr(n < _num_entries, _table[n].get_data());
+  return _table[n].get_data();
 }
 
 /**
@@ -323,8 +322,8 @@ get_data(size_t n) const {
 template<class Key, class Value, class Compare>
 INLINE Value &SimpleHashMap<Key, Value, Compare>::
 modify_data(size_t n) {
-  nassertr(n < _num_entries, _table[n]._data);
-  return _table[n]._data;
+  nassertr(n < _num_entries, _table[n].modify_data());
+  return _table[n].modify_data();
 }
 
 /**
@@ -336,7 +335,19 @@ template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 set_data(size_t n, const Value &data) {
   nassertv(n < _num_entries);
-  _table[n]._data = data;
+  _table[n].set_data(data);
+}
+
+/**
+ * Changes the data for the nth entry of the table.
+ *
+ * @param n should be in the range 0 <= n < size().
+ */
+template<class Key, class Value, class Compare>
+INLINE void SimpleHashMap<Key, Value, Compare>::
+set_data(size_t n, Value &&data) {
+  nassertv(n < _num_entries);
+  _table[n].set_data(move(data));
 }
 
 /**

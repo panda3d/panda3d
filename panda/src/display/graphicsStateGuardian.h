@@ -426,6 +426,8 @@ public:
   PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
   PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
 
+  virtual void ensure_generated_shader(const RenderState *state);
+
 #ifdef DO_PSTATS
   static void init_frame_pstats();
 #endif
@@ -446,6 +448,7 @@ protected:
   virtual void end_bind_clip_planes();
 
   void determine_target_texture();
+  void determine_target_shader();
 
   virtual void free_pointers();
   virtual void close_gsg();
