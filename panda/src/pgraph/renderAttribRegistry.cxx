@@ -93,7 +93,7 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
       // If this attribute was already registered, something odd is going on.
       nassertr(RenderAttrib::_attribs->find(default_attrib) == -1, 0);
       default_attrib->_saved_entry =
-        RenderAttrib::_attribs->store(default_attrib, RenderAttrib::Empty());
+        RenderAttrib::_attribs->store(default_attrib, nullptr);
     }
 
     // It effectively lives forever.  Might as well make it official.

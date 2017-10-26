@@ -1798,34 +1798,46 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   string property_name = make_property->get_local_name(&parser);
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
   // First, check to see if it's already there.
+  ElementIndex index = 0;
   PropertiesByName::const_iterator tni =
     _properties_by_name.find(property_name);
   if (tni != _properties_by_name.end()) {
-    ElementIndex index = (*tni).second;
-    return index;
+    index = (*tni).second;
+    const InterrogateElement &ielem = idb->get_element(index);
+    if (ielem._make_property == make_property) {
+      // This is the same property.
+      return index;
+    }
+
+    // It is possible to have property definitions with the same name, but
+    // they cannot define conflicting interfaces.
+    if ((ielem.is_sequence() || ielem.is_mapping()) !=
+        (make_property->_type != CPPMakeProperty::T_normal)) {
+      cerr << "Conflicting property definitions for " << property_name << "!\n";
+      return index;
+    }
   }
 
   // If we have a length function (ie. this is a sequence property), we should
   // find the function that will give us the length.
   FunctionIndex length_function = 0;
-  bool is_seq = false;
-
-  CPPFunctionGroup::Instances::const_iterator fi;
-  CPPFunctionGroup *fgroup = make_property->_length_function;
-  if (fgroup != NULL) {
-    is_seq = true;
-
-    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
-      CPPInstance *function = (*fi);
-      CPPFunctionType *ftype =
-        function->_type->as_function_type();
-      if (ftype != NULL) {
-        length_function = get_function(function, "", struct_type,
-                                       struct_type->get_scope(), 0);
-        if (length_function != 0) {
-          break;
+  if (make_property->_type & CPPMakeProperty::T_sequence) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    CPPFunctionGroup *fgroup = make_property->_length_function;
+    if (fgroup != NULL) {
+      for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+        CPPInstance *function = (*fi);
+        CPPFunctionType *ftype =
+          function->_type->as_function_type();
+        if (ftype != NULL) {
+          length_function = get_function(function, "", struct_type,
+                                         struct_type->get_scope(), 0);
+          if (length_function != 0) {
+            break;
+          }
         }
       }
     }
@@ -1840,7 +1852,10 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   CPPInstance *getter = NULL;
   CPPType *return_type = NULL;
 
-  fgroup = make_property->_get_function;
+  // How many arguments we expect the getter to have.
+  size_t num_args = (size_t)(make_property->_type != CPPMakeProperty::T_normal);
+
+  CPPFunctionGroup *fgroup = make_property->_get_function;
   if (fgroup != NULL) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
@@ -1852,8 +1867,12 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
 
       const CPPParameterList::Parameters &params = ftype->_parameters->_parameters;
 
-      size_t expected_num_args = (size_t)is_seq;
+      size_t expected_num_args = 0;
       size_t index_arg = 0;
+
+      if (make_property->_type != CPPMakeProperty::T_normal) {
+        ++expected_num_args;
+      }
 
       if (!params.empty() && params[0]->get_simple_name() == "self" &&
           TypeManager::is_pointer_to_PyObject(params[0]->_type)) {
@@ -1867,7 +1886,8 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
           (params.size() > expected_num_args &&
            params[expected_num_args]->_initializer != NULL)) {
         // If this is a sequence getter, it must take an index argument.
-        if (is_seq && !TypeManager::is_integer(params[index_arg]->_type)) {
+        if (make_property->_type == CPPMakeProperty::T_sequence &&
+            !TypeManager::is_integer(params[index_arg]->_type)) {
           continue;
         }
 
@@ -1899,13 +1919,14 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype =
         function->_type->as_function_type();
-      if (ftype != NULL && TypeManager::is_bool(ftype->_return_type)) {
+      if (ftype != nullptr && (TypeManager::is_integer(ftype->_return_type) ||
+                               TypeManager::is_pointer(ftype->_return_type))) {
         hasser = function;
         break;
       }
     }
 
-    if (hasser == NULL || return_type == NULL) {
+    if (hasser == nullptr) {
       cerr << "No instance of has-function '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
@@ -1921,44 +1942,77 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype = function->_type->as_function_type();
-      if (ftype != NULL && ftype->_parameters->_parameters.size() == (size_t)is_seq) {
+      if (ftype != NULL && ftype->_parameters->_parameters.size() == num_args) {
         deleter = function;
         break;
       }
     }
 
-    if (deleter == NULL || return_type == NULL) {
+    if (deleter == nullptr) {
       cerr << "No instance of delete-function '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
     }
   }
 
-  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-  // It isn't here, so we'll have to define it.
-  ElementIndex index = idb->get_next_index();
-  _properties_by_name[property_name] = index;
+  if (index == 0) {
+    // It isn't here, so we'll have to define it.
+    index = idb->get_next_index();
+    _properties_by_name[property_name] = index;
 
-  InterrogateElement iproperty;
-  iproperty._name = make_property->get_simple_name();
-  iproperty._scoped_name = descope(make_property->get_local_name(&parser));
+    InterrogateElement iproperty;
+    iproperty._name = make_property->get_simple_name();
+    iproperty._scoped_name = descope(make_property->get_local_name(&parser));
+    idb->add_element(index, iproperty);
+  }
+
+  InterrogateElement &iproperty = idb->update_element(index);
 
   if (return_type != NULL) {
-    iproperty._type = get_type(TypeManager::unwrap_reference(return_type), false);
+    TypeIndex return_index = get_type(TypeManager::unwrap_reference(return_type), false);
+    if (iproperty._type != 0 && iproperty._type != return_index) {
+      cerr << "Property " << property_name << " has inconsistent element type!\n";
+    }
   } else {
     iproperty._type = 0;
   }
 
-  if (length_function != 0) {
+  if (make_property->_type & CPPMakeProperty::T_sequence) {
     iproperty._flags |= InterrogateElement::F_sequence;
     iproperty._length_function = length_function;
   }
 
-  if (getter != NULL) {
-    iproperty._flags |= InterrogateElement::F_has_getter;
-    iproperty._getter = get_function(getter, "", struct_type,
-                                     struct_type->get_scope(), 0);
-    nassertr(iproperty._getter, 0);
+  if (make_property->_type & CPPMakeProperty::T_mapping) {
+    iproperty._flags |= InterrogateElement::F_mapping;
+  }
+
+  if (make_property->_type == CPPMakeProperty::T_normal) {
+    if (getter != NULL) {
+      iproperty._flags |= InterrogateElement::F_has_getter;
+      iproperty._getter = get_function(getter, "", struct_type,
+                                      struct_type->get_scope(), 0);
+      nassertr(iproperty._getter, 0);
+    }
+  } else {
+    // We could have a mixed sequence/mapping property, so synthesize a
+    // getitem function.  We don't really care what's in here; we just use
+    // this to store the remaps.
+    if (!iproperty.has_getter()) {
+      iproperty._flags |= InterrogateElement::F_has_getter;
+      iproperty._getter = InterrogateDatabase::get_ptr()->get_next_index();
+      InterrogateFunction *ifunction = new InterrogateFunction;
+      ifunction->_instances = new InterrogateFunction::Instances;
+      InterrogateDatabase::get_ptr()->add_function(iproperty._getter, ifunction);
+    }
+
+    // Add our getter to the generated getitem function.
+    string signature = TypeManager::get_function_signature(getter);
+    InterrogateFunction &ifunction =
+      InterrogateDatabase::get_ptr()->update_function(iproperty._getter);
+    if (ifunction._instances == nullptr) {
+      ifunction._instances = new InterrogateFunction::Instances;
+    }
+    ifunction._instances->insert(InterrogateFunction::Instances::value_type(signature, getter));
   }
 
   if (hasser != NULL) {
@@ -2011,7 +2065,6 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     }
   }
 
-  idb->add_element(index, iproperty);
   return index;
 }
 
@@ -2621,7 +2674,9 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_property) {
       ElementIndex element_index = get_make_property((*di)->as_make_property(), cpptype, scope);
-      itype._elements.push_back(element_index);
+      if (find(itype._elements.begin(), itype._elements.end(), element_index) == itype._elements.end()) {
+        itype._elements.push_back(element_index);
+      }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_seq) {
       MakeSeqIndex make_seq_index = get_make_seq((*di)->as_make_seq(), cpptype);

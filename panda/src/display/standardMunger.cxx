@@ -38,7 +38,17 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _auto_shader(false),
   _shader_skinning(false)
 {
-  if (!get_gsg()->get_runtime_color_scale()) {
+  const ShaderAttrib *shader_attrib;
+  state->get_attrib_def(shader_attrib);
+#ifdef HAVE_CG
+  _auto_shader = shader_attrib->auto_shader();
+#endif
+  if (shader_attrib->get_flag(ShaderAttrib::F_hardware_skinning)) {
+    _shader_skinning = true;
+  }
+
+  if (!get_gsg()->get_runtime_color_scale() && !_auto_shader &&
+      shader_attrib->get_shader() == nullptr) {
     // We might need to munge the colors.
     const ColorAttrib *color_attrib;
     const ColorScaleAttrib *color_scale_attrib;
@@ -60,6 +70,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                      _color[3] * cs[3]);
         }
         _munge_color = true;
+        _should_munge_state = true;
       }
 
     } else if (state->get_attrib(color_scale_attrib) &&
@@ -74,6 +85,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
       if ((color_scale_attrib->has_rgb_scale() && !get_gsg()->get_color_scale_via_lighting()) ||
           (color_scale_attrib->has_alpha_scale() && !get_gsg()->get_alpha_scale_via_texture(tex_attrib))) {
         _munge_color_scale = true;
+        _should_munge_state = true;
       }
 
       // Known bug: if there is a material on an object that would obscure the
@@ -81,15 +93,6 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
       // the effect even if it should be obscured.  It doesn't seem worth the
       // effort to detect this contrived situation and handle it correctly.
     }
-  }
-
-  const ShaderAttrib *shader_attrib = (const ShaderAttrib *)
-    state->get_attrib_def(ShaderAttrib::get_class_slot());
-  if (shader_attrib->auto_shader()) {
-    _auto_shader = true;
-  }
-  if (shader_attrib->get_flag(ShaderAttrib::F_hardware_skinning)) {
-    _shader_skinning = true;
   }
 }
 
@@ -340,34 +343,6 @@ munge_state_impl(const RenderState *state) {
   } else if (_munge_color_scale) {
     munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
   }
-
-#ifdef HAVE_CG
-  if (_auto_shader) {
-    GraphicsStateGuardian *gsg = get_gsg();
-    ShaderGenerator *shader_generator = gsg->get_shader_generator();
-    if (shader_generator == nullptr) {
-      shader_generator = new ShaderGenerator(gsg);
-      gsg->set_shader_generator(shader_generator);
-    }
-    if (munged_state->_generated_shader == nullptr) {
-      // Cache the generated ShaderAttrib on the shader state.
-      GeomVertexAnimationSpec spec;
-
-      // Currently we overload this flag to request vertex animation for the
-      // shader generator.
-      const ShaderAttrib *sattr;
-      munged_state->get_attrib_def(sattr);
-      if (sattr->get_flag(ShaderAttrib::F_hardware_skinning)) {
-        spec.set_hardware(4, true);
-      }
-
-      munged_state->_generated_shader = shader_generator->synthesize_shader(munged_state, spec);
-    }
-    if (munged_state->_generated_shader != nullptr) {
-      munged_state = munged_state->set_attrib(munged_state->_generated_shader);
-    }
-  }
-#endif
 
   return munged_state;
 }

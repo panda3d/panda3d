@@ -2620,6 +2620,8 @@ def SetupBuildEnvironment(compiler):
             if os.path.isdir(pcbsd_inc):
                 SYS_INC_DIRS.append(pcbsd_inc)
 
+        null.close()
+
         # Print out the search paths
         if GetVerbose():
             print("System library search path:")

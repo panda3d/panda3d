@@ -103,7 +103,7 @@ class World(DirectObject):
         self.pandaModel = Actor.Actor('panda-model', {'walk': 'panda-walk4'})
         self.pandaModel.reparentTo(self.pandaAxis)
         self.pandaModel.setPos(9, 0, 0)
-        self.pandaModel.setShaderInput("scale", 0.01, 0.01, 0.01, 1.0)
+        self.pandaModel.setShaderInput("scale", (0.01, 0.01, 0.01, 1.0))
         self.pandaWalk = self.pandaModel.actorInterval('walk', playRate=1.8)
         self.pandaWalk.loop()
         self.pandaMovement = self.pandaAxis.hprInterval(
@@ -113,7 +113,7 @@ class World(DirectObject):
         self.teapot = loader.loadModel('teapot')
         self.teapot.reparentTo(render)
         self.teapot.setPos(0, -20, 10)
-        self.teapot.setShaderInput("texDisable", 1, 1, 1, 1)
+        self.teapot.setShaderInput("texDisable", (1, 1, 1, 1))
         self.teapotMovement = self.teapot.hprInterval(50, LPoint3(0, 360, 360))
         self.teapotMovement.loop()
 
@@ -145,9 +145,9 @@ class World(DirectObject):
         # setting up shader
         render.setShaderInput('light', self.LCam)
         render.setShaderInput('Ldepthmap', Ldepthmap)
-        render.setShaderInput('ambient', self.ambient, 0, 0, 1.0)
-        render.setShaderInput('texDisable', 0, 0, 0, 0)
-        render.setShaderInput('scale', 1, 1, 1, 1)
+        render.setShaderInput('ambient', (self.ambient, 0, 0, 1.0))
+        render.setShaderInput('texDisable', (0, 0, 0, 0))
+        render.setShaderInput('scale', (1, 1, 1, 1))
 
         # Put a shader on the Light camera.
         lci = NodePath(PandaNode("Light Camera Initializer"))

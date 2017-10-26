@@ -257,7 +257,7 @@ make_default() {
 /**
  * Returns the basic operation type of the LightAttrib.  If this is O_set, the
  * lights listed here completely replace any lights that were already on.  If
- * this is O_add, the lights here are added to the set of of lights that were
+ * this is O_add, the lights here are added to the set of lights that were
  * already on, and if O_remove, the lights here are removed from the set of
  * lights that were on.
  *
@@ -831,6 +831,14 @@ compose_impl(const RenderAttrib *other) const {
     *result = *bi;
     ++bi;
     ++result;
+  }
+
+  // Increase the attrib_ref of all the lights in this new attribute.
+  Lights::const_iterator it;
+  for (it = new_attrib->_on_lights.begin(); it != new_attrib->_on_lights.end(); ++it) {
+    Light *lobj = (*it).node()->as_light();
+    nassertd(lobj != nullptr) continue;
+    lobj->attrib_ref();
   }
 
   return return_new(new_attrib);

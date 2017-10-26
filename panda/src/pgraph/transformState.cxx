@@ -1512,7 +1512,7 @@ return_unique(TransformState *state) {
     // deleted while it's in it.
     state->cache_ref();
   }
-  si = _states->store(state, Empty());
+  si = _states->store(state, nullptr);
 
   // Save the index and return the input state.
   state->_saved_entry = si;

@@ -55,6 +55,9 @@ public:
   bool add_hook(const string &event_name, EventCallbackFunction *function,
                 void *data);
   bool has_hook(const string &event_name) const;
+  bool has_hook(const string &event_name, EventFunction *function) const;
+  bool has_hook(const string &event_name, EventCallbackFunction *function,
+                void *data) const;
   bool remove_hook(const string &event_name, EventFunction *function);
   bool remove_hook(const string &event_name, EventCallbackFunction *function,
                    void *data);

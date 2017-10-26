@@ -142,10 +142,15 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
           DCAST(ShaderAttrib, ShaderAttrib::make())->set_flag(ShaderAttrib::F_hardware_skinning, true));
         _state = _state->compose(state);
       }
-    }
 
-    StateMunger *state_munger = (StateMunger *)munger;
-    _state = state_munger->munge_state(_state);
+      gsg->ensure_generated_shader(_state);
+    } else {
+      // We may need to munge the state for the fixed-function pipeline.
+      StateMunger *state_munger = (StateMunger *)munger;
+      if (state_munger->should_munge_state()) {
+        _state = state_munger->munge_state(_state);
+      }
+    }
 
     // If there is any animation left in the vertex data after it has been
     // munged--that is, we couldn't arrange to handle the animation in

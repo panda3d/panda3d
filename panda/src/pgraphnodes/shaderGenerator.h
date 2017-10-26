@@ -65,18 +65,15 @@ class GeomVertexAnimationSpec;
  */
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
-  ShaderGenerator(GraphicsStateGuardianBase *gsg);
+  ShaderGenerator(const GraphicsStateGuardianBase *gsg);
   virtual ~ShaderGenerator();
   virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
                                               const GeomVertexAnimationSpec &anim);
 
-protected:
-  static const string combine_mode_as_string(CPT(TextureStage) stage,
-                      TextureStage::CombineMode c_mode, bool alpha, short texindex);
-  static const string combine_source_as_string(CPT(TextureStage) stage,
-                         short num, bool alpha, bool single_value, short texindex);
-  static const string texture_type_as_string(Texture::TextureType ttype);
+  void rehash_generated_shaders();
+  void clear_generated_shaders();
 
+protected:
   // Shader register allocation:
 
   bool _use_generic_attr;
@@ -101,15 +98,28 @@ protected:
 
     GeomVertexAnimationSpec _anim_spec;
     enum TextureFlags {
-      TF_has_rgb = 1,
-      TF_has_alpha = 2,
-      TF_has_texscale = 4,
-      TF_has_texmat = 8,
-      TF_saved_result = 16,
-      TF_map_normal = 32,
-      TF_map_height = 64,
-      TF_map_glow = 128,
-      TF_map_gloss = 256,
+      TF_has_rgb      = 0x001,
+      TF_has_alpha    = 0x002,
+      TF_has_texscale = 0x004,
+      TF_has_texmat   = 0x008,
+      TF_saved_result = 0x010,
+      TF_map_normal   = 0x020,
+      TF_map_height   = 0x040,
+      TF_map_glow     = 0x080,
+      TF_map_gloss    = 0x100,
+      TF_uses_color   = 0x200,
+      TF_uses_primary_color = 0x400,
+      TF_uses_last_saved_result = 0x800,
+
+      TF_rgb_scale_2 = 0x1000,
+      TF_rgb_scale_4 = 0x2000,
+      TF_alpha_scale_2 = 0x4000,
+      TF_alpha_scale_4 = 0x8000,
+
+      TF_COMBINE_RGB_MODE_SHIFT = 16,
+      TF_COMBINE_RGB_MODE_MASK = 0x0000f0000,
+      TF_COMBINE_ALPHA_MODE_SHIFT = 20,
+      TF_COMBINE_ALPHA_MODE_MASK = 0x000f00000,
     };
 
     ColorAttrib::Type _color_type;
@@ -122,9 +132,8 @@ protected:
       TextureStage::Mode _mode;
       TexGenAttrib::Mode _gen_mode;
       int _flags;
-
-      // Stored only if combine modes / blend color is used
-      CPT(TextureStage) _stage;
+      uint16_t _combine_rgb;
+      uint16_t _combine_alpha;
     };
     pvector<TextureInfo> _textures;
 
@@ -158,6 +167,12 @@ protected:
   GeneratedShaders _generated_shaders;
 
   void analyze_renderstate(ShaderKey &key, const RenderState *rs);
+
+  static const string combine_mode_as_string(const ShaderKey::TextureInfo &info,
+                      TextureStage::CombineMode c_mode, bool alpha, short texindex);
+  static const string combine_source_as_string(const ShaderKey::TextureInfo &info,
+                         short num, bool alpha, bool single_value, short texindex);
+  static const string texture_type_as_string(Texture::TextureType ttype);
 
 public:
   static TypeHandle get_class_type() {

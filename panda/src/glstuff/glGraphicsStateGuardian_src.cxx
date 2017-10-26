@@ -174,7 +174,7 @@ static const string default_vshader =
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
   "  texcoord = p3d_MultiTexCoord0;\n"
-  "  color = p3d_Color;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
 static const string default_fshader =
@@ -3126,6 +3126,10 @@ reset() {
     }
   }
 #endif
+
+  // Do we guarantee that we can apply the color scale via a shader?  We set
+  // this false if there is a chance that the fixed-function pipeline is used.
+  _runtime_color_scale = !has_fixed_function_pipeline();
 
 #ifndef OPENGLES
   if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
@@ -10341,8 +10345,7 @@ set_state_and_transform(const RenderState *target,
   _target_rs = target;
 
 #ifndef OPENGLES_1
-  _target_shader = (const ShaderAttrib *)
-    _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
+  determine_target_shader();
   _instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {

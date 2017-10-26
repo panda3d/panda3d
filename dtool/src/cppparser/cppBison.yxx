@@ -397,6 +397,7 @@ pop_struct() {
 %type <u.type> class_derivation_name
 %type <u.type> enum_element_type
 %type <u.type> maybe_trailing_return_type
+%type <u.identifier> maybe_comma_identifier
 /*%type <u.type> typedefname*/
 %type <u.identifier> name
 %type <u.identifier> name_no_final
@@ -548,202 +549,264 @@ declaration:
 {
   current_scope->set_current_vis(V_private);
 }
-        | KW_MAKE_PROPERTY '(' name ',' IDENTIFIER ')' ';'
-{
-
-  CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
-  }
-
-  CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(), NULL, current_scope, @1.file);
-  current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
-}
-        | KW_MAKE_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+        | KW_MAKE_PROPERTY '(' name ',' IDENTIFIER maybe_comma_identifier ')' ';'
 {
   CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
-
   } else {
-    CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
-    CPPFunctionGroup *setter_func = NULL;
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, CPPMakeProperty::T_normal, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
 
-    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
-      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @7);
-    } else {
-      setter_func = setter->as_function_group();
+    if ($6 != nullptr) {
+      CPPDeclaration *setter = $6->find_symbol(current_scope, global_scope, current_lexer);
+      if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+        yyerror("Reference to non-existent or invalid setter: " + $6->get_fully_scoped_name(), @6);
+      } else {
+        make_property->_set_function = setter->as_function_group();
+      }
     }
 
-    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
-                                                         setter_func, current_scope, @1.file);
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
         | KW_MAKE_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
   CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
 
   } else {
-    CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
-    CPPFunctionGroup *setter_func = NULL;
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, CPPMakeProperty::T_normal, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
 
-    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+    CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
+    if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
       yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @7);
     } else {
-      setter_func = setter->as_function_group();
+      make_property->_set_function = setter->as_function_group();
     }
 
     CPPDeclaration *deleter = $9->find_symbol(current_scope, global_scope, current_lexer);
-    if (deleter == (CPPDeclaration *)NULL || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
+    if (deleter == nullptr || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
       yyerror("reference to non-existent or invalid delete method: " + $9->get_fully_scoped_name(), @9);
-      deleter = NULL;
-    }
-
-    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
-                                                         setter_func, current_scope, @1.file);
-    if (deleter) {
+    } else {
       make_property->_del_function = deleter->as_function_group();
     }
+
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
         | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (length_getter == nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
-    length_getter = NULL;
+    length_getter = nullptr;
   }
 
   CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+    getter = nullptr;
   }
 
-  CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(), NULL, current_scope, @1.file);
-  make_property->_length_function = length_getter->as_function_group();
-  current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  if (getter != nullptr && length_getter != nullptr) {
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, CPPMakeProperty::T_sequence, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+    make_property->_length_function = length_getter->as_function_group();
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
 }
         | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (length_getter == nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
-    length_getter = NULL;
+    length_getter = nullptr;
   }
 
   CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+    getter = nullptr;
+  }
 
-  } else {
+  if (getter != nullptr && length_getter != nullptr) {
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, CPPMakeProperty::T_sequence, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+    make_property->_length_function = length_getter->as_function_group();
+
     CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
-    CPPFunctionGroup *setter_func = NULL;
-
-    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+    if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
       yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
     } else {
-      setter_func = setter->as_function_group();
+      make_property->_set_function = setter->as_function_group();
     }
 
-    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
-                                                         setter_func, current_scope, @1.file);
-    make_property->_length_function = length_getter->as_function_group();
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
         | KW_MAKE_SEQ_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (length_getter == nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
     length_getter = NULL;
   }
 
   CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+    getter = nullptr;
+  }
 
-  } else {
+  if (getter != nullptr && length_getter != nullptr) {
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, CPPMakeProperty::T_sequence, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+    make_property->_length_function = length_getter->as_function_group();
+
     CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
-    CPPFunctionGroup *setter_func = NULL;
-
-    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+    if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
       yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
     } else {
-      setter_func = setter->as_function_group();
+      make_property->_set_function = setter->as_function_group();
     }
 
     CPPDeclaration *deleter = $11->find_symbol(current_scope, global_scope, current_lexer);
-    if (deleter == (CPPDeclaration *)NULL || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
+    if (deleter == nullptr || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
       yyerror("reference to non-existent or invalid delete method: " + $11->get_fully_scoped_name(), @11);
-      deleter = NULL;
-    }
-
-    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
-                                                         setter_func, current_scope, @1.file);
-    make_property->_length_function = length_getter->as_function_group();
-    if (deleter) {
+    } else {
       make_property->_del_function = deleter->as_function_group();
     }
+
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_MAP_PROPERTY '(' name ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid item getter method: " + $5->get_fully_scoped_name(), @5);
+
+  } else {
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, CPPMakeProperty::T_mapping, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_MAP_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+
+  } else {
+    CPPMakeProperty *make_property;
+    make_property = new CPPMakeProperty($3, CPPMakeProperty::T_mapping, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+
+    CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
+    if (hasser == nullptr || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid has/find method: " + $5->get_fully_scoped_name(), @5);
+    } else {
+      make_property->_has_function = hasser->as_function_group();
+    }
+
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_MAP_PROPERTY '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER maybe_comma_identifier ')' ';'
+{
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+
+  } else {
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, CPPMakeProperty::T_mapping, current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+
+    CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
+    if (hasser == nullptr || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid has/find method: " + $5->get_fully_scoped_name(), @5);
+    } else {
+      make_property->_has_function = hasser->as_function_group();
+    }
+
+    CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
+    } else {
+      make_property->_set_function = setter->as_function_group();
+    }
+
+    if ($10 != nullptr) {
+      CPPDeclaration *deleter = $10->find_symbol(current_scope, global_scope, current_lexer);
+      if (deleter == nullptr || deleter->get_subtype() != CPPDeclaration::ST_function_group) {
+        yyerror("reference to non-existent or invalid delete method: " + $10->get_fully_scoped_name(), @10);
+      } else {
+        make_property->_del_function = deleter->as_function_group();
+      }
+    }
+
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
         | KW_MAKE_PROPERTY2 '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
-  CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (hasser == (CPPDeclaration *)NULL || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid has-function: " + $5->get_fully_scoped_name(), @5);
-  }
-
   CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
-  }
 
-  if (hasser && getter) {
+  } else {
     CPPMakeProperty *make_property;
-    make_property = new CPPMakeProperty($3,
-                                        hasser->as_function_group(),
-                                        getter->as_function_group(),
-                                        NULL, NULL,
+    make_property = new CPPMakeProperty($3, CPPMakeProperty::T_normal,
                                         current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+
+    CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
+    if (hasser == nullptr || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid has/find method: " + $5->get_fully_scoped_name(), @5);
+    } else {
+      make_property->_has_function = hasser->as_function_group();
+    }
+
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
         | KW_MAKE_PROPERTY2 '(' name ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
-  CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (hasser == (CPPDeclaration *)NULL || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid has-function: " + $5->get_fully_scoped_name(), @5);
-  }
-
   CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (getter == nullptr || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
-  }
 
-  CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
-  if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
-  }
-
-  CPPDeclaration *clearer = $11->find_symbol(current_scope, global_scope, current_lexer);
-  if (clearer == (CPPDeclaration *)NULL || clearer->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid clear-function: " + $11->get_fully_scoped_name(), @11);
-  }
-
-  if (hasser && getter && setter && clearer) {
+  } else {
     CPPMakeProperty *make_property;
-    make_property = new CPPMakeProperty($3,
-                                        hasser->as_function_group(),
-                                        getter->as_function_group(),
-                                        setter->as_function_group(),
-                                        clearer->as_function_group(),
+    make_property = new CPPMakeProperty($3, CPPMakeProperty::T_normal,
                                         current_scope, @1.file);
+    make_property->_get_function = getter->as_function_group();
+
+    CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
+    if (hasser == nullptr || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid has/find method: " + $5->get_fully_scoped_name(), @5);
+    } else {
+      make_property->_has_function = hasser->as_function_group();
+    }
+
+    CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
+    if (setter == nullptr || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
+    } else {
+      make_property->_set_function = setter->as_function_group();
+    }
+
+    CPPDeclaration *clearer = $11->find_symbol(current_scope, global_scope, current_lexer);
+    if (clearer == nullptr || clearer->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("reference to non-existent or invalid clear method: " + $11->get_fully_scoped_name(), @11);
+    } else {
+      make_property->_clear_function = clearer->as_function_group();
+    }
+
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
@@ -1719,6 +1782,18 @@ maybe_trailing_return_type:
 {
   $4->add_modifier(IIT_const);
   $$ = $4->unroll_type($3);
+}
+        ;
+
+
+maybe_comma_identifier:
+        empty
+{
+  $$ = NULL;
+}
+        | ',' IDENTIFIER
+{
+  $$ = $2;
 }
         ;
 

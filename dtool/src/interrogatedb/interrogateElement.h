@@ -19,6 +19,7 @@
 #include "interrogateComponent.h"
 
 class IndexRemapper;
+class CPPMakeProperty;
 
 /**
  * An internal representation of a data element, like a data member or a
@@ -51,6 +52,7 @@ public:
   INLINE FunctionIndex get_del_function() const;
   INLINE bool is_sequence() const;
   INLINE FunctionIndex get_length_function() const;
+  INLINE bool is_mapping() const;
 
   void output(ostream &out) const;
   void input(istream &in);
@@ -79,6 +81,8 @@ private:
   FunctionIndex _has_function;
   FunctionIndex _clear_function;
   FunctionIndex _del_function;
+
+  CPPMakeProperty *_make_property;
 
   friend class InterrogateBuilder;
 };

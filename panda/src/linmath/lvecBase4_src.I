@@ -907,9 +907,30 @@ FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy) {
  *
  */
 INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
+FLOATNAME(UnalignedLVecBase4)(FLOATTYPE fill_value) {
+  fill(fill_value);
+}
+
+/**
+ *
+ */
+INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
 FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
   TAU_PROFILE("UnalignedLVecBase4::UnalignedLVecBase4(FLOATTYPE, ...)", " ", TAU_USER);
   set(x, y, z, w);
+}
+
+/**
+ * Sets each element of the vector to the indicated fill_value.  This is
+ * particularly useful for initializing to zero.
+ */
+INLINE_LINMATH void FLOATNAME(UnalignedLVecBase4)::
+fill(FLOATTYPE fill_value) {
+  TAU_PROFILE("void UnalignedLVecBase4::fill()", " ", TAU_USER);
+  _v(0) = fill_value;
+  _v(1) = fill_value;
+  _v(2) = fill_value;
+  _v(3) = fill_value;
 }
 
 /**
