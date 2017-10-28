@@ -14,7 +14,7 @@ be passed on the command-line.
 
 Usage:
 
-  %(prog)s [opts] app.p3d standalone|installer|html
+  %(prog)s [opts] app.p3d standalone|installer|html|portable
 
 Modes:
 
@@ -32,6 +32,10 @@ Modes:
   html
     An HTML webpage will be generated that can be used to view
     the provided p3d file in a browser.
+
+  portable
+    Creates a build similar to installer, but can be run without
+    an actual installer (e.g., just a folder or an archive).
 
 Options:
 
@@ -81,7 +85,7 @@ Options:
      inside the output dirctory.
 
   -s
-     This option only has effect in 'installer' mode. If it is
+     This option only has effect in 'installer' and 'portable' modes. If it is
      provided, the resulting installers will be fully self-contained,
      will not require an internet connection to run, and start up
      much faster. Note that pdeploy will also take a very long time
@@ -136,12 +140,15 @@ Options:
      If no images are provided, no icon will be generated.
      Only relevant when generating a graphical installer.
 
+  -z
+     Specify this option to generate archived portable builds.
+
   -h
      Display this help
 
 """
 
-DEPLOY_MODES = ["standalone", "installer", "html"]
+DEPLOY_MODES = ["standalone", "installer", "html", "portable"]
 
 import sys
 import os
@@ -170,9 +177,10 @@ authoremail = ""
 iconFiles = []
 includeRequires = False
 omitDefaultCheckboxes = False
+createArchive = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csOl:L:a:A:e:i:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csOl:L:a:A:e:i:h:z')
 except getopt.error as msg:
     usage(1, msg or 'Invalid option')
 
@@ -208,7 +216,8 @@ for opt, arg in opts:
         authoremail = arg.strip()
     elif opt == '-i':
         iconFiles.append(Filename.fromOsSpecific(arg))
-
+    elif opt == '-z':
+        createArchive = True
     elif opt == '-h':
         usage(0)
     else:
@@ -237,8 +246,8 @@ if shortname == '':
 if shortname.lower() != shortname or ' ' in shortname:
     print('\nProvided short name should be lowercase, and may not contain spaces!\n')
 
-if version == '' and deploy_mode == 'installer':
-    print('\nA version number is required in "installer" mode.\n')
+if version == '' and deploy_mode in ('installer', 'portable'):
+    print('\nA version number is required in "installer" and "portable" modes.\n')
     sys.exit(1)
 
 if not outputDir:
@@ -270,11 +279,12 @@ if deploy_mode == 'standalone':
             else:
                 s.build(Filename(outputDir, platform + "/" + shortname), platform)
 
-elif deploy_mode == 'installer':
+elif deploy_mode in ('installer', 'portable'):
     if includeRequires:
         tokens["verify_contents"] = "never"
     i = Installer(appFilename, shortname, fullname, version, tokens = tokens)
     i.includeRequires = includeRequires
+    i.createArchive = createArchive
     if omitDefaultCheckboxes:
         i.offerRun = False
         i.offerDesktopShortcut = False
@@ -289,6 +299,7 @@ elif deploy_mode == 'installer':
     if not authorname or not authoremail or not authorid:
         print("Using author \"%s\" <%s> with ID %s" % \
             (i.authorname, i.authoremail, i.authorid))
+    portablebuild = deploy_mode == 'portable'
 
     # Add the supplied icon images
     if len(iconFiles) > 0:
@@ -304,17 +315,14 @@ elif deploy_mode == 'installer':
     # Now build for the requested platforms.
     if currentPlatform:
         platform = PandaSystem.getPlatform()
-        if platform.startswith("win"):
-            i.build(outputDir, platform)
-        else:
-            i.build(outputDir, platform)
+        i.build(outputDir, platform, portable=portablebuild)
     elif len(platforms) == 0:
-        i.buildAll(outputDir)
+        i.buildAll(outputDir, portable=portablebuild)
     else:
         for platform in platforms:
             output = Filename(outputDir, platform + "/")
             output.makeDir()
-            i.build(output, platform)
+            i.build(output, platform, portable=portablebuild)
 
     del i
 

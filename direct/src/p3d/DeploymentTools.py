@@ -472,6 +472,7 @@ class Installer:
         self.authorname = os.environ.get("DEBFULLNAME", "")
         self.authoremail = os.environ.get("DEBEMAIL", "")
         self.icon = None
+        self.createArchive = False
 
         # Try to determine a default author name ourselves.
         uname = None
@@ -672,7 +673,7 @@ class Installer:
         doc.InsertEndChild(xcontents)
         doc.SaveFile(Filename(hostDir, "contents.xml").toOsSpecific())
 
-    def buildAll(self, outputDir = "."):
+    def buildAll(self, outputDir = ".", portable=False):
         """ Creates a (graphical) installer for every known platform.
         Call this after you have set the desired parameters. """
 
@@ -690,9 +691,9 @@ class Installer:
         for platform in platforms:
             output = Filename(outputDir, platform + "/")
             output.makeDir()
-            self.build(output, platform)
+            self.build(output, platform, portable)
 
-    def build(self, output, platform = None):
+    def build(self, output, platform = None, portable=False):
         """ Builds (graphical) installers and stores it into the path
         indicated by the 'output' argument. You can specify to build for
         a different platform by altering the 'platform' argument.
@@ -701,19 +702,27 @@ class Installer:
         if platform == None:
             platform = PandaSystem.getPlatform()
 
-        if platform.startswith("win"):
-            self.buildNSIS(output, platform)
-            return
-        elif "_" in platform:
-            osname, arch = platform.split("_", 1)
-            if osname == "linux":
-                self.buildDEB(output, platform)
-                self.buildArch(output, platform)
+        if portable:
+            if platform.startswith("osx"):
+                self.buildAPP(output, platform)
+            elif platform.startswith("win") or platform.startswith("linux"):
+                self.buildPortable(output, platform)
+            else:
+                Installer.notify.info("Ignoring unknown platform " + platform)
+        else:
+            if platform.startswith("win"):
+                self.buildNSIS(output, platform)
                 return
-            elif osname == "osx":
-                self.buildPKG(output, platform)
-                return
-        Installer.notify.info("Ignoring unknown platform " + platform)
+            elif "_" in platform:
+                osname, arch = platform.split("_", 1)
+                if osname == "linux":
+                    self.buildDEB(output, platform)
+                    self.buildArch(output, platform)
+                    return
+                elif osname == "osx":
+                    self.buildPKG(output, platform)
+                    return
+            Installer.notify.info("Ignoring unknown platform " + platform)
 
     def __buildTempLinux(self, platform):
         """ Builds a filesystem for Linux.  Used so that buildDEB,
@@ -792,6 +801,71 @@ class Installer:
 
         self.__tempRoots[platform] = (tempdir, totsize)
         return self.__tempRoots[platform]
+
+    def buildPortable(self, output, platform):
+        """ Builds a portable archive that can be extracted onto the filesystem"""
+        arch = platform.rsplit("_", 1)[-1]
+        output = Filename(output)
+        runtime_ext = ".exe" if platform.startswith('win') else ""
+
+        if arch:
+            output_name = "%s_%s_%s" % (self.shortname.lower(), self.version, arch)
+        else:
+            output_name = "%s_%s" % (self.shortname.lower(), self.version)
+
+        if output.isDirectory():
+            output = Filename(output, output_name)
+        output.makeAbsolute()
+        extrafiles = self.standalone.getExtraFiles(platform)
+
+        runtime = Filename(Filename.getTempDirectory(), self.shortname + runtime_ext)
+        runtime.unlink()
+        if self.includeRequires:
+            extraTokens = {"host_dir": ".", "start_dir": "."}
+        else:
+            extraTokens = {}
+        self.standalone.build(runtime, platform, extraTokens)
+
+        # Temporary directory to store the hostdir in
+        hostDir = Filename(self.tempDir, platform + "/")
+        if hostDir.exists():
+            hostDir.unlink()
+        hostDir.makeDir()
+        self.installPackagesInto(hostDir, platform)
+        shutil.copy2(runtime.toOsSpecific(), Filename(hostDir, self.shortname + runtime_ext).toOsSpecific())
+        for file in extrafiles:
+            shutil.copy2(file.toOsSpecific(), Filename(hostDir, file.getBasename()).toOsSpecific())
+
+        if not self.createArchive:
+            Installer.notify.info("Creating %s..." % output)
+            shutil.copytree(hostDir.toOsSpecific(), output.toOsSpecific())
+        else:
+            if platform.startswith('linux'):
+                arctype = 'tar.gz'
+            else:
+                arctype = 'zip'
+
+            arc_fn = Filename(output.getDirname(), "%s.%s" % (output_name, arctype))
+
+            Installer.notify.info("Creating %s..." % arc_fn)
+            dir = Filename(output.getDirname())
+            dir.makeAbsolute()
+
+            if arctype == 'tar.gz':
+                tar = tarfile.open(arc_fn.toOsSpecific(), 'w:gz')
+                tar.add(hostDir.toOsSpecific(), output_name)
+                tar.close()
+            else:
+                zip = zipfile.ZipFile(arc_fn.toOsSpecific(), 'w')
+                for root, dirs, files in self.os_walk(hostDir.toOsSpecific()):
+                    for name in files:
+                        basefile = Filename.fromOsSpecific(os.path.join(root, name))
+                        file = Filename(basefile)
+                        file.makeAbsolute()
+                        file.makeRelativeTo(hostDir)
+                        file = Filename(output_name, file)
+                        zip.write(basefile.toOsSpecific(), str(file))
+                zip.close()
 
     def buildDEB(self, output, platform):
         """ Builds a .deb archive and stores it in the path indicated
