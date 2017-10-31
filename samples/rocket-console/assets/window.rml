@@ -1,0 +1,42 @@
+<template name="window" content="content">
+    <head>
+        <link type="text/rcss" href="rkt.rcss"/>
+        <link type="text/rcss" href="window.rcss"/>
+
+
+        <script>
+import _rocketcore as rocket
+
+def OnLoad(document):
+    print "Rocket document loaded"
+
+# event handlers from templates can be overridden in windows using them
+def OnKeyDown(event, document):
+    keyId = event.parameters['key_identifier']
+    print "Base keydown: unhandled key ",keyId
+
+        </script>
+    </head>
+
+
+    <body class="window" onload='OnLoad(document)' onkeydown='OnKeyDown(event, document)'>
+        <div id="title_bar">
+            <handle move_target="#document">
+            <span id="title">Rocket Sample</span>
+
+                <div id="title_bar_content">
+                </div>
+            </handle>
+        </div>
+        <div id="window">
+            <div id="content">
+            </div>
+        </div>
+
+        <!-- drag and drop of window -->
+        <handle size_target="#document"
+             style="position: absolute; width: 16px; height: 16px; bottom: 0px; right: 0px;">
+        </handle>
+    </body>
+
+</template>

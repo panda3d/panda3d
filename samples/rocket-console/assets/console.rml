@@ -1,0 +1,11 @@
+<rml>
+
+    <head>
+        <title>Administrative Console</title>
+        <link type="text/rcss" href="console.rcss"/>
+    </head>
+    <!-- events are bound strictly from code -->
+    <body >
+        <text id="content" />
+    </body>
+</rml>
