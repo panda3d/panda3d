@@ -25,6 +25,9 @@
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 #include "graphicsPipeSelection.h"
+#include "asyncTaskManager.h"
+#include "asyncTask.h"
+#include "boundingSphere.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime attempts to run
 // pview will fail if it inadvertently links with the wrong version of
@@ -231,6 +234,111 @@ report_version() {
   nout << "\n";
 }
 
+// Task that dynamically adjusts the camera len's near/far clipping
+// planes to ensure the user can zoom in as close as needed to a model.
+//
+// Code adapted from WindowFramework::center_trackball(), but
+// without moving the camera.  When the camera is inside the model,
+// the near clip is set to near-zero.
+//
+class AdjustCameraClipPlanesTask : public AsyncTask {
+public:
+  AdjustCameraClipPlanesTask(const string &name, Camera *camera) :
+    AsyncTask(name), _camera(camera), _lens(camera->get_lens(0)), _sphere(NULL)
+  {
+    NodePath np = framework.get_models();
+    PT(BoundingVolume) volume = np.get_bounds();
+
+    // We expect at least a geometric bounding volume around the world.
+    nassertv(volume != (BoundingVolume *)NULL);
+    nassertv(volume->is_of_type(GeometricBoundingVolume::get_class_type()));
+    CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, volume);
+
+    if (np.has_parent()) {
+      CPT(TransformState) net_transform = np.get_parent().get_net_transform();
+      PT(GeometricBoundingVolume) new_gbv = DCAST(GeometricBoundingVolume, gbv->make_copy());
+      new_gbv->xform(net_transform->get_mat());
+      gbv = new_gbv;
+    }
+
+    // Determine the bounding sphere around the object.
+    if (gbv->is_infinite()) {
+      framework_cat.warning()
+        << "Infinite bounding volume for " << np << "\n";
+      return;
+    }
+
+    if (gbv->is_empty()) {
+      framework_cat.warning()
+        << "Empty bounding volume for " << np << "\n";
+      return;
+    }
+
+    // The BoundingVolume might be a sphere (it's likely), but since it
+    // might not, we'll take no chances and make our own sphere.
+    _sphere = new BoundingSphere(gbv->get_approx_center(), 0.0f);
+    if (!_sphere->extend_by(gbv)) {
+      framework_cat.warning()
+        << "Cannot determine bounding volume of " << np << "\n";
+      return;
+    }
+  }
+  ALLOC_DELETED_CHAIN(AdjustCameraClipPlanesTask);
+
+  virtual DoneStatus do_task() {
+    if (!_sphere) {
+      return DS_done;
+    }
+
+    if (framework.get_num_windows() == 0) {
+      return DS_cont;
+    }
+
+    WindowFramework *wf = framework.get_window(0);
+    if (!wf) {
+      return DS_cont;
+    }
+
+    // Get current camera position.
+    NodePath cameraNP = wf->get_camera_group();
+    LPoint3 pos = cameraNP.get_pos();
+
+    // See how far or close the camera is
+    LPoint3 center = _sphere->get_center();
+    PN_stdfloat radius = _sphere->get_radius();
+
+    PN_stdfloat min_distance = 0.001 * radius;
+
+    // Choose a suitable distance to view the whole volume in our frame.
+    // This is based on the camera lens in use.
+    PN_stdfloat distance;
+    CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, _sphere);
+    if (gbv->contains(pos)) {
+      // See as up-close to the model as possible
+      distance = min_distance;
+    } else {
+      // View from a distance
+      distance = (center - pos).length();
+    }
+
+    // Ensure the far plane is far enough back to see the entire object.
+    PN_stdfloat ideal_far_plane = distance + radius * 1.5;
+    _lens->set_far(max(_lens->get_default_far(), ideal_far_plane));
+
+    // And that the near plane is far enough forward, but if inside
+    // the sphere, keep above 0.
+    PN_stdfloat ideal_near_plane = max(min_distance * 10, distance - radius);
+    _lens->set_near(min(_lens->get_default_near(), ideal_near_plane));
+
+    return DS_cont;
+  }
+
+  Camera *_camera;
+  Lens *_lens;
+  PT(BoundingSphere) _sphere;
+};
+
+
 int
 main(int argc, char **argv) {
   preprocess_argv(argc, argv);
@@ -382,6 +490,9 @@ main(int argc, char **argv) {
     if (anim_controls) {
       window->set_anim_controls(true);
     }
+
+    PT(AdjustCameraClipPlanesTask) task = new AdjustCameraClipPlanesTask("Adjust Camera Bounds", window->get_camera(0));
+    framework.get_task_mgr().add(task);
 
     framework.enable_default_keys();
     framework.define_key("shift-w", "open a new window", event_W, NULL);
