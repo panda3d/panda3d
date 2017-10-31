@@ -1,0 +1,56 @@
+body
+{
+    font-family: "MODENINE";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 15;
+
+}
+
+body.window
+{
+    padding-top: 43px;
+    padding-bottom: 20px;
+
+    min-width: 250px;
+
+    min-height: 135px;
+    max-height: 700px;
+
+}
+
+
+
+div#title_bar
+{
+    z-index: 1;
+
+    position: absolute;
+    top: 0px;
+    left: 0px;
+
+    text-align: center;
+
+    color: #fff;
+    background-color: #22f;
+}
+
+
+div#title_bar span
+{
+    padding-top: 17px;
+    padding-bottom: 48px;
+
+    font-size: 32;
+    font-weight: bold;
+
+    outline-font-effect: outline;
+    outline-width: 1px;
+    outline-color: black;
+}
+
+div#title_bar_content
+{
+    text-align: center;
+    color: #cff;
+}

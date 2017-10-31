@@ -1,0 +1,18 @@
+ModeNine
+
+Based on Andrew Bulhak's ModeSeven, in turn inspired by the screen
+output of the BBC Micro.
+
+copyright: 
+(C) 1998 Andrew C. Bulhak
+(C) 2001 Graham H Freeman
+
+Freely Distributable. 
+
+All we ask is that this readme file must be included with the font package.
+Impresarios of free font sites and shovelware cd-roms, this means you!
+
+If you think this font is doovy, let us know at fonts@grudnuk.com, and we
+might actually make more fonts. 
+
+Another fine Grudnuk Creations produkt | http://grudnuk.com/
