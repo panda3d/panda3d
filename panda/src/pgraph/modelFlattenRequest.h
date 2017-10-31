@@ -19,6 +19,7 @@
 #include "asyncTask.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
+#include "nodePath.h"
 
 /**
  * This class object manages a single asynchronous request to flatten a model.
@@ -38,9 +39,10 @@ PUBLISHED:
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
 
+  INLINE NodePath result() const;
+
   MAKE_PROPERTY(orig, get_orig);
   MAKE_PROPERTY(ready, is_ready);
-  MAKE_PROPERTY(model, get_model);
 
 protected:
   virtual DoneStatus do_task();

@@ -333,6 +333,7 @@ class TaskManager:
         funcOrTask - either an existing Task object (not already added
         to the task manager), or a callable function object.  If this
         is a function, a new Task object will be created and returned.
+        You may also pass in a coroutine object.
 
         name - the name to assign to the Task.  Required, unless you
         are passing in a Task object that already has a name.
@@ -385,6 +386,15 @@ class TaskManager:
             task = funcOrTask
         elif hasattr(funcOrTask, '__call__'):
             task = PythonTask(funcOrTask)
+            if name is None:
+                name = getattr(funcOrTask, '__qualname__', None) or \
+                       getattr(funcOrTask, '__name__', None)
+        elif hasattr(funcOrTask, 'cr_await') or type(funcOrTask) == types.GeneratorType:
+            # It's a coroutine, or something emulating one.
+            task = PythonTask(funcOrTask)
+            if name is None:
+                name = getattr(funcOrTask, '__qualname__', None) or \
+                       getattr(funcOrTask, '__name__', None)
         else:
             self.notify.error(
                 'add: Tried to add a task that was not a Task or a func')

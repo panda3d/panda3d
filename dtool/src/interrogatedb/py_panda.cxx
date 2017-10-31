@@ -622,6 +622,10 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
       return Dtool_Raise_TypeError("PyType_Ready(Dtool_SeqMapWrapper)");
     }
 
+    if (PyType_Ready(&Dtool_GeneratorWrapper_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_GeneratorWrapper)");
+    }
+
     if (PyType_Ready(&Dtool_StaticProperty_Type) < 0) {
       return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
     }
@@ -1111,6 +1115,13 @@ static int Dtool_SeqMapWrapper_setitem(PyObject *self, PyObject *key, PyObject *
   }
 }
 
+static PyObject *Dtool_GeneratorWrapper_iternext(PyObject *self) {
+  Dtool_GeneratorWrapper *wrap = (Dtool_GeneratorWrapper *)self;
+  nassertr(wrap, nullptr);
+  nassertr(wrap->_iternext_func, nullptr);
+  return wrap->_iternext_func(wrap->_base._self);
+}
+
 static PySequenceMethods Dtool_SequenceWrapper_SequenceMethods = {
   Dtool_SequenceWrapper_length,
   0, // sq_concat
@@ -1427,6 +1438,68 @@ PyTypeObject Dtool_SeqMapWrapper_Type = {
   0, // tp_weaklistoffset
   0, // tp_iter
   0, // tp_iternext
+  0, // tp_methods
+  0, // tp_members
+  0, // tp_getset
+  0, // tp_base
+  0, // tp_dict
+  0, // tp_descr_get
+  0, // tp_descr_set
+  0, // tp_dictoffset
+  0, // tp_init
+  PyType_GenericAlloc,
+  0, // tp_new
+  PyObject_Del,
+  0, // tp_is_gc
+  0, // tp_bases
+  0, // tp_mro
+  0, // tp_cache
+  0, // tp_subclasses
+  0, // tp_weaklist
+  0, // tp_del
+#if PY_VERSION_HEX >= 0x02060000
+  0, // tp_version_tag
+#endif
+#if PY_VERSION_HEX >= 0x03040000
+  0, // tp_finalize
+#endif
+};
+
+/**
+ * This variant defines only a generator interface.
+ */
+PyTypeObject Dtool_GeneratorWrapper_Type = {
+  PyVarObject_HEAD_INIT(NULL, 0)
+  "generator wrapper",
+  sizeof(Dtool_GeneratorWrapper),
+  0, // tp_itemsize
+  Dtool_WrapperBase_dealloc,
+  0, // tp_print
+  0, // tp_getattr
+  0, // tp_setattr
+#if PY_MAJOR_VERSION >= 3
+  0, // tp_reserved
+#else
+  0, // tp_compare
+#endif
+  0, // tp_repr
+  0, // tp_as_number
+  0, // tp_as_sequence
+  0, // tp_as_mapping
+  0, // tp_hash
+  0, // tp_call
+  0, // tp_str
+  PyObject_GenericGetAttr,
+  PyObject_GenericSetAttr,
+  0, // tp_as_buffer
+  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
+  0, // tp_doc
+  0, // tp_traverse
+  0, // tp_clear
+  0, // tp_richcompare
+  0, // tp_weaklistoffset
+  PyObject_SelfIter,
+  Dtool_GeneratorWrapper_iternext,
   0, // tp_methods
   0, // tp_members
   0, // tp_getset

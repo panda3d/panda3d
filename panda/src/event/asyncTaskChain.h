@@ -172,6 +172,7 @@ protected:
   bool _frame_sync;
   int _num_busy_threads;
   int _num_tasks;
+  int _num_awaiting_tasks;
   TaskHeap _active;
   TaskHeap _this_active;
   TaskHeap _next_active;

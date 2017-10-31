@@ -21,31 +21,103 @@ class Loader(DirectObject):
     loaderIndex = 0
 
     class Callback:
-        def __init__(self, numObjects, gotList, callback, extraArgs):
+        """Returned by loadModel when used asynchronously.  This class is
+        modelled after Future, and can be awaited."""
+
+        # This indicates that this class behaves like a Future.
+        _asyncio_future_blocking = False
+
+        def __init__(self, loader, numObjects, gotList, callback, extraArgs):
+            self._loader = loader
             self.objects = [None] * numObjects
             self.gotList = gotList
             self.callback = callback
             self.extraArgs = extraArgs
-            self.numRemaining = numObjects
-            self.cancelled = False
             self.requests = set()
+            self.requestList = []
 
         def gotObject(self, index, object):
             self.objects[index] = object
-            self.numRemaining -= 1
 
-            if self.numRemaining == 0:
-                if self.gotList:
-                    self.callback(self.objects, *self.extraArgs)
-                else:
-                    self.callback(*(self.objects + self.extraArgs))
+            if not self.requests:
+                self._loader = None
+                if self.callback:
+                    if self.gotList:
+                        self.callback(self.objects, *self.extraArgs)
+                    else:
+                        self.callback(*(self.objects + self.extraArgs))
+
+        def cancel(self):
+            "Cancels the request.  Callback won't be called."
+            if self._loader:
+                self._loader = None
+                for request in self.requests:
+                    self._loader.loader.remove(request)
+                    del self._loader._requests[request]
+                self.requests = None
+                self.requestList = None
+
+        def cancelled(self):
+            "Returns true if the request was cancelled."
+            return self.requestList is None
+
+        def done(self):
+            "Returns true if all the requests were finished or cancelled."
+            return not self.requests
+
+        def result(self):
+            assert not self.requests, "Result is not ready."
+            if self.gotList:
+                return self.objects
+            else:
+                return self.objects[0]
+
+        def exception(self):
+            assert self.done() and not self.cancelled()
+            return None
+
+        def __await__(self):
+            """ Returns a generator that raises StopIteration when the loading
+            is complete.  This allows this class to be used with 'await'."""
+            if self.requests:
+                self._asyncio_future_blocking = True
+                yield self
+
+            # This should be a simple return, but older versions of Python
+            # don't allow return statements with arguments.
+            result = self.result()
+            exc = StopIteration(result)
+            exc.value = result
+            raise exc
+
+        def __aiter__(self):
+            """ This allows using `async for` to iterate asynchronously over
+            the results of this class.  It does guarantee to return the
+            results in order, though, even though they may not be loaded in
+            that order. """
+            requestList = self.requestList
+            assert requestList is not None, "Request was cancelled."
+
+            class AsyncIter:
+                index = 0
+                def __anext__(self):
+                    if self.index < len(requestList):
+                        i = self.index
+                        self.index = i + 1
+                        return requestList[i]
+                    else:
+                        raise StopAsyncIteration
+
+            iter = AsyncIter()
+            iter.objects = self.objects
+            return iter
 
     # special methods
     def __init__(self, base):
         self.base = base
         self.loader = PandaLoader.getGlobalPtr()
 
-        self.__requests = {}
+        self._requests = {}
 
         self.hook = "async_loader_%s" % (Loader.loaderIndex)
         Loader.loaderIndex += 1
@@ -180,7 +252,7 @@ class Loader(DirectObject):
             # requested models have been loaded, we'll invoke the
             # callback (passing it the models on the parameter list).
 
-            cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
+            cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
             i = 0
             for modelPath in modelList:
                 request = self.loader.makeAsyncRequest(Filename(modelPath), loaderOptions)
@@ -189,26 +261,26 @@ class Loader(DirectObject):
                 request.setDoneEvent(self.hook)
                 self.loader.loadAsync(request)
                 cb.requests.add(request)
-                self.__requests[request] = (cb, i)
+                cb.requestList.append(request)
+                self._requests[request] = (cb, i)
                 i += 1
             return cb
 
     def cancelRequest(self, cb):
         """Cancels an aysynchronous loading or flatten request issued
         earlier.  The callback associated with the request will not be
-        called after cancelRequest() has been performed. """
+        called after cancelRequest() has been performed.
 
-        if not cb.cancelled:
-            cb.cancelled = True
-            for request in cb.requests:
-                self.loader.remove(request)
-                del self.__requests[request]
-            cb.requests = None
+        This is now deprecated: call cb.cancel() instead. """
+
+        cb.cancel()
 
     def isRequestPending(self, cb):
         """ Returns true if an asynchronous loading or flatten request
         issued earlier is still pending, or false if it has completed or
-        been cancelled. """
+        been cancelled.
+
+        This is now deprecated: call cb.done() instead. """
 
         return bool(cb.requests)
 
@@ -344,7 +416,7 @@ class Loader(DirectObject):
             # requested models have been saved, we'll invoke the
             # callback (passing it the models on the parameter list).
 
-            cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
+            cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
             i = 0
             for modelPath, node in modelList:
                 request = self.loader.makeAsyncSaveRequest(Filename(modelPath), loaderOptions, node)
@@ -353,7 +425,8 @@ class Loader(DirectObject):
                 request.setDoneEvent(self.hook)
                 self.loader.saveAsync(request)
                 cb.requests.add(request)
-                self.__requests[request] = (cb, i)
+                cb.requestList.append(request)
+                self._requests[request] = (cb, i)
                 i += 1
             return cb
 
@@ -880,13 +953,14 @@ class Loader(DirectObject):
             # requested sounds have been loaded, we'll invoke the
             # callback (passing it the sounds on the parameter list).
 
-            cb = Loader.Callback(len(soundList), gotList, callback, extraArgs)
+            cb = Loader.Callback(self, len(soundList), gotList, callback, extraArgs)
             for i, soundPath in enumerate(soundList):
                 request = AudioLoadRequest(manager, soundPath, positional)
                 request.setDoneEvent(self.hook)
                 self.loader.loadAsync(request)
                 cb.requests.add(request)
-                self.__requests[request] = (cb, i)
+                cb.requestList.append(request)
+                self._requests[request] = (cb, i)
             return cb
 
     def unloadSfx(self, sfx):
@@ -944,14 +1018,15 @@ class Loader(DirectObject):
             callback = self.__asyncFlattenDone
             gotList = True
 
-        cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
+        cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
         i = 0
         for model in modelList:
             request = ModelFlattenRequest(model.node())
             request.setDoneEvent(self.hook)
             self.loader.loadAsync(request)
             cb.requests.add(request)
-            self.__requests[request] = (cb, i)
+            cb.requestList.append(request)
+            self._requests[request] = (cb, i)
             i += 1
         return cb
 
@@ -980,36 +1055,22 @@ class Loader(DirectObject):
         of loaded objects, and call the appropriate callback when it's
         time."""
 
-        if request not in self.__requests:
+        if request not in self._requests:
             return
 
-        cb, i = self.__requests[request]
-        if cb.cancelled:
+        cb, i = self._requests[request]
+        if cb.cancelled():
             # Shouldn't be here.
-            del self.__requests[request]
+            del self._requests[request]
             return
 
         cb.requests.discard(request)
         if not cb.requests:
-            del self.__requests[request]
+            del self._requests[request]
 
-        object = None
-        if hasattr(request, "getModel"):
-            node = request.getModel()
-            if node is not None:
-                object = NodePath(node)
-
-        elif hasattr(request, "getSound"):
-            object = request.getSound()
-
-        elif hasattr(request, "getSuccess"):
-            object = request.getSuccess()
-
-        cb.gotObject(i, object)
+        cb.gotObject(i, request.result() or None)
 
     load_model = loadModel
-    cancel_request = cancelRequest
-    is_request_pending = isRequestPending
     unload_model = unloadModel
     save_model = saveModel
     load_font = loadFont

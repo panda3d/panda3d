@@ -499,6 +499,24 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     }
   }
 
+  if (method_name == "__await__") {
+    def._answer_location = "am_await";
+    def._wrapper_type = WT_no_params;
+    return true;
+  }
+
+  if (method_name == "__aiter__") {
+    def._answer_location = "am_aiter";
+    def._wrapper_type = WT_no_params;
+    return true;
+  }
+
+  if (method_name == "__anext__") {
+    def._answer_location = "am_anext";
+    def._wrapper_type = WT_no_params;
+    return true;
+  }
+
   if (method_name == "operator ()") {
     def._answer_location = "tp_call";
     def._wrapper_type = WT_none;
@@ -2798,6 +2816,20 @@ write_module_class(ostream &out, Object *obj) {
     out << "};\n\n";
   }
 
+  bool have_async = false;
+  if (has_parent_class || slots.count("am_await") != 0 ||
+                          slots.count("am_aiter") != 0 ||
+                          slots.count("am_anext") != 0) {
+    out << "#if PY_VERSION_HEX >= 0x03050000\n";
+    out << "static PyAsyncMethods Dtool_AsyncMethods_" << ClassName << " = {\n";
+    write_function_slot(out, 2, slots, "am_await");
+    write_function_slot(out, 2, slots, "am_aiter");
+    write_function_slot(out, 2, slots, "am_anext");
+    out << "};\n";
+    out << "#endif\n\n";
+    have_async = true;
+  }
+
   // Output the actual PyTypeObject definition.
   out << "struct Dtool_PyTypedObject Dtool_" << ClassName << " = {\n";
   out << "  {\n";
@@ -2819,7 +2851,13 @@ write_module_class(ostream &out, Object *obj) {
   write_function_slot(out, 4, slots, "tp_setattr");
 
   // cmpfunc tp_compare;  (reserved in Python 3)
-  out << "#if PY_MAJOR_VERSION >= 3\n";
+  out << "#if PY_VERSION_HEX >= 0x03050000\n";
+  if (have_async) {
+    out << "    &Dtool_AsyncMethods_" << ClassName << ",\n";
+  } else {
+    out << "    0, // tp_as_async\n";
+  }
+  out << "#elif PY_MAJOR_VERSION >= 3\n";
   out << "    0, // tp_reserved\n";
   out << "#else\n";
   if (has_hash_compare) {

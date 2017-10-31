@@ -45,6 +45,7 @@ PUBLISHED:
     DS_exit,      // stop the enclosing sequence
     DS_pause,     // pause, then exit (useful within a sequence)
     DS_interrupt, // interrupt the task manager, but run task again
+    DS_await,     // await a different task's completion
   };
 
   enum State {
@@ -54,6 +55,7 @@ PUBLISHED:
     S_servicing_removed,  // Still servicing, but wants removal from manager.
     S_sleeping,
     S_active_nested,      // active within a sequence.
+    S_awaiting,           // Waiting for a dependent task to complete
   };
 
   INLINE State get_state() const;
@@ -98,6 +100,9 @@ PUBLISHED:
 
   virtual void output(ostream &out) const;
 
+  EXTENSION(static PyObject *__await__(PyObject *self));
+  EXTENSION(static PyObject *__iter__(PyObject *self));
+
 protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
@@ -130,10 +135,15 @@ protected:
   double _total_dt;
   int _num_frames;
 
+  // Tasks waiting for this one to complete.
+  pvector<PT(AsyncTask)> _waiting_tasks;
+
   static AtomicAdjust::Integer _next_task_id;
 
   static PStatCollector _show_code_pcollector;
   PStatCollector _task_pcollector;
+
+  friend class PythonTask;
 
 public:
   static TypeHandle get_class_type() {
