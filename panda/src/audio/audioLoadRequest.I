@@ -62,11 +62,24 @@ is_ready() const {
 }
 
 /**
- * Returns the sound that was loaded asynchronously, if any, or NULL if there
- * was an error.  It is an error to call this unless is_ready() returns true.
+ * Returns the sound that was loaded asynchronously, if any, or nullptr if
+ * there was an error.  It is an error to call this unless is_ready() returns
+ * true.
+ * @deprecated Use result() instead.
  */
 INLINE AudioSound *AudioLoadRequest::
 get_sound() const {
   nassertr(_is_ready, NULL);
+  return _sound;
+}
+
+/**
+ * Returns the sound that was loaded asynchronously, if any, or nullptr if
+ * there was an error.  It is an error to call this unless is_ready() returns
+ * true.
+ */
+INLINE AudioSound *AudioLoadRequest::
+result() const {
+  nassertr(_is_ready, nullptr);
   return _sound;
 }

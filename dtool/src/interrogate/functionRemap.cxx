@@ -846,7 +846,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
 
     } else if (fname == "__iter__") {
-      if (_has_this && _parameters.size() == 1 &&
+      if ((int)_parameters.size() == first_param &&
           TypeManager::is_pointer(_return_type->get_new_type())) {
         // It receives no parameters, and returns a pointer.
         _flags |= F_iter;

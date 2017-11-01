@@ -3616,6 +3616,7 @@ if (not RUNTIME):
   TargetAdd('p3event_composite2.obj', opts=OPTS, input='p3event_composite2.cxx')
 
   OPTS=['DIR:panda/src/event', 'PYTHON']
+  TargetAdd('p3event_asyncTask_ext.obj', opts=OPTS, input='asyncTask_ext.cxx')
   TargetAdd('p3event_pythonTask.obj', opts=OPTS, input='pythonTask.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/event', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3event.in', opts=OPTS, input=IGATEFILES)
@@ -4209,6 +4210,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3pipeline_pythonThread.obj')
   TargetAdd('core.pyd', input='p3putil_ext_composite.obj')
   TargetAdd('core.pyd', input='p3pnmimage_pfmFile_ext.obj')
+  TargetAdd('core.pyd', input='p3event_asyncTask_ext.obj')
   TargetAdd('core.pyd', input='p3event_pythonTask.obj')
   TargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
   TargetAdd('core.pyd', input='p3pgraph_ext_composite.obj')

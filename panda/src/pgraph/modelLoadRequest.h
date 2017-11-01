@@ -11,8 +11,8 @@
  * @date 2006-08-29
  */
 
-#ifndef MODELLOADREQUEST
-#define MODELLOADREQUEST
+#ifndef MODELLOADREQUEST_H
+#define MODELLOADREQUEST_H
 
 #include "pandabase.h"
 
@@ -22,6 +22,7 @@
 #include "pandaNode.h"
 #include "pointerTo.h"
 #include "loader.h"
+#include "nodePath.h"
 
 /**
  * A class object that manages a single asynchronous model load request.
@@ -42,6 +43,8 @@ PUBLISHED:
   INLINE const LoaderOptions &get_options() const;
   INLINE Loader *get_loader() const;
 
+  INLINE NodePath result() const;
+
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
 
@@ -49,7 +52,6 @@ PUBLISHED:
   MAKE_PROPERTY(options, get_options);
   MAKE_PROPERTY(loader, get_loader);
   MAKE_PROPERTY(ready, is_ready);
-  MAKE_PROPERTY(model, get_model);
 
 protected:
   virtual DoneStatus do_task();

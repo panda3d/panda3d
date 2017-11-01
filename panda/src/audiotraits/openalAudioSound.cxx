@@ -48,7 +48,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
   _balance(0),
   _play_rate(1.0),
   _positional(positional),
-  _min_dist(3.28f),
+  _min_dist(1.0f),
   _max_dist(1000000000.0f),
   _drop_off_factor(1.0f),
   _length(0.0),
@@ -673,7 +673,7 @@ set_3d_min_distance(PN_stdfloat dist) {
     _manager->make_current();
 
     alGetError(); // clear errors
-    alSourcef(_source,AL_REFERENCE_DISTANCE,_min_dist*_manager->audio_3d_get_distance_factor());
+    alSourcef(_source,AL_REFERENCE_DISTANCE,_min_dist);
     al_audio_errcheck("alSourcefv(_source,AL_REFERENCE_DISTANCE)");
   }
 }
@@ -698,7 +698,7 @@ set_3d_max_distance(PN_stdfloat dist) {
     _manager->make_current();
 
     alGetError(); // clear errors
-    alSourcef(_source,AL_MAX_DISTANCE,_max_dist*_manager->audio_3d_get_distance_factor());
+    alSourcef(_source,AL_MAX_DISTANCE,_max_dist);
     al_audio_errcheck("alSourcefv(_source,AL_MAX_DISTANCE)");
   }
 }

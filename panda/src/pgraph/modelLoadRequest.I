@@ -38,6 +38,16 @@ get_loader() const {
 }
 
 /**
+ * Returns the model that was loaded asynchronously as a NodePath, if any, or
+ * the empty NodePath if there was an error.
+ */
+INLINE NodePath ModelLoadRequest::
+result() const {
+  nassertr_always(_is_ready, NodePath::fail());
+  return NodePath(_model);
+}
+
+/**
  * Returns true if this request has completed, false if it is still pending.
  * When this returns true, you may retrieve the model loaded by calling
  * get_model().

@@ -22,8 +22,8 @@
 #include "py_panda.h"
 
 /**
- * This class exists to allow association of a Python function with the
- * AsyncTaskManager.
+ * This class exists to allow association of a Python function or coroutine
+ * with the AsyncTaskManager.
  */
 class PythonTask : public AsyncTask {
 PUBLISHED:
@@ -32,16 +32,23 @@ PUBLISHED:
   ALLOC_DELETED_CHAIN(PythonTask);
 
   void set_function(PyObject *function);
-  PyObject *get_function();
+  INLINE PyObject *get_function();
 
   void set_args(PyObject *args, bool append_task);
   PyObject *get_args();
 
   void set_upon_death(PyObject *upon_death);
-  PyObject *get_upon_death();
+  INLINE PyObject *get_upon_death();
 
   void set_owner(PyObject *owner);
-  PyObject *get_owner();
+  INLINE PyObject *get_owner() const;
+
+  INLINE void set_result(PyObject *result);
+  PyObject *result() const;
+  //PyObject *exception() const;
+
+  static PyObject *__await__(PyObject *self);
+  INLINE static PyObject *__iter__(PyObject *self);
 
   int __setattr__(PyObject *self, PyObject *attr, PyObject *v);
   int __delattr__(PyObject *self, PyObject *attr);
@@ -94,6 +101,8 @@ protected:
   virtual void upon_death(AsyncTaskManager *manager, bool clean_exit);
 
 private:
+  static PyObject *gen_next(PyObject *self);
+
   void register_to_owner();
   void unregister_from_owner();
   void call_owner_method(const char *method_name);
@@ -102,12 +111,19 @@ private:
 private:
   PyObject *_function;
   PyObject *_args;
-  bool _append_task;
   PyObject *_upon_death;
   PyObject *_owner;
-  bool _registered_to_owner;
+
+  PyObject *_exception;
+  PyObject *_exc_value;
+  PyObject *_exc_traceback;
 
   PyObject *_generator;
+  PyObject *_future_done;
+
+  bool _append_task;
+  bool _registered_to_owner;
+  mutable bool _retrieved_exception;
 
 public:
   static TypeHandle get_class_type() {

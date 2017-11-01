@@ -33,6 +33,7 @@ is_alive() const {
   case S_servicing:
   case S_sleeping:
   case S_active_nested:
+  case S_awaiting:
     return true;
 
   case S_inactive:

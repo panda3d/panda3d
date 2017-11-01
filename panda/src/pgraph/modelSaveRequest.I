@@ -64,3 +64,13 @@ get_success() const {
   nassertr(_is_ready, false);
   return _success;
 }
+
+/**
+ * Returns a boolean indicating whether the model saved correctly.  It is an
+ * error to call this unless is_ready() returns true.
+ */
+INLINE bool ModelSaveRequest::
+result() const {
+  nassertr(_is_ready, false);
+  return _success;
+}
