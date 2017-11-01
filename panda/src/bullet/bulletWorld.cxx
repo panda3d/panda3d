@@ -17,6 +17,7 @@
 #include "bulletSoftBodyWorldInfo.h"
 
 #include "collideMask.h"
+#include "lightMutexHolder.h"
 
 #define clamp(x, x_min, x_max) max(min(x, x_max), x_min)
 
@@ -24,7 +25,6 @@ TypeHandle BulletWorld::_type_handle;
 
 PStatCollector BulletWorld::_pstat_physics("App:Bullet:DoPhysics");
 PStatCollector BulletWorld::_pstat_simulation("App:Bullet:DoPhysics:Simulation");
-PStatCollector BulletWorld::_pstat_debug("App:Bullet:DoPhysics:Debug");
 PStatCollector BulletWorld::_pstat_p2b("App:Bullet:DoPhysics:SyncP2B");
 PStatCollector BulletWorld::_pstat_b2p("App:Bullet:DoPhysics:SyncB2P");
 
@@ -128,6 +128,19 @@ get_world_info() {
 }
 
 /**
+ * Removes a debug node that has been assigned to this BulletWorld.
+ */
+void BulletWorld::
+clear_debug_node() {
+  if (_debug != nullptr) {
+    LightMutexHolder holder(_debug->_lock);
+    _debug->_debug_world = nullptr;
+    _world->setDebugDrawer(nullptr);
+    _debug = nullptr;
+  }
+}
+
+/**
  *
  */
 void BulletWorld::
@@ -184,9 +197,7 @@ do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
 
   // Render debug
   if (_debug) {
-    _pstat_debug.start();
     _debug->sync_b2p(_world);
-    _pstat_debug.stop();
   }
 
   _pstat_physics.stop();
