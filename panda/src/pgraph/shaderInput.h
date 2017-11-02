@@ -31,6 +31,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "shaderBuffer.h"
+#include "extension.h"
 
 /**
  * This is a small container class that can hold any one of the value types
