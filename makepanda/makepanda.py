@@ -2702,7 +2702,9 @@ for basename in del_files:
 
 # Write an appropriate panda3d/__init__.py
 p3d_init = """"Python bindings for the Panda3D libraries"
-"""
+
+__version__ = '%s'
+""" % (WHLVERSION)
 
 if GetTarget() == 'windows':
     p3d_init += """
