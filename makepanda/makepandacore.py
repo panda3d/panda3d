@@ -2858,7 +2858,8 @@ def GetMetadataValue(key):
     if not cfg_parser:
         # Parse the metadata from the setup.cfg file.
         cfg_parser = configparser.ConfigParser()
-        cfg_parser.read('setup.cfg')
+        path = os.path.join(os.path.dirname(__file__), '..', 'setup.cfg')
+        assert cfg_parser.read(path), "Could not read setup.cfg file."
 
     value = cfg_parser.get('metadata', key)
     if key == 'classifiers':
