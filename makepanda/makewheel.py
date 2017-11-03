@@ -388,7 +388,7 @@ class WheelFile(object):
         fp.close()
 
         # Save it in PEP-0376 format for writing out later.
-        digest = str(urlsafe_b64encode(sha.digest()))
+        digest = urlsafe_b64encode(sha.digest()).decode('ascii')
         digest = digest.rstrip('=')
         self.records.append("{0},sha256={1},{2}\n".format(target_path, digest, size))
 
@@ -404,7 +404,7 @@ class WheelFile(object):
 
         sha = hashlib.sha256()
         sha.update(source_data.encode())
-        digest = str(urlsafe_b64encode(sha.digest()))
+        digest = urlsafe_b64encode(sha.digest()).decode('ascii')
         digest = digest.rstrip('=')
         self.records.append("{0},sha256={1},{2}\n".format(target_path, digest, len(source_data)))
 
