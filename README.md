@@ -156,6 +156,13 @@ python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --n
 If successful, this will produce a .pkg file in the root of the source
 directory which you can install using `pkg install`.
 
+Running Tests
+=============
+
+Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation) and run `pytest` over the tests directory.
+This can be done by running `pytest` from the tests directory or running `pytests tests` from the project's root directory.
+If `pytest` is run from the project root without specifying the tests directory, PyTest will collect some tests from the `src` directory that we do not want to run.
+
 Reporting Issues
 ================
 
