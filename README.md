@@ -156,6 +156,17 @@ python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --n
 If successful, this will produce a .pkg file in the root of the source
 directory which you can install using `pkg install`.
 
+Running Tests
+=============
+
+Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation)
+and run the `pytest` command.  If you have not installed Panda3D, you will
+need to configure your enviroment by pointing the `PYTHONPATH` variable at
+the `built` directory.  On Linux, you will also need to point the
+`LD_LIBRARY_PATH` variable at the `built/lib` directory.
+
+As a convenience, you can alternatively pass the `--tests` option to makepanda.
+
 Reporting Issues
 ================
 

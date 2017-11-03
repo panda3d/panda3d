@@ -40,6 +40,7 @@ import sys
 COMPILER=0
 INSTALLER=0
 WHEEL=0
+RUNTESTS=0
 GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
@@ -126,6 +127,7 @@ def usage(problem):
     print("  --help            (print the help message you're reading now)")
     print("  --verbose         (print out more information)")
     print("  --runtime         (build a runtime build instead of an SDK build)")
+    print("  --tests           (run the test suite)")
     print("  --installer       (build an installer)")
     print("  --wheel           (build a pip-installable .whl)")
     print("  --optimize X      (optimization level can be 1,2,3,4)")
@@ -163,12 +165,12 @@ def usage(problem):
     os._exit(1)
 
 def parseopts(args):
-    global INSTALLER,WHEEL,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
+    global INSTALLER,WHEEL,RUNTESTS,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
-        "help","distributor=","verbose","runtime","osxtarget=",
+        "help","distributor=","verbose","runtime","osxtarget=","tests",
         "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
@@ -192,6 +194,7 @@ def parseopts(args):
             if (option=="--help"): raise Exception
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--tests"): RUNTESTS=1
             elif (option=="--wheel"): WHEEL=1
             elif (option=="--verbose"): SetVerbose(True)
             elif (option=="--distributor"): DISTRIBUTOR=value
@@ -6683,6 +6686,16 @@ try:
 except:
     SaveDependencyCache()
     raise
+
+# Run the test suite.
+if RUNTESTS:
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
+    if sys.version_info >= (2, 6):
+        cmdstr += " -B"
+    cmdstr += " -m pytest tests"
+    if GetVerbose():
+        cmdstr += " --verbose"
+    oscmd(cmdstr)
 
 ##########################################################################################
 #
