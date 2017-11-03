@@ -20,7 +20,7 @@ import tempfile
 import subprocess
 from distutils.sysconfig import get_config_var
 from optparse import OptionParser
-from makepandacore import ColorText, LocateBinary, ParsePandaVersion, GetExtensionSuffix, SetVerbose, GetVerbose
+from makepandacore import ColorText, LocateBinary, ParsePandaVersion, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
 from base64 import urlsafe_b64encode
 
 
@@ -103,16 +103,15 @@ Tag: {0}-{1}-{2}
 """
 
 METADATA = {
-    "license": "BSD",
-    "name": "Panda3D",
+    "license": GetMetadataValue('license'),
+    "name": GetMetadataValue('name'),
     "metadata_version": "2.0",
     "generator": "makepanda",
-    "summary": "Panda3D is a game engine, a framework for 3D rendering and "
-               "game development for Python and C++ programs.",
+    "summary": GetMetadataValue('description'),
     "extensions": {
         "python.details": {
             "project_urls": {
-                "Home": "https://www.panda3d.org/"
+                "Home": GetMetadataValue('url'),
             },
             "document_names": {
                 "license": "LICENSE.txt"
@@ -120,25 +119,13 @@ METADATA = {
             "contacts": [
                 {
                     "role": "author",
-                    "email": "etc-panda3d@lists.andrew.cmu.edu",
-                    "name": "Panda3D Team"
+                    "name": GetMetadataValue('author'),
+                    "email": GetMetadataValue('author_email'),
                 }
             ]
         }
     },
-    "classifiers": [
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: OS Independent",
-        "Programming Language :: C++",
-        "Programming Language :: Python",
-        "Topic :: Games/Entertainment",
-        "Topic :: Multimedia",
-        "Topic :: Multimedia :: Graphics",
-        "Topic :: Multimedia :: Graphics :: 3D Rendering"
-    ]
+    "classifiers": GetMetadataValue('classifiers'),
 }
 
 PANDA3D_TOOLS_INIT = """import os, sys
