@@ -6063,7 +6063,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
   // Okay, we're past all the error conditions and special cases.  Now return
   // the return type in the way that was requested.
-  if (return_flags & RF_int) {
+  if ((return_flags & RF_int) != 0 && (return_flags & RF_raise_keyerror) == 0) {
     CPPType *orig_type = remap->_return_type->get_orig_type();
     if (is_constructor) {
       // Special case for constructor.
@@ -6555,6 +6555,12 @@ write_getset(ostream &out, Object *obj, Property *property) {
         out << "  }\n\n";
       }
 
+      out << "  if (index < 0 || index >= (Py_ssize_t)"
+          << len_remap->get_call_str("local_this", pexprs) << ") {\n";
+      out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << "." << ielem.get_name() << "[] index out of range\");\n";
+      out << "    return -1;\n";
+      out << "  }\n";
+
       out << "  if (arg == (PyObject *)NULL) {\n";
       if (property->_deleter != NULL) {
         if (property->_deleter->_has_this) {
@@ -6701,6 +6707,19 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  if (value == (PyObject *)NULL) {\n";
       if (property->_deleter != NULL) {
         out << "    PyObject *arg = key;\n";
+
+        if (property->_has_function != NULL) {
+          std::set<FunctionRemap*> remaps;
+          remaps.insert(property->_has_function->_remaps.begin(),
+                        property->_has_function->_remaps.end());
+
+          out << "    {\n";
+          string expected_params;
+          write_function_forset(out, remaps, 1, 1, expected_params, 6, true, true,
+                                AT_single_arg, RF_raise_keyerror | RF_int, false, true);
+          out << "    }\n";
+        }
+
         std::set<FunctionRemap*> remaps;
         remaps.insert(property->_deleter->_remaps.begin(),
                       property->_deleter->_remaps.end());
@@ -6761,16 +6780,22 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  Py_XINCREF(self);\n";
     }
     out << "  Dtool_SeqMapWrapper *wrap = PyObject_New(Dtool_SeqMapWrapper, &Dtool_SeqMapWrapper_Type);\n"
-           "  wrap->_seq._base._self = self;\n"
-           "  wrap->_seq._len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
-           "  wrap->_seq._getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n"
-           "  wrap->_map_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
+           "  wrap->_map._base._self = self;\n"
+           "  wrap->_map._base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
+           "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
+           "  wrap->_seq_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n"
+           "  wrap->_map._getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "  wrap->_seq._setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
-      out << "  wrap->_map_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
+      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n"
+             "    wrap->_seq_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n"
+             "    wrap->_map._setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n"
+             "  } else {\n"
+             "    wrap->_seq_setitem_func = NULL;\n"
+             "    wrap->_map._setitem_func = NULL;\n"
+             "  }\n";
     } else {
-      out << "  wrap->_seq._setitem_func = NULL;\n";
-      out << "  wrap->_map_setitem_func = NULL;\n";
+      out << "  wrap->_seq_setitem_func = NULL;\n";
+      out << "  wrap->_map._setitem_func = NULL;\n";
     }
     out << "  return (PyObject *)wrap;\n"
             "}\n\n";
@@ -6785,9 +6810,14 @@ write_getset(ostream &out, Object *obj, Property *property) {
     }
     out << "  Dtool_MappingWrapper *wrap = PyObject_New(Dtool_MappingWrapper, &Dtool_MappingWrapper_Type);\n"
            "  wrap->_base._self = self;\n"
+           "  wrap->_base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
            "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "  wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
+      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+      out << "    wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
+      out << "  } else {\n";
+      out << "    wrap->_setitem_func = NULL;\n";
+      out << "  }\n";
     } else {
       out << "  wrap->_setitem_func = NULL;\n";
     }
@@ -6804,10 +6834,15 @@ write_getset(ostream &out, Object *obj, Property *property) {
     }
     out << "  Dtool_SequenceWrapper *wrap = PyObject_New(Dtool_SequenceWrapper, &Dtool_SequenceWrapper_Type);\n"
            "  wrap->_base._self = self;\n"
+           "  wrap->_base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
            "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
            "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "  wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
+      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+      out << "    wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
+      out << "  } else {\n";
+      out << "    wrap->_setitem_func = NULL;\n";
+      out << "  }\n";
     } else {
       out << "  wrap->_setitem_func = NULL;\n";
     }

@@ -474,6 +474,7 @@ map_deepcopy_to_copy(PyObject *self, PyObject *args);
 struct Dtool_WrapperBase {
   PyObject_HEAD;
   PyObject *_self;
+  const char *_name;
 };
 
 struct Dtool_SequenceWrapper {
@@ -490,9 +491,10 @@ struct Dtool_MappingWrapper {
 };
 
 struct Dtool_SeqMapWrapper {
-  Dtool_SequenceWrapper _seq;
-  binaryfunc _map_getitem_func;
-  objobjargproc _map_setitem_func;
+  Dtool_MappingWrapper _map;
+  lenfunc _len_func;
+  ssizeargfunc _seq_getitem_func;
+  ssizeobjargproc _seq_setitem_func;
 };
 
 struct Dtool_GeneratorWrapper {
