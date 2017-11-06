@@ -26,9 +26,8 @@
  *
  */
 class EXPCL_PANDABULLET BulletMultiSphereShape : public BulletShape {
-
 PUBLISHED:
-  BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii);
+  explicit BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii);
   INLINE BulletMultiSphereShape(const BulletMultiSphereShape &copy);
   INLINE void operator = (const BulletMultiSphereShape &copy);
   INLINE ~BulletMultiSphereShape();

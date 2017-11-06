@@ -34,7 +34,7 @@ class VrpnDialDevice;
  */
 class EXPCL_VRPN VrpnClient : public ClientBase {
 PUBLISHED:
-  VrpnClient(const string &server_name);
+  explicit VrpnClient(const string &server_name);
   ~VrpnClient();
 
   INLINE const string &get_server_name() const;

@@ -22,13 +22,12 @@ class InkblotVideoCursor;
  * A cellular automaton that generates an amusing pattern of swirling colors.
  */
 class EXPCL_PANDA_MOVIES InkblotVideo : public MovieVideo {
-
- PUBLISHED:
-  InkblotVideo(int x, int y, int fps);
+PUBLISHED:
+  explicit InkblotVideo(int x, int y, int fps);
   virtual ~InkblotVideo();
   virtual PT(MovieVideoCursor) open();
 
- private:
+private:
   int _specified_x;
   int _specified_y;
   int _specified_fps;

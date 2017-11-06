@@ -25,9 +25,9 @@
 class EXPCL_PANDA_COLLIDE CollisionLine : public CollisionRay {
 PUBLISHED:
   INLINE CollisionLine();
-  INLINE CollisionLine(const LPoint3 &origin, const LVector3 &direction);
-  INLINE CollisionLine(PN_stdfloat ox, PN_stdfloat oy, PN_stdfloat oz,
-                       PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz);
+  INLINE explicit CollisionLine(const LPoint3 &origin, const LVector3 &direction);
+  INLINE explicit CollisionLine(PN_stdfloat ox, PN_stdfloat oy, PN_stdfloat oz,
+                                PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz);
 
 public:
   INLINE CollisionLine(const CollisionLine &copy);

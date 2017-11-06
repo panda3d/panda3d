@@ -59,7 +59,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  GeomPrimitive(UsageHint usage_hint);
+  explicit GeomPrimitive(UsageHint usage_hint);
   GeomPrimitive(const GeomPrimitive &copy);
   void operator = (const GeomPrimitive &copy);
   virtual ~GeomPrimitive();

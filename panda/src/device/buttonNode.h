@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_DEVICE ButtonNode : public DataNode {
 PUBLISHED:
-  ButtonNode(ClientBase *client, const string &device_name);
+  explicit ButtonNode(ClientBase *client, const string &device_name);
   virtual ~ButtonNode();
 
   INLINE bool is_valid() const;

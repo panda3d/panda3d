@@ -37,7 +37,7 @@ protected:
 
 PUBLISHED:
   // This is the normal AnimGroup constructor.
-  AnimGroup(AnimGroup *parent, const string &name);
+  explicit AnimGroup(AnimGroup *parent, const string &name);
   virtual ~AnimGroup();
 
   int get_num_children() const;

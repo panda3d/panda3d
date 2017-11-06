@@ -26,9 +26,8 @@
  *
  */
 class EXPCL_PANDABULLET BulletMinkowskiSumShape : public BulletShape {
-
 PUBLISHED:
-  BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b);
+  explicit BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b);
   INLINE BulletMinkowskiSumShape(const BulletMinkowskiSumShape &copy);
   INLINE void operator = (const BulletMinkowskiSumShape &copy);
   INLINE ~BulletMinkowskiSumShape();

@@ -30,7 +30,7 @@
 class EXPCL_PANDAEXPRESS ISubStream : public istream {
 PUBLISHED:
   INLINE ISubStream();
-  INLINE ISubStream(IStreamWrapper *source, streampos start, streampos end);
+  INLINE explicit ISubStream(IStreamWrapper *source, streampos start, streampos end);
 
 #if _MSC_VER >= 1800
   INLINE ISubStream(const ISubStream &copy) = delete;
@@ -55,7 +55,7 @@ private:
 class EXPCL_PANDAEXPRESS OSubStream : public ostream {
 PUBLISHED:
   INLINE OSubStream();
-  INLINE OSubStream(OStreamWrapper *dest, streampos start, streampos end, bool append = false);
+  INLINE explicit OSubStream(OStreamWrapper *dest, streampos start, streampos end, bool append = false);
 
 #if _MSC_VER >= 1800
   INLINE OSubStream(const OSubStream &copy) = delete;
@@ -74,7 +74,7 @@ private:
 class EXPCL_PANDAEXPRESS SubStream : public iostream {
 PUBLISHED:
   INLINE SubStream();
-  INLINE SubStream(StreamWrapper *nested, streampos start, streampos end, bool append = false);
+  INLINE explicit SubStream(StreamWrapper *nested, streampos start, streampos end, bool append = false);
 
 #if _MSC_VER >= 1800
   INLINE SubStream(const SubStream &copy) = delete;

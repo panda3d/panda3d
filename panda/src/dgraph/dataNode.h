@@ -51,7 +51,7 @@ class DataNodeTransmit;
  */
 class EXPCL_PANDA_DGRAPH DataNode : public PandaNode {
 PUBLISHED:
-  INLINE DataNode(const string &name);
+  INLINE explicit DataNode(const string &name);
 
 protected:
   INLINE DataNode(const DataNode &copy);

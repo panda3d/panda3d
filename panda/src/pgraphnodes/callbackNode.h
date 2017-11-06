@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES CallbackNode : public PandaNode {
 PUBLISHED:
-  CallbackNode(const string &name);
+  explicit CallbackNode(const string &name);
 
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();

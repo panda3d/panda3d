@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggTriangleStrip : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE EggTriangleStrip(const string &name = "");
+  INLINE explicit EggTriangleStrip(const string &name = "");
   INLINE EggTriangleStrip(const EggTriangleStrip &copy);
   INLINE EggTriangleStrip &operator = (const EggTriangleStrip &copy);
   virtual ~EggTriangleStrip();

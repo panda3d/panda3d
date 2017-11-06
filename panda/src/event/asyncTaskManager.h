@@ -47,7 +47,7 @@
  */
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
-  AsyncTaskManager(const string &name);
+  explicit AsyncTaskManager(const string &name);
   BLOCKING virtual ~AsyncTaskManager();
 
   BLOCKING void cleanup();

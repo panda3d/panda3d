@@ -26,10 +26,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletConvexPointCloudShape : public BulletShape {
-
 PUBLISHED:
-  BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale=LVecBase3(1.));
-  BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale=LVecBase3(1.));
+  explicit BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale=LVecBase3(1.));
+  explicit BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale=LVecBase3(1.));
   INLINE BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy);
   INLINE void operator = (const BulletConvexPointCloudShape &copy);
   INLINE ~BulletConvexPointCloudShape();

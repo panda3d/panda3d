@@ -132,7 +132,7 @@ PUBLISHED:
     BO_one_minus_alpha_scale,
   };
 
-  EggGroup(const string &name = "");
+  explicit EggGroup(const string &name = "");
   EggGroup(const EggGroup &copy);
   EggGroup &operator = (const EggGroup &copy);
   ~EggGroup();

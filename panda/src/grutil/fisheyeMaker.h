@@ -33,7 +33,7 @@ class GeomVertexWriter;
  */
 class EXPCL_PANDA_GRUTIL FisheyeMaker : public Namable {
 PUBLISHED:
-  INLINE FisheyeMaker(const string &name);
+  INLINE explicit FisheyeMaker(const string &name);
   INLINE ~FisheyeMaker();
 
   void reset();

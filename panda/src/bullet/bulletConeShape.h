@@ -24,9 +24,8 @@
  *
  */
 class EXPCL_PANDABULLET BulletConeShape : public BulletShape {
-
 PUBLISHED:
-  BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
+  explicit BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   INLINE BulletConeShape(const BulletConeShape &copy);
   INLINE void operator = (const BulletConeShape &copy);
   INLINE ~BulletConeShape();

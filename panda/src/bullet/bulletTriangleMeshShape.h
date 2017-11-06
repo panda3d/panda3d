@@ -31,7 +31,7 @@ private:
   INLINE BulletTriangleMeshShape();
 
 PUBLISHED:
-  BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
+  explicit BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
   INLINE BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
   INLINE void operator = (const BulletTriangleMeshShape &copy);
   INLINE ~BulletTriangleMeshShape();

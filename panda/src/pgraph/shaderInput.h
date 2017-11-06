@@ -90,8 +90,8 @@ public:
   ShaderInput(CPT_InternalName name, const NodePath &np, int priority=0);
 
 PUBLISHED:
-  ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
-  ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority=0);
+  explicit ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+  explicit ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority=0);
 
   enum ShaderInputType {
     M_invalid = 0,

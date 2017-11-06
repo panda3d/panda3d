@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDAEGG EggBin : public EggGroup {
 PUBLISHED:
-  EggBin(const string &name = "");
+  explicit EggBin(const string &name = "");
   EggBin(const EggGroup &copy);
   EggBin(const EggBin &copy);
 

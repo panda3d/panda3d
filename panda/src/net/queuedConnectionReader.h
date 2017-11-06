@@ -33,7 +33,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<NetDatagram
 class EXPCL_PANDA_NET QueuedConnectionReader : public ConnectionReader,
                                public QueuedReturn<NetDatagram> {
 PUBLISHED:
-  QueuedConnectionReader(ConnectionManager *manager, int num_threads);
+  explicit QueuedConnectionReader(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionReader();
 
   BLOCKING bool data_available();

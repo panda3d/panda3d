@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDAPHYSICS LinearNoiseForce : public LinearRandomForce {
 PUBLISHED:
-  LinearNoiseForce(PN_stdfloat a = 1.0f, bool m = false);
+  explicit LinearNoiseForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearNoiseForce(const LinearNoiseForce &copy);
   virtual ~LinearNoiseForce();
 

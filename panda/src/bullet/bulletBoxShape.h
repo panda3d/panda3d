@@ -32,7 +32,7 @@ private:
   INLINE BulletBoxShape() : _shape(NULL) {};
 
 PUBLISHED:
-  BulletBoxShape(const LVecBase3 &halfExtents);
+  explicit BulletBoxShape(const LVecBase3 &halfExtents);
   INLINE BulletBoxShape(const BulletBoxShape &copy);
   INLINE void operator = (const BulletBoxShape &copy);
   INLINE ~BulletBoxShape();

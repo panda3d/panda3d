@@ -31,9 +31,8 @@ class PhysxSoftBody;
  * Renderable geometry which represents a soft body mesh.
  */
 class EXPCL_PANDAPHYSX PhysxSoftBodyNode : public GeomNode {
-
 PUBLISHED:
-  INLINE PhysxSoftBodyNode(const char *name);
+  INLINE explicit PhysxSoftBodyNode(const char *name);
   INLINE ~PhysxSoftBodyNode();
 
   void set_from_geom(const Geom *geom);

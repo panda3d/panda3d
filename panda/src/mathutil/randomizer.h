@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_MATHUTIL Randomizer {
 PUBLISHED:
-  INLINE Randomizer(unsigned long seed = 0);
+  INLINE explicit Randomizer(unsigned long seed = 0);
   INLINE Randomizer(const Randomizer &copy);
   INLINE void operator = (const Randomizer &copy);
 

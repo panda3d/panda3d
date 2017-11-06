@@ -35,7 +35,7 @@
  */
 class EXPCL_PANDA_PGRAPH PlaneNode : public PandaNode {
 PUBLISHED:
-  PlaneNode(const string &name, const LPlane &plane = LPlane());
+  explicit PlaneNode(const string &name, const LPlane &plane = LPlane());
 
 protected:
   PlaneNode(const PlaneNode &copy);

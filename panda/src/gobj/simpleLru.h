@@ -27,7 +27,7 @@ class SimpleLruPage;
  */
 class EXPCL_PANDA_GOBJ SimpleLru : public LinkedListNode, public Namable {
 PUBLISHED:
-  SimpleLru(const string &name, size_t max_size);
+  explicit SimpleLru(const string &name, size_t max_size);
   ~SimpleLru();
 
   INLINE size_t get_total_size() const;
@@ -64,7 +64,7 @@ private:
  */
 class EXPCL_PANDA_GOBJ SimpleLruPage : public LinkedListNode {
 PUBLISHED:
-  INLINE SimpleLruPage(size_t lru_size);
+  INLINE explicit SimpleLruPage(size_t lru_size);
   INLINE SimpleLruPage(const SimpleLruPage &copy);
   INLINE void operator = (const SimpleLruPage &copy);
 

@@ -45,7 +45,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<ConnectionL
 class EXPCL_PANDA_NET QueuedConnectionListener : public ConnectionListener,
                                  public QueuedReturn<ConnectionListenerData> {
 PUBLISHED:
-  QueuedConnectionListener(ConnectionManager *manager, int num_threads);
+  explicit QueuedConnectionListener(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionListener();
 
   BLOCKING bool new_connection_available();

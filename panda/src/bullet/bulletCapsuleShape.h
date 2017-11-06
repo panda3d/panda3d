@@ -24,9 +24,8 @@
  *
  */
 class EXPCL_PANDABULLET BulletCapsuleShape : public BulletShape {
-
 PUBLISHED:
-  BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
+  explicit BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   INLINE BulletCapsuleShape(const BulletCapsuleShape &copy);
   INLINE void operator = (const BulletCapsuleShape &copy);
   INLINE ~BulletCapsuleShape();

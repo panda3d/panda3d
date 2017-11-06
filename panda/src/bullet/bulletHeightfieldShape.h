@@ -28,10 +28,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
-
 PUBLISHED:
-  BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
-  BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up=Z_up);
+  explicit BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
+  explicit BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up=Z_up);
   INLINE BulletHeightfieldShape(const BulletHeightfieldShape &copy);
   INLINE void operator = (const BulletHeightfieldShape &copy);
   INLINE ~BulletHeightfieldShape();

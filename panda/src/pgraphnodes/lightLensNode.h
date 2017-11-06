@@ -32,7 +32,7 @@ class GraphicsStateGuardian;
  */
 class EXPCL_PANDA_PGRAPHNODES LightLensNode : public Light, public Camera {
 PUBLISHED:
-  LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
+  explicit LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
   virtual ~LightLensNode();
 
   INLINE bool has_specular_color() const;

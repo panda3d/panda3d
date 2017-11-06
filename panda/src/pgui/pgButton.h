@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_PGUI PGButton : public PGItem {
 PUBLISHED:
-  PGButton(const string &name);
+  explicit PGButton(const string &name);
   virtual ~PGButton();
 
 protected:
