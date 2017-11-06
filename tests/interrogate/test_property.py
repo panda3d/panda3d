@@ -105,8 +105,9 @@ def test_seq_property_getitem():
     assert prop[-3] == item_a
 
     # Long index
-    assert prop[1L] == item_b
-    assert prop[-1L] == item_b
+    if sys.version_info[0] < 3:
+        assert prop[long(1)] == item_b
+        assert prop[long(-1)] == item_b
 
     # Out of bounds access
     with pytest.raises(IndexError):
@@ -158,10 +159,11 @@ def test_seq_property_setitem():
     assert tuple(prop) == (item_c, item_b, item_a)
 
     # Long index
-    prop[1L] = item_b
-    assert prop[1] == item_b
-    prop[-1L] = item_b
-    assert prop[-1] == item_b
+    if sys.version_info[0] < 3:
+        prop[long(1)] = item_b
+        assert prop[1] == item_b
+        prop[long(-1)] = item_b
+        assert prop[-1] == item_b
 
     # Out of bounds access
     with pytest.raises(IndexError):
