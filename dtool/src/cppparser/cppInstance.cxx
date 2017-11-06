@@ -328,8 +328,8 @@ get_fully_scoped_name() const {
 
 /**
  * If this is a function type instance, checks whether the function name
- * matches the class name (or ~name), and if so, flags it as a constructor (or
- * destructor).
+ * matches the class name (or ~name), and if so, flags it as a constructor,
+ * destructor or assignment operator
  */
 void CPPInstance::
 check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
@@ -344,13 +344,16 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
     string class_name = scope->get_local_name();
 
     if (!method_name.empty() && !class_name.empty()) {
-      if (method_name == class_name) {
+      // Check either a constructor or assignment operator.
+      if (method_name == class_name || method_name == "operator =") {
         CPPType *void_type = CPPType::new_type
           (new CPPSimpleType(CPPSimpleType::T_void));
 
-        int flags = func->_flags | CPPFunctionType::F_constructor;
+        int flags = func->_flags;
+        if (method_name == class_name) {
+          flags |= CPPFunctionType::F_constructor;
+        }
 
-        // Check if it might be a copy or move constructor.
         CPPParameterList *params = func->_parameters;
         if (params->_parameters.size() == 1 && !params->_includes_ellipsis) {
           CPPType *param_type = params->_parameters[0]->_type;
@@ -360,10 +363,18 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
             param_type = ref_type->_pointing_at->remove_cv();
 
             if (class_name == param_type->get_simple_name()) {
-              if (ref_type->_value_category == CPPReferenceType::VC_rvalue) {
-                flags |= CPPFunctionType::F_move_constructor;
+              if (flags & CPPFunctionType::F_constructor) {
+                if (ref_type->_value_category == CPPReferenceType::VC_rvalue) {
+                  flags |= CPPFunctionType::F_move_constructor;
+                } else {
+                  flags |= CPPFunctionType::F_copy_constructor;
+                }
               } else {
-                flags |= CPPFunctionType::F_copy_constructor;
+                if (ref_type->_value_category == CPPReferenceType::VC_rvalue) {
+                  flags |= CPPFunctionType::F_move_assignment_operator;
+                } else {
+                  flags |= CPPFunctionType::F_copy_assignment_operator;
+                }
               }
             }
           }

@@ -206,6 +206,14 @@ is_copy_constructible() const {
 }
 
 /**
+ * Returns true if the type is copy-assignable.
+ */
+bool CPPTypedefType::
+is_copy_assignable() const {
+  return _type->is_copy_assignable();
+}
+
+/**
  * Returns true if the type is destructible.
  */
 bool CPPTypedefType::

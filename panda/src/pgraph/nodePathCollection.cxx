@@ -20,30 +20,6 @@
 #include "indent.h"
 
 /**
- *
- */
-NodePathCollection::
-NodePathCollection() {
-}
-
-/**
- *
- */
-NodePathCollection::
-NodePathCollection(const NodePathCollection &copy) :
-  _node_paths(copy._node_paths)
-{
-}
-
-/**
- *
- */
-void NodePathCollection::
-operator = (const NodePathCollection &copy) {
-  _node_paths = copy._node_paths;
-}
-
-/**
  * Adds a new NodePath to the collection.
  */
 void NodePathCollection::

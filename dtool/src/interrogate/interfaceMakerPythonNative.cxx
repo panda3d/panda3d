@@ -855,31 +855,13 @@ write_prototypes(ostream &out_code, ostream *out_h) {
             << "  return ((bool (*)(PyObject *, PT(" << class_name << ") &))Dtool_Ptr_" << safe_name << "->_Dtool_Coerce)(args, coerced);\n"
             << "}\n";
         }
-
-      } else if (TypeManager::is_trivial(type)) {
+      } else {
         out_code
           << "inline static " << class_name << " *Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " &coerced) {\n"
           << "  nassertr(Dtool_Ptr_" << safe_name << " != NULL, NULL);\n"
           << "  nassertr(Dtool_Ptr_" << safe_name << "->_Dtool_Coerce != NULL, NULL);\n"
           << "  return ((" << class_name << " *(*)(PyObject *, " << class_name << " &))Dtool_Ptr_" << safe_name << "->_Dtool_Coerce)(args, coerced);\n"
           << "}\n";
-
-      } else {
-        out_code
-          << "inline static bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, " << class_name << " const *&coerced, bool &manage) {\n"
-          << "  nassertr(Dtool_Ptr_" << safe_name << " != NULL, false);\n"
-          << "  nassertr(Dtool_Ptr_" << safe_name << "->_Dtool_ConstCoerce != NULL, false);\n"
-          << "  return ((bool (*)(PyObject *, " << class_name << " const *&, bool&))Dtool_Ptr_" << safe_name << "->_Dtool_ConstCoerce)(args, coerced, manage);\n"
-          << "}\n";
-
-        if (has_coerce > 1) {
-          out_code
-            << "inline static bool Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " *&coerced, bool &manage) {\n"
-            << "  nassertr(Dtool_Ptr_" << safe_name << " != NULL, false);\n"
-            << "  nassertr(Dtool_Ptr_" << safe_name << "->_Dtool_Coerce != NULL, false);\n"
-            << "  return ((bool (*)(PyObject *, " << class_name << " *&, bool&))Dtool_Ptr_" << safe_name << "->_Dtool_Coerce)(args, coerced, manage);\n"
-            << "}\n";
-        }
       }
     }
     out_code << "#else\n";
@@ -888,20 +870,12 @@ write_prototypes(ostream &out_code, ostream *out_h) {
 
     if (has_coerce > 0) {
       if (TypeManager::is_reference_count(type)) {
-        assert(!type->is_trivial());
         out_code << "extern bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, CPT(" << class_name << ") &coerced);\n";
         if (has_coerce > 1) {
           out_code << "extern bool Dtool_Coerce_" << safe_name << "(PyObject *args, PT(" << class_name << ") &coerced);\n";
         }
-
-      } else if (TypeManager::is_trivial(type)) {
-        out_code << "extern " << class_name << " *Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " &coerced);\n";
-
       } else {
-        out_code << "extern bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, " << class_name << " const *&coerced, bool &manage);\n";
-        if (has_coerce > 1) {
-          out_code << "extern bool Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " *&coerced, bool &manage);\n";
-        }
+        out_code << "extern " << class_name << " *Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " &coerced);\n";
       }
     }
     out_code << "#endif\n";
@@ -1062,7 +1036,7 @@ write_class_details(ostream &out, Object *obj) {
   int has_coerce = has_coerce_constructor(cpptype->as_struct_type());
   if (has_coerce > 0) {
     write_coerce_constructor(out, obj, true);
-    if (has_coerce > 1 && !TypeManager::is_trivial(obj->_itype._cpptype)) {
+    if (has_coerce > 1 && TypeManager::is_reference_count(obj->_itype._cpptype)) {
       write_coerce_constructor(out, obj, false);
     }
   }
@@ -1182,20 +1156,12 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   int has_coerce = has_coerce_constructor(type->as_struct_type());
   if (has_coerce > 0) {
     if (TypeManager::is_reference_count(type)) {
-      assert(!type->is_trivial());
       out << "bool Dtool_ConstCoerce_" << class_name << "(PyObject *args, CPT(" << c_class_name << ") &coerced);\n";
       if (has_coerce > 1) {
         out << "bool Dtool_Coerce_" << class_name << "(PyObject *args, PT(" << c_class_name << ") &coerced);\n";
       }
-
-    } else if (TypeManager::is_trivial(type)) {
-      out << "" << c_class_name << " *Dtool_Coerce_" << class_name << "(PyObject *args, " << c_class_name << " &coerced);\n";
-
     } else {
-      out << "bool Dtool_ConstCoerce_" << class_name << "(PyObject *args, " << c_class_name << " const *&coerced, bool &manage);\n";
-      if (has_coerce > 1) {
-        out << "bool Dtool_Coerce_" << class_name << "(PyObject *args, " << c_class_name << " *&coerced, bool &manage);\n";
-      }
+      out << "" << c_class_name << " *Dtool_Coerce_" << class_name << "(PyObject *args, " << c_class_name << " &coerced);\n";
     }
   }
 
@@ -3046,8 +3012,7 @@ write_module_class(ostream &out, Object *obj) {
 
   int has_coerce = has_coerce_constructor(obj->_itype._cpptype->as_struct_type());
   if (has_coerce > 0) {
-    if (TypeManager::is_reference_count(obj->_itype._cpptype) ||
-        !TypeManager::is_trivial(obj->_itype._cpptype)) {
+    if (TypeManager::is_reference_count(obj->_itype._cpptype)) {
       out << "  (CoerceFunction)Dtool_ConstCoerce_" << ClassName << ",\n";
       if (has_coerce > 1) {
         out << "  (CoerceFunction)Dtool_Coerce_" << ClassName << ",\n";
@@ -3920,7 +3885,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
     }
     return_flags |= RF_err_false;
 
-  } else if (TypeManager::is_trivial(obj->_itype._cpptype)) {
+  } else {
     out << cClassName << " *Dtool_Coerce_" << ClassName << "(PyObject *args, " << cClassName << " &coerced) {\n";
 
     out << "  " << cClassName << " *local_this;\n";
@@ -3934,26 +3899,6 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
     out << "    return local_this;\n";
 
     return_flags |= RF_err_null;
-
-  } else {
-    if (is_const) {
-      out << "bool Dtool_ConstCoerce_" << ClassName << "(PyObject *args, " << cClassName << " const *&coerced, bool &manage) {\n";
-    } else {
-      out << "bool Dtool_Coerce_" << ClassName << "(PyObject *args, " << cClassName << " *&coerced, bool &manage) {\n";
-    }
-
-    out << "  DTOOL_Call_ExtractThisPointerForType(args, &Dtool_" << ClassName << ", (void**)&coerced);\n";
-    out << "  if (coerced != NULL) {\n";
-    if (!is_const) {
-      out << "    if (!((Dtool_PyInstDef *)args)->_is_const) {\n";
-      out << "      // A non-const instance is required, which this is.\n";
-      out << "      return true;\n";
-      out << "    }\n";
-    } else {
-      out << "    return true;\n";
-    }
-
-    return_flags |= RF_err_false;
   }
 
   out << "  }\n\n";
@@ -5498,8 +5443,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           // actual PointerTo.  This eliminates an unref()ref() pair.
           pexpr_string = "MOVE(" + param_name + "_this)";
 
-        } else if (TypeManager::is_trivial(obj_type)) {
-          // This is a trivial type, such as TypeHandle or LVecBase4.
+        } else {
+          // This is a move-assignable type, such as TypeHandle or LVecBase4.
           obj_type->output_instance(extra_convert, param_name + "_local", &parser);
           extra_convert << ";\n";
 
@@ -5520,29 +5465,6 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           }
 
           coerce_call = "(" + param_name + "_this != NULL)";
-
-          pexpr_string = param_name + "_this";
-
-        } else  {
-          // This is a bit less elegant: we use a bool to store whether we're
-          // supposed to clean up the reference afterward.
-          type->output_instance(extra_convert, param_name + "_this", &parser);
-          extra_convert
-            << default_expr << ";\n"
-            << "bool " << param_name << "_manage = false;\n";
-
-          if (TypeManager::is_const_pointer_or_ref(orig_type)) {
-            coerce_call = "Dtool_ConstCoerce_" + make_safe_name(class_name) +
-              "(" + param_name + ", " + param_name + "_this, " + param_name + "_manage)";
-          } else {
-            coerce_call = "Dtool_Coerce_" + make_safe_name(class_name) +
-              "(" + param_name + ", " + param_name + "_this, " + param_name + "_manage)";
-          }
-
-          extra_cleanup
-            << "if (" << param_name << "_manage) {\n"
-            << "  delete " << param_name << "_this;\n"
-            << "}\n";
 
           pexpr_string = param_name + "_this";
         }
@@ -5848,7 +5770,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     manage_return = remap->_return_value_needs_management;
     return_expr = "return_value";
 
-  } else if ((return_flags & RF_coerced) != 0 && TypeManager::is_trivial(remap->_cpptype)) {
+  } else if ((return_flags & RF_coerced) != 0 && !TypeManager::is_reference_count(remap->_cpptype)) {
     // Another special case is the coerce constructor for a trivial type.  We
     // don't want to invoke "operator new" unnecessarily.
     if (is_constructor && remap->_extension) {
@@ -6152,13 +6074,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "coerced = MOVE(" << return_expr << ");\n";
       indent(out, indent_level) << "return true;\n";
 
-    } else if (TypeManager::is_trivial(remap->_cpptype)) {
-      indent(out, indent_level) << "return &coerced;\n";
-
     } else {
-      indent(out, indent_level) << "coerced = " << return_expr << ";\n";
-      indent(out, indent_level) << "manage = true;\n";
-      indent(out, indent_level) << "return true;\n";
+      indent(out, indent_level) << "return &coerced;\n";
     }
 
   } else if (return_flags & RF_raise_keyerror) {
@@ -7354,6 +7271,14 @@ is_remap_legal(FunctionRemap *remap) {
 int InterfaceMakerPythonNative::
 has_coerce_constructor(CPPStructType *type) {
   if (type == NULL) {
+    return 0;
+  }
+
+  // It is convenient to set default-constructability and move-assignability
+  // as requirement for non-reference-counted objects, since it simplifies the
+  // implementation and it holds for all classes we need it for.
+  if (!TypeManager::is_reference_count(type) &&
+      (!type->is_default_constructible() || !type->is_move_assignable())) {
     return 0;
   }
 
