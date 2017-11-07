@@ -56,8 +56,8 @@ public:
 };
 
 BEGIN_PUBLISH
-NodePath py_decode_NodePath_from_bam_stream(const string &data);
-NodePath py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data);
+NodePath py_decode_NodePath_from_bam_stream(vector_uchar data);
+NodePath py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar data);
 END_PUBLISH
 
 #include "nodePath_ext.I"

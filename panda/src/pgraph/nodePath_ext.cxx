@@ -120,7 +120,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
 
   // We have a non-empty NodePath.
 
-  string bam_stream;
+  vector_uchar bam_stream;
   if (!_this->encode_to_bam_stream(bam_stream, writer)) {
     ostringstream stream;
     stream << "Could not bamify " << _this;
@@ -150,7 +150,6 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   } else {
     // The traditional pickle support: call the non-persistent version of this
     // function.
-
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream()");
@@ -159,14 +158,15 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     }
   }
 
-#if PY_MAJOR_VERSION >= 3
-  PyObject *result = Py_BuildValue("(O(y#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#else
-  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#endif
-  Py_DECREF(func);
-  Py_DECREF(this_class);
-  return result;
+  // PyTuple_SET_ITEM conveniently borrows the reference it is passed.
+  PyObject *args = PyTuple_New(2);
+  PyTuple_SET_ITEM(args, 0, this_class);
+  PyTuple_SET_ITEM(args, 1, Dtool_WrapValue(bam_stream));
+
+  PyObject *tuple = PyTuple_New(2);
+  PyTuple_SET_ITEM(tuple, 0, func);
+  PyTuple_SET_ITEM(tuple, 1, args);
+  return tuple;
 }
 
 /**
@@ -190,15 +190,15 @@ find_net_python_tag(PyObject *key) const {
  * This wrapper is defined as a global function to suit pickle's needs.
  */
 NodePath
-py_decode_NodePath_from_bam_stream(const string &data) {
-  return py_decode_NodePath_from_bam_stream_persist(NULL, data);
+py_decode_NodePath_from_bam_stream(vector_uchar data) {
+  return py_decode_NodePath_from_bam_stream_persist(nullptr, move(data));
 }
 
 /**
  * This wrapper is defined as a global function to suit pickle's needs.
  */
 NodePath
-py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data) {
+py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar data) {
   BamReader *reader = NULL;
   if (unpickler != NULL) {
     PyObject *py_reader = PyObject_GetAttrString(unpickler, "bamReader");
@@ -211,7 +211,7 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &da
     }
   }
 
-  return NodePath::decode_from_bam_stream(data, reader);
+  return NodePath::decode_from_bam_stream(move(data), reader);
 }
 
 /**

@@ -29,6 +29,7 @@
 #endif
 
 #include "pnotify.h"
+#include "vector_uchar.h"
 
 #if defined(HAVE_PYTHON) && !defined(CPPPARSER)
 
@@ -549,7 +550,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(char value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value);
-ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::vector<unsigned char> &value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value);
 
 #if PY_MAJOR_VERSION >= 0x02060000
 ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value);
