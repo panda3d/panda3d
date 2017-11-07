@@ -745,11 +745,31 @@ write_python_instance(ostream &out, int indent_level, const string &return_expr,
       << "  return Py_None;\n";
     indent(out, indent_level)
       << "} else {\n";
-    indent(out, indent_level)
-      << "  return DTool_CreatePyInstanceTyped((void *)" << return_expr
-      << ", *Dtool_Ptr_" << make_safe_name(class_name) << ", "
-      << owns_memory << ", " << is_const << ", "
-      << return_expr << "->as_typed_object()->get_type_index());\n";
+    // Special exception if we are returning TypedWritable, which might
+    // actually be a derived class that inherits from ReferenceCount.
+    if (!owns_memory && !is_const && class_name == "TypedWritable") {
+      indent(out, indent_level)
+        << "  ReferenceCount *rc = " << return_expr << "->as_reference_count();\n";
+      indent(out, indent_level)
+        << "  bool is_refcount = (rc != (ReferenceCount *)NULL);\n";
+      indent(out, indent_level)
+        << "  if (is_refcount) {\n";
+      indent(out, indent_level)
+        << "    rc->ref();\n";
+      indent(out, indent_level)
+        << "  }\n";
+      indent(out, indent_level)
+        << "  return DTool_CreatePyInstanceTyped((void *)" << return_expr
+        << ", *Dtool_Ptr_" << make_safe_name(class_name) << ", is_refcount, "
+        << is_const << ", " << return_expr
+        << "->get_type_index());\n";
+    } else {
+      indent(out, indent_level)
+        << "  return DTool_CreatePyInstanceTyped((void *)" << return_expr
+        << ", *Dtool_Ptr_" << make_safe_name(class_name) << ", "
+        << owns_memory << ", " << is_const << ", "
+        << return_expr << "->as_typed_object()->get_type_index());\n";
+    }
     indent(out, indent_level)
       << "}\n";
   } else {
