@@ -1887,9 +1887,13 @@ Dtool_StaticProperty_dealloc(PyDescrObject *descr) {
 static PyObject *
 Dtool_StaticProperty_repr(PyDescrObject *descr, const char *format) {
 #if PY_MAJOR_VERSION >= 3
-  return PyUnicode_FromFormat("<attribute '%s' of '%s'>", descr->d_name, descr->d_type->tp_name);
+  return PyUnicode_FromFormat("<attribute '%s' of '%s'>",
+                              PyUnicode_AsUTF8(descr->d_name),
+                              descr->d_type->tp_name);
 #else
-  return PyString_FromFormat("<attribute '%s' of '%s'>", descr->d_name, descr->d_type->tp_name);
+  return PyString_FromFormat("<attribute '%s' of '%s'>",
+                             PyString_AS_STRING(descr->d_name),
+                             descr->d_type->tp_name);
 #endif
 }
 
@@ -1907,7 +1911,11 @@ Dtool_StaticProperty_get(PyGetSetDescrObject *descr, PyObject *obj, PyObject *ty
   } else {
     return PyErr_Format(PyExc_AttributeError,
                         "attribute '%s' of type '%.100s' is not readable",
-                        ((PyDescrObject *)descr)->d_name,
+#if PY_MAJOR_VERSION >= 3
+                        PyUnicode_AsUTF8(((PyDescrObject *)descr)->d_name),
+#else
+                        PyString_AS_STRING(((PyDescrObject *)descr)->d_name),
+#endif
                         ((PyDescrObject *)descr)->d_type->tp_name);
   }
 }
@@ -1919,7 +1927,11 @@ Dtool_StaticProperty_set(PyGetSetDescrObject *descr, PyObject *obj, PyObject *va
   } else {
     PyErr_Format(PyExc_AttributeError,
                  "attribute '%s' of type '%.100s' is not writable",
-                 ((PyDescrObject *)descr)->d_name,
+#if PY_MAJOR_VERSION >= 3
+                 PyUnicode_AsUTF8(((PyDescrObject *)descr)->d_name),
+#else
+                 PyString_AS_STRING(((PyDescrObject *)descr)->d_name),
+#endif
                  ((PyDescrObject *)descr)->d_type->tp_name);
     return -1;
   }
