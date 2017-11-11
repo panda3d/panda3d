@@ -7176,7 +7176,7 @@ is_cpp_type_legal(CPPType *in_ctype) {
     return true;
   } else if (TypeManager::is_basic_string_wchar(type)) {
     return true;
-  } else if (TypeManager::is_vector_unsigned_char(type)) {
+  } else if (TypeManager::is_vector_unsigned_char(in_ctype)) {
     return true;
   } else if (TypeManager::is_simple(type)) {
     return true;
