@@ -85,6 +85,10 @@ def setupMirror(name, width, height, rootCamera = None):
         # Set the camera to the mirror-image position of the main camera.
         cameraNP.setMat(rootCamera.getMat(planeNP) * plane.getReflectionMat())
 
+        # Set the cameras roll to the roll of the mirror. Otherwise
+        # mirrored objects will be moved unexpectedly
+        cameraNP.setR(planeNP.getR()-180)
+
         # And reset the frustum to exactly frame the mirror's corners.
         # This is a minor detail, but it helps to provide a realistic
         # reflection and keep the subject centered.
@@ -92,6 +96,18 @@ def setupMirror(name, width, height, rootCamera = None):
         ur = cameraNP.getRelativePoint(card, Point3(width / 2.0, 0, height / 2.0))
         ll = cameraNP.getRelativePoint(card, Point3(-width / 2.0, 0, -height / 2.0))
         lr = cameraNP.getRelativePoint(card, Point3(width / 2.0, 0, -height / 2.0))
+
+        # get the distance from the mirrors camera to the mirror plane
+        camvec = planeNP.getPos() - cameraNP.getPos()
+        camdist = camvec.length()
+
+        # set the discance on the mirrors corners so it will keep correct
+        # sizes of the mirrored objects
+        ul.setY(camdist)
+        ur.setY(camdist)
+        ll.setY(camdist)
+        lr.setY(camdist)
+
         lens.setFrustumFromCorners(ul, ur, ll, lr, Lens.FCCameraPlane | Lens.FCOffAxis | Lens.FCAspectRatio)
 
         return Task.cont
