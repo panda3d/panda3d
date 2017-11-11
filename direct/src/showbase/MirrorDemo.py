@@ -24,7 +24,7 @@ __all__ = ['setupMirror', 'showFrustum']
 from panda3d.core import *
 from direct.task import Task
 
-def setupMirror(name, width, height, rootCamera = None):
+def setupMirror(name, width, height, bufferSize = 256, clearColor=None, rootCamera = None):
     # The return value is a NodePath that contains a rectangle that
     # reflects render.  You can reparent, reposition, and rotate it
     # anywhere you like.
@@ -49,9 +49,12 @@ def setupMirror(name, width, height, rootCamera = None):
     # Now create an offscreen buffer for rendering the mirror's point
     # of view.  The parameters here control the resolution of the
     # texture.
-    buffer = base.win.makeTextureBuffer(name, 256, 256)
-    #buffer.setClearColor(base.win.getClearColor())
-    buffer.setClearColor(VBase4(0, 0, 1, 1))
+    buffer = base.win.makeTextureBuffer(name, bufferSize, bufferSize)
+    if clearColor is None:
+        buffer.setClearColor(base.win.getClearColor())
+        #buffer.setClearColor(VBase4(0, 0, 1, 1))
+    else:
+        buffer.setClearColor(clearColor)
 
     # Set up a display region on this buffer, and create a camera.
     dr = buffer.makeDisplayRegion()
@@ -116,3 +119,21 @@ def showFrustum(np):
     geomNode.addGeom(lens.makeGeometry())
     cameraNP.attachNewNode(geomNode)
 
+if __name__ == "__main__":
+    from direct.showbase.ShowBase import ShowBase
+    base = ShowBase()
+
+    panda = loader.loadModel("panda")
+    panda.setH(180)
+    panda.setPos(0, 10, -2.5)
+    panda.setScale(0.5)
+    panda.reparentTo(render)
+
+    myMirror = setupMirror("mirror", 10, 10, 1024, VBase4(0, 0, 1, 1))
+    myMirror.setPos(0, 15, 2.5)
+    myMirror.setH(180)
+
+    # Uncomment this to show the frustom of the camera in the mirror
+    #showFrustum(render)
+
+    base.run()
