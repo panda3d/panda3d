@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDAPHYSICS ForceNode : public PandaNode {
 PUBLISHED:
-  ForceNode(const string &name);
+  explicit ForceNode(const string &name);
   INLINE void clear();
   INLINE BaseForce *get_force(size_t index) const;
   INLINE size_t get_num_forces() const;

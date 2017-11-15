@@ -36,7 +36,7 @@ class ClockObject;
  */
 class EXPCL_PANDA_GRUTIL FrameRateMeter : public TextNode {
 PUBLISHED:
-  FrameRateMeter(const string &name);
+  explicit FrameRateMeter(const string &name);
   virtual ~FrameRateMeter();
 
   void setup_window(GraphicsOutput *window);

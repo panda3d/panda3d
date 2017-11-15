@@ -21,7 +21,7 @@
  */
 class EXPCL_PANDAPHYSICS LinearFrictionForce : public LinearForce {
 PUBLISHED:
-  LinearFrictionForce(PN_stdfloat coef = 1.0f, PN_stdfloat a = 1.0f, bool m = false);
+  explicit LinearFrictionForce(PN_stdfloat coef = 1.0f, PN_stdfloat a = 1.0f, bool m = false);
   LinearFrictionForce(const LinearFrictionForce &copy);
   virtual ~LinearFrictionForce();
 

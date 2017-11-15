@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomTrifans : public GeomPrimitive {
 PUBLISHED:
-  GeomTrifans(UsageHint usage_hint);
+  explicit GeomTrifans(UsageHint usage_hint);
   GeomTrifans(const GeomTrifans &copy);
   virtual ~GeomTrifans();
   ALLOC_DELETED_CHAIN(GeomTrifans);

@@ -52,6 +52,10 @@ Thumbs.db
 ehthumbs.db
 
 # Python
-__pycache__
+__pycache__/
 *.pyc
 *.pyo
+
+# Test tool cache directories
+.tox/
+.cache/

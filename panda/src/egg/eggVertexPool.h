@@ -65,7 +65,7 @@ public:
   // Here begins the actual public interface to EggVertexPool.
 
 PUBLISHED:
-  EggVertexPool(const string &name);
+  explicit EggVertexPool(const string &name);
   EggVertexPool(const EggVertexPool &copy);
   ~EggVertexPool();
 

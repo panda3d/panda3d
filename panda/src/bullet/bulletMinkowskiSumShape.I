@@ -12,6 +12,16 @@
  */
 
 /**
+ * Only used by make_from_bam.
+ */
+INLINE BulletMinkowskiSumShape::
+BulletMinkowskiSumShape() :
+  _shape(nullptr),
+  _shape_a(nullptr),
+  _shape_b(nullptr) {
+}
+
+/**
  *
  */
 INLINE BulletMinkowskiSumShape::
@@ -94,13 +104,4 @@ INLINE const BulletShape *BulletMinkowskiSumShape::
 get_shape_b() const {
 
   return _shape_b;
-}
-
-/**
- *
- */
-INLINE PN_stdfloat BulletMinkowskiSumShape::
-get_margin() const {
-
-  return (PN_stdfloat)_shape->getMargin();
 }

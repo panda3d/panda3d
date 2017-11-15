@@ -30,7 +30,7 @@ class VorbisAudio;
  */
 class EXPCL_PANDA_MOVIES VorbisAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  VorbisAudioCursor(VorbisAudio *src, istream *stream);
+  explicit VorbisAudioCursor(VorbisAudio *src, istream *stream);
   virtual ~VorbisAudioCursor();
   virtual void seek(double offset);
 

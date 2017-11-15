@@ -1417,7 +1417,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t result.rgb = lerp(result, tex" << i << ", tex" << i << ".a).rgb;\n";
       break;
     case TextureStage::M_blend:
-      text << "\t result.rgb = lerp(result, tex" << i << " * texcolor_" << i << ", tex" << i << ".r).rgb;\n";
+      text << "\t result.rgb = lerp(result.rgb, texcolor_" << i << ".rgb, tex" << i << ".rgb);\n";
+      if (key._calc_primary_alpha) {
+        text << "\t result.a *= tex" << i << ".a;\n";
+      }
       break;
     case TextureStage::M_replace:
       text << "\t result = tex" << i << ";\n";

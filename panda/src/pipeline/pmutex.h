@@ -43,7 +43,7 @@ PUBLISHED:
 public:
   INLINE Mutex(const char *name);
 PUBLISHED:
-  INLINE Mutex(const string &name);
+  INLINE explicit Mutex(const string &name);
   INLINE ~Mutex();
 private:
   INLINE Mutex(const Mutex &copy);

@@ -24,8 +24,8 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionSphere : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionSphere(const LPoint3 &center, PN_stdfloat radius);
-  INLINE CollisionSphere(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat radius);
+  INLINE explicit CollisionSphere(const LPoint3 &center, PN_stdfloat radius);
+  INLINE explicit CollisionSphere(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat radius);
 
   virtual LPoint3 get_collision_origin() const;
 

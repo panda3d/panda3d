@@ -85,7 +85,7 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  SpeedTreeNode(const string &name);
+  explicit SpeedTreeNode(const string &name);
   virtual ~SpeedTreeNode();
 
   INLINE bool is_valid() const;

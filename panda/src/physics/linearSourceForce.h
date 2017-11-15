@@ -21,8 +21,8 @@
  */
 class EXPCL_PANDAPHYSICS LinearSourceForce : public LinearDistanceForce {
 PUBLISHED:
-  LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a = 1.0f,
-              bool mass = true);
+  explicit LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r,
+                             PN_stdfloat a = 1.0f, bool mass = true);
   LinearSourceForce();
   LinearSourceForce(const LinearSourceForce &copy);
   virtual ~LinearSourceForce();

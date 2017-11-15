@@ -31,7 +31,7 @@ protected:
   AnimBundle(AnimGroup *parent, const AnimBundle &copy);
 
 PUBLISHED:
-  INLINE AnimBundle(const string &name, PN_stdfloat fps, int num_frames);
+  INLINE explicit AnimBundle(const string &name, PN_stdfloat fps, int num_frames);
 
   PT(AnimBundle) copy_bundle() const;
 

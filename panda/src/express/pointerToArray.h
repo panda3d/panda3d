@@ -247,6 +247,8 @@ private:
 template <class Element>
 class ConstPointerToArray : public PointerToArrayBase<Element> {
 public:
+  INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
+
   // By hiding this template from interrogate, we would improve compile-time
   // speed and memory utilization.  However, we do want to export a minimal
   // subset of this class.  So we define just the exportable interface here.
@@ -287,7 +289,6 @@ PUBLISHED:
   typedef TYPENAME pvector<Element>::difference_type difference_type;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
-  INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);

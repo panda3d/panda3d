@@ -38,7 +38,7 @@ class ClockObject;
  */
 class EXPCL_PANDA SceneGraphAnalyzerMeter : public TextNode {
 PUBLISHED:
-  SceneGraphAnalyzerMeter(const string &name, PandaNode *node);
+  explicit SceneGraphAnalyzerMeter(const string &name, PandaNode *node);
   virtual ~SceneGraphAnalyzerMeter();
 
   void setup_window(GraphicsOutput *window);

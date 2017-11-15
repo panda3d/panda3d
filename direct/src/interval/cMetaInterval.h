@@ -31,7 +31,7 @@
  */
 class EXPCL_DIRECT CMetaInterval : public CInterval {
 PUBLISHED:
-  CMetaInterval(const string &name);
+  explicit CMetaInterval(const string &name);
   virtual ~CMetaInterval();
 
   enum RelativeStart {

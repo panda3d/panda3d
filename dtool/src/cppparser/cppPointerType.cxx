@@ -178,6 +178,14 @@ is_copy_constructible() const {
 }
 
 /**
+ * Returns true if the type is copy-assignable.
+ */
+bool CPPPointerType::
+is_copy_assignable() const {
+  return true;
+}
+
+/**
  * This is a little more forgiving than is_equal(): it returns true if the
  * types appear to be referring to the same thing, even if they may have
  * different pointers or somewhat different definitions.  It's useful for

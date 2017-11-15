@@ -32,7 +32,7 @@ public:
   ALLOC_DELETED_CHAIN(ModelFlattenRequest);
 
 PUBLISHED:
-  INLINE ModelFlattenRequest(PandaNode *orig);
+  INLINE explicit ModelFlattenRequest(PandaNode *orig);
 
   INLINE PandaNode *get_orig() const;
 

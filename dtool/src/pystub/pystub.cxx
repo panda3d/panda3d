@@ -91,6 +91,7 @@ extern "C" {
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
   EXPCL_PYSTUB int PyModule_Create2(...);
   EXPCL_PYSTUB int PyModule_Create2TraceRefs(...);
+  EXPCL_PYSTUB int PyNumber_AsSsize_t(...);
   EXPCL_PYSTUB int PyNumber_Check(...);
   EXPCL_PYSTUB int PyNumber_Float(...);
   EXPCL_PYSTUB int PyNumber_Int(...);
@@ -216,6 +217,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_FutureWarning;
   EXPCL_PYSTUB extern void *PyExc_ImportError;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
+  EXPCL_PYSTUB extern void *PyExc_KeyError;
   EXPCL_PYSTUB extern void *PyExc_OSError;
   EXPCL_PYSTUB extern void *PyExc_OverflowError;
   EXPCL_PYSTUB extern void *PyExc_RuntimeError;
@@ -313,6 +315,7 @@ int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
 int PyModule_Create2(...) { return 0; };
 int PyModule_Create2TraceRefs(...) { return 0; };
+int PyNumber_AsSsize_t(...) { return 0; }
 int PyNumber_Check(...) { return 0; }
 int PyNumber_Float(...) { return 0; }
 int PyNumber_Int(...) { return 0; }
@@ -444,6 +447,7 @@ void *PyExc_Exception = (void *)NULL;
 void *PyExc_FutureWarning = (void *)NULL;
 void *PyExc_ImportError = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
+void *PyExc_KeyError = (void *)NULL;
 void *PyExc_OSError = (void *)NULL;
 void *PyExc_OverflowError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;

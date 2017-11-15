@@ -32,9 +32,9 @@ class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   LineParticleRenderer();
   LineParticleRenderer(const LineParticleRenderer& copy);
-  LineParticleRenderer(const LColor& head,
-                       const LColor& tail,
-                       ParticleRendererAlphaMode alpha_mode);
+  explicit LineParticleRenderer(const LColor& head,
+                                const LColor& tail,
+                                ParticleRendererAlphaMode alpha_mode);
 
   virtual ~LineParticleRenderer();
 

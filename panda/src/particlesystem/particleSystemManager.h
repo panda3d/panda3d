@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDAPHYSICS ParticleSystemManager {
 PUBLISHED:
-  ParticleSystemManager(int every_nth_frame = 1);
+  explicit ParticleSystemManager(int every_nth_frame = 1);
   virtual ~ParticleSystemManager();
 
   INLINE void set_frame_stepping(int every_nth_frame);

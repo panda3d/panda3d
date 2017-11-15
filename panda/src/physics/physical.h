@@ -41,7 +41,7 @@ public:
   typedef pvector<PT(AngularForce)> AngularForceVector;
 
 PUBLISHED:
-  Physical(int total_objects = 1, bool pre_alloc = false);
+  explicit Physical(int total_objects = 1, bool pre_alloc = false);
   Physical(const Physical& copy);
 
   virtual ~Physical();

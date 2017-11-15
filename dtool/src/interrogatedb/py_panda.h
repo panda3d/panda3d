@@ -29,6 +29,7 @@
 #endif
 
 #include "pnotify.h"
+#include "vector_uchar.h"
 
 #if defined(HAVE_PYTHON) && !defined(CPPPARSER)
 
@@ -474,6 +475,7 @@ map_deepcopy_to_copy(PyObject *self, PyObject *args);
 struct Dtool_WrapperBase {
   PyObject_HEAD;
   PyObject *_self;
+  const char *_name;
 };
 
 struct Dtool_SequenceWrapper {
@@ -490,9 +492,10 @@ struct Dtool_MappingWrapper {
 };
 
 struct Dtool_SeqMapWrapper {
-  Dtool_SequenceWrapper _seq;
-  binaryfunc _map_getitem_func;
-  objobjargproc _map_setitem_func;
+  Dtool_MappingWrapper _map;
+  lenfunc _len_func;
+  ssizeargfunc _seq_getitem_func;
+  ssizeobjargproc _seq_setitem_func;
 };
 
 struct Dtool_GeneratorWrapper {
@@ -547,7 +550,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(char value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value);
-ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::vector<unsigned char> &value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value);
 
 #if PY_MAJOR_VERSION >= 0x02060000
 ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value);

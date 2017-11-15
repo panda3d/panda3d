@@ -225,9 +225,12 @@ private:
  */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationSegment : public ReferenceCount {
-PUBLISHED:
+public:
   ColorInterpolationSegment(ColorInterpolationFunction* function, const PN_stdfloat &time_begin, const PN_stdfloat &time_end, const bool is_modulated, const int id);
+
+PUBLISHED:
   ColorInterpolationSegment(const ColorInterpolationSegment &s);
+
   virtual ~ColorInterpolationSegment();
 
   // INLINE ColorInterpolationFunction* get_function() const;

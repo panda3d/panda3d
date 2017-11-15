@@ -31,7 +31,7 @@ class OpusAudio;
  */
 class EXPCL_PANDA_MOVIES OpusAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  OpusAudioCursor(OpusAudio *src, istream *stream);
+  explicit OpusAudioCursor(OpusAudio *src, istream *stream);
   virtual ~OpusAudioCursor();
   virtual void seek(double offset);
 

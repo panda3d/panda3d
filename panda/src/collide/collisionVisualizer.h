@@ -33,7 +33,7 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionVisualizer : public PandaNode, public CollisionRecorder {
 PUBLISHED:
-  CollisionVisualizer(const string &name);
+  explicit CollisionVisualizer(const string &name);
   virtual ~CollisionVisualizer();
 
   INLINE void set_point_scale(PN_stdfloat point_scale);

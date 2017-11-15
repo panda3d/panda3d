@@ -26,8 +26,8 @@
 class EXPCL_PANDAEXPRESS SubfileInfo {
 PUBLISHED:
   INLINE SubfileInfo();
-  INLINE SubfileInfo(const FileReference *file, streampos start, streamsize size);
-  INLINE SubfileInfo(const Filename &filename, streampos start, streamsize size);
+  INLINE explicit SubfileInfo(const FileReference *file, streampos start, streamsize size);
+  INLINE explicit SubfileInfo(const Filename &filename, streampos start, streamsize size);
   INLINE SubfileInfo(const SubfileInfo &copy);
   INLINE void operator = (const SubfileInfo &copy);
 

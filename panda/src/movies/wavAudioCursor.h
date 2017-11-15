@@ -26,7 +26,7 @@ class WavAudio;
  */
 class EXPCL_PANDA_MOVIES WavAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  WavAudioCursor(WavAudio *src, istream *stream);
+  explicit WavAudioCursor(WavAudio *src, istream *stream);
   virtual ~WavAudioCursor();
   virtual void seek(double offset);
 

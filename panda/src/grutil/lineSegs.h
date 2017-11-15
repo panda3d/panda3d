@@ -32,7 +32,7 @@
  */
 class EXPCL_PANDA_GRUTIL LineSegs : public Namable {
 PUBLISHED:
-  LineSegs(const string &name = "lines");
+  explicit LineSegs(const string &name = "lines");
   ~LineSegs();
 
   void reset();

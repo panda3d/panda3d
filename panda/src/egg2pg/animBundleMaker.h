@@ -34,7 +34,7 @@ class AnimChannelMatrixXfmTable;
  */
 class EXPCL_PANDAEGG AnimBundleMaker {
 public:
-  AnimBundleMaker(EggTable *root);
+  explicit AnimBundleMaker(EggTable *root);
 
   AnimBundleNode *make_node();
 

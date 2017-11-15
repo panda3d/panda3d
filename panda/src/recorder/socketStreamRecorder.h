@@ -41,7 +41,7 @@ class EXPCL_PANDA_RECORDER SocketStreamRecorder : public RecorderBase,
                                                   public ReferenceCount {
 PUBLISHED:
   INLINE SocketStreamRecorder();
-  INLINE SocketStreamRecorder(SocketStream *stream, bool owns_stream);
+  INLINE explicit SocketStreamRecorder(SocketStream *stream, bool owns_stream);
   INLINE ~SocketStreamRecorder();
 
   bool receive_datagram(Datagram &dg);

@@ -940,9 +940,9 @@ PUBLISHED:
   BLOCKING bool write_bam_file(const Filename &filename) const;
   BLOCKING bool write_bam_stream(ostream &out) const;
 
-  INLINE string encode_to_bam_stream() const;
-  bool encode_to_bam_stream(string &data, BamWriter *writer = NULL) const;
-  static NodePath decode_from_bam_stream(const string &data, BamReader *reader = NULL);
+  INLINE vector_uchar encode_to_bam_stream() const;
+  bool encode_to_bam_stream(vector_uchar &data, BamWriter *writer = nullptr) const;
+  static NodePath decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 private:
   static NodePathComponent *

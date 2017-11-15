@@ -60,7 +60,7 @@ protected:
 
 PUBLISHED:
   // This is the normal PartGroup constructor.
-  PartGroup(PartGroup *parent, const string &name);
+  explicit PartGroup(PartGroup *parent, const string &name);
   virtual ~PartGroup();
   virtual bool is_character_joint() const;
 

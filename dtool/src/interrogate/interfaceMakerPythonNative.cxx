@@ -745,11 +745,31 @@ write_python_instance(ostream &out, int indent_level, const string &return_expr,
       << "  return Py_None;\n";
     indent(out, indent_level)
       << "} else {\n";
-    indent(out, indent_level)
-      << "  return DTool_CreatePyInstanceTyped((void *)" << return_expr
-      << ", *Dtool_Ptr_" << make_safe_name(class_name) << ", "
-      << owns_memory << ", " << is_const << ", "
-      << return_expr << "->as_typed_object()->get_type_index());\n";
+    // Special exception if we are returning TypedWritable, which might
+    // actually be a derived class that inherits from ReferenceCount.
+    if (!owns_memory && !is_const && class_name == "TypedWritable") {
+      indent(out, indent_level)
+        << "  ReferenceCount *rc = " << return_expr << "->as_reference_count();\n";
+      indent(out, indent_level)
+        << "  bool is_refcount = (rc != (ReferenceCount *)NULL);\n";
+      indent(out, indent_level)
+        << "  if (is_refcount) {\n";
+      indent(out, indent_level)
+        << "    rc->ref();\n";
+      indent(out, indent_level)
+        << "  }\n";
+      indent(out, indent_level)
+        << "  return DTool_CreatePyInstanceTyped((void *)" << return_expr
+        << ", *Dtool_Ptr_" << make_safe_name(class_name) << ", is_refcount, "
+        << is_const << ", " << return_expr
+        << "->get_type_index());\n";
+    } else {
+      indent(out, indent_level)
+        << "  return DTool_CreatePyInstanceTyped((void *)" << return_expr
+        << ", *Dtool_Ptr_" << make_safe_name(class_name) << ", "
+        << owns_memory << ", " << is_const << ", "
+        << return_expr << "->as_typed_object()->get_type_index());\n";
+    }
     indent(out, indent_level)
       << "}\n";
   } else {
@@ -855,31 +875,13 @@ write_prototypes(ostream &out_code, ostream *out_h) {
             << "  return ((bool (*)(PyObject *, PT(" << class_name << ") &))Dtool_Ptr_" << safe_name << "->_Dtool_Coerce)(args, coerced);\n"
             << "}\n";
         }
-
-      } else if (TypeManager::is_trivial(type)) {
+      } else {
         out_code
           << "inline static " << class_name << " *Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " &coerced) {\n"
           << "  nassertr(Dtool_Ptr_" << safe_name << " != NULL, NULL);\n"
           << "  nassertr(Dtool_Ptr_" << safe_name << "->_Dtool_Coerce != NULL, NULL);\n"
           << "  return ((" << class_name << " *(*)(PyObject *, " << class_name << " &))Dtool_Ptr_" << safe_name << "->_Dtool_Coerce)(args, coerced);\n"
           << "}\n";
-
-      } else {
-        out_code
-          << "inline static bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, " << class_name << " const *&coerced, bool &manage) {\n"
-          << "  nassertr(Dtool_Ptr_" << safe_name << " != NULL, false);\n"
-          << "  nassertr(Dtool_Ptr_" << safe_name << "->_Dtool_ConstCoerce != NULL, false);\n"
-          << "  return ((bool (*)(PyObject *, " << class_name << " const *&, bool&))Dtool_Ptr_" << safe_name << "->_Dtool_ConstCoerce)(args, coerced, manage);\n"
-          << "}\n";
-
-        if (has_coerce > 1) {
-          out_code
-            << "inline static bool Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " *&coerced, bool &manage) {\n"
-            << "  nassertr(Dtool_Ptr_" << safe_name << " != NULL, false);\n"
-            << "  nassertr(Dtool_Ptr_" << safe_name << "->_Dtool_Coerce != NULL, false);\n"
-            << "  return ((bool (*)(PyObject *, " << class_name << " *&, bool&))Dtool_Ptr_" << safe_name << "->_Dtool_Coerce)(args, coerced, manage);\n"
-            << "}\n";
-        }
       }
     }
     out_code << "#else\n";
@@ -888,20 +890,12 @@ write_prototypes(ostream &out_code, ostream *out_h) {
 
     if (has_coerce > 0) {
       if (TypeManager::is_reference_count(type)) {
-        assert(!type->is_trivial());
         out_code << "extern bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, CPT(" << class_name << ") &coerced);\n";
         if (has_coerce > 1) {
           out_code << "extern bool Dtool_Coerce_" << safe_name << "(PyObject *args, PT(" << class_name << ") &coerced);\n";
         }
-
-      } else if (TypeManager::is_trivial(type)) {
-        out_code << "extern " << class_name << " *Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " &coerced);\n";
-
       } else {
-        out_code << "extern bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, " << class_name << " const *&coerced, bool &manage);\n";
-        if (has_coerce > 1) {
-          out_code << "extern bool Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " *&coerced, bool &manage);\n";
-        }
+        out_code << "extern " << class_name << " *Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " &coerced);\n";
       }
     }
     out_code << "#endif\n";
@@ -1062,7 +1056,7 @@ write_class_details(ostream &out, Object *obj) {
   int has_coerce = has_coerce_constructor(cpptype->as_struct_type());
   if (has_coerce > 0) {
     write_coerce_constructor(out, obj, true);
-    if (has_coerce > 1 && !TypeManager::is_trivial(obj->_itype._cpptype)) {
+    if (has_coerce > 1 && TypeManager::is_reference_count(obj->_itype._cpptype)) {
       write_coerce_constructor(out, obj, false);
     }
   }
@@ -1182,20 +1176,12 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   int has_coerce = has_coerce_constructor(type->as_struct_type());
   if (has_coerce > 0) {
     if (TypeManager::is_reference_count(type)) {
-      assert(!type->is_trivial());
       out << "bool Dtool_ConstCoerce_" << class_name << "(PyObject *args, CPT(" << c_class_name << ") &coerced);\n";
       if (has_coerce > 1) {
         out << "bool Dtool_Coerce_" << class_name << "(PyObject *args, PT(" << c_class_name << ") &coerced);\n";
       }
-
-    } else if (TypeManager::is_trivial(type)) {
-      out << "" << c_class_name << " *Dtool_Coerce_" << class_name << "(PyObject *args, " << c_class_name << " &coerced);\n";
-
     } else {
-      out << "bool Dtool_ConstCoerce_" << class_name << "(PyObject *args, " << c_class_name << " const *&coerced, bool &manage);\n";
-      if (has_coerce > 1) {
-        out << "bool Dtool_Coerce_" << class_name << "(PyObject *args, " << c_class_name << " *&coerced, bool &manage);\n";
-      }
+      out << "" << c_class_name << " *Dtool_Coerce_" << class_name << "(PyObject *args, " << c_class_name << " &coerced);\n";
     }
   }
 
@@ -3046,8 +3032,7 @@ write_module_class(ostream &out, Object *obj) {
 
   int has_coerce = has_coerce_constructor(obj->_itype._cpptype->as_struct_type());
   if (has_coerce > 0) {
-    if (TypeManager::is_reference_count(obj->_itype._cpptype) ||
-        !TypeManager::is_trivial(obj->_itype._cpptype)) {
+    if (TypeManager::is_reference_count(obj->_itype._cpptype)) {
       out << "  (CoerceFunction)Dtool_ConstCoerce_" << ClassName << ",\n";
       if (has_coerce > 1) {
         out << "  (CoerceFunction)Dtool_Coerce_" << ClassName << ",\n";
@@ -3920,7 +3905,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
     }
     return_flags |= RF_err_false;
 
-  } else if (TypeManager::is_trivial(obj->_itype._cpptype)) {
+  } else {
     out << cClassName << " *Dtool_Coerce_" << ClassName << "(PyObject *args, " << cClassName << " &coerced) {\n";
 
     out << "  " << cClassName << " *local_this;\n";
@@ -3934,26 +3919,6 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
     out << "    return local_this;\n";
 
     return_flags |= RF_err_null;
-
-  } else {
-    if (is_const) {
-      out << "bool Dtool_ConstCoerce_" << ClassName << "(PyObject *args, " << cClassName << " const *&coerced, bool &manage) {\n";
-    } else {
-      out << "bool Dtool_Coerce_" << ClassName << "(PyObject *args, " << cClassName << " *&coerced, bool &manage) {\n";
-    }
-
-    out << "  DTOOL_Call_ExtractThisPointerForType(args, &Dtool_" << ClassName << ", (void**)&coerced);\n";
-    out << "  if (coerced != NULL) {\n";
-    if (!is_const) {
-      out << "    if (!((Dtool_PyInstDef *)args)->_is_const) {\n";
-      out << "      // A non-const instance is required, which this is.\n";
-      out << "      return true;\n";
-      out << "    }\n";
-    } else {
-      out << "    return true;\n";
-    }
-
-    return_flags |= RF_err_false;
   }
 
   out << "  }\n\n";
@@ -4863,18 +4828,9 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
         if (args_type == AT_single_arg) {
           out << "#if PY_MAJOR_VERSION >= 3\n";
-          // As a special hack to fix pickling in Python 3, if the method name
-          // starts with py_decode_, we take a bytes object instead of a str.
-          if (remap->_cppfunc->get_local_name().substr(0, 10) == "py_decode_") {
-            indent(out, indent_level) << "if (PyBytes_AsStringAndSize(arg, (char **)&"
-              << param_name << "_str, &" << param_name << "_len) == -1) {\n";
-            indent(out, indent_level + 2) << param_name << "_str = NULL;\n";
-            indent(out, indent_level) << "}\n";
-          } else {
-            indent(out, indent_level)
-              << param_name << "_str = PyUnicode_AsUTF8AndSize(arg, &"
-              << param_name << "_len);\n";
-          }
+          indent(out, indent_level)
+            << param_name << "_str = PyUnicode_AsUTF8AndSize(arg, &"
+            << param_name << "_len);\n";
           out << "#else\n"; // NB. PyString_AsStringAndSize also accepts a PyUnicode.
           indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, (char **)&"
             << param_name << "_str, &" << param_name << "_len) == -1) {\n";
@@ -5498,8 +5454,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           // actual PointerTo.  This eliminates an unref()ref() pair.
           pexpr_string = "MOVE(" + param_name + "_this)";
 
-        } else if (TypeManager::is_trivial(obj_type)) {
-          // This is a trivial type, such as TypeHandle or LVecBase4.
+        } else {
+          // This is a move-assignable type, such as TypeHandle or LVecBase4.
           obj_type->output_instance(extra_convert, param_name + "_local", &parser);
           extra_convert << ";\n";
 
@@ -5520,29 +5476,6 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           }
 
           coerce_call = "(" + param_name + "_this != NULL)";
-
-          pexpr_string = param_name + "_this";
-
-        } else  {
-          // This is a bit less elegant: we use a bool to store whether we're
-          // supposed to clean up the reference afterward.
-          type->output_instance(extra_convert, param_name + "_this", &parser);
-          extra_convert
-            << default_expr << ";\n"
-            << "bool " << param_name << "_manage = false;\n";
-
-          if (TypeManager::is_const_pointer_or_ref(orig_type)) {
-            coerce_call = "Dtool_ConstCoerce_" + make_safe_name(class_name) +
-              "(" + param_name + ", " + param_name + "_this, " + param_name + "_manage)";
-          } else {
-            coerce_call = "Dtool_Coerce_" + make_safe_name(class_name) +
-              "(" + param_name + ", " + param_name + "_this, " + param_name + "_manage)";
-          }
-
-          extra_cleanup
-            << "if (" << param_name << "_manage) {\n"
-            << "  delete " << param_name << "_this;\n"
-            << "}\n";
 
           pexpr_string = param_name + "_this";
         }
@@ -5848,7 +5781,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     manage_return = remap->_return_value_needs_management;
     return_expr = "return_value";
 
-  } else if ((return_flags & RF_coerced) != 0 && TypeManager::is_trivial(remap->_cpptype)) {
+  } else if ((return_flags & RF_coerced) != 0 && !TypeManager::is_reference_count(remap->_cpptype)) {
     // Another special case is the coerce constructor for a trivial type.  We
     // don't want to invoke "operator new" unnecessarily.
     if (is_constructor && remap->_extension) {
@@ -6063,7 +5996,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
   // Okay, we're past all the error conditions and special cases.  Now return
   // the return type in the way that was requested.
-  if (return_flags & RF_int) {
+  if ((return_flags & RF_int) != 0 && (return_flags & RF_raise_keyerror) == 0) {
     CPPType *orig_type = remap->_return_type->get_orig_type();
     if (is_constructor) {
       // Special case for constructor.
@@ -6152,13 +6085,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "coerced = MOVE(" << return_expr << ");\n";
       indent(out, indent_level) << "return true;\n";
 
-    } else if (TypeManager::is_trivial(remap->_cpptype)) {
-      indent(out, indent_level) << "return &coerced;\n";
-
     } else {
-      indent(out, indent_level) << "coerced = " << return_expr << ";\n";
-      indent(out, indent_level) << "manage = true;\n";
-      indent(out, indent_level) << "return true;\n";
+      indent(out, indent_level) << "return &coerced;\n";
     }
 
   } else if (return_flags & RF_raise_keyerror) {
@@ -6555,6 +6483,12 @@ write_getset(ostream &out, Object *obj, Property *property) {
         out << "  }\n\n";
       }
 
+      out << "  if (index < 0 || index >= (Py_ssize_t)"
+          << len_remap->get_call_str("local_this", pexprs) << ") {\n";
+      out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << "." << ielem.get_name() << "[] index out of range\");\n";
+      out << "    return -1;\n";
+      out << "  }\n";
+
       out << "  if (arg == (PyObject *)NULL) {\n";
       if (property->_deleter != NULL) {
         if (property->_deleter->_has_this) {
@@ -6701,6 +6635,19 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  if (value == (PyObject *)NULL) {\n";
       if (property->_deleter != NULL) {
         out << "    PyObject *arg = key;\n";
+
+        if (property->_has_function != NULL) {
+          std::set<FunctionRemap*> remaps;
+          remaps.insert(property->_has_function->_remaps.begin(),
+                        property->_has_function->_remaps.end());
+
+          out << "    {\n";
+          string expected_params;
+          write_function_forset(out, remaps, 1, 1, expected_params, 6, true, true,
+                                AT_single_arg, RF_raise_keyerror | RF_int, false, true);
+          out << "    }\n";
+        }
+
         std::set<FunctionRemap*> remaps;
         remaps.insert(property->_deleter->_remaps.begin(),
                       property->_deleter->_remaps.end());
@@ -6761,16 +6708,22 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  Py_XINCREF(self);\n";
     }
     out << "  Dtool_SeqMapWrapper *wrap = PyObject_New(Dtool_SeqMapWrapper, &Dtool_SeqMapWrapper_Type);\n"
-           "  wrap->_seq._base._self = self;\n"
-           "  wrap->_seq._len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
-           "  wrap->_seq._getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n"
-           "  wrap->_map_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
+           "  wrap->_map._base._self = self;\n"
+           "  wrap->_map._base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
+           "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
+           "  wrap->_seq_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n"
+           "  wrap->_map._getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "  wrap->_seq._setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
-      out << "  wrap->_map_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
+      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n"
+             "    wrap->_seq_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n"
+             "    wrap->_map._setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n"
+             "  } else {\n"
+             "    wrap->_seq_setitem_func = NULL;\n"
+             "    wrap->_map._setitem_func = NULL;\n"
+             "  }\n";
     } else {
-      out << "  wrap->_seq._setitem_func = NULL;\n";
-      out << "  wrap->_map_setitem_func = NULL;\n";
+      out << "  wrap->_seq_setitem_func = NULL;\n";
+      out << "  wrap->_map._setitem_func = NULL;\n";
     }
     out << "  return (PyObject *)wrap;\n"
             "}\n\n";
@@ -6785,9 +6738,14 @@ write_getset(ostream &out, Object *obj, Property *property) {
     }
     out << "  Dtool_MappingWrapper *wrap = PyObject_New(Dtool_MappingWrapper, &Dtool_MappingWrapper_Type);\n"
            "  wrap->_base._self = self;\n"
+           "  wrap->_base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
            "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "  wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
+      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+      out << "    wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
+      out << "  } else {\n";
+      out << "    wrap->_setitem_func = NULL;\n";
+      out << "  }\n";
     } else {
       out << "  wrap->_setitem_func = NULL;\n";
     }
@@ -6804,10 +6762,15 @@ write_getset(ostream &out, Object *obj, Property *property) {
     }
     out << "  Dtool_SequenceWrapper *wrap = PyObject_New(Dtool_SequenceWrapper, &Dtool_SequenceWrapper_Type);\n"
            "  wrap->_base._self = self;\n"
+           "  wrap->_base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
            "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
            "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "  wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
+      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+      out << "    wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
+      out << "  } else {\n";
+      out << "    wrap->_setitem_func = NULL;\n";
+      out << "  }\n";
     } else {
       out << "  wrap->_setitem_func = NULL;\n";
     }
@@ -7213,7 +7176,7 @@ is_cpp_type_legal(CPPType *in_ctype) {
     return true;
   } else if (TypeManager::is_basic_string_wchar(type)) {
     return true;
-  } else if (TypeManager::is_vector_unsigned_char(type)) {
+  } else if (TypeManager::is_vector_unsigned_char(in_ctype)) {
     return true;
   } else if (TypeManager::is_simple(type)) {
     return true;
@@ -7319,6 +7282,14 @@ is_remap_legal(FunctionRemap *remap) {
 int InterfaceMakerPythonNative::
 has_coerce_constructor(CPPStructType *type) {
   if (type == NULL) {
+    return 0;
+  }
+
+  // It is convenient to set default-constructability and move-assignability
+  // as requirement for non-reference-counted objects, since it simplifies the
+  // implementation and it holds for all classes we need it for.
+  if (!TypeManager::is_reference_count(type) &&
+      (!type->is_default_constructible() || !type->is_move_assignable())) {
     return 0;
   }
 

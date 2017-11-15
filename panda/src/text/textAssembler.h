@@ -42,7 +42,7 @@ class TextAssembler;
  */
 class EXPCL_PANDA_TEXT TextAssembler {
 PUBLISHED:
-  TextAssembler(TextEncoder *encoder);
+  explicit TextAssembler(TextEncoder *encoder);
   TextAssembler(const TextAssembler &copy);
   void operator = (const TextAssembler &copy);
   ~TextAssembler();

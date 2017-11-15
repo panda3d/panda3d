@@ -43,6 +43,8 @@ public:
     F_volatile_method   = 0x4000,
     F_lvalue_method     = 0x8000,
     F_rvalue_method     = 0x10000,
+    F_copy_assignment_operator = 0x20000,
+    F_move_assignment_operator = 0x40000,
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,

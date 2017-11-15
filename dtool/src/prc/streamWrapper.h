@@ -52,7 +52,7 @@ class EXPCL_DTOOLCONFIG IStreamWrapper : virtual public StreamWrapperBase {
 public:
   INLINE IStreamWrapper(istream *stream, bool owns_pointer);
 PUBLISHED:
-  INLINE IStreamWrapper(istream &stream);
+  INLINE explicit IStreamWrapper(istream &stream);
   ~IStreamWrapper();
 
   INLINE istream *get_istream() const;
@@ -79,7 +79,7 @@ class EXPCL_DTOOLCONFIG OStreamWrapper : virtual public StreamWrapperBase {
 public:
   INLINE OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:
-  INLINE OStreamWrapper(ostream &stream);
+  INLINE explicit OStreamWrapper(ostream &stream);
   ~OStreamWrapper();
 
   INLINE ostream *get_ostream() const;
@@ -115,7 +115,7 @@ class EXPCL_DTOOLCONFIG StreamWrapper : public IStreamWrapper, public OStreamWra
 public:
   INLINE StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:
-  INLINE StreamWrapper(iostream &stream);
+  INLINE explicit StreamWrapper(iostream &stream);
   ~StreamWrapper();
 
   INLINE iostream *get_iostream() const;
