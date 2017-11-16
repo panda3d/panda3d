@@ -581,6 +581,14 @@ get_quality(const FrameBufferProperties &reqs) const {
     }
   }
 
+  // However, deduct for color bits above 24, if we are requesting only 1.
+  // This is to prevent choosing a 64-bit color mode in NVIDIA cards that
+  // is linear and therefore causes the gamma to be off in non-sRGB pipelines.
+  if ((reqs._property[FBP_color_bits] == 1 || reqs._property[FBP_color_bits] == 3) &&
+      _property[FBP_color_bits] > 24) {
+    quality -= 100;
+  }
+
   // Bonus for each depth bit.  Extra: 8 per bit.
   // Please note that the Intel Windows driver only gives extra depth in
   // combination with a stencil buffer, so we need 8 extra depth bits to
