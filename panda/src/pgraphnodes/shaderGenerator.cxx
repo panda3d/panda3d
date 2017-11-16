@@ -618,9 +618,6 @@ clear_generated_shaders() {
  * - linear/exp/exp2 fog
  * - animation
  *
- * Not yet supported:
- * - dot3_rgb and dot3_rgba combine modes
- *
  * Potential optimizations
  * - omit attenuation calculations if attenuation off
  *
@@ -1382,6 +1379,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
+  // Apply the color scale.
+  text << "\t result *= attr_colorscale;\n";
+
   // Store these if any stages will use it.
   if (key._texture_flags & ShaderKey::TF_uses_primary_color) {
     text << "\t float4 primary_color = result;\n";
@@ -1393,6 +1393,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // Now loop through the textures to compose our magic blending formulas.
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
+    TextureStage::CombineMode combine_rgb, combine_alpha;
+
     switch (tex._mode) {
     case TextureStage::M_modulate:
       if ((tex._flags & ShaderKey::TF_has_rgb) != 0 &&
@@ -1432,26 +1434,37 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       break;
     case TextureStage::M_combine:
-      text << "\t result.rgb = ";
-      text << combine_mode_as_string(tex, (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_RGB_MODE_MASK) >> ShaderKey::TF_COMBINE_RGB_MODE_SHIFT), false, i);
+      combine_rgb = (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_RGB_MODE_MASK) >> ShaderKey::TF_COMBINE_RGB_MODE_SHIFT);
+      combine_alpha = (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_ALPHA_MODE_MASK) >> ShaderKey::TF_COMBINE_ALPHA_MODE_SHIFT);
+      if (combine_rgb == TextureStage::CM_dot3_rgba) {
+        text << "\t result = ";
+        text << combine_mode_as_string(tex, combine_rgb, false, i);
+        text << ";\n";
+      } else {
+        text << "\t result.rgb = ";
+        text << combine_mode_as_string(tex, combine_rgb, false, i);
+        text << ";\n\t result.a = ";
+        text << combine_mode_as_string(tex, combine_alpha, false, i);
+        text << ";\n";
+      }
       if (tex._flags & ShaderKey::TF_rgb_scale_2) {
-        text << " * 2";
+        text << "\t result.rgb *= 2;\n";
       }
       if (tex._flags & ShaderKey::TF_rgb_scale_4) {
-        text << " * 4";
+        text << "\t result.rgb *= 4;\n";
       }
-      text << ";\n\t result.a = ";
-      text << combine_mode_as_string(tex, (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_ALPHA_MODE_MASK) >> ShaderKey::TF_COMBINE_ALPHA_MODE_SHIFT), false, i);
       if (tex._flags & ShaderKey::TF_alpha_scale_2) {
-        text << " * 2";
+        text << "\t result.a *= 2;\n";
       }
       if (tex._flags & ShaderKey::TF_alpha_scale_4) {
-        text << " * 4";
+        text << "\t result.a *= 4;\n";
       }
-      text << ";\n";
       break;
     case TextureStage::M_blend_color_scale:
-      text << "\t result.rgb = lerp(result, tex" << i << " * attr_colorscale, tex" << i << ".r).rgb;\n";
+      text << "\t result.rgb = lerp(result.rgb, texcolor_" << i << ".rgb * attr_colorscale.rgb, tex" << i << ".rgb);\n";
+      if (key._calc_primary_alpha) {
+        text << "\t result.a *= texcolor_" << i << ".a * attr_colorscale.a;\n";
+      }
       break;
     default:
       break;
@@ -1460,8 +1473,6 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t last_saved_result = result;\n";
     }
   }
-  // Apply the color scale.
-  text << "\t result *= attr_colorscale;\n";
 
   if (key._alpha_test_mode != RenderAttrib::M_none) {
     text << "\t // Shader includes alpha test:\n";
@@ -1582,24 +1593,24 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 /**
  * This 'synthesizes' a combine mode into a string.
  */
-const string ShaderGenerator::
+string ShaderGenerator::
 combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
   ostringstream text;
   switch (c_mode) {
   case TextureStage::CM_modulate:
-    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 0, alpha, texindex);
     text << " * ";
-    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 1, alpha, texindex);
     break;
   case TextureStage::CM_add:
-    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 0, alpha, texindex);
     text << " + ";
-    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 1, alpha, texindex);
     break;
   case TextureStage::CM_add_signed:
-    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 0, alpha, texindex);
     text << " + ";
-    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 1, alpha, texindex);
     if (alpha) {
       text << " - 0.5";
     } else {
@@ -1608,27 +1619,29 @@ combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::Combine
     break;
   case TextureStage::CM_interpolate:
     text << "lerp(";
-    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 1, alpha, texindex);
     text << ", ";
-    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 0, alpha, texindex);
     text << ", ";
-    text << combine_source_as_string(info, 2, alpha, true, texindex);
+    text << combine_source_as_string(info, 2, alpha, texindex);
     text << ")";
     break;
   case TextureStage::CM_subtract:
-    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
-    text << " + ";
-    text << combine_source_as_string(info, 1, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 0, alpha, texindex);
+    text << " - ";
+    text << combine_source_as_string(info, 1, alpha, texindex);
     break;
   case TextureStage::CM_dot3_rgb:
-    pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGB not yet supported in per-pixel mode.\n";
-    break;
   case TextureStage::CM_dot3_rgba:
-    pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGBA not yet supported in per-pixel mode.\n";
+    text << "4 * dot(";
+    text << combine_source_as_string(info, 0, alpha, texindex);
+    text << " - float3(0.5), ";
+    text << combine_source_as_string(info, 1, alpha, texindex);
+    text << " - float3(0.5))";
     break;
   case TextureStage::CM_replace:
   default: // Not sure if this is correct as default value.
-    text << combine_source_as_string(info, 0, alpha, alpha, texindex);
+    text << combine_source_as_string(info, 0, alpha, texindex);
     break;
   }
   return text.str();
@@ -1637,8 +1650,8 @@ combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::Combine
 /**
  * This 'synthesizes' a combine source into a string.
  */
-const string ShaderGenerator::
-combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alpha, bool single_value, short texindex) {
+string ShaderGenerator::
+combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alpha, short texindex) {
   TextureStage::CombineSource c_src;
   TextureStage::CombineOperand c_op;
   if (!alpha) {
@@ -1651,7 +1664,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
   ostringstream csource;
   if (c_op == TextureStage::CO_one_minus_src_color ||
       c_op == TextureStage::CO_one_minus_src_alpha) {
-    csource << "1.0f - ";
+    csource << "saturate(1.0f - ";
   }
   switch (c_src) {
     case TextureStage::CS_texture:
@@ -1675,16 +1688,15 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
     case TextureStage::CS_undefined:
       break;
   }
+  if (c_op == TextureStage::CO_one_minus_src_color ||
+      c_op == TextureStage::CO_one_minus_src_alpha) {
+    csource << ")";
+  }
   if (c_op == TextureStage::CO_src_color || c_op == TextureStage::CO_one_minus_src_color) {
-    if (single_value) {
-      // Let's take the red channel.
-      csource << ".r";
-    } else {
-      csource << ".rgb";
-    }
+    csource << ".rgb";
   } else {
     csource << ".a";
-    if (!single_value) {
+    if (!alpha) {
       // Dunno if it's legal in the FPP at all, but let's just allow it.
       return "float3(" + csource.str() + ")";
     }
@@ -1695,7 +1707,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
 /**
  * Returns 1D, 2D, 3D or CUBE, depending on the given texture type.
  */
-const string ShaderGenerator::
+const char *ShaderGenerator::
 texture_type_as_string(Texture::TextureType ttype) {
   switch (ttype) {
     case Texture::TT_1d_texture:

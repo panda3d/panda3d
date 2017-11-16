@@ -168,11 +168,11 @@ protected:
 
   void analyze_renderstate(ShaderKey &key, const RenderState *rs);
 
-  static const string combine_mode_as_string(const ShaderKey::TextureInfo &info,
+  static string combine_mode_as_string(const ShaderKey::TextureInfo &info,
                       TextureStage::CombineMode c_mode, bool alpha, short texindex);
-  static const string combine_source_as_string(const ShaderKey::TextureInfo &info,
-                         short num, bool alpha, bool single_value, short texindex);
-  static const string texture_type_as_string(Texture::TextureType ttype);
+  static string combine_source_as_string(const ShaderKey::TextureInfo &info,
+                                         short num, bool alpha, short texindex);
+  static const char *texture_type_as_string(Texture::TextureType ttype);
 
 public:
   static TypeHandle get_class_type() {
