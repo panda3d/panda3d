@@ -81,6 +81,10 @@ class build_apps(distutils.core.Command):
         if 'u' in abi_tag and (platform.startswith('win') or platform.startswith('macosx')):
             abi_tag = abi_tag.replace('u', '')
 
+        pip_version = pip.__version__.split('.')
+        if int(pip_version[0]) < 9:
+            raise RuntimeError("pip 9.0 or greater is required, but found {}".format(pip.__version__))
+
         pip_args = [
             'download',
             '-d', whldir,
