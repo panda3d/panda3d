@@ -428,7 +428,7 @@ class build_apps(distutils.core.Command):
 
         elif magic == b'\x7FELF':
             # Elf magic.  Used on (among others) Linux and FreeBSD.
-            deps = self._read_dependencies_elf(fp)
+            deps = self._read_dependencies_elf(fp, os.path.dirname(source_path), search_path)
 
         elif magic in (b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
                        b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE'):
@@ -448,7 +448,7 @@ class build_apps(distutils.core.Command):
             for dep in deps:
                 self.add_dependency(dep, target_dir, search_path, base)
 
-    def _read_dependencies_elf(self, elf):
+    def _read_dependencies_elf(self, elf, origin, search_path):
         """ Having read the first 4 bytes of the ELF file, fetches the
         dependent libraries and returns those as a list. """
 
@@ -499,13 +499,16 @@ class build_apps(distutils.core.Command):
                 elif tag == 15 or tag == 29:
                     # An RPATH or RUNPATH entry.
                     string = string_tables[link][val : string_tables[link].find(b'\0', val)]
-                    rpath += string.split(b':')
+                    rpath += [
+                        os.path.normpath(i.decode('utf-8').replace('$ORIGIN', origin))
+                        for i in string.split(b':')
+                    ]
 
                 data = elf.read(entsize)
                 tag, val = struct.unpack_from(dynamic_struct, data)
         elf.close()
 
-        #TODO: should we respect the RPATH?  Clear it?  Warn about it?
+        search_path += rpath
         return needed
 
     def _read_dependencies_macho(self, fp):
