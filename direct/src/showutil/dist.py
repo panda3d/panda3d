@@ -6,12 +6,11 @@ import pip
 import sys
 import subprocess
 import zipfile
+import shutil
 import struct
 import io
 
 import distutils.core
-import distutils.dir_util
-import distutils.file_util
 import distutils.log
 
 from . import FreezeTool
@@ -75,7 +74,7 @@ class build_apps(distutils.core.Command):
         else:
             platforms = self.deploy_platforms
             use_wheels = True
-        print("Building platforms: {0}".format(','.join(platforms)))
+        self.announce('Building platforms: {0}'.format(','.join(platforms)), distutils.log.INFO)
 
         for platform in platforms:
             self.build_runtimes(platform, use_wheels)
@@ -119,8 +118,8 @@ class build_apps(distutils.core.Command):
         builddir = os.path.join(self.build_base, platform)
 
         if os.path.exists(builddir):
-            distutils.dir_util.remove_tree(builddir)
-        distutils.dir_util.mkpath(builddir)
+            shutil.rmtree(builddir)
+        os.mkdir(builddir)
 
         path = sys.path[:]
         p3dwhl = None
@@ -247,9 +246,9 @@ class build_apps(distutils.core.Command):
             dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
             libdir = os.path.dirname(dtool_fn.to_os_specific())
             src = os.path.join(libdir, '..', 'etc')
-            distutils.dir_util.copy_tree(src, etcdir)
+            shutil.copytree(src, etcdir)
         else:
-            distutils.dir_util.mkpath(etcdir)
+            os.makedirs(etcdir)
 
             # Combine prc files with libs and copy the whole list
             panda_files = [i for i in p3dwhl.namelist() if i.endswith('.prc')]
@@ -278,7 +277,7 @@ class build_apps(distutils.core.Command):
             for pattern in ignore_copy_list:
                 # Normalize file paths across platforms
                 path = p3d.Filename.from_os_specific(src).get_fullpath()
-                #print("check ignore:", pattern, src, pattern.matches(path))
+                #self.announce('check ignore: {} {} {}'.format(pattern, src, pattern.matches(path)))
                 if pattern.matches(path):
                     return True
             return False
@@ -295,12 +294,12 @@ class build_apps(distutils.core.Command):
             dst = os.path.normpath(dst)
 
             if check_pattern(src):
-                print("skipping file", src)
+                self.announce('skipping file {}'.format(src))
                 return
 
             dst_dir = os.path.dirname(dst)
             if not os.path.exists(dst_dir):
-                distutils.dir_util.mkpath(dst_dir)
+                os.makedirs(dst_dir)
 
             ext = os.path.splitext(src)[1]
             if not ext:
@@ -311,11 +310,11 @@ class build_apps(distutils.core.Command):
                 dst_ext, script = self.build_scripts[ext]
                 dst = dst_root + dst_ext
                 script = script.format(src, dst)
-                print("using script:", script)
+                self.announce('using script: {}'.format(script))
                 subprocess.call(script.split())
             else:
-                #print("Copy file", src, dst)
-                distutils.file_util.copy_file(src, dst)
+                self.announce('copying {0} -> {1}'.format(src, dst))
+                shutil.copyfile(src, dst)
 
         def copy_dir(src, dst):
             for item in os.listdir(src):
@@ -324,7 +323,7 @@ class build_apps(distutils.core.Command):
                 if os.path.isfile(s):
                     copy_file(s, d)
                 elif not dir_has_files(s):
-                    print("skipping directory", os.path.normpath(s))
+                    self.announce('skipping directory'.format(os.path.normpath(s)))
                 else:
                     copy_dir(s, d)
 
@@ -406,10 +405,10 @@ class build_apps(distutils.core.Command):
         source_path may be located inside a .whl file. """
 
         try:
-            print("copying {0} -> {1}".format(os.path.relpath(source_path, self.build_base), os.path.relpath(target_path, self.build_base)))
+            self.announce('copying {0} -> {1}'.format(os.path.relpath(source_path, self.build_base), os.path.relpath(target_path, self.build_base)))
         except ValueError:
             # No relative path (e.g., files on different drives in Windows), just print absolute paths instead
-            print("copying {0} -> {1}".format(source_path, target_path))
+            self.announce('copying {0} -> {1}'.format(source_path, target_path))
 
         # Copy the file, and open it for analysis.
         if '.whl' in source_path:
@@ -425,7 +424,7 @@ class build_apps(distutils.core.Command):
             fp = io.BytesIO(data)
         else:
             # Regular file, copy it
-            distutils.file_util.copy_file(source_path, target_path)
+            shutil.copy_file(source_path, target_path)
             fp = open(target_path, 'rb')
 
         # What kind of magic does the file contain?
@@ -594,12 +593,12 @@ class bdist_apps(distutils.core.Command):
             basename = '{}_{}'.format(self.distribution.get_fullname(), platform)
 
             if (os.path.exists(temp_dir)):
-                distutils.dir_util.remove_tree(temp_dir)
-            distutils.dir_util.copy_tree(build_dir, temp_dir)
+                shutil.rmtree(temp_dir)
+            shutil.copy_tree(build_dir, temp_dir)
 
             distutils.archive_util.make_archive(basename, archive_format, root_dir=build_base, base_dir=base_dir)
 
-            distutils.dir_util.remove_tree(temp_dir)
+            shutil.rmtree(temp_dir)
 
 def setup(**attrs):
     commandClasses = attrs.setdefault("cmdclass", {})
