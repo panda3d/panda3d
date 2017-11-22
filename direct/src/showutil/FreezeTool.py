@@ -30,6 +30,8 @@ isDebugBuild = (python.lower().endswith('_d'))
 
 # These are modules that Python always tries to import up-front.  They
 # must be frozen in any main.exe.
+# NB. if encodings are removed, be sure to remove them from the shortcut in
+# deploy-stub.c.
 startupModules = [
     'encodings', 'encodings.aliases', 'encodings.undefined', 'encodings.ascii',
     'encodings.cp1252', 'encodings.latin_1', 'encodings.utf_8',
