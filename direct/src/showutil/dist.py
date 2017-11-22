@@ -25,8 +25,8 @@ if 'basestring' not in globals():
 class build_apps(distutils.core.Command):
     description = 'build Panda3D applications'
     user_options = [
-        ('build-base', None, 'directory to build applications in'),
-        ('requirements-path', None, 'path to requirements.txt file for pip'),
+        ('build-base=', None, 'directory to build applications in'),
+        ('requirements-path=', None, 'path to requirements.txt file for pip'),
     ]
 
     def initialize_options(self):
