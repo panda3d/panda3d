@@ -424,7 +424,7 @@ class build_apps(distutils.core.Command):
             fp = io.BytesIO(data)
         else:
             # Regular file, copy it
-            shutil.copy_file(source_path, target_path)
+            shutil.copyfile(source_path, target_path)
             fp = open(target_path, 'rb')
 
         # What kind of magic does the file contain?
