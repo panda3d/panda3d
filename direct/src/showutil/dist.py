@@ -65,6 +65,36 @@ class build_apps(distutils.core.Command):
         return zip
 
     def finalize_options(self):
+        # We need to massage the inputs a bit in case they came from a
+        # setup.cfg file.
+        def _parse_list(input):
+            if isinstance(input, basestring):
+                input = input.strip().replace(',', '\n')
+                if input:
+                    return [item.strip() for item in input.split('\n') if item.strip()]
+                else:
+                    return []
+            else:
+                return input
+
+        def _parse_dict(input):
+            if isinstance(input, dict):
+                return input
+            d = {}
+            for item in _parse_list(input):
+                key, sep, value = item.partition('=')
+                d[key.strip()] = value.strip()
+            return d
+
+        self.gui_apps = _parse_dict(self.gui_apps)
+        self.console_apps = _parse_dict(self.console_apps)
+
+        self.copy_paths = _parse_list(self.copy_paths)
+        self.exclude_paths = _parse_list(self.exclude_paths)
+        self.exclude_modules = _parse_list(self.include_modules)
+        self.exclude_modules = _parse_list(self.exclude_modules)
+        self.plugins = _parse_list(self.plugins)
+
         for path in self.copy_paths:
             if isinstance(path, basestring):
                 src = path
@@ -78,6 +108,9 @@ class build_apps(distutils.core.Command):
         if not self.deploy_platforms:
             platforms = [p3d.PandaSystem.get_platform()]
             use_wheels = False
+        elif isinstance(self.deploy_platforms, basestring):
+            platforms = [self.deploy_platforms]
+            use_wheels = True
         else:
             platforms = self.deploy_platforms
             use_wheels = True
