@@ -261,8 +261,9 @@ class build_apps(distutils.core.Command):
                 # Remove python version string
                 if sys.version_info >= (3, 0):
                     parts = basename.split('.')
-                    parts = parts[:-2] + parts[-1:]
-                    basename = '.'.join(parts)
+                    if len(parts) >= 3 and '-' in parts[-2]:
+                        parts = parts[:-2] + parts[-1:]
+                        basename = '.'.join(parts)
             else:
                 # Builtin module, but might not be builtin in wheel libs, so double check
                 if module in whl_modules:
