@@ -12,6 +12,7 @@ import io
 import distutils.core
 import distutils.dir_util
 import distutils.file_util
+import distutils.log
 
 from . import FreezeTool
 from . import pefile
@@ -24,7 +25,10 @@ if 'basestring' not in globals():
 
 class build_apps(distutils.core.Command):
     description = 'build Panda3D applications'
-    user_options = [] # TODO
+    user_options = [
+        ('build-base', None, 'directory to build applications in'),
+        ('requirements-path', None, 'path to requirements.txt file for pip'),
+    ]
 
     def initialize_options(self):
         self.build_base = os.path.join(os.getcwd(), 'build')
@@ -55,8 +59,14 @@ class build_apps(distutils.core.Command):
         return zip
 
     def finalize_options(self):
-        # TODO
-        pass
+        for path in self.copy_paths:
+            if isinstance(path, basestring):
+                src = path
+            else:
+                src, _ = path
+            assert os.path.exists(src), 'Copy path source does not exist: {}'.format(src)
+        assert self.deploy_platforms, 'At least one deploy platform must be defined'
+        assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
 
     def run(self):
         if not self.deploy_platforms:
