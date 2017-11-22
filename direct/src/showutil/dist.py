@@ -159,7 +159,7 @@ class build_apps(distutils.core.Command):
 
         if os.path.exists(builddir):
             shutil.rmtree(builddir)
-        os.mkdir(builddir)
+        os.makedirs(builddir)
 
         path = sys.path[:]
         p3dwhl = None
