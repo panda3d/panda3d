@@ -23,6 +23,7 @@ if 'basestring' not in globals():
 
 
 class build_apps(distutils.core.Command):
+    description = 'build Panda3D applications'
     user_options = [] # TODO
 
     def initialize_options(self):
@@ -555,6 +556,7 @@ class build_apps(distutils.core.Command):
 
 
 class bdist_apps(distutils.core.Command):
+    description = 'bundle built Panda3D applications into distributable forms'
     user_options = []
 
     def initialize_options(self):
