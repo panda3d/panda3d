@@ -44,7 +44,14 @@ class build_apps(distutils.core.Command):
         self.build_scripts= {
             '.egg': ('.bam', 'egg2bam -o {1} {0}'),
         }
-        self.exclude_dependencies = []
+        self.exclude_dependencies = [
+            'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
+            'advapi32.dll', 'opengl32.dll', 'glu32.dll', 'gdi32.dll',
+            'shell32.dll', 'ntdll.dll', 'ws2help.dll', 'rpcrt4.dll',
+            'imm32.dll', 'ddraw.dll', 'shlwapi.dll', 'secur32.dll',
+            'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
+            'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
+            'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll']
 
         # We keep track of the zip files we've opened.
         self._zip_files = {}
@@ -347,7 +354,7 @@ class build_apps(distutils.core.Command):
             # We've already added it earlier.
             return
 
-        if name in self.exclude_dependencies:
+        if name.lower() in self.exclude_dependencies:
             return
 
         for dir in search_path:
@@ -395,7 +402,7 @@ class build_apps(distutils.core.Command):
 
         # Warn if we can't find it, but only once.
         self.warn("could not find dependency {0} (referenced by {1})".format(name, referenced_by))
-        self.exclude_dependencies.append(name)
+        self.exclude_dependencies.append(name.lower())
 
     def copy_with_dependencies(self, source_path, target_path, search_path):
         """ Copies source_path to target_path.  It also scans source_path for
@@ -434,7 +441,9 @@ class build_apps(distutils.core.Command):
             # It's a Windows DLL or EXE file.
             pe = pefile.PEFile()
             pe.read(fp)
-            deps = pe.imports
+            for lib in pe.imports:
+                if not lib.lower().startswith('api-ms-win-'):
+                    deps.append(lib)
 
         elif magic == b'\x7FELF':
             # Elf magic.  Used on (among others) Linux and FreeBSD.
