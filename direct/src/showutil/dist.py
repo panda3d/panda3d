@@ -42,7 +42,7 @@ class build_apps(distutils.core.Command):
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
         self.build_scripts= {
-            '.egg': ('.bam', 'egg2bam -o {1} {0}'),
+            '.egg': ('.egg.bam', 'egg2bam -o {1} {0}'),
         }
         self.exclude_dependencies = [
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
