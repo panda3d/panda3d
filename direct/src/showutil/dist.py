@@ -131,10 +131,12 @@ class build_apps(distutils.core.Command):
             self.build_runtimes(platform, use_wheels)
 
     def download_wheels(self, platform):
-        """ Downloads panda3d wheels for the given platform using pip.
-        These are special wheels that are expected to contain a deploy_libs
+        """ Downloads wheels for the given platform using pip. This includes panda3d
+        wheels. These are special wheels that are expected to contain a deploy_libs
         directory containing the Python runtime libraries, which will be added
         to sys.path."""
+
+        self.announce('Gathering wheels for platform: {}'.format(platform), distutils.log.INFO)
 
         whldir = os.path.join(self.build_base, '__whl_cache__')
         abi_tag = pip.pep425tags.get_abi_tag()
@@ -184,7 +186,7 @@ class build_apps(distutils.core.Command):
                     p3dwhl = self._get_zip_file(p3dwhlfn)
                     break
             else:
-                raise RuntimeError("Missing panda3d wheel")
+                raise RuntimeError("Missing panda3d wheel for platform: {}".format(platform))
 
             #whlfiles = {whl: self._get_zip_file(whl) for whl in wheelpaths}
 
@@ -194,6 +196,9 @@ class build_apps(distutils.core.Command):
 
             # Add deploy_libs from panda3d whl to the path
             path.insert(0, os.path.join(p3dwhlfn, 'deploy_libs'))
+
+
+        self.announce('Building runtime for platform: {}'.format(platform), distutils.log.INFO)
 
         # Create runtimes
         freezer_extras = set()
@@ -317,6 +322,7 @@ class build_apps(distutils.core.Command):
                 self.copy_with_dependencies(source_path, target_path, search_path)
 
         # Copy Game Files
+        self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
         ignore_copy_list = [
             '__pycache__',
             '*.pyc',
