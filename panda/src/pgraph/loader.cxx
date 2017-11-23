@@ -277,7 +277,8 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
               LoaderFileType *requested_type) const {
   BamCache *cache = BamCache::get_global_ptr();
 
-  bool allow_ram_cache = requested_type->get_allow_ram_cache(options);
+  bool allow_ram_cache =
+    ((options.get_flags() & LoaderOptions::LF_no_ram_cache) == 0);
 
   if (allow_ram_cache) {
     // If we're allowing a RAM cache, use the ModelPool to load the file.
@@ -298,7 +299,8 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   bool report_errors = ((options.get_flags() & LoaderOptions::LF_report_errors) != 0 || loader_cat.is_debug());
 
   PT(BamCacheRecord) record;
-  if (cache->get_cache_models() && requested_type->get_allow_disk_cache(options)) {
+  if (cache->get_cache_models() &&
+      (options.get_flags() & LoaderOptions::LF_no_disk_cache) == 0) {
     // See if the model can be found in the on-disk cache, if it is active.
     record = cache->lookup(pathname, "bam");
     if (record != (BamCacheRecord *)NULL) {
