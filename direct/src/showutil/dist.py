@@ -34,6 +34,8 @@ class build_apps(distutils.core.Command):
         self.gui_apps = {}
         self.console_apps = {}
         self.copy_paths = []
+        self.rename_paths = {}
+        self.include_paths = []
         self.exclude_paths = []
         self.include_modules = {}
         self.exclude_modules = {}
@@ -89,9 +91,11 @@ class build_apps(distutils.core.Command):
         self.gui_apps = _parse_dict(self.gui_apps)
         self.console_apps = _parse_dict(self.console_apps)
 
+        self.rename_paths = _parse_dict(self.rename_paths)
         self.copy_paths = _parse_list(self.copy_paths)
+        self.include_paths = _parse_list(self.include_paths)
         self.exclude_paths = _parse_list(self.exclude_paths)
-        self.exclude_modules = _parse_list(self.include_modules)
+        self.include_modules = _parse_list(self.include_modules)
         self.exclude_modules = _parse_list(self.exclude_modules)
         self.plugins = _parse_list(self.plugins)
 
@@ -240,7 +244,7 @@ class build_apps(distutils.core.Command):
             if mod in whl_modules:
                 freezer_extras.add((mod, None))
 
-        #FIXME: this is a temporary hack to pick up libpandagl.
+        # Copy over necessary plugins
         plugin_list = ['panda3d/lib{}'.format(i) for i in self.plugins]
         for lib in p3dwhl.namelist():
             plugname = lib.split('.', 1)[0]
@@ -314,27 +318,26 @@ class build_apps(distutils.core.Command):
         ignore_copy_list += self.exclude_paths
         ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
 
-        def check_pattern(src):
-            for pattern in ignore_copy_list:
-                # Normalize file paths across platforms
-                path = p3d.Filename.from_os_specific(src).get_fullpath()
-                #self.announce('check ignore: {} {} {}'.format(pattern, src, pattern.matches(path)))
+        include_copy_list = [p3d.GlobPattern(i) for i in self.include_paths]
+
+        def check_pattern(src, pattern_list):
+            # Normalize file paths across platforms
+            path = p3d.Filename.from_os_specific(os.path.normpath(src)).get_fullpath()
+            for pattern in pattern_list:
+                #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches(path)))
                 if pattern.matches(path):
                     return True
             return False
 
-        def dir_has_files(directory):
-            files = [
-                i for i in os.listdir(directory)
-                if not check_pattern(os.path.normpath(os.path.join(directory, i)))
-            ]
-            return bool(files)
+        def check_file(fname):
+            return check_pattern(fname, include_copy_list) and \
+                not check_pattern(fname, ignore_copy_list)
 
         def copy_file(src, dst):
             src = os.path.normpath(src)
             dst = os.path.normpath(dst)
 
-            if check_pattern(src):
+            if not check_file(src):
                 self.announce('skipping file {}'.format(src))
                 return
 
@@ -357,28 +360,21 @@ class build_apps(distutils.core.Command):
                 self.announce('copying {0} -> {1}'.format(src, dst))
                 shutil.copyfile(src, dst)
 
-        def copy_dir(src, dst):
-            for item in os.listdir(src):
-                s = os.path.join(src, item)
-                d = os.path.join(dst, item)
-                if os.path.isfile(s):
-                    copy_file(s, d)
-                elif not dir_has_files(s):
-                    self.announce('skipping directory'.format(os.path.normpath(s)))
-                else:
-                    copy_dir(s, d)
+        def update_path(path):
+            normpath = p3d.Filename.from_os_specific(os.path.normpath(src)).c_str()
+            for inputpath, outputpath in self.rename_paths.items():
+                if normpath.startswith(inputpath):
+                    normpath = normpath.replace(inputpath, outputpath, 1)
+            return p3d.Filename(normpath).to_os_specific()
 
-        for path in self.copy_paths:
-            if isinstance(path, basestring):
-                src = dst = path
-            else:
-                src, dst = path
-            dst = os.path.join(builddir, dst)
+        rootdir = os.getcwd()
+        for dirname, subdirlist, filelist in os.walk(rootdir):
+            dirpath = os.path.relpath(dirname, rootdir)
+            for fname in filelist:
+                src = os.path.join(dirpath, fname)
+                dst = os.path.join(builddir, update_path(src))
 
-            if os.path.isfile(src):
                 copy_file(src, dst)
-            else:
-                copy_dir(src, dst)
 
     def add_dependency(self, name, target_dir, search_path, referenced_by):
         """ Searches for the given DLL on the search path.  If it exists,
