@@ -47,13 +47,20 @@ class build_apps(distutils.core.Command):
             '.egg': ('.egg.bam', 'egg2bam -o {1} {0}'),
         }
         self.exclude_dependencies = [
+            # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
             'advapi32.dll', 'opengl32.dll', 'glu32.dll', 'gdi32.dll',
             'shell32.dll', 'ntdll.dll', 'ws2help.dll', 'rpcrt4.dll',
             'imm32.dll', 'ddraw.dll', 'shlwapi.dll', 'secur32.dll',
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
-            'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll']
+            'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
+
+            # manylinux1
+            'libdl.so.2', 'libstdc++.so.6', 'libm.so.6', 'libgcc_s.so.1',
+            'libpthread.so.0', 'libc.so.6', 'ld-linux-x86-64.so.2',
+            'libgl.so.1', 'libx11.so.6', 'libreadline.so.5', 'libncursesw.so.5',
+        ]
 
         # We keep track of the zip files we've opened.
         self._zip_files = {}
