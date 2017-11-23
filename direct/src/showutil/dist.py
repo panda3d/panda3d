@@ -635,12 +635,14 @@ class bdist_apps(distutils.core.Command):
             build_dir = os.path.join(build_base, platform)
             base_dir = self.distribution.get_name()
             temp_dir = os.path.join(build_base, base_dir)
-            archive_format = 'gztar' if platform.startswith('linux') else 'zip'
+            archive_format = 'gztar' if 'linux' in platform else 'zip'
             basename = '{}_{}'.format(self.distribution.get_fullname(), platform)
 
             if (os.path.exists(temp_dir)):
                 shutil.rmtree(temp_dir)
-            shutil.copy_tree(build_dir, temp_dir)
+            shutil.copytree(build_dir, temp_dir)
+
+            self.announce('Building {} for platform: {}'.format(archive_format, platform), distutils.log.INFO)
 
             distutils.archive_util.make_archive(basename, archive_format, root_dir=build_base, base_dir=base_dir)
 
