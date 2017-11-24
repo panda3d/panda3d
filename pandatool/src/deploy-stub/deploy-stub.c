@@ -362,9 +362,9 @@ int main(int argc, char *argv[]) {
   }
 
 #ifdef _WIN32
-  if (codepage != 0) {
-    SetConsoleCP(codepage);
-    SetConsoleOutputCP(codepage);
+  if (blobinfo.codepage != 0) {
+    SetConsoleCP(blobinfo.codepage);
+    SetConsoleOutputCP(blobinfo.codepage);
   }
 #endif
 

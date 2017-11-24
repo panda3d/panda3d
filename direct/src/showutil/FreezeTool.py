@@ -1830,7 +1830,7 @@ class Freezer:
 
         elif data[:4] in (b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
                           b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE'):
-            off = self._find_symbol_macho(macho_data, symbol_name)
+            off = self._find_symbol_macho(data, symbol_name)
             if off is not None:
                 data[off:off+len(replacement)] = replacement
                 return True

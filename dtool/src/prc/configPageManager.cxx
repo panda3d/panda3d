@@ -117,8 +117,10 @@ reload_implicit_pages() {
   };
 #ifdef _MSC_VER
   const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
-#else
+#elif defined(RTLD_SELF)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
+#else
+  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo != nullptr && (blobinfo->version == 0 || blobinfo->num_pointers < 10)) {
     blobinfo = nullptr;
