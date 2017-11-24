@@ -3191,10 +3191,14 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
     if winrc and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 
-    if target.endswith(".in"):
+    ext = os.path.splitext(target)[1]
+    if ext == ".in":
         if not CrossCompiling():
             t.deps[FindLocation("interrogate.exe", [])] = 1
         t.deps[FindLocation("dtool_have_python.dat", [])] = 1
+
+    if ext in (".obj", ".tlb", ".res", ".plugin", ".app") or ext in SUFFIX_DLL or ext in SUFFIX_LIB:
+        t.deps[FindLocation("platform.dat", [])] = 1
 
     if target.endswith(".pz") and not CrossCompiling():
         t.deps[FindLocation("pzip.exe", [])] = 1

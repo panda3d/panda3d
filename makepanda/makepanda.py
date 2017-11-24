@@ -22,6 +22,7 @@ except:
 
 from makepandacore import *
 from installpanda import *
+from distutils.util import get_platform
 import time
 import os
 import sys
@@ -68,6 +69,7 @@ WINDOWS_SDK = None
 MSVC_VERSION = None
 BOOUSEINTELCOMPILER = False
 OPENCV_VER_23 = False
+PLATFORM = None
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -383,6 +385,67 @@ MAJOR_VERSION = '.'.join(VERSION.split('.')[:2])
 
 if P3DSUFFIX is None:
     P3DSUFFIX = MAJOR_VERSION
+
+# Now determine the distutils-style platform tag for the target system.
+target = GetTarget()
+if target == 'windows':
+    if GetTargetArch() == 'x64':
+        PLATFORM = 'win-amd64'
+    else:
+        PLATFORM = 'win32'
+
+elif target == 'darwin':
+    if OSXTARGET:
+        osxver = OSXTARGET
+    else:
+        maj, min = platform.mac_ver()[0].split('.')[:2]
+        osxver = int(maj), int(min)
+
+    arch_tag = None
+    if not OSX_ARCHS:
+        arch_tag = GetTargetArch()
+    elif len(OSX_ARCHS) == 1:
+        arch_tag = OSX_ARCHS[0]
+    elif frozenset(OSX_ARCHS) == frozenset(('i386', 'ppc')):
+        arch_tag = 'fat'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386')):
+        arch_tag = 'intel'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'ppc64')):
+        arch_tag = 'fat64'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc')):
+        arch_tag = 'fat32'
+    else:
+        raise RuntimeError('No arch tag for arch combination %s' % OSX_ARCHS)
+
+    PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
+
+elif target == 'linux' and os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+    # This is manylinux1.  A bit of a sloppy check, though.
+    if GetTargetArch() in ('x86_64', 'amd64'):
+        PLATFORM = 'manylinux1-x86_64'
+    else:
+        PLATFORM = 'manylinux1-i686'
+
+elif not CrossCompiling():
+    if HasTargetArch():
+        # Replace the architecture in the platform string.
+        platform_parts = get_platform().rsplit('-', 1)
+        target_arch = GetTargetArch()
+        if target_arch == 'amd64':
+            target_arch = 'x86_64'
+        PLATFORM = platform_parts[0] + '-' + target_arch
+    else:
+        # We're not cross-compiling; just take the host arch.
+        PLATFORM = get_platform()
+
+else:
+    target_arch = GetTargetArch()
+    if target_arch == 'amd64':
+        target_arch = 'x86_64'
+    PLATFORM = '{0}-{1}' % (target, target_arch)
+
+
+print("Platform: %s" % PLATFORM)
 
 outputdir_suffix = ""
 
@@ -2484,6 +2547,9 @@ def WriteConfigSettings():
     for x in PkgListGet():
         if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat', "0\n")
         else:            ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat', "1\n")
+
+    # Finally, write a platform.dat with the platform we are compiling for.
+    ConditionalWriteFile(GetOutputDir() + '/tmp/platform.dat', PLATFORM)
 
 WriteConfigSettings()
 
