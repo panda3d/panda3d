@@ -22,6 +22,29 @@
 #endif
 #endif
 
+/* Define an exposed symbol where we store the offset to the module data. */
+#ifdef _MSC_VER
+__declspec(dllexport)
+#else
+__attribute__((__visibility__("default"), used))
+#endif
+volatile struct {
+  uint64_t blob_offset;
+  uint64_t blob_size;
+  uint16_t version;
+  uint16_t num_pointers;
+  uint16_t codepage;
+  uint16_t flags;
+  uint64_t reserved;
+
+  // Leave room for future expansion.  We only read pointer 0, but there are
+  // other pointers that are being read by configPageManager.cxx.
+  void *pointers[24];
+
+  // The reason we initialize it to -1 is because otherwise, smart linkers may
+  // end up putting it in the .bss section for zero-initialized data.
+} blobinfo = {(uint64_t)-1};
+
 #ifdef MS_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -221,15 +244,12 @@ error:
     return sts;
 }
 
-
-#if defined(_WIN32) && PY_MAJOR_VERSION >= 3
-int wmain(int argc, wchar_t *argv[]) {
-#else
-int main(int argc, char *argv[]) {
-#endif
-  struct _frozen *blob, *moddef;
-  uint64_t begin, end, size;
-  int retval;
+/**
+ * Maps the binary blob at the given memory address to memory, and returns the
+ * pointer to the beginning of it.
+ */
+static void *map_blob(off_t offset, size_t size) {
+  void *blob;
   FILE *runtime;
 
 #ifdef _WIN32
@@ -243,7 +263,7 @@ int main(int argc, char *argv[]) {
   mib[3] = getpid();
   if (sysctl(mib, 4, (void *)buffer, &bufsize, NULL, 0) == -1) {
     perror("sysctl");
-    return 1;
+    return NULL;
   }
   runtime = fopen(buffer, "rb");
 #else
@@ -251,46 +271,108 @@ int main(int argc, char *argv[]) {
   runtime = fopen(argv[0], "rb");
 #endif
 
-  // Get offsets
-  fseek(runtime, -8, SEEK_END);
-  end = ftell(runtime);
-  fread(&begin, 8, 1, runtime);
-  size = end - begin;
+  // Get offsets.  In version 0, we read it from the end of the file.
+  if (blobinfo.version == 0) {
+    uint64_t end, begin;
+    fseek(runtime, -8, SEEK_END);
+    end = ftell(runtime);
+    fread(&begin, 8, 1, runtime);
+
+    offset = (off_t)begin;
+    size = (size_t)(end - begin);
+  }
 
   // mmap the section indicated by the offset (or malloc/fread on windows)
 #ifdef _WIN32
-  blob = (struct _frozen *)malloc(size);
+  blob = (void *)malloc(size);
   assert(blob != NULL);
-  fseek(runtime, (long)begin, SEEK_SET);
+  fseek(runtime, (long)offset, SEEK_SET);
   fread(blob, size, 1, runtime);
 #else
-  blob = (struct _frozen *)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fileno(runtime), begin);
-  assert(blob != NULL);
+  blob = (void *)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fileno(runtime), offset);
+  assert(blob != MAP_FAILED);
 #endif
 
   fclose(runtime);
+  return blob;
+}
 
-  // Offset the pointers in the table using the base mmap address.
-  moddef = blob;
-  while (moddef->name) {
-    moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
-    if (moddef->code != 0) {
-      moddef->code = (unsigned char *)((uintptr_t)moddef->code + (uintptr_t)blob);
+/**
+ * The inverse of map_blob.
+ */
+static void unmap_blob(void *blob) {
+  if (blob) {
+#ifdef _WIN32
+    free(blob);
+#else
+    munmap(blob, blobinfo.blob_size);
+#endif
+  }
+}
+
+/**
+ * Main entry point to deploy-stub.
+ */
+#if defined(_WIN32) && PY_MAJOR_VERSION >= 3
+int wmain(int argc, wchar_t *argv[]) {
+#else
+int main(int argc, char *argv[]) {
+#endif
+  int retval;
+  struct _frozen *moddef;
+  void *blob = NULL;
+
+  /*
+  printf("blob_offset: %d\n", (int)blobinfo.blob_offset);
+  printf("blob_size: %d\n", (int)blobinfo.blob_size);
+  printf("version: %d\n", (int)blobinfo.version);
+  printf("num_pointers: %d\n", (int)blobinfo.num_pointers);
+  printf("codepage: %d\n", (int)blobinfo.codepage);
+  printf("flags: %d\n", (int)blobinfo.flags);
+  printf("reserved: %d\n", (int)blobinfo.reserved);
+  */
+
+  // If we have a blob offset, we have to map the blob to memory.
+  if (blobinfo.version == 0 || blobinfo.blob_offset != 0) {
+    void *blob = map_blob((off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+    assert(blob != NULL);
+
+    // Offset the pointers in the header using the base mmap address.
+    if (blobinfo.version > 0 && blobinfo.num_pointers > 0) {
+      uint32_t i;
+      for (i = 0; i < blobinfo.num_pointers; ++i) {
+        if (i == 0 || blobinfo.pointers[i] != 0) {
+          blobinfo.pointers[i] = (void *)((uintptr_t)blobinfo.pointers[i] + (uintptr_t)blob);
+        }
+      }
+    } else {
+      blobinfo.pointers[0] = blob;
     }
-    //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
-    moddef++;
+
+    // Offset the pointers in the module table using the base mmap address.
+    moddef = blobinfo.pointers[0];
+    while (moddef->name) {
+      moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
+      if (moddef->code != 0) {
+        moddef->code = (unsigned char *)((uintptr_t)moddef->code + (uintptr_t)blob);
+      }
+      //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
+      moddef++;
+    }
   }
 
+#ifdef _WIN32
+  if (codepage != 0) {
+    SetConsoleCP(codepage);
+    SetConsoleOutputCP(codepage);
+  }
+#endif
+
   // Run frozen application
-  PyImport_FrozenModules = blob;
+  PyImport_FrozenModules = blobinfo.pointers[0];
   retval = Py_FrozenMain(argc, argv);
 
-  // Free resources
-#ifdef _WIN32
-  free(blob);
-#else
-  munmap(blob, size);
-#endif
+  unmap_blob(blob);
   return retval;
 }
 

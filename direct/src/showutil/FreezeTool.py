@@ -8,9 +8,11 @@ import marshal
 import imp
 import platform
 import struct
-from io import StringIO, TextIOWrapper
+from io import StringIO, BytesIO, TextIOWrapper
 import distutils.sysconfig as sysconf
 import zipfile
+
+from . import pefile
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -1589,7 +1591,7 @@ class Freezer:
 
         return target
 
-    def generateRuntimeFromStub(self, basename, stub_file):
+    def generateRuntimeFromStub(self, basename, stub_file, fields={}):
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
@@ -1602,14 +1604,17 @@ class Freezer:
             target = basename
             modext = '.so'
 
-        address_offset = 0
-
-        # First gather up the strings for all the module names.
-        blob = b""
+        # First gather up the strings and code for all the module names, and
+        # put those in a string pool.
+        pool = b""
         strings = set()
 
         for moduleName, mdef in self.getModuleDefs():
             strings.add(moduleName.encode('ascii'))
+
+        for value in fields.values():
+            if value is not None:
+                strings.add(value.encode('utf-8'))
 
         # Sort by length descending, allowing reuse of partial strings.
         strings = sorted(strings, key=lambda str:-len(str))
@@ -1618,13 +1623,15 @@ class Freezer:
         for string in strings:
             # First check whether it's already in there; it could be part of
             # a longer string.
-            offset = blob.find(string + b'\0')
+            offset = pool.find(string + b'\0')
             if offset < 0:
-                offset = len(blob)
-                blob += string + b'\0'
+                offset = len(pool)
+                pool += string + b'\0'
             string_offsets[string] = offset
 
-        # Generate export table.
+        # Now go through the modules and add them to the pool as well.  These
+        # are not 0-terminated, but we later record their sizes and names in
+        # a table after the blob header.
         moduleList = []
 
         for moduleName, mdef in self.getModuleDefs():
@@ -1635,9 +1642,9 @@ class Freezer:
                 continue
 
             # For whatever it's worth, align the code blocks.
-            if len(blob) & 3 != 0:
-                pad = (4 - (len(blob) & 3))
-                blob += b'\0' * pad
+            if len(pool) & 3 != 0:
+                pad = (4 - (len(pool) & 3))
+                pool += b'\0' * pad
 
             assert not mdef.exclude
             # Allow importing this module.
@@ -1649,8 +1656,8 @@ class Freezer:
                 if getattr(module, "__path__", None):
                     # Indicate package by negative size
                     size = -size
-                moduleList.append((moduleName, len(blob), size))
-                blob += code
+                moduleList.append((moduleName, len(pool), size))
+                pool += code
                 continue
 
             # This is a module with no associated Python code.  It is either
@@ -1668,54 +1675,326 @@ class Freezer:
                 code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 code = compile(code, moduleName, 'exec')
                 code = marshal.dumps(code)
-                moduleList.append((moduleName, len(blob), len(code)))
-                blob += code
+                moduleList.append((moduleName, len(pool), len(code)))
+                pool += code
 
-        # Now compose the final blob.
-        if '64' in self.platform:
-            layout = '<QQixxxx'
+        # Determine the format of the header and module list entries depending
+        # on the platform.
+        num_pointers = 10
+        stub_data = bytearray(stub_file.read())
+        if self._is_executable_64bit(stub_data):
+            header_layout = '<QQHHHH8x%dQQ' % num_pointers
+            entry_layout = '<QQixxxx'
         else:
-            layout = '<IIi'
+            header_layout = '<QQHHHH8x%dII' % num_pointers
+            entry_layout = '<IIi'
 
-        blob2 = bytes()
-        blobOffset = (len(moduleList) + 1) * struct.calcsize(layout)
-        blobOffset += address_offset
+        # Calculate the size of the header and module table, so that we can
+        # determine the proper offset for the string pointers.
+        pool_offset = (len(moduleList) + 1) * struct.calcsize(entry_layout)
 
+        # The module table is the first thing in the blob.
+        blob = b""
         for moduleName, offset, size in moduleList:
             encoded = moduleName.encode('ascii')
-            stringOffset = blobOffset + string_offsets[encoded]
+            string_offset = pool_offset + string_offsets[encoded]
             if size != 0:
-                offset += blobOffset
-            blob2 += struct.pack(layout, stringOffset, offset, size)
+                offset += pool_offset
+            blob += struct.pack(entry_layout, string_offset, offset, size)
 
-        blob2 += struct.pack(layout, 0, 0, 0)
-        assert len(blob2) + address_offset == blobOffset
+        blob += struct.pack(entry_layout, 0, 0, 0)
 
-        blob = blob2 + blob
-        del blob2
+        # Add the string pool.
+        assert len(blob) == pool_offset
+        blob += pool
+        del pool
 
         # Total blob length should be aligned to 8 bytes.
         if len(blob) & 7 != 0:
             pad = (8 - (len(blob) & 7))
             blob += b'\0' * pad
 
-        # Build from pre-built binary stub
-        with open(target, 'wb') as f:
-            f.write(stub_file.read())
-            offset = f.tell()
+        if self.platform.startswith('win'):
+            # We don't use mmap on Windows.
+            blob_align = 32
+        else:
+            # Align to page size, so that it can be mmapped.
+            blob_align = 4096
 
+        # Determine the blob offset, padding the stub if necessary.
+        blob_offset = len(stub_data)
+        if (blob_offset & (blob_align - 1)) != 0:
             # Add padding to align to the page size, so it can be mmapped.
-            if offset % 4095 != 0:
-                pad = (4096 - (offset & 4095))
-                f.write(b'\0' * pad)
-                offset += pad
+            pad = (blob_align - (blob_offset & (blob_align - 1)))
+            stub_data += (b'\0' * pad)
+            blob_offset += pad
+        assert (blob_offset % blob_align) == 0
+        assert blob_offset == len(stub_data)
 
+        # Calculate the offsets for the variables.  These are pointers,
+        # relative to the beginning of the blob.
+        field_offsets = {}
+        for key, value in fields.items():
+            if value is not None:
+                encoded = value.encode('utf-8')
+                field_offsets[key] = pool_offset + string_offsets[encoded]
+
+        # Compose the header we will be writing to the stub, to tell it where
+        # to find the module data blob, as well as other variables.
+        header = struct.pack(header_layout,
+            blob_offset,
+            len(blob),
+            1, # Version number
+            num_pointers, # Number of pointers that follow
+            0, # Codepage, not yet used
+            0, # Flags, not yet used
+            0, # Module table pointer, always 0 for now.
+            # The following variables need to be set before static init
+            # time.  See configPageManager.cxx, where they are read.
+            field_offsets.get('prc_data', 0),
+            field_offsets.get('default_prc_dir', 0),
+            field_offsets.get('prc_dir_envvars', 0),
+            field_offsets.get('prc_path_envvars', 0),
+            field_offsets.get('prc_patterns', 0),
+            field_offsets.get('prc_encrypted_patterns', 0),
+            field_offsets.get('prc_encryption_key', 0),
+            field_offsets.get('prc_executable_patterns', 0),
+            field_offsets.get('prc_executable_args_envvar', 0),
+            0)
+
+        # Now, find the location of the 'blobinfo' symbol in the executable,
+        # to which we will write our header.
+        if not self._replace_symbol(stub_data, b'blobinfo', header):
+            # This must be a legacy deploy-stub, which requires the offset to
+            # be appended to the end.
+            blob += struct.pack('<Q', blob_offset)
+
+        with open(target, 'wb') as f:
+            f.write(stub_data)
+            assert f.tell() == blob_offset
             f.write(blob)
-            # And tack on the offset of the blob to the end.
-            f.write(struct.pack('<Q', offset))
 
         os.chmod(target, 0o755)
         return target
+
+    def _is_executable_64bit(self, data):
+        """Returns true if this is a 64-bit executable."""
+
+        if data.startswith(b'MZ'):
+            # A Windows PE file.
+            offset, = struct.unpack_from('<I', data, 0x3c)
+            assert data[offset:offset+4] == b'PE\0\0'
+
+            magic, = struct.unpack_from('<H', data, offset + 24)
+            assert magic in (0x010b, 0x020b)
+            return magic == 0x020b
+
+        elif data.startswith(b"\177ELF"):
+            # A Linux/FreeBSD ELF executable.
+            elfclass = ord(data[4:5])
+            assert elfclass in (1, 2)
+            return elfclass == 2
+
+        elif data[:4] in (b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE'):
+            # 32-bit Mach-O file, as used on macOS.
+            return False
+
+        elif data[:4] in (b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE'):
+            # 64-bit Mach-O file, as used on macOS.
+            return True
+
+        elif data[:4] in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA',
+                          b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA'):
+            # A universal file, containing one or more Mach-O files.
+            #TODO: how to handle universal stubs with more than one arch?
+            pass
+
+    def _replace_symbol(self, data, symbol_name, replacement):
+        """We store a custom section in the binary file containing a header
+        containing offsets to the binary data."""
+
+        if data.startswith(b'MZ'):
+            # A Windows PE file.
+            pe = pefile.PEFile()
+            pe.read(BytesIO(data))
+            addr = pe.get_export_address(symbol_name)
+            if addr is not None:
+                # We found it, return its offset in the file.
+                offset = pe.get_address_offset(addr)
+                if offset is not None:
+                    data[offset:offset+len(replacement)] = replacement
+                    return True
+
+        elif data.startswith(b"\177ELF"):
+            return self._replace_symbol_elf(data, symbol_name, replacement)
+
+        elif data[:4] in (b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
+                          b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE'):
+            off = self._find_symbol_macho(macho_data, symbol_name)
+            if off is not None:
+                data[off:off+len(replacement)] = replacement
+                return True
+            return False
+
+        elif data[:4] in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA'):
+            # Universal binary with 32-bit offsets.
+            return self._replace_symbol_fat(data, b'_' + symbol_name, replacement, False)
+
+        elif data[:4] in (b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA'):
+            # Universal binary with 64-bit offsets.
+            return self._replace_symbol_fat(data, b'_' + symbol_name, replacement, True)
+
+        # We don't know what kind of file this is.
+        return False
+
+    def _replace_symbol_elf(self, elf_data, symbol_name, replacement):
+        """ The Linux/FreeBSD implementation of _replace_symbol. """
+
+        replaced = False
+
+        # Make sure we read in the correct endianness and integer size
+        endian = "<>"[ord(elf_data[5:6]) - 1]
+        is_64bit = ord(elf_data[4:5]) - 1 # 0 = 32-bits, 1 = 64-bits
+        header_struct = endian + ("HHIIIIIHHHHHH", "HHIQQQIHHHHHH")[is_64bit]
+        section_struct = endian + ("4xI4xIIII8xI", "4xI8xQQQI12xQ")[is_64bit]
+        symbol_struct = endian + ("IIIBBH", "IBBHQQ")[is_64bit]
+
+        header_size = struct.calcsize(header_struct)
+        type, machine, version, entry, phoff, shoff, flags, ehsize, phentsize, phnum, shentsize, shnum, shstrndx \
+          = struct.unpack_from(header_struct, elf_data, 16)
+        section_offsets = []
+        symbol_tables = []
+        string_tables = {}
+
+        # Seek to the section header table and find the symbol tables.
+        ptr = shoff
+        for i in range(shnum):
+            type, addr, offset, size, link, entsize = struct.unpack_from(section_struct, elf_data[ptr:ptr+shentsize])
+            ptr += shentsize
+            section_offsets.append(offset - addr)
+            if type == 0x0B and link != 0: # SHT_DYNSYM, links to string table
+                symbol_tables.append((offset, size, link, entsize))
+                string_tables[link] = None
+
+        # Read the relevant string tables.
+        for idx in list(string_tables.keys()):
+            ptr = shoff + idx * shentsize
+            type, addr, offset, size, link, entsize = struct.unpack_from(section_struct, elf_data[ptr:ptr+shentsize])
+            if type == 3:
+                string_tables[idx] = elf_data[offset:offset+size]
+
+        # Loop through to find the offset of the "blobinfo" symbol.
+        for offset, size, link, entsize in symbol_tables:
+            entries = size // entsize
+            for i in range(entries):
+                ptr = offset + i * entsize
+                fields = struct.unpack_from(symbol_struct, elf_data[ptr:ptr+entsize])
+                if is_64bit:
+                    name, info, other, shndx, value, size = fields
+                else:
+                    name, value, size, info, other, shndx = fields
+
+                if not name:
+                    continue
+
+                name = string_tables[link][name : string_tables[link].find(b'\0', name)]
+                if name == symbol_name:
+                    if shndx == 0: # SHN_UNDEF
+                        continue
+                    elif shndx >= 0xff00 and shndx <= 0xffff:
+                        assert False
+                    else:
+                        # Got it.  Make the replacement.
+                        off = section_offsets[shndx] + value
+                        elf_data[off:off+len(replacement)] = replacement
+                        replaced = True
+
+        return replaced
+
+    def _find_symbol_macho(self, macho_data, symbol_name):
+        """ Returns the offset of the given symbol in the binary file. """
+
+        if macho_data[:4] in (b'\xCE\xFA\xED\xFE', b'\xCF\xFA\xED\xFE'):
+            endian = '<'
+        else:
+            endian = '>'
+
+        cputype, cpusubtype, filetype, ncmds, sizeofcmds, flags = \
+            struct.unpack_from(endian + 'IIIIII', macho_data, 4)
+
+        is_64bit = (cputype & 0x1000000) != 0
+        segments = []
+
+        cmd_ptr = 28
+        nlist_struct = endian + 'IBBHI'
+        if is_64bit:
+            nlist_struct = endian + 'IBBHQ'
+            cmd_ptr += 4
+        nlist_size = struct.calcsize(nlist_struct)
+
+        for i in range(ncmds):
+            cmd, cmd_size = struct.unpack_from(endian + 'II', macho_data, cmd_ptr)
+            cmd_data = macho_data[cmd_ptr+8:cmd_ptr+cmd_size]
+            cmd_ptr += cmd_size
+
+            cmd &= ~0x80000000
+
+            if cmd == 0x01: # LC_SEGMENT
+                segname, vmaddr, vmsize, fileoff, filesize, maxprot, initprot, nsects, flags = \
+                    struct.unpack_from(endian + '16sIIIIIIII', cmd_data)
+                segments.append((vmaddr, vmsize, fileoff))
+
+            elif cmd == 0x19: # LC_SEGMENT_64
+                segname, vmaddr, vmsize, fileoff, filesize, maxprot, initprot, nsects, flags = \
+                    struct.unpack_from(endian + '16sQQQQIIII', cmd_data)
+                segments.append((vmaddr, vmsize, fileoff))
+
+            elif cmd == 0x2: # LC_SYMTAB
+                symoff, nsyms, stroff, strsize = \
+                    struct.unpack_from(endian + 'IIII', cmd_data)
+
+                strings = macho_data[stroff:stroff+strsize]
+
+                for i in range(nsyms):
+                    strx, type, sect, desc, value = struct.unpack_from(nlist_struct, macho_data, symoff)
+                    symoff += nlist_size
+                    name = strings[strx : strings.find(b'\0', strx)]
+
+                    if name == symbol_name:
+                        # Find out in which segment this is.
+                        for vmaddr, vmsize, fileoff in segments:
+                            # Is it defined in this segment?
+                            rel = value - vmaddr
+                            if rel >= 0 and rel < vmsize:
+                                # Yes, so return the symbol offset.
+                                return fileoff + rel
+
+    def _replace_symbol_fat(self, fat_data, symbol_name, replacement, is_64bit):
+        """ Implementation of _replace_symbol for universal binaries. """
+        num_fat, = struct.unpack_from('>I', fat_data, 4)
+
+        # After the header we get a table of executables in this fat file,
+        # each one with a corresponding offset into the file.
+        replaced = False
+        ptr = 8
+        for i in range(num_fat):
+            if is_64bit:
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack_from('>QQQQQ', fat_data, ptr)
+                ptr += 40
+            else:
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack_from('>IIIII', fat_data, ptr)
+                ptr += 20
+
+            macho_data = fat_data[offset:offset+size]
+            off = self._find_symbol_macho(macho_data, symbol_name)
+            if off is not None:
+                off += offset
+                fat_data[off:off+len(replacement)] = replacement
+                replaced = True
+
+        return replaced
 
     def makeModuleDef(self, mangledName, code):
         result = ''

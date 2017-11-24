@@ -6583,7 +6583,7 @@ if PkgSkip("PYTHON") == 0:
     if GetTarget() == 'windows':
         TargetAdd('frozen_dllmain.obj', opts=OPTS, input='frozen_dllmain.c')
 
-    if GetTarget() == 'linux':
+    if GetTarget() == 'linux' or GetTarget() == 'freebsd':
         # Setup rpath so libs can be found in the same directory as the deployed game
         LibName('DEPLOYSTUB', "-Wl,-rpath,\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")

@@ -19,6 +19,7 @@ if sys.version_info >= (3, 0):
 # Define some internally used structures.
 RVASize = namedtuple('RVASize', ('addr', 'size'))
 impdirtab = namedtuple('impdirtab', ('lookup', 'timdat', 'forward', 'name', 'impaddr'))
+expdirtab = namedtuple('expdirtab', ('flags', 'timdat', 'majver', 'minver', 'name', 'ordinal_base', 'nentries', 'nnames', 'entries', 'names', 'ordinals'))
 
 
 def _unpack_zstring(mem, offs=0):
@@ -571,10 +572,11 @@ class PEFile(object):
 
         # Read the sections into some kind of virtual memory.
         self.vmem = bytearray(self.sections[-1].vaddr + self.sections[-1].size)
+        memview = memoryview(self.vmem)
 
         for section in self.sections:
             fp.seek(section.offset)
-            fp.readinto(memoryview(self.vmem)[section.vaddr:section.vaddr+section.size])
+            fp.readinto(memview[section.vaddr:section.vaddr+section.size])
 
         # Read the import table.
         start = self.imp_rva.addr
@@ -595,6 +597,43 @@ class PEFile(object):
         self.resources = ResourceTable()
         if self.res_rva.addr and self.res_rva.size:
             self.resources.unpack_from(self.vmem, self.res_rva.addr)
+
+    def get_export_address(self, symbol_name):
+        """ Finds the virtual address for a named export symbol. """
+
+        start = self.exp_rva.addr
+        expdir = expdirtab(*unpack('<IIHHIIIIIII', self.vmem[start:start+40]))
+        if expdir.nnames == 0 or expdir.ordinals == 0 or expdir.names == 0:
+            return None
+
+        nptr = expdir.names
+        optr = expdir.ordinals
+        for i in range(expdir.nnames):
+            name_rva, = unpack('<I', self.vmem[nptr:nptr+4])
+            ordinal, = unpack('<H', self.vmem[optr:optr+2])
+            if name_rva != 0:
+                name = _unpack_zstring(self.vmem, name_rva)
+                if name == symbol_name:
+                    assert ordinal >= 0 and ordinal < expdir.nentries
+                    start = expdir.entries + 8 * ordinal
+                    addr, = unpack('<I', self.vmem[start:start+4])
+                    return addr
+            nptr += 4
+            optr += 2
+
+    def get_address_offset(self, addr):
+        """ Turns an address into a offset relative to the file beginning. """
+
+        section = self.get_address_section(addr)
+        if section is not None:
+            return (addr - section.vaddr) + section.offset
+
+    def get_address_section(self, addr):
+        """ Returns the section that this virtual address belongs to. """
+
+        for section in self.sections:
+            if addr >= section.vaddr and addr < section.vaddr + section.size:
+                return section
 
     def add_icon(self, icon, ordinal=2):
         """ Adds an icon resource from the given Icon object.  Requires

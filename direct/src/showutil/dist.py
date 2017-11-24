@@ -225,7 +225,17 @@ class build_apps(distutils.core.Command):
                 stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', stub_name)
                 stub_file = open(stub_path, 'rb')
 
-            freezer.generateRuntimeFromStub(os.path.join(builddir, appname), stub_file)
+            freezer.generateRuntimeFromStub(os.path.join(builddir, appname), stub_file, {
+                'prc_data': None,
+                'default_prc_dir': None,
+                'prc_dir_envvars': None,
+                'prc_path_envvars': None,
+                'prc_patterns': None,
+                'prc_encrypted_patterns': None,
+                'prc_encryption_key': None,
+                'prc_executable_patterns': None,
+                'prc_executable_args_envvar': None,
+            })
             stub_file.close()
 
             freezer_extras.update(freezer.extras)
@@ -492,16 +502,22 @@ class build_apps(distutils.core.Command):
             # Elf magic.  Used on (among others) Linux and FreeBSD.
             deps = self._read_dependencies_elf(fp, os.path.dirname(source_path), search_path)
 
-        elif magic in (b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
-                       b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE'):
+        elif magic in (b'\xCE\xFA\xED\xFE', b'\xCF\xFA\xED\xFE'):
             # A Mach-O file, as used on macOS.
-            deps = self._read_dependencies_macho(fp)
+            deps = self._read_dependencies_macho(fp, '<')
 
-        elif magic in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA'):
+        elif magic in (b'\xFE\xED\xFA\xCE', b'\xFE\xED\xFA\xCF'):
+            deps = self._read_dependencies_macho(fp, '>')
+
+        elif magic in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA'):
             # A fat file, containing multiple Mach-O binaries.  In the future,
             # we may want to extract the one containing the architecture we
             # are building for.
-            deps = self._read_dependencies_fat(fp)
+            deps = self._read_dependencies_fat(fp, False)
+
+        elif magic in (b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA'):
+            # A 64-bit fat file.
+            deps = self._read_dependencies_fat(fp, True)
 
         # If we discovered any dependencies, recursively add those.
         if deps:
@@ -573,23 +589,23 @@ class build_apps(distutils.core.Command):
         search_path += rpath
         return needed
 
-    def _read_dependencies_macho(self, fp):
+    def _read_dependencies_macho(self, fp, endian):
         """ Having read the first 4 bytes of the Mach-O file, fetches the
         dependent libraries and returns those as a list. """
 
         cputype, cpusubtype, filetype, ncmds, sizeofcmds, flags = \
-            struct.unpack('<IIIIII', fp.read(24))
+            struct.unpack(endian + 'IIIIII', fp.read(24))
 
-        is_64 = (cputype & 0x1000000) != 0
-        if is_64:
+        is_64bit = (cputype & 0x1000000) != 0
+        if is_64bit:
             fp.read(4)
 
         # After the header, we get a series of linker commands.  We just
         # iterate through them and gather up the LC_LOAD_DYLIB commands.
         load_dylibs = []
         for i in range(ncmds):
-            cmd, cmdsize = struct.unpack('<II', fp.read(8))
-            cmd_data = fp.read(cmdsize - 8)
+            cmd, cmd_size = struct.unpack(endian + 'II', fp.read(8))
+            cmd_data = fp.read(cmd_size - 8)
             cmd &= ~0x80000000
 
             if cmd == 0x0c: # LC_LOAD_DYLIB
@@ -600,20 +616,41 @@ class build_apps(distutils.core.Command):
 
         return load_dylibs
 
-    def _read_dependencies_fat(self, fp):
-        num_fat = struct.unpack('>I', fp.read(4))[0]
-        if num_fat == 0:
-            return []
+    def _read_dependencies_fat(self, fp, is_64bit):
+        num_fat, = struct.unpack('>I', fp.read(4))
 
         # After the header we get a table of executables in this fat file,
         # each one with a corresponding offset into the file.
-        # We are just interested in the first one for now.
-        cputype, cpusubtype, offset, size, align = \
-            struct.unpack('>IIIII', fp.read(20))
+        offsets = []
+        for i in range(num_fat):
+            if is_64bit:
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack('>QQQQQ', fp.read(40))
+            else:
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack('>IIIII', fp.read(20))
+            offsets.append(offset)
 
-        # Add 4, since it expects we've already read the magic.
-        fp.seek(offset + 4)
-        return self._read_dependencies_macho(fp)
+        # Go through each of the binaries in the fat file.
+        deps = []
+        for offset in offsets:
+            # Add 4, since it expects we've already read the magic.
+            fp.seek(offset)
+            magic = fp.read(4)
+
+            if magic in (b'\xCE\xFA\xED\xFE', b'\xCF\xFA\xED\xFE'):
+                endian = '<'
+            elif magic in (b'\xFE\xED\xFA\xCE', b'\xFE\xED\xFA\xCF'):
+                endian = '>'
+            else:
+                # Not a Mach-O file we can read.
+                continue
+
+            for dep in self._read_dependencies_macho(fp, endian):
+                if dep not in deps:
+                    deps.append(dep)
+
+        return deps
 
 
 class bdist_apps(distutils.core.Command):
