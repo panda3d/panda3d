@@ -24,14 +24,6 @@ from makepandacore import ColorText, LocateBinary, ParsePandaVersion, GetExtensi
 from base64 import urlsafe_b64encode
 
 
-default_platform = get_platform()
-
-if default_platform.startswith("linux-"):
-    # Is this manylinux1?
-    if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
-        default_platform = default_platform.replace("linux", "manylinux1")
-
-
 def get_abi_tag():
     if sys.version_info >= (3, 0):
         soabi = get_config_var('SOABI')
@@ -68,16 +60,18 @@ def is_elf_file(path):
            open(path, 'rb').read(4) == b'\x7FELF'
 
 
-def is_mach_o_file(path):
+def is_macho_or_fat_file(path):
     base = os.path.basename(path)
     return os.path.isfile(path) and '.' not in base and \
-           open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA',
-                                        b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
-                                        b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE')
+           open(path, 'rb').read(4) in (b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
+                                        b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE',
+                                        b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA',
+                                        b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA')
 
 def is_fat_file(path):
     return os.path.isfile(path) and \
-           open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\bCA')
+           open(path, 'rb').read(4) in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA',
+                                        b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA')
 
 
 def get_python_ext_module_dir():
@@ -88,10 +82,9 @@ def get_python_ext_module_dir():
 if sys.platform in ('win32', 'cygwin'):
     is_executable = is_exe_file
 elif sys.platform == 'darwin':
-    is_executable = is_mach_o_file
+    is_executable = is_macho_or_fat_file
 else:
     is_executable = is_elf_file
-
 
 # Other global parameters
 PY_VERSION = "cp{0}{1}".format(*sys.version_info)
@@ -351,7 +344,10 @@ class WheelFile(object):
             temp = tempfile.NamedTemporaryFile(suffix=suffix, prefix='whl', delete=False)
 
             # On macOS, if no fat wheel was requested, extract the right architecture.
-            if sys.platform == "darwin" and is_fat_file(source_path) and not self.platform.endswith("_intel"):
+            if sys.platform == "darwin" and is_fat_file(source_path) \
+                and not self.platform.endswith("_intel") \
+                and "_fat" not in self.platform:
+
                 if self.platform.endswith("_x86_64"):
                     arch = 'x86_64'
                 else:
@@ -452,10 +448,23 @@ class WheelFile(object):
         self.zip_file.close()
 
 
-def makewheel(version, output_dir, platform=default_platform):
+def makewheel(version, output_dir, platform=None):
     if sys.platform not in ("win32", "darwin") and not sys.platform.startswith("cygwin"):
         if not LocateBinary("patchelf"):
             raise Exception("patchelf is required when building a Linux wheel.")
+
+    if platform is None:
+        # Determine the platform from the build.
+        platform_dat = os.path.join(output_dir, 'tmp', 'platform.dat')
+        if os.path.isfile(platform_dat):
+            platform = open(platform_dat, 'r').read().strip()
+        else:
+            print("Could not find platform.dat in build directory")
+            platform = get_platform()
+            if platform.startswith("linux-"):
+                # Is this manylinux1?
+                if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+                    platform = platform.replace("linux", "manylinux1")
 
     platform = platform.replace('-', '_').replace('.', '_')
 
@@ -616,7 +625,7 @@ if __name__ == "__main__":
     parser.add_option('', '--version', dest = 'version', help = 'Panda3D version number (default: %s)' % (version), default = version)
     parser.add_option('', '--outputdir', dest = 'outputdir', help = 'Makepanda\'s output directory (default: built)', default = 'built')
     parser.add_option('', '--verbose', dest = 'verbose', help = 'Enable verbose output', action = 'store_true', default = False)
-    parser.add_option('', '--platform', dest = 'platform', help = 'Override platform tag (default: %s)' % (default_platform), default = get_platform())
+    parser.add_option('', '--platform', dest = 'platform', help = 'Override platform tag', default = None)
     (options, args) = parser.parse_args()
 
     SetVerbose(options.verbose)
