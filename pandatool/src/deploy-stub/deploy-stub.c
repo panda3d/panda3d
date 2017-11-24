@@ -11,6 +11,10 @@
 #include <sys/sysctl.h>
 #endif
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 
@@ -266,9 +270,21 @@ static void *map_blob(off_t offset, size_t size) {
     return NULL;
   }
   runtime = fopen(buffer, "rb");
+#elif defined(__APPLE__)
+  char buffer[4096];
+  uint32_t bufsize = sizeof(buffer);
+  if (_NSGetExecutablePath(buffer, &bufsize) != 0) {
+    return NULL;
+  }
+  runtime = fopen(buffer, "rb");
 #else
-  // Let's hope that it was invoked with the executable name as first arg.
-  runtime = fopen(argv[0], "rb");
+  char buffer[4096];
+  ssize_t pathlen = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+  if (pathlen <= 0) {
+    perror("readlink(/proc/self/exe)");
+    return NULL;
+  }
+  runtime = fopen(buffer, "rb");
 #endif
 
   // Get offsets.  In version 0, we read it from the end of the file.
