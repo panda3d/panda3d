@@ -28,8 +28,8 @@
  */
 class EXPCL_PANDAEGG EggVertexUV : public EggNamedObject {
 PUBLISHED:
-  EggVertexUV(const string &name, const LTexCoordd &uv);
-  EggVertexUV(const string &name, const LTexCoord3d &uvw);
+  explicit EggVertexUV(const string &name, const LTexCoordd &uv);
+  explicit EggVertexUV(const string &name, const LTexCoord3d &uvw);
   EggVertexUV(const EggVertexUV &copy);
   EggVertexUV &operator = (const EggVertexUV &copy);
   virtual ~EggVertexUV();

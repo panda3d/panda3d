@@ -29,9 +29,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletCharacterControllerNode : public BulletBaseCharacterControllerNode {
-
 PUBLISHED:
-  BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name="character");
+  explicit BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height,
+                                         const char *name="character");
   INLINE ~BulletCharacterControllerNode();
 
   void set_linear_movement(const LVector3 &velocity, bool is_local);

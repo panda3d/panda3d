@@ -33,9 +33,10 @@ public:
   ALLOC_DELETED_CHAIN(TextureReloadRequest);
 
 PUBLISHED:
-  INLINE TextureReloadRequest(const string &name,
-                              PreparedGraphicsObjects *pgo, Texture *texture,
-                              bool allow_compressed);
+  INLINE explicit TextureReloadRequest(const string &name,
+                                       PreparedGraphicsObjects *pgo,
+                                       Texture *texture,
+                                       bool allow_compressed);
 
   INLINE PreparedGraphicsObjects *get_prepared_graphics_objects() const;
   INLINE Texture *get_texture() const;

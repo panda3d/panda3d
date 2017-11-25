@@ -52,7 +52,7 @@ class Texture;
  */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
-  GraphicsEngine(Pipeline *pipeline = NULL);
+  explicit GraphicsEngine(Pipeline *pipeline = NULL);
   BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);

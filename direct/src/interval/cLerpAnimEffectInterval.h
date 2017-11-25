@@ -31,8 +31,8 @@
  */
 class EXPCL_DIRECT CLerpAnimEffectInterval : public CLerpInterval {
 PUBLISHED:
-  INLINE CLerpAnimEffectInterval(const string &name, double duration,
-                                 BlendType blend_type);
+  INLINE explicit CLerpAnimEffectInterval(const string &name, double duration,
+                                          BlendType blend_type);
 
   INLINE void add_control(AnimControl *control, const string &name,
                           float begin_effect, float end_effect);

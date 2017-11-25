@@ -33,7 +33,7 @@ class GeomVertexData;
  */
 class EXPCL_PANDA_PARAMETRICS RopeNode : public PandaNode {
 PUBLISHED:
-  RopeNode(const string &name);
+  explicit RopeNode(const string &name);
 
 protected:
   RopeNode(const RopeNode &copy);

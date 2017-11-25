@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_PIPELINE Semaphore {
 PUBLISHED:
-  INLINE Semaphore(int initial_count = 1);
+  INLINE explicit Semaphore(int initial_count = 1);
   INLINE ~Semaphore();
 private:
   INLINE Semaphore(const Semaphore &copy);

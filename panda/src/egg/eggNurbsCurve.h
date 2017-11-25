@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDAEGG EggNurbsCurve : public EggCurve {
 PUBLISHED:
-  INLINE EggNurbsCurve(const string &name = "");
+  INLINE explicit EggNurbsCurve(const string &name = "");
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);
   INLINE EggNurbsCurve &operator = (const EggNurbsCurve &copy);
 

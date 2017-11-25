@@ -58,7 +58,7 @@ private:
   // Here begins the actual public interface to EggGroupNode.
 
 PUBLISHED:
-  EggGroupNode(const string &name = "") : EggNode(name) { }
+  explicit EggGroupNode(const string &name = "") : EggNode(name) { }
   EggGroupNode(const EggGroupNode &copy);
   EggGroupNode &operator = (const EggGroupNode &copy);
   virtual ~EggGroupNode();

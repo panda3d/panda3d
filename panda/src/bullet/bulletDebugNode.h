@@ -23,9 +23,8 @@
  *
  */
 class EXPCL_PANDABULLET BulletDebugNode : public PandaNode {
-
 PUBLISHED:
-  BulletDebugNode(const char *name="debug");
+  explicit BulletDebugNode(const char *name="debug");
   INLINE ~BulletDebugNode();
 
   virtual void draw_mask_changed();

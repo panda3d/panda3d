@@ -321,7 +321,7 @@ PUBLISHED:
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
 
 PUBLISHED:
-  static PT(PandaNode) decode_from_bam_stream(const string &data, BamReader *reader = NULL);
+  static PT(PandaNode) decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 protected:
   class BoundsData;

@@ -41,6 +41,7 @@ import sys
 COMPILER=0
 INSTALLER=0
 WHEEL=0
+RUNTESTS=0
 GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
@@ -128,6 +129,7 @@ def usage(problem):
     print("  --help            (print the help message you're reading now)")
     print("  --verbose         (print out more information)")
     print("  --runtime         (build a runtime build instead of an SDK build)")
+    print("  --tests           (run the test suite)")
     print("  --installer       (build an installer)")
     print("  --wheel           (build a pip-installable .whl)")
     print("  --optimize X      (optimization level can be 1,2,3,4)")
@@ -165,12 +167,12 @@ def usage(problem):
     os._exit(1)
 
 def parseopts(args):
-    global INSTALLER,WHEEL,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
+    global INSTALLER,WHEEL,RUNTESTS,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
-        "help","distributor=","verbose","runtime","osxtarget=",
+        "help","distributor=","verbose","runtime","osxtarget=","tests",
         "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
@@ -194,6 +196,7 @@ def parseopts(args):
             if (option=="--help"): raise Exception
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--tests"): RUNTESTS=1
             elif (option=="--wheel"): WHEEL=1
             elif (option=="--verbose"): SetVerbose(True)
             elif (option=="--distributor"): DISTRIBUTOR=value
@@ -316,12 +319,14 @@ def parseopts(args):
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
             print("No MSVC version specified. Defaulting to 10 (Visual Studio 2010).")
-            MSVC_VERSION = 10
-
-        try:
-            MSVC_VERSION = int(MSVC_VERSION)
-        except:
-            usage("Invalid setting for --msvc-version")
+            MSVC_VERSION = (10, 0)
+        else:
+            try:
+                MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
+                if (len(MSVC_VERSION) == 1):
+                    MSVC_VERSION += (0,)
+            except:
+                usage("Invalid setting for --msvc-version")
 
         if not WINDOWS_SDK:
             print("No Windows SDK version specified. Defaulting to '7.1'.")
@@ -369,7 +374,8 @@ if VERSION is None:
     if RUNTIME:
         VERSION = PLUGIN_VERSION
     else:
-        VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
+        # Take the value from the setup.cfg file.
+        VERSION = GetMetadataValue('version')
 
 if WHLVERSION is None:
     WHLVERSION = VERSION
@@ -635,7 +641,7 @@ if (COMPILER == "MSVC"):
             #LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
 
-            if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+            if SDK.get("VISUALSTUDIO_VERSION") >= (14,0):
                 # dxerr needs this for __vsnwprintf definition.
                 LibName(pkg, 'legacy_stdio_definitions.lib')
 
@@ -702,7 +708,9 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    GetThirdpartyDir() + "nvidiacg/lib/cgD3D9.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", GetThirdpartyDir() + "nvidiacg/lib/cg.lib")
     if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
-    if (PkgSkip("HARFBUZZ")==0): LibName("HARFBUZZ", GetThirdpartyDir() + "harfbuzz/lib/harfbuzz.lib")
+    if (PkgSkip("HARFBUZZ")==0):
+        LibName("HARFBUZZ", GetThirdpartyDir() + "harfbuzz/lib/harfbuzz.lib")
+        IncDirectory("HARFBUZZ", GetThirdpartyDir() + "harfbuzz/include/harfbuzz")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",GetThirdpartyDir() + "artoolkit/lib/libAR.lib")
@@ -1147,7 +1155,7 @@ def CompileCxx(obj,src,opts):
             # We still target Windows XP.
             cmd += "/DWINVER=0x501 "
             # Work around a WinXP/2003 bug when using VS 2015+.
-            if SDK.get("VISUALSTUDIO_VERSION") == '14.0':
+            if SDK.get("VISUALSTUDIO_VERSION") >= (14,0):
                 cmd += "/Zc:threadSafeInit- "
 
             cmd += "/Fo" + obj + " /nologo /c"
@@ -1188,7 +1196,7 @@ def CompileCxx(obj,src,opts):
             if GetTargetArch() == 'x64':
                 cmd += " /DWIN64_VC /DWIN64"
 
-            if WINDOWS_SDK.startswith('7.') and MSVC_VERSION > 10:
+            if WINDOWS_SDK.startswith('7.') and MSVC_VERSION > (10,):
                 # To preserve Windows XP compatibility.
                 cmd += " /D_USING_V110_SDK71_"
 
@@ -2768,7 +2776,9 @@ for basename in del_files:
 
 # Write an appropriate panda3d/__init__.py
 p3d_init = """"Python bindings for the Panda3D libraries"
-"""
+
+__version__ = '%s'
+""" % (WHLVERSION)
 
 if GetTarget() == 'windows':
     p3d_init += """
@@ -3070,9 +3080,13 @@ if tp_dir is not None:
 
 # Copy over the MSVC runtime.
 if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
-    vcver = SDK["VISUALSTUDIO_VERSION"].replace('.', '')
-    crtname = "Microsoft.VC%s.CRT" % (vcver)
-    dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "redist", GetTargetArch(), crtname)
+    vsver = "%s%s" % SDK["VISUALSTUDIO_VERSION"]
+    vcver = "%s%s" % (SDK["MSVC_VERSION"][0], 0)        # ignore minor version.
+    crtname = "Microsoft.VC%s.CRT" % (vsver)
+    if ("VCTOOLSVERSION" in SDK):
+        dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "Redist", "MSVC", SDK["VCTOOLSVERSION"], "onecore", GetTargetArch(), crtname)
+    else:
+        dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "redist", GetTargetArch(), crtname)
 
     if os.path.isfile(os.path.join(dir, "msvcr" + vcver + ".dll")):
         CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcr" + vcver + ".dll"))
@@ -6801,6 +6815,16 @@ try:
 except:
     SaveDependencyCache()
     raise
+
+# Run the test suite.
+if RUNTESTS:
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
+    if sys.version_info >= (2, 6):
+        cmdstr += " -B"
+    cmdstr += " -m pytest tests"
+    if GetVerbose():
+        cmdstr += " --verbose"
+    oscmd(cmdstr)
 
 ##########################################################################################
 #

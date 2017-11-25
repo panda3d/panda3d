@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightLensNode {
 PUBLISHED:
-  DirectionalLight(const string &name);
+  explicit DirectionalLight(const string &name);
 
 protected:
   DirectionalLight(const DirectionalLight &copy);

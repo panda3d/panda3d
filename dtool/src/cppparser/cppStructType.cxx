@@ -436,6 +436,17 @@ is_copy_constructible() const {
 }
 
 /**
+ * Returns true if the type is copy-assignable.
+ */
+bool CPPStructType::
+is_copy_assignable() const {
+  if (is_abstract()) {
+    return false;
+  }
+  return is_copy_assignable(V_public);
+}
+
+/**
  * Returns true if the type is destructible.
  */
 bool CPPStructType::
@@ -604,6 +615,97 @@ is_move_constructible(CPPVisibility min_vis) const {
   }
 
   return is_copy_constructible(min_vis);
+}
+
+/**
+ * Returns true if the type is copy-assignable, without checking whether the
+ * class is abstract.
+ */
+bool CPPStructType::
+is_copy_assignable(CPPVisibility min_vis) const {
+  CPPInstance *assignment_operator = get_copy_assignment_operator();
+  if (assignment_operator != (CPPInstance *)NULL) {
+    // It has a copy assignment operator.
+    if (assignment_operator->_vis > min_vis) {
+      // Inaccessible copy assignment operator.
+      return false;
+    }
+
+    if (assignment_operator->_storage_class & CPPInstance::SC_deleted) {
+      // Deleted copy assignment operator.
+      return false;
+    }
+
+    // NB: if it's defaulted, it may still be deleted.
+    if ((assignment_operator->_storage_class & CPPInstance::SC_defaulted) == 0) {
+      return true;
+    }
+  }
+
+  // Implicit copy assignment operator.  Check if the implicit or defaulted
+  // copy assignment operator is deleted.
+  if (!assignment_operator && (get_move_constructor() || get_move_assignment_operator())) {
+    // It's not explicitly defaulted, and there is a move constructor or move
+    // assignment operator, so the implicitly-declared one is deleted.
+    return false;
+  }
+
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL) {
+      if (!base->is_copy_assignable(V_protected)) {
+        return false;
+      }
+    }
+  }
+
+  // Make sure all members are assignable.
+  CPPScope::Variables::const_iterator vi;
+  for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
+    CPPInstance *instance = (*vi).second;
+    assert(instance != NULL);
+
+    if (instance->_storage_class & CPPInstance::SC_static) {
+      // Static members don't count.
+      continue;
+    }
+
+    if (!instance->_type->is_copy_assignable()) {
+      // Const or reference member, can't do it.
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Returns true if the type is move-assignable.
+ */
+bool CPPStructType::
+is_move_assignable(CPPVisibility min_vis) const {
+  CPPInstance *assignment_operator = get_move_assignment_operator();
+  if (assignment_operator != (CPPInstance *)NULL) {
+    // It has a user-declared move assignment_operator.
+    if (assignment_operator->_vis > min_vis) {
+      // Inaccessible move assignment_operator.
+      return false;
+    }
+
+    if (assignment_operator->_storage_class & CPPInstance::SC_deleted) {
+      // It is deleted.
+      return false;
+    }
+
+    if (is_abstract()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  return is_copy_assignable(min_vis);
 }
 
 /**
@@ -879,6 +981,80 @@ get_move_constructor() const {
     assert(ftype != (CPPFunctionType *)NULL);
 
     if ((ftype->_flags & CPPFunctionType::F_move_constructor) != 0) {
+      return inst;
+    }
+  }
+
+  return (CPPInstance *)NULL;
+}
+
+/**
+ * Returns the assignment operator defined for the struct type, if any, or
+ * NULL if no assignment operator is found.
+ */
+CPPFunctionGroup *CPPStructType::
+get_assignment_operator() const {
+  // Just look for the function with the name "operator ="
+  CPPScope::Functions::const_iterator fi;
+  fi = _scope->_functions.find("operator =");
+  if (fi != _scope->_functions.end()) {
+    return fi->second;
+  } else {
+    return (CPPFunctionGroup *)NULL;
+  }
+}
+
+/**
+ * Returns the copy assignment operator defined for the struct type, or NULL
+ * if no user-declared copy assignment operator exists.
+ */
+CPPInstance *CPPStructType::
+get_copy_assignment_operator() const {
+  CPPFunctionGroup *fgroup = get_assignment_operator();
+  if (fgroup == (CPPFunctionGroup *)NULL) {
+    return (CPPInstance *)NULL;
+  }
+
+  CPPFunctionGroup::Instances::const_iterator ii;
+  for (ii = fgroup->_instances.begin();
+       ii != fgroup->_instances.end();
+       ++ii) {
+    CPPInstance *inst = (*ii);
+    assert(inst->_type != (CPPType *)NULL);
+
+    CPPFunctionType *ftype = inst->_type->as_function_type();
+    assert(ftype != (CPPFunctionType *)NULL);
+
+    if ((ftype->_flags & CPPFunctionType::F_copy_assignment_operator) != 0) {
+      return inst;
+    }
+  }
+
+  return (CPPInstance *)NULL;
+}
+
+/**
+ * Returns the move assignment operator defined for the struct type, or NULL
+ * if no user-declared move assignment operator exists.
+ */
+CPPInstance *CPPStructType::
+get_move_assignment_operator() const {
+  CPPFunctionGroup *fgroup = get_assignment_operator();
+  if (fgroup == (CPPFunctionGroup *)NULL) {
+    return (CPPInstance *)NULL;
+  }
+
+  CPPFunctionGroup::Instances::const_iterator ii;
+  for (ii = fgroup->_instances.begin();
+       ii != fgroup->_instances.end();
+       ++ii) {
+    CPPInstance *inst = (*ii);
+    assert(inst->_type != (CPPType *)NULL);
+
+    CPPFunctionType *ftype = inst->_type->as_function_type();
+    assert(ftype != (CPPFunctionType *)NULL);
+
+    if ((ftype->_flags & CPPFunctionType::F_move_assignment_operator) != 0) {
       return inst;
     }
   }

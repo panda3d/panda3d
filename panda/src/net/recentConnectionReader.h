@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_NET RecentConnectionReader : public ConnectionReader {
 PUBLISHED:
-  RecentConnectionReader(ConnectionManager *manager);
+  explicit RecentConnectionReader(ConnectionManager *manager);
   virtual ~RecentConnectionReader();
 
   bool data_available();

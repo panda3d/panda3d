@@ -35,7 +35,7 @@ public:
   ALLOC_DELETED_CHAIN(AnimateVerticesRequest);
 
 PUBLISHED:
-  INLINE AnimateVerticesRequest(GeomVertexData *geom_vertex_data);
+  INLINE explicit AnimateVerticesRequest(GeomVertexData *geom_vertex_data);
 
   INLINE bool is_ready() const;
 

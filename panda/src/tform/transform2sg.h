@@ -27,7 +27,7 @@
  */
 class EXPCL_PANDA_TFORM Transform2SG : public DataNode {
 PUBLISHED:
-  Transform2SG(const string &name);
+  explicit Transform2SG(const string &name);
 
   void set_node(PandaNode *node);
   PandaNode *get_node() const;

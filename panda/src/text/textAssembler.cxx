@@ -1411,9 +1411,8 @@ assemble_row(TextAssembler::TextRow &row,
 
   bool underscore = false;
   PN_stdfloat underscore_start = 0.0f;
-  const TextProperties *underscore_properties = NULL;
-
-  const ComputedProperties *prev_cprops;
+  const TextProperties *underscore_properties = nullptr;
+  const ComputedProperties *prev_cprops = nullptr;
 
 #ifdef HAVE_HARFBUZZ
   hb_buffer_t *harfbuff = nullptr;
@@ -1697,6 +1696,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
       break;
     }
   }
+  hb_buffer_set_content_type(buf, HB_BUFFER_CONTENT_TYPE_UNICODE);
   hb_buffer_set_direction(buf, direction);
   hb_buffer_guess_segment_properties(buf);
 

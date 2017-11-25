@@ -60,7 +60,7 @@ class DisplayRegion;
  */
 class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherBase {
 PUBLISHED:
-  MouseWatcher(const string &name = "");
+  explicit MouseWatcher(const string &name = "");
   ~MouseWatcher();
 
   bool remove_region(MouseWatcherRegion *region);

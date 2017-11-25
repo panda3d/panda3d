@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES ComputeNode : public PandaNode {
 PUBLISHED:
-  ComputeNode(const string &name);
+  explicit ComputeNode(const string &name);
 
   INLINE void add_dispatch(const LVecBase3i &num_groups);
   INLINE void add_dispatch(int num_groups_x, int num_groups_y, int num_groups_z);

@@ -25,7 +25,7 @@
 class EXPCL_PANDA_GOBJ PerspectiveLens : public Lens {
 PUBLISHED:
   INLINE PerspectiveLens();
-  INLINE PerspectiveLens(PN_stdfloat hfov, PN_stdfloat vfov);
+  INLINE explicit PerspectiveLens(PN_stdfloat hfov, PN_stdfloat vfov);
 
 public:
   INLINE PerspectiveLens(const PerspectiveLens &copy);

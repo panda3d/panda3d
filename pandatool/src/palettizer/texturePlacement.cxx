@@ -740,25 +740,61 @@ fill_image(PNMImage &image) {
   for (int y = _placed._y; y < _placed._y + _placed._y_size; y++) {
     int sy = y - top;
 
-    if (_placed._wrap_v == EggTexture::WM_clamp) {
+    switch (_placed._wrap_v) {
+    case EggTexture::WM_clamp:
       // Clamp at [0, y_size).
       sy = max(min(sy, y_size - 1), 0);
+      break;
 
-    } else {
+    case EggTexture::WM_mirror:
+      sy = (sy < 0) ? (y_size * 2) - 1 - ((-sy - 1) % (y_size * 2)) : sy % (y_size * 2);
+      sy = (sy < y_size) ? sy : 2 * y_size - sy - 1;
+      break;
+
+    case EggTexture::WM_mirror_once:
+      sy = (sy < y_size) ? sy : 2 * y_size - sy - 1;
+      // Fall through
+
+    case EggTexture::WM_border_color:
+      if (sy < 0 || sy >= y_size) {
+        continue;
+      }
+      break;
+
+    default:
       // Wrap: sign-independent modulo.
       sy = (sy < 0) ? y_size - 1 - ((-sy - 1) % y_size) : sy % y_size;
+      break;
     }
 
     for (int x = _placed._x; x < _placed._x + _placed._x_size; x++) {
       int sx = x - left;
 
-      if (_placed._wrap_u == EggTexture::WM_clamp) {
+      switch (_placed._wrap_u) {
+      case EggTexture::WM_clamp:
         // Clamp at [0, x_size).
         sx = max(min(sx, x_size - 1), 0);
+        break;
 
-      } else {
+      case EggTexture::WM_mirror:
+        sx = (sx < 0) ? (x_size * 2) - 1 - ((-sx - 1) % (x_size * 2)) : sx % (x_size * 2);
+        sx = (sx < x_size) ? sx : 2 * x_size - sx - 1;
+        break;
+
+      case EggTexture::WM_mirror_once:
+        sx = (sx >= 0) ? sx : ~sx;
+        // Fall through
+
+      case EggTexture::WM_border_color:
+        if (sx < 0 || sx >= x_size) {
+          continue;
+        }
+        break;
+
+      default:
         // Wrap: sign-independent modulo.
         sx = (sx < 0) ? x_size - 1 - ((-sx - 1) % x_size) : sx % x_size;
+        break;
       }
 
       image.set_xel(x, y, source.get_xel(sx, sy));

@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDAEGG EggPolygon : public EggPrimitive {
 PUBLISHED:
-  INLINE EggPolygon(const string &name = "");
+  INLINE explicit EggPolygon(const string &name = "");
   INLINE EggPolygon(const EggPolygon &copy);
   INLINE EggPolygon &operator = (const EggPolygon &copy);
 

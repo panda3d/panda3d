@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDAEXPRESS TemporaryFile : public FileReference {
 PUBLISHED:
-  INLINE TemporaryFile(const Filename &filename);
+  INLINE explicit TemporaryFile(const Filename &filename);
   virtual ~TemporaryFile();
 
 public:

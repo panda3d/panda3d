@@ -67,7 +67,7 @@ PUBLISHED:
     S_per_vertex
   };
 
-  INLINE EggPrimitive(const string &name = "");
+  INLINE explicit EggPrimitive(const string &name = "");
   INLINE EggPrimitive(const EggPrimitive &copy);
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
   INLINE ~EggPrimitive();

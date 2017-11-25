@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggPatch : public EggPrimitive {
 PUBLISHED:
-  INLINE EggPatch(const string &name = "");
+  INLINE explicit EggPatch(const string &name = "");
   INLINE EggPatch(const EggPatch &copy);
   INLINE EggPatch &operator = (const EggPatch &copy);
 

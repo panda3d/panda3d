@@ -34,9 +34,16 @@ addons:
     - nvidia-cg-toolkit
     - python-dev
     - python3-dev
+    - python-virtualenv
     - zlib1g-dev
     - fakeroot
-script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
+install:
+    - virtualenv --python=$PYTHONV venv && source venv/bin/activate
+    - $PYTHONV -m pip install pytest
+script:
+    - $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4
+    - LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
+    - LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV -m pytest tests
 notifications:
   irc:
     channels:

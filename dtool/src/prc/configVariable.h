@@ -35,7 +35,7 @@ protected:
                         const string &description, int flags);
 
 PUBLISHED:
-  INLINE ConfigVariable(const string &name);
+  INLINE explicit ConfigVariable(const string &name);
   INLINE ~ConfigVariable();
 
   INLINE const string &get_string_value() const;

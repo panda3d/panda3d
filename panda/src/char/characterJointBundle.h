@@ -30,7 +30,7 @@ protected:
   INLINE CharacterJointBundle(const CharacterJointBundle &copy);
 
 PUBLISHED:
-  CharacterJointBundle(const string &name = "");
+  explicit CharacterJointBundle(const string &name = "");
   virtual ~CharacterJointBundle();
 
 PUBLISHED:

@@ -27,7 +27,7 @@
  */
 class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
 PUBLISHED:
-  PhysicalNode(const string &name);
+  explicit PhysicalNode(const string &name);
   INLINE void clear();
   INLINE Physical *get_physical(size_t index) const;
   INLINE size_t get_num_physicals() const;

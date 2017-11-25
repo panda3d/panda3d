@@ -70,7 +70,7 @@ PUBLISHED:
     Files _files;
   };
 
-  Loader(const string &name = "loader");
+  explicit Loader(const string &name = "loader");
 
   INLINE void set_task_manager(AsyncTaskManager *task_manager);
   INLINE AsyncTaskManager *get_task_manager() const;

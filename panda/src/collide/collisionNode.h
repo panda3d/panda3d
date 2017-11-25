@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionNode : public PandaNode {
 PUBLISHED:
-  CollisionNode(const string &name);
+  explicit CollisionNode(const string &name);
 
 protected:
   CollisionNode(const CollisionNode &copy);

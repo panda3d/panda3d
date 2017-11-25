@@ -25,10 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPH NodePathCollection {
 PUBLISHED:
-  NodePathCollection();
-  NodePathCollection(const NodePathCollection &copy);
-  void operator = (const NodePathCollection &copy);
-  INLINE ~NodePathCollection();
+  NodePathCollection() DEFAULT_CTOR;
 
 #ifdef HAVE_PYTHON
   EXTENSION(NodePathCollection(PyObject *self, PyObject *sequence));

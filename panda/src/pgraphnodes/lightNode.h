@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES LightNode : public Light, public PandaNode {
 PUBLISHED:
-  LightNode(const string &name);
+  explicit LightNode(const string &name);
 
 protected:
   LightNode(const LightNode &copy);

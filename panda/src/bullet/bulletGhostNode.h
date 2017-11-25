@@ -29,9 +29,8 @@ class BulletShape;
  *
  */
 class EXPCL_PANDABULLET BulletGhostNode : public BulletBodyNode {
-
 PUBLISHED:
-  BulletGhostNode(const char *name="ghost");
+  explicit BulletGhostNode(const char *name="ghost");
   INLINE ~BulletGhostNode();
 
   // Overlapping
