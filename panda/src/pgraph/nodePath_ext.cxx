@@ -130,7 +130,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   }
 
   // Start by getting this class object.
-  PyObject *this_class = PyObject_Type(self);
+  PyObject *this_class = (PyObject *)Py_TYPE(self);
   if (this_class == NULL) {
     return NULL;
   }
@@ -143,7 +143,6 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream_persist");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream_persist()");
-      Py_DECREF(this_class);
       return NULL;
     }
 
@@ -153,15 +152,13 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream()");
-      Py_DECREF(this_class);
       return NULL;
     }
   }
 
   // PyTuple_SET_ITEM conveniently borrows the reference it is passed.
-  PyObject *args = PyTuple_New(2);
-  PyTuple_SET_ITEM(args, 0, this_class);
-  PyTuple_SET_ITEM(args, 1, Dtool_WrapValue(bam_stream));
+  PyObject *args = PyTuple_New(1);
+  PyTuple_SET_ITEM(args, 0, Dtool_WrapValue(bam_stream));
 
   PyObject *tuple = PyTuple_New(2);
   PyTuple_SET_ITEM(tuple, 0, func);
