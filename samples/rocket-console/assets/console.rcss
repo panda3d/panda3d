@@ -1,0 +1,38 @@
+body
+{
+    font-family: "Perfect DOS VGA 437";
+    font-weight: normal;
+    font-style: normal;
+
+    // use all the allocated texture space
+    min-width: 100%;
+    min-height: 100%;
+
+    background-color: #000;
+}
+
+
+text#content
+{
+    z-index: 2;
+    font-size: 30px;
+
+    white-space: pre-wrap;
+
+    margin: auto;
+
+    text-align: left;
+    position: absolute;
+
+    // account for non-proportionality of our 1024x512
+    // buffer compared with VGA font proportions and
+    // wanting to center the screen with 40 columns
+    top: 16px;
+    left: 32px;
+
+    width: 100%;
+    height: 100%;
+
+    color: #888;
+
+}

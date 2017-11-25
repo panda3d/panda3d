@@ -63,7 +63,7 @@ PUBLISHED:
 
   // Debug
   INLINE void set_debug_node(BulletDebugNode *node);
-  INLINE void clear_debug_node();
+  void clear_debug_node();
   INLINE BulletDebugNode *get_debug_node() const;
   INLINE bool has_debug_node() const;
 
@@ -208,7 +208,6 @@ private:
 
   static PStatCollector _pstat_physics;
   static PStatCollector _pstat_simulation;
-  static PStatCollector _pstat_debug;
   static PStatCollector _pstat_p2b;
   static PStatCollector _pstat_b2p;
 

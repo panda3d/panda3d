@@ -495,9 +495,15 @@ struct Dtool_SeqMapWrapper {
   objobjargproc _map_setitem_func;
 };
 
+struct Dtool_GeneratorWrapper {
+  Dtool_WrapperBase _base;
+  iternextfunc _iternext_func;
+};
+
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SequenceWrapper_Type;
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MappingWrapper_Type;
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SeqMapWrapper_Type;
+EXPCL_INTERROGATEDB extern PyTypeObject Dtool_GeneratorWrapper_Type;
 EXPCL_INTERROGATEDB extern PyTypeObject Dtool_StaticProperty_Type;
 
 EXPCL_INTERROGATEDB PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);

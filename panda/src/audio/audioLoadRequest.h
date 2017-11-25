@@ -42,6 +42,8 @@ PUBLISHED:
   INLINE bool is_ready() const;
   INLINE AudioSound *get_sound() const;
 
+  INLINE AudioSound *result() const;
+
 protected:
   virtual DoneStatus do_task();
 

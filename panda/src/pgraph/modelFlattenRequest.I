@@ -34,7 +34,7 @@ get_orig() const {
 /**
  * Returns true if this request has completed, false if it is still pending.
  * When this returns true, you may retrieve the model loaded by calling
- * get_result().
+ * result().
  */
 INLINE bool ModelFlattenRequest::
 is_ready() const {
@@ -47,6 +47,20 @@ is_ready() const {
  */
 INLINE PandaNode *ModelFlattenRequest::
 get_model() const {
-  nassertr(_is_ready, NULL);
+  nassertr(_is_ready, nullptr);
   return _model;
+}
+
+/**
+ * Returns the flattened copy of the model wrapped in a NodePath.  It is an
+ * error to call this unless is_ready() returns true.
+ */
+INLINE NodePath ModelFlattenRequest::
+result() const {
+  nassertr(_is_ready, NodePath::fail());
+  if (_model != nullptr) {
+    return NodePath(_model);
+  } else {
+    return NodePath::fail();
+  }
 }

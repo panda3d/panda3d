@@ -44,6 +44,7 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _frame_sync(false),
   _num_busy_threads(0),
   _num_tasks(0),
+  _num_awaiting_tasks(0),
   _state(S_initial),
   _current_sort(-INT_MAX),
   _pickup_mode(false),
@@ -726,6 +727,13 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           }
           break;
 
+        case AsyncTask::DS_await:
+          // The task wants to wait for another one to finish.
+          task->_state = AsyncTask::S_awaiting;
+          _cvar.notify_all();
+          ++_num_awaiting_tasks;
+          break;
+
         default:
           // The task has finished.
           cleanup_task(task, true, true);
@@ -774,6 +782,20 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   --(_manager->_num_tasks);
 
   _manager->remove_task_by_name(task);
+
+  // Activate the tasks that were waiting for this one to finish.
+  if (upon_death) {
+    pvector<PT(AsyncTask)>::iterator it;
+    for (it = task->_waiting_tasks.begin(); it != task->_waiting_tasks.end(); ++it) {
+      AsyncTask *task = *it;
+      // Note that this task may not be on the same task chain.
+      nassertd(task->_manager == _manager) continue;
+      task->_state = AsyncTask::S_active;
+      task->_chain->_active.push_back(task);
+      --task->_chain->_num_awaiting_tasks;
+    }
+    task->_waiting_tasks.clear();
+  }
 
   if (upon_death) {
     _manager->_lock.release();
@@ -899,7 +921,7 @@ finish_sort_group() {
     filter_timeslice_priority();
   }
 
-  nassertr((size_t)_num_tasks == _active.size() + _this_active.size() + _next_active.size() + _sleeping.size(), true);
+  nassertr((size_t)_num_tasks == _active.size() + _this_active.size() + _next_active.size() + _sleeping.size() + (size_t)_num_awaiting_tasks, true);
   make_heap(_active.begin(), _active.end(), AsyncTaskSortPriority());
 
   _current_sort = -INT_MAX;

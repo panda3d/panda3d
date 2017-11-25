@@ -162,7 +162,7 @@ Reporting Issues
 If you encounter any bugs when using Panda3D, please report them in the bug
 tracker.  This is hosted at:
 
-  https://bugs.launchpad.net/panda3d
+  https://github.com/panda3d/panda3d/issues
 
 Make sure to first use the search function to see if the bug has already been
 reported.  When filling out a bug report, make sure that you include as much
