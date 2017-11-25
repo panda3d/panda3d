@@ -22,6 +22,17 @@ if 'basestring' not in globals():
     basestring = str
 
 
+def egg2bam(srcpath, dstpath):
+    dstpath = dstpath + '.bam'
+    subprocess.call([
+        'egg2bam',
+        '-o',
+        dstpath,
+        srcpath
+    ])
+    return dstpath
+
+
 class build_apps(distutils.core.Command):
     description = 'build Panda3D applications'
     user_options = [
@@ -44,7 +55,7 @@ class build_apps(distutils.core.Command):
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
         self.build_scripts= {
-            '.egg': ('.egg.bam', 'egg2bam -o {1} {0}'),
+            '.egg': egg2bam,
         }
         self.exclude_dependencies = [
             # Windows
@@ -371,14 +382,11 @@ class build_apps(distutils.core.Command):
             ext = os.path.splitext(src)[1]
             if not ext:
                 ext = os.path.basename(src)
-            dst_root = os.path.splitext(dst)[0]
 
             if ext in self.build_scripts:
-                dst_ext, script = self.build_scripts[ext]
-                dst = dst_root + dst_ext
-                script = script.format(src, dst)
-                self.announce('using script: {}'.format(script))
-                subprocess.call(script.split())
+                buildscript = self.build_scripts[ext]
+                self.announce('running {} on src ({})'.format(buildscript.__name__, src))
+                dst = self.build_scripts[ext](src, dst)
             else:
                 self.announce('copying {0} -> {1}'.format(src, dst))
                 shutil.copyfile(src, dst)
