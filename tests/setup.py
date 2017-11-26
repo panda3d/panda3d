@@ -22,7 +22,7 @@ setup(
                     'pkg_resources._vendor.packaging.requirements',
                 ] + pytest.freeze_includes(),
             },
-            'deploy_platforms': [
+            'platforms': [
                 'manylinux1_x86_64',
                 'macosx_10_6_x86_64',
                 'win32',

@@ -4,7 +4,7 @@ setup(
     name="asteroids",
     options = {
         'build_apps': {
-            'include_paths': [
+            'include_patterns': [
                 '*.png',
                 '*.jpg',
                 '*.egg',
@@ -16,7 +16,7 @@ setup(
                 'pandagl',
                 'p3openal_audio',
             ],
-            'deploy_platforms': [
+            'platforms': [
                 'manylinux1_x86_64',
                 'macosx_10_6_x86_64',
                 'win32',

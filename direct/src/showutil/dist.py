@@ -46,11 +46,11 @@ class build_apps(distutils.core.Command):
         self.console_apps = {}
         self.copy_paths = []
         self.rename_paths = {}
-        self.include_paths = []
-        self.exclude_paths = []
+        self.include_patterns = []
+        self.exclude_patterns = []
         self.include_modules = {}
         self.exclude_modules = {}
-        self.deploy_platforms = []
+        self.platforms = []
         self.plugins = []
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
@@ -111,8 +111,8 @@ class build_apps(distutils.core.Command):
 
         self.rename_paths = _parse_dict(self.rename_paths)
         self.copy_paths = _parse_list(self.copy_paths)
-        self.include_paths = _parse_list(self.include_paths)
-        self.exclude_paths = _parse_list(self.exclude_paths)
+        self.include_patterns = _parse_list(self.include_patterns)
+        self.exclude_patterns = _parse_list(self.exclude_patterns)
         self.include_modules = _parse_list(self.include_modules)
         self.exclude_modules = _parse_list(self.exclude_modules)
         self.plugins = _parse_list(self.plugins)
@@ -123,18 +123,18 @@ class build_apps(distutils.core.Command):
             else:
                 src, _ = path
             assert os.path.exists(src), 'Copy path source does not exist: {}'.format(src)
-        assert self.deploy_platforms, 'At least one deploy platform must be defined'
+        assert self.platforms, 'At least one deploy platform must be defined'
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
 
     def run(self):
-        if not self.deploy_platforms:
+        if not self.platforms:
             platforms = [p3d.PandaSystem.get_platform()]
             use_wheels = False
-        elif isinstance(self.deploy_platforms, basestring):
-            platforms = [self.deploy_platforms]
+        elif isinstance(self.platforms, basestring):
+            platforms = [self.platforms]
             use_wheels = True
         else:
-            platforms = self.deploy_platforms
+            platforms = self.platforms
             use_wheels = True
         self.announce('Building platforms: {0}'.format(','.join(platforms)), distutils.log.INFO)
 
@@ -349,10 +349,10 @@ class build_apps(distutils.core.Command):
             '*.pyc',
             '*.py',
         ]
-        ignore_copy_list += self.exclude_paths
+        ignore_copy_list += self.exclude_patterns
         ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
 
-        include_copy_list = [p3d.GlobPattern(i) for i in self.include_paths]
+        include_copy_list = [p3d.GlobPattern(i) for i in self.include_patterns]
 
         def check_pattern(src, pattern_list):
             # Normalize file paths across platforms
@@ -673,10 +673,10 @@ class bdist_apps(distutils.core.Command):
 
     def run(self):
         build_cmd = self.get_finalized_command('build_apps')
-        if not build_cmd.deploy_platforms:
+        if not build_cmd.platforms:
             platforms = [p3d.PandaSystem.get_platform()]
         else:
-            platforms = build_cmd.deploy_platforms
+            platforms = build_cmd.platforms
         build_base = build_cmd.build_base
 
         self.run_command('build_apps')
