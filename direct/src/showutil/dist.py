@@ -22,7 +22,7 @@ if 'basestring' not in globals():
     basestring = str
 
 
-def egg2bam(srcpath, dstpath):
+def egg2bam(_build_cmd, srcpath, dstpath):
     dstpath = dstpath + '.bam'
     subprocess.call([
         'egg2bam',
@@ -54,7 +54,7 @@ class build_apps(distutils.core.Command):
         self.plugins = []
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
-        self.build_scripts= {
+        self.build_callbacks= {
             '.egg': egg2bam,
         }
         self.exclude_dependencies = [
@@ -385,7 +385,7 @@ class build_apps(distutils.core.Command):
             if ext in self.build_scripts:
                 buildscript = self.build_scripts[ext]
                 self.announce('running {} on src ({})'.format(buildscript.__name__, src))
-                dst = self.build_scripts[ext](src, dst)
+                dst = self.build_scripts[ext](self, src, dst)
             else:
                 self.announce('copying {0} -> {1}'.format(src, dst))
                 shutil.copyfile(src, dst)
