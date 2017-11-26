@@ -123,7 +123,6 @@ class build_apps(distutils.core.Command):
             else:
                 src, _ = path
             assert os.path.exists(src), 'Copy path source does not exist: {}'.format(src)
-        assert self.platforms, 'At least one deploy platform must be defined'
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
 
     def run(self):
