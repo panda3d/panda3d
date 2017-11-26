@@ -651,9 +651,11 @@ if (COMPILER == "MSVC"):
         DefSymbol("WX",     "_UNICODE", "")
         DefSymbol("WX",     "UNICODE", "")
     if (PkgSkip("VORBIS")==0):
-        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libogg_static.lib")
-        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbis_static.lib")
-        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbisfile_static.lib")
+        for lib in ('ogg', 'vorbis', 'vorbisfile'):
+            path = GetThirdpartyDir() + "vorbis/lib/lib{0}_static.lib".format(lib)
+            if not os.path.isfile(path):
+                path = GetThirdpartyDir() + "vorbis/lib/{0}.lib".format(lib)
+            LibName("VORBIS", path)
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
