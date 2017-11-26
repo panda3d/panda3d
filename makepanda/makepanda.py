@@ -705,9 +705,9 @@ if (COMPILER == "MSVC"):
         DefSymbol("WX",     "_UNICODE", "")
         DefSymbol("WX",     "UNICODE", "")
     if (PkgSkip("VORBIS")==0):
-        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libogg_static.lib")
-        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbis_static.lib")
-        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbisfile_static.lib")
+        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/ogg.lib")
+        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/vorbis.lib")
+        LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/vorbisfile.lib")
     if (PkgSkip("OPUS")==0):
         LibName("OPUS", GetThirdpartyDir() + "opus/lib/libogg_static.lib")
         LibName("OPUS", GetThirdpartyDir() + "opus/lib/libopus_static.lib")
