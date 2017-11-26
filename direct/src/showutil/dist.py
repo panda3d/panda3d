@@ -54,7 +54,7 @@ class build_apps(distutils.core.Command):
         self.plugins = []
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
-        self.build_callbacks= {
+        self.file_handlers= {
             '.egg': egg2bam,
         }
         self.exclude_dependencies = [
@@ -382,10 +382,10 @@ class build_apps(distutils.core.Command):
             if not ext:
                 ext = os.path.basename(src)
 
-            if ext in self.build_scripts:
-                buildscript = self.build_scripts[ext]
+            if ext in self.file_handlers:
+                buildscript = self.file_handlers[ext]
                 self.announce('running {} on src ({})'.format(buildscript.__name__, src))
-                dst = self.build_scripts[ext](self, src, dst)
+                dst = self.file_handlers[ext](self, src, dst)
             else:
                 self.announce('copying {0} -> {1}'.format(src, dst))
                 shutil.copyfile(src, dst)
