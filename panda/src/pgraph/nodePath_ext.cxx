@@ -27,6 +27,7 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3d;
 extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 #endif
 extern struct Dtool_PyTypedObject Dtool_NodePath;
+extern struct Dtool_PyTypedObject Dtool_PandaNode;
 #endif  // CPPPARSER
 
 /**
@@ -164,6 +165,30 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   PyTuple_SET_ITEM(tuple, 0, func);
   PyTuple_SET_ITEM(tuple, 1, args);
   return tuple;
+}
+
+/**
+ * Returns the associated node's tags.
+ */
+PyObject *Extension<NodePath>::
+get_tags() const {
+  // An empty NodePath returns None
+  if (_this->is_empty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  // Just call PandaNode.tags rather than defining a whole new interface.
+  PT(PandaNode) node = _this->node();
+  PyObject *py_node = DTool_CreatePyInstanceTyped
+    ((void *)node.p(), Dtool_PandaNode, true, false, node->get_type_index());
+
+  // DTool_CreatePyInstanceTyped() steals a C++ reference.
+  node.cheat() = nullptr;
+
+  PyObject *result = PyObject_GetAttrString(py_node, "tags");
+  Py_DECREF(py_node);
+  return result;
 }
 
 /**

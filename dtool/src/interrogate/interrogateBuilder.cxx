@@ -1824,20 +1824,17 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   // If we have a length function (ie. this is a sequence property), we should
   // find the function that will give us the length.
   FunctionIndex length_function = 0;
-  if (make_property->_type & CPPMakeProperty::T_sequence) {
+  CPPFunctionGroup *fgroup = make_property->_length_function;
+  if (fgroup != nullptr) {
     CPPFunctionGroup::Instances::const_iterator fi;
-    CPPFunctionGroup *fgroup = make_property->_length_function;
-    if (fgroup != NULL) {
-      for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
-        CPPInstance *function = (*fi);
-        CPPFunctionType *ftype =
-          function->_type->as_function_type();
-        if (ftype != NULL) {
-          length_function = get_function(function, "", struct_type,
-                                         struct_type->get_scope(), 0);
-          if (length_function != 0) {
-            break;
-          }
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype != nullptr) {
+        length_function = get_function(function, "", struct_type,
+                                       struct_type->get_scope(), 0);
+        if (length_function != 0) {
+          break;
         }
       }
     }
@@ -1855,7 +1852,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   // How many arguments we expect the getter to have.
   size_t num_args = (size_t)(make_property->_type != CPPMakeProperty::T_normal);
 
-  CPPFunctionGroup *fgroup = make_property->_get_function;
+  fgroup = make_property->_get_function;
   if (fgroup != NULL) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
@@ -1942,14 +1939,62 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype = function->_type->as_function_type();
-      if (ftype != NULL && ftype->_parameters->_parameters.size() == num_args) {
-        deleter = function;
-        break;
+      if (ftype != nullptr) {
+        const CPPParameterList::Parameters &params = ftype->_parameters->_parameters;
+        if (params.size() == num_args ||
+            (params.size() > num_args && params[num_args]->_initializer != nullptr)) {
+          deleter = function;
+          break;
+        }
       }
     }
 
     if (deleter == nullptr) {
       cerr << "No instance of delete-function '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
+  // And the "inserter".
+  CPPInstance *inserter = nullptr;
+
+  fgroup = make_property->_insert_function;
+  if (fgroup != nullptr) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype != nullptr && ftype->_parameters->_parameters.size() == 2) {
+        inserter = function;
+        break;
+      }
+    }
+
+    if (inserter == nullptr) {
+      cerr << "No instance of insert-function '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
+  // And the function that returns a key by index.
+  CPPInstance *getkey_function = nullptr;
+
+  fgroup = make_property->_get_key_function;
+  if (fgroup != nullptr) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype != nullptr) {
+        getkey_function = function;
+        break;
+      }
+    }
+
+    if (getkey_function == nullptr) {
+      cerr << "No instance of get-key-function '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
     }
@@ -1980,10 +2025,12 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   if (make_property->_type & CPPMakeProperty::T_sequence) {
     iproperty._flags |= InterrogateElement::F_sequence;
     iproperty._length_function = length_function;
+    assert(length_function != 0);
   }
 
   if (make_property->_type & CPPMakeProperty::T_mapping) {
     iproperty._flags |= InterrogateElement::F_mapping;
+    iproperty._length_function = length_function;
   }
 
   if (make_property->_type == CPPMakeProperty::T_normal) {
@@ -2027,6 +2074,20 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     iproperty._del_function = get_function(deleter, "", struct_type,
                                           struct_type->get_scope(), 0);
     nassertr(iproperty._del_function, 0);
+  }
+
+  if (inserter != NULL) {
+    iproperty._flags |= InterrogateElement::F_has_insert_function;
+    iproperty._insert_function = get_function(inserter, "", struct_type,
+                                              struct_type->get_scope(), 0);
+    nassertr(iproperty._insert_function, 0);
+  }
+
+  if (getkey_function != NULL) {
+    iproperty._flags |= InterrogateElement::F_has_getkey_function;
+    iproperty._getkey_function = get_function(getkey_function, "", struct_type,
+                                              struct_type->get_scope(), 0);
+    nassertr(iproperty._getkey_function, 0);
   }
 
   // See if there happens to be a comment before the MAKE_PROPERTY macro.

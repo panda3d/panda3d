@@ -86,8 +86,12 @@ class SimpleHashMap {
 public:
 #ifndef CPPPARSER
   CONSTEXPR SimpleHashMap(const Compare &comp = Compare());
+  INLINE SimpleHashMap(const SimpleHashMap &copy);
   INLINE SimpleHashMap(SimpleHashMap &&from) NOEXCEPT;
   INLINE ~SimpleHashMap();
+
+  INLINE SimpleHashMap &operator = (const SimpleHashMap &copy);
+  INLINE SimpleHashMap &operator = (SimpleHashMap &&from) NOEXCEPT;
 
   INLINE void swap(SimpleHashMap &other);
 

@@ -51,6 +51,7 @@ PUBLISHED:
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
   void set_transform(size_t n, const VertexTransform *transform);
+  void insert_transform(size_t n, const VertexTransform *transform);
   void remove_transform(size_t n);
   size_t add_transform(const VertexTransform *transform);
 
@@ -58,7 +59,8 @@ PUBLISHED:
 
   MAKE_PROPERTY(registered, is_registered);
   MAKE_PROPERTY(modified, get_modified);
-  MAKE_SEQ_PROPERTY(transforms, get_num_transforms, get_transform, set_transform, remove_transform);
+  MAKE_SEQ_PROPERTY(transforms, get_num_transforms, get_transform, set_transform,
+                                remove_transform, insert_transform);
 
 private:
   void do_register();

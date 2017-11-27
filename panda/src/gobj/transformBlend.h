@@ -68,8 +68,8 @@ PUBLISHED:
 
   MAKE_SEQ_PROPERTY(transforms, get_num_transforms, get_transform,
                     set_transform, remove_transform);
-  MAKE_SEQ_PROPERTY(weights, get_num_transforms, get_weight, set_weight);
   MAKE_MAP_PROPERTY(weights, has_transform, get_weight);
+  MAKE_MAP_KEYS_SEQ(weights, get_num_transforms, get_transform);
 
   INLINE void update_blend(Thread *current_thread) const;
 

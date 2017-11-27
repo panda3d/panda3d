@@ -92,6 +92,7 @@ PUBLISHED:
   int get_array_with(const InternalName *name) const;
   const GeomVertexColumn *get_column(const InternalName *name) const;
   INLINE bool has_column(const InternalName *name) const;
+  const InternalName *get_column_name(size_t i) const;
 
   MAKE_SEQ(get_columns, get_num_columns, get_column);
 
@@ -120,13 +121,13 @@ PUBLISHED:
   MAKE_SEQ(get_morph_bases, get_num_morphs, get_morph_base);
   MAKE_SEQ(get_morph_deltas, get_num_morphs, get_morph_delta);
 
-  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array, remove_array);
-  MAKE_SEQ_PROPERTY(columns, get_num_columns, get_column);
+  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array, remove_array, insert_array);
   MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
   MAKE_SEQ_PROPERTY(vectors, get_num_vectors, get_vector);
 
   // We also define this as a mapping interface, for lookups by name.
   MAKE_MAP_PROPERTY(columns, has_column, get_column);
+  MAKE_MAP_KEYS_SEQ(columns, get_num_columns, get_column_name);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

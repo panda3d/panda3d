@@ -465,6 +465,7 @@ typedef struct _object PyObject;
 #define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...) __make_seq_property(property_name, __VA_ARGS__)
 #define MAKE_MAP_PROPERTY(property_name, ...) __make_map_property(property_name, __VA_ARGS__)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...) __make_map_keys_seq(property_name, __VA_ARGS__)
 #define EXTENSION(x) __extension x
 #define EXTEND __extension
 #else
@@ -476,6 +477,7 @@ typedef struct _object PyObject;
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...)
 #define MAKE_MAP_PROPERTY(property_name, ...)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...)
 #define EXTENSION(x)
 #define EXTEND
 #endif

@@ -66,6 +66,7 @@ extern "C" {
   EXPCL_PYSTUB int PyInt_FromLong(...);
   EXPCL_PYSTUB int PyInt_FromSize_t(...);
   EXPCL_PYSTUB int PyInt_Type(...);
+  EXPCL_PYSTUB int PyIter_Next(...);
   EXPCL_PYSTUB int PyList_Append(...);
   EXPCL_PYSTUB int PyList_AsTuple(...);
   EXPCL_PYSTUB int PyList_GetItem(...);
@@ -91,6 +92,7 @@ extern "C" {
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
   EXPCL_PYSTUB int PyModule_Create2(...);
   EXPCL_PYSTUB int PyModule_Create2TraceRefs(...);
+  EXPCL_PYSTUB int PyModule_GetDict(...);
   EXPCL_PYSTUB int PyNumber_AsSsize_t(...);
   EXPCL_PYSTUB int PyNumber_Check(...);
   EXPCL_PYSTUB int PyNumber_Float(...);
@@ -111,15 +113,18 @@ extern "C" {
   EXPCL_PYSTUB int PyObject_GenericSetAttr(...);
   EXPCL_PYSTUB int PyObject_GetAttrString(...);
   EXPCL_PYSTUB int PyObject_GetBuffer(...);
+  EXPCL_PYSTUB int PyObject_GetIter(...);
   EXPCL_PYSTUB int PyObject_HasAttrString(...);
   EXPCL_PYSTUB int PyObject_IsInstance(...);
   EXPCL_PYSTUB int PyObject_IsTrue(...);
+  EXPCL_PYSTUB int PyObject_Malloc(...);
   EXPCL_PYSTUB int PyObject_Repr(...);
   EXPCL_PYSTUB int PyObject_RichCompareBool(...);
   EXPCL_PYSTUB int PyObject_SelfIter(...);
   EXPCL_PYSTUB int PyObject_SetAttrString(...);
   EXPCL_PYSTUB int PyObject_Str(...);
   EXPCL_PYSTUB int PyObject_Type(...);
+  EXPCL_PYSTUB int PySeqIter_New(...);
   EXPCL_PYSTUB int PySequence_Check(...);
   EXPCL_PYSTUB int PySequence_Fast(...);
   EXPCL_PYSTUB int PySequence_GetItem(...);
@@ -290,6 +295,7 @@ int PyInt_AsSsize_t(...) { return 0; }
 int PyInt_FromLong(...) { return 0; }
 int PyInt_FromSize_t(...) { return 0; }
 int PyInt_Type(...) { return 0; }
+int PyIter_Next(...) { return 0; }
 int PyList_Append(...) { return 0; }
 int PyList_AsTuple(...) { return 0; }
 int PyList_GetItem(...) { return 0; }
@@ -315,6 +321,7 @@ int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
 int PyModule_Create2(...) { return 0; };
 int PyModule_Create2TraceRefs(...) { return 0; };
+int PyModule_GetDict(...) { return 0; };
 int PyNumber_AsSsize_t(...) { return 0; }
 int PyNumber_Check(...) { return 0; }
 int PyNumber_Float(...) { return 0; }
@@ -335,15 +342,18 @@ int PyObject_GenericGetAttr(...) { return 0; };
 int PyObject_GenericSetAttr(...) { return 0; };
 int PyObject_GetAttrString(...) { return 0; }
 int PyObject_GetBuffer(...) { return 0; }
+int PyObject_GetIter(...) { return 0; }
 int PyObject_HasAttrString(...) { return 0; }
 int PyObject_IsInstance(...) { return 0; }
 int PyObject_IsTrue(...) { return 0; }
+int PyObject_Malloc(...) { return 0; }
 int PyObject_Repr(...) { return 0; }
 int PyObject_RichCompareBool(...) { return 0; }
 int PyObject_SelfIter(...) { return 0; }
 int PyObject_SetAttrString(...) { return 0; }
 int PyObject_Str(...) { return 0; }
 int PyObject_Type(...) { return 0; }
+int PySeqIter_New(...) { return 0; }
 int PySequence_Check(...) { return 0; }
 int PySequence_Fast(...) { return 0; }
 int PySequence_GetItem(...) { return 0; }

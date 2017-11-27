@@ -6391,6 +6391,8 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
   FunctionRemap *len_remap = nullptr;
   if (property->_length_function != nullptr) {
+    assert(!property->_length_function->_remaps.empty());
+
     // This is actually a sequence.  Wrap this with a special class.
     len_remap = property->_length_function->_remaps.front();
 
@@ -6416,6 +6418,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
   }
 
   if (ielem.is_sequence()) {
+    assert(len_remap != nullptr);
     out <<
       "/**\n"
       " * sequence getter for property " << ielem.get_scoped_name() << "\n"
@@ -6541,6 +6544,35 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << ");\n";
       out << "  }\n";
       out << "  return -1;\n";
+      out << "}\n\n";
+    }
+
+    // Finally, add the inserter, if one exists.
+    if (property->_inserter != nullptr) {
+      out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Sequence_insert(PyObject *self, size_t index, PyObject *arg) {\n";
+      if (property->_has_this) {
+        out << "  " << cClassName  << " *local_this = NULL;\n";
+        out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+            << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+        out << "    return NULL;\n";
+        out << "  }\n\n";
+      }
+
+      std::set<FunctionRemap*> remaps;
+      remaps.insert(property->_inserter->_remaps.begin(),
+                    property->_inserter->_remaps.end());
+
+      string expected_params;
+      write_function_forset(out, remaps, 2, 2,
+                            expected_params, 2, true, true, AT_single_arg,
+                            RF_pyobject | RF_err_null, false, false, "index");
+
+      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "    Dtool_Raise_BadArgumentsError(\n";
+      output_quoted(out, 6, expected_params);
+      out << ");\n";
+      out << "  }\n";
+      out << "  return NULL;\n";
       out << "}\n\n";
     }
   }
@@ -6674,7 +6706,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       remaps.insert(property->_setter_remaps.begin(),
                     property->_setter_remaps.end());
 
-      // We have to create an args tuple only to unpack it alter, ugh.
+      // We have to create an args tuple only to unpack it later, ugh.
       out << "  PyObject *args = PyTuple_New(2);\n"
           << "  PyTuple_SET_ITEM(args, 0, key);\n"
           << "  PyTuple_SET_ITEM(args, 1, value);\n"
@@ -6695,86 +6727,117 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  return -1;\n";
       out << "}\n\n";
     }
+
+    if (property->_getkey_function != nullptr) {
+      out <<
+        "/**\n"
+        " * mapping key-getter for property " << ielem.get_scoped_name() << "\n"
+        " */\n"
+        "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Mapping_Getkey(PyObject *self, Py_ssize_t index) {\n";
+
+      if (property->_has_this) {
+        out <<
+          "  " << cClassName << " *local_this = NULL;\n"
+          "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+          "    return NULL;\n"
+          "  }\n";
+      }
+
+      // We need to raise IndexError if we're out of bounds.
+      if (len_remap != nullptr) {
+        out << "  if (index < 0 || index >= (Py_ssize_t)"
+            << len_remap->get_call_str("local_this", pexprs) << ") {\n";
+        out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << "." << ielem.get_name() << "[] index out of range\");\n";
+        out << "    return NULL;\n";
+        out << "  }\n";
+      }
+
+      std::set<FunctionRemap*> remaps;
+
+      // Extract only the getters that take one integral argument.
+      Function::Remaps::iterator it;
+      for (it = property->_getkey_function->_remaps.begin();
+            it != property->_getkey_function->_remaps.end();
+            ++it) {
+        FunctionRemap *remap = *it;
+        int min_num_args = remap->get_min_num_args();
+        int max_num_args = remap->get_max_num_args();
+        if (min_num_args <= 1 && max_num_args >= 1 &&
+            TypeManager::is_integer(remap->_parameters[(size_t)remap->_has_this]._remap->get_new_type())) {
+          remaps.insert(remap);
+        }
+      }
+
+      string expected_params;
+      write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
+                            AT_no_args, RF_pyobject | RF_err_null, false, true, "index");
+
+      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "    return Dtool_Raise_BadArgumentsError(\n";
+      output_quoted(out, 6, expected_params);
+      out << ");\n"
+              "  }\n"
+              "}\n\n";
+    }
   }
 
   // Now write the actual getter wrapper.  It will be a different wrapper
-  // depending on whether it's a mapping, sequence, or both.
-  if (ielem.is_mapping() && ielem.is_sequence()) {
+  // depending on whether it's a mapping or a sequence.
+  if (ielem.is_mapping()) {
     out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     if (property->_has_this) {
-      out << "  nassertr(self != NULL, NULL);\n"
-             "  Py_INCREF(self);\n";
-    } else {
-      out << "  Py_XINCREF(self);\n";
+      out << "  nassertr(self != NULL, NULL);\n";
     }
-    out << "  Dtool_SeqMapWrapper *wrap = PyObject_New(Dtool_SeqMapWrapper, &Dtool_SeqMapWrapper_Type);\n"
-           "  wrap->_map._base._self = self;\n"
-           "  wrap->_map._base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
-           "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
-           "  wrap->_seq_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n"
-           "  wrap->_map._getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
+    if (property->_setter_remaps.empty()) {
+      out << "  Dtool_MappingWrapper *wrap = Dtool_NewMappingWrapper(self, \"" << ClassName << "." << ielem.get_name() << "\");\n";
+    } else {
+      out << "  Dtool_MappingWrapper *wrap = Dtool_NewMutableMappingWrapper(self, \"" << ClassName << "." << ielem.get_name() << "\");\n";
+    }
+    out << "  if (wrap != NULL) {\n"
+           "    wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n"
-             "    wrap->_seq_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n"
-             "    wrap->_map._setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n"
-             "  } else {\n"
-             "    wrap->_seq_setitem_func = NULL;\n"
-             "    wrap->_map._setitem_func = NULL;\n"
-             "  }\n";
-    } else {
-      out << "  wrap->_seq_setitem_func = NULL;\n";
-      out << "  wrap->_map._setitem_func = NULL;\n";
+      out << "    if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+      out << "      wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
+      out << "    }\n";
     }
-    out << "  return (PyObject *)wrap;\n"
+    if (property->_length_function != nullptr) {
+      out << "    wrap->_keys._len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n";
+      if (property->_getkey_function != nullptr) {
+        out << "    wrap->_keys._getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getkey;\n";
+      }
+    }
+    out << "  }\n"
+           "  return (PyObject *)wrap;\n"
             "}\n\n";
-
-  } else if (ielem.is_mapping()) {
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
-    if (property->_has_this) {
-      out << "  nassertr(self != NULL, NULL);\n"
-             "  Py_INCREF(self);\n";
-    } else {
-      out << "  Py_XINCREF(self);\n";
-    }
-    out << "  Dtool_MappingWrapper *wrap = PyObject_New(Dtool_MappingWrapper, &Dtool_MappingWrapper_Type);\n"
-           "  wrap->_base._self = self;\n"
-           "  wrap->_base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
-           "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
-    if (!property->_setter_remaps.empty()) {
-      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
-      out << "    wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
-      out << "  } else {\n";
-      out << "    wrap->_setitem_func = NULL;\n";
-      out << "  }\n";
-    } else {
-      out << "  wrap->_setitem_func = NULL;\n";
-    }
-    out << "  return (PyObject *)wrap;\n"
-           "}\n\n";
 
   } else if (ielem.is_sequence()) {
     out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     if (property->_has_this) {
-      out << "  nassertr(self != NULL, NULL);\n"
-             "  Py_INCREF(self);\n";
-    } else {
-      out << "  Py_XINCREF(self);\n";
+      out << "  nassertr(self != NULL, NULL);\n";
     }
-    out << "  Dtool_SequenceWrapper *wrap = PyObject_New(Dtool_SequenceWrapper, &Dtool_SequenceWrapper_Type);\n"
-           "  wrap->_base._self = self;\n"
-           "  wrap->_base._name = \"" << ClassName << "." << ielem.get_name() << "\";\n"
-           "  wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
-           "  wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n";
-    if (!property->_setter_remaps.empty()) {
-      out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
-      out << "    wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
-      out << "  } else {\n";
-      out << "    wrap->_setitem_func = NULL;\n";
-      out << "  }\n";
+    if (property->_setter_remaps.empty()) {
+      out <<
+        "  Dtool_SequenceWrapper *wrap = Dtool_NewSequenceWrapper(self, \"" << ClassName << "." << ielem.get_name() << "\");\n"
+        "  if (wrap != NULL) {\n"
+        "    wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
+        "    wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n";
     } else {
-      out << "  wrap->_setitem_func = NULL;\n";
+      out <<
+        "  Dtool_MutableSequenceWrapper *wrap = Dtool_NewMutableSequenceWrapper(self, \"" << ClassName << "." << ielem.get_name() << "\");\n"
+        "  if (wrap != NULL) {\n"
+        "    wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
+        "    wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n";
+      if (!property->_setter_remaps.empty()) {
+        out << "    if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+        out << "      wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
+        if (property->_inserter != nullptr) {
+          out << "      wrap->_insert_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_insert;\n";
+        }
+        out << "    }\n";
+      }
     }
-    out << "  return (PyObject *)wrap;\n"
+    out << "  }\n"
+           "  return (PyObject *)wrap;\n"
             "}\n\n";
 
   } else {
@@ -7083,9 +7146,30 @@ record_property(const InterrogateType &itype, ElementIndex element_index) {
     }
   }
 
-  if (ielement.is_sequence()) {
+  if (ielement.is_sequence() || ielement.is_mapping()) {
     FunctionIndex func_index = ielement.get_length_function();
-    property->_length_function = record_function(itype, func_index);
+    if (func_index != 0) {
+      property->_length_function = record_function(itype, func_index);
+    }
+  }
+
+  if (ielement.is_sequence() && ielement.has_insert_function()) {
+    FunctionIndex func_index = ielement.get_insert_function();
+    Function *insert_function = record_function(itype, func_index);
+    if (is_function_legal(insert_function)) {
+      property->_inserter = insert_function;
+      property->_has_this |= insert_function->_has_this;
+    }
+  }
+
+  if (ielement.is_mapping() && ielement.has_getkey_function()) {
+    FunctionIndex func_index = ielement.get_getkey_function();
+    assert(func_index != 0);
+    Function *getkey_function = record_function(itype, func_index);
+    if (is_function_legal(getkey_function)) {
+      property->_getkey_function = getkey_function;
+      property->_has_this |= getkey_function->_has_this;
+    }
   }
 
   return property;

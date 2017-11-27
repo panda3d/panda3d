@@ -69,11 +69,25 @@ add_forces_from(const ForceNode &other) {
  */
 void ForceNode::
 set_force(size_t index, BaseForce *force) {
-  nassertv(index <= _forces.size());
+  nassertv(index < _forces.size());
 
-  _forces[index]->_force_node = (ForceNode *)NULL;
+  _forces[index]->_force_node = nullptr;
   _forces[index]->_force_node_path.clear();
   _forces[index] = force;
+  force->_force_node = this;
+  force->_force_node_path = NodePath(this);
+}
+
+/**
+ * insert operation
+ */
+void ForceNode::
+insert_force(size_t index, BaseForce *force) {
+  if (index > _forces.size()) {
+    index = _forces.size();
+  }
+
+  _forces.insert(_forces.begin() + index, force);
   force->_force_node = this;
   force->_force_node_path = NodePath(this);
 }

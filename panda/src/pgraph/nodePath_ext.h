@@ -34,6 +34,7 @@ public:
   PyObject *__reduce__(PyObject *self) const;
   PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
 
+  PyObject *get_tags() const;
   INLINE PyObject *get_tag_keys() const;
 
   INLINE PyObject *get_python_tags();

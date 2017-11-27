@@ -28,7 +28,9 @@ CPPMakeProperty(CPPIdentifier *ident, Type type,
   _get_function(nullptr),
   _set_function(nullptr),
   _clear_function(nullptr),
-  _del_function(nullptr)
+  _del_function(nullptr),
+  _insert_function(nullptr),
+  _get_key_function(nullptr)
 {
   _ident->_native_scope = current_scope;
 }
@@ -94,6 +96,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 
   if (_del_function != NULL) {
     out << ", " << _del_function->_name;
+  }
+
+  if (_insert_function != NULL) {
+    out << ", " << _insert_function->_name;
   }
 
   out << ");";

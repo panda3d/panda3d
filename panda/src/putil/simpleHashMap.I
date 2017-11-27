@@ -30,6 +30,25 @@ SimpleHashMap(const Compare &comp) :
  */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
+SimpleHashMap(const SimpleHashMap &copy) :
+  _table_size(copy._table_size),
+  _num_entries(copy._num_entries),
+  _comp(copy._comp) {
+
+  // We allocate enough bytes for _table_size elements of TableEntry, plus
+  // _table_size * 4 more ints at the end (for the index array).
+  size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+
+  _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+  memcpy(_table, copy._table, alloc_size);
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare>::
 SimpleHashMap(SimpleHashMap &&from) NOEXCEPT :
   _table(from._table),
   _deleted_chain(from._deleted_chain),
@@ -37,7 +56,10 @@ SimpleHashMap(SimpleHashMap &&from) NOEXCEPT :
   _num_entries(from._num_entries),
   _comp(move(from._comp))
 {
+  from._table = nullptr;
+  from._deleted_chain = nullptr;
   from._table_size = 0;
+  from._num_entries = 0;
 }
 
 /**
@@ -47,6 +69,48 @@ template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
 ~SimpleHashMap() {
   clear();
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
+operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
+  if (this != &copy) {
+    _table_size = copy._table_size;
+    _num_entries = copy._num_entries;
+    _comp = copy._comp;
+
+    // We allocate enough bytes for _table_size elements of TableEntry, plus
+    // _table_size * 4 more ints at the end (for the index array).
+    size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+
+    _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+    _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+    memcpy(_table, copy._table, alloc_size);
+  }
+  return *this;
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
+operator = (SimpleHashMap<Key, Value, Compare> &&from) NOEXCEPT {
+  if (this != &from) {
+    _table = from._table;
+    _deleted_chain = from._deleted_chain;
+    _table_size = from._table_size;
+    _num_entries = from._num_entries;
+    _comp = move(from._comp);
+
+    from._table = nullptr;
+    from._deleted_chain = nullptr;
+    from._table_size = 0;
+    from._num_entries = 0;
+  }
 }
 
 /**

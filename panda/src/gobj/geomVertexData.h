@@ -105,13 +105,13 @@ PUBLISHED:
   INLINE bool reserve_num_rows(int n);
   void clear_rows();
 
-  INLINE int get_num_arrays() const;
-  INLINE CPT(GeomVertexArrayData) get_array(int i) const;
-  INLINE CPT(GeomVertexArrayDataHandle) get_array_handle(int i) const;
+  INLINE size_t get_num_arrays() const;
+  INLINE CPT(GeomVertexArrayData) get_array(size_t i) const;
+  INLINE CPT(GeomVertexArrayDataHandle) get_array_handle(size_t i) const;
   MAKE_SEQ(get_arrays, get_num_arrays, get_array);
-  INLINE PT(GeomVertexArrayData) modify_array(int i);
-  INLINE PT(GeomVertexArrayDataHandle) modify_array_handle(int i);
-  INLINE void set_array(int i, const GeomVertexArrayData *array);
+  INLINE PT(GeomVertexArrayData) modify_array(size_t i);
+  INLINE PT(GeomVertexArrayDataHandle) modify_array_handle(size_t i);
+  INLINE void set_array(size_t i, const GeomVertexArrayData *array);
   MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array);
 
   INLINE const TransformTable *get_transform_table() const;
@@ -520,10 +520,10 @@ public:
   INLINE GeomVertexData *get_object() const;
 
   INLINE void check_array_writers() const;
-  INLINE GeomVertexArrayDataHandle *get_array_writer(int i) const;
+  INLINE GeomVertexArrayDataHandle *get_array_writer(size_t i) const;
 
-  PT(GeomVertexArrayData) modify_array(int i);
-  void set_array(int i, const GeomVertexArrayData *array);
+  PT(GeomVertexArrayData) modify_array(size_t i);
+  void set_array(size_t i, const GeomVertexArrayData *array);
 
   int get_num_rows() const;
   bool set_num_rows(int n);
