@@ -1258,9 +1258,9 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             win = self.win
 
-        if win != None and win.hasSize() and win.getSbsLeftYSize() != 0:
+        if win != None and win.getSideBySideStereo() and \
+                win.hasSize() and win.getSbsLeftYSize() != 0:
             aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
-
         else:
             if win == None or not hasattr(win, "getRequestedProperties"):
                 props = WindowProperties.getDefault()
@@ -1295,8 +1295,7 @@ class ShowBase(DirectObject.DirectObject):
                 if not props.hasSize():
                     props = WindowProperties.getDefault()
 
-            if props.hasSize():
-                return props.getXSize(), props.getYSize()
+            return props.getXSize(), props.getYSize()
 
     def makeCamera(self, win, sort = 0, scene = None,
                    displayRegion = (0, 1, 0, 1), stereo = None,
@@ -2723,13 +2722,14 @@ class ShowBase(DirectObject.DirectObject):
             # changed and update the camera lenses and aspect2d parameters
             self.adjustWindowAspectRatio(self.getAspectRatio())
 
-            # Temporary hasattr for old Pandas
-            if not hasattr(win, 'getSbsLeftXSize'):
-                self.pixel2d.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
-                self.pixel2dp.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
-            else:
+            if win.getSideBySideStereo() and win.hasSize() and win.getSbsLeftYSize() != 0:
                 self.pixel2d.setScale(2.0 / win.getSbsLeftXSize(), 1.0, 2.0 / win.getSbsLeftYSize())
                 self.pixel2dp.setScale(2.0 / win.getSbsLeftXSize(), 1.0, 2.0 / win.getSbsLeftYSize())
+            else:
+                xsize, ysize = self.getSize()
+                if xsize > 0 and ysize > 0:
+                    self.pixel2d.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
+                    self.pixel2dp.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
     def adjustWindowAspectRatio(self, aspectRatio):
         """ This function is normally called internally by
@@ -2774,34 +2774,34 @@ class ShowBase(DirectObject.DirectObject):
                 self.a2dpRight = aspectRatio
 
             # Reposition the aspect2d marker nodes
-            self.a2dTopCenter.setPos(0, self.a2dTop, self.a2dTop)
-            self.a2dBottomCenter.setPos(0, self.a2dBottom, self.a2dBottom)
+            self.a2dTopCenter.setPos(0, 0, self.a2dTop)
+            self.a2dTopCenterNs.setPos(0, 0, self.a2dTop)
+            self.a2dBottomCenter.setPos(0, 0, self.a2dBottom)
+            self.a2dBottomCenterNs.setPos(0, 0, self.a2dBottom)
             self.a2dLeftCenter.setPos(self.a2dLeft, 0, 0)
-            self.a2dRightCenter.setPos(self.a2dRight, 0, 0)
-            self.a2dTopLeft.setPos(self.a2dLeft, self.a2dTop, self.a2dTop)
-            self.a2dTopRight.setPos(self.a2dRight, self.a2dTop, self.a2dTop)
-            self.a2dBottomLeft.setPos(self.a2dLeft, self.a2dBottom, self.a2dBottom)
-            self.a2dBottomRight.setPos(self.a2dRight, self.a2dBottom, self.a2dBottom)
-
-            # Reposition the aspect2d marker nodes
-            self.a2dTopCenterNs.setPos(0, self.a2dTop, self.a2dTop)
-            self.a2dBottomCenterNs.setPos(0, self.a2dBottom, self.a2dBottom)
             self.a2dLeftCenterNs.setPos(self.a2dLeft, 0, 0)
+            self.a2dRightCenter.setPos(self.a2dRight, 0, 0)
             self.a2dRightCenterNs.setPos(self.a2dRight, 0, 0)
-            self.a2dTopLeftNs.setPos(self.a2dLeft, self.a2dTop, self.a2dTop)
-            self.a2dTopRightNs.setPos(self.a2dRight, self.a2dTop, self.a2dTop)
-            self.a2dBottomLeftNs.setPos(self.a2dLeft, self.a2dBottom, self.a2dBottom)
-            self.a2dBottomRightNs.setPos(self.a2dRight, self.a2dBottom, self.a2dBottom)
+
+            self.a2dTopLeft.setPos(self.a2dLeft, 0, self.a2dTop)
+            self.a2dTopLeftNs.setPos(self.a2dLeft, 0, self.a2dTop)
+            self.a2dTopRight.setPos(self.a2dRight, 0, self.a2dTop)
+            self.a2dTopRightNs.setPos(self.a2dRight, 0, self.a2dTop)
+            self.a2dBottomLeft.setPos(self.a2dLeft, 0, self.a2dBottom)
+            self.a2dBottomLeftNs.setPos(self.a2dLeft, 0, self.a2dBottom)
+            self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
+            self.a2dBottomRightNs.setPos(self.a2dRight, 0, self.a2dBottom)
 
             # Reposition the aspect2dp marker nodes
-            self.a2dpTopCenter.setPos(0, self.a2dpTop, self.a2dpTop)
-            self.a2dpBottomCenter.setPos(0, self.a2dpBottom, self.a2dpBottom)
+            self.a2dpTopCenter.setPos(0, 0, self.a2dpTop)
+            self.a2dpBottomCenter.setPos(0, 0, self.a2dpBottom)
             self.a2dpLeftCenter.setPos(self.a2dpLeft, 0, 0)
             self.a2dpRightCenter.setPos(self.a2dpRight, 0, 0)
-            self.a2dpTopLeft.setPos(self.a2dpLeft, self.a2dpTop, self.a2dpTop)
-            self.a2dpTopRight.setPos(self.a2dpRight, self.a2dpTop, self.a2dpTop)
-            self.a2dpBottomLeft.setPos(self.a2dpLeft, self.a2dpBottom, self.a2dpBottom)
-            self.a2dpBottomRight.setPos(self.a2dpRight, self.a2dpBottom, self.a2dpBottom)
+
+            self.a2dpTopLeft.setPos(self.a2dpLeft, 0, self.a2dpTop)
+            self.a2dpTopRight.setPos(self.a2dpRight, 0, self.a2dpTop)
+            self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
+            self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
 
             # If anybody needs to update their GUI, put a callback on this event
             messenger.send("aspectRatioChanged")
