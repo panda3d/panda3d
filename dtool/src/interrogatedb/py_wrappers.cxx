@@ -13,6 +13,8 @@
 
 #include "py_wrappers.h"
 
+#ifdef HAVE_PYTHON
+
 #if PY_VERSION_HEX >= 0x03040000
 #define _COLLECTIONS_ABC "_collections_abc"
 #elif PY_VERSION_HEX >= 0x03030000
@@ -1669,3 +1671,5 @@ Dtool_NewStaticProperty(PyTypeObject *type, const PyGetSetDef *getset) {
   }
   return (PyObject *)descr;
 }
+
+#endif  // HAVE_PYTHON
