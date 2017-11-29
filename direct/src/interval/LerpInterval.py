@@ -32,7 +32,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
 
     def __init__(self, name, duration, blendType, bakeInStart, fluid,
                  nodePath, other):
-        if name == None:
+        if name is None:
             name = '%s-%d' % (self.__class__.__name__, self.lerpNodePathNum)
             LerpNodePathInterval.lerpNodePathNum += 1
         else:
@@ -45,7 +45,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
         blendType = self.stringBlendType(blendType)
         assert blendType != self.BTInvalid
 
-        if other == None:
+        if other is None:
             other = NodePath()
 
         CLerpNodePathInterval.__init__(self, name, duration, blendType,
@@ -67,7 +67,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
         # function (probably a C++ setter function).  If the param is
         # a callable functor, calls it; otherwise, uses the param
         # directly.
-        if param != None:
+        if param is not None:
             if callable(param):
                 func(param())
             else:
@@ -114,7 +114,7 @@ class LerpPosInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndPos(pos)
-            if startPos != None:
+            if startPos is not None:
                 self.setStartPos(startPos)
 
     def privDoEvent(self, t, event):
@@ -143,9 +143,9 @@ class LerpHprInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndHpr(hpr)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
 
     def privDoEvent(self, t, event):
@@ -181,9 +181,9 @@ class LerpQuatInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndQuat(quat)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
 
     def privDoEvent(self, t, event):
@@ -209,7 +209,7 @@ class LerpScaleInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndScale(scale)
-            if startScale != None:
+            if startScale is not None:
                 self.setStartScale(startScale)
 
     def privDoEvent(self, t, event):
@@ -234,7 +234,7 @@ class LerpShearInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndShear(shear)
-            if startShear != None:
+            if startShear is not None:
                 self.setStartShear(startShear)
 
     def privDoEvent(self, t, event):
@@ -263,12 +263,12 @@ class LerpPosHprInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndPos(pos)
-            if startPos != None:
+            if startPos is not None:
                 self.setStartPos(startPos)
             self.setEndHpr(hpr)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
 
     def privDoEvent(self, t, event):
@@ -308,12 +308,12 @@ class LerpPosQuatInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndPos(pos)
-            if startPos != None:
+            if startPos is not None:
                 self.setStartPos(startPos)
             self.setEndQuat(quat)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
 
     def privDoEvent(self, t, event):
@@ -346,12 +346,12 @@ class LerpHprScaleInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndHpr(hpr)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
             self.setEndScale(scale)
-            if startScale != None:
+            if startScale is not None:
                 self.setStartScale(startScale)
 
     def privDoEvent(self, t, event):
@@ -394,12 +394,12 @@ class LerpQuatScaleInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndQuat(quat)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
             self.setEndScale(scale)
-            if startScale != None:
+            if startScale is not None:
                 self.setStartScale(startScale)
 
     def privDoEvent(self, t, event):
@@ -435,15 +435,15 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndPos(pos)
-            if startPos != None:
+            if startPos is not None:
                 self.setStartPos(startPos)
             self.setEndHpr(hpr)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
             self.setEndScale(scale)
-            if startScale != None:
+            if startScale is not None:
                 self.setStartScale(startScale)
 
     def privDoEvent(self, t, event):
@@ -491,15 +491,15 @@ class LerpPosQuatScaleInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndPos(pos)
-            if startPos != None:
+            if startPos is not None:
                 self.setStartPos(startPos)
             self.setEndQuat(quat)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
             self.setEndScale(scale)
-            if startScale != None:
+            if startScale is not None:
                 self.setStartScale(startScale)
 
     def privDoEvent(self, t, event):
@@ -540,18 +540,18 @@ class LerpPosHprScaleShearInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndPos(pos)
-            if startPos != None:
+            if startPos is not None:
                 self.setStartPos(startPos)
             self.setEndHpr(hpr)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
             self.setEndScale(scale)
-            if startScale != None:
+            if startScale is not None:
                 self.setStartScale(startScale)
             self.setEndShear(shear)
-            if startShear != None:
+            if startShear is not None:
                 self.setStartShear(startShear)
 
     def privDoEvent(self, t, event):
@@ -606,18 +606,18 @@ class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
             self.inPython = 1
         else:
             self.setEndPos(pos)
-            if startPos != None:
+            if startPos is not None:
                 self.setStartPos(startPos)
             self.setEndQuat(quat)
-            if startHpr != None:
+            if startHpr is not None:
                 self.setStartHpr(startHpr)
-            if startQuat != None:
+            if startQuat is not None:
                 self.setStartQuat(startQuat)
             self.setEndScale(scale)
-            if startScale != None:
+            if startScale is not None:
                 self.setStartScale(startScale)
             self.setEndShear(shear)
-            if startShear != None:
+            if startShear is not None:
                 self.setStartShear(startShear)
 
     def privDoEvent(self, t, event):
@@ -642,9 +642,9 @@ class LerpColorInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndColor(color)
-        if startColor != None:
+        if startColor is not None:
             self.setStartColor(startColor)
-        if override != None:
+        if override is not None:
             self.setOverride(override)
 
 class LerpColorScaleInterval(LerpNodePathInterval):
@@ -654,9 +654,9 @@ class LerpColorScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndColorScale(colorScale)
-        if startColorScale != None:
+        if startColorScale is not None:
             self.setStartColorScale(startColorScale)
-        if override != None:
+        if override is not None:
             self.setOverride(override)
 
 class LerpTexOffsetInterval(LerpNodePathInterval):
@@ -667,11 +667,11 @@ class LerpTexOffsetInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndTexOffset(texOffset)
-        if startTexOffset != None:
+        if startTexOffset is not None:
             self.setStartTexOffset(startTexOffset)
-        if textureStage != None:
+        if textureStage is not None:
             self.setTextureStage(textureStage)
-        if override != None:
+        if override is not None:
             self.setOverride(override)
 
 class LerpTexRotateInterval(LerpNodePathInterval):
@@ -682,11 +682,11 @@ class LerpTexRotateInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndTexRotate(texRotate)
-        if startTexRotate != None:
+        if startTexRotate is not None:
             self.setStartTexRotate(startTexRotate)
-        if textureStage != None:
+        if textureStage is not None:
             self.setTextureStage(textureStage)
-        if override != None:
+        if override is not None:
             self.setOverride(override)
 
 class LerpTexScaleInterval(LerpNodePathInterval):
@@ -697,11 +697,11 @@ class LerpTexScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndTexScale(texScale)
-        if startTexScale != None:
+        if startTexScale is not None:
             self.setStartTexScale(startTexScale)
-        if textureStage != None:
+        if textureStage is not None:
             self.setTextureStage(textureStage)
-        if override != None:
+        if override is not None:
             self.setOverride(override)
 
 
@@ -744,7 +744,7 @@ class LerpFunctionNoStateInterval(Interval.Interval):
         self.blendType = LerpBlendHelpers.getBlend(blendType)
         self.extraArgs = extraArgs
         # Generate unique name if necessary
-        if (name == None):
+        if (name is None):
             name = ('LerpFunctionInterval-%d' %
                     LerpFunctionNoStateInterval.lerpFunctionIntervalNum)
             LerpFunctionNoStateInterval.lerpFunctionIntervalNum += 1
@@ -821,7 +821,7 @@ class LerpFunctionInterval(Interval.Interval):
         self.blendType = LerpBlendHelpers.getBlend(blendType)
         self.extraArgs = extraArgs
         # Generate unique name if necessary
-        if (name == None):
+        if (name is None):
             name = ('LerpFunctionInterval-%s-%d' %
                     (function.__name__,
                      LerpFunctionInterval.lerpFunctionIntervalNum))

@@ -188,7 +188,7 @@ class TaskManager:
         so in most cases there is no need to check this method
         first. """
 
-        return (self.mgr.findTaskChain(chainName) != None)
+        return (self.mgr.findTaskChain(chainName) is not None)
 
     def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
                        threadPriority = None, frameBudget = None,
@@ -384,7 +384,7 @@ class TaskManager:
     def __setupTask(self, funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath):
         if isinstance(funcOrTask, AsyncTask):
             task = funcOrTask
-        elif hasattr(funcOrTask, '__call__'):
+        elif callable(funcOrTask):
             task = PythonTask(funcOrTask)
             if name is None:
                 name = getattr(funcOrTask, '__qualname__', None) or \
@@ -407,7 +407,7 @@ class TaskManager:
             task.setArgs(extraArgs, appendTask)
         elif extraArgs is not None:
             self.notify.error(
-                'Task %s does not accept arguments.' % (repr(task)))
+                'Task %r does not accept arguments.' % (task))
 
         if name is not None:
             task.setName(name)
@@ -504,7 +504,7 @@ class TaskManager:
         self.globalClock.setRealTime(t)
         messenger.send("resetClock", [timeDelta])
 
-        if self.resumeFunc != None:
+        if self.resumeFunc is not None:
             self.resumeFunc()
 
         if self.stepping:

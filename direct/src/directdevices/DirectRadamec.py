@@ -23,7 +23,7 @@ class DirectRadamec(DirectObject):
 
     def __init__(self, device = 'Analog0', nodePath = None):
         # See if device manager has been initialized
-        if base.direct.deviceManager == None:
+        if base.direct.deviceManager is None:
             base.direct.deviceManager = DirectDeviceManager()
         # Set name
         self.name = 'Radamec-' + repr(DirectRadamec.radamecCount)

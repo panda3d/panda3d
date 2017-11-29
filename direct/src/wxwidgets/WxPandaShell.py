@@ -112,7 +112,7 @@ class WxPandaShell(WxAppShell):
         self.wxStep()
         ViewportManager.initializeAll()
         # Position the camera
-        if base.trackball != None:
+        if base.trackball is not None:
           base.trackball.node().setPos(0, 30, 0)
           base.trackball.node().setHpr(0, 15, 0)
 
@@ -203,7 +203,7 @@ class WxPandaShell(WxAppShell):
         while self.evtLoop.Pending():
           self.evtLoop.Dispatch()
         self.wxApp.ProcessIdle()
-        if task != None: return task.cont
+        if task is not None: return task.cont
 
     def appInit(self):
         """Overridden from WxAppShell.py."""

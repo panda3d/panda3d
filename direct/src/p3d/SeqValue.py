@@ -87,4 +87,4 @@ class SeqValue:
         return bool(self.value)
 
     def __str__(self):
-        return 'SeqValue%s' % (repr(self.value))
+        return 'SeqValue%r' % (self.value)

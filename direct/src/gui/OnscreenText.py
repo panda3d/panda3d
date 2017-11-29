@@ -100,7 +100,7 @@ class OnscreenText(NodePath):
           direction: this can be set to 'ltr' or 'rtl' to override the
               direction of the text.
         """
-        if parent == None:
+        if parent is None:
             parent = aspect2d
 
         # make a text node
@@ -118,7 +118,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenTitle:
             scale = scale or 0.15
@@ -126,7 +126,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenPrompt:
             scale = scale or 0.1
@@ -134,7 +134,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == NameConfirm:
             scale = scale or 0.1
@@ -142,7 +142,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == BlackOnWhite:
             scale = scale or 0.1
@@ -150,7 +150,7 @@ class OnscreenText(NodePath):
             bg = bg or (1, 1, 1, 1)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         else:
             raise ValueError
@@ -169,7 +169,7 @@ class OnscreenText(NodePath):
         if decal:
             textNode.setCardDecal(1)
 
-        if font == None:
+        if font is None:
             font = DGG.getDefaultFont()
 
         textNode.setFont(font)
@@ -213,7 +213,7 @@ class OnscreenText(NodePath):
         # graph.
         self.updateTransformMat()
 
-        if drawOrder != None:
+        if drawOrder is not None:
             textNode.setBin('fixed')
             textNode.setDrawOrder(drawOrder)
 
@@ -344,7 +344,7 @@ class OnscreenText(NodePath):
         uniform scale, or two scales, or a tuple of two scales.
         """
 
-        if sy == None:
+        if sy is None:
             if isinstance(sx, tuple):
                 self.__scale = sx
             else:

@@ -22,8 +22,8 @@ def findClass(className):
             # the matching class and a good module namespace to redefine
             # our class in.
             if (classObj and
-                ((type(classObj) == types.ClassType) or
-                 (type(classObj) == types.TypeType)) and
+                ((type(classObj) is types.ClassType) or
+                 (type(classObj) is types.TypeType)) and
                 (classObj.__module__ == moduleName)):
                 return [classObj, module.__dict__]
     return None
@@ -94,7 +94,7 @@ def copyFuncs(fromClass, toClass):
     # Copy the functions from fromClass into toClass dictionary
     for funcName, newFunc in fromClass.__dict__.items():
         # Filter out for functions
-        if (type(newFunc) == types.FunctionType):
+        if (type(newFunc) is types.FunctionType):
             # See if we already have a function with this name
             oldFunc = toClass.__dict__.get(funcName)
             if oldFunc:

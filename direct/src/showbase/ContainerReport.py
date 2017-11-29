@@ -102,7 +102,7 @@ class ContainerReport(Job):
                 try:
                     keys.sort()
                 except TypeError as e:
-                    self.notify.warning('non-sortable dict keys: %s: %s' % (self._id2pathStr[id(parentObj)], repr(e)))
+                    self.notify.warning('non-sortable dict keys: %s: %r' % (self._id2pathStr[id(parentObj)], e))
                 for key in keys:
                     try:
                         attr = parentObj[key]

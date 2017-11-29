@@ -127,7 +127,7 @@ class Messenger:
                  safeRepr(extraArgs), persistent))
 
         # Make sure that the method is callable
-        assert hasattr(method, '__call__'), (
+        assert callable(method), (
             "method not callable in accept (ignoring): %s %s"%
             (safeRepr(method), safeRepr(extraArgs)))
 
@@ -404,7 +404,7 @@ class Messenger:
                 # we have cleaned up the accept hook, because the
                 # method itself might call accept() or acceptOnce()
                 # again.
-                assert hasattr(method, '__call__')
+                assert callable(method)
 
                 # Release the lock temporarily while we call the method.
                 self.lock.release()
@@ -442,7 +442,7 @@ class Messenger:
             for objectEntry in list(objectDict.items()):
                 object, params = objectEntry
                 method = params[0]
-                if (type(method) == types.MethodType):
+                if (type(method) is types.MethodType):
                     function = method.__func__
                 else:
                     function = method
@@ -558,7 +558,7 @@ class Messenger:
         """
         return string version of class.method or method.
         """
-        if (type(method) == types.MethodType):
+        if (type(method) is types.MethodType):
             functionName = method.__self__.__class__.__name__ + '.' + \
                 method.__func__.__name__
         else:
@@ -592,9 +592,9 @@ class Messenger:
         str += "="*64 + "\n"
         for key, eventDict in list(self.__objectEvents.items()):
             object = self._getObject(key)
-            str += "%s:\n" % repr(object)
+            str += "%r:\n" % object
             for event in list(eventDict.keys()):
-                str += "     %s\n" % repr(event)
+                str += "     %r\n" % event
 
         str += "="*64 + "\n" + "End of messenger info.\n"
         return str
@@ -614,7 +614,7 @@ class Messenger:
             for key in list(acceptorDict.keys()):
                 function, extraArgs, persistent = acceptorDict[key]
                 object = self._getObject(key)
-                if (type(object) == types.InstanceType):
+                if (type(object) is types.InstanceType):
                     className = object.__class__.__name__
                 else:
                     className = "Not a class"
@@ -625,7 +625,7 @@ class Messenger:
                        'Extra Args:   ' + repr(extraArgs) + '\n\t' +
                        'Persistent:   ' + repr(persistent) + '\n')
                 # If this is a class method, get its actual function
-                if (type(function) == types.MethodType):
+                if (type(function) is types.MethodType):
                     str = (str + '\t' +
                            'Method:       ' + repr(function) + '\n\t' +
                            'Function:     ' + repr(function.__func__) + '\n')

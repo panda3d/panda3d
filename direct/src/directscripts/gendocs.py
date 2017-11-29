@@ -143,7 +143,7 @@ def textToHTML(comment, sep, delsection=None):
             sec = sec.replace(">","&gt;")
             sec = sec.replace("  "," ")
             sec = sec.replace("  "," ")
-            if (delsection != None) and (delsection.match(sec)):
+            if (delsection is not None) and (delsection.match(sec)):
                 included[sec] = 1
             if sec not in included:
                 included[sec] = 1

@@ -67,24 +67,24 @@ class AnimControlInterval(Interval.Interval):
         self.playRate = playRate
 
         # If no name specified, use id as name
-        if (name == None):
+        if (name is None):
             name = id
 
         self.frameRate = self.controls.getAnim(0).getFrameRate() * abs(playRate)
         # Compute start and end frames.
-        if startFrame != None:
+        if startFrame is not None:
             self.startFrame = startFrame
-        elif startTime != None:
+        elif startTime is not None:
             self.startFrame = startTime * self.frameRate
         else:
             self.startFrame = 0
 
-        if endFrame != None:
+        if endFrame is not None:
             self.endFrame = endFrame
-        elif endTime != None:
+        elif endTime is not None:
             self.endFrame = endTime * self.frameRate
-        elif duration != None:
-            if startTime == None:
+        elif duration is not None:
+            if startTime is None:
                 startTime = float(self.startFrame) / float(self.frameRate)
             endTime = startTime + duration
             self.endFrame = duration * self.frameRate
@@ -108,7 +108,7 @@ class AnimControlInterval(Interval.Interval):
 
         # Compute duration if no duration specified
         self.implicitDuration = 0
-        if duration == None:
+        if duration is None:
             self.implicitDuration = 1
             duration = float(self.numFrames) / self.frameRate
 

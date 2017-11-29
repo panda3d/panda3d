@@ -41,7 +41,7 @@ class PhasedObject:
             self.setAlias(phase, alias)
 
     def __repr__(self):
-        return 'PhasedObject(%s)' % str(self.aliasPhaseMap)
+        return 'PhasedObject(%s)' % self.aliasPhaseMap
 
     def __str__(self):
         outStr = PhasedObject.__repr__(self)

@@ -174,7 +174,7 @@ class CommonFilters:
                 self.textures[tex].setWrapV(Texture.WMClamp)
 
             self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits)
-            if (self.finalQuad == None):
+            if (self.finalQuad is None):
                 self.cleanup()
                 return False
 
@@ -413,7 +413,7 @@ class CommonFilters:
         if (size=="off"):
             self.delBloom()
             return
-        if (maxtrigger==None): maxtrigger=mintrigger+0.8
+        if (maxtrigger is None): maxtrigger=mintrigger+0.8
         oldconfig = self.configuration.get("Bloom", None)
         fullrebuild = True
         if (oldconfig) and (oldconfig.size == size):

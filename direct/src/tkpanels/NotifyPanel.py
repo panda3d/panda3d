@@ -18,7 +18,7 @@ class NotifyPanel:
         # To get severity levels
         from panda3d.core import NSFatal, NSError, NSWarning, NSInfo, NSDebug, NSSpam
 
-        if tl == None:
+        if tl is None:
             tl = Toplevel()
             tl.title('Notify Controls')
             tl.geometry('300x400')

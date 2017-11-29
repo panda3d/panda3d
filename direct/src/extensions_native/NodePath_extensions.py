@@ -315,7 +315,7 @@ def printTransform(self, other = None, sd = 2, fRecursive = 0):
     from panda3d.core import Vec3
     fmtStr = '%%0.%df' % sd
     name = self.getName()
-    if other == None:
+    if other is None:
         transform = self.getTransform()
     else:
         transform = self.getTransform(other)
@@ -464,7 +464,7 @@ def showCS(self, mask = None):
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
-            if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
+            if (mask is None or (np.node().getIntoCollideMask() & mask).getWord()):
                 np.show()
 
 Dtool_funcToMethod(showCS, NodePath)
@@ -482,7 +482,7 @@ def hideCS(self, mask = None):
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
-            if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
+            if (mask is None or (np.node().getIntoCollideMask() & mask).getWord()):
                 np.hide()
 
 Dtool_funcToMethod(hideCS, NodePath)
@@ -639,15 +639,15 @@ def flattenMultitex(self, stateFrom = None, target = None,
                         useGeom = 0, allowTexMat = 0, win = None):
         from panda3d.core import MultitexReducer
         mr = MultitexReducer()
-        if target != None:
+        if target is not None:
             mr.setTarget(target)
         mr.setUseGeom(useGeom)
         mr.setAllowTexMat(allowTexMat)
 
-        if win == None:
+        if win is None:
             win = base.win
 
-        if stateFrom == None:
+        if stateFrom is None:
             mr.scan(self)
         else:
             mr.scan(self, stateFrom)
@@ -790,7 +790,7 @@ def r_subdivideCollisions(self, solids, numSolidsInLeaves):
 
 def r_constructCollisionTree(self, solidTree, parentNode, colName):
         for item in solidTree:
-            if type(item[0]) == type([]):
+            if type(item[0]) is type([]):
                 newNode = parentNode.attachNewNode('%s-branch' % colName)
                 self.r_constructCollisionTree(item, newNode, colName)
             else:

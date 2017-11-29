@@ -170,7 +170,7 @@ class ObjectMgrBase:
             if objDef is None:
                 objDef = base.protoPalette.findItem(typeName)
         newobj = None
-        if objDef and type(objDef) != dict:
+        if objDef and type(objDef) is not dict:
             if not hasattr(objDef, 'createFunction'):
                 return newobj
             if nodePath is None:
@@ -184,7 +184,7 @@ class ObjectMgrBase:
                         elif pair[1] == OG.ARG_PARENT:
                             funcArgs[pair[0]] = parent
 
-                    if type(funcName) == str:
+                    if type(funcName) is str:
                         if funcName.startswith('.'):
                             # when it's using default objectHandler
                             if self.editor:
@@ -682,7 +682,7 @@ class ObjectMgrBase:
                         kwargs[key] = funcArgs[key]
                         undoKwargs[key] = funcArgs[key]
 
-                if type(funcName) == str:
+                if type(funcName) is str:
                     if funcName.startswith('.'):
                         if self.editor:
                             func = Functor(getattr(self.editor, "objectHandler%s"%funcName), **kwargs)

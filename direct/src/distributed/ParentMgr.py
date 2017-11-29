@@ -49,8 +49,8 @@ class ParentMgr:
         """ this internal function removes any currently-pending reparent
         request for the given child nodepath """
         if child in self.pendingChild2parentToken:
-            self.notify.debug("cancelling pending reparent of %s to '%s'" %
-                              (repr(child),
+            self.notify.debug("cancelling pending reparent of %r to '%s'" %
+                              (child,
                                self.pendingChild2parentToken[child]))
             parentToken = self.pendingChild2parentToken[child]
             del self.pendingChild2parentToken[child]
@@ -62,15 +62,15 @@ class ParentMgr:
             # this child may already be waiting on a different parent;
             # make sure they aren't any more
             self.privRemoveReparentRequest(child)
-            self.notify.debug("performing wrtReparent of %s to '%s'" %
-                              (repr(child), parentToken))
+            self.notify.debug("performing wrtReparent of %r to '%s'" %
+                              (child, parentToken))
             child.wrtReparentTo(self.token2nodepath[parentToken])
         else:
             if isDefaultValue(parentToken):
-                self.notify.error('child %s requested reparent to default-value token: %s' % (repr(child), parentToken))
+                self.notify.error('child %r requested reparent to default-value token: %s' % (child, parentToken))
             self.notify.debug(
-                "child %s requested reparent to parent '%s' that is not (yet) registered" %
-                (repr(child), parentToken))
+                "child %r requested reparent to parent '%s' that is not (yet) registered" %
+                (child, parentToken))
             # cancel any pending reparent on behalf of this child
             self.privRemoveReparentRequest(child)
             # make note of this pending parent request
@@ -84,17 +84,17 @@ class ParentMgr:
     def registerParent(self, token, parent):
         if token in self.token2nodepath:
             self.notify.error(
-                "registerParent: token '%s' already registered, referencing %s" %
-                (token, repr(self.token2nodepath[token])))
+                "registerParent: token '%s' already registered, referencing %r" %
+                (token, self.token2nodepath[token]))
 
         if isDefaultValue(token):
-            self.notify.error('parent token (for %s) cannot be a default value (%s)' % (repr(parent), token))
+            self.notify.error('parent token (for %r) cannot be a default value (%s)' % (parent, token))
 
         if type(token) is int:
             if token > 0xFFFFFFFF:
-                self.notify.error('parent token %s (for %s) is out of uint32 range' % (token, repr(parent)))
+                self.notify.error('parent token %s (for %r) is out of uint32 range' % (token, parent))
 
-        self.notify.debug("registering %s as '%s'" % (repr(parent), token))
+        self.notify.debug("registering %r as '%s'" % (parent, token))
         self.token2nodepath[token] = parent
 
         # if we have any pending children, add them
@@ -133,8 +133,8 @@ class ParentMgr:
                 # will happen in a single frame, and the net result will
                 # be that the toon will be in the right place when
                 # rendering starts.
-                self.notify.debug("performing reparent of %s to '%s'" %
-                                  (repr(child), token))
+                self.notify.debug("performing reparent of %r to '%s'" %
+                                  (child, token))
                 child.reparentTo(self.token2nodepath[token])
                 # remove this child from the child->parent table
                 assert self.pendingChild2parentToken[child] == token

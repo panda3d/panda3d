@@ -738,7 +738,7 @@ class Freezer:
         allowChildren is true, the children of the indicated module
         may still be included."""
 
-        assert self.mf == None
+        assert self.mf is None
 
         self.modules[moduleName] = self.ModuleDef(
             moduleName, exclude = True,
@@ -772,7 +772,7 @@ class Freezer:
             print("couldn't import %s" % (moduleName))
             module = None
 
-        if module != None:
+        if module is not None:
             for symbol in moduleName.split('.')[1:]:
                 module = getattr(module, symbol)
             if hasattr(module, '__path__'):
@@ -787,7 +787,7 @@ class Freezer:
         if '.' in baseName:
             parentName, baseName = moduleName.rsplit('.', 1)
             path = self.getModulePath(parentName)
-            if path == None:
+            if path is None:
                 return None
 
         try:
@@ -811,7 +811,7 @@ class Freezer:
             print("couldn't import %s" % (moduleName))
             module = None
 
-        if module != None:
+        if module is not None:
             for symbol in moduleName.split('.')[1:]:
                 module = getattr(module, symbol)
             if hasattr(module, '__all__'):
@@ -824,7 +824,7 @@ class Freezer:
         if '.' in baseName:
             parentName, baseName = moduleName.rsplit('.', 1)
             path = self.getModulePath(parentName)
-            if path == None:
+            if path is None:
                 return None
 
         try:
@@ -863,7 +863,7 @@ class Freezer:
         directories within a particular directory.
         """
 
-        assert self.mf == None
+        assert self.mf is None
 
         if not newName:
             newName = moduleName
@@ -897,7 +897,7 @@ class Freezer:
             for parentName, newParentName in parentNames:
                 modules = self.getModuleStar(parentName)
 
-                if modules == None:
+                if modules is None:
                     # It's actually a regular module.
                     self.modules[newParentName] = self.ModuleDef(
                         parentName, implicit = implicit, guess = guess,
@@ -925,7 +925,7 @@ class Freezer:
         to done(), you may not add any more modules until you call
         reset(). """
 
-        assert self.mf == None
+        assert self.mf is None
 
         # If we are building an exe, we also need to implicitly
         # bring in Python's startup modules.

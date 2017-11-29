@@ -132,7 +132,7 @@ def avatarShadow():
     taskMgr.add(shadowCameraRotate, 'shadowCamera')
 
     global sc
-    if sc != None:
+    if sc is not None:
         sc.clear()
 
     sc = ShadowCaster(lightPath, objectPath, 4, 6)
@@ -178,7 +178,7 @@ def arbitraryShadow(node):
     taskMgr.add(shadowCameraRotate, 'shadowCamera')
 
     global sc
-    if sc != None:
+    if sc is not None:
         sc.clear()
 
     sc = ShadowCaster(lightPath, objectPath, 100, 100)

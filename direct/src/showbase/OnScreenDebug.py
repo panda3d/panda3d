@@ -63,7 +63,7 @@ class OnScreenDebug:
                 #isNew = "was"
                 isNew = "~"
             value = v[1]
-            if type(value) == float:
+            if type(value) is float:
                 value = "% 10.4f"%(value,)
             # else: other types will be converted to str by the "%s"
             self.onScreenText.appendText("%20s %s %-44s\n"%(k, isNew, value))

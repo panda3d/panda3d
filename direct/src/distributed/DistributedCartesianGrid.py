@@ -161,7 +161,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                 self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility(event=parentEvent)
 
     def processVisibility(self, task):
-        if self.visAvatar == None:
+        if self.visAvatar is None:
             # no avatar to process visibility for
             return Task.done
         if(self.visAvatar.isDisabled()):

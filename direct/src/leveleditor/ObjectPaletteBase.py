@@ -59,7 +59,7 @@ class ObjectPaletteBase:
         'item' is the object to be inserted, it can be either a group or obj.
         'parentName' is the name of parent under where this item will be inserted.
         """
-        if type(self.data) != dict:
+        if type(self.data) is not dict:
            return None
 
         if parentName is None:
@@ -70,7 +70,7 @@ class ObjectPaletteBase:
         self.dataKeys.append(item.name)
 
     def add(self, item, parentName = None):
-        if type(item) == str:
+        if type(item) is str:
            self.insertItem(ObjectGen(name = item), parentName)
         else:
            self.insertItem(item, parentName)

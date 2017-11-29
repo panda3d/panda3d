@@ -29,14 +29,14 @@ class State(DirectObject):
                 enterFunc = state.getEnterFunc()
                 exitFunc = state.getExitFunc()
                 # print 'testing: ', state, enterFunc, exitFunc, oldFunction
-                if type(enterFunc) == types.MethodType:
+                if type(enterFunc) is types.MethodType:
                     if enterFunc.__func__ == oldFunction:
                         # print 'found: ', enterFunc, oldFunction
                         state.setEnterFunc(types.MethodType(newFunction,
                                                             enterFunc.__self__,
                                                             enterFunc.__self__.__class__))
                         count += 1
-                if type(exitFunc) == types.MethodType:
+                if type(exitFunc) is types.MethodType:
                     if exitFunc.__func__ == oldFunction:
                         # print 'found: ', exitFunc, oldFunction
                         state.setExitFunc(types.MethodType(newFunction,
@@ -101,7 +101,7 @@ class State(DirectObject):
             return 1
 
         # if we're given a state object, get its name instead
-        if type(otherState) != type(''):
+        if type(otherState) is not str:
             otherState = otherState.getName()
         return (otherState in self.__transitions)
 
@@ -198,7 +198,7 @@ class State(DirectObject):
         # state that is safe to enter
         self.__enterChildren(argList)
 
-        if (self.__enterFunc != None):
+        if (self.__enterFunc is not None):
             self.__enterFunc(*argList)
 
     def exit(self, argList=[]):
@@ -209,7 +209,7 @@ class State(DirectObject):
         self.__exitChildren(argList)
 
         # call exit function if it exists
-        if (self.__exitFunc != None):
+        if (self.__exitFunc is not None):
             self.__exitFunc(*argList)
 
     def __str__(self):

@@ -596,7 +596,7 @@ class AppRunner(DirectObject):
             if hasattr(builtins, "base"):
                 base.destroy()
 
-            self.notify.info("Normal exit with status %s." % repr(err.code))
+            self.notify.info("Normal exit with status %r." % err.code)
             raise
 
         except:
@@ -715,7 +715,7 @@ class AppRunner(DirectObject):
                 mainModule = sys.modules[moduleName]
 
             # Check if it has a main() function.  If so, call it.
-            if hasattr(mainModule, 'main') and hasattr(mainModule.main, '__call__'):
+            if hasattr(mainModule, 'main') and callable(mainModule.main):
                 mainModule.main(self)
 
             # Now clear this flag.

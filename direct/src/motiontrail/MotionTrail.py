@@ -168,7 +168,7 @@ class MotionTrail(NodePath, DirectObject):
                     # Python version
                     if (motion_trail.active and motion_trail.check_for_update (current_time)):
                         transform = None
-                        if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
+                        if (motion_trail.root_node_path is not None) and (motion_trail.root_node_path != render):
                             motion_trail.root_node_path.update ( )
 
                         if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
@@ -176,7 +176,7 @@ class MotionTrail(NodePath, DirectObject):
                         else:
                             transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
 
-                        if (transform != None):
+                        if (transform is not None):
                             motion_trail.update_motion_trail (current_time, transform)
                 else:
                     # C++ version
@@ -270,7 +270,7 @@ class MotionTrail(NodePath, DirectObject):
 
         # transfer only on modification
         if (self.modified_vertices):
-            self.cmotion_trail.setParameters (self.sampling_time, self.time_window, self.texture != None, self.calculate_relative_matrix, self.use_nurbs, self.resolution_distance)
+            self.cmotion_trail.setParameters (self.sampling_time, self.time_window, self.texture is not None, self.calculate_relative_matrix, self.use_nurbs, self.resolution_distance)
 
             self.cmotion_trail.resetVertexList ( )
 
@@ -298,7 +298,7 @@ class MotionTrail(NodePath, DirectObject):
 
         self.vertex_index = 0;
 
-        if (self.texture != None):
+        if (self.texture is not None):
             self.format = GeomVertexFormat.getV3c4t2 ( )
         else:
             self.format = GeomVertexFormat.getV3c4 ( )
@@ -307,7 +307,7 @@ class MotionTrail(NodePath, DirectObject):
 
         self.vertex_writer = GeomVertexWriter (self.vertex_data, "vertex")
         self.color_writer = GeomVertexWriter (self.vertex_data, "color")
-        if (self.texture != None):
+        if (self.texture is not None):
             self.texture_writer = GeomVertexWriter (self.vertex_data, "texcoord")
 
         self.triangles = GeomTriangles (Geom.UHStatic)
@@ -324,7 +324,7 @@ class MotionTrail(NodePath, DirectObject):
         self.color_writer.addData4f (c2)
         self.color_writer.addData4f (c3)
 
-        if (self.texture != None):
+        if (self.texture is not None):
             self.texture_writer.addData2f (t0)
             self.texture_writer.addData2f (t1)
             self.texture_writer.addData2f (t2)
@@ -698,7 +698,7 @@ class MotionTrail(NodePath, DirectObject):
         return
 
     def reset_motion_trail_geometry(self):
-        if (self.geom_node != None):
+        if (self.geom_node is not None):
             self.geom_node.removeAllGeoms ( )
         return
 
