@@ -42,9 +42,9 @@ add_curve(ParametricCurve *curve) {
  * Adds a new ParametricCurve to the collection at the indicated index.
  */
 void ParametricCurveCollection::
-add_curve(ParametricCurve *curve, int index) {
+insert_curve(size_t index, ParametricCurve *curve) {
   prepare_add_curve(curve);
-  index = max(min(index, (int)_curves.size()), 0);
+  index = min(index, _curves.size());
   _curves.insert(_curves.begin() + index, curve);
   redraw();
 }
@@ -93,8 +93,8 @@ remove_curve(ParametricCurve *curve) {
  * number.
  */
 void ParametricCurveCollection::
-remove_curve(int index) {
-  nassertv(index >= 0 && index < (int)_curves.size());
+remove_curve(size_t index) {
+  nassertv(index < _curves.size());
   PT(ParametricCurve) curve = _curves[index];
   prepare_remove_curve(curve);
   _curves.erase(_curves.begin() + index);
@@ -107,8 +107,8 @@ remove_curve(int index) {
  * number.
  */
 void ParametricCurveCollection::
-set_curve(int index, ParametricCurve *curve) {
-  nassertv(index >= 0 && index < (int)_curves.size());
+set_curve(size_t index, ParametricCurve *curve) {
+  nassertv(index < _curves.size());
   prepare_remove_curve(_curves[index]);
   prepare_add_curve(curve);
   _curves[index] = curve;

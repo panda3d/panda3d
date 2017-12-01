@@ -49,7 +49,6 @@ PUBLISHED:
   void sort_descendants();
 
   MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
-  MAKE_MAP_PROPERTY(children, get_child_named, get_child_named);
 
 public:
   virtual TypeHandle get_value_type() const;

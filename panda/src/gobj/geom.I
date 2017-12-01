@@ -68,7 +68,7 @@ is_empty() const {
  * Returns the number of GeomPrimitive objects stored within the Geom, each of
  * which represents a number of primitives of a particular type.
  */
-INLINE int Geom::
+INLINE size_t Geom::
 get_num_primitives() const {
   CDReader cdata(_cycler);
   return cdata->_primitives.size();
@@ -80,9 +80,9 @@ get_num_primitives() const {
  * or set_primitive() if you want to modify it.
  */
 INLINE CPT(GeomPrimitive) Geom::
-get_primitive(int i) const {
+get_primitive(size_t i) const {
   CDReader cdata(_cycler);
-  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  nassertr(i < cdata->_primitives.size(), nullptr);
   return cdata->_primitives[i].get_read_pointer();
 }
 
@@ -95,13 +95,26 @@ get_primitive(int i) const {
  * away other changes you might have recently made in an upstream thread.
  */
 INLINE PT(GeomPrimitive) Geom::
-modify_primitive(int i) {
+modify_primitive(size_t i) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  nassertr(i < cdata->_primitives.size(), NULL);
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
   return cdata->_primitives[i].get_write_pointer();
+}
+
+/**
+ * Inserts a new GeomPrimitive structure to the Geom object.  This specifies a
+ * particular subset of vertices that are used to define geometric primitives
+ * of the indicated type.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
+ */
+INLINE void Geom::
+add_primitive(const GeomPrimitive *primitive) {
+  insert_primitive((size_t)-1, primitive);
 }
 
 /**

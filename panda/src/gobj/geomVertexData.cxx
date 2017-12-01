@@ -2565,8 +2565,8 @@ reserve_num_rows(int n) {
  *
  */
 PT(GeomVertexArrayData) GeomVertexDataPipelineWriter::
-modify_array(int i) {
-  nassertr(i >= 0 && i < (int)_cdata->_arrays.size(), NULL);
+modify_array(size_t i) {
+  nassertr(i < _cdata->_arrays.size(), nullptr);
 
   PT(GeomVertexArrayData) new_data;
   if (_got_array_writers) {
@@ -2586,8 +2586,8 @@ modify_array(int i) {
  *
  */
 void GeomVertexDataPipelineWriter::
-set_array(int i, const GeomVertexArrayData *array) {
-  nassertv(i >= 0 && i < (int)_cdata->_arrays.size());
+set_array(size_t i, const GeomVertexArrayData *array) {
+  nassertv(i < _cdata->_arrays.size());
   _cdata->_arrays[i] = (GeomVertexArrayData *)array;
   _object->clear_cache_stage();
   _cdata->_modified = Geom::get_next_modified();

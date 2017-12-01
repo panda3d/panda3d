@@ -59,6 +59,20 @@ else:
 
 ########################################################################
 ##
+## Visual C++ Version (MSVC) and Visual Studio Information Map
+##
+########################################################################
+
+MSVCVERSIONINFO = {
+    (10,0): {"vsversion":(10,0), "vsname":"Visual Studio 2010"},
+    (11,0): {"vsversion":(11,0), "vsname":"Visual Studio 2012"},
+    (12,0): {"vsversion":(12,0), "vsname":"Visual Studio 2013"},
+    (14,0): {"vsversion":(14,0), "vsname":"Visual Studio 2015"},
+    (14,1): {"vsversion":(15,0), "vsname":"Visual Studio 2017"},
+}
+
+########################################################################
+##
 ## Maya and Max Version List (with registry keys)
 ##
 ########################################################################
@@ -921,6 +935,17 @@ def GetProgramFiles():
         return "E:\\Program Files"
     return 0
 
+def GetProgramFiles_x86():
+    if ("ProgramFiles(x86)" in os.environ):
+        return os.environ["ProgramFiles(x86)"]
+    elif (os.path.isdir("C:\\Program Files (x86)")):
+        return "C:\\Program Files (x86)"
+    elif (os.path.isdir("D:\\Program Files (x86)")):
+        return "D:\\Program Files (x86)"
+    elif (os.path.isdir("E:\\Program Files (x86)")):
+        return "E:\\Program Files (x86)"
+    return GetProgramFiles()
+
 ########################################################################
 ##
 ## Parsing Compiler Option Lists
@@ -1147,7 +1172,7 @@ def GetThirdpartyDir():
     target_arch = GetTargetArch()
 
     if (target == 'windows'):
-        vc = SDK["VISUALSTUDIO_VERSION"].split('.')[0]
+        vc = str(SDK["MSVC_VERSION"][0])
 
         if target_arch == 'x64':
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-x64/"
@@ -2042,21 +2067,64 @@ def SdkLocatePython(prefer_thirdparty_python=False):
     else:
         print("Using Python %s" % (SDK["PYTHONVERSION"][6:9]))
 
-def SdkLocateVisualStudio(version=10):
+def SdkLocateVisualStudio(version=(10,0)):
     if (GetHost() != "windows"): return
 
-    version = str(version) + '.0'
+    try:
+        msvcinfo = MSVCVERSIONINFO[version]
+    except:
+        exit("Couldn't get Visual Studio infomation with MSVC %s.%s version." % version)
 
-    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", version)
-    if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
+    vsversion = msvcinfo["vsversion"]
+    vsversion_str = "%s.%s" % vsversion
+    version_str = "%s.%s" % version
+
+    # try to use vswhere.exe
+    vswhere_path = LocateBinary("vswhere.exe")
+    if not vswhere_path:
+        if sys.platform == 'cygwin':
+            vswhere_path = "/cygdrive/c/Program Files/Microsoft Visual Studio/Installer/vswhere.exe"
+        else:
+            vswhere_path = "%s\\Microsoft Visual Studio\\Installer\\vswhere.exe" % GetProgramFiles()
+        if not os.path.isfile(vswhere_path):
+            vswhere_path = None
+
+    if not vswhere_path:
+        if sys.platform == 'cygwin':
+            vswhere_path = "/cygdrive/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+        else:
+            vswhere_path = "%s\\Microsoft Visual Studio\\Installer\\vswhere.exe" % GetProgramFiles_x86()
+        if not os.path.isfile(vswhere_path):
+            vswhere_path = None
+
+    vsdir = 0
+    if vswhere_path:
+        min_vsversion = vsversion_str
+        max_vsversion = "%s.%s" % (vsversion[0]+1, 0)
+        vswhere_cmd = ["vswhere.exe", "-legacy", "-property", "installationPath",
+            "-version", "[{},{})".format(min_vsversion, max_vsversion)]
+        handle = subprocess.Popen(vswhere_cmd, executable=vswhere_path, stdout=subprocess.PIPE)
+        found_paths = handle.communicate()[0].splitlines()
+        if found_paths:
+            vsdir = found_paths[0].decode("utf-8") + "\\"
+
+    # try to use registry
+    if (vsdir == 0):
+        vsdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7", vsversion_str)
+    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", version_str)
+
+    if (vsdir != 0):
+        SDK["VISUALSTUDIO"] = vsdir
+
+    elif (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
 
-    elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
-        SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio %s\\" % (version)
+    elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (vsversion_str))):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio %s\\" % (vsversion_str)
 
-    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
-        SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio %s\\" % (version)
+    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (vsversion_str))):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio %s\\" % (vsversion_str)
 
     elif "VCINSTALLDIR" in os.environ:
         vcdir = os.environ["VCINSTALLDIR"]
@@ -2068,14 +2136,17 @@ def SdkLocateVisualStudio(version=10):
         SDK["VISUALSTUDIO"] = vcdir
 
     else:
-        exit("Couldn't find Visual Studio %s.  To use a different version, use the --msvc-version option." % version)
+        exit("Couldn't find %s.  To use a different version, use the --msvc-version option." % msvcinfo["vsname"])
 
-    SDK["VISUALSTUDIO_VERSION"] = version
+    SDK["MSVC_VERSION"] = version
+    SDK["VISUALSTUDIO_VERSION"] = vsversion
 
     if GetVerbose():
-        print("Using Visual Studio %s located at %s" % (version, SDK["VISUALSTUDIO"]))
+        print("Using %s located at %s" % (msvcinfo["vsname"], SDK["VISUALSTUDIO"]))
     else:
-        print("Using Visual Studio %s" % (version))
+        print("Using %s" % (msvcinfo["vsname"]))
+
+    print("Using MSVC %s" % version_str)
 
 def SdkLocateWindows(version = '7.1'):
     if GetTarget() != "windows" or GetHost() != "windows":
@@ -2383,7 +2454,19 @@ def SetupVisualStudioEnviron():
         exit("Could not find Visual Studio install directory")
     if ("MSPLATFORM" not in SDK):
         exit("Could not find the Microsoft Platform SDK")
-    os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
+
+    if (SDK["VISUALSTUDIO_VERSION"] >= (15,0)):
+        try:
+            vsver_file = open(os.path.join(SDK["VISUALSTUDIO"],
+                "VC\\Auxiliary\\Build\\Microsoft.VCToolsVersion.default.txt"), "r")
+            SDK["VCTOOLSVERSION"] = vsver_file.readline().strip()
+            vcdir_suffix = "VC\\Tools\\MSVC\\%s\\" % SDK["VCTOOLSVERSION"]
+        except:
+            exit("Couldn't find tool version of %s." % MSVCVERSIONINFO[SDK["MSVC_VERSION"]]["vsname"])
+    else:
+        vcdir_suffix = "VC\\"
+
+    os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + vcdir_suffix
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
 
     winsdk_ver = SDK["MSPLATFORM_VERSION"]
@@ -2392,18 +2475,22 @@ def SetupVisualStudioEnviron():
     arch = GetTargetArch()
     bindir = ""
     libdir = ""
-    if (arch == 'x64'):
-        bindir = 'amd64'
-        libdir = 'amd64'
-    elif (arch != 'x86'):
-        bindir = arch
+    if ("VCTOOLSVERSION" in SDK):
+        bindir = "Host" + GetHostArch().upper() + "\\" + arch
         libdir = arch
+    else:
+        if (arch == 'x64'):
+            bindir = 'amd64'
+            libdir = 'amd64'
+        elif (arch != 'x86'):
+            bindir = arch
+            libdir = arch
 
-    if (arch != 'x86' and GetHostArch() == 'x86'):
-        # Special version of the tools that run on x86.
-        bindir = 'x86_' + bindir
+        if (arch != 'x86' and GetHostArch() == 'x86'):
+            # Special version of the tools that run on x86.
+            bindir = 'x86_' + bindir
 
-    vc_binpath = SDK["VISUALSTUDIO"] + "VC\\bin"
+    vc_binpath = SDK["VISUALSTUDIO"] + vcdir_suffix + "bin"
     binpath = os.path.join(vc_binpath, bindir)
     if not os.path.isfile(binpath + "\\cl.exe"):
         # Try the x86 tools, those should work just as well.
@@ -2416,10 +2503,10 @@ def SetupVisualStudioEnviron():
 
     AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
-    AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
-    AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib\\" + libdir)
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib\\" + libdir)
+    AddToPathEnv("INCLUDE", os.environ["VCINSTALLDIR"] + "include")
+    AddToPathEnv("INCLUDE", os.environ["VCINSTALLDIR"] + "atlmfc\\include")
+    AddToPathEnv("LIB",     os.environ["VCINSTALLDIR"] + "lib\\" + libdir)
+    AddToPathEnv("LIB",     os.environ["VCINSTALLDIR"] + "atlmfc\\lib\\" + libdir)
 
     winsdk_ver = SDK["MSPLATFORM_VERSION"]
     if winsdk_ver.startswith('10.'):
@@ -2429,6 +2516,16 @@ def SetupVisualStudioEnviron():
         # Windows Kit 10 introduces the "universal CRT".
         inc_dir = SDK["MSPLATFORM"] + "Include\\" + winsdk_ver + "\\"
         lib_dir = SDK["MSPLATFORM"] + "Lib\\" + winsdk_ver + "\\"
+        AddToPathEnv("INCLUDE", inc_dir + "shared")
+        AddToPathEnv("INCLUDE", inc_dir + "ucrt")
+        AddToPathEnv("INCLUDE", inc_dir + "um")
+        AddToPathEnv("LIB", lib_dir + "ucrt\\" + arch)
+        AddToPathEnv("LIB", lib_dir + "um\\" + arch)
+    elif winsdk_ver == '8.1':
+        AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
+
+        inc_dir = SDK["MSPLATFORM"] + "Include\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\winv6.3\\"
         AddToPathEnv("INCLUDE", inc_dir + "shared")
         AddToPathEnv("INCLUDE", inc_dir + "ucrt")
         AddToPathEnv("INCLUDE", inc_dir + "um")
@@ -2456,7 +2553,7 @@ def SetupVisualStudioEnviron():
 
     # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
     # with Visual Studio 2015 requires use of the Universal CRT.
-    if winsdk_ver == '7.1' and SDK["VISUALSTUDIO_VERSION"] == '14.0':
+    if winsdk_ver == '7.1' and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
         win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
         # Fallback in case we can't read the registry.

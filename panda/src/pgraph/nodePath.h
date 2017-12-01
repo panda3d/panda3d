@@ -913,10 +913,11 @@ PUBLISHED:
   INLINE bool has_net_tag(const string &key) const;
   NodePath find_net_tag(const string &key) const;
 
-  MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
   MAKE_MAP_PROPERTY(net_tags, has_net_tag, get_net_tag);
 
+  EXTENSION(INLINE PyObject *get_tags() const);
   EXTENSION(INLINE PyObject *get_tag_keys() const);
+  MAKE_PROPERTY(tags, get_tags);
 
   EXTENSION(PyObject *get_python_tags());
   EXTENSION(INLINE void set_python_tag(PyObject *keys, PyObject *value));

@@ -45,6 +45,7 @@
 #include "copyOnWritePointer.h"
 #include "lightReMutex.h"
 #include "extension.h"
+#include "simpleHashMap.h"
 
 class NodePathComponent;
 class CullTraverser;
@@ -196,7 +197,15 @@ PUBLISHED:
                       Thread *current_thread = Thread::get_current_thread()) const;
   void clear_tag(const string &key,
                  Thread *current_thread = Thread::get_current_thread());
+
+public:
   void get_tag_keys(vector_string &keys) const;
+  INLINE size_t get_num_tags() const;
+  INLINE string get_tag_key(size_t i) const;
+
+PUBLISHED:
+  MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
+  MAKE_MAP_KEYS_SEQ(tags, get_num_tags, get_tag_key);
 
   EXTENSION(PyObject *get_tag_keys() const);
 
@@ -511,7 +520,7 @@ private:
 
   // This is used to maintain a table of keyed data on each node, for the
   // user's purposes.
-  typedef phash_map<string, string, string_hash> TagData;
+  typedef SimpleHashMap<string, string, string_hash> TagData;
 
   // This is actually implemented in pandaNode_ext.h, but defined here so
   // that we can destruct it from the C++ side.  Note that it isn't cycled,

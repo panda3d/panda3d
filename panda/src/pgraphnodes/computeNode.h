@@ -34,11 +34,12 @@ PUBLISHED:
   INLINE size_t get_num_dispatches() const;
   INLINE const LVecBase3i &get_dispatch(size_t i) const;
   INLINE void set_dispatch(size_t i, const LVecBase3i &num_groups);
+  INLINE void insert_dispatch(size_t i, const LVecBase3i &num_groups);
   INLINE void remove_dispatch(size_t i);
   INLINE void clear_dispatches();
 
   MAKE_SEQ(get_dispatches, get_num_dispatches, get_dispatch);
-  MAKE_SEQ_PROPERTY(dispatches, get_num_dispatches, get_dispatch, set_dispatch, remove_dispatch);
+  MAKE_SEQ_PROPERTY(dispatches, get_num_dispatches, get_dispatch, set_dispatch, remove_dispatch, insert_dispatch);
 
 public:
   ComputeNode(const ComputeNode &copy);

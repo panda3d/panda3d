@@ -35,10 +35,11 @@ PUBLISHED:
 
   void add_forces_from(const ForceNode &other);
   void set_force(size_t index, BaseForce *force);
+  void insert_force(size_t index, BaseForce *force);
   void remove_force(BaseForce *force);
   void remove_force(size_t index);
 
-  MAKE_SEQ_PROPERTY(forces, get_num_forces, get_force, set_force, remove_force);
+  MAKE_SEQ_PROPERTY(forces, get_num_forces, get_force, set_force, remove_force, insert_force);
 
   virtual void output(ostream &out) const;
   virtual void write_forces(ostream &out, unsigned int indent=0) const;

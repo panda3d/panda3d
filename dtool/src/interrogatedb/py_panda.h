@@ -469,49 +469,6 @@ EXPCL_INTERROGATEDB PyObject *
 map_deepcopy_to_copy(PyObject *self, PyObject *args);
 
 /**
- * These classes are returned from properties that require a subscript
- * interface, ie. something.children[i] = 3.
- */
-struct Dtool_WrapperBase {
-  PyObject_HEAD;
-  PyObject *_self;
-  const char *_name;
-};
-
-struct Dtool_SequenceWrapper {
-  Dtool_WrapperBase _base;
-  lenfunc _len_func;
-  ssizeargfunc _getitem_func;
-  ssizeobjargproc _setitem_func;
-};
-
-struct Dtool_MappingWrapper {
-  Dtool_WrapperBase _base;
-  binaryfunc _getitem_func;
-  objobjargproc _setitem_func;
-};
-
-struct Dtool_SeqMapWrapper {
-  Dtool_MappingWrapper _map;
-  lenfunc _len_func;
-  ssizeargfunc _seq_getitem_func;
-  ssizeobjargproc _seq_setitem_func;
-};
-
-struct Dtool_GeneratorWrapper {
-  Dtool_WrapperBase _base;
-  iternextfunc _iternext_func;
-};
-
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SequenceWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MappingWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SeqMapWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_GeneratorWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_StaticProperty_Type;
-
-EXPCL_INTERROGATEDB PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
-
-/**
  * These functions check whether the arguments passed to a function conform to
  * certain expectations.
  */
@@ -565,6 +522,8 @@ EXPCL_INTERROGATEDB extern void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObjec
 #define Dtool_Ptr_DTOOL_SUPER_BASE (&Dtool_DTOOL_SUPER_BASE)
 
 #include "py_panda.I"
+
+#include "py_wrappers.h"
 
 #endif  // HAVE_PYTHON && !CPPPARSER
 

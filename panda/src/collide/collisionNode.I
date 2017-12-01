@@ -65,7 +65,7 @@ clear_solids() {
 /**
  *
  */
-INLINE int CollisionNode::
+INLINE size_t CollisionNode::
 get_num_solids() const {
   return _solids.size();
 }
@@ -74,8 +74,8 @@ get_num_solids() const {
  *
  */
 INLINE CPT(CollisionSolid) CollisionNode::
-get_solid(int n) const {
-  nassertr(n >= 0 && n < get_num_solids(), NULL);
+get_solid(size_t n) const {
+  nassertr(n < get_num_solids(), nullptr);
   return _solids[n].get_read_pointer();
 }
 
@@ -83,8 +83,8 @@ get_solid(int n) const {
  *
  */
 INLINE PT(CollisionSolid) CollisionNode::
-modify_solid(int n) {
-  nassertr(n >= 0 && n < get_num_solids(), NULL);
+modify_solid(size_t n) {
+  nassertr(n < get_num_solids(), nullptr);
   mark_internal_bounds_stale();
   return _solids[n].get_write_pointer();
 }
@@ -93,9 +93,21 @@ modify_solid(int n) {
  * Replaces the solid with the indicated index.
  */
 INLINE void CollisionNode::
-set_solid(int n, CollisionSolid *solid) {
-  nassertv(n >= 0 && n < get_num_solids());
+set_solid(size_t n, CollisionSolid *solid) {
+  nassertv(n < get_num_solids());
   _solids[n] = solid;
+  mark_internal_bounds_stale();
+}
+
+/**
+ * Inserts the indicated solid to the node at the indicated position.
+ */
+INLINE void CollisionNode::
+insert_solid(size_t n, const CollisionSolid *solid) {
+  if (n > _solids.size()) {
+    n = _solids.size();
+  }
+  _solids.insert(_solids.begin() + n, (CollisionSolid *)solid);
   mark_internal_bounds_stale();
 }
 
@@ -104,8 +116,8 @@ set_solid(int n, CollisionSolid *solid) {
  * indices down by one.
  */
 INLINE void CollisionNode::
-remove_solid(int n) {
-  nassertv(n >= 0 && n < get_num_solids());
+remove_solid(size_t n) {
+  nassertv(n < get_num_solids());
   _solids.erase(_solids.begin() + n);
   mark_internal_bounds_stale();
 }
@@ -114,7 +126,7 @@ remove_solid(int n) {
  * Adds the indicated solid to the node.  Returns the index of the new solid
  * within the node's list of solids.
  */
-INLINE int CollisionNode::
+INLINE size_t CollisionNode::
 add_solid(const CollisionSolid *solid) {
   _solids.push_back((CollisionSolid *)solid);
   mark_internal_bounds_stale();

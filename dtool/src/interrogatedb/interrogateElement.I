@@ -25,6 +25,8 @@ InterrogateElement(InterrogateModuleDef *def) :
   _has_function = 0;
   _clear_function = 0;
   _del_function = 0;
+  _insert_function = 0;
+  _getkey_function = 0;
   _length_function = 0;
   _make_property = nullptr;
 }
@@ -52,6 +54,8 @@ operator = (const InterrogateElement &copy) {
   _has_function = copy._has_function;
   _clear_function = copy._clear_function;
   _del_function = copy._del_function;
+  _insert_function = copy._insert_function;
+  _getkey_function = copy._getkey_function;
   _length_function = copy._length_function;
   _make_property = copy._make_property;
 }
@@ -183,6 +187,38 @@ has_del_function() const {
 INLINE FunctionIndex InterrogateElement::
 get_del_function() const {
   return _del_function;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateElement::
+has_insert_function() const {
+  return (_flags & F_has_insert_function) != 0;
+}
+
+/**
+ *
+ */
+INLINE FunctionIndex InterrogateElement::
+get_insert_function() const {
+  return _insert_function;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateElement::
+has_getkey_function() const {
+  return (_flags & F_has_getkey_function) != 0;
+}
+
+/**
+ *
+ */
+INLINE FunctionIndex InterrogateElement::
+get_getkey_function() const {
+  return _getkey_function;
 }
 
 /**
