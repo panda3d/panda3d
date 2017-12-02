@@ -44,7 +44,6 @@ class build_apps(distutils.core.Command):
         self.build_base = os.path.join(os.getcwd(), 'build')
         self.gui_apps = {}
         self.console_apps = {}
-        self.copy_paths = []
         self.rename_paths = {}
         self.include_patterns = []
         self.exclude_patterns = []
@@ -110,19 +109,12 @@ class build_apps(distutils.core.Command):
         self.console_apps = _parse_dict(self.console_apps)
 
         self.rename_paths = _parse_dict(self.rename_paths)
-        self.copy_paths = _parse_list(self.copy_paths)
         self.include_patterns = _parse_list(self.include_patterns)
         self.exclude_patterns = _parse_list(self.exclude_patterns)
         self.include_modules = _parse_list(self.include_modules)
         self.exclude_modules = _parse_list(self.exclude_modules)
         self.plugins = _parse_list(self.plugins)
 
-        for path in self.copy_paths:
-            if isinstance(path, basestring):
-                src = path
-            else:
-                src, _ = path
-            assert os.path.exists(src), 'Copy path source does not exist: {}'.format(src)
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
 
     def run(self):
