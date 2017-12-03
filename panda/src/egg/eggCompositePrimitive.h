@@ -32,11 +32,11 @@ PUBLISHED:
 
   virtual Shading get_shading() const;
 
-  INLINE int get_num_components() const;
-  INLINE const EggAttributes *get_component(int i) const;
-  INLINE EggAttributes *get_component(int i);
+  INLINE size_t get_num_components() const;
+  INLINE const EggAttributes *get_component(size_t i) const;
+  INLINE EggAttributes *get_component(size_t i);
   MAKE_SEQ(get_components, get_num_components, get_component);
-  INLINE void set_component(int i, const EggAttributes *attrib);
+  INLINE void set_component(size_t i, const EggAttributes *attrib);
 
   MAKE_SEQ_PROPERTY(components, get_num_components, get_component, set_component);
 

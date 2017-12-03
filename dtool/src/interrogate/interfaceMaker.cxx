@@ -90,6 +90,8 @@ Property(const InterrogateElement &ielement) :
   _has_function(nullptr),
   _clear_function(nullptr),
   _deleter(nullptr),
+  _inserter(nullptr),
+  _getkey_function(nullptr),
   _has_this(false)
 {
 }

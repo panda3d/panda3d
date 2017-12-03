@@ -47,7 +47,9 @@ static_assert(MEMORY_HOOK_ALIGNMENT * 8 >= NATIVE_WORDSIZE,
 static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
               "MEMORY_HOOK_ALIGNMENT should be a power of two");
 
-#if defined(USE_MEMORY_DLMALLOC)
+#if defined(CPPPARSER)
+
+#elif defined(USE_MEMORY_DLMALLOC)
 
 // Memory manager: DLMALLOC This is Doug Lea's memory manager.  It is very
 // fast, but it is not thread-safe.  However, we provide thread locking within

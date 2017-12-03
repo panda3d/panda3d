@@ -27,6 +27,7 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3d;
 extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 #endif
 extern struct Dtool_PyTypedObject Dtool_NodePath;
+extern struct Dtool_PyTypedObject Dtool_PandaNode;
 #endif  // CPPPARSER
 
 /**
@@ -130,7 +131,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   }
 
   // Start by getting this class object.
-  PyObject *this_class = PyObject_Type(self);
+  PyObject *this_class = (PyObject *)Py_TYPE(self);
   if (this_class == NULL) {
     return NULL;
   }
@@ -143,7 +144,6 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream_persist");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream_persist()");
-      Py_DECREF(this_class);
       return NULL;
     }
 
@@ -153,20 +153,42 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream()");
-      Py_DECREF(this_class);
       return NULL;
     }
   }
 
   // PyTuple_SET_ITEM conveniently borrows the reference it is passed.
-  PyObject *args = PyTuple_New(2);
-  PyTuple_SET_ITEM(args, 0, this_class);
-  PyTuple_SET_ITEM(args, 1, Dtool_WrapValue(bam_stream));
+  PyObject *args = PyTuple_New(1);
+  PyTuple_SET_ITEM(args, 0, Dtool_WrapValue(bam_stream));
 
   PyObject *tuple = PyTuple_New(2);
   PyTuple_SET_ITEM(tuple, 0, func);
   PyTuple_SET_ITEM(tuple, 1, args);
   return tuple;
+}
+
+/**
+ * Returns the associated node's tags.
+ */
+PyObject *Extension<NodePath>::
+get_tags() const {
+  // An empty NodePath returns None
+  if (_this->is_empty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  // Just call PandaNode.tags rather than defining a whole new interface.
+  PT(PandaNode) node = _this->node();
+  PyObject *py_node = DTool_CreatePyInstanceTyped
+    ((void *)node.p(), Dtool_PandaNode, true, false, node->get_type_index());
+
+  // DTool_CreatePyInstanceTyped() steals a C++ reference.
+  node.cheat() = nullptr;
+
+  PyObject *result = PyObject_GetAttrString(py_node, "tags");
+  Py_DECREF(py_node);
+  return result;
 }
 
 /**

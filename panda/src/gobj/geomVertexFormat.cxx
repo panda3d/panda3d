@@ -310,7 +310,9 @@ add_array(const GeomVertexArrayFormat *array_format) {
 void GeomVertexFormat::
 insert_array(size_t array, const GeomVertexArrayFormat *array_format) {
   nassertv(!is_registered());
-  nassertv(array <= _arrays.size());
+  if (array > _arrays.size()) {
+    array = _arrays.size();
+  }
 
   _arrays.insert(_arrays.begin() + array, (GeomVertexArrayFormat *)array_format);
 }
@@ -375,6 +377,22 @@ get_column(size_t i) const {
   }
 
   return NULL;
+}
+
+/**
+ * Returns the name of the ith column, across all arrays.
+ */
+const InternalName *GeomVertexFormat::
+get_column_name(size_t i) const {
+  Arrays::const_iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    if (i < (size_t)(*ai)->get_num_columns()) {
+      return (*ai)->get_column(i)->get_name();
+    }
+    i -= (*ai)->get_num_columns();
+  }
+
+  return nullptr;
 }
 
 /**

@@ -87,15 +87,16 @@ PUBLISHED:
 
   INLINE bool is_empty() const;
 
-  INLINE int get_num_primitives() const;
-  INLINE CPT(GeomPrimitive) get_primitive(int i) const;
+  INLINE size_t get_num_primitives() const;
+  INLINE CPT(GeomPrimitive) get_primitive(size_t i) const;
   MAKE_SEQ(get_primitives, get_num_primitives, get_primitive);
-  INLINE PT(GeomPrimitive) modify_primitive(int i);
-  void set_primitive(int i, const GeomPrimitive *primitive);
-  void add_primitive(const GeomPrimitive *primitive);
-  void remove_primitive(int i);
+  INLINE PT(GeomPrimitive) modify_primitive(size_t i);
+  void set_primitive(size_t i, const GeomPrimitive *primitive);
+  void insert_primitive(size_t i, const GeomPrimitive *primitive);
+  INLINE void add_primitive(const GeomPrimitive *primitive);
+  void remove_primitive(size_t i);
   void clear_primitives();
-  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive);
+  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive, insert_primitive);
 
   INLINE PT(Geom) decompose() const;
   INLINE PT(Geom) doubleside() const;

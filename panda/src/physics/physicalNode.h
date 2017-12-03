@@ -36,10 +36,12 @@ PUBLISHED:
 
   void add_physicals_from(const PhysicalNode &other);
   void set_physical(size_t index, Physical *physical);
+  void insert_physical(size_t index, Physical *physical);
   void remove_physical(Physical *physical);
   void remove_physical(size_t index);
 
-  MAKE_SEQ_PROPERTY(physicals, get_num_physicals, get_physical, set_physical, remove_physical);
+  MAKE_SEQ_PROPERTY(physicals, get_num_physicals, get_physical, set_physical,
+                    remove_physical, insert_physical);
 
   virtual void write(ostream &out, unsigned int indent=0) const;
 

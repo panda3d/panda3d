@@ -53,18 +53,31 @@ def test_fbquality_rgba64():
     # This issue occurs if we are requesting 1 bit, not if we are requesting
     # a specific amount.  There are several ways to do that, so we want to
     # assert that none of them will yield a 64-bit color buffer.
-    req_color = FrameBufferProperties()
-    req_color.color_bits = 1
+    req_color0 = FrameBufferProperties()
+    req_color0.color_bits = 0
 
-    req_color_alpha = FrameBufferProperties()
-    req_color_alpha.color_bits = 1
-    req_color_alpha.alpha_bits = 1
+    req_color1 = FrameBufferProperties()
+    req_color1.color_bits = 1
 
-    req_rgb = FrameBufferProperties()
-    req_rgb.set_rgba_bits(1, 1, 1, 0)
+    req_color0_alpha0 = FrameBufferProperties()
+    req_color0_alpha0.color_bits = 0
+    req_color0_alpha0.alpha_bits = 0
 
-    req_rgb_alpha = FrameBufferProperties()
-    req_rgb_alpha.set_rgba_bits(1, 1, 1, 1)
+    req_color1_alpha1 = FrameBufferProperties()
+    req_color1_alpha1.color_bits = 1
+    req_color1_alpha1.alpha_bits = 1
+
+    req_rgb0 = FrameBufferProperties()
+    req_rgb0.set_rgba_bits(0, 0, 0, 0)
+
+    req_rgb1 = FrameBufferProperties()
+    req_rgb1.set_rgba_bits(1, 1, 1, 0)
+
+    req_rgb0_alpha0 = FrameBufferProperties()
+    req_rgb0_alpha0.set_rgba_bits(0, 0, 0, 0)
+
+    req_rgb1_alpha1 = FrameBufferProperties()
+    req_rgb1_alpha1.set_rgba_bits(1, 1, 1, 1)
 
     fb_rgba8 = FrameBufferProperties()
     fb_rgba8.rgb_color = True
@@ -74,7 +87,11 @@ def test_fbquality_rgba64():
     fb_rgba16.rgb_color = True
     fb_rgba16.set_rgba_bits(16, 16, 16, 16)
 
-    assert fb_rgba8.get_quality(req_color) > fb_rgba16.get_quality(req_color)
-    assert fb_rgba8.get_quality(req_color_alpha) > fb_rgba16.get_quality(req_color_alpha)
-    assert fb_rgba8.get_quality(req_rgb) > fb_rgba16.get_quality(req_rgb)
-    assert fb_rgba8.get_quality(req_rgb_alpha) > fb_rgba16.get_quality(req_rgb_alpha)
+    assert fb_rgba8.get_quality(req_color0) > fb_rgba16.get_quality(req_color0)
+    assert fb_rgba8.get_quality(req_color1) > fb_rgba16.get_quality(req_color1)
+    assert fb_rgba8.get_quality(req_color0_alpha0) > fb_rgba16.get_quality(req_color0_alpha0)
+    assert fb_rgba8.get_quality(req_color1_alpha1) > fb_rgba16.get_quality(req_color1_alpha1)
+    assert fb_rgba8.get_quality(req_rgb0) > fb_rgba16.get_quality(req_rgb0)
+    assert fb_rgba8.get_quality(req_rgb1) > fb_rgba16.get_quality(req_rgb1)
+    assert fb_rgba8.get_quality(req_rgb0_alpha0) > fb_rgba16.get_quality(req_rgb0_alpha0)
+    assert fb_rgba8.get_quality(req_rgb1_alpha1) > fb_rgba16.get_quality(req_rgb1_alpha1)

@@ -109,6 +109,8 @@ public:
   CPPFunctionGroup *_set_function;
   CPPFunctionGroup *_clear_function;
   CPPFunctionGroup *_del_function;
+  CPPFunctionGroup *_insert_function;
+  CPPFunctionGroup *_get_key_function;
 };
 
 #endif

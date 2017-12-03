@@ -76,7 +76,6 @@ PUBLISHED:
   void sort_descendants();
 
   MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
-  MAKE_MAP_PROPERTY(children, get_child_named, get_child_named);
 
   bool apply_freeze(const TransformState *transform);
   virtual bool apply_freeze_matrix(const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);

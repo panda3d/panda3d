@@ -2,6 +2,7 @@ import sys
 import pytest
 from panda3d import core
 from contextlib import contextmanager
+import collections
 
 
 @contextmanager
@@ -70,6 +71,15 @@ item_b = core.CollisionSphere((0, 0, 0), 2)
 item_c = core.CollisionSphere((0, 0, 0), 3)
 
 
+def test_seq_property_abc():
+    prop = seq_property()
+    assert isinstance(prop, collections.Container)
+    assert isinstance(prop, collections.Sized)
+    assert isinstance(prop, collections.Iterable)
+    assert isinstance(prop, collections.MutableSequence)
+    assert isinstance(prop, collections.Sequence)
+
+
 def test_seq_property_empty():
     prop = seq_property()
     assert not prop
@@ -90,6 +100,11 @@ def test_seq_property_iter():
     assert item_a in prop
     assert item_c not in prop
     assert None not in prop
+
+
+def test_seq_property_reversed():
+    prop = seq_property(item_a, item_b, item_b)
+    assert tuple(reversed(prop)) == tuple(reversed(tuple(prop)))
 
 
 def test_seq_property_getitem():
@@ -313,6 +328,88 @@ def test_seq_property_remove():
         prop.remove("nonsense")
 
 
+def test_seq_property_append():
+    prop = seq_property(item_a, item_b)
+
+    with constant_refcount(item_c):
+        prop.append(item_c)
+
+    assert tuple(prop) == (item_a, item_b, item_c)
+
+    with pytest.raises(TypeError):
+        prop.append(None)
+    with pytest.raises(TypeError):
+        prop.append("nonsense")
+
+
+def test_seq_property_insert():
+    # Adding at the beginning
+    prop = seq_property(item_a, item_a, item_a)
+    with constant_refcount(item_b):
+        prop.insert(0, item_b)
+
+    assert tuple(prop) == (item_b, item_a, item_a, item_a)
+
+    # Adding in the middle
+    prop = seq_property(item_a, item_a, item_a)
+    with constant_refcount(item_b):
+        prop.insert(2, item_b)
+
+    assert tuple(prop) == (item_a, item_a, item_b, item_a)
+
+    # Adding at the end
+    prop = seq_property(item_a, item_a, item_a)
+    with constant_refcount(item_b):
+        prop.insert(len(prop), item_b)
+
+    assert tuple(prop) == (item_a, item_a, item_a, item_b)
+
+    # Adding with negative index
+    prop = seq_property(item_a, item_a, item_a)
+    with constant_refcount(item_b):
+        prop.insert(-2, item_b)
+
+    assert tuple(prop) == (item_a, item_b, item_a, item_a)
+
+    # Adding at the end with overflowing index
+    prop = seq_property(item_a, item_a, item_a)
+    with constant_refcount(item_b):
+        prop.insert(2345, item_b)
+
+    assert tuple(prop) == (item_a, item_a, item_a, item_b)
+
+    # Adding at the beginning with negative overflowing index
+    prop = seq_property(item_a, item_a, item_a)
+    with constant_refcount(item_b):
+        prop.insert(-2345, item_b)
+
+    assert tuple(prop) == (item_b, item_a, item_a, item_a)
+
+
+def test_seq_property_extend():
+    prop = seq_property(item_a)
+
+    with constant_refcount(item_b):
+        prop.extend((item_b, item_c))
+
+    assert tuple(prop) == (item_a, item_b, item_c)
+
+    with pytest.raises(TypeError):
+        prop.extend(None)
+    with pytest.raises(TypeError):
+        prop.extend("nonsense")
+    with pytest.raises(TypeError):
+        prop.extend(item_a)
+    with pytest.raises(TypeError):
+        prop.extend(item_a, item_b)
+    with pytest.raises(TypeError):
+        prop.extend()
+    with pytest.raises(TypeError):
+        prop.extend((item_a, None))
+    with pytest.raises(TypeError):
+        prop.extend(["nonsense"])
+
+
 # The next tests are for MAKE_MAP_PROPERTY.
 @pytest.fixture
 def map_property(**items):
@@ -324,6 +421,27 @@ def map_property(**items):
     for k, v in items.items():
         np.set_tag(k, v)
     return np.tags
+
+
+def test_map_property_abc():
+    prop = map_property()
+    assert isinstance(prop, collections.Container)
+    assert isinstance(prop, collections.Sized)
+    assert isinstance(prop, collections.Iterable)
+    assert isinstance(prop, collections.MutableMapping)
+    assert isinstance(prop, collections.Mapping)
+
+
+def test_map_property_empty():
+    prop = map_property()
+    assert not prop
+    assert len(prop) == 0
+
+    with pytest.raises(KeyError):
+        prop.popitem()
+
+    with pytest.raises(KeyError):
+        prop['nonsense']
 
 
 def test_map_property_getitem():
@@ -430,6 +548,24 @@ def test_map_property_pop():
     assert 'key' not in prop
 
 
+def test_map_property_popitem():
+    key = 'key'
+    value = 'value'
+    prop = map_property(**{key: value})
+
+    assert prop.popitem() == (key, value)
+
+    with pytest.raises(KeyError):
+        assert prop.popitem()
+
+
+def test_map_property_clear():
+    prop = map_property(key='value', key2='value2')
+
+    prop.clear()
+    assert len(prop) == 0
+
+
 def test_map_property_setdefault():
     prop = map_property(key='value')
 
@@ -466,3 +602,24 @@ def test_map_property_update():
 
     assert prop['key'] == 'value'
     assert prop['key2'] == 'value2'
+
+
+def test_map_property_keys():
+    prop = map_property(key='value', key2='value2')
+
+    assert isinstance(prop.keys(), collections.MappingView)
+    assert frozenset(prop.keys()) == frozenset(('key', 'key2'))
+
+
+def test_map_property_values():
+    prop = map_property(key='value', key2='value2')
+
+    assert isinstance(prop.values(), collections.ValuesView)
+    assert frozenset(prop.values()) == frozenset(('value', 'value2'))
+
+
+def test_map_property_items():
+    prop = map_property(key='value', key2='value2')
+
+    assert isinstance(prop.items(), collections.MappingView)
+    assert frozenset(prop.items()) == frozenset((('key', 'value'), ('key2', 'value2')))

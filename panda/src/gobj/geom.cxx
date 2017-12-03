@@ -294,10 +294,10 @@ make_nonindexed(bool composite_only) {
  * away other changes you might have recently made in an upstream thread.
  */
 void Geom::
-set_primitive(int i, const GeomPrimitive *primitive) {
+set_primitive(size_t i, const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  nassertv(i < cdata->_primitives.size());
   nassertv(primitive->check_valid(cdata->_data.get_read_pointer(current_thread)));
 
   // All primitives within a particular Geom must have the same fundamental
@@ -327,7 +327,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
 }
 
 /**
- * Adds a new GeomPrimitive structure to the Geom object.  This specifies a
+ * Inserts a new GeomPrimitive structure to the Geom object.  This specifies a
  * particular subset of vertices that are used to define geometric primitives
  * of the indicated type.
  *
@@ -335,7 +335,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
  * away other changes you might have recently made in an upstream thread.
  */
 void Geom::
-add_primitive(const GeomPrimitive *primitive) {
+insert_primitive(size_t i, const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
 
@@ -348,9 +348,13 @@ add_primitive(const GeomPrimitive *primitive) {
 
   // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
-  nassertv_always(compat != (GeomPrimitive *)NULL);
+  nassertv_always(compat != nullptr);
 
-  cdata->_primitives.push_back((GeomPrimitive *)compat.p());
+  if (i >= cdata->_primitives.size()) {
+    cdata->_primitives.push_back((GeomPrimitive *)compat.p());
+  } else {
+    cdata->_primitives.insert(cdata->_primitives.begin() + i, (GeomPrimitive *)compat.p());
+  }
   PrimitiveType new_primitive_type = compat->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
@@ -374,10 +378,10 @@ add_primitive(const GeomPrimitive *primitive) {
  * away other changes you might have recently made in an upstream thread.
  */
 void Geom::
-remove_primitive(int i) {
+remove_primitive(size_t i) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  nassertv(i < cdata->_primitives.size());
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
   if (cdata->_primitives.empty()) {
     cdata->_primitive_type = PT_none;
