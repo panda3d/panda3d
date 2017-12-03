@@ -17,8 +17,6 @@
 
 #ifdef HAVE_PYTHON
 
-PyTupleObject Dtool_EmptyTuple;
-
 PyMemberDef standard_type_members[] = {
   {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
   {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
@@ -33,39 +31,6 @@ static RuntimeTypeMap runtime_type_map;
 static RuntimeTypeSet runtime_type_set;
 static NamedTypeMap named_type_map;
 
-#if PY_MAJOR_VERSION < 3
-/**
- * Given a long or int, returns a size_t, or raises an OverflowError if it is
- * out of range.
- */
-size_t PyLongOrInt_AsSize_t(PyObject *vv) {
-  if (PyInt_Check(vv)) {
-    long value = PyInt_AS_LONG(vv);
-    if (value < 0) {
-      PyErr_SetString(PyExc_OverflowError,
-                      "can't convert negative value to size_t");
-      return (size_t)-1;
-    }
-    return (size_t)value;
-  }
-
-  if (!PyLong_Check(vv)) {
-    Dtool_Raise_TypeError("a long or int was expected");
-    return (size_t)-1;
-  }
-
-  size_t bytes;
-  int one = 1;
-  int res = _PyLong_AsByteArray((PyLongObject *)vv, (unsigned char *)&bytes,
-                                SIZEOF_SIZE_T, (int)*(unsigned char*)&one, 0);
-
-  if (res < 0) {
-    return (size_t)res;
-  } else {
-    return bytes;
-  }
-}
-#endif
 
 /**
  * Given a valid (non-NULL) PyObject, does a simple check to see if it might
@@ -646,8 +611,9 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
       return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
     }
 
-    // Initialize the "empty tuple".
-    (void)PyObject_INIT_VAR((PyObject *)&Dtool_EmptyTuple, &PyTuple_Type, 0);
+#ifdef Py_TRACE_REFS
+    _Py_AddToAllObjects((PyObject *)&Dtool_EmptyTuple, 0);
+#endif
 
     // Initialize the base class of everything.
     Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(NULL);

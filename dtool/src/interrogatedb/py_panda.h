@@ -20,130 +20,14 @@
 #define  Py_DEBUG
 #endif
 
-#ifndef NO_RUNTIME_TYPES
-
-#include "dtoolbase.h"
-#include "typedObject.h"
-#include "typeRegistry.h"
-
-#endif
-
 #include "pnotify.h"
 #include "vector_uchar.h"
 
 #if defined(HAVE_PYTHON) && !defined(CPPPARSER)
 
-#ifdef _POSIX_C_SOURCE
-#undef _POSIX_C_SOURCE
-#endif
-
-#ifdef _XOPEN_SOURCE
-#undef _XOPEN_SOURCE
-#endif
-
-#define PY_SSIZE_T_CLEAN 1
-
-#include "Python.h"
+// py_compat.h includes Python.h.
+#include "py_compat.h"
 #include "structmember.h"
-
-#ifndef HAVE_LONG_LONG
-#define PyLong_FromLongLong(x) PyLong_FromLong((long) (x))
-#define PyLong_FromUnsignedLongLong(x) PyLong_FromUnsignedLong((unsigned long) (x))
-#define PyLong_AsLongLong(x) PyLong_AsLong(x)
-#define PyLong_AsUnsignedLongLong(x) PyLong_AsUnsignedLong(x)
-#define PyLong_AsUnsignedLongLongMask(x) PyLong_AsUnsignedLongMask(x)
-#define PyLong_AsLongLongAndOverflow(x) PyLong_AsLongAndOverflow(x)
-#endif
-
-#if PY_VERSION_HEX < 0x02050000
-
-// Prior to Python 2.5, we didn't have Py_ssize_t.
-typedef int Py_ssize_t;
-#define PyInt_FromSsize_t PyInt_FromLong
-#define PyInt_AsSsize_t PyInt_AsLong
-
-#endif  // PY_VERSION_HEX
-
-// 2.4 macros which aren't available in 2.3
-#ifndef Py_RETURN_NONE
-inline PyObject* doPy_RETURN_NONE()
-{   Py_INCREF(Py_None); return Py_None; }
-#define Py_RETURN_NONE return doPy_RETURN_NONE()
-#endif
-
-#ifndef Py_RETURN_TRUE
-inline PyObject* doPy_RETURN_TRUE()
-{Py_INCREF(Py_True); return Py_True;}
-#define Py_RETURN_TRUE return doPy_RETURN_TRUE()
-#endif
-
-#ifndef Py_RETURN_FALSE
-inline PyObject* doPy_RETURN_FALSE()
-{Py_INCREF(Py_False); return Py_False;}
-#define Py_RETURN_FALSE return doPy_RETURN_FALSE()
-#endif
-
-#ifndef PyVarObject_HEAD_INIT
-#define PyVarObject_HEAD_INIT(type, size) \
-  PyObject_HEAD_INIT(type) size,
-#endif
-
-#ifndef Py_TYPE
-#define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
-#endif
-
-#ifndef Py_TPFLAGS_CHECKTYPES
-// Always on in Python 3
-#define Py_TPFLAGS_CHECKTYPES 0
-#endif
-
-#if PY_MAJOR_VERSION >= 3
-// For writing code that will compile in both versions.
-#define nb_nonzero nb_bool
-#define nb_divide nb_true_divide
-#define nb_inplace_divide nb_inplace_true_divide
-
-#define PyLongOrInt_Check(x) PyLong_Check(x)
-#define PyLongOrInt_AS_LONG PyLong_AS_LONG
-#define PyInt_Check PyLong_Check
-#define PyInt_AsLong PyLong_AsLong
-#define PyInt_AS_LONG PyLong_AS_LONG
-#define PyLongOrInt_AsSize_t PyLong_AsSize_t
-#else
-#define PyLongOrInt_Check(x) (PyInt_Check(x) || PyLong_Check(x))
-// PyInt_FromSize_t automatically picks the right type.
-#define PyLongOrInt_AS_LONG PyInt_AsLong
-
-EXPCL_INTERROGATEDB size_t PyLongOrInt_AsSize_t(PyObject *);
-
-// For more portably defining hash functions.
-typedef long Py_hash_t;
-#endif
-
-#if PY_MAJOR_VERSION >= 3
-// Python 3 versions before 3.3.3 defined this incorrectly.
-#undef _PyErr_OCCURRED
-#define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
-
-// Python versions before 3.3 did not define this.
-#if PY_VERSION_HEX < 0x03030000
-#define PyUnicode_AsUTF8 _PyUnicode_AsString
-#define PyUnicode_AsUTF8AndSize _PyUnicode_AsStringAndSize
-#endif
-#endif
-
-// Which character to use in PyArg_ParseTuple et al for a byte string.
-#if PY_MAJOR_VERSION >= 3
-#define FMTCHAR_BYTES "y"
-#else
-#define FMTCHAR_BYTES "s"
-#endif
-
-extern EXPCL_INTERROGATEDB PyTupleObject Dtool_EmptyTuple;
-
-#ifndef _PyObject_CallNoArg
-#define _PyObject_CallNoArg(func) PyObject_Call((func), (PyObject *)&Dtool_EmptyTuple, NULL)
-#endif
 
 using namespace std;
 
