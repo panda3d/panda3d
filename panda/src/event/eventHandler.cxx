@@ -103,7 +103,7 @@ dispatch_event(const Event *event) {
   }
 
   // Finally, check for futures that need to be triggered.
-  Futures::const_iterator fi;
+  Futures::iterator fi;
   fi = _futures.find(event->get_name());
 
   if (fi != _futures.end()) {
