@@ -70,6 +70,7 @@ class build_apps(distutils.core.Command):
             'libdl.so.2', 'libstdc++.so.6', 'libm.so.6', 'libgcc_s.so.1',
             'libpthread.so.0', 'libc.so.6', 'ld-linux-x86-64.so.2',
             'libgl.so.1', 'libx11.so.6', 'libreadline.so.5', 'libncursesw.so.5',
+            'libbz2.so.1', 'libz.so.1', 'liblzma.so.0',
         ]
 
         # We keep track of the zip files we've opened.
