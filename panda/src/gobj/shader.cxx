@@ -3407,9 +3407,10 @@ parse_eof() {
  * Use this function instead of prepare_now() to preload textures from a user
  * interface standpoint.
  */
-void Shader::
+PT(AsyncFuture) Shader::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  prepared_objects->enqueue_shader(this);
+  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_shader_future(this);
+  return obj.p();
 }
 
 /**

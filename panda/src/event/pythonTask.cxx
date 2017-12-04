@@ -25,7 +25,7 @@ TypeHandle PythonTask::_type_handle;
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
-extern struct Dtool_PyTypedObject Dtool_AsyncTask;
+extern struct Dtool_PyTypedObject Dtool_AsyncFuture;
 extern struct Dtool_PyTypedObject Dtool_PythonTask;
 #endif
 
@@ -238,8 +238,8 @@ set_owner(PyObject *owner) {
  * exception occurred within this task, it is raised instead.
  */
 PyObject *PythonTask::
-result() const {
-  nassertr(!is_alive(), nullptr);
+get_result() const {
+  nassertr(done(), nullptr);
 
   if (_exception == nullptr) {
     // The result of the call is stored in _exc_value.
@@ -272,49 +272,6 @@ exception() const {
     return PyObject_CallFunctionObjArgs(_exception, _exc_value, nullptr);
   }
 }*/
-
-/**
- * Returns an iterator that continuously yields an awaitable until the task
- * has finished.
- */
-PyObject *PythonTask::
-__await__(PyObject *self) {
-  Dtool_GeneratorWrapper *gen;
-  gen = (Dtool_GeneratorWrapper *)PyType_GenericAlloc(&Dtool_GeneratorWrapper_Type, 0);
-  if (gen != nullptr) {
-    Py_INCREF(self);
-    gen->_base._self = self;
-    gen->_iternext_func = &gen_next;
-  }
-  return (PyObject *)gen;
-}
-
-/**
- * Yields continuously until a task has finished.
- */
-PyObject *PythonTask::
-gen_next(PyObject *self) {
-  const PythonTask *task = nullptr;
-  if (!Dtool_Call_ExtractThisPointer(self, Dtool_PythonTask, (void **)&task)) {
-    return nullptr;
-  }
-
-  if (task->is_alive()) {
-    Py_INCREF(self);
-    return self;
-  } else if (task->_exception != nullptr) {
-    task->_retrieved_exception = true;
-    Py_INCREF(task->_exception);
-    Py_INCREF(task->_exc_value);
-    Py_INCREF(task->_exc_traceback);
-    PyErr_Restore(task->_exception, task->_exc_value, task->_exc_traceback);
-    return nullptr;
-  } else {
-    // The result of the call is stored in _exc_value.
-    PyErr_SetObject(PyExc_StopIteration, task->_exc_value);
-    return nullptr;
-  }
-}
 
 /**
  * Maps from an expression like "task.attr_name = v". This is customized here
@@ -620,36 +577,39 @@ do_python_task() {
           }
         }
 
-        // Tell the task chain we want to kill ourselves.  It doesn't really
-        // matter what we return if we set S_servicing_removed.  If we don't
-        // set it, however, it will think this was a clean exit.
-        _manager->_lock.acquire();
-        _state = S_servicing_removed;
-        _manager->_lock.release();
-        return DS_interrupt;
+        // Tell the task chain we want to kill ourselves.  We indicate this is
+        // a "clean exit" because we still want to run the done callbacks on
+        // exception.
+        return DS_done;
       }
 
     } else if (DtoolCanThisBeAPandaInstance(result)) {
-      // We are waiting for a task to finish.
-      void *ptr = ((Dtool_PyInstDef *)result)->_My_Type->_Dtool_UpcastInterface(result, &Dtool_AsyncTask);
+      // We are waiting for an AsyncFuture (eg. other task) to finish.
+      void *ptr = ((Dtool_PyInstDef *)result)->_My_Type->_Dtool_UpcastInterface(result, &Dtool_AsyncFuture);
       if (ptr != nullptr) {
         // Suspend execution of this task until this other task has completed.
-        AsyncTask *task = (AsyncTask *)ptr;
-        AsyncTaskManager *manager = task->_manager;
-        nassertr(manager != nullptr, DS_interrupt);
+        AsyncFuture *fut = (AsyncFuture *)ptr;
+        AsyncTaskManager *manager = fut->_manager;
+        if (manager == nullptr) {
+          manager = _manager;
+          fut->_manager = manager;
+        }
         nassertr(manager == _manager, DS_interrupt);
-        manager->_lock.acquire();
-        if (task != (AsyncTask *)this) {
-          if (task->is_alive()) {
+        MutexHolder holder(manager->_lock);
+        if (fut != (AsyncFuture *)this) {
+          if (!fut->done()) {
             if (task_cat.is_debug()) {
               task_cat.debug()
-                << *this << " is now awaiting <" << *task << ">.\n";
+                << *this << " is now awaiting <" << *fut << ">.\n";
             }
-            task->_waiting_tasks.push_back(this);
+            fut->add_waiting_task(this);
           } else {
             // The task is already done.  Continue at next opportunity.
+            if (task_cat.is_debug()) {
+              task_cat.debug()
+                << *this << " would await <" << *fut << ">, were it not already done.\n";
+            }
             Py_DECREF(result);
-            manager->_lock.release();
             return DS_cont;
           }
         } else {
@@ -658,14 +618,12 @@ do_python_task() {
           task_cat.error()
             << *this << " cannot await itself\n";
         }
-        task->_manager->_lock.release();
         Py_DECREF(result);
         return DS_await;
       }
-
     } else {
-      // We are waiting for a future to finish.  We currently implement this
-      // by simply checking every frame whether the future is done.
+      // We are waiting for a non-Panda future to finish.  We currently
+      // implement this by checking every frame whether the future is done.
       PyObject *check = PyObject_GetAttrString(result, "_asyncio_future_blocking");
       if (check != nullptr && check != Py_None) {
         Py_DECREF(check);
@@ -680,7 +638,7 @@ do_python_task() {
         if (task_cat.is_debug()) {
           PyObject *str = PyObject_ASCII(result);
           task_cat.debug()
-            << *this << " is now awaiting " << PyUnicode_AsUTF8(str) << ".\n";
+            << *this << " is now polling " << PyUnicode_AsUTF8(str) << ".done()\n";
           Py_DECREF(str);
         }
 #endif
@@ -744,6 +702,24 @@ do_python_task() {
       // Unexpected value.
       break;
     }
+  }
+
+  // This is unfortunate, but some are returning task.done, which nowadays
+  // conflicts with the AsyncFuture method.  Check if that is being returned.
+  PyMethodDef *meth = nullptr;
+  if (PyCFunction_Check(result)) {
+    meth = ((PyCFunctionObject *)result)->m_ml;
+#if PY_MAJOR_VERSION >= 3
+  } else if (Py_TYPE(result) == &PyMethodDescr_Type) {
+#else
+  } else if (strcmp(Py_TYPE(result)->tp_name, "method_descriptor") == 0) {
+#endif
+    meth = ((PyMethodDescrObject *)result)->d_method;
+  }
+
+  if (meth != nullptr && strcmp(meth->ml_name, "done") == 0) {
+    Py_DECREF(result);
+    return DS_done;
   }
 
   ostringstream strm;

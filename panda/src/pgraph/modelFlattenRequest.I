@@ -18,8 +18,7 @@
 INLINE ModelFlattenRequest::
 ModelFlattenRequest(PandaNode *orig) :
   AsyncTask(orig->get_name()),
-  _orig(orig),
-  _is_ready(false)
+  _orig(orig)
 {
 }
 
@@ -35,32 +34,21 @@ get_orig() const {
  * Returns true if this request has completed, false if it is still pending.
  * When this returns true, you may retrieve the model loaded by calling
  * result().
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
  */
 INLINE bool ModelFlattenRequest::
 is_ready() const {
-  return _is_ready;
+  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
 }
 
 /**
  * Returns the flattened copy of the model.  It is an error to call this
- * unless is_ready() returns true.
+ * unless done() returns true.
+ * @deprecated Use result() instead.
  */
 INLINE PandaNode *ModelFlattenRequest::
 get_model() const {
-  nassertr(_is_ready, nullptr);
-  return _model;
-}
-
-/**
- * Returns the flattened copy of the model wrapped in a NodePath.  It is an
- * error to call this unless is_ready() returns true.
- */
-INLINE NodePath ModelFlattenRequest::
-result() const {
-  nassertr(_is_ready, NodePath::fail());
-  if (_model != nullptr) {
-    return NodePath(_model);
-  } else {
-    return NodePath::fail();
-  }
+  nassertr_always(done(), nullptr);
+  return (PandaNode *)_result;
 }

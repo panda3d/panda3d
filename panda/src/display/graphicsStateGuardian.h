@@ -460,7 +460,7 @@ protected:
   static CPT(RenderState) get_unclipped_state();
   static CPT(RenderState) get_untextured_state();
 
-  void async_reload_texture(TextureContext *tc);
+  AsyncFuture *async_reload_texture(TextureContext *tc);
 
 protected:
   PT(SceneSetup) _scene_null;

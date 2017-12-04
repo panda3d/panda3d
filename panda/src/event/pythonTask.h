@@ -20,6 +20,7 @@
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
+#include "extension.h"
 
 /**
  * This class exists to allow association of a Python function or coroutine
@@ -44,12 +45,14 @@ PUBLISHED:
   INLINE PyObject *get_owner() const;
 
   INLINE void set_result(PyObject *result);
-  PyObject *result() const;
+
+public:
+  // This is exposed only for the result() function in asyncFuture_ext.cxx
+  // to use, which is why it is not published.
+  PyObject *get_result() const;
   //PyObject *exception() const;
 
-  static PyObject *__await__(PyObject *self);
-  INLINE static PyObject *__iter__(PyObject *self);
-
+PUBLISHED:
   int __setattr__(PyObject *self, PyObject *attr, PyObject *v);
   int __delattr__(PyObject *self, PyObject *attr);
   PyObject *__getattr__(PyObject *attr) const;
@@ -101,8 +104,6 @@ protected:
   virtual void upon_death(AsyncTaskManager *manager, bool clean_exit);
 
 private:
-  static PyObject *gen_next(PyObject *self);
-
   void register_to_owner();
   void unregister_from_owner();
   void call_owner_method(const char *method_name);
@@ -124,6 +125,8 @@ private:
   bool _append_task;
   bool _registered_to_owner;
   mutable bool _retrieved_exception;
+
+  friend class Extension<AsyncFuture>;
 
 public:
   static TypeHandle get_class_type() {

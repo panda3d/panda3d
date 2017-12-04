@@ -39,18 +39,13 @@ PUBLISHED:
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
 
-  INLINE NodePath result() const;
-
   MAKE_PROPERTY(orig, get_orig);
-  MAKE_PROPERTY(ready, is_ready);
 
 protected:
   virtual DoneStatus do_task();
 
 private:
   PT(PandaNode) _orig;
-  bool _is_ready;
-  PT(PandaNode) _model;
 
 public:
   static TypeHandle get_class_type() {

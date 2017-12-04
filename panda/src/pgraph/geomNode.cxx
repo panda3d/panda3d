@@ -38,6 +38,7 @@
 #include "boundingBox.h"
 #include "boundingSphere.h"
 #include "config_mathutil.h"
+#include "preparedGraphicsObjects.h"
 
 
 bool allow_flatten_color = ConfigVariableBool
@@ -382,14 +383,14 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
     int num_arrays = vdata_reader.get_num_arrays();
     for (int i = 0; i < num_arrays; ++i) {
       CPT(GeomVertexArrayData) array = vdata_reader.get_array(i);
-      ((GeomVertexArrayData *)array.p())->prepare(prepared_objects);
+      prepared_objects->enqueue_vertex_buffer((GeomVertexArrayData *)array.p());
     }
 
     // And also each of the index arrays.
     int num_primitives = geom->get_num_primitives();
     for (int i = 0; i < num_primitives; ++i) {
       CPT(GeomPrimitive) prim = geom->get_primitive(i);
-      ((GeomPrimitive *)prim.p())->prepare(prepared_objects);
+      prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
     }
 
     if (munger->is_of_type(StateMunger::get_class_type())) {
@@ -405,7 +406,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
         Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
         // TODO: prepare the sampler states, if specified.
         if (texture != nullptr) {
-          texture->prepare(prepared_objects);
+          prepared_objects->enqueue_texture(texture);
         }
       }
     }
@@ -415,7 +416,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
     if (geom_state->get_attrib(sa)) {
       Shader *shader = (Shader *)sa->get_shader();
       if (shader != nullptr) {
-        shader->prepare(prepared_objects);
+        prepared_objects->enqueue_shader(shader);
       }
       // TODO: prepare the shader inputs.
     }

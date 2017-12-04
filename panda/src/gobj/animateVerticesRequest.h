@@ -40,11 +40,10 @@ PUBLISHED:
   INLINE bool is_ready() const;
 
 protected:
-    virtual AsyncTask::DoneStatus do_task();
+  virtual AsyncTask::DoneStatus do_task();
 
 private:
   PT(GeomVertexData) _geom_vertex_data;
-  bool _is_ready;
 
 public:
   static TypeHandle get_class_type() {

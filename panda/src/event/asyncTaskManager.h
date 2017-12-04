@@ -71,13 +71,13 @@ PUBLISHED:
   AsyncTaskCollection find_tasks_matching(const GlobPattern &pattern) const;
 
   bool remove(AsyncTask *task);
-  int remove(const AsyncTaskCollection &tasks);
+  size_t remove(const AsyncTaskCollection &tasks);
 
   BLOCKING void wait_for_tasks();
   BLOCKING void stop_threads();
   void start_threads();
 
-  INLINE int get_num_tasks() const;
+  INLINE size_t get_num_tasks() const;
 
   AsyncTaskCollection get_tasks() const;
   AsyncTaskCollection get_active_tasks() const;
@@ -126,7 +126,7 @@ protected:
   typedef ov_set<PT(AsyncTaskChain), IndirectCompareNames<AsyncTaskChain> > TaskChains;
   TaskChains _task_chains;
 
-  int _num_tasks;
+  size_t _num_tasks;
   TasksByName _tasks_by_name;
   PT(ClockObject) _clock;
 
@@ -151,6 +151,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskChain;
   friend class AsyncTaskChain::AsyncTaskChainThread;
   friend class AsyncTask;

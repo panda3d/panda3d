@@ -43,6 +43,7 @@
 #include "colorSpace.h"
 #include "geomEnums.h"
 #include "bamCacheRecord.h"
+#include "asyncFuture.h"
 
 class PNMImage;
 class PfmFile;
@@ -522,7 +523,7 @@ PUBLISHED:
   MAKE_PROPERTY(auto_texture_scale, get_auto_texture_scale,
                                     set_auto_texture_scale);
 
-  void prepare(PreparedGraphicsObjects *prepared_objects);
+  PT(AsyncFuture) prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool was_image_modified(PreparedGraphicsObjects *prepared_objects) const;
   size_t get_data_size_bytes(PreparedGraphicsObjects *prepared_objects) const;

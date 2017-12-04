@@ -46,13 +46,10 @@ PUBLISHED:
   INLINE bool is_ready() const;
   INLINE bool get_success() const;
 
-  INLINE bool result() const;
-
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(options, get_options);
   MAKE_PROPERTY(node, get_node);
   MAKE_PROPERTY(loader, get_loader);
-  MAKE_PROPERTY(ready, is_ready);
 
 protected:
   virtual DoneStatus do_task();
@@ -62,7 +59,6 @@ private:
   LoaderOptions _options;
   PT(PandaNode) _node;
   PT(Loader) _loader;
-  bool _is_ready;
   bool _success;
 
 public:

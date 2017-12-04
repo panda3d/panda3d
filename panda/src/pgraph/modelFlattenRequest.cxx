@@ -35,8 +35,8 @@ do_task() {
     np.attach_new_node(_orig);
   }
   np.flatten_strong();
-  _model = np.get_child(0).node();
-  _is_ready = true;
+
+  set_result(np.get_child(0).node());
 
   // Don't continue the task; we're done.
   return DS_done;

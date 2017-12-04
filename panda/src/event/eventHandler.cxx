@@ -28,6 +28,26 @@ EventHandler(EventQueue *ev_queue) : _queue(*ev_queue) {
 }
 
 /**
+ * Returns a pending future that will be marked as done when the event is next
+ * fired.
+ */
+AsyncFuture *EventHandler::
+get_future(const string &event_name) {
+  Futures::iterator fi;
+  fi = _futures.find(event_name);
+
+  // If we already have a future, but someone cancelled it, we need to create
+  // a new future instead.
+  if (fi != _futures.end() && !fi->second->cancelled()) {
+    return fi->second;
+  } else {
+    AsyncFuture *fut = new AsyncFuture;
+    _futures[event_name] = fut;
+    return fut;
+  }
+}
+
+/**
  * The main processing loop of the EventHandler.  This function must be called
  * periodically to service events.  Walks through each pending event and calls
  * its assigned hooks.
@@ -80,6 +100,18 @@ dispatch_event(const Event *event) {
     for (cfi = copy_functions.begin(); cfi != copy_functions.end(); ++cfi) {
       ((*cfi).first)(event, (*cfi).second);
     }
+  }
+
+  // Finally, check for futures that need to be triggered.
+  Futures::const_iterator fi;
+  fi = _futures.find(event->get_name());
+
+  if (fi != _futures.end()) {
+    AsyncFuture *fut = (*fi).second;
+    if (!fut->done()) {
+      fut->set_result((TypedReferenceCount *)event);
+    }
+    _futures.erase(fi);
   }
 }
 

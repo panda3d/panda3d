@@ -1417,9 +1417,10 @@ peek() {
  * Use this function instead of prepare_now() to preload textures from a user
  * interface standpoint.
  */
-void Texture::
+PT(AsyncFuture) Texture::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  prepared_objects->enqueue_texture(this);
+  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_texture_future(this);
+  return obj.p();
 }
 
 /**
