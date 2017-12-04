@@ -59,6 +59,26 @@ builtinInitFuncs = {
     'marshal': 'PyMarshal_Init',
 }
 
+# These are modules that are not found normally for these modules. Add them
+# to an include list so users do not have to do this manually.
+try:
+    from pytest import freeze_includes as pytest_imports
+except ImportError:
+    def pytest_imports():
+        return []
+
+hiddenImports = {
+    'pytest': pytest_imports(),
+    'pkg_resources': [
+        'pkg_resources.*.*',
+        # TODO why does the above not get these modules too?
+        'pkg_resources._vendor.packaging.*',
+        'pkg_resources._vendor.packaging.version',
+        'pkg_resources._vendor.packaging.specifiers',
+        'pkg_resources._vendor.packaging.requirements',
+    ],
+}
+
 # These are missing modules that we've reported already this session.
 reportedMissing = {}
 
@@ -1042,6 +1062,10 @@ class Freezer:
                 # Something went wrong, guess it's not an importable
                 # module.
                 pass
+
+        # Check if any new modules we found have "hidden" imports
+        for origName in list(self.mf.modules.keys()):
+            hidden = hiddenImports.get(origName, [])
 
         # Now, any new modules we found get added to the export list.
         for origName in list(self.mf.modules.keys()):
