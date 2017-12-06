@@ -117,6 +117,7 @@ class build_apps(distutils.core.Command):
         self.plugins = _parse_list(self.plugins)
 
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
+        assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
 
     def run(self):
         if not self.platforms:
