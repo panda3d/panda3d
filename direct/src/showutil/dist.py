@@ -3,6 +3,7 @@ from __future__ import print_function
 import collections
 import os
 import pip
+import plistlib
 import sys
 import subprocess
 import zipfile
@@ -44,6 +45,7 @@ class build_apps(distutils.core.Command):
         self.build_base = os.path.join(os.getcwd(), 'build')
         self.gui_apps = {}
         self.console_apps = {}
+        self.macos_main_app = None
         self.rename_paths = {}
         self.include_patterns = []
         self.exclude_patterns = []
@@ -116,6 +118,19 @@ class build_apps(distutils.core.Command):
         self.exclude_modules = _parse_list(self.exclude_modules)
         self.plugins = _parse_list(self.plugins)
 
+        num_gui_apps = len(self.gui_apps)
+        num_console_apps = len(self.console_apps)
+
+        if self.macos_main_app is None:
+            if num_gui_apps > 1:
+                assert True, 'macos_main_app must be defined if more than one gui_app is defined'
+            elif num_gui_apps == 1:
+                self.macos_main_app = list(self.gui_apps.keys())[0]
+            elif num_console_apps > 1:
+                assert True, 'macos_main_app must be defined if more than one console_app is defined with no gui_apps'
+            elif num_console_apps == 1:
+                self.macos_main_app = list(self.console_apps.keys())[0]
+
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
         assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
 
@@ -168,6 +183,55 @@ class build_apps(distutils.core.Command):
 
         wheelpaths = [os.path.join(whldir,i) for i in os.listdir(whldir) if platform in i]
         return wheelpaths
+
+    def bundle_macos_app(self, builddir):
+        """Bundle built runtime into a .app for macOS"""
+
+        appname = '{}.app'.format(self.macos_main_app)
+        appdir = os.path.join(builddir, appname)
+        contentsdir = os.path.join(appdir, 'Contents')
+        macosdir = os.path.join(contentsdir, 'MacOS')
+        fwdir = os.path.join(contentsdir, 'Frameworks')
+        resdir = os.path.join(contentsdir, 'Resources')
+
+        self.announce('Bundling macOS app into {}'.format(appdir), distutils.log.INFO)
+
+        # Create initial directory structure
+        os.makedirs(macosdir)
+        os.makedirs(fwdir)
+        os.makedirs(resdir)
+
+        # Move files over
+        for fname in os.listdir(builddir):
+            src = os.path.join(builddir, fname)
+            if appdir in src:
+                continue
+
+            if fname in self.gui_apps or self.console_apps:
+                dst = macosdir
+            elif src.endswith('.so') or src.endswith('dylib'):
+                dst = fwdir
+            else:
+                # TODO Cg still shows up in Resources when it should be in Frameworks
+                dst = resdir
+            shutil.move(src, dst)
+
+        # Write out Info.plist
+        plist = {
+            'CFBundleName': appname,
+            'CFBundleDisplayName': appname, #TODO use name from setup.py/cfg
+            'CFBundleIdentifier': '', #TODO
+            'CFBundleVersion': '0.0.0', #TODO get from setup.py
+            'CFBundlePackageType': 'APPL',
+            'CFBundleSignature': '', #TODO
+            'CFBundleExecutable': self.macos_main_app,
+        }
+        with open(os.path.join(contentsdir, 'Info.plist'), 'wb') as f:
+            if hasattr(plistlib, 'dump'):
+                plistlib.dump(plist, f)
+            else:
+                plistlib.writePlist(plist, f)
+
 
     def build_runtimes(self, platform, use_wheels):
         """ Builds the distributions for the given platform. """
@@ -399,6 +463,10 @@ class build_apps(distutils.core.Command):
                 dst = os.path.join(builddir, update_path(src))
 
                 copy_file(src, dst)
+
+        # Bundle into an .app on macOS
+        #if 'macosx' in platform:
+        #    self.bundle_macos_app(builddir)
 
     def add_dependency(self, name, target_dir, search_path, referenced_by):
         """ Searches for the given DLL on the search path.  If it exists,
