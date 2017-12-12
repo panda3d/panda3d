@@ -583,12 +583,11 @@ do_python_task() {
         return DS_done;
       }
 
-    } else if (DtoolCanThisBeAPandaInstance(result)) {
+    } else if (DtoolInstance_Check(result)) {
       // We are waiting for an AsyncFuture (eg. other task) to finish.
-      void *ptr = ((Dtool_PyInstDef *)result)->_My_Type->_Dtool_UpcastInterface(result, &Dtool_AsyncFuture);
-      if (ptr != nullptr) {
+      AsyncFuture *fut = (AsyncFuture *)DtoolInstance_UPCAST(result, Dtool_AsyncFuture);
+      if (fut != nullptr) {
         // Suspend execution of this task until this other task has completed.
-        AsyncFuture *fut = (AsyncFuture *)ptr;
         AsyncTaskManager *manager = fut->_manager;
         if (manager == nullptr) {
           manager = _manager;

@@ -31,34 +31,14 @@ static RuntimeTypeMap runtime_type_map;
 static RuntimeTypeSet runtime_type_set;
 static NamedTypeMap named_type_map;
 
-
-/**
- * Given a valid (non-NULL) PyObject, does a simple check to see if it might
- * be an instance of a Panda type.  It does this using a signature that is
- * encoded on each instance.
- */
-bool DtoolCanThisBeAPandaInstance(PyObject *self) {
-  // simple sanity check for the class type..size.. will stop basic foobars..
-  // It is arguably better to use something like this:
-  // PyType_IsSubtype(Py_TYPE(self), &Dtool_DTOOL_SUPER_BASE._PyType) ...but
-  // probably not as fast.
-  if (Py_TYPE(self)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef)) {
-    Dtool_PyInstDef *pyself = (Dtool_PyInstDef *) self;
-    if (pyself->_signature == PY_PANDA_SIGNATURE) {
-      return true;
-    }
-  }
-  return false;
-}
-
 /**
 
  */
 void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer) {
-  if (DtoolCanThisBeAPandaInstance(self)) {
-    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, classdef);
+  if (DtoolInstance_Check(self)) {
+    *answer = DtoolInstance_UPCAST(self, *classdef);
   } else {
-    *answer = NULL;
+    *answer = nullptr;
   }
 }
 
@@ -68,12 +48,12 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *c
  * was of the wrong type, raises an AttributeError.
  */
 bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer) {
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
+  if (self == nullptr || !DtoolInstance_Check(self) || DtoolInstance_VOID_PTR(self) == nullptr) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
 
-  *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
+  *answer = DtoolInstance_UPCAST(self, classdef);
   return true;
 }
 
@@ -88,12 +68,12 @@ bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef
 bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                             void **answer, const char *method_name) {
 
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
+  if (self == nullptr || !DtoolInstance_Check(self) || DtoolInstance_VOID_PTR(self) == nullptr) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
 
-  if (((Dtool_PyInstDef *)self)->_is_const) {
+  if (DtoolInstance_IS_CONST(self)) {
     // All overloads of this function are non-const.
     PyErr_Format(PyExc_TypeError,
                  "Cannot call %s() on a const object.",
@@ -101,7 +81,7 @@ bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject 
     return false;
   }
 
-  *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
+  *answer = DtoolInstance_UPCAST(self, classdef);
   return true;
 }
 
@@ -131,19 +111,19 @@ void *
 DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
                                int param, const string &function_name, bool const_ok,
                                bool report_errors) {
-  // if (PyErr_Occurred()) { return NULL; }
-  if (self == NULL) {
+  // if (PyErr_Occurred()) { return nullptr; }
+  if (self == nullptr) {
     if (report_errors) {
-      return Dtool_Raise_TypeError("self is NULL");
+      return Dtool_Raise_TypeError("self is nullptr");
     }
-    return NULL;
+    return nullptr;
   }
 
-  if (DtoolCanThisBeAPandaInstance(self)) {
-    void *result = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, classdef);
+  if (DtoolInstance_Check(self)) {
+    void *result = DtoolInstance_UPCAST(self, *classdef);
 
-    if (result != NULL) {
-      if (const_ok || !((Dtool_PyInstDef *)self)->_is_const) {
+    if (result != nullptr) {
+      if (const_ok || !DtoolInstance_IS_CONST(self)) {
         return result;
       }
 
@@ -152,7 +132,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
                             "%s() argument %d may not be const",
                             function_name.c_str(), param);
       }
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -160,17 +140,14 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
     return Dtool_Raise_ArgTypeError(self, param, function_name.c_str(), classdef->_PyType.tp_name);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void *DTOOL_Call_GetPointerThis(PyObject *self) {
-  if (self != NULL) {
-    if (DtoolCanThisBeAPandaInstance(self)) {
-      Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-      return pyself->_ptr_to_object;
-    }
+  if (self != nullptr && DtoolInstance_Check(self)) {
+    return DtoolInstance_VOID_PTR(self);
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -713,7 +690,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
   PyObject *to_in = NULL;
   if (PyArg_UnpackTuple(args, "Dtool_BorrowThisReference", 2, 2, &to_in, &from_in)) {
 
-    if (DtoolCanThisBeAPandaInstance(from_in) && DtoolCanThisBeAPandaInstance(to_in)) {
+    if (DtoolInstance_Check(from_in) && DtoolInstance_Check(to_in)) {
       Dtool_PyInstDef *from = (Dtool_PyInstDef *) from_in;
       Dtool_PyInstDef *to = (Dtool_PyInstDef *) to_in;
 
@@ -758,9 +735,8 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
 }
 
 Py_hash_t DTOOL_PyObject_HashPointer(PyObject *self) {
-  if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
-    Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-    return (Py_hash_t) pyself->_ptr_to_object;
+  if (self != nullptr && DtoolInstance_Check(self)) {
+    return (Py_hash_t)DtoolInstance_VOID_PTR(self);
   }
   return -1;
 }
@@ -933,14 +909,14 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
                       const char *keyword) {
 
   if (PyTuple_GET_SIZE(args) == 1) {
-    if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {
+    if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
   } else if (PyTuple_GET_SIZE(args) == 0) {
     PyObject *key;
     Py_ssize_t ppos = 0;
-    if (kwds != NULL && ((PyDictObject *)kwds)->ma_used == 1 &&
+    if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
         PyDict_Next(kwds, &ppos, &key, result)) {
       // We got the item, we just need to make sure that it had the right key.
 #if PY_VERSION_HEX >= 0x03060000
@@ -961,7 +937,7 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
  */
 bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds) {
   if (PyTuple_GET_SIZE(args) == 1 &&
-      (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0)) {
+      (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0)) {
     *result = PyTuple_GET_ITEM(args, 0);
     return true;
   }
@@ -979,12 +955,12 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
                               const char *keyword) {
 
   if (PyTuple_GET_SIZE(args) == 1) {
-    if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {
+    if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
   } else if (PyTuple_GET_SIZE(args) == 0) {
-    if (kwds != NULL && ((PyDictObject *)kwds)->ma_used == 1) {
+    if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1) {
       PyObject *key;
       Py_ssize_t ppos = 0;
       if (!PyDict_Next(kwds, &ppos, &key, result)) {
@@ -1011,7 +987,7 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
  * Variant of Dtool_ExtractOptionalArg that does not accept a keyword argument.
  */
 bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds) {
-  if (kwds != NULL && ((PyDictObject *)kwds)->ma_used != 0) {
+  if (kwds != nullptr && PyDict_GET_SIZE(kwds) != 0) {
     return false;
   }
   if (PyTuple_GET_SIZE(args) == 1) {

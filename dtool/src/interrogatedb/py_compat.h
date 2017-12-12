@@ -155,6 +155,12 @@ extern EXPCL_INTERROGATEDB PyTupleObject Dtool_EmptyTuple;
 #  define PyLong_AsLongLongAndOverflow(x) PyLong_AsLongAndOverflow(x)
 #endif
 
+/* Python 3.7 */
+
+#ifndef PyDict_GET_SIZE
+#  define PyDict_GET_SIZE(mp) (((PyDictObject *)mp)->ma_used)
+#endif
+
 /* Other Python implementations */
 
 // _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.

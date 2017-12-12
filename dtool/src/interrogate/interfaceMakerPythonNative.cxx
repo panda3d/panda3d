@@ -1094,14 +1094,14 @@ write_class_details(ostream &out, Object *obj) {
   // Write support methods to cast from and to pointers of this type.
   {
     out << "static void *Dtool_UpcastInterface_" << ClassName << "(PyObject *self, Dtool_PyTypedObject *requested_type) {\n";
-    out << "  Dtool_PyTypedObject *SelfType = ((Dtool_PyInstDef *)self)->_My_Type;\n";
-    out << "  if (SelfType != Dtool_Ptr_" << ClassName << ") {\n";
+    out << "  Dtool_PyTypedObject *type = DtoolInstance_TYPE(self);\n";
+    out << "  if (type != &Dtool_" << ClassName << ") {\n";
     out << "    printf(\"" << ClassName << " ** Bad Source Type-- Requesting Conversion from %s to %s\\n\", Py_TYPE(self)->tp_name, requested_type->_PyType.tp_name); fflush(NULL);\n";;
     out << "    return NULL;\n";
     out << "  }\n";
     out << "\n";
-    out << "  " << cClassName << " *local_this = (" << cClassName << " *)((Dtool_PyInstDef *)self)->_ptr_to_object;\n";
-    out << "  if (requested_type == Dtool_Ptr_" << ClassName << ") {\n";
+    out << "  " << cClassName << " *local_this = (" << cClassName << " *)DtoolInstance_VOID_PTR(self);\n";
+    out << "  if (requested_type == &Dtool_" << ClassName << ") {\n";
     out << "    return local_this;\n";
     out << "  }\n";
 
@@ -2220,13 +2220,13 @@ write_module_class(ostream &out, Object *obj) {
           // provide a writable buffer or a readonly buffer.
           const string const_this = "(const " + cClassName + " *)local_this";
           if (remap_const != NULL && remap_nonconst != NULL) {
-            out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+            out << "  if (!DtoolInstance_IS_CONST(self)) {\n";
             out << "    return " << remap_nonconst->call_function(out, 4, false, "local_this", params_nonconst) << ";\n";
             out << "  } else {\n";
             out << "    return " << remap_const->call_function(out, 4, false, const_this, params_const) << ";\n";
             out << "  }\n";
           } else if (remap_nonconst != NULL) {
-            out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+            out << "  if (!DtoolInstance_IS_CONST(self)) {\n";
             out << "    return " << remap_nonconst->call_function(out, 4, false, "local_this", params_nonconst) << ";\n";
             out << "  } else {\n";
             out << "    Dtool_Raise_TypeError(\"Cannot call " << ClassName << ".__getbuffer__() on a const object.\");\n";
@@ -2285,7 +2285,7 @@ write_module_class(ostream &out, Object *obj) {
           string return_expr;
           const string const_this = "(const " + cClassName + " *)local_this";
           if (remap_const != NULL && remap_nonconst != NULL) {
-            out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+            out << "  if (!DtoolInstance_IS_CONST(self)) {\n";
             return_expr = remap_nonconst->call_function(out, 4, false, "local_this", params_nonconst);
             if (!return_expr.empty()) {
               out << "    " << return_expr << ";\n";
@@ -3078,7 +3078,7 @@ write_module_class(ostream &out, Object *obj) {
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
   } else {
-    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_Ptr_DTOOL_SUPER_BASE;\n";
+    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)&Dtool_DTOOL_SUPER_BASE;\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();
@@ -3515,8 +3515,9 @@ write_function_for_name(ostream &out, Object *obj,
       out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", "
           << "(void **)&local_this, \"" << classNameFromCppName(cClassName, false)
           << "." << methodNameFromCppName(remap, cClassName, false) << "\")) {\n";
+
     } else {
-      out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+      out << "  if (!DtoolInstance_GetPointer(self, local_this, Dtool_" << ClassName << ")) {\n";
     }
 
     error_return(out, 4, return_flags);
@@ -3616,7 +3617,7 @@ write_function_for_name(ostream &out, Object *obj,
       if (strip_keyword_args) {
         // None of the remaps take any keyword arguments, so let's check that
         // we take none.  This saves some checks later on.
-        indent(out, 4) << "if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {\n";
+        indent(out, 4) << "if (kwds == NULL || PyDict_GET_SIZE(kwds) == 0) {\n";
         if (min_args == 1 && min_args == 1) {
           indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
           write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
@@ -3890,11 +3891,10 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
     // Note: this relies on the PT() being initialized to NULL.  This is
     // currently the case in all invocations, but this may not be true in the
     // future.
-    out << "  DTOOL_Call_ExtractThisPointerForType(args, &Dtool_" << ClassName << ", (void**)&coerced.cheat());\n";
-    out << "  if (coerced != NULL) {\n";
+    out << "  if (DtoolInstance_GetPointer(args, coerced.cheat(), Dtool_" << ClassName << ")) {\n";
     out << "    // The argument is already of matching type, no need to coerce.\n";
     if (!is_const) {
-      out << "    if (!((Dtool_PyInstDef *)args)->_is_const) {\n";
+      out << "    if (!DtoolInstance_IS_CONST(args)) {\n";
       out << "      // A non-const instance is required, which this is.\n";
       out << "      coerced->ref();\n";
       out << "      return true;\n";
@@ -3909,9 +3909,8 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
     out << cClassName << " *Dtool_Coerce_" << ClassName << "(PyObject *args, " << cClassName << " &coerced) {\n";
 
     out << "  " << cClassName << " *local_this;\n";
-    out << "  DTOOL_Call_ExtractThisPointerForType(args, &Dtool_" << ClassName << ", (void**)&local_this);\n";
-    out << "  if (local_this != NULL) {\n";
-    out << "    if (((Dtool_PyInstDef *)args)->_is_const) {\n";
+    out << "  if (DtoolInstance_GetPointer(args, local_this, Dtool_" << ClassName << ")) {\n";
+    out << "    if (DtoolInstance_IS_CONST(args)) {\n";
     out << "      // This is a const object.  Make a copy.\n";
     out << "      coerced = *(const " << cClassName << " *)local_this;\n";
     out << "      return &coerced;\n";
@@ -4340,7 +4339,7 @@ write_function_forset(ostream &out,
     if (all_nonconst) {
       // Yes, they do.  Check that the parameter has the required constness.
       indent(out, indent_level)
-        << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+        << "if (!DtoolInstance_IS_CONST(self)) {\n";
       indent_level += 2;
       verify_const = false;
     }
@@ -4406,7 +4405,7 @@ write_function_forset(ostream &out,
       if (verify_const && (remap->_has_this && !remap->_const_method)) {
         // If it's a non-const method, we only allow a non-const this.
         indent(out, indent_level)
-          << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+          << "if (!DtoolInstance_IS_CONST(self)) {\n";
       } else {
         indent(out, indent_level)
           << "{\n";
@@ -4441,7 +4440,7 @@ write_function_forset(ostream &out,
 
         if (verify_const && (remap->_has_this && !remap->_const_method)) {
           indent(out, indent_level)
-            << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+            << "if (!DtoolInstance_IS_CONST(self)) {\n";
         } else {
           indent(out, indent_level)
             << "{\n";
@@ -5525,14 +5524,13 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           // This function does the same thing in this case and is slightly
           // simpler.  But maybe we should just reorganize these functions
           // entirely?
-          extra_convert << ";\n";
-          if (is_optional) {
-            extra_convert << "  ";
-          }
-          extra_convert
-            << "DTOOL_Call_ExtractThisPointerForType(" << param_name
-            << ", Dtool_Ptr_" << make_safe_name(class_name)
-            << ", (void **)&" << param_name << "_this);\n";
+          extra_convert << " = NULL;\n";
+          int indent_level = is_optional ? 2 : 0;
+          indent(extra_convert, indent_level)
+            << "DtoolInstance_GetPointer(" << param_name
+            << ", " << param_name << "_this"
+            << ", *Dtool_Ptr_" << make_safe_name(class_name)
+            << ");\n";
         } else {
           extra_convert << boolalpha
             << " = (" << class_name << " *)"
@@ -6796,7 +6794,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
     out << "  if (wrap != NULL) {\n"
            "    wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "    if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+      out << "    if (!DtoolInstance_IS_CONST(self)) {\n";
       out << "      wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
       out << "    }\n";
     }
@@ -6828,7 +6826,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
         "    wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
         "    wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n";
       if (!property->_setter_remaps.empty()) {
-        out << "    if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+        out << "    if (!DtoolInstance_IS_CONST(self)) {\n";
         out << "      wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
         if (property->_inserter != nullptr) {
           out << "      wrap->_insert_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_insert;\n";

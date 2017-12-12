@@ -15,6 +15,8 @@
 
 #ifdef HAVE_PYTHON
 
+#include "bamWriter.h"
+
 #ifndef CPPPARSER
 extern Dtool_PyTypedObject Dtool_BamWriter;
 #endif  // CPPPARSER
@@ -65,7 +67,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
       // It's OK if there's no bamWriter.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_writer, &Dtool_BamWriter, (void **)&writer);
+      DtoolInstance_GetPointer(py_writer, writer, Dtool_BamWriter);
       Py_DECREF(py_writer);
     }
   }

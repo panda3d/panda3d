@@ -97,7 +97,7 @@ __init__(PyObject *self, PyObject *source) {
 
   // Now construct the internal list by copying the elements one-at-a-time
   // from Python.
-  PyObject *dict = ((Dtool_PyInstDef *)self)->_My_Type->_PyType.tp_dict;
+  PyObject *dict = DtoolInstance_TYPE(self)->_PyType.tp_dict;
   PyObject *push_back = PyDict_GetItemString(dict, "push_back");
   if (push_back == NULL) {
     PyErr_BadArgument();
@@ -105,7 +105,7 @@ __init__(PyObject *self, PyObject *source) {
   }
 
   // We need to initialize the this pointer before we can call push_back.
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = (void *)this->_this;
+  DtoolInstance_INIT_PTR(self, this->_this);
 
   Py_ssize_t size = PySequence_Size(source);
   this->_this->reserve(size);

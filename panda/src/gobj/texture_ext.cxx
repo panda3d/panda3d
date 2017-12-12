@@ -33,15 +33,12 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
   nassertv(compression != Texture::CM_default);
 
   // Check if perhaps a PointerToArray object was passed in.
-  if (DtoolCanThisBeAPandaInstance(image)) {
-    Dtool_PyInstDef *inst = (Dtool_PyInstDef *)image;
-
-    if (inst->_My_Type == &Dtool_ConstPointerToArray_unsigned_char) {
-      _this->set_ram_image(*(const CPTA_uchar *)inst->_ptr_to_object, compression, page_size);
+  if (DtoolInstance_Check(image)) {
+    if (DtoolInstance_TYPE(image) == &Dtool_ConstPointerToArray_unsigned_char) {
+      _this->set_ram_image(*(const CPTA_uchar *)DtoolInstance_VOID_PTR(image), compression, page_size);
       return;
-
-    } else if (inst->_My_Type == &Dtool_PointerToArray_unsigned_char) {
-      _this->set_ram_image(*(const PTA_uchar *)inst->_ptr_to_object, compression, page_size);
+    } else if (DtoolInstance_TYPE(image) == &Dtool_PointerToArray_unsigned_char) {
+      _this->set_ram_image(*(const PTA_uchar *)DtoolInstance_VOID_PTR(image), compression, page_size);
       return;
     }
   }
@@ -99,15 +96,12 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
 void Extension<Texture>::
 set_ram_image_as(PyObject *image, const string &provided_format) {
   // Check if perhaps a PointerToArray object was passed in.
-  if (DtoolCanThisBeAPandaInstance(image)) {
-    Dtool_PyInstDef *inst = (Dtool_PyInstDef *)image;
-
-    if (inst->_My_Type == &Dtool_ConstPointerToArray_unsigned_char) {
-      _this->set_ram_image_as(*(const CPTA_uchar *)inst->_ptr_to_object, provided_format);
+  if (DtoolInstance_Check(image)) {
+    if (DtoolInstance_TYPE(image) == &Dtool_ConstPointerToArray_unsigned_char) {
+      _this->set_ram_image_as(*(const CPTA_uchar *)DtoolInstance_VOID_PTR(image), provided_format);
       return;
-
-    } else if (inst->_My_Type == &Dtool_PointerToArray_unsigned_char) {
-      _this->set_ram_image_as(*(const PTA_uchar *)inst->_ptr_to_object, provided_format);
+    } else if (DtoolInstance_TYPE(image) == &Dtool_PointerToArray_unsigned_char) {
+      _this->set_ram_image_as(*(const PTA_uchar *)DtoolInstance_VOID_PTR(image), provided_format);
       return;
     }
   }

@@ -43,10 +43,10 @@
 #include "colorSpace.h"
 #include "geomEnums.h"
 #include "bamCacheRecord.h"
+#include "pnmImage.h"
+#include "pfmFile.h"
 #include "asyncFuture.h"
 
-class PNMImage;
-class PfmFile;
 class TextureContext;
 class FactoryParams;
 class PreparedGraphicsObjects;

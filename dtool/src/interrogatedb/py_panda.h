@@ -127,7 +127,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 #else // NDEBUG
 #define Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
-  if (((Dtool_PyInstDef *)self)->_ptr_to_object != NULL) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
       cerr << "Detected leak for " << #CLASS_NAME \
            << " which interrogate cannot delete.\n"; \
@@ -139,9 +139,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 
 #define Define_Dtool_FreeInstance(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
-  if (((Dtool_PyInstDef *)self)->_ptr_to_object != NULL) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
-      delete ((CNAME *)((Dtool_PyInstDef *)self)->_ptr_to_object);\
+      delete (CNAME *)DtoolInstance_VOID_PTR(self);\
     }\
   }\
   Py_TYPE(self)->tp_free(self);\
@@ -149,9 +149,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 
 #define Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
-  if (((Dtool_PyInstDef *)self)->_ptr_to_object != NULL) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
-      unref_delete((CNAME *)((Dtool_PyInstDef *)self)->_ptr_to_object);\
+      unref_delete((CNAME *)DtoolInstance_VOID_PTR(self));\
     }\
   }\
   Py_TYPE(self)->tp_free(self);\
@@ -163,8 +163,17 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   Py_TYPE(self)->tp_free(self);\
 }
 
-// Simple Recognition Functions..
-EXPCL_INTERROGATEDB bool DtoolCanThisBeAPandaInstance(PyObject *self);
+// Use DtoolInstance_Check to check whether a PyObject* is a DtoolInstance.
+#define DtoolInstance_Check(obj) \
+  (Py_TYPE(obj)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef) && \
+   ((Dtool_PyInstDef *)obj)->_signature == PY_PANDA_SIGNATURE)
+
+// These macros access the DtoolInstance without error checking.
+#define DtoolInstance_TYPE(obj) (((Dtool_PyInstDef *)obj)->_My_Type)
+#define DtoolInstance_IS_CONST(obj) (((Dtool_PyInstDef *)obj)->_is_const)
+#define DtoolInstance_VOID_PTR(obj) (((Dtool_PyInstDef *)obj)->_ptr_to_object)
+#define DtoolInstance_INIT_PTR(obj, ptr) { ((Dtool_PyInstDef *)obj)->_ptr_to_object = (void*)(ptr); }
+#define DtoolInstance_UPCAST(obj, type) (((Dtool_PyInstDef *)(obj))->_My_Type->_Dtool_UpcastInterface((obj), &(type)))
 
 // ** HACK ** allert.. Need to keep a runtime type dictionary ... that is
 // forward declared of typed object.  We rely on the fact that typed objects
@@ -192,20 +201,14 @@ EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyT
 EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                                               void **answer, const char *method_name);
 
-template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&into);
+template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into);
+template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &classdef);
 
 // Functions related to error reporting.
 EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
 
-// _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.
-// Some implementations of the CPython API (e.g. PyPy's cpyext) do not define
-// it, so in these cases we just silently fall back to PyErr_Occurred.
-#ifndef _PyErr_OCCURRED
-#define _PyErr_OCCURRED() PyErr_Occurred()
-#endif
-
 #ifdef NDEBUG
-#define Dtool_CheckErrorOccurred() (UNLIKELY(_PyErr_OCCURRED() != NULL))
+#define Dtool_CheckErrorOccurred() (UNLIKELY(_PyErr_OCCURRED() != nullptr))
 #else
 #define Dtool_CheckErrorOccurred() (UNLIKELY(_Dtool_CheckErrorOccurred()))
 #endif
@@ -232,8 +235,8 @@ EXPCL_INTERROGATEDB PyObject *Dtool_Return_Bool(bool value);
 EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
-#define Dtool_Return_None() (_PyErr_OCCURRED() != NULL ? NULL : (Py_INCREF(Py_None), Py_None))
-#define Dtool_Return(value) (_PyErr_OCCURRED() != NULL ? NULL : value)
+#define Dtool_Return_None() (LIKELY(_PyErr_OCCURRED() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
+#define Dtool_Return(value) (LIKELY(_PyErr_OCCURRED() == nullptr) ? value : nullptr)
 #else
 #define Dtool_Return_None() _Dtool_Return_None()
 #define Dtool_Return(value) _Dtool_Return(value)
