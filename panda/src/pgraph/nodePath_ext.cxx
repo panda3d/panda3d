@@ -251,7 +251,7 @@ set_shader_input(CPT_InternalName name, PyObject *value, int priority) {
   }
 
   ShaderInput &input = attrib->_inputs[name];
-  invoke_extension(&input).__init__(move(name), value);
+  invoke_extension(&input).__init__(move(name), value, priority);
 
   if (!_PyErr_OCCURRED()) {
     node->set_attrib(ShaderAttrib::return_new(attrib));
