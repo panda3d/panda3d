@@ -50,10 +50,10 @@ class Loader(DirectObject):
         def cancel(self):
             "Cancels the request.  Callback won't be called."
             if self._loader:
-                self._loader = None
                 for request in self.requests:
                     self._loader.loader.remove(request)
                     del self._loader._requests[request]
+                self._loader = None
                 self.requests = None
                 self.requestList = None
 
