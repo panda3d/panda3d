@@ -367,7 +367,6 @@ public:
   virtual void finish_decal();
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                                     const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader,
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
@@ -427,6 +426,8 @@ public:
   PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
   PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
 
+  virtual void ensure_generated_shader(const RenderState *state);
+
 #ifdef DO_PSTATS
   static void init_frame_pstats();
 #endif
@@ -447,6 +448,7 @@ protected:
   virtual void end_bind_clip_planes();
 
   void determine_target_texture();
+  void determine_target_shader();
 
   virtual void free_pointers();
   virtual void close_gsg();
@@ -458,7 +460,7 @@ protected:
   static CPT(RenderState) get_unclipped_state();
   static CPT(RenderState) get_untextured_state();
 
-  void async_reload_texture(TextureContext *tc);
+  AsyncFuture *async_reload_texture(TextureContext *tc);
 
 protected:
   PT(SceneSetup) _scene_null;
@@ -496,9 +498,8 @@ protected:
   CPT(ShaderAttrib) _state_shader;
   CPT(ShaderAttrib) _target_shader;
 
-  // These are set by begin_draw_primitives(), and are only valid between
+  // This is set by begin_draw_primitives(), and are only valid between
   // begin_draw_primitives() and end_draw_primitives().
-  CPT(GeomMunger) _munger;
   const GeomVertexDataPipelineReader *_data_reader;
 
   unsigned int _color_write_mask;

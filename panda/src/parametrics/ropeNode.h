@@ -33,7 +33,7 @@ class GeomVertexData;
  */
 class EXPCL_PANDA_PARAMETRICS RopeNode : public PandaNode {
 PUBLISHED:
-  RopeNode(const string &name);
+  explicit RopeNode(const string &name);
 
 protected:
   RopeNode(const RopeNode &copy);
@@ -135,6 +135,23 @@ PUBLISHED:
   INLINE const LMatrix4 &get_matrix() const;
 
   void reset_bound(const NodePath &rel_to);
+
+PUBLISHED:
+  MAKE_PROPERTY(curve, get_curve, set_curve);
+  MAKE_PROPERTY(render_mode, get_render_mode, set_render_mode);
+  MAKE_PROPERTY(uv_mode, get_uv_mode, set_uv_mode);
+  MAKE_PROPERTY(uv_direction, get_uv_direction, set_uv_direction);
+  MAKE_PROPERTY(uv_scale, get_uv_scale, set_uv_scale);
+  MAKE_PROPERTY(normal_mode, get_normal_mode, set_normal_mode);
+  MAKE_PROPERTY(tube_up, get_tube_up, set_tube_up);
+  MAKE_PROPERTY(use_vertex_color, get_use_vertex_color, set_use_vertex_color);
+  MAKE_PROPERTY(vertex_color_dimension, get_vertex_color_dimension);
+  MAKE_PROPERTY(num_subdiv, get_num_subdiv, set_num_subdiv);
+  MAKE_PROPERTY(num_slices, get_num_slices, set_num_slices);
+  MAKE_PROPERTY(use_vertex_thickness, get_use_vertex_thickness, set_use_vertex_thickness);
+  MAKE_PROPERTY(vertex_thickness_dimension, get_vertex_thickness_dimension);
+  MAKE_PROPERTY(thickness, get_thickness, set_thickness);
+  MAKE_PROPERTY2(matrix, has_matrix, get_matrix, set_matrix, clear_matrix);
 
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,

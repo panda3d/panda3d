@@ -526,6 +526,10 @@ write_data(xel *array, xelval *alpha_data) {
 
   png_set_write_fn(_png, (void *)this, png_write_data, png_flush_data);
 
+  // The compression level corresponds directly to the compression levels for
+  // zlib.
+  png_set_compression_level(_png, png_compression_level);
+
   // First, write the header.
 
   int true_bit_depth = pm_maxvaltobits(_maxval);

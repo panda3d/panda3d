@@ -338,7 +338,7 @@ class FireflyDemo(ShowBase):
         color_g = random.uniform(0.8, 1.0)
         color_b = min(color_g, random.uniform(0.5, 1.0))
         fly.setColor(color_r, color_g, color_b, 1.0)
-        fly.setShaderInput("lightcolor", color_r, color_g, color_b, 1.0)
+        fly.setShaderInput("lightcolor", (color_r, color_g, color_b, 1.0))
         int1 = fly.posInterval(random.uniform(7, 12), pos1, pos2)
         int2 = fly.posInterval(random.uniform(7, 12), pos2, pos1)
         si1 = fly.scaleInterval(random.uniform(0.8, 1.5),

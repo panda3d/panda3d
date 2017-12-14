@@ -125,6 +125,7 @@ register_with_read_factory() {
  */
 void BulletConvexHullShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
   dg.add_stdfloat(get_margin());
 
   unsigned int num_points = _shape->getNumPoints();
@@ -161,7 +162,10 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletConvexHullShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  PN_stdfloat margin = scan.get_stdfloat();
+  BulletShape::fillin(scan, manager);
+  nassertv(_shape == nullptr);
+
+  _shape->setMargin(scan.get_stdfloat());
   unsigned int num_points = scan.get_uint32();
 
 #if BT_BULLET_VERSION >= 282

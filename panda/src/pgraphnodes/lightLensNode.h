@@ -20,6 +20,7 @@
 #include "camera.h"
 #include "graphicsStateGuardianBase.h"
 #include "graphicsOutputBase.h"
+#include "atomicAdjust.h"
 
 class ShaderGenerator;
 class GraphicsStateGuardian;
@@ -31,8 +32,10 @@ class GraphicsStateGuardian;
  */
 class EXPCL_PANDA_PGRAPHNODES LightLensNode : public Light, public Camera {
 PUBLISHED:
-  LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
+  explicit LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
   virtual ~LightLensNode();
+
+  INLINE bool has_specular_color() const;
 
   INLINE bool is_shadow_caster() const;
   INLINE void set_shadow_caster(bool caster);
@@ -53,13 +56,21 @@ protected:
 
   LVecBase2i _sb_size;
   bool _shadow_caster;
+  bool _has_specular_color;
   int _sb_sort;
 
   // This is really a map of GSG -> GraphicsOutput.
   typedef pmap<PT(GraphicsStateGuardianBase), PT(GraphicsOutputBase) > ShadowBuffers;
   ShadowBuffers _sbuffers;
 
+  // This counts how many LightAttribs in the world are referencing this
+  // LightLensNode object.
+  AtomicAdjust::Integer _attrib_count;
+
 public:
+  virtual void attrib_ref();
+  virtual void attrib_unref();
+
   virtual PandaNode *as_node();
   virtual Light *as_light();
 

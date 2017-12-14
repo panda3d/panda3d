@@ -35,12 +35,8 @@ get_composition_cache() const {
   PyObject *list = PyList_New(num_states);
   size_t i = 0;
 
-  int size = _this->_composition_cache.get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_this->_composition_cache.has_element(si)) {
-      continue;
-    }
-
+  size_t size = _this->_composition_cache.get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
 
@@ -94,12 +90,8 @@ get_invert_composition_cache() const {
   PyObject *list = PyList_New(num_states);
   size_t i = 0;
 
-  int size = _this->_invert_composition_cache.get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_this->_invert_composition_cache.has_element(si)) {
-      continue;
-    }
-
+  size_t size = _this->_invert_composition_cache.get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
 
@@ -149,11 +141,8 @@ get_states() {
   PyObject *list = PyList_New(num_states);
   size_t i = 0;
 
-  int size = TransformState::_states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!TransformState::_states->has_element(si)) {
-      continue;
-    }
+  size_t size = TransformState::_states->get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
     const TransformState *state = TransformState::_states->get_key(si);
     state->ref();
     PyObject *a =
@@ -180,11 +169,8 @@ get_unused_states() {
   LightReMutexHolder holder(*TransformState::_states_lock);
 
   PyObject *list = PyList_New(0);
-  int size = TransformState::_states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!TransformState::_states->has_element(si)) {
-      continue;
-    }
+  size_t size = TransformState::_states->get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
     const TransformState *state = TransformState::_states->get_key(si);
     if (state->get_cache_ref_count() == state->get_ref_count()) {
       state->ref();

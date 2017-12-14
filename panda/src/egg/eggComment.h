@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDAEGG EggComment : public EggNode {
 PUBLISHED:
-  INLINE EggComment(const string &node_name, const string &comment);
+  INLINE explicit EggComment(const string &node_name, const string &comment);
   INLINE EggComment(const EggComment &copy);
 
   // You can use the string operators to directly set and manipulate the

@@ -230,17 +230,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) ColorScaleAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // A ColorScaleAttrib doesn't directly contribute to the auto-shader
-  // contents--instead, the shader is always written to query attr_colorscale
-  // at runtime.  So the attrib itself means nothing to the shader.
-  return NULL;
-}
-
-/**
  * Quantizes the color scale to the nearest multiple of 1000, just to prevent
  * runaway accumulation of only slightly-different ColorScaleAttribs.
  */

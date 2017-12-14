@@ -134,13 +134,46 @@ If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
 package file in order to install the SDK onto your system.
 
+FreeBSD
+-------
+
+Building on FreeBSD is very similar to building on Linux.  You will need to
+install the requisite packages using the system package manager.  To install
+the recommended set of dependencies, you can use this command:
+
+```bash
+pkg install pkgconf png jpeg-turbo tiff freetype2 eigen squish openal opusfile libvorbis libX11 libGL ode bullet assimp openexr
+```
+
+You will also need to choose which version of Python you want to use.
+Install the appropriate package for it (such as `python2` or `python36`) and
+run the makepanda script with your chosen Python version:
+
+```bash
+python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+```
+
+If successful, this will produce a .pkg file in the root of the source
+directory which you can install using `pkg install`.
+
+Running Tests
+=============
+
+Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation)
+and run the `pytest` command.  If you have not installed Panda3D, you will
+need to configure your enviroment by pointing the `PYTHONPATH` variable at
+the `built` directory.  On Linux, you will also need to point the
+`LD_LIBRARY_PATH` variable at the `built/lib` directory.
+
+As a convenience, you can alternatively pass the `--tests` option to makepanda.
+
 Reporting Issues
 ================
 
 If you encounter any bugs when using Panda3D, please report them in the bug
 tracker.  This is hosted at:
 
-  https://bugs.launchpad.net/panda3d
+  https://github.com/panda3d/panda3d/issues
 
 Make sure to first use the search function to see if the bug has already been
 reported.  When filling out a bug report, make sure that you include as much

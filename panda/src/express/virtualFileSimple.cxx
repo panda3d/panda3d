@@ -150,7 +150,16 @@ copy_file(VirtualFile *new_file) {
   // Different mount point, or the mount doesn't support copying.  Do it by
   // hand.
   ostream *out = new_file->open_write_file(false, true);
+  if (out == nullptr) {
+    return false;
+  }
+
   istream *in = open_read_file(false);
+  if (in == nullptr) {
+    new_file->close_write_file(out);
+    new_file->delete_file();
+    return false;
+  }
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];

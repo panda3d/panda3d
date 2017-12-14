@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomTriangles : public GeomPrimitive {
 PUBLISHED:
-  GeomTriangles(UsageHint usage_hint);
+  explicit GeomTriangles(UsageHint usage_hint);
   GeomTriangles(const GeomTriangles &copy);
   virtual ~GeomTriangles();
   ALLOC_DELETED_CHAIN(GeomTriangles);

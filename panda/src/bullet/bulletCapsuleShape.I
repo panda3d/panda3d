@@ -12,6 +12,16 @@
  */
 
 /**
+ * Only used by make_from_bam.
+ */
+INLINE BulletCapsuleShape::
+BulletCapsuleShape() :
+  _shape(nullptr),
+  _radius(0),
+  _height(0) {
+}
+
+/**
  *
  */
 INLINE BulletCapsuleShape::
@@ -25,7 +35,9 @@ INLINE BulletCapsuleShape::
  */
 INLINE BulletCapsuleShape::
 BulletCapsuleShape(const BulletCapsuleShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape),
+  _radius(copy._radius),
+  _height(copy._height) {
 }
 
 /**
@@ -34,22 +46,31 @@ BulletCapsuleShape(const BulletCapsuleShape &copy) :
 INLINE void BulletCapsuleShape::
 operator = (const BulletCapsuleShape &copy) {
   _shape = copy._shape;
+  _radius = copy._radius;
+  _height = copy._height;
 }
 
 /**
- *
+ * Returns the radius that was used to construct this capsule.
  */
 INLINE PN_stdfloat BulletCapsuleShape::
 get_radius() const {
-
-  return (PN_stdfloat)_shape->getRadius();
+  return _radius;
 }
 
 /**
- *
+ * Returns half of get_height().
+ * @deprecated see get_height() instead.
  */
 INLINE PN_stdfloat BulletCapsuleShape::
 get_half_height() const {
+  return _height * 0.5;
+}
 
-  return (PN_stdfloat)_shape->getHalfHeight();
+/**
+ * Returns the height that was used to construct this capsule.
+ */
+INLINE PN_stdfloat BulletCapsuleShape::
+get_height() const {
+  return _height;
 }

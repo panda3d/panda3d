@@ -15,6 +15,7 @@
 #include "geom.h"
 #include "geomTransformer.h"
 #include "sceneGraphReducer.h"
+#include "stateMunger.h"
 #include "accumulatedAttribs.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -37,6 +38,7 @@
 #include "boundingBox.h"
 #include "boundingSphere.h"
 #include "config_mathutil.h"
+#include "preparedGraphicsObjects.h"
 
 
 bool allow_flatten_color = ConfigVariableBool
@@ -381,43 +383,42 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
     int num_arrays = vdata_reader.get_num_arrays();
     for (int i = 0; i < num_arrays; ++i) {
       CPT(GeomVertexArrayData) array = vdata_reader.get_array(i);
-      ((GeomVertexArrayData *)array.p())->prepare(prepared_objects);
+      prepared_objects->enqueue_vertex_buffer((GeomVertexArrayData *)array.p());
     }
 
     // And also each of the index arrays.
     int num_primitives = geom->get_num_primitives();
     for (int i = 0; i < num_primitives; ++i) {
       CPT(GeomPrimitive) prim = geom->get_primitive(i);
-      ((GeomPrimitive *)prim.p())->prepare(prepared_objects);
+      prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
+    }
+
+    if (munger->is_of_type(StateMunger::get_class_type())) {
+      StateMunger *state_munger = (StateMunger *)munger.p();
+      geom_state = state_munger->munge_state(geom_state);
     }
 
     // And now prepare each of the textures.
-    const RenderAttrib *attrib =
-      geom_state->get_attrib(TextureAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
-      const TextureAttrib *ta;
-      DCAST_INTO_V(ta, attrib);
+    const TextureAttrib *ta;
+    if (geom_state->get_attrib(ta)) {
       int num_stages = ta->get_num_on_stages();
       for (int i = 0; i < num_stages; ++i) {
         Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
         // TODO: prepare the sampler states, if specified.
-        if (texture != (Texture *)NULL) {
-          texture->prepare(prepared_objects);
+        if (texture != nullptr) {
+          prepared_objects->enqueue_texture(texture);
         }
       }
     }
 
     // As well as the shaders.
-    attrib = geom_state->get_attrib(ShaderAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
-      const ShaderAttrib *sa;
-      DCAST_INTO_V(sa, attrib);
+    const ShaderAttrib *sa;
+    if (geom_state->get_attrib(sa)) {
       Shader *shader = (Shader *)sa->get_shader();
-      if (shader != (Shader *)NULL) {
-        shader->prepare(prepared_objects);
+      if (shader != nullptr) {
+        prepared_objects->enqueue_shader(shader);
       }
-      // TODO: prepare the shader inputs.  TODO: Invoke the shader generator
-      // if enabled.
+      // TODO: prepare the shader inputs.
     }
   }
 

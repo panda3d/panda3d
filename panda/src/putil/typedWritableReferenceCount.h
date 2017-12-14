@@ -37,7 +37,7 @@ public:
   virtual ReferenceCount *as_reference_count();
 
 PUBLISHED:
-  static PT(TypedWritableReferenceCount) decode_from_bam_stream(const string &data, BamReader *reader = NULL);
+  static PT(TypedWritableReferenceCount) decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 public:
   virtual TypeHandle get_type() const {
@@ -61,10 +61,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-#ifdef DO_MEMORY_USAGE
+// We can safely redefine this as a no-op.
 template<>
 INLINE void PointerToBase<TypedWritableReferenceCount>::update_type(To *ptr) {}
-#endif
 
 #include "typedWritableReferenceCount.I"
 

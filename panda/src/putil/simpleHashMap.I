@@ -15,10 +15,10 @@
  *
  */
 template<class Key, class Value, class Compare>
-INLINE SimpleHashMap<Key, Value, Compare>::
+CONSTEXPR SimpleHashMap<Key, Value, Compare>::
 SimpleHashMap(const Compare &comp) :
-  _table(NULL),
-  _deleted_chain(NULL),
+  _table(nullptr),
+  _deleted_chain(nullptr),
   _table_size(0),
   _num_entries(0),
   _comp(comp)
@@ -30,8 +30,87 @@ SimpleHashMap(const Compare &comp) :
  */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
+SimpleHashMap(const SimpleHashMap &copy) :
+  _table_size(copy._table_size),
+  _num_entries(copy._num_entries),
+  _comp(copy._comp) {
+
+  // We allocate enough bytes for _table_size elements of TableEntry, plus
+  // _table_size * 4 more ints at the end (for the index array).
+  size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+
+  _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+  memcpy(_table, copy._table, alloc_size);
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare>::
+SimpleHashMap(SimpleHashMap &&from) NOEXCEPT :
+  _table(from._table),
+  _deleted_chain(from._deleted_chain),
+  _table_size(from._table_size),
+  _num_entries(from._num_entries),
+  _comp(move(from._comp))
+{
+  from._table = nullptr;
+  from._deleted_chain = nullptr;
+  from._table_size = 0;
+  from._num_entries = 0;
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare>::
 ~SimpleHashMap() {
   clear();
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
+operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
+  if (this != &copy) {
+    _table_size = copy._table_size;
+    _num_entries = copy._num_entries;
+    _comp = copy._comp;
+
+    // We allocate enough bytes for _table_size elements of TableEntry, plus
+    // _table_size * 4 more ints at the end (for the index array).
+    size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+
+    _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+    _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+    memcpy(_table, copy._table, alloc_size);
+  }
+  return *this;
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
+operator = (SimpleHashMap<Key, Value, Compare> &&from) NOEXCEPT {
+  if (this != &from) {
+    _table = from._table;
+    _deleted_chain = from._deleted_chain;
+    _table_size = from._table_size;
+    _num_entries = from._num_entries;
+    _comp = move(from._comp);
+
+    from._table = nullptr;
+    from._deleted_chain = nullptr;
+    from._table_size = 0;
+    from._num_entries = 0;
+  }
 }
 
 /**
@@ -69,29 +148,13 @@ find(const Key &key) const {
     return -1;
   }
 
-  size_t index = get_hash(key);
-  if (!has_element(index)) {
+  int slot = find_slot(key);
+  if (slot >= 0) {
+    return get_index_array()[slot];
+  } else {
+    // The key is not in the table.
     return -1;
   }
-  if (is_element(index, key)) {
-    return index;
-  }
-
-  // There was some other key at the hashed slot.  That's a hash conflict.
-  // Maybe our entry was recorded at a later slot position; scan the
-  // subsequent positions until we find the entry or an unused slot,
-  // indicating the end of the scan.
-  size_t i = index;
-  i = (i + 1) & (_table_size - 1);
-  while (i != index && has_element(i)) {
-    if (is_element(i, key)) {
-      return i;
-    }
-    i = (i + 1) & (_table_size - 1);
-  }
-
-  // The key is not in the table.
-  return -1;
 }
 
 /**
@@ -105,23 +168,23 @@ store(const Key &key, const Value &data) {
     // Special case: the first key in an empty table.
     nassertr(_num_entries == 0, -1);
     new_table();
-    size_t index = get_hash(key);
-    store_new_element(index, key, data);
-    ++_num_entries;
+    int pos = store_new_element(get_hash(key), key, data);
 #ifdef _DEBUG
-    nassertr(validate(), index);
+    nassertr(validate(), pos);
 #endif
-    return index;
+    return pos;
   }
+  consider_expand_table();
 
-  size_t index = get_hash(key);
-  if (!has_element(index)) {
+  const int *index_array = get_index_array();
+  size_t hash = get_hash(key);
+  int index = index_array[hash];
+  if (index < 0) {
     // This element is not already in the map; add it.
     if (consider_expand_table()) {
       return store(key, data);
     }
-    store_new_element(index, key, data);
-    ++_num_entries;
+    index = store_new_element(hash, key, data);
 #ifdef _DEBUG
     nassertr(validate(), index);
 #endif
@@ -129,7 +192,7 @@ store(const Key &key, const Value &data) {
   }
   if (is_element(index, key)) {
     // This element is already in the map; replace the data at that key.
-    _table[index]._data = data;
+    set_data(index, data);
 #ifdef _DEBUG
     nassertr(validate(), index);
 #endif
@@ -138,28 +201,27 @@ store(const Key &key, const Value &data) {
 
   // There was some other key at the hashed slot.  That's a hash conflict.
   // Record this entry at a later position.
-  size_t i = index;
-  i = (i + 1) & (_table_size - 1);
-  while (i != index) {
-    if (!has_element(i)) {
+  size_t slot = next_hash(hash);
+  while (slot != hash) {
+    index = index_array[slot];
+    if (index < 0) {
       if (consider_expand_table()) {
         return store(key, data);
       }
-      store_new_element(i, key, data);
-      ++_num_entries;
+      index = store_new_element(slot, key, data);
 #ifdef _DEBUG
-      nassertr(validate(), i);
+      nassertr(validate(), index);
 #endif
-      return i;
+      return index;
     }
-    if (is_element(i, key)) {
-      _table[i]._data = data;
+    if (is_element(index, key)) {
+      set_data(index, data);
 #ifdef _DEBUG
-      nassertr(validate(), i);
+      nassertr(validate(), index);
 #endif
-      return i;
+      return index;
     }
-    i = (i + 1) & (_table_size - 1);
+    slot = next_hash(slot);
   }
 
   // Shouldn't get here unless _num_entries == _table_size, which shouldn't be
@@ -171,15 +233,82 @@ store(const Key &key, const Value &data) {
 /**
  * Removes the indicated key and its associated data from the table.  Returns
  * true if the key was removed, false if it was not present.
+ *
+ * Iterator safety:  To perform removal during iteration, revisit the element
+ * at the current index if removal succeeds,  keeping in mind that the number
+ * of elements has now shrunk by one.
  */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 remove(const Key &key) {
-  int index = find(key);
-  if (index == -1) {
+  if (_num_entries == 0) {
+    // Special case: the table is empty.
     return false;
   }
-  remove_element(index);
+
+  int *index_array = get_index_array();
+  size_t slot = (size_t)find_slot(key);
+  if (slot == (size_t)-1) {
+    // It wasn't in the hash map.
+    return false;
+  }
+
+  // Now remove this element.
+  size_t last = _num_entries - 1;
+  size_t index = (size_t)index_array[slot];
+  if (index < _num_entries) {
+    // Find the last element in the index array.
+    int other_slot = find_slot(_table[last]._key);
+    nassertr(other_slot != -1, false);
+    nassertr(index_array[(size_t)other_slot] == (int)last, false);
+
+    // Swap it with the last one, so that we don't get any gaps in the table
+    // of entries.
+    _table[index] = move(_table[last]);
+    index_array[(size_t)other_slot] = index;
+  }
+
+  _table[last].~TableEntry();
+  _num_entries = last;
+
+  // It's important that we do this after the second find_slot, above, since
+  // it might otherwise fail due to the unexpected gap, since some indices may
+  // not be at their ideal positions right now.
+  index_array[slot] = -1;
+
+  //if (consider_shrink_table()) {
+  //  // No need to worry about that gap; resize_table() will rebuild the index.
+  //  return true;
+  //}
+
+  // Now we have put a hole in the index array.  If there was a hash conflict
+  // in the slot after this one, we have to move it down to close the hole.
+  slot = next_hash(slot);
+  while (has_slot(slot)) {
+    size_t index = (size_t)index_array[slot];
+    size_t wants_slot = get_hash(_table[index]._key);
+    if (wants_slot != slot) {
+      // This one was a hash conflict; try to put it where it belongs.  We
+      // can't just put it in n, since maybe it belongs somewhere after n.
+      while (wants_slot != slot && has_slot(wants_slot)) {
+        wants_slot = next_hash(wants_slot);
+      }
+      if (wants_slot != slot) {
+        // We just have to flip the slots in the index array; we can keep the
+        // elements in the table where they are.
+        index_array[wants_slot] = index;
+        index_array[slot] = -1;
+      }
+    }
+
+    // Continue until we encounter the next unused slot.  Until we do, we
+    // can't be sure we've found all of the potential hash conflicts.
+    slot = next_hash(slot);
+  }
+
+#ifdef _DEBUG
+  nassertr(validate(), true);
+#endif
   return true;
 }
 
@@ -190,15 +319,13 @@ template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 clear() {
   if (_table_size != 0) {
-    for (size_t i = 0; i < _table_size; ++i) {
-      if (has_element(i)) {
-        clear_element(i);
-      }
+    for (size_t i = 0; i < _num_entries; ++i) {
+      _table[i].~TableEntry();
     }
 
     _deleted_chain->deallocate(_table, TypeHandle::none());
-    _table = NULL;
-    _deleted_chain = NULL;
+    _table = nullptr;
+    _deleted_chain = nullptr;
     _table_size = 0;
     _num_entries = 0;
   }
@@ -219,131 +346,88 @@ operator [] (const Key &key) {
 }
 
 /**
- * Returns the total number of slots in the table.
+ * Returns the total number of entries in the table.  Same as get_num_entries.
  */
 template<class Key, class Value, class Compare>
-INLINE size_t SimpleHashMap<Key, Value, Compare>::
-get_size() const {
-  return _table_size;
+CONSTEXPR size_t SimpleHashMap<Key, Value, Compare>::
+size() const {
+  return _num_entries;
 }
 
 /**
- * Returns true if there is an element stored in the nth slot, false
- * otherwise.
+ * Returns the key in the nth entry of the table.
  *
- * n should be in the range 0 <= n < get_size().
- */
-template<class Key, class Value, class Compare>
-INLINE bool SimpleHashMap<Key, Value, Compare>::
-has_element(size_t n) const {
-  nassertr(n < _table_size, false);
-  return (get_exists_array()[n] != 0);
-}
-
-/**
- * Returns the key in the nth slot of the table.
- *
- * It is an error to call this if there is nothing stored in the nth slot (use
- * has_element() to check this first).  n should be in the range 0 <= n <
- * get_size().
+ * @param n should be in the range 0 <= n < size().
  */
 template<class Key, class Value, class Compare>
 INLINE const Key &SimpleHashMap<Key, Value, Compare>::
 get_key(size_t n) const {
-  nassertr(has_element(n), _table[n]._key);
+  nassertr(n < _num_entries, _table[n]._key);
   return _table[n]._key;
 }
 
 /**
- * Returns the data in the nth slot of the table.
+ * Returns the data in the nth entry of the table.
  *
- * It is an error to call this if there is nothing stored in the nth slot (use
- * has_element() to check this first).  n should be in the range 0 <= n <
- * get_size().
+ * @param n should be in the range 0 <= n < size().
  */
 template<class Key, class Value, class Compare>
 INLINE const Value &SimpleHashMap<Key, Value, Compare>::
 get_data(size_t n) const {
-  nassertr(has_element(n), _table[n]._data);
-  return _table[n]._data;
+  nassertr(n < _num_entries, _table[n].get_data());
+  return _table[n].get_data();
 }
 
 /**
- * Returns a modifiable reference to the data in the nth slot of the table.
+ * Returns a modifiable reference to the data in the nth entry of the table.
  *
- * It is an error to call this if there is nothing stored in the nth slot (use
- * has_element() to check this first).  n should be in the range 0 <= n <
- * get_size().
+ * @param n should be in the range 0 <= n < size().
  */
 template<class Key, class Value, class Compare>
 INLINE Value &SimpleHashMap<Key, Value, Compare>::
 modify_data(size_t n) {
-  nassertr(has_element(n), _table[n]._data);
-  return _table[n]._data;
+  nassertr(n < _num_entries, _table[n].modify_data());
+  return _table[n].modify_data();
 }
 
 /**
- * Changes the data for the nth slot of the table.
+ * Changes the data for the nth entry of the table.
  *
- * It is an error to call this if there is nothing stored in the nth slot (use
- * has_element() to check this first).  n should be in the range 0 <= n <
- * get_size().
+ * @param n should be in the range 0 <= n < size().
  */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 set_data(size_t n, const Value &data) {
-  nassertv(has_element(n));
-  _table[n]._data = data;
+  nassertv(n < _num_entries);
+  _table[n].set_data(data);
 }
 
 /**
- * Removes the nth slot from the table.
+ * Changes the data for the nth entry of the table.
  *
- * It is an error to call this if there is nothing stored in the nth slot (use
- * has_element() to check this first).  n should be in the range 0 <= n <
- * get_size().
+ * @param n should be in the range 0 <= n < size().
+ */
+template<class Key, class Value, class Compare>
+INLINE void SimpleHashMap<Key, Value, Compare>::
+set_data(size_t n, Value &&data) {
+  nassertv(n < _num_entries);
+  _table[n].set_data(move(data));
+}
+
+/**
+ * Removes the nth entry from the table.
+ *
+ * @param n should be in the range 0 <= n < size().
  */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 remove_element(size_t n) {
-  nassertv(has_element(n));
-
-  clear_element(n);
-  nassertv(_num_entries > 0);
-  --_num_entries;
-
-  // Now we have put a hole in the table.  If there was a hash conflict in the
-  // slot following this one, we have to move it down to close the hole.
-  size_t i = n;
-  i = (i + 1) & (_table_size - 1);
-  while (has_element(i)) {
-    size_t wants_index = get_hash(_table[i]._key);
-    if (wants_index != i) {
-      // This one was a hash conflict; try to put it where it belongs.  We
-      // can't just put it in n, since maybe it belongs somewhere after n.
-      while (wants_index != i && has_element(wants_index)) {
-        wants_index = (wants_index + 1) & (_table_size - 1);
-      }
-      if (wants_index != i) {
-        store_new_element(wants_index, _table[i]._key, _table[i]._data);
-        clear_element(i);
-      }
-    }
-
-    // Continue until we encounter the next unused slot.  Until we do, we
-    // can't be sure we've found all of the potential hash conflicts.
-    i = (i + 1) & (_table_size - 1);
-  }
-
-#ifdef _DEBUG
-  nassertv(validate());
-#endif
+  nassertv(n < _num_entries);
+  remove(_table[n]._key);
 }
 
 /**
- * Returns the number of active entries in the table.  This is not necessarily
- * related to the number of slots in the table as reported by get_size().  Use
- * get_size() to iterate through all of the slots, not get_num_entries().
+ * Returns the number of active entries in the table.  Same as size().
  */
 template<class Key, class Value, class Compare>
 INLINE size_t SimpleHashMap<Key, Value, Compare>::
@@ -352,7 +436,7 @@ get_num_entries() const {
 }
 
 /**
- * Returns true if the table is empty; i.e.  get_num_entries() == 0.
+ * Returns true if the table is empty; i.e. get_num_entries() == 0.
  */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
@@ -367,17 +451,20 @@ template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 output(ostream &out) const {
   out << "SimpleHashMap (" << _num_entries << " entries): [";
-  for (size_t i = 0; i < _table_size; ++i) {
-    if (!has_element(i)) {
+  const int *index_array = get_index_array();
+  size_t num_slots = _table_size * sparsity;
+  for (size_t slot = 0; slot < num_slots; ++slot) {
+    if (!has_slot(slot)) {
       out << " *";
 
     } else {
-      out << " " << _table[i]._key;
-      size_t index = get_hash(_table[i]._key);
-      if (index != i) {
+      size_t index = (size_t)index_array[slot];
+      out << " " << index;
+      size_t ideal_slot = get_hash(_table[index]._key);
+      if (ideal_slot != slot) {
         // This was misplaced as the result of a hash conflict.  Report how
         // far off it is.
-        out << "(" << ((_table_size + i - index) & (_table_size - 1)) << ")";
+        out << "(" << ((_table_size + slot - ideal_slot) & (num_slots - 1)) << ")";
       }
     }
   }
@@ -392,6 +479,9 @@ void SimpleHashMap<Key, Value, Compare>::
 write(ostream &out) const {
   output(out);
   out << "\n";
+  for (size_t i = 0; i < _num_entries; ++i) {
+    out << "  " << _table[i]._key << " (hash " << get_hash(_table[i]._key) << ")\n";
+  }
 }
 
 /**
@@ -403,21 +493,31 @@ bool SimpleHashMap<Key, Value, Compare>::
 validate() const {
   size_t count = 0;
 
-  const unsigned char *exists_array = get_exists_array();
-
-  for (size_t i = 0; i < _table_size; ++i) {
-    if (exists_array[i] != 0) {
+  const int *index_array = get_index_array();
+  size_t num_slots = _table_size * sparsity;
+  for (size_t slot = 0; slot < num_slots; ++slot) {
+    if (has_slot(slot)) {
+      size_t index = (size_t)index_array[slot];
       ++count;
-      size_t ideal_index = get_hash(_table[i]._key);
-      size_t wants_index = ideal_index;
-      while (wants_index != i && exists_array[wants_index] != 0) {
-        wants_index = (wants_index + 1) & (_table_size - 1);
-      }
-      if (wants_index != i) {
+      if (index >= _num_entries) {
         util_cat.error()
-          << "SimpleHashMap is invalid: key " << _table[i]._key
-          << " should be in slot " << wants_index << " instead of "
-          << i << " (ideal is " << ideal_index << ")\n";
+          << "SimpleHashMap " << this << " is invalid: slot " << slot
+          << " contains index " << index << " which is past the end of the"
+             " table\n";
+        write(util_cat.error(false));
+        return false;
+      }
+      nassertd(index < _num_entries) continue;
+      size_t ideal_slot = get_hash(_table[index]._key);
+      size_t wants_slot = ideal_slot;
+      while (wants_slot != slot && has_slot(wants_slot)) {
+        wants_slot = next_hash(wants_slot);
+      }
+      if (wants_slot != slot) {
+        util_cat.error()
+          << "SimpleHashMap " << this << " is invalid: key "
+          << _table[index]._key << " should be in slot " << wants_slot
+          << " instead of " << slot << " (ideal is " << ideal_slot << ")\n";
         write(util_cat.error(false));
         return false;
       }
@@ -426,7 +526,7 @@ validate() const {
 
   if (count != _num_entries) {
     util_cat.error()
-      << "SimpleHashMap is invalid: reports " << _num_entries
+      << "SimpleHashMap " << this << " is invalid: reports " << _num_entries
       << " entries, actually has " << count << "\n";
     write(util_cat.error(false));
     return false;
@@ -449,7 +549,57 @@ get_hash(const Key &key) const {
   return (size_t)floor(f * _table_size);
   */
 
-  return ((_comp(key) * (size_t)9973) >> 8) & (_table_size - 1);
+  return ((_comp(key) * (size_t)9973) >> 8) & ((_table_size * sparsity) - 1);
+}
+
+/**
+ * Given a hash value, increments it, looping around the hash space.
+ */
+template<class Key, class Value, class Compare>
+INLINE size_t SimpleHashMap<Key, Value, Compare>::
+next_hash(size_t hash) const {
+  return (hash + 1) & ((_table_size * sparsity) - 1);
+}
+
+/**
+ * Finds the slot in which the given key should fit.
+ */
+template<class Key, class Value, class Compare>
+INLINE int SimpleHashMap<Key, Value, Compare>::
+find_slot(const Key &key) const {
+  const int *index_array = get_index_array();
+  size_t hash = get_hash(key);
+  int index = index_array[hash];
+  if (index < 0) {
+    return -1;
+  }
+
+  if (is_element((size_t)index, key)) {
+    return hash;
+  }
+
+  // There was some other key at the hashed slot.  That's a hash conflict.
+  // Maybe our entry was recorded at a later slot position; scan the
+  // subsequent positions until we find the entry or an unused slot,
+  // indicating the end of the scan.
+  size_t slot = next_hash(hash);
+  while (slot != hash && has_slot(slot)) {
+    if (is_element((size_t)index_array[slot], key)) {
+      return (int)slot;
+    }
+    slot = next_hash(slot);
+  }
+
+  return -1;
+}
+
+/**
+ * Returns true if the given slot refers to an element.
+ */
+template<class Key, class Value, class Compare>
+INLINE bool SimpleHashMap<Key, Value, Compare>::
+has_slot(size_t slot) const {
+  return get_index_array()[slot] >= 0;
 }
 
 /**
@@ -458,40 +608,33 @@ get_hash(const Key &key) const {
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 is_element(size_t n, const Key &key) const {
-  nassertr(has_element(n), false);
+  nassertr(n < _num_entries, false);
   return _comp.is_equal(_table[n]._key, key);
 }
 
 /**
- * Constructs a new TableEntry at position n, storing the indicated key and
- * value.
+ * Constructs a new TableEntry with the given slot, storing the indicated key
+ * and value.
  */
 template<class Key, class Value, class Compare>
-INLINE void SimpleHashMap<Key, Value, Compare>::
-store_new_element(size_t n, const Key &key, const Value &data) {
-  new(&_table[n]) TableEntry(key, data);
-  get_exists_array()[n] = true;
+INLINE size_t SimpleHashMap<Key, Value, Compare>::
+store_new_element(size_t slot, const Key &key, const Value &data) {
+  size_t index = _num_entries++;
+  new(&_table[index]) TableEntry(key, data);
+  nassertr(get_index_array()[slot] == -1, index)
+  get_index_array()[slot] = index;
+  return index;
 }
 
 /**
- * Destructs the TableEntry at position n.
- */
-template<class Key, class Value, class Compare>
-INLINE void SimpleHashMap<Key, Value, Compare>::
-clear_element(size_t n) {
-  _table[n].~TableEntry();
-  get_exists_array()[n] = false;
-}
-
-/**
- * Returns the beginning of the array of _table_size unsigned chars that are
- * the boolean flags for whether each element exists (has been constructed)
+ * Returns the beginning of the array of _table_size ints that are the indices
+ * pointing to the location within the table where the elements are stored.
  * within the table.
  */
 template<class Key, class Value, class Compare>
-INLINE unsigned char *SimpleHashMap<Key, Value, Compare>::
-get_exists_array() const {
-  return (unsigned char *)(_table + _table_size);
+INLINE int *SimpleHashMap<Key, Value, Compare>::
+get_index_array() const {
+  return (int *)(_table + _table_size);
 }
 
 /**
@@ -504,15 +647,15 @@ new_table() {
 
   // Pick a good initial table size.  For now, we make it really small.  Maybe
   // that's the right answer.
-  _table_size = 4;
+  _table_size = 2;
 
   // We allocate enough bytes for _table_size elements of TableEntry, plus
-  // _table_size more bytes at the end (for the exists array).
-  size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size;
+  // _table_size * 4 more ints at the end (for the index array).
+  size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
-  memset(get_exists_array(), 0, _table_size);
+  memset(get_index_array(), -1, _table_size * sizeof(int) * sparsity);
 }
 
 /**
@@ -522,62 +665,78 @@ new_table() {
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 consider_expand_table() {
-  if (_num_entries >= (_table_size >> 1)) {
-    expand_table();
+  if (_num_entries < _table_size) {
+    return false;
+  } else {
+    resize_table(_table_size << 1);
     return true;
   }
-  return false;
 }
 
 /**
- * Doubles the size of the existing table.
+ * Shrinks the table if the allocated storage is significantly larger than the
+ * number of elements in it.  Returns true if shrunk, false otherwise.
+ */
+template<class Key, class Value, class Compare>
+INLINE bool SimpleHashMap<Key, Value, Compare>::
+consider_shrink_table() {
+  // If the number of elements gets less than an eighth of the table size, we
+  // know it's probably time to shrink it down.
+  if (_table_size <= 16 || _num_entries >= (_table_size >> 3)) {
+    return false;
+  } else {
+    size_t new_size = _table_size;
+    do {
+      new_size >>= 1;
+    } while (new_size >= 16 && _num_entries < (new_size >> 2));
+    resize_table(new_size);
+    return true;
+  }
+}
+
+/**
+ * Resizes the existing table.
  */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
-expand_table() {
+resize_table(size_t new_size) {
   nassertv(_table_size != 0);
+  nassertv(new_size >= _num_entries);
 
-  SimpleHashMap<Key, Value, Compare> old_map(_comp);
-  swap(old_map);
+  DeletedBufferChain *old_chain = _deleted_chain;
+  TableEntry *old_table = _table;
 
-  // Double the table size.
-  size_t old_table_size = old_map._table_size;
-  _table_size = (old_table_size << 1);
-  nassertv(_table == NULL);
+  _table_size = new_size;
 
   // We allocate enough bytes for _table_size elements of TableEntry, plus
-  // _table_size more bytes at the end (for the exists array).
-  size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size;
+  // _table_size * sparsity more ints at the end (for the sparse index array).
+  size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size * sparsity * sizeof(int);
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
-  unsigned char *exists_array = get_exists_array();
-  memset(exists_array, 0, _table_size);
-  nassertv(_num_entries == 0);
+  int *index_array = get_index_array();
+  memset(index_array, -1, _table_size * sizeof(int) * sparsity);
 
-  // Now copy the entries from the old table into the new table.
-  for (size_t i = 0; i < old_table_size; ++i) {
-    if (old_map.has_element(i)) {
-      size_t new_index = get_hash(old_map._table[i]._key);
+  // Now copy the entries from the old table into the new table.  We don't
+  // have to reorder these, fortunately.  Hopefully, a smart compiler will
+  // optimize this to a memcpy.
+  for (size_t i = 0; i < _num_entries; ++i) {
+    new(&_table[i]) TableEntry(move(old_table[i]));
+    old_table[i].~TableEntry();
+  }
 
-      while (exists_array[new_index] != 0) {
-        // Hash conflict;  look for a better spot.  This has to succeed.
-        new_index = (new_index + 1) & (_table_size - 1);
-      }
+  // We don't need this old thing anymore.
+  old_chain->deallocate(old_table, TypeHandle::none());
 
-#ifdef USE_MOVE_SEMANTICS
-      // Use C++11 rvalue references to invoke the move constructor, which may
-      // be more efficient.
-      new(&_table[new_index]) TableEntry(move(old_map._table[i]));
-#else
-      new(&_table[new_index]) TableEntry(old_map._table[i]);
-#endif
-      exists_array[new_index] = true;
-      ++_num_entries;
+  // Reindex the table.
+  for (size_t i = 0; i < _num_entries; ++i) {
+    size_t slot = get_hash(_table[i]._key);
+
+    while (has_slot(slot)) {
+      // Hash conflict;  look for a better spot.  This has to succeed.
+      slot = next_hash(slot);
     }
+    index_array[slot] = (int)i;
   }
 
   nassertv(validate());
-  nassertv(old_map.validate());
-
-  nassertv(_num_entries == old_map._num_entries);
 }

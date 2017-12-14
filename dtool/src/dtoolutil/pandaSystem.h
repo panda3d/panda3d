@@ -48,6 +48,21 @@ PUBLISHED:
 
   static string get_platform();
 
+  MAKE_PROPERTY(version_string, get_version_string);
+  MAKE_PROPERTY(major_version, get_major_version);
+  MAKE_PROPERTY(minor_version, get_minor_version);
+  MAKE_PROPERTY(sequence_version, get_sequence_version);
+  MAKE_PROPERTY(official_version, is_official_version);
+
+  MAKE_PROPERTY(memory_alignment, get_memory_alignment);
+
+  MAKE_PROPERTY(distributor, get_distributor);
+  MAKE_PROPERTY(compiler, get_compiler);
+  MAKE_PROPERTY(build_date, get_build_date);
+  MAKE_PROPERTY(git_commit, get_git_commit);
+
+  MAKE_PROPERTY(platform, get_platform);
+
   bool has_system(const string &system) const;
   size_t get_num_systems() const;
   string get_system(size_t n) const;

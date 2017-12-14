@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES ComputeNode : public PandaNode {
 PUBLISHED:
-  ComputeNode(const string &name);
+  explicit ComputeNode(const string &name);
 
   INLINE void add_dispatch(const LVecBase3i &num_groups);
   INLINE void add_dispatch(int num_groups_x, int num_groups_y, int num_groups_z);
@@ -34,11 +34,12 @@ PUBLISHED:
   INLINE size_t get_num_dispatches() const;
   INLINE const LVecBase3i &get_dispatch(size_t i) const;
   INLINE void set_dispatch(size_t i, const LVecBase3i &num_groups);
+  INLINE void insert_dispatch(size_t i, const LVecBase3i &num_groups);
   INLINE void remove_dispatch(size_t i);
   INLINE void clear_dispatches();
 
   MAKE_SEQ(get_dispatches, get_num_dispatches, get_dispatch);
-  MAKE_SEQ_PROPERTY(dispatches, get_num_dispatches, get_dispatch, set_dispatch, remove_dispatch);
+  MAKE_SEQ_PROPERTY(dispatches, get_num_dispatches, get_dispatch, set_dispatch, remove_dispatch, insert_dispatch);
 
 public:
   ComputeNode(const ComputeNode &copy);

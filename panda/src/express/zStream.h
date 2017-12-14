@@ -34,7 +34,7 @@
 class EXPCL_PANDAEXPRESS IDecompressStream : public istream {
 PUBLISHED:
   INLINE IDecompressStream();
-  INLINE IDecompressStream(istream *source, bool owns_source);
+  INLINE explicit IDecompressStream(istream *source, bool owns_source);
 
 #if _MSC_VER >= 1800
   INLINE IDecompressStream(const IDecompressStream &copy) = delete;
@@ -60,8 +60,8 @@ private:
 class EXPCL_PANDAEXPRESS OCompressStream : public ostream {
 PUBLISHED:
   INLINE OCompressStream();
-  INLINE OCompressStream(ostream *dest, bool owns_dest,
-                           int compression_level = 6);
+  INLINE explicit OCompressStream(ostream *dest, bool owns_dest,
+                                  int compression_level = 6);
 
 #if _MSC_VER >= 1800
   INLINE OCompressStream(const OCompressStream &copy) = delete;

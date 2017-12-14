@@ -12,6 +12,15 @@
  */
 
 /**
+ * Returns true if this light defines a specular color, false if the specular
+ * color is derived automatically from the light color.
+ */
+INLINE bool LightLensNode::
+has_specular_color() const {
+  return _has_specular_color;
+}
+
+/**
  * Returns whether this light is configured to cast shadows or not.
  */
 INLINE bool LightLensNode::

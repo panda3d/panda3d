@@ -28,7 +28,7 @@ class SimpleAllocatorBlock;
  */
 class EXPCL_PANDA_GOBJ SimpleAllocator : public LinkedListNode {
 PUBLISHED:
-  INLINE SimpleAllocator(size_t max_size, Mutex &lock);
+  INLINE explicit SimpleAllocator(size_t max_size, Mutex &lock);
   virtual ~SimpleAllocator();
 
   INLINE SimpleAllocatorBlock *alloc(size_t size);

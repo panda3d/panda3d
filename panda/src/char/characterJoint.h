@@ -35,9 +35,9 @@ protected:
   CharacterJoint(const CharacterJoint &copy);
 
 PUBLISHED:
-  CharacterJoint(Character *character,
-                 PartBundle *root, PartGroup *parent, const string &name,
-                 const LMatrix4 &default_value);
+  explicit CharacterJoint(Character *character, PartBundle *root,
+                          PartGroup *parent, const string &name,
+                          const LMatrix4 &default_value);
   virtual ~CharacterJoint();
 
 public:

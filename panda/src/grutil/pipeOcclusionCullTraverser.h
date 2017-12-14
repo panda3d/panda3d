@@ -41,7 +41,7 @@ class GraphicsStateGuardian;
 class EXPCL_PANDA_GRUTIL PipeOcclusionCullTraverser : public CullTraverser,
                                                public CullHandler {
 PUBLISHED:
-  PipeOcclusionCullTraverser(GraphicsOutput *host);
+  explicit PipeOcclusionCullTraverser(GraphicsOutput *host);
   PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy);
 
   virtual void set_scene(SceneSetup *scene_setup,

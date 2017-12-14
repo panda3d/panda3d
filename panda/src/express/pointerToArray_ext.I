@@ -79,114 +79,48 @@ INLINE void Extension<PointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
 #if PY_VERSION_HEX >= 0x02060000
   if (PyObject_CheckBuffer(source)) {
-    // User passed a buffer object.
-    Py_buffer view;
-    if (PyObject_GetBuffer(source, &view, PyBUF_CONTIG_RO) == -1) {
-      PyErr_SetString(PyExc_TypeError,
-                      "PointerToArray constructor requires a contiguous buffer");
-      return;
-    }
-
-    if (view.itemsize != 1 && view.itemsize != sizeof(Element)) {
-      PyErr_SetString(PyExc_TypeError,
-                      "buffer.itemsize does not match PointerToArray element size");
-      return;
-    }
-
-    if (view.len % sizeof(Element) != 0) {
-      PyErr_Format(PyExc_ValueError,
-                   "byte buffer is not a multiple of %zu bytes",
-                   sizeof(Element));
-      return;
-    }
-
-    if (view.len > 0) {
-      this->_this->resize(view.len / sizeof(Element));
-      memcpy(this->_this->p(), view.buf, view.len);
-    }
-
-    PyBuffer_Release(&view);
+#else
+  if (PyString_CheckExact(source)) {
+#endif
+    // It's a byte sequence, or any object that exports the buffer protocol.
+    this->set_data(source);
     return;
   }
-#endif
 
-  if (!PySequence_Check(source)) {
+  // Don't allow a unicode object even though it's a sequence.
+  if (!PySequence_Check(source) || PyUnicode_CheckExact(source)) {
     // If passed with a non-sequence, this isn't the right constructor.
     PyErr_SetString(PyExc_TypeError,
                     "PointerToArray constructor requires a sequence or buffer object");
     return;
   }
 
-  // If we were passed a Python string, then instead of storing it character-
-  // at-a-time, just load the whole string as a data buffer.  Not sure if this
-  // case is still necessary - don't Python strbytes objects export the buffer
-  // protocol, as above?
-#if PY_MAJOR_VERSION >= 3
-  if (PyBytes_Check(source)) {
-    int size = PyBytes_Size(source);
-    if (size % sizeof(Element) != 0) {
-      PyErr_Format(PyExc_ValueError,
-                   "bytes object is not a multiple of %zu bytes",
-                   sizeof(Element));
-      return;
-    }
-
-    int num_elements = size / sizeof(Element);
-    this->_this->insert(this->_this->begin(), num_elements, Element());
-
-    // Hope there aren't any constructors or destructors involved here.
-    if (size != 0) {
-      const char *data = PyBytes_AsString(source);
-      memcpy(this->_this->p(), data, size);
-    }
-    return;
-  }
-#else
-  if (PyString_CheckExact(source)) {
-    int size = PyString_Size(source);
-    if (size % sizeof(Element) != 0) {
-      PyErr_Format(PyExc_ValueError,
-                   "str object is not a multiple of %zu bytes",
-                   sizeof(Element));
-      return;
-    }
-
-    int num_elements = size / sizeof(Element);
-    this->_this->insert(this->_this->begin(), num_elements, Element());
-
-    // Hope there aren't any constructors or destructors involved here.
-    if (size != 0) {
-      const char *data = PyString_AsString(source);
-      memcpy(this->_this->p(), data, size);
-    }
-    return;
-  }
-#endif
-
   // Now construct the internal list by copying the elements one-at-a-time
   // from Python.
-  PyObject *push_back = PyObject_GetAttrString(self, "push_back");
+  PyObject *dict = DtoolInstance_TYPE(self)->_PyType.tp_dict;
+  PyObject *push_back = PyDict_GetItemString(dict, "push_back");
   if (push_back == NULL) {
     PyErr_BadArgument();
     return;
   }
 
   // We need to initialize the this pointer before we can call push_back.
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = (void *)this->_this;
+  DtoolInstance_INIT_PTR(self, this->_this);
 
-  int size = PySequence_Size(source);
-  for (int i = 0; i < size; ++i) {
+  Py_ssize_t size = PySequence_Size(source);
+  this->_this->reserve(size);
+  for (Py_ssize_t i = 0; i < size; ++i) {
     PyObject *item = PySequence_GetItem(source, i);
     if (item == NULL) {
       return;
     }
-    PyObject *result = PyObject_CallFunctionObjArgs(push_back, item, NULL);
+    PyObject *result = PyObject_CallFunctionObjArgs(push_back, self, item, NULL);
     Py_DECREF(item);
     if (result == NULL) {
       // Unable to add item--probably it wasn't of the appropriate type.
       PyErr_Print();
       PyErr_Format(PyExc_TypeError,
-                   "Element %d in sequence passed to PointerToArray "
+                   "Element %zd in sequence passed to PointerToArray "
                    "constructor could not be added", i);
       return;
     }
@@ -213,15 +147,110 @@ __setitem__(size_t n, const Element &value) {
 }
 
 /**
- * This special constructor accepts a Python list of elements, or a Python
- * string (or a bytes object, in Python 3).
+ * This returns the entire contents of the vector as a block of raw data in a
+ * string (or bytes object, in Python 3).
+ *
+ * @deprecated use memoryview(pta) or bytearray(pta) instead.
  */
 template<class Element>
-INLINE void Extension<ConstPointerToArray<Element> >::
-__init__(PyObject *self, PyObject *source) {
-  PointerToArray<Element> array;
-  invoke_extension(&array).__init__(self, source);
-  *(this->_this) = MOVE(array);
+INLINE PyObject *Extension<PointerToArray<Element> >::
+get_data() const {
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
+#else
+  return PyString_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
+#endif
+}
+
+/**
+ * This method exists mainly to access the data of the array easily from a
+ * high-level language such as Python.
+ *
+ * This replaces the entire contents of the vector from a block of raw data
+ * in a string (or bytes object, in Python 3).
+ */
+template<class Element>
+INLINE void Extension<PointerToArray<Element> >::
+set_data(PyObject *data) {
+#if PY_VERSION_HEX >= 0x02060000
+  if (PyObject_CheckBuffer(data)) {
+    // User passed a buffer object.
+    Py_buffer view;
+    if (PyObject_GetBuffer(data, &view, PyBUF_CONTIG_RO) == -1) {
+      PyErr_SetString(PyExc_TypeError,
+                      "PointerToArray.set_data() requires a contiguous buffer");
+      return;
+    }
+
+    if (view.itemsize != 1 && view.itemsize != sizeof(Element)) {
+      PyErr_SetString(PyExc_TypeError,
+                      "buffer.itemsize does not match PointerToArray element size");
+      return;
+    }
+
+    if (view.len % sizeof(Element) != 0) {
+      PyErr_Format(PyExc_ValueError,
+                   "byte buffer is not a multiple of %zu bytes",
+                   sizeof(Element));
+      return;
+    }
+
+    if (view.len > 0) {
+      this->_this->resize(view.len / sizeof(Element));
+      memcpy(this->_this->p(), view.buf, view.len);
+    } else {
+      this->_this->clear();
+    }
+
+    PyBuffer_Release(&view);
+  } else {
+    Dtool_Raise_TypeError("PointerToArray.set_data() requires a buffer object");
+  }
+#else
+  // In Python 2.5 we didn't have the new buffer protocol, only str.
+  if (PyString_CheckExact(data)) {
+    int size = PyString_Size(data);
+    if (size % sizeof(Element) != 0) {
+      PyErr_Format(PyExc_ValueError,
+                   "str object is not a multiple of %zu bytes",
+                   sizeof(Element));
+      return;
+    }
+
+    int num_elements = size / sizeof(Element);
+    this->_this->insert(this->_this->begin(), num_elements, Element());
+
+    // Hope there aren't any constructors or destructors involved here.
+    if (size != 0) {
+      const char *ptr = PyString_AsString(data);
+      memcpy(this->_this->p(), ptr, size);
+    } else {
+      this->_this->clear();
+    }
+  } else {
+    Dtool_Raise_TypeError("PointerToArray.set_data() requires a str");
+  }
+#endif
+}
+
+/**
+ * This returns the contents of a portion of the vector--from element (n)
+ * through element (n + count - 1)--as a block of raw data in a string (or
+ * bytes object, in Python 3).
+ *
+ * @deprecated use memoryview(pta) or bytearray(pta) instead.
+ */
+template<class Element>
+INLINE PyObject *Extension<PointerToArray<Element> >::
+get_subdata(size_t n, size_t count) const {
+  n = min(n, this->_this->size());
+  count = max(count, n);
+  count = min(count, this->_this->size() - n);
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
+#else
+  return PyString_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
+#endif
 }
 
 /**
@@ -231,6 +260,42 @@ template<class Element>
 INLINE const Element &Extension<ConstPointerToArray<Element> >::
 __getitem__(size_t n) const {
   return (*this->_this)[n];
+}
+
+/**
+ * This returns the entire contents of the vector as a block of raw data in a
+ * string (or bytes object, in Python 3).
+ *
+ * @deprecated use memoryview(pta) or bytearray(pta) instead.
+ */
+template<class Element>
+INLINE PyObject *Extension<ConstPointerToArray<Element> >::
+get_data() const {
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
+#else
+  return PyString_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
+#endif
+}
+
+/**
+ * This returns the contents of a portion of the vector--from element (n)
+ * through element (n + count - 1)--as a block of raw data in a string (or
+ * bytes object, in Python 3).
+ *
+ * @deprecated use memoryview(pta) or bytearray(pta) instead.
+ */
+template<class Element>
+INLINE PyObject *Extension<ConstPointerToArray<Element> >::
+get_subdata(size_t n, size_t count) const {
+  n = min(n, this->_this->size());
+  count = max(count, n);
+  count = min(count, this->_this->size() - n);
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
+#else
+  return PyString_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
+#endif
 }
 
 /**
@@ -461,6 +526,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 #endif
 }
 
+/**
+ * Specialization on __getbuffer__ for LMatrix3f.
+ */
 template<>
 INLINE int Extension<ConstPointerToArray<LMatrix3f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
@@ -488,6 +556,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 #endif
 }
 
+/**
+ * Specialization on __getbuffer__ for LMatrix3d.
+ */
 template<>
 INLINE int Extension<ConstPointerToArray<LMatrix3d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
@@ -515,6 +586,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 #endif
 }
 
+/**
+ * Specialization on __getbuffer__ for UnalignedLMatrix4f.
+ */
 template<>
 INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
@@ -542,6 +616,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 #endif
 }
 
+/**
+ * Specialization on __getbuffer__ for UnalignedLMatrix4d.
+ */
 template<>
 INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {

@@ -2103,11 +2103,11 @@ get_name() const {
  * This method is used by __reduce__ to handle streaming of NodePaths to a
  * pickle file.
  */
-INLINE string NodePath::
+INLINE vector_uchar NodePath::
 encode_to_bam_stream() const {
-  string data;
+  vector_uchar data;
   if (!encode_to_bam_stream(data)) {
-    return string();
+    data.clear();
   }
   return data;
 }

@@ -29,28 +29,27 @@ class BulletRigidBodyNode;
  * adhering to specified limits.  It's motor can apply angular force to them.
  */
 class EXPCL_PANDABULLET BulletHingeConstraint : public BulletConstraint {
-
 PUBLISHED:
-  BulletHingeConstraint(const BulletRigidBodyNode *node_a,
-                        const LPoint3 &pivot_a,
-                        const LVector3 &axis_a,
-                        bool use_frame_a=false);
-  BulletHingeConstraint(const BulletRigidBodyNode *node_a,
-                        const BulletRigidBodyNode *node_b,
-                        const LPoint3 &pivot_a,
-                        const LPoint3 &pivot_b,
-                        const LVector3 &axis_a,
-                        const LVector3 &axis_b,
-                        bool use_frame_a=false);
+  explicit BulletHingeConstraint(const BulletRigidBodyNode *node_a,
+                                 const LPoint3 &pivot_a,
+                                 const LVector3 &axis_a,
+                                 bool use_frame_a=false);
+  explicit BulletHingeConstraint(const BulletRigidBodyNode *node_a,
+                                 const BulletRigidBodyNode *node_b,
+                                 const LPoint3 &pivot_a,
+                                 const LPoint3 &pivot_b,
+                                 const LVector3 &axis_a,
+                                 const LVector3 &axis_b,
+                                 bool use_frame_a=false);
 
-  BulletHingeConstraint(const BulletRigidBodyNode *node_a,
-                        const TransformState *ts_a,
-                        bool use_frame_a=false);
-  BulletHingeConstraint(const BulletRigidBodyNode *node_a,
-                        const BulletRigidBodyNode *node_b,
-                        const TransformState *ts_a,
-                        const TransformState *ts_b,
-                        bool use_frame_a=false);
+  explicit BulletHingeConstraint(const BulletRigidBodyNode *node_a,
+                                 const TransformState *ts_a,
+                                 bool use_frame_a=false);
+  explicit BulletHingeConstraint(const BulletRigidBodyNode *node_a,
+                                 const BulletRigidBodyNode *node_b,
+                                 const TransformState *ts_a,
+                                 const TransformState *ts_b,
+                                 bool use_frame_a=false);
 
   INLINE ~BulletHingeConstraint();
 

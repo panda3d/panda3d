@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES FadeLODNode : public LODNode {
 PUBLISHED:
-  FadeLODNode(const string &name);
+  explicit FadeLODNode(const string &name);
 
 protected:
   FadeLODNode(const FadeLODNode &copy);

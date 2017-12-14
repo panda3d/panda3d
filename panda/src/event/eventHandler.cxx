@@ -28,6 +28,26 @@ EventHandler(EventQueue *ev_queue) : _queue(*ev_queue) {
 }
 
 /**
+ * Returns a pending future that will be marked as done when the event is next
+ * fired.
+ */
+AsyncFuture *EventHandler::
+get_future(const string &event_name) {
+  Futures::iterator fi;
+  fi = _futures.find(event_name);
+
+  // If we already have a future, but someone cancelled it, we need to create
+  // a new future instead.
+  if (fi != _futures.end() && !fi->second->cancelled()) {
+    return fi->second;
+  } else {
+    AsyncFuture *fut = new AsyncFuture;
+    _futures[event_name] = fut;
+    return fut;
+  }
+}
+
+/**
  * The main processing loop of the EventHandler.  This function must be called
  * periodically to service events.  Walks through each pending event and calls
  * its assigned hooks.
@@ -80,6 +100,18 @@ dispatch_event(const Event *event) {
     for (cfi = copy_functions.begin(); cfi != copy_functions.end(); ++cfi) {
       ((*cfi).first)(event, (*cfi).second);
     }
+  }
+
+  // Finally, check for futures that need to be triggered.
+  Futures::iterator fi;
+  fi = _futures.find(event->get_name());
+
+  if (fi != _futures.end()) {
+    AsyncFuture *fut = (*fi).second;
+    if (!fut->done()) {
+      fut->set_result((TypedReferenceCount *)event);
+    }
+    _futures.erase(fi);
   }
 }
 
@@ -174,6 +206,46 @@ has_hook(const string &event_name) const {
   chi = _cbhooks.find(event_name);
   if (chi != _cbhooks.end()) {
     if (!(*chi).second.empty()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/**
+ * Returns true if there is the hook added on the indicated event name and
+ * function pointer, false otherwise.
+ */
+bool EventHandler::
+has_hook(const string &event_name, EventFunction *function) const {
+  assert(!event_name.empty());
+  Hooks::const_iterator hi;
+  hi = _hooks.find(event_name);
+  if (hi != _hooks.end()) {
+    const Functions& functions = (*hi).second;
+    if (functions.find(function) != functions.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/**
+ * Returns true if there is the hook added on the indicated event name,
+ * function pointer and callback data, false otherwise.
+ */
+bool EventHandler::
+has_hook(const string &event_name, EventCallbackFunction *function, void *data) const {
+  assert(!event_name.empty());
+  CallbackHooks::const_iterator chi;
+  chi = _cbhooks.find(event_name);
+  if (chi != _cbhooks.end()) {
+    const CallbackFunctions& cbfunctions = (*chi).second;
+    if (cbfunctions.find(CallbackFunction(function, data)) != cbfunctions.end()) {
       return true;
     }
   }

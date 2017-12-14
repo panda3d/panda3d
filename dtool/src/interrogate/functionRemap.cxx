@@ -772,16 +772,14 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     first_param = 1;
   }
 
-  if (_has_this || _type == T_constructor) {
-    if (_parameters.size() > (size_t)first_param && _parameters[first_param]._name == "self" &&
-        TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
-      // Here's a special case.  If the first parameter of a nonstatic method
-      // is a PyObject * called "self", then we will automatically fill it in
-      // from the this pointer, and remove it from the generated parameter
-      // list.
-      _parameters.erase(_parameters.begin() + first_param);
-      _flags |= F_explicit_self;
-    }
+  if (_parameters.size() > (size_t)first_param && _parameters[first_param]._name == "self" &&
+      TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
+    // Here's a special case.  If the first parameter of a nonstatic method
+    // is a PyObject * called "self", then we will automatically fill it in
+    // from the this pointer, and remove it from the generated parameter
+    // list.
+    _parameters.erase(_parameters.begin() + first_param);
+    _flags |= F_explicit_self;
   }
 
   if ((int)_parameters.size() == first_param) {
@@ -799,6 +797,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         (_parameters[first_param + 1]._name == "kwargs" ||
           _parameters[first_param + 1]._name == "kwds")) {
       _flags |= F_explicit_args;
+      _args_type = InterfaceMaker::AT_keyword_args;
     }
   }
 
@@ -848,7 +847,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
 
     } else if (fname == "__iter__") {
-      if (_has_this && _parameters.size() == 1 &&
+      if ((int)_parameters.size() == first_param &&
           TypeManager::is_pointer(_return_type->get_new_type())) {
         // It receives no parameters, and returns a pointer.
         _flags |= F_iter;
@@ -910,6 +909,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
             _args_type |= InterfaceMaker::AT_keyword_args;
             break;
           }
+        }
+      } else if (_args_type == InterfaceMaker::AT_single_arg) {
+        // If it takes an argument named "args", we are directly passing the
+        // "args" tuple to the function.
+        if (_parameters[first_param]._name == "args") {
+          _flags |= F_explicit_args;
+          _args_type = InterfaceMaker::AT_varargs;
         }
       }
     }

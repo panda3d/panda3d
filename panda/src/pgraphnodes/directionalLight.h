@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightLensNode {
 PUBLISHED:
-  DirectionalLight(const string &name);
+  explicit DirectionalLight(const string &name);
 
 protected:
   DirectionalLight(const DirectionalLight &copy);
@@ -59,8 +59,6 @@ public:
                     int light_id);
 
 private:
-  bool _has_specular_color;
-
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:

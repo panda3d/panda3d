@@ -24,11 +24,11 @@
  */
 class EXPCL_PANDAEGG EggPoint : public EggPrimitive {
 PUBLISHED:
-  INLINE EggPoint(const string &name = "");
+  INLINE explicit EggPoint(const string &name = "");
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);
 
-  virtual EggPoint *make_copy() const OVERRIDE;
+  virtual EggPoint *make_copy() const override;
 
   INLINE bool has_thick() const;
   INLINE double get_thick() const;
@@ -40,9 +40,9 @@ PUBLISHED:
   INLINE void set_perspective(bool perspective);
   INLINE void clear_perspective();
 
-  virtual bool cleanup() OVERRIDE;
+  virtual bool cleanup() override;
 
-  virtual void write(ostream &out, int indent_level) const OVERRIDE;
+  virtual void write(ostream &out, int indent_level) const override;
 
 private:
   enum Flags {
@@ -64,10 +64,10 @@ public:
     register_type(_type_handle, "EggPoint",
                   EggPrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const OVERRIDE {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() OVERRIDE {
+  virtual TypeHandle force_init_type() override {
     init_type();
     return get_class_type();
   }

@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_PGUI PGScrollFrame : public PGVirtualFrame, public PGSliderBarNotify {
 PUBLISHED:
-  PGScrollFrame(const string &name = "");
+  explicit PGScrollFrame(const string &name = "");
   virtual ~PGScrollFrame();
 
 protected:

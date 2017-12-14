@@ -40,12 +40,12 @@ PUBLISHED:
 
   SparkleParticleRenderer();
   SparkleParticleRenderer(const SparkleParticleRenderer& copy);
-  SparkleParticleRenderer(const LColor& center,
-                          const LColor& edge,
-                          PN_stdfloat birth_radius,
-                          PN_stdfloat death_radius,
-                          SparkleParticleLifeScale life_scale,
-                          ParticleRendererAlphaMode alpha_mode);
+  explicit SparkleParticleRenderer(const LColor& center,
+                                   const LColor& edge,
+                                   PN_stdfloat birth_radius,
+                                   PN_stdfloat death_radius,
+                                   SparkleParticleLifeScale life_scale,
+                                   ParticleRendererAlphaMode alpha_mode);
 
   virtual ~SparkleParticleRenderer();
 

@@ -20,8 +20,7 @@ AudioLoadRequest(AudioManager *audio_manager, const string &filename,
                  bool positional) :
   _audio_manager(audio_manager),
   _filename(filename),
-  _positional(positional),
-  _is_ready(false)
+  _positional(positional)
 {
 }
 
@@ -55,18 +54,22 @@ get_positional() const {
  * Returns true if this request has completed, false if it is still pending.
  * When this returns true, you may retrieve the sound loaded by calling
  * get_sound().
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
  */
 INLINE bool AudioLoadRequest::
 is_ready() const {
-  return _is_ready;
+  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
 }
 
 /**
- * Returns the sound that was loaded asynchronously, if any, or NULL if there
- * was an error.  It is an error to call this unless is_ready() returns true.
+ * Returns the sound that was loaded asynchronously, if any, or nullptr if
+ * there was an error.  It is an error to call this unless done() returns
+ * true.
+ * @deprecated Use result() instead.
  */
 INLINE AudioSound *AudioLoadRequest::
 get_sound() const {
-  nassertr(_is_ready, NULL);
-  return _sound;
+  nassertr_always(done(), nullptr);
+  return (AudioSound *)_result;
 }

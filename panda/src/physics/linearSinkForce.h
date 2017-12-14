@@ -21,8 +21,8 @@
  */
 class EXPCL_PANDAPHYSICS LinearSinkForce : public LinearDistanceForce {
 PUBLISHED:
-  LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a = 1.0f,
-                  bool m = true);
+  explicit LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r,
+                           PN_stdfloat a = 1.0f, bool m = true);
   LinearSinkForce();
   LinearSinkForce(const LinearSinkForce &copy);
   virtual ~LinearSinkForce();

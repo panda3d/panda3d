@@ -18,37 +18,19 @@
  *
  */
 CPPMakeProperty::
-CPPMakeProperty(CPPIdentifier *ident,
-                CPPFunctionGroup *getter, CPPFunctionGroup *setter,
+CPPMakeProperty(CPPIdentifier *ident, Type type,
                 CPPScope *current_scope, const CPPFile &file) :
   CPPDeclaration(file),
   _ident(ident),
-  _length_function(NULL),
-  _has_function(NULL),
-  _get_function(getter),
-  _set_function(setter),
-  _clear_function(NULL),
-  _del_function(NULL)
-{
-  _ident->_native_scope = current_scope;
-}
-
-/**
- *
- */
-CPPMakeProperty::
-CPPMakeProperty(CPPIdentifier *ident,
-                CPPFunctionGroup *hasser, CPPFunctionGroup *getter,
-                CPPFunctionGroup *setter, CPPFunctionGroup *clearer,
-                CPPScope *current_scope, const CPPFile &file) :
-  CPPDeclaration(file),
-  _ident(ident),
-  _length_function(NULL),
-  _has_function(hasser),
-  _get_function(getter),
-  _set_function(setter),
-  _clear_function(clearer),
-  _del_function(NULL)
+  _type(type),
+  _length_function(nullptr),
+  _has_function(nullptr),
+  _get_function(nullptr),
+  _set_function(nullptr),
+  _clear_function(nullptr),
+  _del_function(nullptr),
+  _insert_function(nullptr),
+  _get_key_function(nullptr)
 {
   _ident->_native_scope = current_scope;
 }
@@ -114,6 +96,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 
   if (_del_function != NULL) {
     out << ", " << _del_function->_name;
+  }
+
+  if (_insert_function != NULL) {
+    out << ", " << _insert_function->_name;
   }
 
   out << ");";

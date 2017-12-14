@@ -44,6 +44,7 @@
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
+#include "sphereLight.h"
 #include "spotlight.h"
 #include "textureReloadRequest.h"
 #include "shaderAttrib.h"
@@ -282,6 +283,11 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
+
+  // Give it a unique identifier.  Unlike a pointer, we can guarantee that
+  // this value will never be reused.
+  static size_t next_index = 0;
+  _id = next_index++;
 }
 
 /**
@@ -291,6 +297,19 @@ GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
   GeomMunger::unregister_mungers_for_gsg(this);
+
+  // Remove the munged states for this GSG.  This requires going through all
+  // states, although destructing a GSG should be rare enough for this not to
+  // matter too much.
+  // Note that if uniquify-states is false, we can't iterate over all the
+  // states, and some GSGs will linger.  Let's hope this isn't a problem.
+  LightReMutexHolder holder(*RenderState::_states_lock);
+  size_t size = RenderState::_states->get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const RenderState *state = RenderState::_states->get_key(si);
+    state->_mungers.remove(_id);
+    state->_munged_states.remove(_id);
+  }
 }
 
 /**
@@ -751,7 +770,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
     // multiple times during a frame.  Also, this might well be the only GSG
     // in the world anyway.
     int mi = state->_last_mi;
-    if (mi >= 0 && mungers.has_element(mi) && mungers.get_key(mi) == this) {
+    if (mi >= 0 && mi < mungers.get_num_entries() && mungers.get_key(mi) == _id) {
       PT(GeomMunger) munger = mungers.get_data(mi);
       if (munger->is_registered()) {
         return munger;
@@ -759,7 +778,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
     }
 
     // Nope, we have to look it up in the map.
-    mi = mungers.find(this);
+    mi = mungers.find(_id);
     if (mi >= 0) {
       PT(GeomMunger) munger = mungers.get_data(mi);
       if (munger->is_registered()) {
@@ -777,7 +796,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
   nassertr(munger != (GeomMunger *)NULL && munger->is_registered(), munger);
   nassertr(munger->is_of_type(StateMunger::get_class_type()), munger);
 
-  state->_last_mi = mungers.store(this, munger);
+  state->_last_mi = mungers.store(_id, munger);
   return munger;
 }
 
@@ -1131,6 +1150,28 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &LMatrix4::ident_mat();
     }
   }
+  case Shader::SMO_texscale_i: {
+    const TexMatrixAttrib *tma;
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma) &&
+        index < ta->get_num_on_stages()) {
+      LVecBase3 scale = tma->get_transform(ta->get_on_stage(index))->get_scale();
+      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,scale[0],scale[1],scale[2],0);
+      return &t;
+    } else {
+      return &LMatrix4::ident_mat();
+    }
+  }
+  case Shader::SMO_texcolor_i: {
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && index < ta->get_num_on_stages()) {
+      TextureStage *ts = ta->get_on_stage(index);
+      t.set_row(3, ts->get_color());
+      return &t;
+    } else {
+      return &LMatrix4::zeros_mat();
+    }
+  }
   case Shader::SMO_tex_is_alpha_i: {
     // This is a hack so we can support both F_alpha and other formats in the
     // default shader, to fix font rendering in GLES2
@@ -1165,9 +1206,14 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     nassertr(!np.is_empty(), &LMatrix4::zeros_mat());
     const PlaneNode *plane_node;
     DCAST_INTO_R(plane_node, np.node(), &LMatrix4::zeros_mat());
-    LPlane p (plane_node->get_plane());
-    p.xform(np.get_net_transform()->get_mat()); // World-space
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
+
+    // Transform plane to world space
+    CPT(TransformState) transform = np.get_net_transform();
+    LPlane plane = plane_node->get_plane();
+    if (!transform->is_identity()) {
+      plane.xform(transform->get_mat());
+    }
+    t.set_row(3, plane);
     return &t;
   }
   case Shader::SMO_apiview_clipplane_i: {
@@ -1204,7 +1250,6 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_world_to_view: {
     return &(_scene_setup->get_world_transform()->get_mat());
-    break;
   }
   case Shader::SMO_view_to_world: {
     return &(_scene_setup->get_camera_transform()->get_mat());
@@ -1395,6 +1440,62 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       }
     }
     return fetch_specified_member(NodePath(), name, t);
+  }
+  case Shader::SMO_light_source_i_packed: {
+    // The light matrix contains COLOR, ATTENUATION, POSITION, VIEWVECTOR
+    const LightAttrib *target_light;
+    _target_rs->get_attrib_def(target_light);
+
+    // We don't count ambient lights, which would be pretty silly to handle
+    // via this mechanism.
+    size_t num_lights = target_light->get_num_non_ambient_lights();
+    if (index >= 0 && (size_t)index < num_lights) {
+      NodePath np = target_light->get_on_light((size_t)index);
+      nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+      PandaNode *node = np.node();
+      Light *light = node->as_light();
+      nassertr(light != nullptr, &LMatrix4::zeros_mat());
+      t.set_row(0, light->get_color());
+      t.set_row(1, light->get_attenuation());
+
+      LMatrix4 mat = np.get_net_transform()->get_mat() *
+        _scene_setup->get_world_transform()->get_mat();
+
+      if (node->is_of_type(DirectionalLight::get_class_type())) {
+        LVecBase3 d = mat.xform_vec(((const DirectionalLight *)node)->get_direction());
+        d.normalize();
+        t.set_row(2, LVecBase4(d, 0));
+        t.set_row(3, LVecBase4(-d, 0));
+
+      } else if (node->is_of_type(LightLensNode::get_class_type())) {
+        const Lens *lens = ((const LightLensNode *)node)->get_lens();
+
+        LPoint3 p = mat.xform_point(lens->get_nodal_point());
+        t.set_row(3, LVecBase4(p));
+
+        // For shadowed point light we need to store near/far.
+        // For spotlight we need to store cutoff angle.
+        if (node->is_of_type(Spotlight::get_class_type())) {
+          PN_stdfloat cutoff = ccos(deg_2_rad(lens->get_hfov() * 0.5f));
+          LVecBase3 d = -(mat.xform_vec(lens->get_view_vector()));
+          t.set_cell(1, 3, ((const Spotlight *)node)->get_exponent());
+          t.set_row(2, LVecBase4(d, cutoff));
+
+        } else if (node->is_of_type(PointLight::get_class_type())) {
+          t.set_cell(1, 3, lens->get_far());
+          t.set_cell(3, 3, lens->get_near());
+
+          if (node->is_of_type(SphereLight::get_class_type())) {
+            t.set_cell(2, 3, ((const SphereLight *)node)->get_radius());
+          }
+        }
+      }
+    } else if (index == 0) {
+      // Apply the default OpenGL lights otherwise.
+      // Special exception for light 0, which defaults to white.
+      t.set_row(0, _light_color_scale);
+    }
+    return &t;
   }
   default:
     nassertr(false /*should never get here*/, &LMatrix4::ident_mat());
@@ -2272,10 +2373,8 @@ finish_decal() {
  */
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
-  _munger = munger;
   _data_reader = data_reader;
 
   // Always draw if we have a shader, since the shader might use a different
@@ -2346,7 +2445,6 @@ draw_points(const GeomPrimitivePipelineReader *, bool) {
  */
 void GraphicsStateGuardian::
 end_draw_primitives() {
-  _munger = NULL;
   _data_reader = NULL;
 }
 
@@ -2961,6 +3059,19 @@ determine_target_texture() {
 }
 
 /**
+ * Assigns _target_shader based on the _target_rs.
+ */
+void GraphicsStateGuardian::
+determine_target_shader() {
+  if (_target_rs->_generated_shader != nullptr) {
+    _target_shader = (const ShaderAttrib *)_target_rs->_generated_shader.p();
+  } else {
+    _target_shader = (const ShaderAttrib *)
+      _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
+  }
+}
+
+/**
  * Frees some memory that was explicitly allocated within the glgsg.
  */
 void GraphicsStateGuardian::
@@ -3092,15 +3203,15 @@ get_untextured_state() {
  * Should be called when a texture is encountered that needs to have its RAM
  * image reloaded, and get_incomplete_render() is true.  This will fire off a
  * thread on the current Loader object that will request the texture to load
- * its image.  The image will be available at some point in the future (no
- * event will be generated).
+ * its image.  The image will be available at some point in the future.
+ * @returns a future object that can be used to check its status.
  */
-void GraphicsStateGuardian::
+AsyncFuture *GraphicsStateGuardian::
 async_reload_texture(TextureContext *tc) {
-  nassertv(_loader != (Loader *)NULL);
+  nassertr(_loader != nullptr, nullptr);
 
   int priority = 0;
-  if (_current_display_region != (DisplayRegion *)NULL) {
+  if (_current_display_region != nullptr) {
     priority = _current_display_region->get_texture_reload_priority();
   }
 
@@ -3109,15 +3220,15 @@ async_reload_texture(TextureContext *tc) {
 
   // See if we are already loading this task.
   AsyncTaskCollection orig_tasks = task_mgr->find_tasks(task_name);
-  int num_tasks = orig_tasks.get_num_tasks();
-  for (int ti = 0; ti < num_tasks; ++ti) {
+  size_t num_tasks = orig_tasks.get_num_tasks();
+  for (size_t ti = 0; ti < num_tasks; ++ti) {
     AsyncTask *task = orig_tasks.get_task(ti);
     if (task->is_exact_type(TextureReloadRequest::get_class_type()) &&
-        DCAST(TextureReloadRequest, task)->get_texture() == tc->get_texture()) {
+        ((TextureReloadRequest *)task)->get_texture() == tc->get_texture()) {
       // This texture is already queued to be reloaded.  Don't queue it again,
       // just make sure the priority is updated, and return.
       task->set_priority(max(task->get_priority(), priority));
-      return;
+      return (AsyncFuture *)task;
     }
   }
 
@@ -3128,6 +3239,7 @@ async_reload_texture(TextureContext *tc) {
                              _supports_compressed_texture);
   request->set_priority(priority);
   _loader->load_async(request);
+  return (AsyncFuture *)request.p();
 }
 
 /**
@@ -3301,6 +3413,43 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   light->_sbuffers[this] = sbuffer;
 
   return tex;
+}
+
+/**
+ * Ensures that an appropriate shader has been generated for the given state.
+ * This is stored in the _generated_shader field on the RenderState.
+ */
+void GraphicsStateGuardian::
+ensure_generated_shader(const RenderState *state) {
+#ifdef HAVE_CG
+  const ShaderAttrib *shader_attrib;
+  state->get_attrib_def(shader_attrib);
+
+  if (shader_attrib->auto_shader()) {
+    if (_shader_generator == nullptr) {
+      if (!_supports_basic_shaders) {
+        return;
+      }
+      _shader_generator = new ShaderGenerator(this);
+    }
+    if (state->_generated_shader == nullptr ||
+        state->_generated_shader_seq != _generated_shader_seq) {
+      GeomVertexAnimationSpec spec;
+
+      // Currently we overload this flag to request vertex animation for the
+      // shader generator.
+      const ShaderAttrib *sattr;
+      state->get_attrib_def(sattr);
+      if (sattr->get_flag(ShaderAttrib::F_hardware_skinning)) {
+        spec.set_hardware(4, true);
+      }
+
+      // Cache the generated ShaderAttrib on the shader state.
+      state->_generated_shader = _shader_generator->synthesize_shader(state, spec);
+      state->_generated_shader_seq = _generated_shader_seq;
+    }
+  }
+#endif
 }
 
 /**

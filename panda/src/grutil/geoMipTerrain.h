@@ -35,7 +35,7 @@
  */
 class EXPCL_PANDA_GRUTIL GeoMipTerrain : public TypedObject {
 PUBLISHED:
-  INLINE GeoMipTerrain(const string &name);
+  INLINE explicit GeoMipTerrain(const string &name);
   INLINE ~GeoMipTerrain();
 
   INLINE PNMImage &heightfield();

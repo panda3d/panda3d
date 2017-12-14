@@ -174,7 +174,7 @@ static const string default_vshader =
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
   "  texcoord = p3d_MultiTexCoord0;\n"
-  "  color = p3d_Color;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
 static const string default_fshader =
@@ -2135,7 +2135,7 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
       get_extension_func("glGenerateMipmap");
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
-      get_extension_func("glRenderbufferStorageMultisampleEXT");
+      get_extension_func("glRenderbufferStorageMultisample");
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)
       get_extension_func("glBlitFramebuffer");
 
@@ -3127,6 +3127,10 @@ reset() {
   }
 #endif
 
+  // Do we guarantee that we can apply the color scale via a shader?  We set
+  // this false if there is a chance that the fixed-function pipeline is used.
+  _runtime_color_scale = !has_fixed_function_pipeline();
+
 #ifndef OPENGLES
   if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
@@ -3934,7 +3938,6 @@ end_frame(Thread *current_thread) {
  */
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
 #ifndef NDEBUG
@@ -3953,7 +3956,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -4018,10 +4021,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
+    //const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
 
     UpdateSeq modified = max(geom_reader->get_modified(), _data_reader->get_modified());
-    if (ggc->get_display_list(_geom_display_list, gmunger, modified)) {
+    if (ggc->get_display_list(_geom_display_list, nullptr, modified)) {
       // If it hasn't been modified, just play the display list again.
       if (GLCAT.is_spam()) {
         GLCAT.spam()
@@ -10342,8 +10345,7 @@ set_state_and_transform(const RenderState *target,
   _target_rs = target;
 
 #ifndef OPENGLES_1
-  _target_shader = (const ShaderAttrib *)
-    _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
+  determine_target_shader();
   _instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {

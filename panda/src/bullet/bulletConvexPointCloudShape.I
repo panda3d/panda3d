@@ -12,6 +12,15 @@
  */
 
 /**
+ * Only used by make_from_bam.
+ */
+INLINE BulletConvexPointCloudShape::
+BulletConvexPointCloudShape() :
+  _scale(1),
+  _shape(nullptr) {
+}
+
+/**
  *
  */
 INLINE BulletConvexPointCloudShape::
@@ -25,6 +34,7 @@ INLINE BulletConvexPointCloudShape::
  */
 INLINE BulletConvexPointCloudShape::
 BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy) :
+  _scale(copy._scale),
   _shape(copy._shape) {
 }
 
@@ -33,6 +43,7 @@ BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy) :
  */
 INLINE void BulletConvexPointCloudShape::
 operator = (const BulletConvexPointCloudShape &copy) {
+  _scale = copy._scale;
   _shape = copy._shape;
 }
 

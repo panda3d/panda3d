@@ -35,9 +35,9 @@ class EXPCL_PANDA_PIPELINE ReMutex : public ReMutexDirect
 PUBLISHED:
   INLINE ReMutex();
 public:
-  INLINE ReMutex(const char *name);
+  INLINE explicit ReMutex(const char *name);
 PUBLISHED:
-  INLINE ReMutex(const string &name);
+  INLINE explicit ReMutex(const string &name);
   INLINE ~ReMutex();
 private:
   INLINE ReMutex(const ReMutex &copy);

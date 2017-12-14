@@ -523,14 +523,15 @@ void ShaderAttrib::
 output(ostream &out) const {
   out << "ShaderAttrib:";
 
-  if (_has_shader) {
-    if (_shader == NULL) {
+  if (_auto_shader) {
+    out << "auto";
+    return;
+  } else if (_has_shader) {
+    if (_shader == nullptr) {
       out << "off";
     } else {
       out << _shader->get_filename().get_basename();
     }
-  } else if (_auto_shader) {
-    out << "auto";
   }
 
   out << "," << _inputs.size() << " inputs";
@@ -692,26 +693,6 @@ compose_impl(const RenderAttrib *other) const {
   attr->_flags |= over->_flags;
   attr->_has_flags |= (over->_has_flags);
   return return_new(attr);
-}
-
-/**
- *
- */
-CPT(RenderAttrib) ShaderAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // For a ShaderAttrib, we only need to preserve the auto-shader flags.
-  // Custom shaders, and custom shader inputs, aren't relevant to the shader
-  // generator.
-  ShaderAttrib *attrib = new ShaderAttrib;
-  attrib->_auto_shader = _auto_shader;
-  attrib->_has_shader = _has_shader;
-  attrib->_auto_normal_on = _auto_normal_on;
-  attrib->_auto_glow_on = _auto_glow_on;
-  attrib->_auto_gloss_on = _auto_gloss_on;
-  attrib->_auto_ramp_on = _auto_ramp_on;
-  attrib->_auto_shadow_on = _auto_shadow_on;
-  attrib->_flags = _flags;
-  return return_new(attrib);
 }
 
 /**

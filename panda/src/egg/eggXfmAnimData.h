@@ -28,8 +28,8 @@
  */
 class EXPCL_PANDAEGG EggXfmAnimData : public EggAnimData {
 PUBLISHED:
-  INLINE EggXfmAnimData(const string &name = "",
-                        CoordinateSystem cs = CS_default);
+  INLINE explicit EggXfmAnimData(const string &name = "",
+                                 CoordinateSystem cs = CS_default);
   EggXfmAnimData(const EggXfmSAnim &convert_from);
 
   INLINE EggXfmAnimData(const EggXfmAnimData &copy);

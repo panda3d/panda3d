@@ -253,9 +253,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const TransformState *, Empty, indirect_equals_hash<const TransformState *> > States;
+  typedef SimpleHashMap<const TransformState *, nullptr_t, indirect_equals_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
@@ -406,11 +404,9 @@ private:
   friend class Extension<TransformState>;
 };
 
-#ifdef DO_MEMORY_USAGE
 // We can safely redefine this as a no-op.
 template<>
 INLINE void PointerToBase<TransformState>::update_type(To *ptr) {}
-#endif
 
 INLINE ostream &operator << (ostream &out, const TransformState &state) {
   state.output(out);

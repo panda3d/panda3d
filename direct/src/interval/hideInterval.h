@@ -23,7 +23,7 @@
  */
 class EXPCL_DIRECT HideInterval : public CInterval {
 PUBLISHED:
-  HideInterval(const NodePath &node, const string &name = string());
+  explicit HideInterval(const NodePath &node, const string &name = string());
 
   virtual void priv_instant();
   virtual void priv_reverse_instant();

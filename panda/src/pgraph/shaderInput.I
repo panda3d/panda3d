@@ -420,6 +420,14 @@ ShaderInput(CPT_InternalName name, const LVecBase2i &vec, int priority) :
 /**
  *
  */
+INLINE ShaderInput::
+operator bool () const {
+  return _type != M_invalid;
+}
+
+/**
+ *
+ */
 INLINE bool ShaderInput::
 operator == (const ShaderInput &other) const {
   if (_type != other._type || _name != other._name || _priority != other._priority) {

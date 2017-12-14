@@ -31,6 +31,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "shaderBuffer.h"
+#include "extension.h"
 
 /**
  * This is a small container class that can hold any one of the value types
@@ -46,7 +47,11 @@ PUBLISHED:
   };
 
   static const ShaderInput &get_blank();
-  INLINE ShaderInput(CPT_InternalName name, int priority=0);
+  INLINE explicit ShaderInput(CPT_InternalName name, int priority=0);
+
+  EXTENSION(explicit ShaderInput(CPT_InternalName name, PyObject *value, int priority=0));
+
+public:
   INLINE ShaderInput(CPT_InternalName name, Texture *tex, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, ShaderBuffer *buf, int priority=0);
@@ -83,8 +88,10 @@ PUBLISHED:
   INLINE ShaderInput(CPT_InternalName name, const LVecBase2i &vec, int priority=0);
 
   ShaderInput(CPT_InternalName name, const NodePath &np, int priority=0);
-  ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
-  ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority=0);
+
+PUBLISHED:
+  explicit ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+  explicit ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority=0);
 
   enum ShaderInputType {
     M_invalid = 0,
@@ -98,6 +105,7 @@ PUBLISHED:
     M_buffer,
   };
 
+  INLINE operator bool() const;
   INLINE bool operator == (const ShaderInput &other) const;
   INLINE bool operator != (const ShaderInput &other) const;
   INLINE bool operator < (const ShaderInput &other) const;
@@ -132,6 +140,7 @@ private:
   int _type;
 
   friend class ShaderAttrib;
+  friend class Extension<ShaderInput>;
 };
 
 #include "shaderInput.I"

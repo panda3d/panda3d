@@ -27,7 +27,7 @@
 class EXPCL_PANDAEGG EggFilenameNode : public EggNode {
 PUBLISHED:
   INLINE EggFilenameNode();
-  INLINE EggFilenameNode(const string &node_name, const Filename &filename);
+  INLINE explicit EggFilenameNode(const string &node_name, const Filename &filename);
   INLINE EggFilenameNode(const EggFilenameNode &copy);
   INLINE EggFilenameNode &operator = (const EggFilenameNode &copy);
 

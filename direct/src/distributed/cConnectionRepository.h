@@ -55,8 +55,8 @@ class SocketStream;
  */
 class EXPCL_DIRECT CConnectionRepository {
 PUBLISHED:
-  CConnectionRepository(bool has_owner_view = false,
-                        bool threaded_net = false);
+  explicit CConnectionRepository(bool has_owner_view = false,
+                                 bool threaded_net = false);
   ~CConnectionRepository();
 
 /*

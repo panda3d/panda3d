@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDAEGG EggAnimPreload : public EggNode {
 PUBLISHED:
-  INLINE EggAnimPreload(const string &name = "");
+  INLINE explicit EggAnimPreload(const string &name = "");
   INLINE EggAnimPreload(const EggAnimPreload &copy);
   INLINE EggAnimPreload &operator = (const EggAnimPreload &copy);
 

@@ -12,6 +12,15 @@
  */
 
 /**
+ * Only used by make_from_bam.
+ */
+INLINE BulletCylinderShape::
+BulletCylinderShape() :
+  _half_extents(LVector3::zero()),
+  _shape(nullptr) {
+}
+
+/**
  *
  */
 INLINE BulletCylinderShape::
@@ -25,7 +34,7 @@ INLINE BulletCylinderShape::
  */
 INLINE BulletCylinderShape::
 BulletCylinderShape(const BulletCylinderShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape), _half_extents(copy._half_extents) {
 }
 
 /**
@@ -34,6 +43,7 @@ BulletCylinderShape(const BulletCylinderShape &copy) :
 INLINE void BulletCylinderShape::
 operator = (const BulletCylinderShape &copy) {
   _shape = copy._shape;
+  _half_extents = copy._half_extents;
 }
 
 /**

@@ -37,6 +37,8 @@ public:
 PUBLISHED:
   INLINE Texture *get_texture() const;
   INLINE int get_view() const;
+  virtual uint64_t get_native_id() const;
+  virtual uint64_t get_native_buffer_id() const;
 
   INLINE bool was_modified() const;
   INLINE bool was_properties_modified() const;

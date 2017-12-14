@@ -126,12 +126,15 @@ public:
     Property(const InterrogateElement &ielement);
 
     const InterrogateElement &_ielement;
+    vector<FunctionRemap *> _getter_remaps;
+    vector<FunctionRemap *> _setter_remaps;
     Function *_length_function;
-    Function *_getter;
-    Function *_setter;
     Function *_has_function;
     Function *_clear_function;
     Function *_deleter;
+    Function *_inserter;
+    Function *_getkey_function;
+    bool _has_this;
   };
   typedef vector<Property *> Properties;
 

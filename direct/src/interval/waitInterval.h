@@ -23,7 +23,7 @@
  */
 class EXPCL_DIRECT WaitInterval : public CInterval {
 PUBLISHED:
-  INLINE WaitInterval(double duration);
+  INLINE explicit WaitInterval(double duration);
 
   virtual void priv_step(double t);
 

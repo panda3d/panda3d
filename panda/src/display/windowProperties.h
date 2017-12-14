@@ -49,6 +49,8 @@ PUBLISHED:
   static WindowProperties get_default();
   static void set_default(const WindowProperties &default_properties);
   static void clear_default();
+  MAKE_PROPERTY(config_properties, get_config_properties);
+  MAKE_PROPERTY(default, get_default, set_default);
 
   static WindowProperties size(int x_size, int y_size);
 

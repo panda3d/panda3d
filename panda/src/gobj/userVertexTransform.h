@@ -30,7 +30,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ UserVertexTransform : public VertexTransform {
 PUBLISHED:
-  UserVertexTransform(const string &name);
+  explicit UserVertexTransform(const string &name);
 
   INLINE const string &get_name() const;
 

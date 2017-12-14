@@ -44,7 +44,7 @@ public:
  */
 class EXPCL_PANDA_GOBJ AdaptiveLru : public Namable {
 PUBLISHED:
-  AdaptiveLru(const string &name, size_t max_size);
+  explicit AdaptiveLru(const string &name, size_t max_size);
   ~AdaptiveLru();
 
   INLINE size_t get_total_size() const;
@@ -134,7 +134,7 @@ private:
  */
 class EXPCL_PANDA_GOBJ AdaptiveLruPage : public AdaptiveLruPageDynamicList, public AdaptiveLruPageStaticList {
 PUBLISHED:
-  AdaptiveLruPage(size_t lru_size);
+  explicit AdaptiveLruPage(size_t lru_size);
   AdaptiveLruPage(const AdaptiveLruPage &copy);
   void operator = (const AdaptiveLruPage &copy);
 

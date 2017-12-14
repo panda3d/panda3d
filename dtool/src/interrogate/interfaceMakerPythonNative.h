@@ -47,6 +47,7 @@ public:
   virtual bool separate_overloading();
 
   virtual Object *record_object(TypeIndex type_index);
+  Property *record_property(const InterrogateType &itype, ElementIndex element_index);
 
 protected:
   virtual string get_wrapper_prefix();
@@ -111,6 +112,9 @@ private:
 
     // Decref temporary args object before returning.
     RF_decref_args = 0x1000,
+
+    // This raises a KeyError on falsey (or -1) return value.
+    RF_raise_keyerror = 0x4000,
   };
 
   class SlottedFunctionDef {

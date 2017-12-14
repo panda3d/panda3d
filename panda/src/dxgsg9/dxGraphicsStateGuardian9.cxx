@@ -1141,11 +1141,9 @@ end_frame(Thread *current_thread) {
  */
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger,
-                                                    data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -3076,7 +3074,7 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
-  _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  determine_target_shader();
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
@@ -4440,7 +4438,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     set_texture_stage_state(i, D3DTSS_RESULTARG, D3DTA_CURRENT);
   }
 
-  if (stage->uses_color()) {
+  if (stage->uses_color() || stage->involves_color_scale()) {
     // Set up the constant color for this stage.
 
     D3DCOLOR constant_color;
