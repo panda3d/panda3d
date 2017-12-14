@@ -199,7 +199,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   VkDeviceMemory memory;
   uint32_t palette_size = (uint32_t)min(2, vulkan_color_palette_size.get_value()) * 16;
   if (!create_buffer(palette_size, _color_vertex_buffer, memory,
-                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
     vulkandisplay_cat.error()
@@ -1422,7 +1422,10 @@ set_state_and_transform(const RenderState *state,
     DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
     update_texture(tc, true);
 
-    tc->transition(_cmd, _graphics_queue_family_index,
+    // Transition the texture so that it can be read by the shader.  This has
+    // to happen on the transfer command buffer, since it can't happen during
+    // an active render pass.
+    tc->transition(_transfer_cmd, _graphics_queue_family_index,
                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                    VK_ACCESS_SHADER_READ_BIT);

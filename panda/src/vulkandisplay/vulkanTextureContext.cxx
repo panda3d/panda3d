@@ -83,8 +83,8 @@ transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
   barrier.dstAccessMask = dst_access_mask;
   barrier.oldLayout = _layout;
   barrier.newLayout = layout;
-  barrier.srcQueueFamilyIndex = 0;//_graphics_queue_family_index;
-  barrier.dstQueueFamilyIndex = 0;//_graphics_queue_family_index;
+  barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;//_graphics_queue_family_index;
+  barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;//_graphics_queue_family_index;
   barrier.image = _image;
   barrier.subresourceRange.aspectMask = _aspect_mask;
   barrier.subresourceRange.baseMipLevel = 0;
