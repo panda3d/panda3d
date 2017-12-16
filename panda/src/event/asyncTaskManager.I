@@ -36,7 +36,7 @@ get_clock() {
  * Returns the number of tasks that are currently active or sleeping within
  * the task manager.
  */
-INLINE int AsyncTaskManager::
+INLINE size_t AsyncTaskManager::
 get_num_tasks() const {
   MutexHolder holder(_lock);
   return _num_tasks;

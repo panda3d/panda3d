@@ -114,7 +114,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
       // It's OK if there's no bamWriter.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_writer, &Dtool_BamWriter, (void **)&writer);
+      DtoolInstance_GetPointer(py_writer, writer, Dtool_BamWriter);
       Py_DECREF(py_writer);
     }
   }
@@ -228,7 +228,7 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar dat
       // It's OK if there's no bamReader.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_reader, &Dtool_BamReader, (void **)&reader);
+      DtoolInstance_GetPointer(py_reader, reader, Dtool_BamReader);
       Py_DECREF(py_reader);
     }
   }
@@ -251,7 +251,7 @@ set_shader_input(CPT_InternalName name, PyObject *value, int priority) {
   }
 
   ShaderInput &input = attrib->_inputs[name];
-  invoke_extension(&input).__init__(move(name), value);
+  invoke_extension(&input).__init__(move(name), value, priority);
 
   if (!_PyErr_OCCURRED()) {
     node->set_attrib(ShaderAttrib::return_new(attrib));

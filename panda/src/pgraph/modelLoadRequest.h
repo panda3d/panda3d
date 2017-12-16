@@ -43,15 +43,12 @@ PUBLISHED:
   INLINE const LoaderOptions &get_options() const;
   INLINE Loader *get_loader() const;
 
-  INLINE NodePath result() const;
-
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
 
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(options, get_options);
   MAKE_PROPERTY(loader, get_loader);
-  MAKE_PROPERTY(ready, is_ready);
 
 protected:
   virtual DoneStatus do_task();
@@ -60,8 +57,6 @@ private:
   Filename _filename;
   LoaderOptions _options;
   PT(Loader) _loader;
-  bool _is_ready;
-  PT(PandaNode) _model;
 
 public:
   static TypeHandle get_class_type() {

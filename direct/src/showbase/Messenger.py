@@ -109,6 +109,12 @@ class Messenger:
             if record[0] <= 0:
                 del self._id2object[id]
 
+    def future(self, event):
+        """ Returns a future that is triggered by the given event name.  This
+        will function only once. """
+
+        return eventMgr.eventHandler.get_future(event)
+
     def accept(self, event, object, method, extraArgs=[], persistent=1):
         """ accept(self, string, DirectObject, Function, List, Boolean)
 
@@ -409,9 +415,13 @@ class Messenger:
                 # Release the lock temporarily while we call the method.
                 self.lock.release()
                 try:
-                    method (*(extraArgs + sentArgs))
+                    result = method (*(extraArgs + sentArgs))
                 finally:
                     self.lock.acquire()
+
+                if hasattr(result, 'cr_await'):
+                    # It's a coroutine, so schedule it with the task manager.
+                    taskMgr.add(result)
 
     def clear(self):
         """

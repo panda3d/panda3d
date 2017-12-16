@@ -50,10 +50,10 @@ class Loader(DirectObject):
         def cancel(self):
             "Cancels the request.  Callback won't be called."
             if self._loader:
-                self._loader = None
                 for request in self.requests:
                     self._loader.loader.remove(request)
                     del self._loader._requests[request]
+                self._loader = None
                 self.requests = None
                 self.requestList = None
 
@@ -66,7 +66,9 @@ class Loader(DirectObject):
             return not self.requests
 
         def result(self):
-            assert not self.requests, "Result is not ready."
+            "Returns the results, suspending the thread to wait if necessary."
+            for r in list(self.requests):
+                r.wait()
             if self.gotList:
                 return self.objects
             else:
@@ -132,7 +134,8 @@ class Loader(DirectObject):
     # model loading funcs
     def loadModel(self, modelPath, loaderOptions = None, noCache = None,
                   allowInstance = False, okMissing = None,
-                  callback = None, extraArgs = [], priority = None):
+                  callback = None, extraArgs = [], priority = None,
+                  blocking = None):
         """
         Attempts to load a model or models from one or more relative
         pathnames.  If the input modelPath is a string (a single model
@@ -169,10 +172,10 @@ class Loader(DirectObject):
         If callback is not None, then the model load will be performed
         asynchronously.  In this case, loadModel() will initiate a
         background load and return immediately.  The return value will
-        be an object that may later be passed to
-        loader.cancelRequest() to cancel the asynchronous request.  At
-        some later point, when the requested model(s) have finished
-        loading, the callback function will be invoked with the n
+        be an object that can be used to check the status, cancel the
+        request, or use it in an `await` expression.  Unless callback
+        is the special value True, when the requested model(s) have
+        finished loading, it will be invoked with the n
         loaded models passed as its parameter list.  It is possible
         that the callback will be invoked immediately, even before
         loadModel() returns.  If you use callback, you may also
@@ -224,7 +227,10 @@ class Loader(DirectObject):
             modelList = modelPath
             gotList = True
 
-        if callback is None:
+        if blocking is None:
+            blocking = callback is None
+
+        if blocking:
             # We got no callback, so it's a synchronous load.
 
             result = []
@@ -362,7 +368,8 @@ class Loader(DirectObject):
         ModelPool.releaseModel(modelNode)
 
     def saveModel(self, modelPath, node, loaderOptions = None,
-                  callback = None, extraArgs = [], priority = None):
+                  callback = None, extraArgs = [], priority = None,
+                  blocking = None):
         """ Saves the model (a NodePath or PandaNode) to the indicated
         filename path.  Returns true on success, false on failure.  If
         a callback is used, the model is saved asynchronously, and the
@@ -397,7 +404,10 @@ class Loader(DirectObject):
         # From here on, we deal with a list of (filename, node) pairs.
         modelList = list(zip(modelList, nodeList))
 
-        if callback is None:
+        if blocking is None:
+            blocking = callback is None
+
+        if blocking:
             # We got no callback, so it's a synchronous save.
 
             result = []
@@ -1059,7 +1069,7 @@ class Loader(DirectObject):
             return
 
         cb, i = self._requests[request]
-        if cb.cancelled():
+        if cb.cancelled() or request.cancelled():
             # Shouldn't be here.
             del self._requests[request]
             return
@@ -1068,7 +1078,11 @@ class Loader(DirectObject):
         if not cb.requests:
             del self._requests[request]
 
-        cb.gotObject(i, request.result() or None)
+        result = request.result()
+        if isinstance(result, PandaNode):
+            result = NodePath(result)
+
+        cb.gotObject(i, result)
 
     load_model = loadModel
     unload_model = unloadModel

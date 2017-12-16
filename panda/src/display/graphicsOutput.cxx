@@ -115,7 +115,6 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _sbs_left_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   _sbs_right_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   _delete_flag = false;
-  _trigger_copy = false;
 
   if (_fb_properties.is_single_buffered()) {
     _draw_buffer_type = RenderBuffer::T_front;
@@ -1435,7 +1434,10 @@ copy_to_textures() {
       }
     }
   }
-  _trigger_copy = false;
+  if (_trigger_copy != nullptr) {
+    _trigger_copy->set_result(nullptr);
+    _trigger_copy = nullptr;
+  }
 
   return okflag;
 }

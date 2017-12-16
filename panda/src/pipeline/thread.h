@@ -28,7 +28,7 @@ class ReMutex;
 class MutexDebug;
 class ConditionVarDebug;
 class ConditionVarFullDebug;
-class AsyncTaskBase;
+class AsyncTask;
 
 /**
  * A thread; that is, a lightweight process.  This is an abstract base class;
@@ -89,7 +89,7 @@ PUBLISHED:
   BLOCKING INLINE void join();
   INLINE void preempt();
 
-  INLINE AsyncTaskBase *get_current_task() const;
+  INLINE AsyncTask *get_current_task() const;
 
   INLINE void set_python_index(int index);
 
@@ -142,7 +142,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AsyncTaskBase *_current_task;
+  AsyncTask *_current_task;
 
   int _python_index;
 
@@ -184,7 +184,7 @@ private:
   friend class ThreadPosixImpl;
   friend class ThreadSimpleImpl;
   friend class MainThread;
-  friend class AsyncTaskBase;
+  friend class AsyncTask;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

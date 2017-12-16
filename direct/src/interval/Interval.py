@@ -116,8 +116,9 @@ class Interval(DirectObject):
         return self.currT
 
     def start(self, startT = 0.0, endT = -1.0, playRate = 1.0):
+        """ Starts the interval.  Returns an awaitable. """
         self.setupPlay(startT, endT, playRate, 0)
-        self.__spawnTask()
+        return self.__spawnTask()
 
     def loop(self, startT = 0.0, endT = -1.0, playRate = 1.0):
         self.setupPlay(startT, endT, playRate, 1)
@@ -427,6 +428,7 @@ class Interval(DirectObject):
         task = Task(self.__playTask)
         task.interval = self
         taskMgr.add(task, taskName)
+        return task
 
     def __removeTask(self):
         # Kill old task(s), including those from a similarly-named but

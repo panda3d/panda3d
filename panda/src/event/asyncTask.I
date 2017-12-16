@@ -182,15 +182,6 @@ set_done_event(const string &done_event) {
 }
 
 /**
- * Returns the event name that will be triggered when the task finishes.  See
- * set_done_event().
- */
-INLINE const string &AsyncTask::
-get_done_event() const {
-  return _done_event;
-}
-
-/**
  * Returns the amount of time elapsed during the task's previous run cycle, in
  * seconds.
  */

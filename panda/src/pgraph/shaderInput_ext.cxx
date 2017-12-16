@@ -91,80 +91,79 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
       _this->_stored_vector = LCAST(PN_stdfloat, vec);
     }
 
-  } else if (DtoolCanThisBeAPandaInstance(value)) {
-    Dtool_PyInstDef *inst = (Dtool_PyInstDef *)value;
+  } else if (DtoolInstance_Check(value)) {
     void *ptr;
 
-    if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_Texture))) {
+    if ((ptr = DtoolInstance_UPCAST(value, Dtool_Texture))) {
       _this->_type = ShaderInput::M_texture;
       _this->_value = (Texture *)ptr;
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_NodePath))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_NodePath))) {
       _this->_type = ShaderInput::M_nodepath;
       _this->_value = new ParamNodePath(*(const NodePath *)ptr);
 
-    } else if (inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToVoid)) {
-      if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_float))) {
+    } else if (DtoolInstance_UPCAST(value, Dtool_PointerToVoid)) {
+      if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_float))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_float *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_double))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_double))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_double *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_int))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_int))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_int *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4f))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_UnalignedLVecBase4f))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase4f *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3f))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LVecBase3f))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase3f *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2f))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LVecBase2f))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase2f *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLMatrix4f))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_UnalignedLMatrix4f))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LMatrix4f *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LMatrix3f))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LMatrix3f))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LMatrix3f *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4d))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_UnalignedLVecBase4d))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase4d *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3d))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LVecBase3d))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase3d *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2d))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LVecBase2d))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase2d *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLMatrix4d))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_UnalignedLMatrix4d))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LMatrix4d *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LMatrix3d))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LMatrix3d))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LMatrix3d *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4i))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_UnalignedLVecBase4i))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase4i *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3i))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LVecBase3i))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase3i *)ptr;
 
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2i))) {
+      } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_PointerToArray_LVecBase2i))) {
         _this->_type = ShaderInput::M_numeric;
         _this->_stored_ptr = *(const PTA_LVecBase2i *)ptr;
 
@@ -173,81 +172,81 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
         return;
       }
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LMatrix4f))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LMatrix4f))) {
       _this->_type = ShaderInput::M_numeric;
       _this->_stored_ptr = *(const LMatrix4f *)ptr;
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LMatrix3f))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LMatrix3f))) {
       _this->_type = ShaderInput::M_numeric;
       _this->_stored_ptr = *(const LMatrix3f *)ptr;
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LMatrix4d))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LMatrix4d))) {
       _this->_type = ShaderInput::M_numeric;
       _this->_stored_ptr = *(const LMatrix4d *)ptr;
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LMatrix3d))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LMatrix3d))) {
       _this->_type = ShaderInput::M_numeric;
       _this->_stored_ptr = *(const LMatrix3d *)ptr;
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4f))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase4f))) {
       const LVecBase4f &vec = *(const LVecBase4f *)ptr;
       _this->_type = ShaderInput::M_vector;
       _this->_stored_ptr = vec;
       _this->_stored_vector = LCAST(PN_stdfloat, vec);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3f))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase3f))) {
       const LVecBase3f &vec = *(const LVecBase3f *)ptr;
       _this->_type = ShaderInput::M_vector;
       _this->_stored_ptr = vec;
       _this->_stored_vector.set(vec[0], vec[1], vec[2], 0);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2f))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase2f))) {
       const LVecBase2f &vec = *(const LVecBase2f *)ptr;
       _this->_type = ShaderInput::M_vector;
       _this->_stored_ptr = vec;
       _this->_stored_vector.set(vec[0], vec[1], 0, 0);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4d))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase4d))) {
       const LVecBase4d &vec = *(const LVecBase4d *)ptr;
       _this->_type = ShaderInput::M_vector;
       _this->_stored_ptr = vec;
       _this->_stored_vector = LCAST(PN_stdfloat, vec);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3d))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase3d))) {
       const LVecBase3d &vec = *(const LVecBase3d *)ptr;
       _this->_type = ShaderInput::M_vector;
       _this->_stored_ptr = vec;
       _this->_stored_vector.set(vec[0], vec[1], vec[2], 0);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2d))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase2d))) {
       const LVecBase2d &vec = *(const LVecBase2d *)ptr;
       _this->_type = ShaderInput::M_vector;
       _this->_stored_ptr = vec;
       _this->_stored_vector.set(vec[0], vec[1], 0, 0);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4i))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase4i))) {
       const LVecBase4i &vec = *(const LVecBase4i *)ptr;
       _this->_type = ShaderInput::M_numeric;
       _this->_stored_ptr = vec;
       _this->_stored_vector = LCAST(PN_stdfloat, vec);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3i))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase3i))) {
       const LVecBase3i &vec = *(const LVecBase3i *)ptr;
       _this->_type = ShaderInput::M_numeric;
       _this->_stored_ptr = vec;
       _this->_stored_vector.set(vec[0], vec[1], vec[2], 0);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2i))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_LVecBase2i))) {
       const LVecBase2i &vec = *(const LVecBase2i *)ptr;
       _this->_type = ShaderInput::M_numeric;
       _this->_stored_ptr = vec;
       _this->_stored_vector.set(vec[0], vec[1], 0, 0);
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_ShaderBuffer))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_ShaderBuffer))) {
       _this->_type = ShaderInput::M_buffer;
       _this->_value = (ShaderBuffer *)ptr;
 
-    } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_ParamValueBase))) {
+    } else if ((ptr = DtoolInstance_UPCAST(value, Dtool_ParamValueBase))) {
       _this->_type = ShaderInput::M_param;
       _this->_value = (ParamValueBase *)ptr;
 

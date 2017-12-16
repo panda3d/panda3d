@@ -16,6 +16,8 @@
 
 #include "py_panda.h"
 
+#ifdef HAVE_PYTHON
+
 /**
  * These classes are returned from properties that require a subscript
  * interface, ie. something.children[i] = 3.
@@ -71,4 +73,6 @@ EXPCL_INTERROGATEDB Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObjec
 EXPCL_INTERROGATEDB PyObject *Dtool_NewGenerator(PyObject *self, const char *name, iternextfunc func);
 EXPCL_INTERROGATEDB PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
 
-#endif
+#endif  // HAVE_PYTHON
+
+#endif  // PY_WRAPPERS_H
