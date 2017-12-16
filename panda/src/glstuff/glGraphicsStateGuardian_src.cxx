@@ -6455,6 +6455,18 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     break;
 
+  case Texture::F_depth_component16:
+    component_type = Texture::T_unsigned_short;
+    break;
+
+  case Texture::F_depth_component24:
+    component_type = Texture::T_unsigned_int;
+    break;
+
+  case Texture::F_depth_component32:
+    component_type = Texture::T_float;
+    break;
+
   default:
     if (_current_properties->get_srgb_color()) {
       if (_current_properties->get_alpha_bits()) {

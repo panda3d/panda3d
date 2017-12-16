@@ -275,12 +275,21 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
 
   // Choose a default bitplane.
   if (plane == RTP_COUNT) {
-    if (tex->get_format() == Texture::F_depth_stencil) {
+    switch (tex->get_format()) {
+    case Texture::F_depth_stencil:
       plane = RTP_depth_stencil;
-    } else if (tex->get_format() == Texture::F_depth_component) {
+      break;
+
+    case Texture::F_depth_component:
+    case Texture::F_depth_component16:
+    case Texture::F_depth_component24:
+    case Texture::F_depth_component32:
       plane = RTP_depth;
-    } else {
+      break;
+
+    default:
       plane = RTP_color;
+      break;
     }
   }
 
