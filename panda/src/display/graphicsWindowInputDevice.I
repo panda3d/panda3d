@@ -37,3 +37,13 @@ set_pointer_out_of_window(double time) {
   LightMutexHolder holder(_lock);
   InputDevice::set_pointer_out_of_window(time);
 }
+
+/**
+ * To be called by a particular kind of GraphicsWindow to indicate that the
+ * pointer has moved by the given relative amount.
+ */
+INLINE void GraphicsWindowInputDevice::
+pointer_moved(double x, double y, double time) {
+  LightMutexHolder holder(_lock);
+  InputDevice::pointer_moved(x, y, time);
+}

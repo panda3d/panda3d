@@ -111,6 +111,35 @@ add_event(bool in_win, int xpos, int ypos, int seq, double time) {
 }
 
 /**
+ * Adds a new event to the end of the list based on the given mouse movement.
+ */
+void PointerEventList::
+add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta, int seq, double time) {
+  PointerEvent pe;
+  pe._in_window = in_win;
+  pe._xpos = xpos;
+  pe._ypos = ypos;
+  pe._dx = xdelta;
+  pe._dy = ydelta;
+  pe._sequence = seq;
+  pe._time = time;
+  pe._length = csqrt(xdelta*xdelta + ydelta*ydelta);
+  if (pe._length > 0.0) {
+    pe._direction = normalize_angle(rad_2_deg(catan2(-ydelta,xdelta)));
+  } else if (!_events.empty()) {
+    pe._direction = _events.back()._direction;
+  } else {
+    pe._direction = 0.0;
+  }
+  if (!_events.empty()) {
+    pe._rotation = delta_angle(_events.back()._direction, pe._direction);
+  } else {
+    pe._rotation = 0.0;
+  }
+  _events.push_back(pe);
+}
+
+/**
  * Returns true if the trail loops around the specified point.
  */
 bool PointerEventList::

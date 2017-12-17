@@ -25,10 +25,7 @@ class DatagramIterator;
  */
 class EXPCL_PANDA_EVENT PointerEvent {
 public:
-
   INLINE PointerEvent();
-  INLINE PointerEvent(const PointerEvent &copy);
-  INLINE void operator = (const PointerEvent &copy);
 
   INLINE bool operator == (const PointerEvent &other) const;
   INLINE bool operator != (const PointerEvent &other) const;
@@ -43,8 +40,8 @@ public:
   bool      _in_window;
   int       _xpos;
   int       _ypos;
-  int       _dx;
-  int       _dy;
+  double    _dx;
+  double    _dy;
   double    _length;
   double    _direction;
   double    _rotation;

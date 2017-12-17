@@ -617,15 +617,16 @@ initialize_input_devices() {
           char *pound3 = pound2 ? strchr(pound2+1,'#') : 0;
           if (pound3) *pound3 = 0;
           for (char *p = psName; *p; p++) {
-            if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
+            if (!isalnum(*p)) {
               *p = '_';
             }
           }
           if (pound2) *pound2 = '.';
           _input_device_handle[_input_devices.size()] = pRawInputDeviceList[i].hDevice;
-          //GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(this, psName);
-          //device.set_pointer_in_window(0,0);
-          //add_input_device(device);
+
+          PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_only(this, psName);
+          device->set_pointer_in_window(0, 0);
+          add_input_device(device);
         }
       }
     }
@@ -2654,53 +2655,53 @@ handle_raw_input(HRAWINPUT hraw) {
   if (raw->header.hDevice == 0) {
     return;
   }
-/*
-  for (int i = 1; i < (int)(_input_devices.size()); ++i) {
+
+  for (size_t i = 1; i < _input_devices.size(); ++i) {
     if (_input_device_handle[i] == raw->header.hDevice) {
+      PT(GraphicsWindowInputDevice) input =
+        DCAST(GraphicsWindowInputDevice, _input_devices[i]);
+
       int adjx = raw->data.mouse.lLastX;
       int adjy = raw->data.mouse.lLastY;
 
       if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
-        _input_devices[i].set_pointer_in_window(adjx, adjy);
+        input->set_pointer_in_window(adjx, adjy);
       } else {
-        //int oldx = _input_devices[i].get_raw_pointer().get_x();
-        //int oldy = _input_devices[i].get_raw_pointer().get_y();
-        //_input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
+        input->pointer_moved(adjx, adjy);
       }
 
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(0), get_message_time());
+        input->button_down(MouseButton::button(0), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_UP) {
-        _input_devices[i].button_up(MouseButton::button(0), get_message_time());
+        input->button_up(MouseButton::button(0), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_2_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(2), get_message_time());
+        input->button_down(MouseButton::button(2), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_2_UP) {
-        _input_devices[i].button_up(MouseButton::button(2), get_message_time());
+        input->button_up(MouseButton::button(2), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(1), get_message_time());
+        input->button_down(MouseButton::button(1), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_UP) {
-        _input_devices[i].button_up(MouseButton::button(1), get_message_time());
+        input->button_up(MouseButton::button(1), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(3), get_message_time());
+        input->button_down(MouseButton::button(3), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP) {
-        _input_devices[i].button_up(MouseButton::button(3), get_message_time());
+        input->button_up(MouseButton::button(3), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(4), get_message_time());
+        input->button_down(MouseButton::button(4), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP) {
-        _input_devices[i].button_up(MouseButton::button(4), get_message_time());
+        input->button_up(MouseButton::button(4), get_message_time());
       }
     }
   }
-*/
 }
 
 /**

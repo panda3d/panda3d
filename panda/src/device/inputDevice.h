@@ -185,6 +185,7 @@ PUBLISHED:
 protected:
   void set_pointer(bool inwin, double x, double y, double time);
   void set_pointer_out_of_window(double time);
+  void pointer_moved(double x, double y, double time);
   void set_button_state(int index, bool down);
   void set_control_state(int index, double state);
   void set_tracker(const LPoint3 &pos, const LOrientation &orient, double time);

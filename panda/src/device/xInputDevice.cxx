@@ -378,7 +378,7 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
   for (int i = 0; i < 16; ++i) {
     if (buttons & mask) {
       // Set the state without triggering a button event.
-      _buttons[i]._state = (buttons & mask) ? S_down : S_up;
+      _buttons[i].state = (buttons & mask) ? S_down : S_up;
     }
     mask <<= 1;
     if (i == 10) {

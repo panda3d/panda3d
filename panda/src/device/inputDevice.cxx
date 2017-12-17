@@ -157,6 +157,27 @@ set_pointer_out_of_window(double time) {
 }
 
 /**
+ * Records that a relative mouse movement has taken place.
+ */
+void InputDevice::
+pointer_moved(double x, double y, double time) {
+  nassertv(_lock.debug_is_locked());
+  _pointer_data._xpos += x;
+  _pointer_data._ypos += y;
+
+  if (_enable_pointer_events) {
+    int seq = _event_sequence++;
+    if (_pointer_events.is_null()) {
+      _pointer_events = new PointerEventList();
+    }
+    _pointer_events->add_event(_pointer_data._in_window,
+                               _pointer_data._xpos,
+                               _pointer_data._ypos,
+                               x, y, seq, time);
+  }
+}
+
+/**
  * Sets the state of the indicated button index, where true indicates down,
  * and false indicates up.  This may generate a ButtonEvent if the button has
  * an associated ButtonHandle.  The caller should ensure that the lock is held

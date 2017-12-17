@@ -30,41 +30,6 @@ PointerEvent() :
 }
 
 /**
- *
- */
-INLINE PointerEvent::
-PointerEvent(const PointerEvent &copy) :
-  _in_window(copy._in_window),
-  _xpos(copy._xpos),
-  _ypos(copy._ypos),
-  _dx(copy._dx),
-  _dy(copy._dy),
-  _length(copy._length),
-  _direction(copy._direction),
-  _rotation(copy._rotation),
-  _sequence(copy._sequence),
-  _time(copy._time)
-{
-}
-
-/**
- *
- */
-INLINE void PointerEvent::
-operator = (const PointerEvent &copy) {
-  _in_window = copy._in_window;
-  _xpos = copy._xpos;
-  _ypos = copy._ypos;
-  _dx = copy._dx;
-  _dy = copy._dy;
-  _sequence = copy._sequence;
-  _length = copy._length;
-  _direction = copy._direction;
-  _rotation = copy._rotation;
-  _time = copy._time;
-}
-
-/**
  * The equality operator does not consider time significant.
  */
 INLINE bool PointerEvent::

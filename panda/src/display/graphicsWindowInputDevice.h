@@ -57,6 +57,7 @@ PUBLISHED:
 
   INLINE void set_pointer_in_window(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE void pointer_moved(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
 
 private:
   typedef pset<ButtonHandle> ButtonsHeld;
