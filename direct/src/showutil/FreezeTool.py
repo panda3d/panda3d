@@ -1066,6 +1066,8 @@ class Freezer:
         # Check if any new modules we found have "hidden" imports
         for origName in list(self.mf.modules.keys()):
             hidden = hiddenImports.get(origName, [])
+            for modname in hidden:
+                self.__loadModule(self.ModuleDef(modname, implicit = True))
 
         # Now, any new modules we found get added to the export list.
         for origName in list(self.mf.modules.keys()):
