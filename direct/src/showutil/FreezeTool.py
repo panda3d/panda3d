@@ -77,6 +77,7 @@ hiddenImports = {
         'pkg_resources._vendor.packaging.specifiers',
         'pkg_resources._vendor.packaging.requirements',
     ],
+    'xml.etree.cElementTree': ['xml.etree.ElementTree'],
 }
 
 # These are missing modules that we've reported already this session.
