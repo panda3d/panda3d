@@ -78,6 +78,7 @@ hiddenImports = {
         'pkg_resources._vendor.packaging.requirements',
     ],
     'xml.etree.cElementTree': ['xml.etree.ElementTree'],
+    'datetime': ['_strptime'],
 }
 
 # These are missing modules that we've reported already this session.
