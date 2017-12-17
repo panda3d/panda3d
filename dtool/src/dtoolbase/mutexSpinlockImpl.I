@@ -14,16 +14,8 @@
 /**
  *
  */
-INLINE MutexSpinlockImpl::
-MutexSpinlockImpl() {
-  _lock = 0;
-}
-
-/**
- *
- */
-INLINE MutexSpinlockImpl::
-~MutexSpinlockImpl() {
+CONSTEXPR MutexSpinlockImpl::
+MutexSpinlockImpl() : _lock(0) {
 }
 
 /**

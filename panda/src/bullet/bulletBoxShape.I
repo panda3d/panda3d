@@ -12,6 +12,15 @@
  */
 
 /**
+ * Only used by make_from_bam.
+ */
+INLINE BulletBoxShape::
+BulletBoxShape() :
+  _shape(nullptr),
+  _half_extents(LVecBase3::zero()) {
+}
+
+/**
  *
  */
 INLINE BulletBoxShape::
@@ -25,7 +34,7 @@ INLINE BulletBoxShape::
  */
 INLINE BulletBoxShape::
 BulletBoxShape(const BulletBoxShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape), _half_extents(copy._half_extents) {
 }
 
 /**
@@ -34,4 +43,5 @@ BulletBoxShape(const BulletBoxShape &copy) :
 INLINE void BulletBoxShape::
 operator = (const BulletBoxShape &copy) {
   _shape = copy._shape;
+  _half_extents = copy._half_extents;
 }

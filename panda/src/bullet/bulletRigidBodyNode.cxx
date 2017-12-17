@@ -612,6 +612,9 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   get_gravity().write_datagram(dg);
   get_linear_factor().write_datagram(dg);
   get_angular_factor().write_datagram(dg);
+  // dynamic state (?)
+  get_linear_velocity().write_datagram(dg);
+  get_angular_velocity().write_datagram(dg);
 }
 
 /**

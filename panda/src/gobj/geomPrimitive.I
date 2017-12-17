@@ -124,8 +124,19 @@ get_vertex(int i) const {
  */
 INLINE int GeomPrimitive::
 get_num_primitives() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
-  return reader.get_num_primitives();
+  int num_vertices_per_primitive = get_num_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    // This is a complex primitive type like a triangle strip: each primitive
+    // uses a different number of vertices.
+    CDReader cdata(_cycler);
+    return cdata->_ends.size();
+
+  } else {
+    // This is a simple primitive type like a triangle: each primitive uses
+    // the same number of vertices.
+    return (get_num_vertices() / num_vertices_per_primitive);
+  }
 }
 
 /**
@@ -233,6 +244,24 @@ INLINE CPT(GeomVertexArrayData) GeomPrimitive::
 get_vertices() const {
   CDReader cdata(_cycler);
   return cdata->_vertices.get_read_pointer();
+}
+
+/**
+ * Equivalent to get_vertices().get_handle().
+ */
+INLINE CPT(GeomVertexArrayDataHandle) GeomPrimitive::
+get_vertices_handle(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  return new GeomVertexArrayDataHandle(cdata->_vertices.get_read_pointer(current_thread), current_thread);
+}
+
+/**
+ * Equivalent to modify_vertices().get_handle().
+ */
+INLINE PT(GeomVertexArrayDataHandle) GeomPrimitive::
+modify_vertices_handle(Thread *current_thread) {
+  CDWriter cdata(_cycler, true, current_thread);
+  return new GeomVertexArrayDataHandle(do_modify_vertices(cdata), current_thread);
 }
 
 /**
@@ -414,36 +443,30 @@ CData(const GeomPrimitive::CData &copy) :
  *
  */
 INLINE GeomPrimitivePipelineReader::
-GeomPrimitivePipelineReader(const GeomPrimitive *object,
+GeomPrimitivePipelineReader(CPT(GeomPrimitive) object,
                             Thread *current_thread) :
-  _object(object),
+  _object(move(object)),
   _current_thread(current_thread),
-  _cdata(object->_cycler.read_unlocked(current_thread)),
-  _vertices_reader(NULL)
+#ifndef CPPPARSER
+  _cdata(_object->_cycler.read_unlocked(current_thread)),
+#endif
+  _vertices_cdata(NULL)
 {
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
   _cdata->ref();
 #endif  // DO_PIPELINING
+
   if (!_cdata->_vertices.is_null()) {
-    _vertices_reader = _cdata->_vertices.get_read_pointer()->get_handle();
+    _vertices = _cdata->_vertices.get_read_pointer(current_thread);
+    _vertices_cdata = _vertices->_cycler.read_unlocked(current_thread);
+#ifdef DO_PIPELINING
+    _vertices_cdata->ref();
+#endif  // DO_PIPELINING
+    // We must grab the lock *after* we have incremented the reference count,
+    // above.
+    _vertices_cdata->_rw_lock.acquire();
   }
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE GeomPrimitivePipelineReader::
-GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomPrimitivePipelineReader::
-operator = (const GeomPrimitivePipelineReader &) {
-  nassertv(false);
 }
 
 /**
@@ -460,8 +483,17 @@ INLINE GeomPrimitivePipelineReader::
   unref_delete((CycleData *)_cdata);
 #endif  // DO_PIPELINING
 
+  if (_vertices_cdata != nullptr) {
+    // We must release the lock *before* we decrement the reference count,
+    // below.
+    _vertices_cdata->_rw_lock.release();
+
+#ifdef DO_PIPELINING
+    unref_delete((CycleData *)_vertices_cdata);
+#endif  // DO_PIPELINING
+  }
+
 #ifdef _DEBUG
-  _vertices_reader = NULL;
   _object = NULL;
   _cdata = NULL;
 #endif  // _DEBUG
@@ -512,7 +544,7 @@ get_index_type() const {
  */
 INLINE bool GeomPrimitivePipelineReader::
 is_indexed() const {
-  return (!_cdata->_vertices.is_null());
+  return (!_vertices.is_null());
 }
 
 /**
@@ -523,8 +555,10 @@ get_num_vertices() const {
   if (_cdata->_num_vertices != -1) {
     return _cdata->_num_vertices;
   } else {
-    nassertr(!_cdata->_vertices.is_null(), 0);
-    return _vertices_reader->get_num_rows();
+    nassertr(!_vertices.is_null(), 0);
+    size_t stride = _vertices->_array_format->get_stride();
+    nassertr(stride != 0, 0);
+    return get_data_size_bytes() / stride;
   }
 }
 
@@ -551,7 +585,7 @@ get_max_vertex() const {
  */
 INLINE int GeomPrimitivePipelineReader::
 get_data_size_bytes() const {
-  return _vertices_reader->get_data_size_bytes();
+  return _vertices_cdata->_buffer.get_size();
 }
 
 /**
@@ -568,15 +602,7 @@ get_modified() const {
 INLINE int GeomPrimitivePipelineReader::
 get_index_stride() const {
   nassertr(is_indexed(), 0);
-  return _cdata->_vertices.get_read_pointer()->get_array_format()->get_stride();
-}
-
-/**
- *
- */
-INLINE const GeomVertexArrayDataHandle *GeomPrimitivePipelineReader::
-get_vertices_reader() const {
-  return _vertices_reader;
+  return _vertices->_array_format->get_stride();
 }
 
 /**
@@ -584,7 +610,8 @@ get_vertices_reader() const {
  */
 INLINE const unsigned char *GeomPrimitivePipelineReader::
 get_read_pointer(bool force) const {
-  return _vertices_reader->get_read_pointer(force);
+  ((GeomVertexArrayData *)_vertices.p())->mark_used();
+  return _vertices_cdata->_buffer.get_read_pointer(force);
 }
 
 /**
@@ -630,6 +657,14 @@ INLINE IndexBufferContext *GeomPrimitivePipelineReader::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) const {
   return ((GeomPrimitive *)_object.p())->prepare_now(prepared_objects, gsg);
+}
+
+/**
+ * Calls the appropriate method on the GSG to draw the primitive.
+ */
+INLINE bool GeomPrimitivePipelineReader::
+draw(GraphicsStateGuardianBase *gsg, bool force) const {
+  return _object->draw(gsg, this, force);
 }
 
 INLINE ostream &

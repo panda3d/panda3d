@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomPoints : public GeomPrimitive {
 PUBLISHED:
-  GeomPoints(UsageHint usage_hint);
+  explicit GeomPoints(UsageHint usage_hint);
   GeomPoints(const GeomPoints &copy);
   virtual ~GeomPoints();
   ALLOC_DELETED_CHAIN(GeomPoints);

@@ -73,7 +73,16 @@ get_unique_id() const {
  */
 INLINE int Thread::
 get_pipeline_stage() const {
+#if !defined(_DEBUG) && defined(__has_builtin) && __has_builtin(__builtin_assume)
+  // Because this is a signed int, this results in a sign extend on x86-64.
+  // However, since we guarantee that this is never less than zero, clang
+  // offers a nice way to avoid that.
+  int pipeline_stage = _pipeline_stage;
+  __builtin_assume(pipeline_stage >= 0);
+  return pipeline_stage;
+#else
   return _pipeline_stage;
+#endif
 }
 
 /**
@@ -268,7 +277,7 @@ preempt() {
  * AsyncTaskManager), if any, or NULL if the thread is not currently servicing
  * a task.
  */
-INLINE AsyncTaskBase *Thread::
+INLINE AsyncTask *Thread::
 get_current_task() const {
   return _current_task;
 }

@@ -25,7 +25,8 @@ INLINE BulletSphereShape::
  */
 INLINE BulletSphereShape::
 BulletSphereShape(const BulletSphereShape &copy) :
-  _shape(copy._shape) {
+  _shape(copy._shape),
+  _radius(copy._radius) {
 }
 
 /**
@@ -34,13 +35,13 @@ BulletSphereShape(const BulletSphereShape &copy) :
 INLINE void BulletSphereShape::
 operator = (const BulletSphereShape &copy) {
   _shape = copy._shape;
+  _radius = copy._radius;
 }
 
 /**
- *
+ * Returns the radius that was used to construct this sphere.
  */
 INLINE PN_stdfloat BulletSphereShape::
 get_radius() const {
-
-  return _shape->getRadius();
+  return _radius;
 }

@@ -34,6 +34,7 @@
 CullableObject::FormatMap CullableObject::_format_map;
 LightMutex CullableObject::_format_lock;
 
+PStatCollector CullableObject::_munge_pcollector("*:Munge");
 PStatCollector CullableObject::_munge_geom_pcollector("*:Munge:Geom");
 PStatCollector CullableObject::_munge_sprites_pcollector("*:Munge:Sprites");
 PStatCollector CullableObject::_munge_sprites_verts_pcollector("*:Munge:Sprites:Verts");
@@ -50,15 +51,13 @@ TypeHandle CullableObject::_type_handle;
  * have to block while the vertex data is paged in.
  */
 bool CullableObject::
-munge_geom(GraphicsStateGuardianBase *gsg,
-           GeomMunger *munger, const CullTraverser *traverser,
-           bool force) {
-  nassertr(munger != (GeomMunger *)NULL, false);
-  Thread *current_thread = traverser->get_current_thread();
-  PStatTimer timer(_munge_geom_pcollector, current_thread);
-  if (_geom != (Geom *)NULL) {
-    _munger = munger;
+munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
+           const CullTraverser *traverser, bool force) {
+  nassertr(munger != nullptr, false);
 
+  Thread *current_thread = traverser->get_current_thread();
+  PStatTimer timer(_munge_pcollector, current_thread);
+  if (_geom != nullptr) {
     GraphicsStateGuardianBase *gsg = traverser->get_gsg();
     int gsg_bits = gsg->get_supported_geom_rendering();
     if (!hardware_point_sprites) {
@@ -125,8 +124,11 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 
     // Now invoke the munger to ensure the resulting geometry is in a GSG-
     // friendly form.
-    if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
-      return false;
+    {
+      PStatTimer timer(_munge_geom_pcollector, current_thread);
+      if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
+        return false;
+      }
     }
 
     // If we have prepared it for skinning via the shader generator, mark a
@@ -140,10 +142,15 @@ munge_geom(GraphicsStateGuardianBase *gsg,
           DCAST(ShaderAttrib, ShaderAttrib::make())->set_flag(ShaderAttrib::F_hardware_skinning, true));
         _state = _state->compose(state);
       }
-    }
 
-    StateMunger *state_munger = (StateMunger *)munger;
-    _state = state_munger->munge_state(_state);
+      gsg->ensure_generated_shader(_state);
+    } else {
+      // We may need to munge the state for the fixed-function pipeline.
+      StateMunger *state_munger = (StateMunger *)munger;
+      if (state_munger->should_munge_state()) {
+        _state = state_munger->munge_state(_state);
+      }
+    }
 
     // If there is any animation left in the vertex data after it has been
     // munged--that is, we couldn't arrange to handle the animation in

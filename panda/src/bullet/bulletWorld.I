@@ -55,21 +55,12 @@ INLINE BulletWorld::
  */
 INLINE void BulletWorld::
 set_debug_node(BulletDebugNode *node) {
-
   nassertv(node);
-
-  _debug = node;
-  _world->setDebugDrawer(&(_debug->_drawer));
-}
-
-/**
- *
- */
-INLINE void BulletWorld::
-clear_debug_node() {
-
-  _debug = NULL;
-  _world->setDebugDrawer(NULL);
+  if (node != _debug) {
+    clear_debug_node();
+    _debug = node;
+    _world->setDebugDrawer(&(_debug->_drawer));
+  }
 }
 
 /**
@@ -79,6 +70,15 @@ INLINE BulletDebugNode *BulletWorld::
 get_debug_node() const {
 
   return _debug;
+}
+
+/**
+ *
+ */
+INLINE bool BulletWorld::
+has_debug_node() const {
+
+  return _debug != NULL;
 }
 
 /**

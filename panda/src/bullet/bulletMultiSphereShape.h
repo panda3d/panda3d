@@ -26,9 +26,11 @@
  *
  */
 class EXPCL_PANDABULLET BulletMultiSphereShape : public BulletShape {
+private:
+  BulletMultiSphereShape() : _shape(nullptr) {}
 
 PUBLISHED:
-  BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii);
+  explicit BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii);
   INLINE BulletMultiSphereShape(const BulletMultiSphereShape &copy);
   INLINE void operator = (const BulletMultiSphereShape &copy);
   INLINE ~BulletMultiSphereShape();
@@ -37,11 +39,23 @@ PUBLISHED:
   INLINE LPoint3 get_sphere_pos(int index) const;
   INLINE PN_stdfloat get_sphere_radius(int index) const;
 
+  MAKE_PROPERTY(sphere_count, get_sphere_count);
+  MAKE_SEQ_PROPERTY(sphere_pos, get_sphere_count, get_sphere_pos);
+  MAKE_SEQ_PROPERTY(sphere_radius, get_sphere_count, get_sphere_radius);
+
 public:
   virtual btCollisionShape *ptr() const;
 
 private:
   btMultiSphereShape *_shape;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

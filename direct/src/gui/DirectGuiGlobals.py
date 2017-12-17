@@ -1,12 +1,10 @@
-"""Undocumented Module"""
-
-__all__ = []
-
-
 """
 Global definitions used by Direct Gui Classes and handy constants
 that can be used during widget construction
 """
+
+__all__ = []
+
 from panda3d.core import *
 
 defaultFont = None

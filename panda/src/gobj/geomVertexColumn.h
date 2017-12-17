@@ -38,10 +38,10 @@ class EXPCL_PANDA_GOBJ GeomVertexColumn : public GeomEnums {
 private:
   INLINE GeomVertexColumn();
 PUBLISHED:
-  INLINE GeomVertexColumn(CPT_InternalName name, int num_components,
-                          NumericType numeric_type, Contents contents,
-                          int start, int column_alignment = 0,
-                          int num_elements = 0, int element_stride = 0);
+  INLINE explicit GeomVertexColumn(CPT_InternalName name, int num_components,
+                                   NumericType numeric_type, Contents contents,
+                                   int start, int column_alignment = 0,
+                                   int num_elements = 0, int element_stride = 0);
   INLINE GeomVertexColumn(const GeomVertexColumn &copy);
   void operator = (const GeomVertexColumn &copy);
   INLINE ~GeomVertexColumn();

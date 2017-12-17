@@ -18,11 +18,9 @@
 
 #include "geom.h"
 #include "geomVertexData.h"
-#include "geomMunger.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "pointerTo.h"
-#include "referenceCount.h"
 #include "geomNode.h"
 #include "cullTraverserData.h"
 #include "pStatCollector.h"
@@ -34,27 +32,23 @@
 #include "geomDrawCallbackData.h"
 
 class CullTraverser;
+class GeomMunger;
 
 /**
  * The smallest atom of cull.  This is normally just a Geom and its associated
  * state, but it also contain a draw callback.
  */
-class EXPCL_PANDA_PGRAPH CullableObject
-#ifdef DO_MEMORY_USAGE
-  : public ReferenceCount   // We inherit from ReferenceCount just to get the memory type tracking that MemoryUsage provides.
-#endif  // DO_MEMORY_USAGE
-{
+class EXPCL_PANDA_PGRAPH CullableObject {
 public:
   INLINE CullableObject();
-  INLINE CullableObject(const Geom *geom, const RenderState *state,
-                        const TransformState *internal_transform);
+  INLINE CullableObject(CPT(Geom) geom, CPT(RenderState) state,
+                        CPT(TransformState) internal_transform);
 
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
 
-  bool munge_geom(GraphicsStateGuardianBase *gsg,
-                  GeomMunger *munger, const CullTraverser *traverser,
-                  bool force);
+  bool munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
+                  const CullTraverser *traverser, bool force);
   INLINE void draw(GraphicsStateGuardianBase *gsg,
                    bool force, Thread *current_thread);
 
@@ -63,6 +57,11 @@ public:
 
   INLINE void set_draw_callback(CallbackObject *draw_callback);
 
+  INLINE void draw_inline(GraphicsStateGuardianBase *gsg,
+                          bool force, Thread *current_thread);
+  INLINE void draw_callback(GraphicsStateGuardianBase *gsg,
+                            bool force, Thread *current_thread);
+
 public:
   ALLOC_DELETED_CHAIN(CullableObject);
 
@@ -70,7 +69,6 @@ public:
 
 public:
   CPT(Geom) _geom;
-  PT(GeomMunger) _munger;
   CPT(GeomVertexData) _munged_data;
   CPT(RenderState) _state;
   CPT(TransformState) _internal_transform;
@@ -81,9 +79,6 @@ private:
 
   static CPT(RenderState) get_flash_cpu_state();
   static CPT(RenderState) get_flash_hardware_state();
-
-  INLINE void draw_inline(GraphicsStateGuardianBase *gsg,
-                          bool force, Thread *current_thread);
 
 private:
   // This class is used internally by munge_points_to_quads().
@@ -113,6 +108,7 @@ private:
   static FormatMap _format_map;
   static LightMutex _format_lock;
 
+  static PStatCollector _munge_pcollector;
   static PStatCollector _munge_geom_pcollector;
   static PStatCollector _munge_sprites_pcollector;
   static PStatCollector _munge_sprites_verts_pcollector;
@@ -124,13 +120,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
-#ifdef DO_MEMORY_USAGE
-    ReferenceCount::init_type();
-    register_type(_type_handle, "CullableObject",
-                  ReferenceCount::get_class_type());
-#else
     register_type(_type_handle, "CullableObject");
-#endif  // DO_MEMORY_USAGE
   }
 
 private:

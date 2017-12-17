@@ -900,7 +900,7 @@ class DirectSession(DirectObject):
             # If nothing specified, try selected node path
             nodePath = self.selected.last
         if nodePath:
-            nodePath.remove()
+            nodePath.removeNode()
 
     def removeAllSelected(self):
         self.selected.removeAll()

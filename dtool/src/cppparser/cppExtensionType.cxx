@@ -132,6 +132,14 @@ is_copy_constructible() const {
 }
 
 /**
+ * Returns true if the type is copy-assignable.
+ */
+bool CPPExtensionType::
+is_copy_assignable() const {
+  return (_type == T_enum || _type == T_enum_class || _type == T_enum_struct);
+}
+
+/**
  *
  */
 CPPDeclaration *CPPExtensionType::

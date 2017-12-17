@@ -20,10 +20,11 @@
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
+#include "extension.h"
 
 /**
- * This class exists to allow association of a Python function with the
- * AsyncTaskManager.
+ * This class exists to allow association of a Python function or coroutine
+ * with the AsyncTaskManager.
  */
 class PythonTask : public AsyncTask {
 PUBLISHED:
@@ -32,17 +33,26 @@ PUBLISHED:
   ALLOC_DELETED_CHAIN(PythonTask);
 
   void set_function(PyObject *function);
-  PyObject *get_function();
+  INLINE PyObject *get_function();
 
   void set_args(PyObject *args, bool append_task);
   PyObject *get_args();
 
   void set_upon_death(PyObject *upon_death);
-  PyObject *get_upon_death();
+  INLINE PyObject *get_upon_death();
 
   void set_owner(PyObject *owner);
-  PyObject *get_owner();
+  INLINE PyObject *get_owner() const;
 
+  INLINE void set_result(PyObject *result);
+
+public:
+  // This is exposed only for the result() function in asyncFuture_ext.cxx
+  // to use, which is why it is not published.
+  PyObject *get_result() const;
+  //PyObject *exception() const;
+
+PUBLISHED:
   int __setattr__(PyObject *self, PyObject *attr, PyObject *v);
   int __delattr__(PyObject *self, PyObject *attr);
   PyObject *__getattr__(PyObject *attr) const;
@@ -102,12 +112,21 @@ private:
 private:
   PyObject *_function;
   PyObject *_args;
-  bool _append_task;
   PyObject *_upon_death;
   PyObject *_owner;
-  bool _registered_to_owner;
+
+  PyObject *_exception;
+  PyObject *_exc_value;
+  PyObject *_exc_traceback;
 
   PyObject *_generator;
+  PyObject *_future_done;
+
+  bool _append_task;
+  bool _registered_to_owner;
+  mutable bool _retrieved_exception;
+
+  friend class Extension<AsyncFuture>;
 
 public:
   static TypeHandle get_class_type() {

@@ -12,6 +12,7 @@
  */
 
 #include "config_event.h"
+#include "asyncFuture.h"
 #include "asyncTask.h"
 #include "asyncTaskChain.h"
 #include "asyncTaskManager.h"
@@ -31,6 +32,7 @@ NotifyCategoryDef(event, "");
 NotifyCategoryDef(task, "");
 
 ConfigureFn(config_event) {
+  AsyncFuture::init_type();
   AsyncTask::init_type();
   AsyncTaskChain::init_type();
   AsyncTaskManager::init_type();

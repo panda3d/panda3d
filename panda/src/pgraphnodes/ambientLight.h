@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES AmbientLight : public LightNode {
 PUBLISHED:
-  AmbientLight(const string &name);
+  explicit AmbientLight(const string &name);
 
 protected:
   AmbientLight(const AmbientLight &copy);
@@ -33,7 +33,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual void write(ostream &out, int indent_level) const;
-  virtual bool is_ambient_light() const;
+  virtual bool is_ambient_light() const FINAL;
 
 PUBLISHED:
   virtual int get_class_priority() const;

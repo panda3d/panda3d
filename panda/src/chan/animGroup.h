@@ -37,18 +37,18 @@ protected:
 
 PUBLISHED:
   // This is the normal AnimGroup constructor.
-  AnimGroup(AnimGroup *parent, const string &name);
+  explicit AnimGroup(AnimGroup *parent, const string &name);
   virtual ~AnimGroup();
 
   int get_num_children() const;
   AnimGroup *get_child(int n) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
 
-  MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
-
   AnimGroup *get_child_named(const string &name) const;
   AnimGroup *find_child(const string &name) const;
   void sort_descendants();
+
+  MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
 
 public:
   virtual TypeHandle get_value_type() const;

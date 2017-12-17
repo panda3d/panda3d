@@ -16,8 +16,6 @@
 
 #include "pandabase.h"
 
-#ifdef DO_MEMORY_USAGE
-
 class MemoryInfo;
 
 /**
@@ -54,7 +52,5 @@ private:
 INLINE ostream &operator << (ostream &out, const MemoryUsagePointerCounts &c);
 
 #include "memoryUsagePointerCounts.I"
-
-#endif  // DO_MEMORY_USAGE
 
 #endif

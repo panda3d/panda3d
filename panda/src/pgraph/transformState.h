@@ -234,9 +234,7 @@ private:
   static CPT(TransformState) return_unique(TransformState *state);
 
   CPT(TransformState) do_compose(const TransformState *other) const;
-  CPT(TransformState) store_compose(const TransformState *other, const TransformState *result);
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
-  CPT(TransformState) store_invert_compose(const TransformState *other, const TransformState *result);
   void detect_and_break_cycles();
   static bool r_detect_cycles(const TransformState *start_state,
                               const TransformState *current_state,
@@ -255,9 +253,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const TransformState *, Empty, indirect_equals_hash<const TransformState *> > States;
+  typedef SimpleHashMap<const TransformState *, nullptr_t, indirect_equals_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
@@ -288,8 +284,8 @@ private:
   };
 
   typedef SimpleHashMap<const TransformState *, Composition, pointer_hash> CompositionCache;
-  CompositionCache _composition_cache;
-  CompositionCache _invert_composition_cache;
+  mutable CompositionCache _composition_cache;
+  mutable CompositionCache _invert_composition_cache;
 
   // This is used to mark nodes as we visit them to detect cycles.
   UpdateSeq _cycle_detect;
@@ -297,7 +293,7 @@ private:
 
   // This keeps track of our current position through the garbage collection
   // cycle.
-  static int _garbage_index;
+  static size_t _garbage_index;
 
   static bool _uniquify_matrix;
 
@@ -407,6 +403,10 @@ private:
 
   friend class Extension<TransformState>;
 };
+
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<TransformState>::update_type(To *ptr) {}
 
 INLINE ostream &operator << (ostream &out, const TransformState &state) {
   state.output(out);

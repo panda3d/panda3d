@@ -19,6 +19,10 @@ get_pfm() {
   return _pfm;
 }
 
+INLINE PfmVizzer::
+~PfmVizzer() {
+}
+
 /**
  * Returns the reference to the PfmFile manipulated by this PfmVizzer.
  */

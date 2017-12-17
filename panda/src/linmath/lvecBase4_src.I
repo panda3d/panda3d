@@ -119,14 +119,6 @@ operator [](int i) {
 }
 
 /**
- * Returns 4: the number of components of a LVecBase4.
- */
-CONSTEXPR int FLOATNAME(LVecBase4)::
-size() {
-  return 4;
-}
-
-/**
  * Returns true if any component of the vector is not-a-number, false
  * otherwise.
  */
@@ -286,14 +278,6 @@ add_w(FLOATTYPE value) {
 INLINE_LINMATH const FLOATTYPE *FLOATNAME(LVecBase4)::
 get_data() const {
   return &_v(0);
-}
-
-/**
- * Returns the number of elements in the vector, four.
- */
-CONSTEXPR int FLOATNAME(LVecBase4)::
-get_num_components() {
-  return 4;
 }
 
 /**
@@ -923,9 +907,30 @@ FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy) {
  *
  */
 INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
+FLOATNAME(UnalignedLVecBase4)(FLOATTYPE fill_value) {
+  fill(fill_value);
+}
+
+/**
+ *
+ */
+INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
 FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
   TAU_PROFILE("UnalignedLVecBase4::UnalignedLVecBase4(FLOATTYPE, ...)", " ", TAU_USER);
   set(x, y, z, w);
+}
+
+/**
+ * Sets each element of the vector to the indicated fill_value.  This is
+ * particularly useful for initializing to zero.
+ */
+INLINE_LINMATH void FLOATNAME(UnalignedLVecBase4)::
+fill(FLOATTYPE fill_value) {
+  TAU_PROFILE("void UnalignedLVecBase4::fill()", " ", TAU_USER);
+  _v(0) = fill_value;
+  _v(1) = fill_value;
+  _v(2) = fill_value;
+  _v(3) = fill_value;
 }
 
 /**
@@ -959,26 +964,10 @@ operator [](int i) {
 }
 
 /**
- * Returns 4: the number of components of a LVecBase4.
- */
-CONSTEXPR int FLOATNAME(UnalignedLVecBase4)::
-size() {
-  return 4;
-}
-
-/**
  * Returns the address of the first of the three data elements in the vector.
  * The remaining elements occupy the next positions consecutively in memory.
  */
 INLINE_LINMATH const FLOATTYPE *FLOATNAME(UnalignedLVecBase4)::
 get_data() const {
   return &_v(0);
-}
-
-/**
- * Returns the number of elements in the vector, 4.
- */
-CONSTEXPR int FLOATNAME(UnalignedLVecBase4)::
-get_num_components() {
-  return 4;
 }

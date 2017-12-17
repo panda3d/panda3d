@@ -35,7 +35,8 @@ class OnscreenText(NodePath):
                  font = None,
                  parent = None,
                  sort = 0,
-                 mayChange = True):
+                 mayChange = True,
+                 direction = None):
         """
         Make a text node from string, put it into the 2d sg and set it
         up with all the indicated parameters.
@@ -95,6 +96,9 @@ class OnscreenText(NodePath):
           mayChange: pass true if the text or its properties may need
               to be changed at runtime, false if it is static once
               created (which leads to better memory optimization).
+
+          direction: this can be set to 'ltr' or 'rtl' to override the
+              direction of the text.
         """
         if parent == None:
             parent = aspect2d
@@ -191,6 +195,17 @@ class OnscreenText(NodePath):
             # If we have a frame color, create a frame.
             textNode.setFrameColor(frame[0], frame[1], frame[2], frame[3])
             textNode.setFrameAsMargin(0.1, 0.1, 0.1, 0.1)
+
+        if direction is not None:
+            if isinstance(direction, str):
+                direction = direction.lower()
+                if direction == 'rtl':
+                    direction = TextProperties.D_rtl
+                elif direction == 'ltr':
+                    direction = TextProperties.D_ltr
+                else:
+                    raise ValueError('invalid direction')
+            textNode.setDirection(direction)
 
         # Create a transform for the text for our scale and position.
         # We'd rather do it here, on the text itself, rather than on

@@ -108,16 +108,25 @@ output_c_string(ostream &out, const string &string_name,
  */
 EVP_PKEY *
 generate_key() {
-  RSA *rsa = RSA_generate_key(1024, 7, NULL, NULL);
-
-  if (rsa == (RSA *)NULL) {
+  RSA *rsa = RSA_new();
+  BIGNUM *e = BN_new();
+  if (rsa == nullptr || e == nullptr) {
     output_ssl_errors();
     exit(1);
   }
 
+  BN_set_word(e, 7);
+
+  if (!RSA_generate_key_ex(rsa, 1024, e, nullptr)) {
+    BN_free(e);
+    RSA_free(rsa);
+    output_ssl_errors();
+    exit(1);
+  }
+  BN_free(e);
+
   EVP_PKEY *pkey = EVP_PKEY_new();
   EVP_PKEY_assign_RSA(pkey, rsa);
-
   return pkey;
 }
 
@@ -161,7 +170,7 @@ write_public_keys(Filename outfile) {
       }
 
       output_c_string(out, "prc_pubkey", i, mbio);
-      BIO_reset(mbio);
+      (void)BIO_reset(mbio);
       out << "\n";
     }
   }

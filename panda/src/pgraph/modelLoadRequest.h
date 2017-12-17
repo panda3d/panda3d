@@ -11,8 +11,8 @@
  * @date 2006-08-29
  */
 
-#ifndef MODELLOADREQUEST
-#define MODELLOADREQUEST
+#ifndef MODELLOADREQUEST_H
+#define MODELLOADREQUEST_H
 
 #include "pandabase.h"
 
@@ -22,6 +22,7 @@
 #include "pandaNode.h"
 #include "pointerTo.h"
 #include "loader.h"
+#include "nodePath.h"
 
 /**
  * A class object that manages a single asynchronous model load request.
@@ -33,10 +34,10 @@ public:
   ALLOC_DELETED_CHAIN(ModelLoadRequest);
 
 PUBLISHED:
-  ModelLoadRequest(const string &name,
-                   const Filename &filename,
-                   const LoaderOptions &options,
-                   Loader *loader);
+  explicit ModelLoadRequest(const string &name,
+                            const Filename &filename,
+                            const LoaderOptions &options,
+                            Loader *loader);
 
   INLINE const Filename &get_filename() const;
   INLINE const LoaderOptions &get_options() const;
@@ -48,8 +49,6 @@ PUBLISHED:
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(options, get_options);
   MAKE_PROPERTY(loader, get_loader);
-  MAKE_PROPERTY(ready, is_ready);
-  MAKE_PROPERTY(model, get_model);
 
 protected:
   virtual DoneStatus do_task();
@@ -58,8 +57,6 @@ private:
   Filename _filename;
   LoaderOptions _options;
   PT(Loader) _loader;
-  bool _is_ready;
-  PT(PandaNode) _model;
 
 public:
   static TypeHandle get_class_type() {

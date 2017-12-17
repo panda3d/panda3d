@@ -22,13 +22,6 @@ ButtonHandle(int index) : _index(index) {
 /**
  *
  */
-INLINE ButtonHandle::
-ButtonHandle(const ButtonHandle &copy) : _index(copy._index) {
-}
-
-/**
- *
- */
 INLINE bool ButtonHandle::
 operator == (const ButtonHandle &other) const {
   return (_index == other._index);

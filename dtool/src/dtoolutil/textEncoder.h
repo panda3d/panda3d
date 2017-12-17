@@ -46,6 +46,7 @@ PUBLISHED:
 
   INLINE static void set_default_encoding(Encoding encoding);
   INLINE static Encoding get_default_encoding();
+  MAKE_PROPERTY(default_encoding, get_default_encoding, set_default_encoding);
 
   INLINE void set_text(const string &text);
   INLINE void set_text(const string &text, Encoding encoding);

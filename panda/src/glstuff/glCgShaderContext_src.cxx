@@ -145,7 +145,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 
     if (cgGetParameterBaseResource(p) == CG_ATTR0) {
       // The Cg toolkit claims that it is bound to a generic vertex attribute.
-      if (_glsl_program != 0) {
+      if (_glgsg->has_fixed_function_pipeline() && _glsl_program != 0) {
         // This is where the Cg glslv compiler lies, making the stupid
         // assumption that we're using an NVIDIA card where generic attributes
         // are aliased with conventional vertex attributes.  Instead, it
@@ -246,7 +246,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
       // A conventional texture coordinate set.
       loc = CA_texcoord + cgGetParameterResourceIndex(p);
 
-    } else {
+    } else if (_glgsg->has_fixed_function_pipeline()) {
       // Some other conventional vertex attribute.
       switch (res) {
       case CG_POSITION0:
@@ -276,6 +276,14 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
         GLCAT.error(false) << ".\n";
         loc = CA_unknown;
       }
+    } else {
+      GLCAT.error()
+        << "Cg varying " << cgGetParameterName(p);
+      if (cgGetParameterSemantic(p)) {
+        GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
+      }
+      GLCAT.error(false) << " is bound to a conventional vertex attribute, "
+                            "but the compatibility profile is not enabled.\n";
     }
 
 #ifndef NDEBUG
@@ -350,6 +358,20 @@ release_resources() {
 }
 
 /**
+ * Returns true if the shader is "valid", ie, if the compilation was
+ * successful.  The compilation could fail if there is a syntax error in the
+ * shader, or if the current video card isn't shader-capable, or if no shader
+ * languages are compiled into panda.
+ */
+bool CLP(CgShaderContext)::
+valid() {
+  if (_shader == nullptr || _shader->get_error_flag()) {
+    return false;
+  }
+  return (_cg_program != 0);
+}
+
+/**
  * This function is to be called to enable a new shader.  It also initializes
  * all of the shader's input parameters.
  */
@@ -391,6 +413,7 @@ unbind() {
 void CLP(CgShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
+                        const TransformState *camera_transform,
                         const TransformState *projection_transform) {
 
   if (!valid()) {
@@ -402,6 +425,10 @@ set_state_and_transform(const RenderState *target_rs,
 
   if (_modelview_transform != modelview_transform) {
     _modelview_transform = modelview_transform;
+    altered |= (Shader::SSD_transform & ~Shader::SSD_view_transform);
+  }
+  if (_camera_transform != camera_transform) {
+    _camera_transform = camera_transform;
     altered |= Shader::SSD_transform;
   }
   if (_projection_transform != projection_transform) {
@@ -916,8 +943,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       } else {
         // There is no vertex column with this name; disable the attribute
         // array.
-#ifdef SUPPORT_FIXED_FUNCTION
-        if (p == 0) {
+        if (_glgsg->has_fixed_function_pipeline() && p == 0) {
           // NOTE: if we disable attribute 0 in compatibility profile, the
           // object will disappear.  In GLSL we fix this by forcing the vertex
           // column to be at 0, but we don't have control over that with Cg.
@@ -930,9 +956,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             _glgsg->_glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
           }
 
-        } else
-#endif  // SUPPORT_FIXED_FUNCTION
-        if (p >= 0) {
+        } else if (p >= 0) {
           _glgsg->disable_vertex_attrib_array(p);
 
           if (p == _color_attrib_index) {
@@ -1068,8 +1092,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     if (tex.is_null()) {
       // Apply a white texture in order to make it easier to use a shader that
       // takes a texture on a model that doesn't have a texture applied.
-      _glgsg->set_active_texture_stage(i);
-      _glgsg->apply_white_texture();
+      _glgsg->apply_white_texture(i);
       continue;
     }
 

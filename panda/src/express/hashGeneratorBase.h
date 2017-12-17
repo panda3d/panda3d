@@ -30,7 +30,6 @@
 class EXPCL_PANDAEXPRESS HashGeneratorBase {
 public:
   INLINE HashGeneratorBase();
-  INLINE ~HashGeneratorBase();
 
   INLINE size_t get_hash() const;
 

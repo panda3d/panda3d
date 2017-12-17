@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Implements a pop-up menu containing multiple clickable options."""
 
 __all__ = ['DirectOptionMenu']
 

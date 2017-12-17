@@ -513,22 +513,22 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   nassertv(current_shader_attrib != NULL);
 
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.terrain_size", LVecBase2i(_size)) );
+    ShaderInput("ShaderTerrainMesh.terrain_size", LVecBase2i(_size)));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.chunk_size", LVecBase2i(_chunk_size)));
+    ShaderInput("ShaderTerrainMesh.chunk_size", LVecBase2i(_chunk_size)));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.view_index", LVecBase2i(_current_view_index)));
+    ShaderInput("ShaderTerrainMesh.view_index", LVecBase2i(_current_view_index)));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.data_texture", _data_texture));
+    ShaderInput("ShaderTerrainMesh.data_texture", _data_texture));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.heightfield", _heightfield_tex));
+    ShaderInput("ShaderTerrainMesh.heightfield", _heightfield_tex));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_instance_count(
     traversal_data.emitted_chunks);
 
   state = state->set_attrib(current_shader_attrib, 10000);
 
   // Emit chunk
-  CullableObject *object = new CullableObject(_chunk_geom, state, modelview_transform);
+  CullableObject *object = new CullableObject(_chunk_geom, move(state), move(modelview_transform));
   trav->get_cull_handler()->record_object(object, trav);
 
   // After rendering, increment the view index

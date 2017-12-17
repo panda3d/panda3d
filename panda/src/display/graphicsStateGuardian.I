@@ -539,6 +539,14 @@ get_supports_depth_stencil() const {
 }
 
 /**
+ * Returns true if this particular GSG supports luminance textures.
+ */
+INLINE bool GraphicsStateGuardian::
+get_supports_luminance_texture() const {
+  return _supports_luminance_texture;
+}
+
+/**
  * Returns true if this particular GSG supports the filter mode FT_shadow for
  * depth textures.
  */

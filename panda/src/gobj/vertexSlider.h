@@ -36,7 +36,7 @@ class SliderTable;
  */
 class EXPCL_PANDA_GOBJ VertexSlider : public TypedWritableReferenceCount {
 PUBLISHED:
-  VertexSlider(const InternalName *name);
+  explicit VertexSlider(const InternalName *name);
   virtual ~VertexSlider();
 
   INLINE const InternalName *get_name() const;

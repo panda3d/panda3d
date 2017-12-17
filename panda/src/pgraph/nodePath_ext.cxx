@@ -13,6 +13,8 @@
 
 #include "nodePath_ext.h"
 #include "typedWritable_ext.h"
+#include "shaderInput_ext.h"
+#include "shaderAttrib.h"
 
 #ifdef HAVE_PYTHON
 
@@ -24,6 +26,8 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3d;
 #else
 extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 #endif
+extern struct Dtool_PyTypedObject Dtool_NodePath;
+extern struct Dtool_PyTypedObject Dtool_PandaNode;
 #endif  // CPPPARSER
 
 /**
@@ -110,14 +114,14 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
       // It's OK if there's no bamWriter.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_writer, &Dtool_BamWriter, (void **)&writer);
+      DtoolInstance_GetPointer(py_writer, writer, Dtool_BamWriter);
       Py_DECREF(py_writer);
     }
   }
 
   // We have a non-empty NodePath.
 
-  string bam_stream;
+  vector_uchar bam_stream;
   if (!_this->encode_to_bam_stream(bam_stream, writer)) {
     ostringstream stream;
     stream << "Could not bamify " << _this;
@@ -127,7 +131,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   }
 
   // Start by getting this class object.
-  PyObject *this_class = PyObject_Type(self);
+  PyObject *this_class = (PyObject *)Py_TYPE(self);
   if (this_class == NULL) {
     return NULL;
   }
@@ -140,29 +144,50 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream_persist");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream_persist()");
-      Py_DECREF(this_class);
       return NULL;
     }
 
   } else {
     // The traditional pickle support: call the non-persistent version of this
     // function.
-
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream()");
-      Py_DECREF(this_class);
       return NULL;
     }
   }
 
-#if PY_MAJOR_VERSION >= 3
-  PyObject *result = Py_BuildValue("(O(y#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#else
-  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#endif
-  Py_DECREF(func);
-  Py_DECREF(this_class);
+  // PyTuple_SET_ITEM conveniently borrows the reference it is passed.
+  PyObject *args = PyTuple_New(1);
+  PyTuple_SET_ITEM(args, 0, Dtool_WrapValue(bam_stream));
+
+  PyObject *tuple = PyTuple_New(2);
+  PyTuple_SET_ITEM(tuple, 0, func);
+  PyTuple_SET_ITEM(tuple, 1, args);
+  return tuple;
+}
+
+/**
+ * Returns the associated node's tags.
+ */
+PyObject *Extension<NodePath>::
+get_tags() const {
+  // An empty NodePath returns None
+  if (_this->is_empty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  // Just call PandaNode.tags rather than defining a whole new interface.
+  PT(PandaNode) node = _this->node();
+  PyObject *py_node = DTool_CreatePyInstanceTyped
+    ((void *)node.p(), Dtool_PandaNode, true, false, node->get_type_index());
+
+  // DTool_CreatePyInstanceTyped() steals a C++ reference.
+  node.cheat() = nullptr;
+
+  PyObject *result = PyObject_GetAttrString(py_node, "tags");
+  Py_DECREF(py_node);
   return result;
 }
 
@@ -187,15 +212,15 @@ find_net_python_tag(PyObject *key) const {
  * This wrapper is defined as a global function to suit pickle's needs.
  */
 NodePath
-py_decode_NodePath_from_bam_stream(const string &data) {
-  return py_decode_NodePath_from_bam_stream_persist(NULL, data);
+py_decode_NodePath_from_bam_stream(vector_uchar data) {
+  return py_decode_NodePath_from_bam_stream_persist(nullptr, move(data));
 }
 
 /**
  * This wrapper is defined as a global function to suit pickle's needs.
  */
 NodePath
-py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data) {
+py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar data) {
   BamReader *reader = NULL;
   if (unpickler != NULL) {
     PyObject *py_reader = PyObject_GetAttrString(unpickler, "bamReader");
@@ -203,12 +228,80 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &da
       // It's OK if there's no bamReader.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_reader, &Dtool_BamReader, (void **)&reader);
+      DtoolInstance_GetPointer(py_reader, reader, Dtool_BamReader);
       Py_DECREF(py_reader);
     }
   }
 
-  return NodePath::decode_from_bam_stream(data, reader);
+  return NodePath::decode_from_bam_stream(move(data), reader);
+}
+
+/**
+ * Sets a single shader input.
+ */
+void Extension<NodePath>::
+set_shader_input(CPT_InternalName name, PyObject *value, int priority) {
+  PT(PandaNode) node = _this->node();
+  CPT(RenderAttrib) prev_attrib = node->get_attrib(ShaderAttrib::get_class_slot());
+  PT(ShaderAttrib) attrib;
+  if (prev_attrib == nullptr) {
+    attrib = new ShaderAttrib();
+  } else {
+    attrib = new ShaderAttrib(*(const ShaderAttrib *)prev_attrib.p());
+  }
+
+  ShaderInput &input = attrib->_inputs[name];
+  invoke_extension(&input).__init__(move(name), value, priority);
+
+  if (!_PyErr_OCCURRED()) {
+    node->set_attrib(ShaderAttrib::return_new(attrib));
+  }
+}
+
+/**
+ * Sets multiple shader inputs at the same time.  This can be significantly
+ * more efficient if many inputs need to be set at the same time.
+ */
+void Extension<NodePath>::
+set_shader_inputs(PyObject *args, PyObject *kwargs) {
+  if (PyObject_Size(args) > 0) {
+    Dtool_Raise_TypeError("NodePath.set_shader_inputs takes only keyword arguments");
+    return;
+  }
+
+  PT(PandaNode) node = _this->node();
+  CPT(RenderAttrib) prev_attrib = node->get_attrib(ShaderAttrib::get_class_slot());
+  PT(ShaderAttrib) attrib;
+  if (prev_attrib == nullptr) {
+    attrib = new ShaderAttrib();
+  } else {
+    attrib = new ShaderAttrib(*(const ShaderAttrib *)prev_attrib.p());
+  }
+
+  PyObject *key, *value;
+  Py_ssize_t pos = 0;
+
+  while (PyDict_Next(kwargs, &pos, &key, &value)) {
+    char *buffer;
+    Py_ssize_t length;
+#if PY_MAJOR_VERSION >= 3
+    buffer = (char *)PyUnicode_AsUTF8AndSize(key, &length);
+    if (buffer == nullptr) {
+#else
+    if (PyString_AsStringAndSize(key, &buffer, &length) == -1) {
+#endif
+      Dtool_Raise_TypeError("NodePath.set_shader_inputs accepts only string keywords");
+      return;
+    }
+
+    CPT_InternalName name(string(buffer, length));
+    ShaderInput &input = attrib->_inputs[name];
+    invoke_extension(&input).__init__(move(name), value);
+  }
+
+  if (!_PyErr_OCCURRED()) {
+    node->set_attrib(ShaderAttrib::return_new(attrib));
+  }
 }
 
 /**

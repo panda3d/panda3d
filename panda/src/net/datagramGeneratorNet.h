@@ -32,7 +32,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<Datagram>);
  */
 class EXPCL_PANDA_NET DatagramGeneratorNet : public DatagramGenerator, public ConnectionReader, public QueuedReturn<Datagram> {
 PUBLISHED:
-  DatagramGeneratorNet(ConnectionManager *manager, int num_threads);
+  explicit DatagramGeneratorNet(ConnectionManager *manager, int num_threads);
   virtual ~DatagramGeneratorNet();
 
   // Inherited from DatagramGenerator

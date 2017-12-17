@@ -31,26 +31,6 @@ BitArray(WordType init_value) {
 }
 
 /**
- *
- */
-INLINE BitArray::
-BitArray(const BitArray &copy) :
-  _array(copy._array),
-  _highest_bits(copy._highest_bits)
-{
-}
-
-/**
- *
- */
-INLINE BitArray &BitArray::
-operator = (const BitArray &copy) {
-  _array = copy._array;
-  _highest_bits = copy._highest_bits;
-  return *this;
-}
-
-/**
  * Returns a BitArray with an infinite array of bits, all on.
  */
 INLINE BitArray BitArray::
@@ -96,13 +76,6 @@ range(int low_bit, int size) {
   BitArray result;
   result.set_range(low_bit, size);
   return result;
-}
-
-/**
- *
- */
-INLINE BitArray::
-~BitArray() {
 }
 
 /**

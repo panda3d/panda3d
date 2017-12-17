@@ -31,7 +31,7 @@ public:
   typedef T To;
 
 protected:
-  ALWAYS_INLINE PointerToBase() DEFAULT_CTOR;
+  ALWAYS_INLINE_CONSTEXPR PointerToBase() NOEXCEPT DEFAULT_CTOR;
   INLINE PointerToBase(To *ptr);
   INLINE PointerToBase(const PointerToBase<T> &copy);
   INLINE ~PointerToBase();
@@ -44,9 +44,7 @@ protected:
   INLINE void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
 
-#ifdef DO_MEMORY_USAGE
-  void update_type(To *ptr);
-#endif  // DO_MEMORY_USAGE
+  INLINE void update_type(To *ptr);
 
   // No assignment or retrieval functions are declared in PointerToBase,
   // because we will have to specialize on const vs.  non-const later.

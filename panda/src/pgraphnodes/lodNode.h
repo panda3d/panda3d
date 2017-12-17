@@ -27,7 +27,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES LODNode : public PandaNode {
 PUBLISHED:
-  INLINE LODNode(const string &name);
+  INLINE explicit LODNode(const string &name);
 
   static PT(LODNode) make_default_lod(const string &name);
 

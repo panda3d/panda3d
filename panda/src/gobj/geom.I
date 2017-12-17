@@ -51,7 +51,7 @@ get_geom_rendering() const {
 INLINE CPT(GeomVertexData) Geom::
 get_vertex_data(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_data.get_read_pointer();
+  return cdata->_data.get_read_pointer(current_thread);
 }
 
 /**
@@ -68,7 +68,7 @@ is_empty() const {
  * Returns the number of GeomPrimitive objects stored within the Geom, each of
  * which represents a number of primitives of a particular type.
  */
-INLINE int Geom::
+INLINE size_t Geom::
 get_num_primitives() const {
   CDReader cdata(_cycler);
   return cdata->_primitives.size();
@@ -80,9 +80,9 @@ get_num_primitives() const {
  * or set_primitive() if you want to modify it.
  */
 INLINE CPT(GeomPrimitive) Geom::
-get_primitive(int i) const {
+get_primitive(size_t i) const {
   CDReader cdata(_cycler);
-  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  nassertr(i < cdata->_primitives.size(), nullptr);
   return cdata->_primitives[i].get_read_pointer();
 }
 
@@ -95,13 +95,26 @@ get_primitive(int i) const {
  * away other changes you might have recently made in an upstream thread.
  */
 INLINE PT(GeomPrimitive) Geom::
-modify_primitive(int i) {
+modify_primitive(size_t i) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  nassertr(i < cdata->_primitives.size(), NULL);
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
   return cdata->_primitives[i].get_write_pointer();
+}
+
+/**
+ * Inserts a new GeomPrimitive structure to the Geom object.  This specifies a
+ * particular subset of vertices that are used to define geometric primitives
+ * of the indicated type.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
+ */
+INLINE void Geom::
+add_primitive(const GeomPrimitive *primitive) {
+  insert_primitive((size_t)-1, primitive);
 }
 
 /**
@@ -514,6 +527,18 @@ CData(const Geom::CData &copy) :
 {
 }
 
+
+/**
+ *
+ */
+INLINE GeomPipelineReader::
+GeomPipelineReader(Thread *current_thread) :
+  _object(nullptr),
+  _current_thread(current_thread),
+  _cdata(nullptr)
+{
+}
+
 /**
  *
  */
@@ -532,39 +557,51 @@ GeomPipelineReader(const Geom *object, Thread *current_thread) :
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE GeomPipelineReader::
-GeomPipelineReader(const GeomPipelineReader &) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomPipelineReader::
-operator = (const GeomPipelineReader &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE GeomPipelineReader::
 ~GeomPipelineReader() {
 #ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
+  if (_object != nullptr) {
+    nassertv(_object->test_ref_count_nonzero());
+  }
 #endif // _DEBUG
   // _object->_cycler.release_read(_cdata);
 
 #ifdef DO_PIPELINING
-  unref_delete((CycleData *)_cdata);
+  if (_cdata != nullptr) {
+    unref_delete((CycleData *)_cdata);
+  }
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
   _object = NULL;
   _cdata = NULL;
 #endif  // _DEBUG
+}
+
+/**
+ *
+ */
+INLINE void GeomPipelineReader::
+set_object(const Geom *object) {
+  if (object != _object) {
+    // _object->_cycler.release_read(_cdata);
+
+#ifdef DO_PIPELINING
+    if (_cdata != NULL) {
+      unref_delete((CycleData *)_cdata);
+    }
+#endif  // DO_PIPELINING
+
+    _cdata = object->_cycler.read_unlocked(_current_thread);
+
+#ifdef DO_PIPELINING
+    _cdata->ref();
+#endif  // DO_PIPELINING
+
+    _object = object;
+  }
 }
 
 /**

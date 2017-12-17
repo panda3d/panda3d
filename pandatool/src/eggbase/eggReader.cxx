@@ -193,7 +193,7 @@ handle_args(ProgramBase::Args &args) {
     file_path.append_directory(filename.get_dirname());
 
     if (_force_complete) {
-      if (!file_data.load_externals()) {
+      if (!file_data.load_externals(file_path)) {
         exit(1);
       }
     }

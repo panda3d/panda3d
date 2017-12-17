@@ -61,26 +61,30 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  */
 PointLight::
 PointLight(const string &name) :
-  LightLensNode(name),
-  _has_specular_color(false)
-{
+  LightLensNode(name) {
   PT(Lens) lens;
   lens = new PerspectiveLens(90, 90);
+  lens->set_interocular_distance(0);
   lens->set_view_vector(1, 0, 0, 0, -1, 0);
   set_lens(0, lens);
   lens = new PerspectiveLens(90, 90);
+  lens->set_interocular_distance(0);
   lens->set_view_vector(-1, 0, 0, 0, -1, 0);
   set_lens(1, lens);
   lens = new PerspectiveLens(90, 90);
+  lens->set_interocular_distance(0);
   lens->set_view_vector(0, 1, 0, 0, 0, 1);
   set_lens(2, lens);
   lens = new PerspectiveLens(90, 90);
+  lens->set_interocular_distance(0);
   lens->set_view_vector(0, -1, 0, 0, 0, -1);
   set_lens(3, lens);
   lens = new PerspectiveLens(90, 90);
+  lens->set_interocular_distance(0);
   lens->set_view_vector(0, 0, 1, 0, -1, 0);
   set_lens(4, lens);
   lens = new PerspectiveLens(90, 90);
+  lens->set_interocular_distance(0);
   lens->set_view_vector(0, 0, -1, 0, -1, 0);
   set_lens(5, lens);
 }
@@ -92,7 +96,6 @@ PointLight(const string &name) :
 PointLight::
 PointLight(const PointLight &copy) :
   LightLensNode(copy),
-  _has_specular_color(copy._has_specular_color),
   _cycler(copy._cycler)
 {
 }

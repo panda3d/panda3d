@@ -51,6 +51,9 @@ PUBLISHED:
 
   static void make_texcoords_for_patch(Geom *geom, int resx, int resy);
 
+  MAKE_PROPERTY(sb_index, get_sb_index);
+  MAKE_PROPERTY(sb_flip, get_sb_flip);
+
 private:
   static PT(InternalName) _sb_index;
   static PT(InternalName) _sb_flip;

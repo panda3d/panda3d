@@ -41,12 +41,12 @@ PUBLISHED:
 
   AsyncTask *find_task(const string &name) const;
 
-  int get_num_tasks() const;
-  AsyncTask *get_task(int index) const;
+  size_t get_num_tasks() const;
+  AsyncTask *get_task(size_t index) const;
   MAKE_SEQ(get_tasks, get_num_tasks, get_task);
-  void remove_task(int index);
-  AsyncTask *operator [] (int index) const;
-  int size() const;
+  void remove_task(size_t index);
+  AsyncTask *operator [] (size_t index) const;
+  size_t size() const;
   INLINE void operator += (const AsyncTaskCollection &other);
   INLINE AsyncTaskCollection operator + (const AsyncTaskCollection &other) const;
 

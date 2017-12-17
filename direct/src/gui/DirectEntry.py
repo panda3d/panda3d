@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""Contains the DirectEntry class, a type of DirectGUI widget that accepts
+text entered using the keyboard."""
 
 __all__ = ['DirectEntry']
 

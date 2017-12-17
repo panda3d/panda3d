@@ -28,7 +28,7 @@ class EXPCL_DTOOLCONFIG StreamReader {
 public:
   INLINE StreamReader(istream &in);
 PUBLISHED:
-  INLINE StreamReader(istream *in, bool owns_stream);
+  INLINE explicit StreamReader(istream *in, bool owns_stream);
   INLINE StreamReader(const StreamReader &copy);
   INLINE void operator = (const StreamReader &copy);
   INLINE ~StreamReader();

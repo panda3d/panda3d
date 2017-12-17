@@ -22,6 +22,7 @@
 #include "cppGlobals.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
+#include "pystub.h"
 #include <stdlib.h>
 
 CPPParser parser;
@@ -193,6 +194,8 @@ show_nested_types(const string &str) {
 
 int
 main(int argc, char **argv) {
+  pystub();
+
   extern char *optarg;
   extern int optind;
   const char *optstr = "I:S:D:o:l:vp";

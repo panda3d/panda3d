@@ -42,14 +42,8 @@ pset<FmodAudioManager *> FmodAudioManager::_all_managers;
 
 bool FmodAudioManager::_system_is_valid = false;
 
-
-// This sets the distance factor for 3D audio to use feet.  FMOD uses meters
-// by default.  Since Panda use feet we need to compensate for that with a
-// factor of 3.28 This can be overwritten.  You just need to call
-// audio_3d_set_distance_factor(PN_stdfloat factor) and set your new factor.
-
 PN_stdfloat FmodAudioManager::_doppler_factor = 1;
-PN_stdfloat FmodAudioManager::_distance_factor = 3.28;
+PN_stdfloat FmodAudioManager::_distance_factor = 1;
 PN_stdfloat FmodAudioManager::_drop_off_factor = 1;
 
 
@@ -99,6 +93,8 @@ FmodAudioManager() {
   _up.x = 0;
   _up.y = 0;
   _up.z = 0;
+
+  _active = true;
 
   _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
 
@@ -424,8 +420,8 @@ get_sound(const string &file_name, bool positional, int) {
   vfs->resolve_filename(path, get_model_path());
 
   // Build a new AudioSound from the audio data.
-  PT(AudioSound) audioSound = 0;
-  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional );
+  PT(AudioSound) audioSound;
+  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional);
 
   _all_sounds.insert(fmodAudioSound);
 
@@ -447,7 +443,7 @@ get_sound(MovieAudio *source, bool positional, int) {
  * This is to query if you are using a MultiChannel Setup.
  */
 int FmodAudioManager::
-getSpeakerSetup() {
+get_speaker_setup() {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerMode;
@@ -502,7 +498,7 @@ getSpeakerSetup() {
  * init or re-init the AudioManagers after Panda is running.
  */
 void FmodAudioManager::
-setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
+set_speaker_setup(AudioManager::SpeakerModeCategory cat) {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;

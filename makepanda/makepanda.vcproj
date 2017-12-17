@@ -2371,12 +2371,9 @@
 			</Filter>
 			<Filter Name="gsgbase">
 				<File RelativePath="..\panda\src\gsgbase\graphicsOutputBase.cxx"></File>
-				<File RelativePath="..\panda\src\gsgbase\displayRegionBase.h"></File>
-				<File RelativePath="..\panda\src\gsgbase\displayRegionBase.I"></File>
 				<File RelativePath="..\panda\src\gsgbase\gsgbase_composite.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\config_gsgbase.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\graphicsOutputBase.I"></File>
-				<File RelativePath="..\panda\src\gsgbase\displayRegionBase.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\gsgbase_composite1.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\config_gsgbase.h"></File>
 				<File RelativePath="..\panda\src\gsgbase\test_gsgbase.cxx"></File>

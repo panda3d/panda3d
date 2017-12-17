@@ -58,22 +58,14 @@
 #pragma warning (disable : 4267)
 /* C4577: 'noexcept' used with no exception handling mode specified */
 #pragma warning (disable : 4577)
-
-#if _MSC_VER >= 1300
- #if _MSC_VER >= 1310
-   #define USING_MSVC7_1
-// #pragma message("VC 7.1")
- #else
-// #pragma message("VC 7.0")
- #endif
-#define USING_MSVC7
-#else
-// #pragma message("VC 6.0")
-#endif
 #endif  /* WIN32_VC */
 
 #ifndef __has_builtin
 #define __has_builtin(x) 0
+#endif
+
+#ifndef __has_attribute
+#define __has_attribute(x) 0
 #endif
 
 // Use NODEFAULT to optimize a switch() stmt to tell MSVC to automatically go
@@ -89,6 +81,26 @@
 #define NODEFAULT
 #endif
 
+// Use this to hint the compiler that a memory address is aligned.
+#if __has_builtin(__builtin_assume_aligned) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+#define ASSUME_ALIGNED(x, y) (__builtin_assume_aligned(x, y))
+#else
+#define ASSUME_ALIGNED(x, y) (x)
+#endif
+
+#if __has_attribute(assume_aligned) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)
+#define RETURNS_ALIGNED(x) __attribute__((assume_aligned(x)))
+#else
+#define RETURNS_ALIGNED(x)
+#endif
+
+#ifdef __GNUC__
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define LIKELY(x) (x)
+#define UNLIKELY(x) (x)
+#endif
 
 /*
   include win32 defns for everything up to WinServer2003, and assume
@@ -328,7 +340,7 @@ typedef struct _object PyObject;
 
 #ifdef __WORDSIZE
 #define NATIVE_WORDSIZE __WORDSIZE
-#elif defined(_LP64)
+#elif defined(_LP64) || defined(_WIN64)
 #define NATIVE_WORDSIZE 64
 #else
 #define NATIVE_WORDSIZE 32
@@ -339,21 +351,26 @@ typedef struct _object PyObject;
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
 #define ALIGN_16BYTE
+#define ALIGN_32BYTE
 #define ALIGN_64BYTE
 #elif defined(_MSC_VER)
 #define ALIGN_4BYTE __declspec(align(4))
 #define ALIGN_8BYTE __declspec(align(8))
 #define ALIGN_16BYTE __declspec(align(16))
+#define ALIGN_32BYTE __declspec(align(32))
 #define ALIGN_64BYTE __declspec(align(64))
 #elif defined(__GNUC__)
 #define ALIGN_4BYTE __attribute__ ((aligned (4)))
 #define ALIGN_8BYTE __attribute__ ((aligned (8)))
 #define ALIGN_16BYTE __attribute__ ((aligned (16)))
+#define ALIGN_32BYTE __attribute__ ((aligned (32)))
 #define ALIGN_64BYTE __attribute__ ((aligned (64)))
 #else
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
 #define ALIGN_16BYTE
+#define ALIGN_32BYTE
+#define ALIGN_64BYTE
 #endif
 
 // Do we need to implement memory-alignment enforcement within the MemoryHook
@@ -389,6 +406,35 @@ typedef struct _object PyObject;
 
 #endif
 
+#ifdef LINMATH_ALIGN
+/* We require 16-byte alignment of certain structures, to support SSE2.  We
+   don't strictly have to align everything, but it's just easier to do so. */
+#if defined(HAVE_EIGEN) && defined(__AVX__) && defined(STDFLOAT_DOUBLE)
+/* Eigen uses AVX instructions, but let's only enable this when compiling with
+   double precision, so that we can keep our ABI a bit more stable. */
+#define MEMORY_HOOK_ALIGNMENT 32
+#else
+#define MEMORY_HOOK_ALIGNMENT 16
+#endif
+/* Otherwise, align to two words.  This seems to be pretty standard to the
+   point where some code may rely on this being the case. */
+#elif defined(IS_OSX) || NATIVE_WORDSIZE >= 64
+#define MEMORY_HOOK_ALIGNMENT 16
+#else
+#define MEMORY_HOOK_ALIGNMENT 8
+#endif
+
+#ifdef HAVE_EIGEN
+/* Make sure that Eigen doesn't assume alignment guarantees we don't offer. */
+#define EIGEN_MAX_ALIGN_BYTES MEMORY_HOOK_ALIGNMENT
+#ifndef EIGEN_MPL2_ONLY
+#define EIGEN_MPL2_ONLY 1
+#endif
+#if !defined(_DEBUG) && !defined(EIGEN_NO_DEBUG)
+#define EIGEN_NO_DEBUG 1
+#endif
+#endif
+
 /* Determine our memory-allocation requirements. */
 #if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
 /* In this case we have some custom memory management requirements. */
@@ -418,6 +464,8 @@ typedef struct _object PyObject;
 #define MAKE_PROPERTY2(property_name, ...) __make_property2(property_name, __VA_ARGS__)
 #define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...) __make_seq_property(property_name, __VA_ARGS__)
+#define MAKE_MAP_PROPERTY(property_name, ...) __make_map_property(property_name, __VA_ARGS__)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...) __make_map_keys_seq(property_name, __VA_ARGS__)
 #define EXTENSION(x) __extension x
 #define EXTEND __extension
 #else
@@ -428,6 +476,8 @@ typedef struct _object PyObject;
 #define MAKE_PROPERTY2(property_name, ...)
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...)
+#define MAKE_MAP_PROPERTY(property_name, ...)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...)
 #define EXTENSION(x)
 #define EXTEND
 #endif

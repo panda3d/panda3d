@@ -24,6 +24,8 @@
 
 #ifdef HAVE_OPENSSL
 
+#include "openSSLWrapper.h"
+
 PT(HTTPClient) HTTPClient::_global_ptr;
 
 /**
@@ -67,6 +69,68 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
   }
   words.push_back(string());
 }
+
+#ifndef NDEBUG
+/**
+ * This method is attached as a callback for SSL messages only when debug
+ * output is enabled.
+ */
+static void
+ssl_msg_callback(int write_p, int version, int content_type,
+                 const void *, size_t len, SSL *, void *) {
+  ostringstream describe;
+  if (write_p) {
+    describe << "sent ";
+  } else {
+    describe << "received ";
+  }
+  switch (version) {
+  case SSL2_VERSION:
+    describe << "SSL 2.0 ";
+    break;
+
+  case SSL3_VERSION:
+    describe << "SSL 3.0 ";
+    break;
+
+  case TLS1_VERSION:
+    describe << "TLS 1.0 ";
+    break;
+
+  default:
+    describe << "unknown protocol ";
+  }
+
+  describe << "message: ";
+
+  if (version != SSL2_VERSION) {
+    switch (content_type) {
+    case 20:
+      describe << "change cipher spec, ";
+      break;
+
+    case 21:
+      describe << "alert, ";
+      break;
+
+    case 22:
+      describe << "handshake, ";
+      break;
+
+    case 23:
+      describe << "application data, ";
+      break;
+
+    default:
+      describe << "unknown content type, ";
+    }
+  }
+
+  describe << len << " bytes.\n";
+
+  downloader_cat.debug() << describe.str();
+}
+#endif  // !defined(NDEBUG)
 
 /**
  *
@@ -807,7 +871,7 @@ load_client_certificate() {
 
       // Rewind the "file" to the beginning in order to read the public key
       // (which might appear first in the file).
-      BIO_reset(mbio);
+      (void)BIO_reset(mbio);
 
       ERR_clear_error();
       _client_certificate_pub =
@@ -1563,68 +1627,6 @@ split_whitespace(string &a, string &b, const string &c) {
   }
   b = c.substr(p);
 }
-
-#ifndef NDEBUG
-/**
- * This method is attached as a callback for SSL messages only when debug
- * output is enabled.
- */
-void HTTPClient::
-ssl_msg_callback(int write_p, int version, int content_type,
-                 const void *, size_t len, SSL *, void *) {
-  ostringstream describe;
-  if (write_p) {
-    describe << "sent ";
-  } else {
-    describe << "received ";
-  }
-  switch (version) {
-  case SSL2_VERSION:
-    describe << "SSL 2.0 ";
-    break;
-
-  case SSL3_VERSION:
-    describe << "SSL 3.0 ";
-    break;
-
-  case TLS1_VERSION:
-    describe << "TLS 1.0 ";
-    break;
-
-  default:
-    describe << "unknown protocol ";
-  }
-
-  describe << "message: ";
-
-  if (version != SSL2_VERSION) {
-    switch (content_type) {
-    case 20:
-      describe << "change cipher spec, ";
-      break;
-
-    case 21:
-      describe << "alert, ";
-      break;
-
-    case 22:
-      describe << "handshake, ";
-      break;
-
-    case 23:
-      describe << "application data, ";
-      break;
-
-    default:
-      describe << "unknown content type, ";
-    }
-  }
-
-  describe << len << " bytes.\n";
-
-  downloader_cat.debug() << describe.str();
-}
-#endif  // !defined(NDEBUG)
 
 /**
  *

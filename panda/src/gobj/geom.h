@@ -87,15 +87,16 @@ PUBLISHED:
 
   INLINE bool is_empty() const;
 
-  INLINE int get_num_primitives() const;
-  INLINE CPT(GeomPrimitive) get_primitive(int i) const;
+  INLINE size_t get_num_primitives() const;
+  INLINE CPT(GeomPrimitive) get_primitive(size_t i) const;
   MAKE_SEQ(get_primitives, get_num_primitives, get_primitive);
-  INLINE PT(GeomPrimitive) modify_primitive(int i);
-  void set_primitive(int i, const GeomPrimitive *primitive);
-  void add_primitive(const GeomPrimitive *primitive);
-  void remove_primitive(int i);
+  INLINE PT(GeomPrimitive) modify_primitive(size_t i);
+  void set_primitive(size_t i, const GeomPrimitive *primitive);
+  void insert_primitive(size_t i, const GeomPrimitive *primitive);
+  INLINE void add_primitive(const GeomPrimitive *primitive);
+  void remove_primitive(size_t i);
   void clear_primitives();
-  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive);
+  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive, insert_primitive);
 
   INLINE PT(Geom) decompose() const;
   INLINE PT(Geom) doubleside() const;
@@ -153,7 +154,6 @@ PUBLISHED:
 
 public:
   bool draw(GraphicsStateGuardianBase *gsg,
-            const GeomMunger *munger,
             const GeomVertexData *vertex_data,
             bool force, Thread *current_thread) const;
 
@@ -401,15 +401,17 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
+  INLINE GeomPipelineReader(Thread *current_thread);
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
 private:
-  INLINE GeomPipelineReader(const GeomPipelineReader &copy);
-  INLINE void operator = (const GeomPipelineReader &copy);
+  GeomPipelineReader(const GeomPipelineReader &copy) DELETED;
+  GeomPipelineReader &operator = (const GeomPipelineReader &copy) DELETED_ASSIGN;
 
 public:
   INLINE ~GeomPipelineReader();
   ALLOC_DELETED_CHAIN(GeomPipelineReader);
 
+  INLINE void set_object(const Geom *object);
   INLINE const Geom *get_object() const;
   INLINE Thread *get_current_thread() const;
 
@@ -427,7 +429,7 @@ public:
   INLINE GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                   GraphicsStateGuardianBase *gsg) const;
 
-  bool draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+  bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexDataPipelineReader *data_reader,
             bool force) const;
 

@@ -11,8 +11,8 @@
  * @date 2001-03-04
  */
 
-#ifndef NODEPATHCOLLECTION_H
-#define NODEPATHCOLLECTION_H
+#ifndef PARAMETRICCURVECOLLECTION_H
+#define PARAMETRICCURVECOLLECTION_H
 
 #include "pandabase.h"
 
@@ -41,10 +41,11 @@ PUBLISHED:
 
   void add_curve(ParametricCurve *curve);
   void add_curve(ParametricCurve *curve, int index);
+  void insert_curve(size_t index, ParametricCurve *curve);
   int add_curves(PandaNode *node);
   bool remove_curve(ParametricCurve *curve);
-  void remove_curve(int index);
-  void set_curve(int index, ParametricCurve *curve);
+  void remove_curve(size_t index);
+  void set_curve(size_t index, ParametricCurve *curve);
   bool has_curve(ParametricCurve *curve) const;
   void clear();
   void clear_timewarps();

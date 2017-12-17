@@ -23,13 +23,13 @@
  */
 class EXPCL_PANDAEGG EggPolygon : public EggPrimitive {
 PUBLISHED:
-  INLINE EggPolygon(const string &name = "");
+  INLINE explicit EggPolygon(const string &name = "");
   INLINE EggPolygon(const EggPolygon &copy);
   INLINE EggPolygon &operator = (const EggPolygon &copy);
 
-  virtual EggPolygon *make_copy() const OVERRIDE;
+  virtual EggPolygon *make_copy() const override;
 
-  virtual bool cleanup();
+  virtual bool cleanup() override;
 
   bool calculate_normal(LNormald &result, CoordinateSystem cs = CS_default) const;
   bool is_planar() const;
@@ -39,7 +39,7 @@ PUBLISHED:
   INLINE bool triangulate_into(EggGroupNode *container, bool convex_also) const;
   PT(EggPolygon) triangulate_in_place(bool convex_also);
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const override;
 
 private:
   bool decomp_concave(EggGroupNode *container, int asum, int x, int y) const;
@@ -55,10 +55,13 @@ public:
     register_type(_type_handle, "EggPolygon",
                   EggPrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

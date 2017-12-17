@@ -83,6 +83,10 @@ private:
   static TypeHandle _type_handle;
 };
 
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<GeometricBoundingVolume>::update_type(To *ptr) {}
+
 #include "geometricBoundingVolume.I"
 
 #endif

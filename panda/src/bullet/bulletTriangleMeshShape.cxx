@@ -124,6 +124,8 @@ register_with_read_factory() {
  */
 void BulletTriangleMeshShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
   dg.add_stdfloat(get_margin());
 
   manager->write_pointer(dg, _mesh);
@@ -145,16 +147,18 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   _mesh = DCAST(BulletTriangleMesh, p_list[pi++]);
 
-  btTriangleMesh *mesh_ptr = _mesh->ptr();
+  btStridingMeshInterface *mesh_ptr = _mesh->ptr();
   nassertr(mesh_ptr != NULL, pi);
 
   if (_dynamic) {
     _gimpact_shape = new btGImpactMeshShape(mesh_ptr);
     _gimpact_shape->updateBound();
     _gimpact_shape->setUserPointer(this);
+    _gimpact_shape->setMargin(_margin);
   } else {
     _bvh_shape = new btBvhTriangleMeshShape(mesh_ptr, _compress, _bvh);
     _bvh_shape->setUserPointer(this);
+    _bvh_shape->setMargin(_margin);
   }
 
   return pi;
@@ -183,7 +187,9 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletTriangleMeshShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  PN_stdfloat margin = scan.get_stdfloat();
+  BulletShape::fillin(scan, manager);
+
+  _margin = scan.get_stdfloat();
 
   manager->read_pointer(scan);
 

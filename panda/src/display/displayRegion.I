@@ -480,8 +480,8 @@ set_cull_result(PT(CullResult) cull_result, PT(SceneSetup) scene_setup,
                 Thread *current_thread) {
   CDCullWriter cdata(_cycler_cull, true, current_thread);
 #ifdef USE_MOVE_SEMANTICS
-  cdata->_cull_result = std::move(cull_result);
-  cdata->_scene_setup = std::move(scene_setup);
+  cdata->_cull_result = move(cull_result);
+  cdata->_scene_setup = move(scene_setup);
 #else
   swap(cdata->_cull_result, cull_result);
   swap(cdata->_scene_setup, scene_setup);
@@ -882,4 +882,10 @@ get_lens_index() const {
 INLINE int DisplayRegionPipelineReader::
 get_pixel_height(int i) const {
   return _cdata->_regions[i]._pixels[3] - _cdata->_regions[i]._pixels[2];
+}
+
+INLINE ostream &
+operator << (ostream &out, const DisplayRegion &dr) {
+  dr.output(out);
+  return out;
 }

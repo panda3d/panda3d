@@ -135,9 +135,6 @@ public:
   INLINE ordered_vector(TypeHandle type_handle = ov_set_type_handle);
   INLINE ordered_vector(const Compare &compare,
                         TypeHandle type_handle = ov_set_type_handle);
-  INLINE ordered_vector(const ordered_vector<Key, Compare, Vector> &copy);
-  INLINE ordered_vector<Key, Compare, Vector> &operator = (const ordered_vector<Key, Compare, Vector> &copy);
-  INLINE ~ordered_vector();
 
   // Iterator access.
   INLINE ITERATOR begin();
@@ -150,9 +147,20 @@ public:
   INLINE CONST_REVERSE_ITERATOR rbegin() const;
   INLINE CONST_REVERSE_ITERATOR rend() const;
 
+  INLINE CONST_ITERATOR cbegin() const;
+  INLINE CONST_ITERATOR cend() const;
+  INLINE CONST_REVERSE_ITERATOR crbegin() const;
+  INLINE CONST_REVERSE_ITERATOR crend() const;
+
   // Random access.
   INLINE reference operator [] (SIZE_TYPE n);
   INLINE const_reference operator [] (SIZE_TYPE n) const;
+
+  INLINE reference front();
+  INLINE const_reference front() const;
+
+  INLINE reference back();
+  INLINE const_reference back() const;
 
   // Size information.
   INLINE SIZE_TYPE size() const;
@@ -204,6 +212,7 @@ public:
   bool verify_list_nonunique() const;
 
   INLINE void push_back(const VALUE_TYPE &key);
+  INLINE void push_back(VALUE_TYPE &&key);
   INLINE void pop_back();
   INLINE void resize(SIZE_TYPE n);
   INLINE void resize(SIZE_TYPE n, const VALUE_TYPE &value);
@@ -265,8 +274,6 @@ public:
   INLINE ov_set(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_set(const Compare &compare,
                 TypeHandle type_handle = ov_set_type_handle);
-  INLINE ov_set(const ov_set<Key, Compare, Vector> &copy);
-  INLINE ov_set<Key, Compare, Vector> &operator = (const ov_set<Key, Compare, Vector> &copy);
 
   INLINE ITERATOR insert(ITERATOR position, const VALUE_TYPE &key0);
   INLINE pair<ITERATOR, bool> insert(const VALUE_TYPE &key0);
@@ -288,8 +295,6 @@ public:
   INLINE ov_multiset(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_multiset(const Compare &compare,
                      TypeHandle type_handle = ov_set_type_handle);
-  INLINE ov_multiset(const ov_multiset<Key, Compare, Vector> &copy);
-  INLINE ov_multiset<Key, Compare, Vector> &operator = (const ov_multiset<Key, Compare, Vector> &copy);
 
   INLINE ITERATOR insert(ITERATOR position, const VALUE_TYPE &key);
   INLINE ITERATOR insert(const VALUE_TYPE &key);

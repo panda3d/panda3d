@@ -22,8 +22,7 @@ TextureReloadRequest(const string &name,
   AsyncTask(name),
   _pgo(pgo),
   _texture(texture),
-  _allow_compressed(allow_compressed),
-  _is_ready(false)
+  _allow_compressed(allow_compressed)
 {
   nassertv(_pgo != (PreparedGraphicsObjects *)NULL);
   nassertv(_texture != (Texture *)NULL);
@@ -58,8 +57,10 @@ get_allow_compressed() const {
 
 /**
  * Returns true if this request has completed, false if it is still pending.
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
  */
 INLINE bool TextureReloadRequest::
 is_ready() const {
-  return _is_ready;
+  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
 }

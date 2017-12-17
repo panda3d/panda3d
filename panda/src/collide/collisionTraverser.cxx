@@ -57,7 +57,7 @@ public:
   inline bool operator () (int a, int b) const {
     const CollisionTraverser::OrderedColliderDef &ocd_a = _trav._ordered_colliders[a];
     const CollisionTraverser::OrderedColliderDef &ocd_b = _trav._ordered_colliders[b];
-    return DCAST(CollisionNode, ocd_a._node_path.node())->get_collider_sort() < DCAST(CollisionNode, ocd_b._node_path.node())->get_collider_sort();
+    return ((const CollisionNode *)ocd_a._node_path.node())->get_collider_sort() < ((const CollisionNode *)ocd_b._node_path.node())->get_collider_sort();
   }
 
   const CollisionTraverser &_trav;
@@ -1117,31 +1117,45 @@ compare_collider_to_node(CollisionEntry &entry,
   }
 
   if (within_node_bounds) {
+    Thread *current_thread = Thread::get_current_thread();
+
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, entry._into_node);
+
     int num_solids = cnode->get_num_solids();
-    collide_cat.spam()
-      << "Colliding against CollisionNode " << entry._into_node
-      << " which has " << num_solids << " collision solids.\n";
-    for (int s = 0; s < num_solids; ++s) {
-      entry._into = cnode->get_solid(s);
+    if (collide_cat.is_spam()) {
+      collide_cat.spam()
+        << "Colliding against CollisionNode " << entry._into_node
+        << " which has " << num_solids << " collision solids.\n";
+    }
 
-      // We should allow a collision test for solid into itself, because the
-      // solid might be simply instanced into multiple different
-      // CollisionNodes.  We are already filtering out tests for a
-      // CollisionNode into itself.
-      CPT(BoundingVolume) solid_bv = entry._into->get_bounds();
-      const GeometricBoundingVolume *solid_gbv = NULL;
-      if (num_solids > 1 &&
-          solid_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-        // Only bother to test against each solid's bounding volume if we have
-        // more than one solid in the node, as a slight optimization.  (If the
-        // node contains just one solid, then the node's bounding volume,
-        // which we just tested, is the same as the solid's bounding volume.)
-        DCAST_INTO_V(solid_gbv, solid_bv);
+    // Only bother to test against each solid's bounding volume if we have
+    // more than one solid in the node, as a slight optimization.  (If the
+    // node contains just one solid, then the node's bounding volume, which
+    // we just tested, is the same as the solid's bounding volume.)
+    if (num_solids == 1) {
+      entry._into = cnode->_solids[0].get_read_pointer(current_thread);
+      Colliders::const_iterator ci;
+      ci = _colliders.find(entry.get_from_node_path());
+      nassertv(ci != _colliders.end());
+      entry.test_intersection((*ci).second, this);
+    } else {
+      CollisionNode::Solids::const_iterator si;
+      for (si = cnode->_solids.begin(); si != cnode->_solids.end(); ++si) {
+        entry._into = (*si).get_read_pointer(current_thread);
+
+        // We should allow a collision test for solid into itself, because the
+        // solid might be simply instanced into multiple different
+        // CollisionNodes.  We are already filtering out tests for a
+        // CollisionNode into itself.
+        CPT(BoundingVolume) solid_bv = entry._into->get_bounds();
+        const GeometricBoundingVolume *solid_gbv = nullptr;
+        if (solid_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+          solid_gbv = (const GeometricBoundingVolume *)solid_bv.p();
+        }
+
+        compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
       }
-
-      compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
     }
   }
 }

@@ -39,7 +39,7 @@
 class EXPCL_PANDAEXPRESS Patchfile {
 PUBLISHED:
   Patchfile();
-  Patchfile(PT(Buffer) buffer);
+  explicit Patchfile(PT(Buffer) buffer);
   ~Patchfile();
 
   bool build(Filename file_orig, Filename file_new, Filename patch_name);

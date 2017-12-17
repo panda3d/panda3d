@@ -29,9 +29,13 @@
  */
 class EXPCL_DTOOL MutexSpinlockImpl {
 public:
-  INLINE MutexSpinlockImpl();
-  INLINE ~MutexSpinlockImpl();
+  CONSTEXPR MutexSpinlockImpl();
 
+private:
+  MutexSpinlockImpl(const MutexSpinlockImpl &copy) DELETED;
+  MutexSpinlockImpl &operator = (const MutexSpinlockImpl &copy) DELETED_ASSIGN;
+
+public:
   INLINE void acquire();
   INLINE bool try_acquire();
   INLINE void release();

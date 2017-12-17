@@ -17,7 +17,7 @@
 INLINE CullableObject::
 CullableObject() {
 #ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
+  MemoryUsage::record_pointer(this, get_class_type());
 #endif
 }
 
@@ -26,14 +26,14 @@ CullableObject() {
  * render state and transform.
  */
 INLINE CullableObject::
-CullableObject(const Geom *geom, const RenderState *state,
-               const TransformState *internal_transform) :
-  _geom(geom),
-  _state(state),
-  _internal_transform(internal_transform)
+CullableObject(CPT(Geom) geom, CPT(RenderState) state,
+               CPT(TransformState) internal_transform) :
+  _geom(move(geom)),
+  _state(move(state)),
+  _internal_transform(move(internal_transform))
 {
 #ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
+  MemoryUsage::record_pointer(this, get_class_type());
 #endif
 }
 
@@ -43,13 +43,12 @@ CullableObject(const Geom *geom, const RenderState *state,
 INLINE CullableObject::
 CullableObject(const CullableObject &copy) :
   _geom(copy._geom),
-  _munger(copy._munger),
   _munged_data(copy._munged_data),
   _state(copy._state),
   _internal_transform(copy._internal_transform)
 {
 #ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
+  MemoryUsage::record_pointer(this, get_class_type());
 #endif
 }
 
@@ -59,7 +58,6 @@ CullableObject(const CullableObject &copy) :
 INLINE void CullableObject::
 operator = (const CullableObject &copy) {
   _geom = copy._geom;
-  _munger = copy._munger;
   _munged_data = copy._munged_data;
   _state = copy._state;
   _internal_transform = copy._internal_transform;
@@ -132,7 +130,22 @@ flush_level() {
  */
 INLINE void CullableObject::
 draw_inline(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
-  _geom->draw(gsg, _munger, _munged_data, force, current_thread);
+  _geom->draw(gsg, _munged_data, force, current_thread);
+}
+
+/**
+ * Invokes the draw callback, assuming one is set.  Crashes if not.
+ */
+INLINE void CullableObject::
+draw_callback(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
+  gsg->clear_before_callback();
+  gsg->set_state_and_transform(_state, _internal_transform);
+  GeomDrawCallbackData cbdata(this, gsg, force);
+  _draw_callback->do_callback(&cbdata);
+  if (cbdata.get_lost_state()) {
+    // Tell the GSG to forget its state.
+    gsg->clear_state_and_transform();
+  }
 }
 
 /**

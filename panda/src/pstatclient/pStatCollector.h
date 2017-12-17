@@ -50,10 +50,10 @@ public:
   INLINE PStatCollector();
 
 PUBLISHED:
-  INLINE PStatCollector(const string &name,
-                        PStatClient *client = NULL);
-  INLINE PStatCollector(const PStatCollector &parent,
-                        const string &name);
+  INLINE explicit PStatCollector(const string &name,
+                                 PStatClient *client = NULL);
+  INLINE explicit PStatCollector(const PStatCollector &parent,
+                                 const string &name);
 
   INLINE PStatCollector(const PStatCollector &copy);
   INLINE void operator = (const PStatCollector &copy);

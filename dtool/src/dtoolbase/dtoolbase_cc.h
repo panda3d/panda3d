@@ -34,11 +34,15 @@ using namespace std;
 #define ALWAYS_INLINE inline
 #define TYPENAME typename
 #define CONSTEXPR constexpr
+#define ALWAYS_INLINE_CONSTEXPR constexpr
 #define NOEXCEPT noexcept
 #define FINAL final
-#define OVERRIDE override
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
+#define DEFAULT_DTOR = default
+#define DEFAULT_ASSIGN = default
+#define DELETED = delete
+#define DELETED_ASSIGN = delete
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -75,6 +79,7 @@ typedef int ios_seekdir;
 #endif
 
 #include <string>
+#include <utility>
 
 #ifdef HAVE_NAMESPACE
 using namespace std;
@@ -114,6 +119,20 @@ typedef ios::iostate ios_iostate;
 typedef ios::seekdir ios_seekdir;
 #endif
 
+// Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
+// in some important missing functions.
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+typedef decltype(nullptr) nullptr_t;
+
+template<class T> struct remove_reference      {typedef T type;};
+template<class T> struct remove_reference<T&>  {typedef T type;};
+template<class T> struct remove_reference<T&& >{typedef T type;};
+
+template<class T> typename remove_reference<T>::type &&move(T &&t) {
+  return static_cast<typename remove_reference<T>::type&&>(t);
+}
+#endif
+
 #ifdef _MSC_VER
 #define ALWAYS_INLINE __forceinline
 #elif defined(__GNUC__)
@@ -134,7 +153,9 @@ typedef ios::seekdir ios_seekdir;
 // Determine the availability of C++11 features.
 #if defined(__has_extension) // Clang magic.
 #  if __has_extension(cxx_constexpr)
-#    define CONSTEXPR constexpr
+#    if !defined(__apple_build_version__) || __apple_build_version__ >= 5000000
+#      define CONSTEXPR constexpr
+#    endif
 #  endif
 #  if __has_extension(cxx_noexcept)
 #    define NOEXCEPT noexcept
@@ -145,35 +166,42 @@ typedef ios::seekdir ios_seekdir;
 #  endif
 #  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
 #    define FINAL final
-#    define OVERRIDE override
 #  endif
 #  if __has_extension(cxx_defaulted_functions)
 #     define DEFAULT_CTOR = default
+#     define DEFAULT_DTOR = default
+#     define DEFAULT_ASSIGN = default
 #  endif
-#elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
-
-// GCC defines several macros which we can query.  List of all supported
-// builtin macros: https:gcc.gnu.orgprojectscxx0x.html
-#  if __cpp_constexpr >= 200704
-#    define CONSTEXPR constexpr
+#  if __has_extension(cxx_deleted_functions)
+#     define DELETED = delete
 #  endif
+#elif defined(__GNUC__) // GCC
 
 // Starting at GCC 4.4
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
 #  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
+#  define DELETED = delete
 #  endif
 
 // Starting at GCC 4.6
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#    define CONSTEXPR constexpr
 #    define NOEXCEPT noexcept
 #    define USE_MOVE_SEMANTICS
-#    define FINAL final
 #    define MOVE(x) move(x)
 #  endif
 
 // Starting at GCC 4.7
 #  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
-#    define OVERRIDE override
+#    define FINAL final
+#  endif
+
+// GCC defines several macros which we can query.  List of all supported
+// builtin macros: https://gcc.gnu.org/projects/cxx-status.html
+#  if !defined(CONSTEXPR) && __cpp_constexpr >= 200704
+#    define CONSTEXPR constexpr
 #  endif
 
 #elif defined(_MSC_VER) && _MSC_VER >= 1900 // Visual Studio 2015
@@ -181,20 +209,27 @@ typedef ios::seekdir ios_seekdir;
 #  define NOEXCEPT noexcept
 #  define USE_MOVE_SEMANTICS
 #  define FINAL final
-#  define OVERRIDE override
 #  define MOVE(x) move(x)
-#  define DEFAULT_CTOR = default
 #elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
 #  define NOEXCEPT throw()
-#  define OVERRIDE override
 #  define USE_MOVE_SEMANTICS
 #  define FINAL sealed
 #  define MOVE(x) move(x)
 #endif
 
+#if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
+#  define DEFAULT_CTOR = default
+#  define DEFAULT_DTOR = default
+#  define DEFAULT_ASSIGN = default
+#  define DELETED = delete
+#endif
+
 // Fallbacks if features are not supported
 #ifndef CONSTEXPR
 #  define CONSTEXPR INLINE
+#  define ALWAYS_INLINE_CONSTEXPR ALWAYS_INLINE
+#else
+#  define ALWAYS_INLINE_CONSTEXPR ALWAYS_INLINE CONSTEXPR
 #endif
 #ifndef NOEXCEPT
 #  define NOEXCEPT
@@ -205,11 +240,20 @@ typedef ios::seekdir ios_seekdir;
 #ifndef FINAL
 #  define FINAL
 #endif
-#ifndef OVERRIDE
-#  define OVERRIDE
-#endif
 #ifndef DEFAULT_CTOR
 #  define DEFAULT_CTOR {}
+#endif
+#ifndef DEFAULT_DTOR
+#  define DEFAULT_DTOR {}
+#endif
+#ifndef DEFAULT_ASSIGN
+#  define DEFAULT_ASSIGN {return *this;}
+#endif
+#ifndef DELETED
+#  define DELETED {assert(false);}
+#  define DELETED_ASSIGN {assert(false);return *this;}
+#else
+#  define DELETED_ASSIGN DELETED
 #endif
 
 
@@ -243,10 +287,10 @@ EXPCL_DTOOL void init_memory_hook();
 
 // Now redefine some handy macros to hook into the above MemoryHook object.
 #ifndef USE_MEMORY_NOWRAPPERS
-#define PANDA_MALLOC_SINGLE(size) (memory_hook->heap_alloc_single(size))
+#define PANDA_MALLOC_SINGLE(size) (ASSUME_ALIGNED(memory_hook->heap_alloc_single(size), MEMORY_HOOK_ALIGNMENT))
 #define PANDA_FREE_SINGLE(ptr) memory_hook->heap_free_single(ptr)
-#define PANDA_MALLOC_ARRAY(size) (memory_hook->heap_alloc_array(size))
-#define PANDA_REALLOC_ARRAY(ptr, size) (memory_hook->heap_realloc_array(ptr, size))
+#define PANDA_MALLOC_ARRAY(size) (ASSUME_ALIGNED(memory_hook->heap_alloc_array(size), MEMORY_HOOK_ALIGNMENT))
+#define PANDA_REALLOC_ARRAY(ptr, size) (ASSUME_ALIGNED(memory_hook->heap_realloc_array(ptr, size), MEMORY_HOOK_ALIGNMENT))
 #define PANDA_FREE_ARRAY(ptr) memory_hook->heap_free_array(ptr)
 #else
 #define PANDA_MALLOC_SINGLE(size) ::malloc(size)

@@ -58,8 +58,12 @@ PUBLISHED:
   bool operator < (const RenderEffects &other) const;
 
   INLINE bool is_empty() const;
-  INLINE int get_num_effects() const;
-  INLINE const RenderEffect *get_effect(int n) const;
+  INLINE size_t get_num_effects() const;
+  INLINE const RenderEffect *get_effect(size_t n) const;
+
+  INLINE size_t size() const;
+  INLINE const RenderEffect *operator [] (size_t n) const;
+  INLINE const RenderEffect *operator [] (TypeHandle type) const;
 
   int find_effect(TypeHandle type) const;
 
@@ -102,7 +106,7 @@ public:
   INLINE bool has_adjust_transform() const;
   void adjust_transform(CPT(TransformState) &net_transform,
                         CPT(TransformState) &node_transform,
-                        PandaNode *node) const;
+                        const PandaNode *node) const;
 
   static void init_states();
 

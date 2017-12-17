@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PGUI PGWaitBar : public PGItem {
 PUBLISHED:
-  PGWaitBar(const string &name = "");
+  explicit PGWaitBar(const string &name = "");
   virtual ~PGWaitBar();
 
 protected:

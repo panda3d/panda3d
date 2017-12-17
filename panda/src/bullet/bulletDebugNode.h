@@ -17,16 +17,14 @@
 #include "pandabase.h"
 
 #include "bullet_includes.h"
-
-#include "geomNode.h"
+#include "lightMutex.h"
 
 /**
  *
  */
-class EXPCL_PANDABULLET BulletDebugNode : public GeomNode {
-
+class EXPCL_PANDABULLET BulletDebugNode : public PandaNode {
 PUBLISHED:
-  BulletDebugNode(const char *name="debug");
+  explicit BulletDebugNode(const char *name="debug");
   INLINE ~BulletDebugNode();
 
   virtual void draw_mask_changed();
@@ -35,6 +33,15 @@ PUBLISHED:
   INLINE void show_constraints(bool show);
   INLINE void show_bounding_boxes(bool show);
   INLINE void show_normals(bool show);
+  INLINE bool get_show_wireframe() const;
+  INLINE bool get_show_constraints() const;
+  INLINE bool get_show_bounding_boxes() const;
+  INLINE bool get_show_normals() const;
+
+  MAKE_PROPERTY(wireframe, get_show_wireframe, show_wireframe);
+  MAKE_PROPERTY(constraints, get_show_constraints, show_constraints);
+  MAKE_PROPERTY(bounding_boxes, get_show_bounding_boxes, show_bounding_boxes);
+  MAKE_PROPERTY(normals, get_show_normals, show_normals);
 
 public:
   virtual bool safe_to_flatten() const;
@@ -43,6 +50,9 @@ public:
   virtual bool safe_to_combine() const;
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
+
+  virtual bool is_renderable() const;
+  virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 private:
   void sync_b2p(btDynamicsWorld *world);
@@ -91,13 +101,21 @@ private:
     int _mode;
   };
 
+  LightMutex _lock;
   DebugDraw _drawer;
+
+  bool _debug_stale;
+  btDynamicsWorld *_debug_world;
+  PT(Geom) _debug_lines;
+  PT(Geom) _debug_triangles;
 
   bool _wireframe;
   bool _constraints;
   bool _bounds;
 
   friend class BulletWorld;
+
+  static PStatCollector _pstat_debug;
 
 public:
   static void register_with_read_factory();
@@ -112,9 +130,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    GeomNode::init_type();
+    PandaNode::init_type();
     register_type(_type_handle, "BulletDebugNode",
-                  GeomNode::get_class_type());
+                  PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

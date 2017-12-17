@@ -213,7 +213,7 @@ make_default() {
 /**
  * Returns the basic operation type of the ClipPlaneAttrib.  If this is O_set,
  * the planes listed here completely replace any planes that were already on.
- * If this is O_add, the planes here are added to the set of of planes that
+ * If this is O_add, the planes here are added to the set of planes that
  * were already on, and if O_remove, the planes here are removed from the set
  * of planes that were on.
  *
@@ -487,7 +487,7 @@ filter_to_max(int max_clip_planes) const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_off(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  DCAST_INTO_R(ta, other, NULL);
 
   if (_off_all_planes || (!ta->_off_all_planes && ta->_off_planes.empty())) {
     // If we turn off all planes, or the other turns none off, the result is
@@ -701,7 +701,7 @@ get_hash_impl() const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_impl(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  DCAST_INTO_R(ta, other, NULL);
 
   if (ta->_off_all_planes) {
     // If the other type turns off all planes, it doesn't matter what we are.
@@ -831,14 +831,6 @@ invert_compose_impl(const RenderAttrib *other) const {
   // bit more thought.  It's hard to imagine that it's even important to
   // compute this properly.
   return other;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) ClipPlaneAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
 }
 
 /**

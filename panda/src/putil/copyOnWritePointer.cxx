@@ -23,12 +23,10 @@
  * This flavor of the method is written for the threaded case.
  */
 CPT(CopyOnWriteObject) CopyOnWritePointer::
-get_read_pointer() const {
+get_read_pointer(Thread *current_thread) const {
   if (_cow_object == (CopyOnWriteObject *)NULL) {
     return NULL;
   }
-
-  Thread *current_thread = Thread::get_current_thread();
 
   MutexHolder holder(_cow_object->_lock_mutex);
   while (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_write) {

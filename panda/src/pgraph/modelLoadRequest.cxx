@@ -28,8 +28,7 @@ ModelLoadRequest(const string &name,
   AsyncTask(name),
   _filename(filename),
   _options(options),
-  _loader(loader),
-  _is_ready(false)
+  _loader(loader)
 {
 }
 
@@ -43,8 +42,8 @@ do_task() {
     Thread::sleep(delay);
   }
 
-  _model = _loader->load_sync(_filename, _options);
-  _is_ready = true;
+  PT(PandaNode) model = _loader->load_sync(_filename, _options);
+  set_result(model);
 
   // Don't continue the task; we're done.
   return DS_done;

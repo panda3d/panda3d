@@ -28,6 +28,7 @@
 
 #include "pmap.h"
 
+typedef struct hb_buffer_t hb_buffer_t;
 
 class TextEncoder;
 class TextGraphic;
@@ -41,7 +42,7 @@ class TextAssembler;
  */
 class EXPCL_PANDA_TEXT TextAssembler {
 PUBLISHED:
-  TextAssembler(TextEncoder *encoder);
+  explicit TextAssembler(TextEncoder *encoder);
   TextAssembler(const TextAssembler &copy);
   void operator = (const TextAssembler &copy);
   ~TextAssembler();
@@ -212,21 +213,6 @@ private:
   typedef pmap<GeomCollectorKey, GeomCollector> GeomCollectorMap;
 
   struct QuadDef {
-    // Copying this class is a performance hotspot, hence we define the move
-    // constructor.
-    ALWAYS_INLINE QuadDef() {}
-    ALWAYS_INLINE QuadDef(const QuadDef &copy) :
-      _dimensions(copy._dimensions), _uvs(copy._uvs),
-      _slantl(copy._slantl), _slanth(copy._slanth),
-      _glyph(copy._glyph) {}
-
-#ifdef USE_MOVE_SEMANTICS
-    ALWAYS_INLINE QuadDef(QuadDef &&from) NOEXCEPT :
-      _dimensions(from._dimensions), _uvs(from._uvs),
-      _slantl(from._slantl), _slanth(from._slanth),
-      _glyph(move(from._glyph)) {}
-#endif
-
     LVecBase4 _dimensions;
     LVecBase4 _uvs;
     PN_stdfloat _slantl, _slanth;
@@ -261,6 +247,9 @@ private:
                     PlacedGlyphs &row_placed_glyphs,
                     PN_stdfloat &row_width, PN_stdfloat &line_height,
                     TextProperties::Alignment &align, PN_stdfloat &wordwrap);
+
+  void shape_buffer(hb_buffer_t *buf, PlacedGlyphs &glyphs, PN_stdfloat &xpos,
+                    const TextProperties &properties);
 
   // These interfaces are for implementing cheesy accent marks and ligatures
   // when the font doesn't support them.

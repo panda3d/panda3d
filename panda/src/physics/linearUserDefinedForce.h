@@ -17,18 +17,12 @@
 #include "linearForce.h"
 
 /**
- * a programmable force that takes an evaluator fn.
- *
- * NOTE : AS OF Interrogate => Squeak, this class does NOT get FFI'd due to
- * the function pointer bug, and is currently NOT getting interrogated.
- * Change this in the makefile when the time is right or this class becomes
- * needed...
+ * A programmable force that takes an evaluator function.
  */
 class EXPCL_PANDAPHYSICS LinearUserDefinedForce : public LinearForce {
 PUBLISHED:
-  LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = NULL,
-                         PN_stdfloat a = 1.0f,
-                         bool md = false);
+  explicit LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = NULL,
+                                  PN_stdfloat a = 1.0f, bool md = false);
   LinearUserDefinedForce(const LinearUserDefinedForce &copy);
   virtual ~LinearUserDefinedForce();
 

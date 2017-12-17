@@ -154,6 +154,7 @@ PUBLISHED:
   INLINE bool get_supports_generate_mipmap() const;
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_depth_stencil() const;
+  INLINE bool get_supports_luminance_texture() const;
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_sampler_objects() const;
   INLINE bool get_supports_basic_shaders() const;
@@ -203,6 +204,7 @@ PUBLISHED:
   MAKE_PROPERTY(supports_generate_mipmap, get_supports_generate_mipmap);
   MAKE_PROPERTY(supports_depth_texture, get_supports_depth_texture);
   MAKE_PROPERTY(supports_depth_stencil, get_supports_depth_stencil);
+  MAKE_PROPERTY(supports_luminance_texture, get_supports_luminance_texture);
   MAKE_PROPERTY(supports_shadow_filter, get_supports_shadow_filter);
   MAKE_PROPERTY(supports_sampler_objects, get_supports_sampler_objects);
   MAKE_PROPERTY(supports_basic_shaders, get_supports_basic_shaders);
@@ -284,7 +286,7 @@ PUBLISHED:
   MAKE_PROPERTY(driver_shader_version_minor, get_driver_shader_version_minor);
 
   bool set_scene(SceneSetup *scene_setup);
-  virtual SceneSetup *get_scene() const;
+  virtual SceneSetup *get_scene() const FINAL;
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
 public:
@@ -365,7 +367,6 @@ public:
   virtual void finish_decal();
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                                     const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader,
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
@@ -422,7 +423,10 @@ public:
   static void create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
   PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=NULL);
+  PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
   PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
+
+  virtual void ensure_generated_shader(const RenderState *state);
 
 #ifdef DO_PSTATS
   static void init_frame_pstats();
@@ -444,6 +448,7 @@ protected:
   virtual void end_bind_clip_planes();
 
   void determine_target_texture();
+  void determine_target_shader();
 
   virtual void free_pointers();
   virtual void close_gsg();
@@ -455,7 +460,7 @@ protected:
   static CPT(RenderState) get_unclipped_state();
   static CPT(RenderState) get_untextured_state();
 
-  void async_reload_texture(TextureContext *tc);
+  AsyncFuture *async_reload_texture(TextureContext *tc);
 
 protected:
   PT(SceneSetup) _scene_null;
@@ -493,9 +498,8 @@ protected:
   CPT(ShaderAttrib) _state_shader;
   CPT(ShaderAttrib) _target_shader;
 
-  // These are set by begin_draw_primitives(), and are only valid between
+  // This is set by begin_draw_primitives(), and are only valid between
   // begin_draw_primitives() and end_draw_primitives().
-  CPT(GeomMunger) _munger;
   const GeomVertexDataPipelineReader *_data_reader;
 
   unsigned int _color_write_mask;
@@ -597,6 +601,7 @@ protected:
   bool _supports_generate_mipmap;
   bool _supports_depth_texture;
   bool _supports_depth_stencil;
+  bool _supports_luminance_texture;
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
   bool _supports_basic_shaders;

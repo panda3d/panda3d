@@ -52,8 +52,7 @@ public:
 
   bool heap_trim(size_t pad);
 
-  INLINE static size_t get_memory_alignment();
-  INLINE static size_t get_header_reserved_bytes();
+  CONSTEXPR static size_t get_memory_alignment();
 
   virtual void *mmap_alloc(size_t size, bool allow_exec);
   virtual void mmap_free(void *ptr, size_t size);
@@ -66,12 +65,8 @@ public:
 
   virtual void alloc_fail(size_t attempted_size);
 
-private:
-  INLINE static size_t inflate_size(size_t size);
-  INLINE static void *alloc_to_ptr(void *alloc, size_t size);
-  INLINE static void *ptr_to_alloc(void *ptr, size_t &size);
+  INLINE static size_t get_ptr_size(void *ptr);
 
-#ifdef DO_MEMORY_USAGE
 protected:
   TVOLATILE AtomicAdjust::Integer _total_heap_single_size;
   TVOLATILE AtomicAdjust::Integer _total_heap_array_size;
@@ -83,7 +78,6 @@ protected:
   size_t _max_heap_size;
 
   virtual void overflow_heap_size();
-#endif  // DO_MEMORY_USAGE
 
 private:
   size_t _page_size;
@@ -91,7 +85,7 @@ private:
   typedef map<size_t, DeletedBufferChain *> DeletedChains;
   DeletedChains _deleted_chains;
 
-  MutexImpl _lock;
+  mutable MutexImpl _lock;
 };
 
 #include "memoryHook.I"

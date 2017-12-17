@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
 PUBLISHED:
-  EggGroupUniquifier(bool filter_names = true);
+  explicit EggGroupUniquifier(bool filter_names = true);
 
   virtual string get_category(EggNode *node);
   virtual string filter_name(EggNode *node);

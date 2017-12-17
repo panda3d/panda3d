@@ -26,8 +26,8 @@
  */
 class PythonThread : public Thread {
 PUBLISHED:
-  PythonThread(PyObject *function, PyObject *args,
-               const string &name, const string &sync_name);
+  explicit PythonThread(PyObject *function, PyObject *args,
+                        const string &name, const string &sync_name);
   virtual ~PythonThread();
 
   BLOCKING PyObject *join();

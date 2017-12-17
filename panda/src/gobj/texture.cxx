@@ -1417,9 +1417,10 @@ peek() {
  * Use this function instead of prepare_now() to preload textures from a user
  * interface standpoint.
  */
-void Texture::
+PT(AsyncFuture) Texture::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  prepared_objects->enqueue_texture(this);
+  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_texture_future(this);
+  return obj.p();
 }
 
 /**
@@ -3441,8 +3442,8 @@ do_load_sub_image(CData *cdata, const PNMImage &image, int x, int y, int z, int 
   nassertr(y >= 0 && y < tex_y_size, false);
   nassertr(z >= 0 && z < tex_z_size, false);
 
-  nassertr(image.get_x_size() + x < tex_x_size, false);
-  nassertr(image.get_y_size() + y < tex_y_size, false);
+  nassertr(image.get_x_size() + x <= tex_x_size, false);
+  nassertr(image.get_y_size() + y <= tex_y_size, false);
 
   // Flip y
   y = cdata->_y_size - (image.get_y_size() + y);

@@ -32,6 +32,7 @@ get_python_tags() {
 /**
  * This variant on get_tag_keys returns a Python list of strings.  Returns
  * None if the NodePath is empty.
+ * @deprecated use `np.tags.keys()` instead.
  */
 INLINE PyObject *Extension<NodePath>::
 get_tag_keys() const {

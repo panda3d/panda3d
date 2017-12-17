@@ -30,10 +30,8 @@
 #include "lightMutex.h"
 #include "deletedChain.h"
 #include "simpleHashMap.h"
-#include "weakKeyHashMap.h"
 #include "cacheStats.h"
 #include "renderAttribRegistry.h"
-#include "graphicsStateGuardianBase.h"
 
 class FactoryParams;
 class ShaderAttrib;
@@ -109,6 +107,8 @@ PUBLISHED:
   INLINE int get_override(TypeHandle type) const;
   INLINE int get_override(int slot) const;
 
+  MAKE_MAP_PROPERTY(attribs, has_attrib, get_attrib);
+
   INLINE CPT(RenderState) get_unique() const;
 
   virtual bool unref() const;
@@ -129,8 +129,6 @@ PUBLISHED:
   INLINE const RenderState *get_invert_composition_cache_result(size_t n) const;
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
-
-  const RenderState *get_auto_shader_state() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
@@ -173,8 +171,6 @@ private:
   INLINE bool do_node_unref() const;
   INLINE void calc_hash();
   void do_calc_hash();
-  void assign_auto_shader_state();
-  CPT(RenderState) do_calc_auto_shader_state();
 
   class CompositionCycleDescEntry {
   public:
@@ -223,15 +219,14 @@ public:
   // declare this as a ShaderAttrib because that would create a circular
   // include-file dependency problem.  Aaargh.
   mutable CPT(RenderAttrib) _generated_shader;
+  mutable UpdateSeq _generated_shader_seq;
 
 private:
   // This mutex protects _states.  It also protects any modification to the
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const RenderState *, Empty, indirect_compare_to_hash<const RenderState *> > States;
+  typedef SimpleHashMap<const RenderState *, nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
   static States *_states;
   static const RenderState *_empty_state;
 
@@ -268,9 +263,14 @@ private:
   // in the RenderState pointer than vice-versa, since there are likely to be
   // far fewer GSG's than RenderStates.  The code to manage this map lives in
   // GraphicsStateGuardian::get_geom_munger().
-  typedef WeakKeyHashMap<GraphicsStateGuardianBase, PT(GeomMunger) > Mungers;
+  typedef SimpleHashMap<size_t, PT(GeomMunger), size_t_hash> Mungers;
   mutable Mungers _mungers;
   mutable int _last_mi;
+
+  // Similarly, this is a cache of munged states.  This map is managed by
+  // StateMunger::munge_state().
+  typedef SimpleHashMap<size_t, WCPT(RenderState), size_t_hash> MungedStates;
+  mutable MungedStates _munged_states;
 
   // This is used to mark nodes as we visit them to detect cycles.
   UpdateSeq _cycle_detect;
@@ -278,7 +278,7 @@ private:
 
   // This keeps track of our current position through the garbage collection
   // cycle.
-  static int _garbage_index;
+  static size_t _garbage_index;
 
   static PStatCollector _cache_update_pcollector;
   static PStatCollector _garbage_collect_pcollector;
@@ -316,8 +316,6 @@ private:
   int _bin_index;
   int _draw_order;
   size_t _hash;
-
-  const RenderState *_auto_shader_state;
 
   enum Flags {
     F_checked_bin_index       = 0x000001,
@@ -366,7 +364,13 @@ private:
   friend class GraphicsStateGuardian;
   friend class RenderAttribRegistry;
   friend class Extension<RenderState>;
+  friend class ShaderGenerator;
+  friend class StateMunger;
 };
+
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<RenderState>::update_type(To *ptr) {}
 
 INLINE ostream &operator << (ostream &out, const RenderState &state) {
   state.output(out);

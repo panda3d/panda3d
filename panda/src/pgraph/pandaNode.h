@@ -45,6 +45,7 @@
 #include "copyOnWritePointer.h"
 #include "lightReMutex.h"
 #include "extension.h"
+#include "simpleHashMap.h"
 
 class NodePathComponent;
 class CullTraverser;
@@ -196,7 +197,15 @@ PUBLISHED:
                       Thread *current_thread = Thread::get_current_thread()) const;
   void clear_tag(const string &key,
                  Thread *current_thread = Thread::get_current_thread());
+
+public:
   void get_tag_keys(vector_string &keys) const;
+  INLINE size_t get_num_tags() const;
+  INLINE string get_tag_key(size_t i) const;
+
+PUBLISHED:
+  MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
+  MAKE_MAP_KEYS_SEQ(tags, get_num_tags, get_tag_key);
 
   EXTENSION(PyObject *get_tag_keys() const);
 
@@ -234,6 +243,8 @@ PUBLISHED:
   INLINE static DrawMask get_all_camera_mask();
   INLINE bool is_overall_hidden() const;
   INLINE void set_overall_hidden(bool overall_hidden);
+  MAKE_PROPERTY(overall_bit, get_overall_bit);
+  MAKE_PROPERTY(all_camera_mask, get_all_camera_mask);
   MAKE_PROPERTY(overall_hidden, is_overall_hidden, set_overall_hidden);
 
   void adjust_draw_mask(DrawMask show_mask,
@@ -319,7 +330,7 @@ PUBLISHED:
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
 
 PUBLISHED:
-  static PT(PandaNode) decode_from_bam_stream(const string &data, BamReader *reader = NULL);
+  static PT(PandaNode) decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 protected:
   class BoundsData;
@@ -509,7 +520,7 @@ private:
 
   // This is used to maintain a table of keyed data on each node, for the
   // user's purposes.
-  typedef phash_map<string, string, string_hash> TagData;
+  typedef SimpleHashMap<string, string, string_hash> TagData;
 
   // This is actually implemented in pandaNode_ext.h, but defined here so
   // that we can destruct it from the C++ side.  Note that it isn't cycled,
@@ -799,12 +810,10 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritable::init_type();
-    ReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     Namable::init_type();
     register_type(_type_handle, "PandaNode",
-                  TypedWritable::get_class_type(),
-                  ReferenceCount::get_class_type(),
+                  TypedWritableReferenceCount::get_class_type(),
                   Namable::get_class_type());
     CData::init_type();
     Down::init_type();
@@ -829,6 +838,7 @@ private:
   friend class PandaNodePipelineReader;
   friend class EggLoader;
   friend class Extension<PandaNode>;
+  friend class CullTraverserData;
 };
 
 /**
@@ -879,8 +889,8 @@ public:
   INLINE bool has_tag(const string &key) const;
 
   INLINE CollideMask get_net_collide_mask() const;
-  INLINE CPT(RenderAttrib) get_off_clip_planes() const;
-  INLINE CPT(BoundingVolume) get_bounds() const;
+  INLINE const RenderAttrib *get_off_clip_planes() const;
+  INLINE const BoundingVolume *get_bounds() const;
   INLINE int get_nested_vertices() const;
   INLINE bool is_final() const;
   INLINE int get_fancy_bits() const;
@@ -907,6 +917,10 @@ private:
   static TypeHandle _type_handle;
 
 };
+
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<PandaNode>::update_type(To *ptr) {}
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {
   node.output(out);

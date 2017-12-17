@@ -71,7 +71,6 @@ PUBLISHED:
   INLINE int compare_to(const RenderAttrib &other) const;
   INLINE size_t get_hash() const;
   INLINE CPT(RenderAttrib) get_unique() const;
-  INLINE CPT(RenderAttrib) get_auto_shader_attrib(const RenderState *state) const;
 
   virtual bool unref() const FINAL;
 
@@ -84,6 +83,7 @@ PUBLISHED:
   static bool validate_attribs();
 
   virtual int get_slot() const=0;
+  MAKE_PROPERTY(slot, get_slot);
 
   enum PandaCompareFunc {   // intentionally defined to match D3DCMPFUNC
     M_none=0,           // alpha-test disabled (always-draw)
@@ -170,7 +170,6 @@ protected:
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
   void output_comparefunc(ostream &out, PandaCompareFunc fn) const;
 
 public:
@@ -186,9 +185,7 @@ public:
 private:
   // This mutex protects _attribs.
   static LightReMutex *_attribs_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const RenderAttrib *, Empty, indirect_compare_to_hash<const RenderAttrib *> > Attribs;
+  typedef SimpleHashMap<const RenderAttrib *, nullptr_t, indirect_compare_to_hash<const RenderAttrib *> > Attribs;
   static Attribs *_attribs;
 
   int _saved_entry;
@@ -196,7 +193,7 @@ private:
 
   // This keeps track of our current position through the garbage collection
   // cycle.
-  static int _garbage_index;
+  static size_t _garbage_index;
 
   static PStatCollector _garbage_collect_pcollector;
 

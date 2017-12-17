@@ -1,4 +1,6 @@
-"""Undocumented Module"""
+"""This module defines various transition effects that can be used to
+graphically transition between two scenes, such as by fading the screen to
+a particular color."""
 
 __all__ = ['Transitions']
 
@@ -345,7 +347,7 @@ class Transitions:
                 frameColor = (0, 0, 0, 1),
                 borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
-                pos = (0, 0, 0.8),
+                pos = (0, 0, 1.0),
                 image = barImage,
                 image_scale = (2.25,1,.5),
                 image_pos = (0,0,.1),
@@ -360,7 +362,7 @@ class Transitions:
                 frameColor = (0, 0, 0, 1),
                 borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
-                pos = (0, 0, -1),
+                pos = (0, 0, -1.2),
                 image = barImage,
                 image_scale = (2.25,1,.5),
                 image_pos = (0,0,.1),

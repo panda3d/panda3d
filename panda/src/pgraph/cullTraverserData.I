@@ -20,7 +20,8 @@ CullTraverserData(const NodePath &start,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
                   Thread *current_thread) :
-  _node_path(start),
+  _next(nullptr),
+  _start(start._head),
   _node_reader(start.node(), current_thread),
   _net_transform(net_transform),
   _state(state),
@@ -35,43 +36,15 @@ CullTraverserData(const NodePath &start,
 }
 
 /**
- *
- */
-INLINE CullTraverserData::
-CullTraverserData(const CullTraverserData &copy) :
-  _node_path(copy._node_path),
-  _node_reader(copy._node_reader),
-  _net_transform(copy._net_transform),
-  _state(copy._state),
-  _view_frustum(copy._view_frustum),
-  _cull_planes(copy._cull_planes),
-  _draw_mask(copy._draw_mask),
-  _portal_depth(copy._portal_depth)
-{
-}
-
-/**
- *
- */
-INLINE void CullTraverserData::
-operator = (const CullTraverserData &copy) {
-  _node_path = copy._node_path;
-  _node_reader = copy._node_reader;
-  _net_transform = copy._net_transform;
-  _state = copy._state;
-  _view_frustum = copy._view_frustum;
-  _cull_planes = copy._cull_planes;
-  _draw_mask = copy._draw_mask;
-  _portal_depth = copy._portal_depth;
-}
-
-/**
  * This constructor creates a CullTraverserData object that reflects the next
  * node down in the traversal.
  */
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
-  _node_path(parent._node_path, child),
+  _next(&parent),
+#ifdef _DEBUG
+  _start(nullptr),
+#endif
   _node_reader(child, parent._node_reader.get_current_thread()),
   _net_transform(parent._net_transform),
   _state(parent._state),
@@ -87,18 +60,11 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
 }
 
 /**
- *
- */
-INLINE CullTraverserData::
-~CullTraverserData() {
-}
-
-/**
  * Returns the node traversed to so far.
  */
 INLINE PandaNode *CullTraverserData::
 node() const {
-  return _node_path.node();
+  return (PandaNode *)_node_reader.get_node();
 }
 
 /**
@@ -115,6 +81,18 @@ node_reader() {
 INLINE const PandaNodePipelineReader *CullTraverserData::
 node_reader() const {
   return &_node_reader;
+}
+
+/**
+ * Constructs and returns an actual NodePath that represents the same path we
+ * have just traversed.
+ */
+INLINE NodePath CullTraverserData::
+get_node_path() const {
+  NodePath result;
+  result._head = r_get_node_path();
+  nassertr(result._head != nullptr, NodePath::fail());
+  return result;
 }
 
 /**

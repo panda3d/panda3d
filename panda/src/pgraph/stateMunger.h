@@ -30,11 +30,12 @@ public:
   virtual ~StateMunger();
   CPT(RenderState) munge_state(const RenderState *state);
 
+  INLINE bool should_munge_state() const;
+
 protected:
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
-  typedef WeakKeyHashMap<RenderState, WCPT(RenderState) > StateMap;
-  StateMap _state_map;
+  bool _should_munge_state;
 
 public:
   static TypeHandle get_class_type() {

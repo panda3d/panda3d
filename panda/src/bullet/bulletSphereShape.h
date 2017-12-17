@@ -31,7 +31,7 @@ private:
   INLINE BulletSphereShape() : _shape(NULL) {};
 
 PUBLISHED:
-  BulletSphereShape(PN_stdfloat radius);
+  explicit BulletSphereShape(PN_stdfloat radius);
   INLINE BulletSphereShape(const BulletSphereShape &copy);
   INLINE void operator = (const BulletSphereShape &copy);
   INLINE ~BulletSphereShape();
@@ -40,11 +40,14 @@ PUBLISHED:
 
   static BulletSphereShape *make_from_solid(const CollisionSphere *solid);
 
+  MAKE_PROPERTY(radius, get_radius);
+
 public:
   virtual btCollisionShape *ptr() const;
 
 private:
   btSphereShape *_shape;
+  PN_stdfloat _radius;
 
 public:
   static void register_with_read_factory();

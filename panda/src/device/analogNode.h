@@ -38,8 +38,8 @@
  */
 class EXPCL_PANDA_DEVICE AnalogNode : public DataNode {
 PUBLISHED:
-  AnalogNode(ClientBase *client, const string &device_name);
-  AnalogNode(InputDevice *device);
+  explicit AnalogNode(ClientBase *client, const string &device_name);
+  explicit AnalogNode(InputDevice *device);
   virtual ~AnalogNode();
 
   INLINE bool is_valid() const;

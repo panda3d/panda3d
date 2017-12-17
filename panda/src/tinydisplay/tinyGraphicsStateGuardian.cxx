@@ -470,7 +470,6 @@ end_frame(Thread *current_thread) {
  */
 bool TinyGraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
 #ifndef NDEBUG
@@ -479,7 +478,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif  // NDEBUG
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -1734,11 +1733,7 @@ release_texture(TextureContext *tc) {
  */
 void TinyGraphicsStateGuardian::
 do_issue_light() {
-  // Initialize the current ambient light total and newly enabled light list
-  LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
-
   int num_enabled = 0;
-  int num_on_lights = 0;
 
   const LightAttrib *target_light = DCAST(LightAttrib, _target_rs->get_attrib_def(LightAttrib::get_class_slot()));
   if (display_cat.is_spam()) {
@@ -1750,43 +1745,35 @@ do_issue_light() {
   clear_light_state();
 
   // Now, assign new lights.
-  if (target_light != (LightAttrib *)NULL) {
-    CPT(LightAttrib) new_light = target_light->filter_to_max(_max_lights);
-    if (display_cat.is_spam()) {
-      new_light->write(display_cat.spam(false), 2);
-    }
-
-    num_on_lights = new_light->get_num_on_lights();
-    for (int li = 0; li < num_on_lights; li++) {
-      NodePath light = new_light->get_on_light(li);
-      nassertv(!light.is_empty());
-      Light *light_obj = light.node()->as_light();
-      nassertv(light_obj != (Light *)NULL);
-
+  if (target_light != nullptr) {
+    if (target_light->has_any_on_light()) {
       _lighting_enabled = true;
       _c->lighting_enabled = true;
+    }
 
-      if (light_obj->get_type() == AmbientLight::get_class_type()) {
-        // Accumulate all of the ambient lights together into one.
-        cur_ambient_light += light_obj->get_color();
+    size_t filtered_lights = min((size_t)_max_lights, target_light->get_num_non_ambient_lights());
+    for (size_t li = 0; li < filtered_lights; ++li) {
+      NodePath light = target_light->get_on_light(li);
+      nassertv(!light.is_empty());
+      Light *light_obj = light.node()->as_light();
+      nassertv(light_obj != nullptr);
 
-      } else {
-        // Other kinds of lights each get their own GLLight object.
-        light_obj->bind(this, light, num_enabled);
-        num_enabled++;
+      // Other kinds of lights each get their own GLLight object.
+      light_obj->bind(this, light, num_enabled);
+      num_enabled++;
 
-        // Handle the diffuse color here, since all lights have this property.
-        GLLight *gl_light = _c->first_light;
-        nassertv(gl_light != NULL);
-        const LColor &diffuse = light_obj->get_color();
-        gl_light->diffuse.v[0] = diffuse[0];
-        gl_light->diffuse.v[1] = diffuse[1];
-        gl_light->diffuse.v[2] = diffuse[2];
-        gl_light->diffuse.v[3] = diffuse[3];
-      }
+      // Handle the diffuse color here, since all lights have this property.
+      GLLight *gl_light = _c->first_light;
+      nassertv(gl_light != NULL);
+      const LColor &diffuse = light_obj->get_color();
+      gl_light->diffuse.v[0] = diffuse[0];
+      gl_light->diffuse.v[1] = diffuse[1];
+      gl_light->diffuse.v[2] = diffuse[2];
+      gl_light->diffuse.v[3] = diffuse[3];
     }
   }
 
+  LColor cur_ambient_light = target_light->get_ambient_contribution();
   _c->ambient_light_model.v[0] = cur_ambient_light[0];
   _c->ambient_light_model.v[1] = cur_ambient_light[1];
   _c->ambient_light_model.v[2] = cur_ambient_light[2];
@@ -2612,12 +2599,10 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
 
   if (gltex->total_bytecount != total_bytecount) {
     if (gltex->allocated_buffer != NULL) {
-      PANDA_FREE_ARRAY(gltex->allocated_buffer);
-      TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
+      TinyTextureContext::get_class_type().deallocate_array(gltex->allocated_buffer);
     }
-    gltex->allocated_buffer = PANDA_MALLOC_ARRAY(total_bytecount);
+    gltex->allocated_buffer = TinyTextureContext::get_class_type().allocate_array(total_bytecount);
     gltex->total_bytecount = total_bytecount;
-    TinyTextureContext::get_class_type().inc_memory_usage(TypeHandle::MC_array, total_bytecount);
   }
 
   char *next_buffer = (char *)gltex->allocated_buffer;

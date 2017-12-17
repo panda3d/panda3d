@@ -18,6 +18,7 @@
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "auxBitplaneAttrib.h"
 
 TypeHandle AlphaTestAttrib::_type_handle;
 int AlphaTestAttrib::_attrib_slot;
@@ -91,14 +92,6 @@ get_hash_impl() const {
   hash = int_hash::add_hash(hash, (int)_mode);
   hash = float_hash().add_hash(hash, _reference_alpha);
   return hash;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) AlphaTestAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
 }
 
 /**

@@ -29,15 +29,16 @@ class BulletShape;
  *
  */
 class EXPCL_PANDABULLET BulletGhostNode : public BulletBodyNode {
-
 PUBLISHED:
-  BulletGhostNode(const char *name="ghost");
+  explicit BulletGhostNode(const char *name="ghost");
   INLINE ~BulletGhostNode();
 
   // Overlapping
   INLINE int get_num_overlapping_nodes() const;
   INLINE PandaNode *get_overlapping_node(int idx) const;
   MAKE_SEQ(get_overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
+  
+  MAKE_SEQ_PROPERTY(overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
 
 public:
   virtual btCollisionObject *get_object() const;

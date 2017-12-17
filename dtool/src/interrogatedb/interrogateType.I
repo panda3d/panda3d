@@ -293,6 +293,14 @@ is_union() const {
  *
  */
 INLINE bool InterrogateType::
+is_final() const {
+  return (_flags & F_final) != 0;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateType::
 is_fully_defined() const {
   return (_flags & F_fully_defined) != 0;
 }
@@ -341,6 +349,14 @@ has_destructor() const {
 INLINE bool InterrogateType::
 destructor_is_inherited() const {
   return (_flags & F_inherited_destructor) != 0;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateType::
+destructor_is_implicit() const {
+  return (_flags & F_implicit_destructor) != 0;
 }
 
 /**

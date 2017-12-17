@@ -32,7 +32,7 @@ private:
   INLINE BulletPlaneShape() : _shape(NULL) {};
 
 PUBLISHED:
-  BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
+  explicit BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
   INLINE BulletPlaneShape(const BulletPlaneShape &copy);
   INLINE void operator = (const BulletPlaneShape &copy);
   INLINE ~BulletPlaneShape();
@@ -41,6 +41,9 @@ PUBLISHED:
   INLINE PN_stdfloat get_plane_constant() const;
 
   static BulletPlaneShape *make_from_solid(const CollisionPlane *solid);
+
+  MAKE_PROPERTY(plane_normal, get_plane_normal);
+  MAKE_PROPERTY(plane_constant, get_plane_constant);
 
 public:
   virtual btCollisionShape *ptr() const;

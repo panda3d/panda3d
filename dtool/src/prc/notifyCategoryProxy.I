@@ -69,7 +69,8 @@ is_on(NotifySeverity severity) {
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_spam() {
-  return get_unsafe_ptr()->is_spam();
+  // Instruct the compiler to optimize for the usual case.
+  return UNLIKELY(get_unsafe_ptr()->is_spam());
 }
 #else
 template<class GetCategory>
@@ -86,7 +87,8 @@ is_spam() {
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
-  return get_unsafe_ptr()->is_debug();
+  // Instruct the compiler to optimize for the usual case.
+  return UNLIKELY(get_unsafe_ptr()->is_debug());
 }
 #else
 template<class GetCategory>

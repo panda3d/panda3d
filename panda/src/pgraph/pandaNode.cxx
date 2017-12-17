@@ -1216,7 +1216,7 @@ set_tag(const string &key, const string &value, Thread *current_thread) {
   // stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    cdata->_tag_data[key] = value;
+    cdata->_tag_data.store(key, value);
     cdata->set_fancy_bit(FB_tag, true);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -1231,8 +1231,8 @@ void PandaNode::
 clear_tag(const string &key, Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    cdata->_tag_data.erase(key);
-    cdata->set_fancy_bit(FB_tag, !cdata->_tag_data.empty());
+    cdata->_tag_data.remove(key);
+    cdata->set_fancy_bit(FB_tag, !cdata->_tag_data.is_empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
@@ -1257,13 +1257,10 @@ copy_tags(PandaNode *other) {
     CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
     CDStageReader cdatar(other->_cycler, pipeline_stage, current_thread);
 
-    TagData::const_iterator ti;
-    for (ti = cdatar->_tag_data.begin();
-         ti != cdatar->_tag_data.end();
-         ++ti) {
-      cdataw->_tag_data[(*ti).first] = (*ti).second;
+    for (size_t n = 0; n < cdatar->_tag_data.size(); ++n) {
+      cdataw->_tag_data.store(cdatar->_tag_data.get_key(n), cdatar->_tag_data.get_data(n));
     }
-    cdataw->set_fancy_bit(FB_tag, !cdataw->_tag_data.empty());
+    cdataw->set_fancy_bit(FB_tag, !cdataw->_tag_data.is_empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
@@ -1286,14 +1283,11 @@ copy_tags(PandaNode *other) {
 void PandaNode::
 list_tags(ostream &out, const string &separator) const {
   CDReader cdata(_cycler);
-  if (!cdata->_tag_data.empty()) {
-    TagData::const_iterator ti = cdata->_tag_data.begin();
-    out << (*ti).first;
-    ++ti;
-    while (ti != cdata->_tag_data.end()) {
-      out << separator << (*ti).first;
-      ++ti;
+  for (size_t n = 0; n < cdata->_tag_data.size(); ++n) {
+    if (n > 0) {
+      out << separator;
     }
+    out << cdata->_tag_data.get_key(n);
   }
 
   // We used to list the Python tags here.  That's a bit awkward, though,
@@ -1310,12 +1304,8 @@ list_tags(ostream &out, const string &separator) const {
 void PandaNode::
 get_tag_keys(vector_string &keys) const {
   CDReader cdata(_cycler);
-  if (!cdata->_tag_data.empty()) {
-    TagData::const_iterator ti = cdata->_tag_data.begin();
-    while (ti != cdata->_tag_data.end()) {
-      keys.push_back((*ti).first);
-      ++ti;
-    }
+  for (size_t n = 0; n < cdata->_tag_data.size(); ++n) {
+    keys.push_back(cdata->_tag_data.get_key(n));
   }
 }
 
@@ -1331,28 +1321,30 @@ compare_tags(const PandaNode *other) const {
   CDReader cdata(_cycler);
   CDReader cdata_other(other->_cycler);
 
-  TagData::const_iterator ati = cdata->_tag_data.begin();
-  TagData::const_iterator bti = cdata_other->_tag_data.begin();
-  while (ati != cdata->_tag_data.end() &&
-         bti != cdata_other->_tag_data.end()) {
-    int cmp = strcmp((*ati).first.c_str(), (*bti).first.c_str());
+  const TagData &a_data = cdata->_tag_data;
+  const TagData &b_data = cdata_other->_tag_data;
+
+  size_t ai = 0;
+  size_t bi = 0;
+  while (ai < a_data.size() && bi < b_data.size()) {
+    int cmp = strcmp(a_data.get_key(ai).c_str(), b_data.get_key(bi).c_str());
     if (cmp != 0) {
       return cmp;
     }
 
-    cmp = strcmp((*ati).second.c_str(), (*bti).second.c_str());
+    cmp = strcmp(a_data.get_key(ai).c_str(), b_data.get_key(bi).c_str());
     if (cmp != 0) {
       return cmp;
     }
 
-    ++ati;
-    ++bti;
+    ++ai;
+    ++bi;
   }
-  if (ati != cdata->_tag_data.end()) {
+  if (ai < a_data.size()) {
     // list A is longer.
     return 1;
   }
-  if (bti != cdata_other->_tag_data.end()) {
+  if (bi < b_data.size()) {
     // list B is longer.
     return -1;
   }
@@ -1412,11 +1404,8 @@ copy_all_properties(PandaNode *other) {
     // to preserve properties such as the default GeomNode bitmask.
     cdataw->_into_collide_mask |= cdatar->_into_collide_mask;
 
-    TagData::const_iterator ti;
-    for (ti = cdatar->_tag_data.begin();
-         ti != cdatar->_tag_data.end();
-         ++ti) {
-      cdataw->_tag_data[(*ti).first] = (*ti).second;
+    for (size_t n = 0; n < cdatar->_tag_data.size(); ++n) {
+      cdataw->_tag_data.store(cdatar->_tag_data.get_key(n), cdatar->_tag_data.get_data(n));
     }
 
     static const int change_bits = (FB_transform | FB_state | FB_effects |
@@ -2124,8 +2113,8 @@ is_ambient_light() const {
 }
 
 /**
- * Reads the string created by a previous call to encode_to_bam_stream(), and
- * extracts and returns the single object on that string.  Returns NULL on
+ * Reads the bytes created by a previous call to encode_to_bam_stream(), and
+ * extracts and returns the single object on those bytes.  Returns NULL on
  * error.
  *
  * This method is intended to replace decode_raw_from_bam_stream() when you
@@ -2134,15 +2123,15 @@ is_ambient_light() const {
  * responsible for maintaining the reference count on the return value.
  */
 PT(PandaNode) PandaNode::
-decode_from_bam_stream(const string &data, BamReader *reader) {
+decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   TypedWritable *object;
   ReferenceCount *ref_ptr;
 
-  if (!TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, data, reader)) {
-    return NULL;
+  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, move(data), reader)) {
+    return DCAST(PandaNode, object);
+  } else {
+    return nullptr;
   }
-
-  return DCAST(PandaNode, object);
 }
 
 /**
@@ -3775,12 +3764,10 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint8(_bounds_type);
 
   dg.add_uint32(_tag_data.size());
-  TagData::const_iterator ti;
-  for (ti = _tag_data.begin(); ti != _tag_data.end(); ++ti) {
-    dg.add_string((*ti).first);
-    dg.add_string((*ti).second);
+  for (size_t n = 0; n < _tag_data.size(); ++n) {
+    dg.add_string(_tag_data.get_key(n));
+    dg.add_string(_tag_data.get_data(n));
   }
-
 
   write_up_list(*get_up(), manager, dg);
   write_down_list(*get_down(), manager, dg);
@@ -3855,7 +3842,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   set_fancy_bit(FB_transform, !_transform->is_identity());
   set_fancy_bit(FB_state, !_state->is_empty());
   set_fancy_bit(FB_effects, !_effects->is_empty());
-  set_fancy_bit(FB_tag, !_tag_data.empty());
+  set_fancy_bit(FB_tag, !_tag_data.is_empty());
 
   // Mark the bounds stale.
   ++_next_update;
@@ -3914,7 +3901,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (int i = 0; i < num_tags; i++) {
     string key = scan.get_string();
     string value = scan.get_string();
-    _tag_data[key] = value;
+    _tag_data.store(key, value);
   }
 
 

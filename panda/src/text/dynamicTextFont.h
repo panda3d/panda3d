@@ -31,6 +31,8 @@
 
 class NurbsCurveResult;
 
+typedef struct hb_font_t hb_font_t;
+
 /**
  * A DynamicTextFont is a special TextFont object that rasterizes its glyphs
  * from a standard font file (e.g.  a TTF file) on the fly.  It requires the
@@ -123,6 +125,10 @@ PUBLISHED:
 
 public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
+  virtual PN_stdfloat get_kerning(int first, int second) const;
+
+  bool get_glyph_by_index(int character, int glyph_index, CPT(TextGlyph) &glyph);
+  hb_font_t *get_hb_font() const;
 
 private:
   void initialize();
@@ -169,6 +175,8 @@ private:
   // keep their reference counts; they also appear in the above table.
   typedef pvector< PT(TextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
+
+  mutable hb_font_t *_hb_font;
 
 public:
   static TypeHandle get_class_type() {

@@ -186,7 +186,7 @@ class DirectManipulationControl(DirectObject):
 
     def drawMarquee(self, startX, startY):
         if self.marquee:
-            self.marquee.remove()
+            self.marquee.removeNode()
             self.marquee = None
 
         if base.direct.cameraControl.useMayaCamControls and base.direct.fAlt:
@@ -228,7 +228,7 @@ class DirectManipulationControl(DirectObject):
             skipFlags |= SKIP_CAMERA * (1 - base.getControl())
 
             if self.marquee:
-                self.marquee.remove()
+                self.marquee.removeNode()
                 self.marquee = None
                 base.direct.deselectAll()
 
@@ -1691,7 +1691,7 @@ class ObjectHandles(NodePath, DirectObject):
         np.setPos(base.direct.camera, hitPt)
         resultPt = Point3(0)
         resultPt.assign(np.getPos())
-        np.remove()
+        np.removeNode()
         del iRay
         return resultPt
 

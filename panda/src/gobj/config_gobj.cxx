@@ -572,6 +572,7 @@ ConfigureFn(config_gobj) {
   ParamTextureImage::init_type();
   ParamTextureSampler::init_type();
   PerspectiveLens::init_type();
+  PreparedGraphicsObjects::EnqueuedObject::init_type();
   QueryContext::init_type();
   SamplerContext::init_type();
   SamplerState::init_type();

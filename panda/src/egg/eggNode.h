@@ -34,7 +34,7 @@ class EggTextureCollection;
  */
 class EXPCL_PANDAEGG EggNode : public EggNamedObject {
 PUBLISHED:
-  INLINE EggNode(const string &name = "");
+  INLINE explicit EggNode(const string &name = "");
   INLINE EggNode(const EggNode &copy);
   INLINE EggNode &operator = (const EggNode &copy);
 

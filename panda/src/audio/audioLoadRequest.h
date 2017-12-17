@@ -32,8 +32,9 @@ public:
   ALLOC_DELETED_CHAIN(AudioLoadRequest);
 
 PUBLISHED:
-  INLINE AudioLoadRequest(AudioManager *audio_manager, const string &filename,
-                          bool positional);
+  INLINE explicit AudioLoadRequest(AudioManager *audio_manager,
+                                   const string &filename,
+                                   bool positional);
 
   INLINE AudioManager *get_audio_manager() const;
   INLINE const string &get_filename() const;
@@ -49,9 +50,6 @@ private:
   PT(AudioManager) _audio_manager;
   string _filename;
   bool _positional;
-
-  bool _is_ready;
-  PT(AudioSound) _sound;
 
 public:
   static TypeHandle get_class_type() {

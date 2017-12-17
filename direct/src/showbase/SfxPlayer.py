@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""Contains the SfxPlayer class, a thin utility class for playing sounds at
+a particular location."""
 
 __all__ = ['SfxPlayer']
 
@@ -95,6 +96,3 @@ class SfxPlayer:
             if node is not None:
                 finalVolume *= node.getNetAudioVolume()
             sfx.setVolume(finalVolume)
-
-
-

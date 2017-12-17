@@ -178,6 +178,10 @@ private:
   static TypeHandle _texcoord_type_handle;
 };
 
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<InternalName>::update_type(To *ptr) {}
+
 INLINE ostream &operator << (ostream &out, const InternalName &tcn);
 
 /**

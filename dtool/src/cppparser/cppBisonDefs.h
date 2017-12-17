@@ -23,6 +23,7 @@
 
 #include <string>
 
+#include "cppClosureType.h"
 #include "cppExtensionType.h"
 #include "cppFile.h"
 
@@ -42,6 +43,7 @@ class CPPParameterList;
 class CPPTemplateParameterList;
 class CPPScope;
 class CPPIdentifier;
+class CPPCaptureType;
 
 void parse_cpp(CPPParser *cp);
 CPPExpression *parse_const_expr(CPPPreprocessor *pp,
@@ -81,6 +83,8 @@ public:
     CPPExtensionType::Type extension_enum;
     CPPExpression *expr;
     CPPIdentifier *identifier;
+    CPPClosureType *closure_type;
+    CPPClosureType::Capture *capture;
   } u;
 };
 #define YYSTYPE cppyystype

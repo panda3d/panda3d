@@ -341,6 +341,22 @@ ns_get_environment_variable(const string &var) const {
     }
   }
 
+#elif !defined(__APPLE__)
+  // Similarly, we define fallbacks on POSIX systems for the variables defined
+  // in the XDG Base Directory specification, so that they can be safely used
+  // in Config.prc files.
+  if (var == "XDG_CONFIG_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.config";
+
+  } else if (var == "XDG_CACHE_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.cache";
+
+  } else if (var == "XDG_DATA_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.local/share";
+  }
 #endif // _WIN32
 
   return string();
@@ -591,8 +607,8 @@ read_args() {
     dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
 
     while (map != NULL) {
-      char *tail = strrchr(map->l_name, '/');
-      char *head = strchr(map->l_name, '/');
+      const char *tail = strrchr(map->l_name, '/');
+      const char *head = strchr(map->l_name, '/');
       if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
                         || strcmp(tail, "/libp3dtool.so") == 0)) {
         _dtool_name = head;
@@ -615,8 +631,8 @@ read_args() {
       char buffer[PATH_MAX];
       buffer[0] = 0;
       maps.getline(buffer, PATH_MAX);
-      char *tail = strrchr(buffer, '/');
-      char *head = strchr(buffer, '/');
+      const char *tail = strrchr(buffer, '/');
+      const char *head = strchr(buffer, '/');
       if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
                         || strcmp(tail, "/libp3dtool.so") == 0)) {
         _dtool_name = head;

@@ -24,9 +24,9 @@
  */
 class EXPCL_DIRECT CConstrainTransformInterval : public CConstraintInterval {
 PUBLISHED:
-  CConstrainTransformInterval(const string &name, double duration,
-                              const NodePath &node, const NodePath &target,
-                              bool wrt);
+  explicit CConstrainTransformInterval(const string &name, double duration,
+                                       const NodePath &node,
+                                       const NodePath &target, bool wrt);
 
   INLINE const NodePath &get_node() const;
   INLINE const NodePath &get_target() const;

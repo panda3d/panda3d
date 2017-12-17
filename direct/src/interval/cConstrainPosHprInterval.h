@@ -26,10 +26,10 @@
  */
 class EXPCL_DIRECT CConstrainPosHprInterval : public CConstraintInterval {
 PUBLISHED:
-  CConstrainPosHprInterval(const string &name, double duration,
-                           const NodePath &node, const NodePath &target,
-                           bool wrt, const LVecBase3 posOffset=LVector3::zero(),
-                           const LVecBase3 hprOffset=LVector3::zero());
+  explicit CConstrainPosHprInterval(const string &name, double duration,
+                                    const NodePath &node, const NodePath &target,
+                                    bool wrt, const LVecBase3 posOffset=LVector3::zero(),
+                                    const LVecBase3 hprOffset=LVector3::zero());
 
   INLINE const NodePath &get_node() const;
   INLINE const NodePath &get_target() const;

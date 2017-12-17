@@ -64,11 +64,21 @@ PUBLISHED:
 
   int find_on_stage(const TextureStage *stage) const;
 
+  MAKE_SEQ_PROPERTY(on_stages, get_num_on_stages, get_on_stage);
+
+  MAKE_MAP_PROPERTY(textures, has_on_stage, get_on_texture);
+  MAKE_MAP_KEYS_SEQ(textures, get_num_on_stages, get_on_stage);
+
+  MAKE_MAP_PROPERTY(samplers, has_on_stage, get_on_sampler);
+  MAKE_MAP_KEYS_SEQ(samplers, get_num_on_stages, get_on_stage);
+
   INLINE int get_num_off_stages() const;
   INLINE TextureStage *get_off_stage(int n) const;
   MAKE_SEQ(get_off_stages, get_num_off_stages, get_off_stage);
   INLINE bool has_off_stage(TextureStage *stage) const;
   INLINE bool has_all_off() const;
+
+  MAKE_SEQ_PROPERTY(off_stages, get_num_off_stages, get_off_stage);
 
   INLINE bool is_identity() const;
 
@@ -94,7 +104,6 @@ protected:
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
   INLINE void check_sorted() const;
@@ -158,6 +167,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
+  MAKE_PROPERTY(class_slot, get_class_slot);
 
 public:
   static void register_with_read_factory();

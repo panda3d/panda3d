@@ -34,36 +34,6 @@ ordered_vector(const Compare &compare, TypeHandle type_handle) :
 }
 
 /**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ordered_vector<Key, Compare, Vector>::
-ordered_vector(const ordered_vector<Key, Compare, Vector> &copy) :
-  _compare(copy._compare),
-  _vector(copy._vector)
-{
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ordered_vector<Key, Compare, Vector> &ordered_vector<Key, Compare, Vector>::
-operator = (const ordered_vector<Key, Compare, Vector> &copy) {
-  _compare = copy._compare;
-  _vector = copy._vector;
-  return *this;
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ordered_vector<Key, Compare, Vector>::
-~ordered_vector() {
-}
-
-/**
  * Returns the iterator that marks the first element in the ordered vector.
  */
 template<class Key, class Compare, class Vector>
@@ -140,6 +110,44 @@ rend() const {
 }
 
 /**
+ * Returns the iterator that marks the first element in the ordered vector.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
+cbegin() const {
+  return _vector.begin();
+}
+
+/**
+ * Returns the iterator that marks the end of the ordered vector.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
+cend() const {
+  return _vector.end();
+}
+
+/**
+ * Returns the iterator that marks the first element in the ordered vector,
+ * when viewed in reverse order.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::CONST_REVERSE_ITERATOR ordered_vector<Key, Compare, Vector>::
+crbegin() const {
+  return _vector.rbegin();
+}
+
+/**
+ * Returns the iterator that marks the end of the ordered vector, when viewed
+ * in reverse order.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::CONST_REVERSE_ITERATOR ordered_vector<Key, Compare, Vector>::
+crend() const {
+  return _vector.rend();
+}
+
+/**
  * Returns the nth element.
  */
 template<class Key, class Compare, class Vector>
@@ -155,6 +163,54 @@ template<class Key, class Compare, class Vector>
 INLINE TYPENAME ordered_vector<Key, Compare, Vector>::CONST_REFERENCE ordered_vector<Key, Compare, Vector>::
 operator [] (TYPENAME ordered_vector<Key, Compare, Vector>::SIZE_TYPE n) const {
   return _vector[n];
+}
+
+/**
+ * Returns a reference to the first element.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::REFERENCE ordered_vector<Key, Compare, Vector>::
+front() {
+#ifdef _DEBUG
+  assert(!_vector.empty());
+#endif
+  return _vector[0];
+}
+
+/**
+ * Returns a const reference to the first element.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::CONST_REFERENCE ordered_vector<Key, Compare, Vector>::
+front() const {
+#ifdef _DEBUG
+  assert(!_vector.empty());
+#endif
+  return _vector[0];
+}
+
+/**
+ * Returns a reference to the first element.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::REFERENCE ordered_vector<Key, Compare, Vector>::
+back() {
+#ifdef _DEBUG
+  assert(!_vector.empty());
+#endif
+  return _vector[_vector.size() - 1];
+}
+
+/**
+ * Returns a const reference to the last element.
+ */
+template<class Key, class Compare, class Vector>
+INLINE TYPENAME ordered_vector<Key, Compare, Vector>::CONST_REFERENCE ordered_vector<Key, Compare, Vector>::
+back() const {
+#ifdef _DEBUG
+  assert(!_vector.empty());
+#endif
+  return _vector[_vector.size() - 1];
 }
 
 /**
@@ -561,6 +617,18 @@ push_back(const value_type &key) {
 }
 
 /**
+ * Adds the new element to the end of the vector without regard for proper
+ * sorting.  This is a bad idea to do except to populate the vector the first
+ * time; be sure to call sort() after you have added all the elements.
+ */
+template<class Key, class Compare, class Vector>
+INLINE void ordered_vector<Key, Compare, Vector>::
+push_back(value_type &&key) {
+  TAU_PROFILE("ordered_vector::push_back()", " ", TAU_USER);
+  _vector.push_back(move(key));
+}
+
+/**
  * Removes the last element at the end of the vector.
  */
 template<class Key, class Compare, class Vector>
@@ -637,26 +705,6 @@ ov_set(const Compare &compare, TypeHandle type_handle) :
 }
 
 /**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_set<Key, Compare, Vector>::
-ov_set(const ov_set<Key, Compare, Vector> &copy) :
-  ordered_vector<Key, Compare, Vector>(copy)
-{
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_set<Key, Compare, Vector> &ov_set<Key, Compare, Vector>::
-operator = (const ov_set<Key, Compare, Vector> &copy) {
-  ordered_vector<Key, Compare, Vector>::operator = (copy);
-  return *this;
-}
-
-/**
  * Maps to insert_unique().
  */
 template<class Key, class Compare, class Vector>
@@ -711,26 +759,6 @@ INLINE ov_multiset<Key, Compare, Vector>::
 ov_multiset(const Compare &compare, TypeHandle type_handle) :
   ordered_vector<Key, Compare, Vector>(compare, type_handle)
 {
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_multiset<Key, Compare, Vector>::
-ov_multiset(const ov_multiset<Key, Compare, Vector> &copy) :
-  ordered_vector<Key, Compare, Vector>(copy)
-{
-}
-
-/**
- *
- */
-template<class Key, class Compare, class Vector>
-INLINE ov_multiset<Key, Compare, Vector> &ov_multiset<Key, Compare, Vector>::
-operator = (const ov_multiset<Key, Compare, Vector> &copy) {
-  ordered_vector<Key, Compare, Vector>::operator = (copy);
-  return *this;
 }
 
 /**

@@ -1271,7 +1271,7 @@ set_window_sort(GraphicsOutput *window, int sort) {
  * model begins with the "-" character.
  */
 void GraphicsEngine::
-cull_and_draw_together(const GraphicsEngine::Windows &wlist,
+cull_and_draw_together(GraphicsEngine::Windows wlist,
                        Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
 
@@ -1328,21 +1328,24 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  DisplayRegionPipelineReader *dr_reader =
-    new DisplayRegionPipelineReader(dr, current_thread);
+  PT(SceneSetup) scene_setup;
 
-  win->change_scenes(dr_reader);
-  gsg->prepare_display_region(dr_reader);
+  {
+    DisplayRegionPipelineReader dr_reader(dr, current_thread);
+    win->change_scenes(&dr_reader);
+    gsg->prepare_display_region(&dr_reader);
 
-  if (dr_reader->is_any_clear_active()) {
-    gsg->clear(dr);
+    if (dr_reader.is_any_clear_active()) {
+      gsg->clear(dr);
+    }
+
+    scene_setup = setup_scene(gsg, &dr_reader);
   }
 
-  PT(SceneSetup) scene_setup = setup_scene(gsg, dr_reader);
   if (scene_setup == (SceneSetup *)NULL) {
     // Never mind.
 
-  } else if (dr_reader->get_object()->is_stereo()) {
+  } else if (dr->is_stereo()) {
     // Don't draw stereo DisplayRegions directly.
 
   } else if (!gsg->set_scene(scene_setup)) {
@@ -1353,9 +1356,6 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
   } else {
     DrawCullHandler cull_handler(gsg);
     if (gsg->begin_scene()) {
-      delete dr_reader;
-      dr_reader = NULL;
-
       CallbackObject *cbobj = dr->get_cull_callback();
       if (cbobj != (CallbackObject *)NULL) {
         // Issue the cull callback on this DisplayRegion.
@@ -1372,10 +1372,6 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
       gsg->end_scene();
     }
   }
-
-  if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
-    delete dr_reader;
-  }
 }
 
 /**
@@ -1384,7 +1380,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
  * drawing.
  */
 void GraphicsEngine::
-cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
+cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
 
   _singular_warning_last_frame = _singular_warning_this_frame;
@@ -1399,27 +1395,41 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   for (size_t wi = 0; wi < wlist_size; ++wi) {
     GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
+      GraphicsStateGuardian *gsg = win->get_gsg();
       PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
       int num_display_regions = win->get_num_active_display_regions();
       for (int i = 0; i < num_display_regions; ++i) {
         DisplayRegion *dr = win->get_active_display_region(i);
-        if (dr != (DisplayRegion *)NULL) {
-          DisplayRegionPipelineReader *dr_reader =
-            new DisplayRegionPipelineReader(dr, current_thread);
-
+        if (dr != nullptr) {
+          PT(SceneSetup) scene_setup;
+          PT(CullResult) cull_result;
           CullKey key;
-          key._gsg = win->get_gsg();
-          key._camera = dr_reader->get_camera();
-          key._lens_index = dr_reader->get_lens_index();
+          {
+            PStatTimer timer(_cull_setup_pcollector, current_thread);
+            DisplayRegionPipelineReader dr_reader(dr, current_thread);
+            scene_setup = setup_scene(gsg, &dr_reader);
+            if (scene_setup == nullptr) {
+              continue;
+            }
 
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(key, (DisplayRegion *)NULL)).first;
-          if ((*aci).second == NULL) {
+            key._gsg = gsg;
+            key._camera = dr_reader.get_camera();
+            key._lens_index = dr_reader.get_lens_index();
+          }
+
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(move(key), nullptr)).first;
+          if ((*aci).second == nullptr) {
             // We have not used this camera already in this thread.  Perform
             // the cull operation.
-            delete dr_reader;
-            dr_reader = NULL;
+            cull_result = dr->get_cull_result(current_thread);
+            if (cull_result != nullptr) {
+              cull_result = cull_result->make_next();
+            } else {
+              // This DisplayRegion has no cull results; draw it.
+              cull_result = new CullResult(gsg, dr->get_draw_region_pcollector());
+            }
             (*aci).second = dr;
-            cull_to_bins(win, dr, current_thread);
+            cull_to_bins(win, gsg, dr, scene_setup, cull_result, current_thread);
 
           } else {
             // We have already culled a scene using this camera in this
@@ -1429,14 +1439,11 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
             // image.)  Of course, the cull result will be the same, so just
             // use the result from the other DisplayRegion.
             DisplayRegion *other_dr = (*aci).second;
-            dr->set_cull_result(other_dr->get_cull_result(current_thread),
-                                setup_scene(win->get_gsg(), dr_reader),
-                                current_thread);
+            cull_result = other_dr->get_cull_result(current_thread);
           }
 
-          if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
-            delete dr_reader;
-          }
+          // Save the results for next frame.
+          dr->set_cull_result(MOVE(cull_result), MOVE(scene_setup), current_thread);
         }
       }
     }
@@ -1447,50 +1454,26 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
  * Called only within the inner loop of cull_to_bins(), above.
  */
 void GraphicsEngine::
-cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
-  GraphicsStateGuardian *gsg = win->get_gsg();
-  if (gsg == (GraphicsStateGuardian *)NULL) {
-    return;
+cull_to_bins(GraphicsOutput *win, GraphicsStateGuardian *gsg,
+             DisplayRegion *dr, SceneSetup *scene_setup,
+             CullResult *cull_result, Thread *current_thread) {
+
+  BinCullHandler cull_handler(cull_result);
+  CallbackObject *cbobj = dr->get_cull_callback();
+  if (cbobj != (CallbackObject *)NULL) {
+    // Issue the cull callback on this DisplayRegion.
+    DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
+    cbobj->do_callback(&cbdata);
+
+    // The callback has taken care of the culling.
+
+  } else {
+    // Perform the cull normally.
+    dr->do_cull(&cull_handler, scene_setup, gsg, current_thread);
   }
 
-  PT(CullResult) cull_result;
-  PT(SceneSetup) scene_setup;
-  {
-    PStatTimer timer(_cull_setup_pcollector, current_thread);
-    DisplayRegionPipelineReader dr_reader(dr, current_thread);
-    scene_setup = setup_scene(gsg, &dr_reader);
-    cull_result = dr->get_cull_result(current_thread);
-
-    if (cull_result != (CullResult *)NULL) {
-      cull_result = cull_result->make_next();
-
-    } else {
-      // This DisplayRegion has no cull results; draw it.
-      cull_result = new CullResult(gsg, dr->get_draw_region_pcollector());
-    }
-  }
-
-  if (scene_setup != (SceneSetup *)NULL) {
-    BinCullHandler cull_handler(cull_result);
-    CallbackObject *cbobj = dr->get_cull_callback();
-    if (cbobj != (CallbackObject *)NULL) {
-      // Issue the cull callback on this DisplayRegion.
-      DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
-      cbobj->do_callback(&cbdata);
-
-      // The callback has taken care of the culling.
-
-    } else {
-      // Perform the cull normally.
-      dr->do_cull(&cull_handler, scene_setup, gsg, current_thread);
-    }
-
-    PStatTimer timer(_cull_sort_pcollector, current_thread);
-    cull_result->finish_cull(scene_setup, current_thread);
-  }
-
-  // Save the results for next frame.
-  dr->set_cull_result(MOVE(cull_result), MOVE(scene_setup), current_thread);
+  PStatTimer timer(_cull_sort_pcollector, current_thread);
+  cull_result->finish_cull(scene_setup, current_thread);
 }
 
 /**
@@ -1538,7 +1521,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           for (int i = 0; i < num_display_regions; ++i) {
             DisplayRegion *dr = win->get_active_display_region(i);
             if (dr != (DisplayRegion *)NULL) {
-              draw_bins(win, dr, current_thread);
+              do_draw(win, gsg, dr, current_thread);
             }
           }
         }
@@ -1580,22 +1563,6 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
       }
     }
   }
-}
-
-/**
- * This variant on draw_bins() is only called from draw_bins(), above.  It
- * draws the cull result for a particular DisplayRegion.
- */
-void GraphicsEngine::
-draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
-  GraphicsStateGuardian *gsg = win->get_gsg();
-  if (gsg == (GraphicsStateGuardian *)NULL) {
-    return;
-  }
-
-  PT(CullResult) cull_result = dr->get_cull_result(current_thread);
-  PT(SceneSetup) scene_setup = dr->get_scene_setup(current_thread);
-  do_draw(cull_result, scene_setup, win, dr, current_thread);
 }
 
 /**
@@ -1882,16 +1849,6 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
   scene_setup->set_cs_world_transform(cs_world_transform);
 
-  // Make sure that the GSG has a ShaderGenerator for the munger to use.  We
-  // have to do this here because the ShaderGenerator needs a host window
-  // pointer.  Hopefully we'll be able to eliminate that requirement in the
-  // future.
-#ifdef HAVE_CG
-  if (gsg->get_shader_generator() == NULL) {
-    gsg->set_shader_generator(new ShaderGenerator(gsg, window));
-  }
-#endif
-
   return scene_setup;
 }
 
@@ -1899,14 +1856,19 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
  * Draws the previously-culled scene.
  */
 void GraphicsEngine::
-do_draw(CullResult *cull_result, SceneSetup *scene_setup,
-        GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
-
-  CallbackObject *cbobj;
-  GraphicsStateGuardian *gsg = win->get_gsg();
-
+do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thread *current_thread) {
   // Statistics
   PStatGPUTimer timer(gsg, dr->get_draw_region_pcollector(), current_thread);
+
+  PT(CullResult) cull_result;
+  PT(SceneSetup) scene_setup;
+  {
+    DisplayRegion::CDCullReader cdata(dr->_cycler_cull, current_thread);
+    cull_result = cdata->_cull_result;
+    scene_setup = cdata->_scene_setup;
+  }
+
+  CallbackObject *cbobj;
 
   {
     DisplayRegionPipelineReader dr_reader(dr, current_thread);

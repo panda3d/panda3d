@@ -24,10 +24,13 @@
  *
  */
 class EXPCL_PANDABULLET BulletCylinderShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletCylinderShape();
 
 PUBLISHED:
-  BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
-  BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up=Z_up);
+  explicit BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
+  explicit BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up=Z_up);
   INLINE BulletCylinderShape(const BulletCylinderShape &copy);
   INLINE void operator = (const BulletCylinderShape &copy);
   INLINE ~BulletCylinderShape();
@@ -36,11 +39,24 @@ PUBLISHED:
   INLINE LVecBase3 get_half_extents_without_margin() const;
   INLINE LVecBase3 get_half_extents_with_margin() const;
 
+  MAKE_PROPERTY(radius, get_radius);
+  MAKE_PROPERTY(half_extents_without_margin, get_half_extents_without_margin);
+  MAKE_PROPERTY(half_extents_with_margin, get_half_extents_with_margin);
+
 public:
   virtual btCollisionShape *ptr() const;
 
 private:
+  LVector3 _half_extents;
   btCylinderShape *_shape;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

@@ -47,7 +47,7 @@ class WorkingNodePath;
  */
 class EXPCL_PANDAFX ProjectionScreen : public PandaNode {
 PUBLISHED:
-  ProjectionScreen(const string &name = "");
+  explicit ProjectionScreen(const string &name = "");
   virtual ~ProjectionScreen();
 
 protected:

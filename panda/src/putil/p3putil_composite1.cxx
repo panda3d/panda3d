@@ -22,6 +22,7 @@
 #include "copyOnWriteObject.cxx"
 #include "copyOnWritePointer.cxx"
 #include "cPointerCallbackObject.cxx"
+#include "datagramBuffer.cxx"
 #include "datagramInputFile.cxx"
 #include "datagramOutputFile.cxx"
 #include "doubleBitMask.cxx"

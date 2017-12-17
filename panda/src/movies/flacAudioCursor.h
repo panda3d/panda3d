@@ -30,7 +30,7 @@ class FlacAudio;
  */
 class EXPCL_PANDA_MOVIES FlacAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  FlacAudioCursor(FlacAudio *src, istream *stream);
+  explicit FlacAudioCursor(FlacAudio *src, istream *stream);
   virtual ~FlacAudioCursor();
   virtual void seek(double offset);
 

@@ -16,6 +16,11 @@
  */
 INLINE void PhysicalNode::
 clear() {
+  PhysicalsVector::iterator it;
+  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
+    nassertd((*it)->_physical_node == this) continue;
+    (*it)->_physical_node = nullptr;
+  }
   _physicals.erase(_physicals.begin(), _physicals.end());
 }
 

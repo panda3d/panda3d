@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the Audio3DManager class."""
 
 __all__ = ['Audio3DManager']
 
@@ -288,4 +288,28 @@ class Audio3DManager:
         for object in list(self.sound_dict.keys()):
             for sound in self.sound_dict[object]:
                 self.detachSound(sound)
+
+    #snake_case alias:
+    get_doppler_factor = getDopplerFactor
+    set_listener_velocity_auto = setListenerVelocityAuto
+    attach_listener = attachListener
+    set_distance_factor = setDistanceFactor
+    attach_sound_to_object = attachSoundToObject
+    get_drop_off_factor = getDropOffFactor
+    set_doppler_factor = setDopplerFactor
+    get_sounds_on_object = getSoundsOnObject
+    set_sound_velocity_auto = setSoundVelocityAuto
+    get_sound_max_distance = getSoundMaxDistance
+    load_sfx = loadSfx
+    get_distance_factor = getDistanceFactor
+    set_listener_velocity = setListenerVelocity
+    set_sound_max_distance = setSoundMaxDistance
+    get_sound_velocity = getSoundVelocity
+    get_listener_velocity = getListenerVelocity
+    set_sound_velocity = setSoundVelocity
+    set_sound_min_distance = setSoundMinDistance
+    get_sound_min_distance = getSoundMinDistance
+    detach_listener = detachListener
+    set_drop_off_factor = setDropOffFactor
+    detach_sound = detachSound
 

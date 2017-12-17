@@ -193,13 +193,13 @@ clear_flag(int flag) const {
  *
  */
 CPT(RenderAttrib) ShaderAttrib::
-set_shader_input(const ShaderInput *input) const {
+set_shader_input(ShaderInput input) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  Inputs::iterator i = result->_inputs.find(input->get_name());
+  Inputs::iterator i = result->_inputs.find(input.get_name());
   if (i == result->_inputs.end()) {
-    result->_inputs.insert(Inputs::value_type(input->get_name(), input));
+    result->_inputs.insert(Inputs::value_type(input.get_name(), move(input)));
   } else {
-    i->second = input;
+    i->second = move(input);
   }
   return return_new(result);
 }
@@ -248,13 +248,13 @@ clear_all_shader_inputs() const {
  * Returns the ShaderInput of the given name.  If no such name is found, this
  * function does not return NULL --- it returns the "blank" ShaderInput.
  */
-const ShaderInput *ShaderAttrib::
+const ShaderInput &ShaderAttrib::
 get_shader_input(const InternalName *id) const {
   Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    return ShaderInput::get_blank();
-  } else {
+  if (i != _inputs.end()) {
     return (*i).second;
+  } else {
+    return ShaderInput::get_blank();
   }
 }
 
@@ -262,7 +262,7 @@ get_shader_input(const InternalName *id) const {
  * Returns the ShaderInput of the given name.  If no such name is found, this
  * function does not return NULL --- it returns the "blank" ShaderInput.
  */
-const ShaderInput *ShaderAttrib::
+const ShaderInput &ShaderAttrib::
 get_shader_input(const string &id) const {
   return get_shader_input(InternalName::make(id));
 }
@@ -275,20 +275,21 @@ const NodePath &ShaderAttrib::
 get_shader_input_nodepath(const InternalName *id) const {
   static NodePath resfail;
   Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    ostringstream strm;
-    strm << "Shader input " << id->get_name() << " is not present.\n";
-    nassert_raise(strm.str());
-    return resfail;
-  } else {
-    const ShaderInput *p = (*i).second;
-    if (p->get_value_type() != ShaderInput::M_nodepath) {
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+    if (p.get_value_type() == ShaderInput::M_nodepath) {
+      return ((const ParamNodePath *)p.get_value())->get_value();
+    } else {
       ostringstream strm;
       strm << "Shader input " << id->get_name() << " is not a nodepath.\n";
       nassert_raise(strm.str());
       return resfail;
     }
-    return p->get_nodepath();
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return resfail;
   }
 
   // Satisfy compiler.
@@ -303,19 +304,14 @@ LVecBase4 ShaderAttrib::
 get_shader_input_vector(InternalName *id) const {
   static LVecBase4 resfail(0,0,0,0);
   Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    ostringstream strm;
-    strm << "Shader input " << id->get_name() << " is not present.\n";
-    nassert_raise(strm.str());
-    return resfail;
-  } else {
-    const ShaderInput *p = (*i).second;
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
 
-    if (p->get_value_type() == ShaderInput::M_vector) {
-      return p->get_vector();
+    if (p.get_value_type() == ShaderInput::M_vector) {
+      return p.get_vector();
 
-    } else if (p->get_value_type() == ShaderInput::M_numeric && p->get_ptr()._size <= 4) {
-      const Shader::ShaderPtrData &ptr = p->get_ptr();
+    } else if (p.get_value_type() == ShaderInput::M_numeric && p.get_ptr()._size <= 4) {
+      const Shader::ShaderPtrData &ptr = p.get_ptr();
 
       switch (ptr._type) {
       case Shader::SPT_float:
@@ -339,19 +335,23 @@ get_shader_input_vector(InternalName *id) const {
         }
       }
 
-    } else if (p->get_value_type() == ShaderInput::M_param) {
+    } else if (p.get_value_type() == ShaderInput::M_param) {
       // Temporary solution until the new param system
-      ParamValueBase *param = p->get_param();
+      TypedWritableReferenceCount *param = p.get_value();
       if (param != NULL && param->is_of_type(ParamVecBase4::get_class_type())) {
-        return ((const ParamVecBase4 *) param)->get_value();
+        return ((const ParamVecBase4 *)param)->get_value();
       }
     }
 
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not a vector.\n";
     nassert_raise(strm.str());
-    return resfail;
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
   }
+  return resfail;
 }
 
 /**
@@ -361,21 +361,21 @@ get_shader_input_vector(InternalName *id) const {
 const Shader::ShaderPtrData *ShaderAttrib::
 get_shader_input_ptr(const InternalName *id) const {
   Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    ostringstream strm;
-    strm << "Shader input " << id->get_name() << " is not present.\n";
-    nassert_raise(strm.str());
-    return NULL;
-  } else {
-    const ShaderInput *p = (*i).second;
-    if (p->get_value_type() != ShaderInput::M_numeric &&
-        p->get_value_type() != ShaderInput::M_vector) {
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+    if (p.get_value_type() != ShaderInput::M_numeric &&
+        p.get_value_type() != ShaderInput::M_vector) {
       ostringstream strm;
       strm << "Shader input " << id->get_name() << " is not a PTA(float/double) type.\n";
       nassert_raise(strm.str());
       return NULL;
     }
-    return &(p->get_ptr());
+    return &(p.get_ptr());
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return NULL;
   }
 }
 
@@ -389,24 +389,39 @@ get_shader_input_ptr(const InternalName *id) const {
 Texture *ShaderAttrib::
 get_shader_input_texture(const InternalName *id, SamplerState *sampler) const {
   Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    ostringstream strm;
-    strm << "Shader input " << id->get_name() << " is not present.\n";
-    nassert_raise(strm.str());
-    return NULL;
-  } else {
-    const ShaderInput *p = (*i).second;
-    if (p->get_value_type() != ShaderInput::M_texture &&
-        p->get_value_type() != ShaderInput::M_texture_sampler) {
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+    switch (p.get_value_type()) {
+    case ShaderInput::M_texture:
+      {
+        Texture *tex = (Texture *)p.get_value();
+        if (sampler) {
+          *sampler = tex->get_default_sampler();
+        }
+        return tex;
+      }
+
+    case ShaderInput::M_texture_sampler:
+      {
+        const ParamTextureSampler *param = (const ParamTextureSampler *)p.get_value();
+        if (sampler) {
+          *sampler = param->get_sampler();
+        }
+        return param->get_texture();
+      }
+
+    default:
       ostringstream strm;
       strm <<  "Shader input " << id->get_name() << " is not a texture.\n";
       nassert_raise(strm.str());
       return NULL;
     }
-    if (sampler != NULL) {
-      *sampler = p->get_sampler();
-    }
-    return p->get_texture();
+
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return NULL;
   }
 }
 
@@ -417,22 +432,17 @@ get_shader_input_texture(const InternalName *id, SamplerState *sampler) const {
 const LMatrix4 &ShaderAttrib::
 get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
   Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    ostringstream strm;
-    strm << "Shader input " << id->get_name() << " is not present.\n";
-    nassert_raise(strm.str());
-    return LMatrix4::ident_mat();
-  } else {
-    const ShaderInput *p = (*i).second;
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
 
-    if (p->get_value_type() == ShaderInput::M_nodepath) {
-      const NodePath &np = p->get_nodepath();
+    if (p.get_value_type() == ShaderInput::M_nodepath) {
+      const NodePath &np = p.get_nodepath();
       nassertr(!np.is_empty(), LMatrix4::ident_mat());
       return np.get_transform()->get_mat();
 
-    } else if (p->get_value_type() == ShaderInput::M_numeric &&
-               p->get_ptr()._size >= 16 && (p->get_ptr()._size & 15) == 0) {
-      const Shader::ShaderPtrData &ptr = p->get_ptr();
+    } else if (p.get_value_type() == ShaderInput::M_numeric &&
+               p.get_ptr()._size >= 16 && (p.get_ptr()._size & 15) == 0) {
+      const Shader::ShaderPtrData &ptr = p.get_ptr();
 
       switch (ptr._type) {
         case Shader::SPT_float: {
@@ -460,6 +470,11 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
     strm << "Shader input " << id->get_name() << " is not a NodePath, LMatrix4 or PTA_LMatrix4.\n";
     nassert_raise(strm.str());
     return LMatrix4::ident_mat();
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return LMatrix4::ident_mat();
   }
 }
 
@@ -476,11 +491,11 @@ get_shader_input_buffer(const InternalName *id) const {
     nassert_raise(strm.str());
     return NULL;
   } else {
-    const ShaderInput *p = (*i).second;
+    const ShaderInput &p = (*i).second;
 
-    if (p->get_value_type() == ShaderInput::M_buffer) {
+    if (p.get_value_type() == ShaderInput::M_buffer) {
       ShaderBuffer *value;
-      DCAST_INTO_R(value, p->_value, NULL);
+      DCAST_INTO_R(value, p._value, NULL);
       return value;
     }
 
@@ -508,14 +523,15 @@ void ShaderAttrib::
 output(ostream &out) const {
   out << "ShaderAttrib:";
 
-  if (_has_shader) {
-    if (_shader == NULL) {
+  if (_auto_shader) {
+    out << "auto";
+    return;
+  } else if (_has_shader) {
+    if (_shader == nullptr) {
       out << "off";
     } else {
       out << _shader->get_filename().get_basename();
     }
-  } else if (_auto_shader) {
-    out << "auto";
   }
 
   out << "," << _inputs.size() << " inputs";
@@ -615,8 +631,7 @@ get_hash_impl() const {
 
   Inputs::const_iterator ii;
   for (ii = _inputs.begin(); ii != _inputs.end(); ++ii) {
-    hash = pointer_hash::add_hash(hash, (*ii).first);
-    hash = pointer_hash::add_hash(hash, (*ii).second);
+    hash = (*ii).second.add_hash(hash);
   }
 
   return hash;
@@ -649,13 +664,13 @@ compose_impl(const RenderAttrib *other) const {
   Inputs::const_iterator iover;
   for (iover=over->_inputs.begin(); iover!=over->_inputs.end(); ++iover) {
     const InternalName *id = (*iover).first;
-    const ShaderInput *dover = (*iover).second;
+    const ShaderInput &dover = (*iover).second;
     Inputs::iterator iattr = attr->_inputs.find(id);
     if (iattr == attr->_inputs.end()) {
       attr->_inputs.insert(Inputs::value_type(id,dover));
     } else {
-      const ShaderInput *dattr = (*iattr).second;
-      if (dattr->get_priority() <= dover->get_priority()) {
+      const ShaderInput &dattr = (*iattr).second;
+      if (dattr.get_priority() <= dover.get_priority()) {
         iattr->second = iover->second;
       }
     }
@@ -678,26 +693,6 @@ compose_impl(const RenderAttrib *other) const {
   attr->_flags |= over->_flags;
   attr->_has_flags |= (over->_has_flags);
   return return_new(attr);
-}
-
-/**
- *
- */
-CPT(RenderAttrib) ShaderAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // For a ShaderAttrib, we only need to preserve the auto-shader flags.
-  // Custom shaders, and custom shader inputs, aren't relevant to the shader
-  // generator.
-  ShaderAttrib *attrib = new ShaderAttrib;
-  attrib->_auto_shader = _auto_shader;
-  attrib->_has_shader = _has_shader;
-  attrib->_auto_normal_on = _auto_normal_on;
-  attrib->_auto_glow_on = _auto_glow_on;
-  attrib->_auto_gloss_on = _auto_gloss_on;
-  attrib->_auto_ramp_on = _auto_ramp_on;
-  attrib->_auto_shadow_on = _auto_shadow_on;
-  attrib->_flags = _flags;
-  return return_new(attrib);
 }
 
 /**

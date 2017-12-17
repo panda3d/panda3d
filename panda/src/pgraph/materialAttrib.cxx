@@ -58,10 +58,10 @@ make_default() {
 void MaterialAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  if (is_off()) {
-    out << "(off)";
-  } else {
+  if (_material != nullptr) {
     out << *_material;
+  } else if (is_off()) {
+    out << "(off)";
   }
 }
 
@@ -98,17 +98,7 @@ compare_to_impl(const RenderAttrib *other) const {
  */
 size_t MaterialAttrib::
 get_hash_impl() const {
-  size_t hash = 0;
-  hash = pointer_hash::add_hash(hash, _material);
-  return hash;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) MaterialAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
+  return pointer_hash::add_hash(0, _material);
 }
 
 /**
@@ -139,9 +129,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
 
   TypedWritable *material = p_list[pi++];
-  if (material != (TypedWritable *)NULL) {
-    _material = DCAST(Material, material);
-  }
+  _material = DCAST(Material, material);
 
   return pi;
 }

@@ -75,6 +75,7 @@ public:
   virtual bool is_constructible(const CPPType *type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_copy_assignable() const;
   virtual bool is_destructible() const;
   virtual bool is_parameter_expr() const;
 

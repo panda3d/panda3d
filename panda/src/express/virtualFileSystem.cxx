@@ -1226,6 +1226,24 @@ do_get_file(const Filename &filename, int open_flags) const {
     }
   }
 
+#if defined(_WIN32) && !defined(NDEBUG)
+  if (!found_file) {
+    // The file could not be found.  Perhaps this is because the user passed
+    // in a Windows-style path where a Unix-style path was expected?
+    if (filename.length() > 2 && isalpha(filename[0]) && filename[1] == ':' &&
+        (filename[2] == '\\' || filename[2] == '/')) {
+
+      Filename corrected_fn = Filename::from_os_specific(filename);
+      if (corrected_fn.exists()) {
+        express_cat.warning()
+          << "Filename uses Windows-style path: " << filename << "\n";
+        express_cat.warning()
+          << "  expected Unix-style path: " << corrected_fn << "\n";
+      }
+    }
+  }
+#endif
+
   return found_file;
 }
 

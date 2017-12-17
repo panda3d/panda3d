@@ -40,7 +40,7 @@
  */
 class EXPCL_PANDA_DEVICE MouseAndKeyboard : public DataNode {
 PUBLISHED:
-  MouseAndKeyboard(GraphicsWindow *window, int device, const string &name);
+  explicit MouseAndKeyboard(GraphicsWindow *window, int device, const string &name);
   void set_source(GraphicsWindow *window, int device);
 
   PT(GraphicsWindow) get_source_window() const;

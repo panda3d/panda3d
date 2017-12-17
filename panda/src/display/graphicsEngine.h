@@ -52,7 +52,7 @@ class Texture;
  */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
-  GraphicsEngine(Pipeline *pipeline = NULL);
+  explicit GraphicsEngine(Pipeline *pipeline = NULL);
   BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
@@ -142,14 +142,15 @@ private:
 
   void set_window_sort(GraphicsOutput *window, int sort);
 
-  void cull_and_draw_together(const Windows &wlist, Thread *current_thread);
+  void cull_and_draw_together(Windows wlist, Thread *current_thread);
   void cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
                               Thread *current_thread);
 
-  void cull_to_bins(const Windows &wlist, Thread *current_thread);
-  void cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
+  void cull_to_bins(Windows wlist, Thread *current_thread);
+  void cull_to_bins(GraphicsOutput *win, GraphicsStateGuardian *gsg,
+                    DisplayRegion *dr, SceneSetup *scene_setup,
+                    CullResult *cull_result, Thread *current_thread);
   void draw_bins(const Windows &wlist, Thread *current_thread);
-  void draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
   void make_contexts(const Windows &wlist, Thread *current_thread);
 
   void process_events(const Windows &wlist, Thread *current_thread);
@@ -162,8 +163,8 @@ private:
 
   PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg,
                              DisplayRegionPipelineReader *dr);
-  void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
-               GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
+  void do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg,
+               DisplayRegion *dr, Thread *current_thread);
 
   void do_add_window(GraphicsOutput *window,
                      const GraphicsThreadingModel &threading_model);

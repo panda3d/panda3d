@@ -516,9 +516,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
         if (keep_data_objects) {
           // Copy the data, but keep the same GeomVertexArrayData object.
 
-          PT(GeomVertexArrayData) dest_data = modify_array(dest_i);
-          CPT(GeomVertexArrayData) source_data = source->get_array(source_i);
-          dest_data->modify_handle()->copy_data_from(source_data->get_handle());
+          modify_array_handle(dest_i)->copy_data_from(source->get_array_handle(source_i));
         } else {
           // Copy the GeomVertexArrayData object.
           if (get_array(dest_i) != source->get_array(source_i)) {
@@ -533,13 +531,16 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
   }
 
   // Now make sure the arrays we didn't share are all filled in.
-  reserve_num_rows(num_rows);
-  set_num_rows(num_rows);
+  {
+    GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
+    writer.check_array_writers();
+    writer.reserve_num_rows(num_rows);
+    writer.set_num_rows(num_rows);
+  }
 
   // Now go back through and copy any data that's left over.
   for (source_i = 0; source_i < num_arrays; ++source_i) {
-    CPT(GeomVertexArrayData) array_obj = source->get_array(source_i);
-    CPT(GeomVertexArrayDataHandle) array_handle = array_obj->get_handle();
+    CPT(GeomVertexArrayDataHandle) array_handle = source->get_array_handle(source_i);
     const unsigned char *array_data = array_handle->get_read_pointer(true);
     const GeomVertexArrayFormat *source_array_format = source_format->get_array(source_i);
     int num_columns = source_array_format->get_num_columns();
@@ -557,8 +558,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
 
         if (dest_column->is_bytewise_equivalent(*source_column)) {
           // We can do a quick bytewise copy.
-          PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
-          PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
+          PT(GeomVertexArrayDataHandle) dest_handle = modify_array_handle(dest_i);
           unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           bytewise_copy(dest_array_data + dest_column->get_start(),
@@ -569,8 +569,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
         } else if (dest_column->is_packed_argb() &&
                    source_column->is_uint8_rgba()) {
           // A common special case: OpenGL color to DirectX color.
-          PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
-          PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
+          PT(GeomVertexArrayDataHandle) dest_handle = modify_array_handle(dest_i);
           unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           uint8_rgba_to_packed_argb
@@ -582,8 +581,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
         } else if (dest_column->is_uint8_rgba() &&
                    source_column->is_packed_argb()) {
           // Another common special case: DirectX color to OpenGL color.
-          PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
-          PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
+          PT(GeomVertexArrayDataHandle) dest_handle = modify_array_handle(dest_i);
           unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           packed_argb_to_uint8_rgba
@@ -700,12 +698,10 @@ copy_row_from(int dest_row, const GeomVertexData *source,
   int num_arrays = source_format->get_num_arrays();
 
   for (int i = 0; i < num_arrays; ++i) {
-    PT(GeomVertexArrayData) dest_array_obj = modify_array(i);
-    PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
+    PT(GeomVertexArrayDataHandle) dest_handle = modify_array_handle(i);
     unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
-    CPT(GeomVertexArrayData) source_array_obj = source->get_array(i);
-    CPT(GeomVertexArrayDataHandle) source_array_handle = source_array_obj->get_handle();
+    CPT(GeomVertexArrayDataHandle) source_array_handle = source->get_array_handle(i);
     const unsigned char *source_array_data = source_array_handle->get_read_pointer(true);
 
     const GeomVertexArrayFormat *array_format = source_format->get_array(i);
@@ -1144,8 +1140,7 @@ do_set_color(GeomVertexData *vdata, const LColor &color) {
   packer->set_data4f(buffer, color);
 #endif
 
-  PT(GeomVertexArrayDataHandle) handle =
-    vdata->modify_array(array_index)->modify_handle();
+  PT(GeomVertexArrayDataHandle) handle = vdata->modify_array_handle(array_index);
   unsigned char *write_ptr = handle->get_write_pointer();
   unsigned char *end_ptr = write_ptr + handle->get_data_size_bytes();
   write_ptr += column->get_start();
@@ -1586,7 +1581,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
   }
 
   // Then apply the transforms.
-  CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table.get_read_pointer();
+  CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table.get_read_pointer(current_thread);
   if (tb_table != (TransformBlendTable *)NULL) {
     // Recompute all the blends up front, so we don't have to test each one
     // for staleness at each vertex.
@@ -1617,7 +1612,8 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
     if (blend_array_format->get_stride() == 2 &&
         blend_array_format->get_column(0)->get_component_bytes() == 2) {
       // The blend indices are a table of ushorts.  Optimize this common case.
-      CPT(GeomVertexArrayDataHandle) blend_array_handle = cdata->_arrays[blend_array_index].get_read_pointer()->get_handle(current_thread);
+      CPT(GeomVertexArrayDataHandle) blend_array_handle =
+        new GeomVertexArrayDataHandle(cdata->_arrays[blend_array_index].get_read_pointer(current_thread), current_thread);
       const unsigned short *blendt = (const unsigned short *)blend_array_handle->get_read_pointer(true);
 
       size_t ci;
@@ -2399,22 +2395,10 @@ make_array_readers() {
   _array_readers.reserve(_cdata->_arrays.size());
   GeomVertexData::Arrays::const_iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    CPT(GeomVertexArrayData) array_obj = (*ai).get_read_pointer();
-    _array_readers.push_back(array_obj->get_handle(_current_thread));
+    _array_readers.push_back(new GeomVertexArrayDataHandle((*ai).get_read_pointer(_current_thread), _current_thread));
   }
 
   _got_array_readers = true;
-}
-
-/**
- *
- */
-void GeomVertexDataPipelineReader::
-delete_array_readers() {
-  nassertv(_got_array_readers);
-
-  _array_readers.clear();
-  _got_array_readers = false;
 }
 
 /**
@@ -2581,8 +2565,8 @@ reserve_num_rows(int n) {
  *
  */
 PT(GeomVertexArrayData) GeomVertexDataPipelineWriter::
-modify_array(int i) {
-  nassertr(i >= 0 && i < (int)_cdata->_arrays.size(), NULL);
+modify_array(size_t i) {
+  nassertr(i < _cdata->_arrays.size(), nullptr);
 
   PT(GeomVertexArrayData) new_data;
   if (_got_array_writers) {
@@ -2602,15 +2586,15 @@ modify_array(int i) {
  *
  */
 void GeomVertexDataPipelineWriter::
-set_array(int i, const GeomVertexArrayData *array) {
-  nassertv(i >= 0 && i < (int)_cdata->_arrays.size());
+set_array(size_t i, const GeomVertexArrayData *array) {
+  nassertv(i < _cdata->_arrays.size());
   _cdata->_arrays[i] = (GeomVertexArrayData *)array;
   _object->clear_cache_stage();
   _cdata->_modified = Geom::get_next_modified();
   _cdata->_animated_vertices_modified = UpdateSeq();
 
   if (_got_array_writers) {
-    _array_writers[i] = _cdata->_arrays[i].get_write_pointer()->modify_handle(_current_thread);
+    _array_writers[i] = new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread);
   }
 }
 
@@ -2624,8 +2608,7 @@ make_array_writers() {
   _array_writers.reserve(_cdata->_arrays.size());
   GeomVertexData::Arrays::iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    PT(GeomVertexArrayData) array_obj = (*ai).get_write_pointer();
-    _array_writers.push_back(array_obj->modify_handle(_current_thread));
+    _array_writers.push_back(new GeomVertexArrayDataHandle((*ai).get_write_pointer(), _current_thread));
   }
 
   _object->clear_cache_stage();

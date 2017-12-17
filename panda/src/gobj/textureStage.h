@@ -21,6 +21,7 @@
 #include "typedWritableReferenceCount.h"
 #include "updateSeq.h"
 #include "luse.h"
+#include "graphicsStateGuardianBase.h"
 
 class FactoryParams;
 
@@ -34,7 +35,7 @@ class FactoryParams;
 class EXPCL_PANDA_GOBJ TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
   explicit TextureStage(const string &name);
-  INLINE TextureStage(TextureStage &copy);
+  INLINE TextureStage(const TextureStage &copy);
   void operator = (const TextureStage &copy);
 
   virtual ~TextureStage();
@@ -201,8 +202,12 @@ PUBLISHED:
 
   MAKE_PROPERTY(tex_view_offset, get_tex_view_offset, set_tex_view_offset);
 
+  MAKE_PROPERTY(default, get_default);
+
 public:
   INLINE static UpdateSeq get_sort_seq();
+
+  INLINE void mark_used_by_auto_shader() const;
 
 private:
   INLINE void update_color_flags();
@@ -246,6 +251,8 @@ private:
 
   static PT(TextureStage) _default_stage;
   static UpdateSeq _sort_seq;
+
+  mutable bool _used_by_auto_shader;
 
 public:
   // Datagram stuff

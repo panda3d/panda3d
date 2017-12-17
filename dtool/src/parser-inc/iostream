@@ -88,6 +88,9 @@ __published:
   streampos tellp();
   void seekp(streampos pos);
   void seekp(streamoff off, ios_base::seekdir dir);
+
+protected:
+  ostream(ostream &&);
 };
 class istream : virtual public ios {
 __published:
@@ -97,12 +100,18 @@ __published:
   streampos tellg();
   void seekg(streampos pos);
   void seekg(streamoff off, ios_base::seekdir dir);
+
+protected:
+  istream(istream &&);
 };
 class iostream : public istream, public ostream {
 __published:
   iostream(const iostream&) = delete;
 
   void flush();
+
+protected:
+  iostream(iostream &&);
 };
 
 class ofstream : public ostream {

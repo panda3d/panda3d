@@ -31,9 +31,9 @@ class LensNode;
 class EXPCL_PANDA_COLLIDE CollisionSegment : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSegment();
-  INLINE CollisionSegment(const LPoint3 &a, const LPoint3 &db);
-  INLINE CollisionSegment(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
-                          PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz);
+  INLINE explicit CollisionSegment(const LPoint3 &a, const LPoint3 &db);
+  INLINE explicit CollisionSegment(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+                                   PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz);
 
   virtual LPoint3 get_collision_origin() const;
 

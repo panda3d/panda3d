@@ -390,8 +390,10 @@ cp_dependency(ShaderMatInput inp) {
   if ((inp == SMO_model_to_view) ||
       (inp == SMO_view_to_model) ||
       (inp == SMO_model_to_apiview) ||
-      (inp == SMO_apiview_to_model) ||
-      (inp == SMO_view_to_world) ||
+      (inp == SMO_apiview_to_model)) {
+    dep |= SSD_transform;
+  }
+  if ((inp == SMO_view_to_world) ||
       (inp == SMO_world_to_view) ||
       (inp == SMO_view_x_to_view) ||
       (inp == SMO_view_to_view_x) ||
@@ -404,7 +406,7 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_dlight_x) ||
       (inp == SMO_plight_x) ||
       (inp == SMO_slight_x)) {
-    dep |= SSD_transform;
+    dep |= SSD_view_transform;
   }
   if ((inp == SMO_texpad_x) ||
       (inp == SMO_texpix_x) ||
@@ -426,7 +428,9 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_shaderinputs;
 
-    if ((inp == SMO_alight_x) ||
+    if ((inp == SMO_texpad_x) ||
+        (inp == SMO_texpix_x) ||
+        (inp == SMO_alight_x) ||
         (inp == SMO_dlight_x) ||
         (inp == SMO_plight_x) ||
         (inp == SMO_slight_x) ||
@@ -446,10 +450,12 @@ cp_dependency(ShaderMatInput inp) {
     }
   }
   if ((inp == SMO_light_ambient) ||
-      (inp == SMO_light_source_i_attrib)) {
-    dep |= SSD_light;
-    if (inp == SMO_light_source_i_attrib) {
-      dep |= SSD_transform;
+      (inp == SMO_light_source_i_attrib) ||
+      (inp == SMO_light_source_i_packed)) {
+    dep |= SSD_light | SSD_frame;
+    if (inp == SMO_light_source_i_attrib ||
+        inp == SMO_light_source_i_packed) {
+      dep |= SSD_view_transform;
     }
   }
   if ((inp == SMO_light_product_i_ambient) ||
@@ -461,7 +467,7 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_apiview_clipplane_i)) {
     dep |= SSD_clip_planes;
   }
-  if (inp == SMO_texmat_i || inp == SMO_inv_texmat_i) {
+  if (inp == SMO_texmat_i || inp == SMO_inv_texmat_i || inp == SMO_texscale_i) {
     dep |= SSD_tex_matrix;
   }
   if ((inp == SMO_window_size) ||
@@ -479,7 +485,7 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_apiclip_to_apiview)) {
     dep |= SSD_projection;
   }
-  if (inp == SMO_tex_is_alpha_i) {
+  if (inp == SMO_tex_is_alpha_i || inp == SMO_texcolor_i) {
     dep |= SSD_texture | SSD_frame;
   }
 
@@ -730,6 +736,29 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     return true;
   }
 
+  if (pieces[0] == "mat" && pieces[1] == "shadow") {
+    if ((!cp_errchk_parameter_words(p,3))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,16,16))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = p._id;
+    bind._piece = SMP_whole;
+    bind._func = SMF_compose;
+    bind._part[1] = SMO_light_source_i_attrib;
+    bind._arg[1] = InternalName::make("shadowViewMatrix");
+    bind._part[0] = SMO_view_to_apiview;
+    bind._arg[0] = NULL;
+    bind._index = atoi(pieces[2].c_str());
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
+    return true;
+  }
+
   // Implement some macros.  Macros work by altering the contents of the
   // 'pieces' array, and then falling through.
 
@@ -829,7 +858,13 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     ShaderMatSpec bind;
     bind._id = p._id;
+    bind._piece = SMP_whole;
     bind._func = SMF_compose;
+    bind._part[1] = SMO_light_source_i_attrib;
+    bind._arg[1] = InternalName::make("shadowViewMatrix");
+    bind._part[0] = SMO_view_to_apiview;
+    bind._arg[0] = NULL;
+    bind._index = atoi(pieces[2].c_str());
 
     int next = 1;
     pieces.push_back("");
@@ -954,6 +989,30 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._arg[0] = NULL;
       bind._part[1] = SMO_identity;
       bind._arg[1] = NULL;
+    } else if (pieces[1].compare(0, 5, "light") == 0) {
+      if (!cp_errchk_parameter_float(p,16,16)) {
+        return false;
+      }
+      bind._id = p._id;
+      bind._piece = SMP_transpose;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_light_source_i_packed;
+      bind._arg[0] = NULL;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
+      bind._index = atoi(pieces[1].c_str() + 5);
+    } else if (pieces[1].compare(0, 5, "lspec") == 0) {
+      if (!cp_errchk_parameter_float(p,3,4)) {
+        return false;
+      }
+      bind._id = p._id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_light_source_i_attrib;
+      bind._arg[0] = InternalName::make("specular");
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
+      bind._index = atoi(pieces[1].c_str() + 5);
     } else {
       cp_report_error(p,"Unknown attr parameter.");
       return false;
@@ -1079,6 +1138,52 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_whole;
     bind._func = SMF_first;
     bind._part[0] = SMO_texmat_i;
+    bind._arg[0] = NULL;
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+    bind._index = atoi(pieces[1].c_str());
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
+    return true;
+  }
+
+  if (pieces[0] == "texscale") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,3,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = p._id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texscale_i;
+    bind._arg[0] = NULL;
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+    bind._index = atoi(pieces[1].c_str());
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
+    return true;
+  }
+
+  if (pieces[0] == "texcolor") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,3,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = p._id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texcolor_i;
     bind._arg[0] = NULL;
     bind._part[1] = SMO_identity;
     bind._arg[1] = NULL;
@@ -1229,9 +1334,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     ShaderTexSpec bind;
     bind._id = p._id;
-    bind._name = InternalName::make(pieces[1])->append("shadowMap");
-    bind._stage = -1;
-    bind._part = STO_named_input;
+    bind._name = nullptr;
+    bind._stage = atoi(pieces[1].c_str());
+    bind._part = STO_light_i_shadow_map;
     switch (p._type) {
     case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
     case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
@@ -3302,9 +3407,10 @@ parse_eof() {
  * Use this function instead of prepare_now() to preload textures from a user
  * interface standpoint.
  */
-void Shader::
+PT(AsyncFuture) Shader::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  prepared_objects->enqueue_shader(this);
+  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_shader_future(this);
+  return obj.p();
 }
 
 /**
