@@ -801,7 +801,8 @@ private:
                                int z, const PfmFile &pfm,
                                int num_components, int component_width);
   static bool convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
-                                  int num_components, int component_width,
+                                  int num_components,
+                                  ComponentType component_type, bool is_srgb,
                                   CPTA_uchar image, size_t page_size,
                                   int z);
   static bool convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
