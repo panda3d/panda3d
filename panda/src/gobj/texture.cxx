@@ -5584,10 +5584,28 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
   nassertr(cdata->_has_clear_color, 0);
   nassertr(cdata->_num_components <= 4, 0);
 
-  // TODO: encode the color into the sRGB color space if used
   switch (cdata->_component_type) {
   case T_unsigned_byte:
-    {
+    if (is_srgb(cdata->_format)) {
+      xel color;
+      xelval alpha;
+      encode_sRGB_uchar(cdata->_clear_color, color, alpha);
+      switch (cdata->_num_components) {
+      case 2:
+        into[1] = (unsigned char)color.g;
+      case 1:
+        into[0] = (unsigned char)color.r;
+        break;
+      case 4:
+        into[3] = (unsigned char)alpha;
+      case 3: // BGR <-> RGB
+        into[0] = (unsigned char)color.b;
+        into[1] = (unsigned char)color.g;
+        into[2] = (unsigned char)color.r;
+        break;
+      }
+      break;
+    } else {
       LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 255;
       switch (cdata->_num_components) {

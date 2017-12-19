@@ -279,12 +279,12 @@ clear_clear_color() {
  * Returns the raw image data for a single pixel if it were set to the clear
  * color.
  */
-INLINE string Texture::
+INLINE vector_uchar Texture::
 get_clear_data() const {
   CDReader cdata(_cycler);
-  unsigned char data[16];
-  size_t size = do_get_clear_data(cdata, data);
-  return string((char *)data, size);
+  vector_uchar data(16);
+  data.resize(do_get_clear_data(cdata, &data[0]));
+  return data;
 }
 
 /**

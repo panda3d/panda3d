@@ -265,7 +265,7 @@ PUBLISHED:
   INLINE LColor get_clear_color() const;
   INLINE void set_clear_color(const LColor &color);
   INLINE void clear_clear_color();
-  INLINE string get_clear_data() const;
+  INLINE vector_uchar get_clear_data() const;
   MAKE_PROPERTY2(clear_color, has_clear_color, get_clear_color,
                               set_clear_color, clear_clear_color);
 
