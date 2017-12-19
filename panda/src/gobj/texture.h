@@ -856,6 +856,9 @@ private:
   INLINE static void store_scaled_short(unsigned char *&p, int value, double scale);
   INLINE static double get_unsigned_byte(const unsigned char *&p);
   INLINE static double get_unsigned_short(const unsigned char *&p);
+  INLINE static double get_unsigned_int(const unsigned char *&p);
+  INLINE static double get_float(const unsigned char *&p);
+  INLINE static double get_half_float(const unsigned char *&p);
 
   INLINE static bool is_txo_filename(const Filename &fullpath);
   INLINE static bool is_dds_filename(const Filename &fullpath);
