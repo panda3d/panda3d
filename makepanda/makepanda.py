@@ -6370,6 +6370,8 @@ for VER in MAYAVERSIONS:
         continue
     elif GetTarget() == 'darwin' and int(VNUM) >= 2009:
       ARCH_OPTS = ['NOARCH:PPC']
+    elif GetTarget() == 'darwin':
+      ARCH_OPTS = ['NOARCH:X86_64']
     else:
       ARCH_OPTS = []
 
