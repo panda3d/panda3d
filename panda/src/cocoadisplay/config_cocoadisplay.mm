@@ -12,6 +12,7 @@
  */
 
 #include "config_cocoadisplay.h"
+#include "cocoaGraphicsBuffer.h"
 #include "cocoaGraphicsPipe.h"
 #include "cocoaGraphicsStateGuardian.h"
 #include "cocoaGraphicsWindow.h"
@@ -40,6 +41,7 @@ init_libcocoadisplay() {
   }
   initialized = true;
 
+  CocoaGraphicsBuffer::init_type();
   CocoaGraphicsPipe::init_type();
   CocoaGraphicsStateGuardian::init_type();
   CocoaGraphicsWindow::init_type();

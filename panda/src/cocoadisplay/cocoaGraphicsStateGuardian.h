@@ -19,6 +19,7 @@
 #include "glgsg.h"
 
 #import <AppKit/NSOpenGL.h>
+#import <OpenGL/OpenGL.h>
 
 /**
  * A tiny specialization on GLGraphicsStateGuardian to add some Cocoa-specific
@@ -37,6 +38,9 @@ public:
                              CocoaGraphicsStateGuardian *share_with);
 
   virtual ~CocoaGraphicsStateGuardian();
+
+  INLINE void lock_context();
+  INLINE void unlock_context();
 
   NSOpenGLContext *_share_context;
   NSOpenGLContext *_context;

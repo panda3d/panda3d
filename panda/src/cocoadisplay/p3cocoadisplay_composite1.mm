@@ -1,4 +1,5 @@
 #include "config_cocoadisplay.mm"
+#include "cocoaGraphicsBuffer.mm"
 #include "cocoaGraphicsPipe.mm"
 #include "cocoaGraphicsStateGuardian.mm"
 #include "cocoaGraphicsWindow.mm"
