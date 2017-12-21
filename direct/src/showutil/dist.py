@@ -340,7 +340,11 @@ class build_apps(distutils.core.Command):
                 whl_modules_ext = '.'.join(whl_modules[0].split('.')[1:])
             whl_modules = [i.split('.')[0] for i in whl_modules]
 
-        # Make sure to copy any builtins that have shared objects in the deploy libs
+        # Make sure to copy any builtins that have shared objects in the
+        # deploy libs, assuming they are not already in freezer_extras.
+        for mod, source_path in freezer_extras:
+            freezer_modules.discard(mod)
+
         for mod in freezer_modules:
             if mod in whl_modules:
                 freezer_extras.add((mod, None))
@@ -374,6 +378,7 @@ class build_apps(distutils.core.Command):
                 if module in whl_modules:
                     source_path = os.path.join(p3dwhlfn, 'deploy_libs/{}.{}'.format(module, whl_modules_ext))#'{0}/deploy_libs/{1}.{2}'.format(p3dwhlfn, module, whl_modules_ext)
                     basename = os.path.basename(source_path)
+                    #XXX should we remove python version string here too?
                 else:
                     continue
 
