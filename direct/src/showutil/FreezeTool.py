@@ -1710,7 +1710,7 @@ class Freezer:
 
         # Determine the format of the header and module list entries depending
         # on the platform.
-        num_pointers = 10
+        num_pointers = 11
         stub_data = bytearray(stub_file.read())
         bitnesses = self._get_executable_bitnesses(stub_data)
 
@@ -1804,6 +1804,7 @@ class Freezer:
                 field_offsets.get('prc_encryption_key', 0),
                 field_offsets.get('prc_executable_patterns', 0),
                 field_offsets.get('prc_executable_args_envvar', 0),
+                field_offsets.get('main_dir', 0),
                 0)
 
             # Now, find the location of the 'blobinfo' symbol in the binary,

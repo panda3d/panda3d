@@ -2,29 +2,34 @@
 
 #include "Python.h"
 #ifdef _WIN32
-#include "malloc.h"
+#  include "malloc.h"
 #else
-#include <sys/mman.h>
+#  include <sys/mman.h>
 #endif
 
 #ifdef __FreeBSD__
-#include <sys/sysctl.h>
+#  include <sys/sysctl.h>
 #endif
 
 #ifdef __APPLE__
-#include <mach-o/dyld.h>
+#  include <mach-o/dyld.h>
+#  include <libgen.h>
 #endif
 
 #include <stdio.h>
 #include <stdint.h>
 
 #if PY_MAJOR_VERSION >= 3
-#include <locale.h>
+#  include <locale.h>
 
-#if PY_MINOR_VERSION < 5
-#define Py_DecodeLocale _Py_char2wchar
+#  if PY_MINOR_VERSION < 5
+#    define Py_DecodeLocale _Py_char2wchar
+#  endif
 #endif
-#endif
+
+/* Leave room for future expansion.  We only read pointer 0, but there are
+   other pointers that are being read by configPageManager.cxx. */
+#define MAX_NUM_POINTERS 24
 
 /* Define an exposed symbol where we store the offset to the module data. */
 #ifdef _MSC_VER
@@ -40,18 +45,15 @@ volatile struct {
   uint16_t codepage;
   uint16_t flags;
   uint64_t reserved;
-
-  // Leave room for future expansion.  We only read pointer 0, but there are
-  // other pointers that are being read by configPageManager.cxx.
-  void *pointers[24];
+  void *pointers[MAX_NUM_POINTERS];
 
   // The reason we initialize it to -1 is because otherwise, smart linkers may
   // end up putting it in the .bss section for zero-initialized data.
 } blobinfo = {(uint64_t)-1};
 
 #ifdef MS_WINDOWS
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
 
 extern void PyWinFreeze_ExeInit(void);
 extern void PyWinFreeze_ExeTerm(void);
@@ -61,7 +63,7 @@ static struct _inittab extensions[] = {
 };
 
 #if PY_MAJOR_VERSION >= 3
-#define WIN_UNICODE
+#  define WIN_UNICODE
 #endif
 #endif
 
@@ -90,6 +92,22 @@ static int supports_code_page(UINT cp) {
   return 1;
 }
 #endif
+
+/**
+ * Sets the main_dir field of the blobinfo structure, but only if it wasn't
+ * already set.
+ */
+static void set_main_dir(char *main_dir) {
+  if (blobinfo.num_pointers >= 10) {
+    if (blobinfo.num_pointers == 10) {
+      ++blobinfo.num_pointers;
+      blobinfo.pointers[10] = NULL;
+    }
+    if (blobinfo.pointers[10] == NULL) {
+      blobinfo.pointers[10] = main_dir;
+    }
+  }
+}
 
 /* Main program */
 
@@ -356,7 +374,11 @@ int main(int argc, char *argv[]) {
     // Offset the pointers in the header using the base mmap address.
     if (blobinfo.version > 0 && blobinfo.num_pointers > 0) {
       uint32_t i;
+      assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
       for (i = 0; i < blobinfo.num_pointers; ++i) {
+        // Only offset if the pointer is non-NULL.  Except for the first
+        // pointer, which may never be NULL and usually (but not always)
+        // points to the beginning of the blob.
         if (i == 0 || blobinfo.pointers[i] != 0) {
           blobinfo.pointers[i] = (void *)((uintptr_t)blobinfo.pointers[i] + (uintptr_t)blob);
         }

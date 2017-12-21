@@ -114,6 +114,7 @@ reload_implicit_pages() {
     const char *prc_encryption_key;
     const char *prc_executable_patterns;
     const char *prc_executable_args_envvar;
+    const char *main_dir;
   };
 #ifdef _MSC_VER
   const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
@@ -126,6 +127,10 @@ reload_implicit_pages() {
 #endif
   if (blobinfo != nullptr && (blobinfo->version == 0 || blobinfo->num_pointers < 10)) {
     blobinfo = nullptr;
+  }
+
+  if (blobinfo != nullptr && blobinfo->num_pointers >= 11 && blobinfo->main_dir != nullptr) {
+    ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", blobinfo->main_dir);
   }
 
   // PRC_PATTERNS lists one or more filename templates separated by spaces.
