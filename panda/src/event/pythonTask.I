@@ -45,17 +45,12 @@ get_owner() const {
  */
 INLINE void PythonTask::
 set_result(PyObject *result) {
+  // Note that we don't call notify_done() here since the done status will be
+  // automatically notified upon the task's completion.
   nassertv(is_alive());
+  nassertv(!done());
   nassertv(_exception == nullptr);
   Py_INCREF(result);
   Py_XDECREF(_exc_value);
   _exc_value = result;
-}
-
-/**
- * Same as __await__, for backward compatibility with the old coroutine way.
- */
-INLINE PyObject *PythonTask::
-__iter__(PyObject *self) {
-  return __await__(self);
 }

@@ -32,6 +32,7 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 #include "epvector.h"
+#include "asyncFuture.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a whole.  Instead,
@@ -109,7 +110,7 @@ PUBLISHED:
   INLINE bool get_cache_compiled_shader() const;
   INLINE void set_cache_compiled_shader(bool flag);
 
-  void prepare(PreparedGraphicsObjects *prepared_objects);
+  PT(AsyncFuture) prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();

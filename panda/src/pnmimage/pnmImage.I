@@ -80,7 +80,7 @@ to_val(float input_value) const {
   switch (_xel_encoding) {
   case XE_generic:
   case XE_generic_alpha:
-    return clamp_val((int)(input_value * get_maxval() + 0.5f));
+    return (int)(min(1.0f, max(0.0f, input_value)) * get_maxval() + 0.5f);
 
   case XE_generic_sRGB:
   case XE_generic_sRGB_alpha:

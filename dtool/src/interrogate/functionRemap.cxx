@@ -797,6 +797,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         (_parameters[first_param + 1]._name == "kwargs" ||
           _parameters[first_param + 1]._name == "kwds")) {
       _flags |= F_explicit_args;
+      _args_type = InterfaceMaker::AT_keyword_args;
     }
   }
 
@@ -908,6 +909,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
             _args_type |= InterfaceMaker::AT_keyword_args;
             break;
           }
+        }
+      } else if (_args_type == InterfaceMaker::AT_single_arg) {
+        // If it takes an argument named "args", we are directly passing the
+        // "args" tuple to the function.
+        if (_parameters[first_param]._name == "args") {
+          _flags |= F_explicit_args;
+          _args_type = InterfaceMaker::AT_varargs;
         }
       }
     }

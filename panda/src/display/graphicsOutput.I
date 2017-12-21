@@ -489,10 +489,16 @@ get_child_sort() const {
 /**
  * When the GraphicsOutput is in triggered copy mode, this function triggers
  * the copy (at the end of the next frame).
+ * @returns a future that can be awaited.
  */
-INLINE void GraphicsOutput::
-trigger_copy()  {
-  _trigger_copy = true;
+INLINE AsyncFuture *GraphicsOutput::
+trigger_copy() {
+  AsyncFuture *future = _trigger_copy;
+  if (future == nullptr) {
+    future = new AsyncFuture;
+    _trigger_copy = future;
+  }
+  return future;
 }
 
 /**

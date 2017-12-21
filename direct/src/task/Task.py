@@ -74,7 +74,9 @@ Task = PythonTask
 # Copy the module-level enums above into the class level.  This funny
 # syntax is necessary because it's a C++-wrapped extension type, not a
 # true Python class.
-Task.DtoolClassDict['done'] = done
+# We can't override 'done', which is already a known method.  We have a
+# special check in PythonTask for when the method is being returned.
+#Task.DtoolClassDict['done'] = done
 Task.DtoolClassDict['cont'] = cont
 Task.DtoolClassDict['again'] = again
 Task.DtoolClassDict['pickup'] = pickup
@@ -83,6 +85,8 @@ Task.DtoolClassDict['exit'] = exit
 # Alias the AsyncTaskPause constructor as Task.pause().
 pause = AsyncTaskPause
 Task.DtoolClassDict['pause'] = staticmethod(pause)
+
+gather = Task.gather
 
 def sequence(*taskList):
     seq = AsyncTaskSequence('sequence')

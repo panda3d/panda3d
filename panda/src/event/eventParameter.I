@@ -12,13 +12,6 @@
  */
 
 /**
- * Defines an EventParameter that stores nothing: the "empty" parameter.
- */
-INLINE EventParameter::
-EventParameter() {
-}
-
-/**
  * Defines an EventParameter that stores a pointer to any kind of
  * TypedWritableReferenceCount object.  This is the most general constructor.
  *

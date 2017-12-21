@@ -135,6 +135,7 @@ stop_threads() {
 /**
  * Removes a pending asynchronous load request.  Returns true if successful,
  * false otherwise.
+ * @deprecated use task.cancel() to cancel the request instead.
  */
 INLINE bool Loader::
 remove(AsyncTask *task) {

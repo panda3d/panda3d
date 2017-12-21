@@ -15,8 +15,8 @@
 #define ASYNCTASK_H
 
 #include "pandabase.h"
-
-#include "asyncTaskBase.h"
+#include "asyncFuture.h"
+#include "namable.h"
 #include "pmutex.h"
 #include "conditionVar.h"
 #include "pStatCollector.h"
@@ -29,7 +29,7 @@ class AsyncTaskChain;
  * Normally, you would subclass from this class, and override do_task(), to
  * define the functionality you wish to have the task perform.
  */
-class EXPCL_PANDA_EVENT AsyncTask : public AsyncTaskBase {
+class EXPCL_PANDA_EVENT AsyncTask : public AsyncFuture, public Namable {
 public:
   AsyncTask(const string &name = string());
   ALLOC_DELETED_CHAIN(AsyncTask);
@@ -62,7 +62,7 @@ PUBLISHED:
   INLINE bool is_alive() const;
   INLINE AsyncTaskManager *get_manager() const;
 
-  void remove();
+  bool remove();
 
   INLINE void set_delay(double delay);
   INLINE void clear_delay();
@@ -92,7 +92,6 @@ PUBLISHED:
   INLINE int get_priority() const;
 
   INLINE void set_done_event(const string &done_event);
-  INLINE const string &get_done_event() const;
 
   INLINE double get_dt() const;
   INLINE double get_max_dt() const;
@@ -100,12 +99,12 @@ PUBLISHED:
 
   virtual void output(ostream &out) const;
 
-  EXTENSION(static PyObject *__await__(PyObject *self));
-  EXTENSION(static PyObject *__iter__(PyObject *self));
-
 protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
+
+  virtual bool cancel() FINAL;
+  virtual bool is_task() const FINAL {return true;}
 
   virtual bool is_runnable();
   virtual DoneStatus do_task();
@@ -120,11 +119,9 @@ protected:
   double _wake_time;
   int _sort;
   int _priority;
-  string _done_event;
 
   State _state;
   Thread *_servicing_thread;
-  AsyncTaskManager *_manager;
   AsyncTaskChain *_chain;
 
   double _start_time;
@@ -134,9 +131,6 @@ protected:
   double _max_dt;
   double _total_dt;
   int _num_frames;
-
-  // Tasks waiting for this one to complete.
-  pvector<PT(AsyncTask)> _waiting_tasks;
 
   static AtomicAdjust::Integer _next_task_id;
 
@@ -150,9 +144,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    AsyncTaskBase::init_type();
+    AsyncFuture::init_type();
     register_type(_type_handle, "AsyncTask",
-                  AsyncTaskBase::get_class_type());
+                  AsyncFuture::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -162,6 +156,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskManager;
   friend class AsyncTaskChain;
   friend class AsyncTaskSequence;

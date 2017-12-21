@@ -6,13 +6,13 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file asyncTask_ext.h
+ * @file asyncFuture_ext.h
  * @author rdb
  * @date 2017-10-29
  */
 
-#ifndef ASYNCTASK_EXT_H
-#define ASYNCTASK_EXT_H
+#ifndef ASYNCFUTURE_EXT_H
+#define ASYNCFUTURE_EXT_H
 
 #include "extension.h"
 #include "py_panda.h"
@@ -21,15 +21,21 @@
 #ifdef HAVE_PYTHON
 
 /**
- * Extension class for AsyncTask
+ * Extension class for AsyncFuture
  */
 template<>
-class Extension<AsyncTask> : public ExtensionBase<AsyncTask> {
+class Extension<AsyncFuture> : public ExtensionBase<AsyncFuture> {
 public:
   static PyObject *__await__(PyObject *self);
   static PyObject *__iter__(PyObject *self) { return __await__(self); }
+
+  PyObject *result(PyObject *timeout = Py_None) const;
+
+  PyObject *add_done_callback(PyObject *self, PyObject *fn);
+
+  static PyObject *gather(PyObject *args);
 };
 
 #endif  // HAVE_PYTHON
 
-#endif  // ASYNCTASK_EXT_H
+#endif  // ASYNCFUTURE_EXT_H

@@ -3184,15 +3184,15 @@ get_untextured_state() {
  * Should be called when a texture is encountered that needs to have its RAM
  * image reloaded, and get_incomplete_render() is true.  This will fire off a
  * thread on the current Loader object that will request the texture to load
- * its image.  The image will be available at some point in the future (no
- * event will be generated).
+ * its image.  The image will be available at some point in the future.
+ * @returns a future object that can be used to check its status.
  */
-void GraphicsStateGuardian::
+AsyncFuture *GraphicsStateGuardian::
 async_reload_texture(TextureContext *tc) {
-  nassertv(_loader != (Loader *)NULL);
+  nassertr(_loader != nullptr, nullptr);
 
   int priority = 0;
-  if (_current_display_region != (DisplayRegion *)NULL) {
+  if (_current_display_region != nullptr) {
     priority = _current_display_region->get_texture_reload_priority();
   }
 
@@ -3201,15 +3201,15 @@ async_reload_texture(TextureContext *tc) {
 
   // See if we are already loading this task.
   AsyncTaskCollection orig_tasks = task_mgr->find_tasks(task_name);
-  int num_tasks = orig_tasks.get_num_tasks();
-  for (int ti = 0; ti < num_tasks; ++ti) {
+  size_t num_tasks = orig_tasks.get_num_tasks();
+  for (size_t ti = 0; ti < num_tasks; ++ti) {
     AsyncTask *task = orig_tasks.get_task(ti);
     if (task->is_exact_type(TextureReloadRequest::get_class_type()) &&
-        DCAST(TextureReloadRequest, task)->get_texture() == tc->get_texture()) {
+        ((TextureReloadRequest *)task)->get_texture() == tc->get_texture()) {
       // This texture is already queued to be reloaded.  Don't queue it again,
       // just make sure the priority is updated, and return.
       task->set_priority(max(task->get_priority(), priority));
-      return;
+      return (AsyncFuture *)task;
     }
   }
 
@@ -3220,6 +3220,7 @@ async_reload_texture(TextureContext *tc) {
                              _supports_compressed_texture);
   request->set_priority(priority);
   _loader->load_async(request);
+  return (AsyncFuture *)request.p();
 }
 
 /**

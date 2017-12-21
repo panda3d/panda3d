@@ -456,24 +456,21 @@ do_add(AsyncTask *task) {
 /**
  * Removes the indicated task from this chain.  Returns true if removed, false
  * otherwise.  Assumes the lock is already held.  The task->upon_death()
- * method is *not* called.
+ * method is called with clean_exit=false if upon_death is given.
  */
 bool AsyncTaskChain::
-do_remove(AsyncTask *task) {
-  bool removed = false;
-
+do_remove(AsyncTask *task, bool upon_death) {
   nassertr(task->_chain == this, false);
 
   switch (task->_state) {
   case AsyncTask::S_servicing:
-    // This task is being serviced.
+    // This task is being serviced.  upon_death will be called afterwards.
     task->_state = AsyncTask::S_servicing_removed;
-    removed = true;
-    break;
+    return true;
 
   case AsyncTask::S_servicing_removed:
-    // Being serviced, though it will be removed later.
-    break;
+    // Being serviced, though it is already marked to be removed afterwards.
+    return false;
 
   case AsyncTask::S_sleeping:
     // Sleeping, easy.
@@ -482,10 +479,9 @@ do_remove(AsyncTask *task) {
       nassertr(index != -1, false);
       _sleeping.erase(_sleeping.begin() + index);
       make_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
-      removed = true;
-      cleanup_task(task, false, false);
+      cleanup_task(task, upon_death, false);
     }
-    break;
+    return true;
 
   case AsyncTask::S_active:
     {
@@ -503,15 +499,15 @@ do_remove(AsyncTask *task) {
           nassertr(index != -1, false);
         }
       }
-      removed = true;
-      cleanup_task(task, false, false);
+      cleanup_task(task, upon_death, false);
+      return true;
     }
 
   default:
     break;
   }
 
-  return removed;
+  return false;
 }
 
 /**
@@ -776,26 +772,18 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   PT(AsyncTask) hold_task = task;
 
   task->_state = AsyncTask::S_inactive;
-  task->_chain = NULL;
-  task->_manager = NULL;
+  task->_chain = nullptr;
   --_num_tasks;
   --(_manager->_num_tasks);
 
   _manager->remove_task_by_name(task);
 
-  // Activate the tasks that were waiting for this one to finish.
-  if (upon_death) {
-    pvector<PT(AsyncTask)>::iterator it;
-    for (it = task->_waiting_tasks.begin(); it != task->_waiting_tasks.end(); ++it) {
-      AsyncTask *task = *it;
-      // Note that this task may not be on the same task chain.
-      nassertd(task->_manager == _manager) continue;
-      task->_state = AsyncTask::S_active;
-      task->_chain->_active.push_back(task);
-      --task->_chain->_num_awaiting_tasks;
-    }
-    task->_waiting_tasks.clear();
+  if (upon_death && task->set_future_state(clean_exit ? AsyncFuture::FS_finished
+                                                      : AsyncFuture::FS_cancelled)) {
+    task->notify_done(clean_exit);
   }
+
+  task->_manager = nullptr;
 
   if (upon_death) {
     _manager->_lock.release();

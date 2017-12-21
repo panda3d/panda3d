@@ -49,28 +49,20 @@ get_loader() const {
  * Returns true if this request has completed, false if it is still pending.
  * When this returns true, you may retrieve the success flag with
  * get_success().
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
  */
 INLINE bool ModelSaveRequest::
 is_ready() const {
-  return _is_ready;
+  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
 }
 
 /**
  * Returns the true if the model was saved successfully, false otherwise.  It
- * is an error to call this unless is_ready() returns true.
+ * is an error to call this unless done() returns true.
  */
 INLINE bool ModelSaveRequest::
 get_success() const {
-  nassertr(_is_ready, false);
-  return _success;
-}
-
-/**
- * Returns a boolean indicating whether the model saved correctly.  It is an
- * error to call this unless is_ready() returns true.
- */
-INLINE bool ModelSaveRequest::
-result() const {
-  nassertr(_is_ready, false);
+  nassertr_always(done(), false);
   return _success;
 }

@@ -97,7 +97,7 @@ __init__(PyObject *self, PyObject *source) {
 
   // Now construct the internal list by copying the elements one-at-a-time
   // from Python.
-  PyObject *dict = ((Dtool_PyInstDef *)self)->_My_Type->_PyType.tp_dict;
+  PyObject *dict = DtoolInstance_TYPE(self)->_PyType.tp_dict;
   PyObject *push_back = PyDict_GetItemString(dict, "push_back");
   if (push_back == NULL) {
     PyErr_BadArgument();
@@ -105,7 +105,7 @@ __init__(PyObject *self, PyObject *source) {
   }
 
   // We need to initialize the this pointer before we can call push_back.
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = (void *)this->_this;
+  DtoolInstance_INIT_PTR(self, this->_this);
 
   Py_ssize_t size = PySequence_Size(source);
   this->_this->reserve(size);
@@ -203,34 +203,37 @@ set_data(PyObject *data) {
     }
 
     PyBuffer_Release(&view);
-  } else {
-    Dtool_Raise_TypeError("PointerToArray.set_data() requires a buffer object");
+    return;
   }
-#else
-  // In Python 2.5 we didn't have the new buffer protocol, only str.
-  if (PyString_CheckExact(data)) {
-    int size = PyString_Size(data);
-    if (size % sizeof(Element) != 0) {
+#endif
+
+  // In Python 2, there was also an older buffer protocol, supported by eg.
+  // str and array objects.
+#if PY_MAJOR_VERSION < 3
+  // The old, deprecated buffer interface, as used by eg. the array module.
+  const void *buffer;
+  Py_ssize_t buffer_len;
+  if (!PyUnicode_CheckExact(data) &&
+      PyObject_AsReadBuffer(data, &buffer, &buffer_len) == 0) {
+    if (buffer_len % sizeof(Element) != 0) {
       PyErr_Format(PyExc_ValueError,
-                   "str object is not a multiple of %zu bytes",
+                   "byte buffer is not a multiple of %zu bytes",
                    sizeof(Element));
       return;
     }
 
-    int num_elements = size / sizeof(Element);
-    this->_this->insert(this->_this->begin(), num_elements, Element());
-
-    // Hope there aren't any constructors or destructors involved here.
-    if (size != 0) {
-      const char *ptr = PyString_AsString(data);
-      memcpy(this->_this->p(), ptr, size);
+    if (buffer_len > 0) {
+      this->_this->resize(buffer_len / sizeof(Element));
+      memcpy(this->_this->p(), buffer, buffer_len);
     } else {
       this->_this->clear();
     }
-  } else {
-    Dtool_Raise_TypeError("PointerToArray.set_data() requires a str");
+
+    return;
   }
 #endif
+
+  Dtool_Raise_TypeError("PointerToArray.set_data() requires a buffer object");
 }
 
 /**

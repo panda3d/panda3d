@@ -232,7 +232,7 @@ draw_bounding_volume(const BoundingVolume *vol,
   if (bounds_viz != (Geom *)NULL) {
     _geoms_pcollector.add_level(2);
     CullableObject *outer_viz =
-      new CullableObject(move(bounds_viz), get_bounds_outer_viz_state(),
+      new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
                          internal_transform);
     _cull_handler->record_object(outer_viz, this);
 

@@ -43,8 +43,6 @@ PUBLISHED:
   INLINE bool is_ready() const;
   INLINE AudioSound *get_sound() const;
 
-  INLINE AudioSound *result() const;
-
 protected:
   virtual DoneStatus do_task();
 
@@ -52,9 +50,6 @@ private:
   PT(AudioManager) _audio_manager;
   string _filename;
   bool _positional;
-
-  bool _is_ready;
-  PT(AudioSound) _sound;
 
 public:
   static TypeHandle get_class_type() {

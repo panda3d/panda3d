@@ -79,6 +79,8 @@ private:
   static void get_texel_la(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_rgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_rgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_srgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_srgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
 
   int _x_size;
   int _y_size;

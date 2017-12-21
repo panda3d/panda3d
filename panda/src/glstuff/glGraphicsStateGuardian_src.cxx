@@ -155,7 +155,11 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // drawing GUIs and such.
 static const string default_vshader =
 #ifndef OPENGLES
+#ifdef __APPLE__ // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
@@ -179,7 +183,11 @@ static const string default_vshader =
 
 static const string default_fshader =
 #ifndef OPENGLES
+#ifdef __APPLE__  // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
@@ -6455,6 +6463,15 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     break;
 
+  case Texture::F_depth_component16:
+    component_type = Texture::T_unsigned_short;
+    break;
+
+  case Texture::F_depth_component24:
+  case Texture::F_depth_component32:
+    component_type = Texture::T_float;
+    break;
+
   default:
     if (_current_properties->get_srgb_color()) {
       if (_current_properties->get_alpha_bits()) {
@@ -12314,20 +12331,20 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               if (_supports_clear_texture) {
                 // We can do that with the convenient glClearTexImage
                 // function.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                                 component_type, (void *)clear_data.data());
+                                 component_type, (void *)&clear_data[0]);
                 continue;
               }
             } else {
               if (_supports_clear_buffer) {
                 // For buffer textures we need to clear the underlying
                 // storage.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
-                                   component_type, (const void *)clear_data.data());
+                                   component_type, (const void *)&clear_data[0]);
                 continue;
               }
             }
