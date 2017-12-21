@@ -6617,6 +6617,12 @@ if PkgSkip("PYTHON") == 0:
         TargetAdd('deploy-stubw.exe', input='deploy-stub.obj')
         TargetAdd('deploy-stubw.exe', input='frozen_dllmain.obj')
         TargetAdd('deploy-stubw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
+    elif GetTarget() == 'darwin':
+        DefSymbol('MACOS_APP_BUNDLE', 'MACOS_APP_BUNDLE')
+        OPTS = OPTS + ['MACOS_APP_BUNDLE']
+        TargetAdd('deploy-stubw.obj', opts=OPTS, input='deploy-stub.c')
+        TargetAdd('deploy-stubw.exe', input='deploy-stubw.obj')
+        TargetAdd('deploy-stubw.exe', opts=['MACOS_APP_BUNDLE', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
 
 #
 # Generate the models directory and samples directory

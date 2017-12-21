@@ -1619,7 +1619,7 @@ class Freezer:
 
         return target
 
-    def generateRuntimeFromStub(self, target, stub_file, fields={}):
+    def generateRuntimeFromStub(self, target, stub_file, use_console, fields={}):
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
@@ -1700,7 +1700,11 @@ class Freezer:
             # trouble importing it as a builtin module.  Synthesize a frozen
             # module that loads it dynamically.
             if '.' in moduleName:
-                code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
+                if self.platform.startswith("macosx") and not use_console:
+                    # We write the Frameworks directory to sys.path[0].
+                    code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(sys.path[0], "%s%s"))' % (moduleName, moduleName, moduleName, modext)
+                else:
+                    code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 code = compile(code, moduleName, 'exec')
                 code = marshal.dumps(code)
                 moduleList.append((moduleName, len(pool), len(code)))

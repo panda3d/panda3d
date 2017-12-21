@@ -237,6 +237,37 @@ int Py_FrozenMain(int argc, char **argv)
     PySys_SetArgv(argc, argv);
 #endif
 
+#ifdef MACOS_APP_BUNDLE
+    // Add the Frameworks directory to sys.path.
+    char buffer[PATH_MAX];
+    uint32_t bufsize = sizeof(buffer);
+    if (_NSGetExecutablePath(buffer, &bufsize) != 0) {
+      assert(false);
+      return 1;
+    }
+    char resolved[PATH_MAX];
+    if (!realpath(buffer, resolved)) {
+      perror("realpath");
+      return 1;
+    }
+    const char *dir = dirname(resolved);
+    sprintf(buffer, "%s/../Frameworks", dir);
+
+    PyObject *sys_path = PyList_New(1);
+  #if PY_MAJOR_VERSION >= 3
+    PyList_SET_ITEM(sys_path, 0, PyUnicode_FromString(buffer));
+  #else
+    PyList_SET_ITEM(sys_path, 0, PyString_FromString(buffer));
+  #endif
+    PySys_SetObject("path", sys_path);
+    Py_DECREF(sys_path);
+
+    // Now, store a path to the Resources directory into the main_dir pointer,
+    // for ConfigPageManager to read out and assign to MAIN_DIR.
+    sprintf(buffer, "%s/../Resources", dir);
+    set_main_dir(buffer);
+#endif
+
     n = PyImport_ImportFrozenModule("__main__");
     if (n == 0)
         Py_FatalError("__main__ not frozen");

@@ -349,7 +349,10 @@ class WheelFile(object):
 
             # Fix things like @loader_path/../lib references
             if sys.platform == "darwin":
-                deps_path = '@loader_path'
+                if source_path.endswith('deploy-stubw'):
+                    deps_path = '@executable_path/../Frameworks'
+                else:
+                    deps_path = '@loader_path'
                 loader_path = [os.path.dirname(source_path)]
                 for dep in deps:
                     if dep.endswith('/Python'):
