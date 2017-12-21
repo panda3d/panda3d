@@ -601,6 +601,9 @@ class PEFile(object):
     def get_export_address(self, symbol_name):
         """ Finds the virtual address for a named export symbol. """
 
+        if isinstance(symbol_name, bytes):
+            symbol_name = symbol_name.decode('ascii')
+
         start = self.exp_rva.addr
         expdir = expdirtab(*unpack('<IIHHIIIIIII', self.vmem[start:start+40]))
         if expdir.nnames == 0 or expdir.ordinals == 0 or expdir.names == 0:
