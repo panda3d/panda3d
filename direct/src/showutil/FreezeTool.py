@@ -1648,6 +1648,8 @@ class Freezer:
         strings = sorted(strings, key=lambda str:-len(str))
         string_offsets = {}
 
+        # Now add the strings to the pool, and collect the offsets relative to
+        # the beginning of the pool.
         for string in strings:
             # First check whether it's already in there; it could be part of
             # a longer string.
@@ -1710,54 +1712,49 @@ class Freezer:
         # on the platform.
         num_pointers = 10
         stub_data = bytearray(stub_file.read())
-        if self._is_executable_64bit(stub_data):
-            header_layout = '<QQHHHH8x%dQQ' % num_pointers
-            entry_layout = '<QQixxxx'
-        else:
-            header_layout = '<QQHHHH8x%dII' % num_pointers
-            entry_layout = '<IIi'
+        bitnesses = self._get_executable_bitnesses(stub_data)
 
-        # Calculate the size of the header and module table, so that we can
-        # determine the proper offset for the string pointers.
-        pool_offset = (len(moduleList) + 1) * struct.calcsize(entry_layout)
+        header_layouts = {
+            32: '<QQHHHH8x%dII' % num_pointers,
+            64: '<QQHHHH8x%dQQ' % num_pointers,
+        }
+        entry_layouts = {
+            32: '<IIi',
+            64: '<QQixxxx',
+        }
 
-        # The module table is the first thing in the blob.
-        blob = b""
-        for moduleName, offset, size in moduleList:
-            encoded = moduleName.encode('ascii')
-            string_offset = pool_offset + string_offsets[encoded]
-            if size != 0:
-                offset += pool_offset
-            blob += struct.pack(entry_layout, string_offset, offset, size)
+        # Calculate the size of the module tables, so that we can determine
+        # the proper offset for the string pointers.  There can be more than
+        # one module table for macOS executables.  Sort the bitnesses so that
+        # the alignment is correct.
+        bitnesses = sorted(bitnesses, reverse=True)
 
-        blob += struct.pack(entry_layout, 0, 0, 0)
+        pool_offset = 0
+        for bitness in bitnesses:
+            pool_offset += (len(moduleList) + 1) * struct.calcsize(entry_layouts[bitness])
 
-        # Add the string pool.
-        assert len(blob) == pool_offset
-        blob += pool
-        del pool
-
-        # Total blob length should be aligned to 8 bytes.
-        if len(blob) & 7 != 0:
-            pad = (8 - (len(blob) & 7))
-            blob += b'\0' * pad
-
+        # Now we can determine the offset of the blob.
         if self.platform.startswith('win'):
-            # We don't use mmap on Windows.
+            # We don't use mmap on Windows.  Align just for good measure.
             blob_align = 32
         else:
             # Align to page size, so that it can be mmapped.
             blob_align = 4096
 
-        # Determine the blob offset, padding the stub if necessary.
+        # Add padding before the blob if necessary.
         blob_offset = len(stub_data)
         if (blob_offset & (blob_align - 1)) != 0:
-            # Add padding to align to the page size, so it can be mmapped.
             pad = (blob_align - (blob_offset & (blob_align - 1)))
             stub_data += (b'\0' * pad)
             blob_offset += pad
         assert (blob_offset % blob_align) == 0
         assert blob_offset == len(stub_data)
+
+        # Also determine the total blob size now.  Add padding to the end.
+        blob_size = pool_offset + len(pool)
+        if blob_size & 31 != 0:
+            pad = (32 - (blob_size & 31))
+            blob_size += pad
 
         # Calculate the offsets for the variables.  These are pointers,
         # relative to the beginning of the blob.
@@ -1767,34 +1764,68 @@ class Freezer:
                 encoded = value.encode('utf-8')
                 field_offsets[key] = pool_offset + string_offsets[encoded]
 
-        # Compose the header we will be writing to the stub, to tell it where
-        # to find the module data blob, as well as other variables.
-        header = struct.pack(header_layout,
-            blob_offset,
-            len(blob),
-            1, # Version number
-            num_pointers, # Number of pointers that follow
-            0, # Codepage, not yet used
-            0, # Flags, not yet used
-            0, # Module table pointer, always 0 for now.
-            # The following variables need to be set before static init
-            # time.  See configPageManager.cxx, where they are read.
-            field_offsets.get('prc_data', 0),
-            field_offsets.get('default_prc_dir', 0),
-            field_offsets.get('prc_dir_envvars', 0),
-            field_offsets.get('prc_path_envvars', 0),
-            field_offsets.get('prc_patterns', 0),
-            field_offsets.get('prc_encrypted_patterns', 0),
-            field_offsets.get('prc_encryption_key', 0),
-            field_offsets.get('prc_executable_patterns', 0),
-            field_offsets.get('prc_executable_args_envvar', 0),
-            0)
+        # OK, now go and write the blob.  This consists of the module table
+        # (there may be two in the case of a macOS universal (fat) binary).
+        blob = b""
+        append_offset = False
+        for bitness in bitnesses:
+            entry_layout = entry_layouts[bitness]
+            header_layout = header_layouts[bitness]
 
-        # Now, find the location of the 'blobinfo' symbol in the executable,
-        # to which we will write our header.
-        if not self._replace_symbol(stub_data, b'blobinfo', header):
-            # This must be a legacy deploy-stub, which requires the offset to
-            # be appended to the end.
+            table_offset = len(blob)
+            for moduleName, offset, size in moduleList:
+                encoded = moduleName.encode('ascii')
+                string_offset = pool_offset + string_offsets[encoded]
+                if size != 0:
+                    offset += pool_offset
+                blob += struct.pack(entry_layout, string_offset, offset, size)
+
+            # A null entry marks the end of the module table.
+            blob += struct.pack(entry_layout, 0, 0, 0)
+
+            # Compose the header we will be writing to the stub, to tell it
+            # where to find the module data blob, as well as other variables.
+            header = struct.pack(header_layout,
+                blob_offset,
+                blob_size,
+                1, # Version number
+                num_pointers, # Number of pointers that follow
+                0, # Codepage, not yet used
+                0, # Flags, not yet used
+                table_offset, # Module table pointer.
+                # The following variables need to be set before static init
+                # time.  See configPageManager.cxx, where they are read.
+                field_offsets.get('prc_data', 0),
+                field_offsets.get('default_prc_dir', 0),
+                field_offsets.get('prc_dir_envvars', 0),
+                field_offsets.get('prc_path_envvars', 0),
+                field_offsets.get('prc_patterns', 0),
+                field_offsets.get('prc_encrypted_patterns', 0),
+                field_offsets.get('prc_encryption_key', 0),
+                field_offsets.get('prc_executable_patterns', 0),
+                field_offsets.get('prc_executable_args_envvar', 0),
+                0)
+
+            # Now, find the location of the 'blobinfo' symbol in the binary,
+            # to which we will write our header.
+            if not self._replace_symbol(stub_data, b'blobinfo', header, bitness=bitness):
+                # This must be a legacy deploy-stub, which requires the offset to
+                # be appended to the end.
+                append_offset = True
+
+        # Add the string/code pool.
+        assert len(blob) == pool_offset
+        blob += pool
+        del pool
+
+        # Now pad out the blob to the calculated blob size.
+        if len(blob) < blob_size:
+            blob += b'\0' * (blob_size - len(blob))
+        assert len(blob) == blob_size
+
+        if append_offset:
+            # This is for legacy deploy-stub.
+            print("WARNING: Could not find blob header. Is deploy-stub outdated?")
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:
@@ -1805,8 +1836,9 @@ class Freezer:
         os.chmod(target, 0o755)
         return target
 
-    def _is_executable_64bit(self, data):
-        """Returns true if this is a 64-bit executable."""
+    def _get_executable_bitnesses(self, data):
+        """Returns the bitnesses (32 or 64) of the given executable data.
+        This will contain 1 element for non-fat executables."""
 
         if data.startswith(b'MZ'):
             # A Windows PE file.
@@ -1815,31 +1847,62 @@ class Freezer:
 
             magic, = struct.unpack_from('<H', data, offset + 24)
             assert magic in (0x010b, 0x020b)
-            return magic == 0x020b
+            if magic == 0x020b:
+                return (64,)
+            else:
+                return (32,)
 
         elif data.startswith(b"\177ELF"):
             # A Linux/FreeBSD ELF executable.
             elfclass = ord(data[4:5])
             assert elfclass in (1, 2)
-            return elfclass == 2
+            return (elfclass * 32,)
 
         elif data[:4] in (b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE'):
             # 32-bit Mach-O file, as used on macOS.
-            return False
+            return (32,)
 
         elif data[:4] in (b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE'):
             # 64-bit Mach-O file, as used on macOS.
-            return True
+            return (64,)
 
-        elif data[:4] in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA',
-                          b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA'):
-            # A universal file, containing one or more Mach-O files.
-            #TODO: how to handle universal stubs with more than one arch?
-            pass
+        elif data[:4] in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA'):
+            # Universal binary with 32-bit offsets.
+            num_fat, = struct.unpack_from('>I', data, 4)
+            bitnesses = set()
+            ptr = 8
+            for i in range(num_fat):
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack_from('>IIIII', data, ptr)
+                ptr += 20
 
-    def _replace_symbol(self, data, symbol_name, replacement):
+                if (cputype & 0x1000000) != 0:
+                    bitnesses.add(64)
+                else:
+                    bitnesses.add(32)
+            return tuple(bitnesses)
+
+        elif data[:4] in (b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA'):
+            # Universal binary with 64-bit offsets.
+            num_fat, = struct.unpack_from('>I', data, 4)
+            bitnesses = set()
+            ptr = 8
+            for i in range(num_fat):
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack_from('>QQQQQ', data, ptr)
+                ptr += 40
+
+                if (cputype & 0x1000000) != 0:
+                    bitnesses.add(64)
+                else:
+                    bitnesses.add(32)
+            return tuple(bitnesses)
+
+    def _replace_symbol(self, data, symbol_name, replacement, bitness=None):
         """We store a custom section in the binary file containing a header
-        containing offsets to the binary data."""
+        containing offsets to the binary data.
+        If bitness is set, and the binary in question is a macOS universal
+        binary, it only replaces for binaries with the given bitness. """
 
         if data.startswith(b'MZ'):
             # A Windows PE file.
@@ -1866,11 +1929,49 @@ class Freezer:
 
         elif data[:4] in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA'):
             # Universal binary with 32-bit offsets.
-            return self._replace_symbol_fat(data, b'_' + symbol_name, replacement, False)
+            num_fat, = struct.unpack_from('>I', data, 4)
+            replaced = False
+            ptr = 8
+            for i in range(num_fat):
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack_from('>IIIII', data, ptr)
+                ptr += 20
+
+                # Does this match the requested bitness?
+                if bitness is not None and ((cputype & 0x1000000) != 0) != (bitness == 64):
+                    continue
+
+                macho_data = data[offset:offset+size]
+                off = self._find_symbol_macho(macho_data, symbol_name)
+                if off is not None:
+                    off += offset
+                    data[off:off+len(replacement)] = replacement
+                    replaced = True
+
+            return replaced
 
         elif data[:4] in (b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA'):
             # Universal binary with 64-bit offsets.
-            return self._replace_symbol_fat(data, b'_' + symbol_name, replacement, True)
+            num_fat, = struct.unpack_from('>I', data, 4)
+            replaced = False
+            ptr = 8
+            for i in range(num_fat):
+                cputype, cpusubtype, offset, size, align = \
+                    struct.unpack_from('>QQQQQ', data, ptr)
+                ptr += 40
+
+                # Does this match the requested bitness?
+                if bitness is not None and ((cputype & 0x1000000) != 0) != (bitness == 64):
+                    continue
+
+                macho_data = data[offset:offset+size]
+                off = self._find_symbol_macho(macho_data, symbol_name)
+                if off is not None:
+                    off += offset
+                    data[off:off+len(replacement)] = replacement
+                    replaced = True
+
+            return replaced
 
         # We don't know what kind of file this is.
         return False
@@ -1988,7 +2089,7 @@ class Freezer:
                     symoff += nlist_size
                     name = strings[strx : strings.find(b'\0', strx)]
 
-                    if name == symbol_name:
+                    if name == b'_' + symbol_name:
                         # Find out in which segment this is.
                         for vmaddr, vmsize, fileoff in segments:
                             # Is it defined in this segment?
@@ -1996,33 +2097,7 @@ class Freezer:
                             if rel >= 0 and rel < vmsize:
                                 # Yes, so return the symbol offset.
                                 return fileoff + rel
-
-    def _replace_symbol_fat(self, fat_data, symbol_name, replacement, is_64bit):
-        """ Implementation of _replace_symbol for universal binaries. """
-        num_fat, = struct.unpack_from('>I', fat_data, 4)
-
-        # After the header we get a table of executables in this fat file,
-        # each one with a corresponding offset into the file.
-        replaced = False
-        ptr = 8
-        for i in range(num_fat):
-            if is_64bit:
-                cputype, cpusubtype, offset, size, align = \
-                    struct.unpack_from('>QQQQQ', fat_data, ptr)
-                ptr += 40
-            else:
-                cputype, cpusubtype, offset, size, align = \
-                    struct.unpack_from('>IIIII', fat_data, ptr)
-                ptr += 20
-
-            macho_data = fat_data[offset:offset+size]
-            off = self._find_symbol_macho(macho_data, symbol_name)
-            if off is not None:
-                off += offset
-                fat_data[off:off+len(replacement)] = replacement
-                replaced = True
-
-        return replaced
+                        print("Could not find memory address for symbol %s" % (symbol_name))
 
     def makeModuleDef(self, mangledName, code):
         result = ''
