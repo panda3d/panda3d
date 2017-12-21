@@ -69,6 +69,10 @@ static struct _inittab extensions[] = {
 
 #if defined(_WIN32) && PY_VERSION_HEX < 0x03060000
 static int supports_code_page(UINT cp) {
+  if (cp == 0) {
+    cp = GetACP();
+  }
+
   /* Shortcut, because we know that these encodings are bundled by default--
    * see FreezeTool.py and Python's encodings/aliases.py */
   if (cp != 0 && cp != 1252 && cp != 367 && cp != 437 && cp != 850 && cp != 819) {
