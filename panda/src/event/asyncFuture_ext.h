@@ -29,7 +29,11 @@ public:
   static PyObject *__await__(PyObject *self);
   static PyObject *__iter__(PyObject *self) { return __await__(self); }
 
-  PyObject *result(double timeout = -1.0) const;
+  PyObject *result(PyObject *timeout = Py_None) const;
+
+  PyObject *add_done_callback(PyObject *self, PyObject *fn);
+
+  static PyObject *gather(PyObject *args);
 };
 
 #endif  // HAVE_PYTHON

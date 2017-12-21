@@ -45,6 +45,7 @@ PythonTask(PyObject *func_or_coro, const string &name) :
   _exc_traceback(nullptr),
   _generator(nullptr),
   _future_done(nullptr),
+  _ignore_return(false),
   _retrieved_exception(false) {
 
   nassertv(func_or_coro != nullptr);
@@ -169,9 +170,7 @@ get_args() {
     }
 
     this->ref();
-    PyObject *self =
-      DTool_CreatePyInstanceTyped(this, Dtool_TypedReferenceCount,
-                                  true, false, get_type_index());
+    PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
     PyTuple_SET_ITEM(with_task, num_args, self);
     return with_task;
 
@@ -588,20 +587,21 @@ do_python_task() {
       AsyncFuture *fut = (AsyncFuture *)DtoolInstance_UPCAST(result, Dtool_AsyncFuture);
       if (fut != nullptr) {
         // Suspend execution of this task until this other task has completed.
-        AsyncTaskManager *manager = fut->_manager;
-        if (manager == nullptr) {
-          manager = _manager;
-          fut->_manager = manager;
-        }
-        nassertr(manager == _manager, DS_interrupt);
-        MutexHolder holder(manager->_lock);
-        if (fut != (AsyncFuture *)this) {
-          if (!fut->done()) {
+        if (fut != (AsyncFuture *)this && !fut->done()) {
+          if (fut->is_task()) {
+            // This is actually a task, do we need to schedule it with the
+            // manager?  This allows doing something like
+            //   await Task.pause(1.0)
+            // directly instead of having to do:
+            //   await taskMgr.add(Task.pause(1.0))
+            AsyncTask *task = (AsyncTask *)fut;
+            _manager->add(task);
+          }
+          if (fut->add_waiting_task(this)) {
             if (task_cat.is_debug()) {
               task_cat.debug()
                 << *this << " is now awaiting <" << *fut << ">.\n";
             }
-            fut->add_waiting_task(this);
           } else {
             // The task is already done.  Continue at next opportunity.
             if (task_cat.is_debug()) {
@@ -664,7 +664,7 @@ do_python_task() {
     return DS_interrupt;
   }
 
-  if (result == Py_None) {
+  if (result == Py_None || _ignore_return) {
     Py_DECREF(result);
     return DS_done;
   }
@@ -861,15 +861,10 @@ void PythonTask::
 call_function(PyObject *function) {
   if (function != Py_None) {
     this->ref();
-    PyObject *self =
-      DTool_CreatePyInstanceTyped(this, Dtool_TypedReferenceCount,
-                                  true, false, get_type_index());
-    PyObject *args = Py_BuildValue("(O)", self);
-    Py_DECREF(self);
-
-    PyObject *result = PyObject_CallObject(function, args);
+    PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
+    PyObject *result = PyObject_CallFunctionObjArgs(function, self, nullptr);
     Py_XDECREF(result);
-    Py_DECREF(args);
+    Py_DECREF(self);
   }
 }
 

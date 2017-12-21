@@ -159,6 +159,105 @@ def test_coro_exception():
         task.result()
 
 
+def test_future_gather():
+    fut1 = core.AsyncFuture()
+    fut2 = core.AsyncFuture()
+
+    # 0 and 1 arguments are special
+    assert core.AsyncFuture.gather().done()
+    assert core.AsyncFuture.gather(fut1) == fut1
+
+    # Gathering not-done futures
+    gather = core.AsyncFuture.gather(fut1, fut2)
+    assert not gather.done()
+
+    # One future done
+    fut1.set_result(1)
+    assert not gather.done()
+
+    # Two futures done
+    fut2.set_result(2)
+    assert gather.done()
+
+    assert not gather.cancelled()
+    assert tuple(gather.result()) == (1, 2)
+
+
+def test_future_gather_cancel_inner():
+    fut1 = core.AsyncFuture()
+    fut2 = core.AsyncFuture()
+
+    # Gathering not-done futures
+    gather = core.AsyncFuture.gather(fut1, fut2)
+    assert not gather.done()
+
+    # One future cancelled
+    fut1.cancel()
+    assert not gather.done()
+
+    # Two futures cancelled
+    fut2.set_result(2)
+    assert gather.done()
+
+    assert not gather.cancelled()
+    with pytest.raises(CancelledError):
+        assert gather.result()
+
+
+def test_future_gather_cancel_outer():
+    fut1 = core.AsyncFuture()
+    fut2 = core.AsyncFuture()
+
+    # Gathering not-done futures
+    gather = core.AsyncFuture.gather(fut1, fut2)
+    assert not gather.done()
+
+    assert gather.cancel()
+    assert gather.done()
+    assert gather.cancelled()
+
+    with pytest.raises(CancelledError):
+        assert gather.result()
+
+
+def test_future_done_callback():
+    fut = core.AsyncFuture()
+
+    # Use the list hack since Python 2 doesn't have the "nonlocal" keyword.
+    called = [False]
+    def on_done(arg):
+        assert arg == fut
+        called[0] = True
+
+    fut.add_done_callback(on_done)
+    fut.cancel()
+    assert fut.done()
+
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.poll()
+    assert called[0]
+
+
+def test_future_done_callback_already_done():
+    # Same as above, but with the future already done when add_done_callback
+    # is called.
+    fut = core.AsyncFuture()
+    fut.cancel()
+    assert fut.done()
+
+    # Use the list hack since Python 2 doesn't have the "nonlocal" keyword.
+    called = [False]
+    def on_done(arg):
+        assert arg == fut
+        called[0] = True
+
+    fut.add_done_callback(on_done)
+
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.poll()
+    assert called[0]
+
+
 def test_event_future():
     queue = core.EventQueue()
     handler = core.EventHandler(queue)

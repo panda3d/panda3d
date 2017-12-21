@@ -33,6 +33,7 @@ NotifyCategoryDef(task, "");
 
 ConfigureFn(config_event) {
   AsyncFuture::init_type();
+  AsyncGatheringFuture::init_type();
   AsyncTask::init_type();
   AsyncTaskChain::init_type();
   AsyncTaskManager::init_type();
