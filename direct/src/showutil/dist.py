@@ -280,11 +280,16 @@ class build_apps(distutils.core.Command):
                 freezer.excludeModule(exmod)
             freezer.done(addStartupModules=True)
 
+            target_path = os.path.join(builddir, appname)
+
             stub_name = 'deploy-stub'
             if platform.startswith('win'):
                 if not use_console:
                     stub_name = 'deploy-stubw'
+
+            if platform.startswith('win'):
                 stub_name += '.exe'
+                target_path += '.exe'
 
             if use_wheels:
                 stub_file = p3dwhl.open('panda3d_tools/{0}'.format(stub_name))
@@ -293,7 +298,7 @@ class build_apps(distutils.core.Command):
                 stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', stub_name)
                 stub_file = open(stub_path, 'rb')
 
-            freezer.generateRuntimeFromStub(os.path.join(builddir, appname), stub_file, {
+            freezer.generateRuntimeFromStub(target_path, stub_file, {
                 'prc_data': None,
                 'default_prc_dir': None,
                 'prc_dir_envvars': None,
@@ -305,6 +310,12 @@ class build_apps(distutils.core.Command):
                 'prc_executable_args_envvar': None,
             })
             stub_file.close()
+
+            # Copy the dependencies.
+            search_path = [builddir]
+            if use_wheels:
+                search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
+            self.copy_dependencies(open(target_path, 'rb'), builddir, search_path, stub_name)
 
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
@@ -556,6 +567,13 @@ class build_apps(distutils.core.Command):
             shutil.copyfile(source_path, target_path)
             fp = open(target_path, 'rb')
 
+        target_dir = os.path.dirname(target_path)
+        base = os.path.basename(target_path)
+        self.copy_dependencies(fp, target_dir, search_path, base)
+
+    def copy_dependencies(self, fp, target_dir, search_path, referenced_by):
+        """ Copies the dependencies of the given open file. """
+
         # What kind of magic does the file contain?
         deps = []
         magic = fp.read(4)
@@ -589,11 +607,8 @@ class build_apps(distutils.core.Command):
             deps = self._read_dependencies_fat(fp, True)
 
         # If we discovered any dependencies, recursively add those.
-        if deps:
-            target_dir = os.path.dirname(target_path)
-            base = os.path.basename(target_path)
-            for dep in deps:
-                self.add_dependency(dep, target_dir, search_path, base)
+        for dep in deps:
+            self.add_dependency(dep, target_dir, search_path, referenced_by)
 
     def _read_dependencies_elf(self, elf, origin, search_path):
         """ Having read the first 4 bytes of the ELF file, fetches the

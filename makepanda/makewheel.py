@@ -350,19 +350,25 @@ class WheelFile(object):
 
             # Fix things like @loader_path/../lib references
             if sys.platform == "darwin":
+                deps_path = '@loader_path'
                 loader_path = [os.path.dirname(source_path)]
                 for dep in deps:
-                    if '@loader_path' not in dep:
-                        continue
+                    if dep.endswith('/Python'):
+                        # If this references the Python framework, change it
+                        # to reference libpython instead.
+                        new_dep = deps_path + '/libpython{0}.{1}.dylib'.format(*sys.version_info)
+                    else:
+                        if '@loader_path' not in dep:
+                            continue
 
-                    dep_path = dep.replace('@loader_path', '.')
-                    target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
-                    target_dep = self.consider_add_dependency(target_dep, dep_path, loader_path)
-                    if not target_dep:
-                        # It won't be included, so no use adjusting the path.
-                        continue
+                        dep_path = dep.replace('@loader_path', '.')
+                        target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
+                        target_dep = self.consider_add_dependency(target_dep, dep_path, loader_path)
+                        if not target_dep:
+                            # It won't be included, so no use adjusting the path.
+                            continue
+                        new_dep = os.path.join(deps_path, os.path.relpath(target_dep, os.path.dirname(target_path)))
 
-                    new_dep = os.path.join('@loader_path', os.path.relpath(target_dep, os.path.dirname(target_path)))
                     subprocess.call(["install_name_tool", "-change", dep, new_dep, temp.name])
             else:
                 subprocess.call(["strip", "-s", temp.name])
@@ -600,7 +606,7 @@ def makewheel(version, output_dir, platform=None):
     else:
         pylib_name = get_config_var('LDLIBRARY')
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
-    whl.write_file('/deploy_libs/' + pylib_name, pylib_path)
+    whl.write_file('deploy_libs/' + pylib_name, pylib_path)
 
     whl.close()
 

@@ -1619,17 +1619,15 @@ class Freezer:
 
         return target
 
-    def generateRuntimeFromStub(self, basename, stub_file, fields={}):
+    def generateRuntimeFromStub(self, target, stub_file, fields={}):
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
             raise Exception(message)
 
         if self.platform.startswith('win'):
-            target = basename + '.exe'
             modext = '.pyd'
         else:
-            target = basename
             modext = '.so'
 
         # First gather up the strings and code for all the module names, and
