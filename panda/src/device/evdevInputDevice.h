@@ -44,6 +44,9 @@ private:
   int _ff_strong;
   int _ff_weak;
 
+  pvector<int> _control_indices;
+  pvector<int> _button_indices;
+
   // These are used for D-pad emulation.
   int _dpad_x_axis;
   int _dpad_y_axis;

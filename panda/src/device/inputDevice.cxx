@@ -118,7 +118,7 @@ get_pointer_events() {
 /**
  * Called by the implementation to add a new known control.
  */
-void InputDevice::
+int InputDevice::
 add_control(ControlAxis axis, int minimum, int maximum, bool centered) {
   AnalogState state;
   state.axis = axis;
@@ -131,14 +131,16 @@ add_control(ControlAxis axis, int minimum, int maximum, bool centered) {
     state._scale = 1.0 / maximum;
     state._bias = 0.0;
   }
+  int index = (int)_controls.size();
   _controls.push_back(state);
+  return index;
 }
 
 /**
  * Called by the implementation to add a new known control.  This version
  * tries to guess whether the control is centered or not.
  */
-void InputDevice::
+int InputDevice::
 add_control(ControlAxis axis, int minimum, int maximum) {
   bool centered = (minimum < 0)
     || axis == C_left_x
@@ -150,7 +152,7 @@ add_control(ControlAxis axis, int minimum, int maximum) {
     || axis == C_wheel
     || axis == C_twist
     || axis == C_rudder;
-  add_control(axis, minimum, maximum, centered);
+  return add_control(axis, minimum, maximum, centered);
 }
 
 /**

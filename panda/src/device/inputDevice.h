@@ -185,8 +185,8 @@ PUBLISHED:
 
 protected:
   // Called during the constructor to add new controls or buttons
-  void add_control(ControlAxis axis, int minimum, int maximum, bool centered);
-  void add_control(ControlAxis axis, int minimum, int maximum);
+  int add_control(ControlAxis axis, int minimum, int maximum, bool centered);
+  int add_control(ControlAxis axis, int minimum, int maximum);
 
   void set_pointer(bool inwin, double x, double y, double time);
   void set_pointer_out_of_window(double time);

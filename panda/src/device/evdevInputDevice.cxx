@@ -25,52 +25,33 @@
 
 #define test_bit(bit, array) ((array)[(bit)>>3] & (1<<((bit)&7)))
 
-static InputDevice::ControlAxis axis_map[] = {
-  // ABS_X = 0x00
-  InputDevice::C_left_x,
-  // ABS_Y = 0x01
-  InputDevice::C_left_y,
-  // ABS_Z = 0x02
-  InputDevice::C_left_trigger,
-  // ABS_RX = 0x03
-  InputDevice::C_right_x,
-  // ABS_RY = 0x04
-  InputDevice::C_right_y,
-  // ABS_RZ = 0x05
-  InputDevice::C_right_trigger,
-  // ABS_THROTTLE = 0x06
-  InputDevice::C_throttle,
-  // ABS_RUDDER = 0x07
-  InputDevice::C_rudder,
-  // ABS_WHEEL = 0x08
-  InputDevice::C_wheel,
-  // ABS_GAS = 0x09
-  InputDevice::C_accelerator,
-  // ABS_BRAKE = 0x0a
-  InputDevice::C_brake,
+enum QuirkBits {
+  // Right stick uses Z and Rz inputs.
+  QB_rstick_from_z = 1,
 
-  InputDevice::C_none,
-  InputDevice::C_none,
-  InputDevice::C_none,
-  InputDevice::C_none,
-  InputDevice::C_none,
+  // Throttle goes from -1 to 1 rather than from 0 to 1.
+  QB_centered_throttle = 2,
 
-  // ABS_HAT0X = 0x10
-  InputDevice::C_hat_x,
-  // ABS_HAT0Y = 0x11
-  InputDevice::C_hat_y,
+  // Throttle is reversed.
+  QB_reversed_throttle = 4,
 
-  // ABS_HAT1X = 0x12
-  // ABS_HAT1Y = 0x13
-  // ABS_HAT2X = 0x14
-  // ABS_HAT2Y = 0x15
-  // ABS_HAT3X = 0x16
-  // ABS_HAT3Y = 0x17
-  // ABS_PRESSURE = 0x18
-  // ABS_DISTANCE = 0x19
-  // ABS_TILT_X = 0x1a
-  // ABS_TILT_Y = 0x1b
-  // ABS_TOOL_WIDTH = 0x1c
+  // Only consider the device "connected" if all axes are non-zero.
+  QB_connect_if_nonzero = 8,
+};
+
+static const struct DeviceMapping {
+  unsigned short vendor;
+  unsigned short product;
+  InputDevice::DeviceClass device_class;
+  int quirks;
+} mapping_presets[] = {
+  // NVIDIA Shield Controller
+  {0x0955, 0x7214, InputDevice::DC_gamepad, QB_rstick_from_z},
+  // T.Flight Hotas X
+  {0x044f, 0xb108, InputDevice::DC_flight_stick, QB_centered_throttle | QB_reversed_throttle},
+  // Xbox 360 Wireless Controller
+  {0x045e, 0x0719, InputDevice::DC_gamepad, QB_connect_if_nonzero},
+  {0},
 };
 
 TypeHandle EvdevInputDevice::_type_handle;
@@ -214,6 +195,8 @@ bool EvdevInputDevice::
 init_device() {
   nassertr(_fd >= 0, false);
 
+  LightMutexHolder holder(_lock);
+
   uint8_t evtypes[(EV_CNT + 7) >> 3];
   memset(evtypes, 0, sizeof(evtypes));
   char name[128];
@@ -262,76 +245,89 @@ init_device() {
     has_axes = true;
   }
 
+  // Do we have a preset device mapping?
+  int quirks = 0;
+  const DeviceMapping *mapping = mapping_presets;
+  while (mapping->vendor != 0) {
+    if (_vendor_id == mapping->vendor && _product_id == mapping->product) {
+      _device_class = mapping->device_class;
+      quirks = mapping->quirks;
+      break;
+    }
+    ++mapping;
+  }
 
   // Try to detect which type of device we have here
-  int device_scores[DC_COUNT];
-  memset(device_scores, 0, sizeof(device_scores));
+  if (_device_class == DC_unknown) {
+    int device_scores[DC_COUNT];
+    memset(device_scores, 0, sizeof(device_scores));
 
-  // Test for specific keys
-  if (test_bit(BTN_GAMEPAD, keys)) {
-    device_scores[DC_gamepad] += 5;
-    device_scores[DC_steering_wheel] += 5;
-    device_scores[DC_flight_stick] += 5;
-  }
+    // Test for specific keys
+    if (test_bit(BTN_GAMEPAD, keys) && test_bit(ABS_X, axes) && test_bit(ABS_RX, axes)) {
+      device_scores[DC_gamepad] += 5;
+      device_scores[DC_steering_wheel] += 5;
+      device_scores[DC_flight_stick] += 5;
+    }
 
-  if (test_bit(ABS_WHEEL, axes) && test_bit(ABS_GAS, axes) && test_bit(ABS_BRAKE, axes)) {
-    device_scores[DC_steering_wheel] += 10;
-  }
-  if (test_bit(BTN_GEAR_DOWN, keys) && test_bit(BTN_GEAR_UP, keys)) {
-    device_scores[DC_steering_wheel] += 10;
-  }
-  if (test_bit(BTN_JOYSTICK, keys)) {
-    device_scores[DC_flight_stick] += 10;
-  }
-  if (test_bit(BTN_MOUSE, keys)) {
-    device_scores[DC_mouse] += 20;
-  }
-  uint8_t unknown_keys[] = {KEY_POWER};
-  for (int i = 0; i < 1; i++) {
-    if (test_bit(unknown_keys[i], keys)) {
-      if (unknown_keys[i] == KEY_POWER) {
+    if (test_bit(ABS_WHEEL, axes) && test_bit(ABS_GAS, axes) && test_bit(ABS_BRAKE, axes)) {
+      device_scores[DC_steering_wheel] += 10;
+    }
+    if (test_bit(BTN_GEAR_DOWN, keys) && test_bit(BTN_GEAR_UP, keys)) {
+      device_scores[DC_steering_wheel] += 10;
+    }
+    if (test_bit(BTN_JOYSTICK, keys) && test_bit(ABS_X, axes)) {
+      device_scores[DC_flight_stick] += 10;
+    }
+    if (test_bit(BTN_MOUSE, keys) && test_bit(EV_REL, evtypes)) {
+      device_scores[DC_mouse] += 20;
+    }
+    uint8_t unknown_keys[] = {KEY_POWER};
+    for (int i = 0; i < 1; i++) {
+      if (test_bit(unknown_keys[i], keys)) {
+        if (unknown_keys[i] == KEY_POWER) {
+        }
+        device_scores[DC_unknown] += 20;
       }
-      device_scores[DC_unknown] += 20;
     }
-  }
-  if (_flags & IDF_has_keyboard) {
-    device_scores[DC_keyboard] += 20;
-  }
+    if (_flags & IDF_has_keyboard) {
+      device_scores[DC_keyboard] += 20;
+    }
 
-  // Test for specific name tags
-  string lowercase_name = _name;
-  for(int x=0; x<_name.length(); x++) {
-    lowercase_name[x]=tolower(lowercase_name[x]);
-  }
-  if (lowercase_name.find("gamepad") != string::npos) {
-    device_scores[DC_gamepad] += 10;
-  }
-  if (lowercase_name.find("wheel") != string::npos) {
-    device_scores[DC_steering_wheel] += 10;
-  }
-  if (lowercase_name.find("mouse") != string::npos || lowercase_name.find("touchpad") != string::npos) {
-    device_scores[DC_mouse] += 10;
-  }
-  if (lowercase_name.find("keyboard") != string::npos) {
-    device_scores[DC_keyboard] += 10;
-  }
-  // List of lowercase names that occur in unknown devices
-  string unknown_names[] = {"video bus", "power button", "sleep button"};
-  for(int i = 0; i < 3; i++) {
-    if (lowercase_name.find(unknown_names[i]) != string::npos) {
-      device_scores[DC_unknown] += 20;
+    // Test for specific name tags
+    string lowercase_name = _name;
+    for(int x=0; x<_name.length(); x++) {
+      lowercase_name[x]=tolower(lowercase_name[x]);
     }
-  }
+    if (lowercase_name.find("gamepad") != string::npos) {
+      device_scores[DC_gamepad] += 10;
+    }
+    if (lowercase_name.find("wheel") != string::npos) {
+      device_scores[DC_steering_wheel] += 10;
+    }
+    if (lowercase_name.find("mouse") != string::npos || lowercase_name.find("touchpad") != string::npos) {
+      device_scores[DC_mouse] += 10;
+    }
+    if (lowercase_name.find("keyboard") != string::npos) {
+      device_scores[DC_keyboard] += 10;
+    }
+    // List of lowercase names that occur in unknown devices
+    string unknown_names[] = {"video bus", "power button", "sleep button"};
+    for(int i = 0; i < 3; i++) {
+      if (lowercase_name.find(unknown_names[i]) != string::npos) {
+        device_scores[DC_unknown] += 20;
+      }
+    }
 
-  // Check which device type got the most points
-  size_t highest_score = 0;
-  for (size_t i = 0; i < DC_COUNT; i++) {
-    if (device_scores[i] > highest_score) {
-      highest_score = device_scores[i];
-      _device_class = (DeviceClass)i;
+    // Check which device type got the most points
+    size_t highest_score = 0;
+    for (size_t i = 0; i < DC_COUNT; i++) {
+      if (device_scores[i] > highest_score) {
+        highest_score = device_scores[i];
+        _device_class = (DeviceClass)i;
+      }
     }
+    //cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
   }
-  //cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
 
   if (_device_class != DC_gamepad) {
     emulate_dpad = false;
@@ -343,70 +339,140 @@ init_device() {
     memset(states, 0, sizeof(states));
     ioctl(_fd, EVIOCGKEY(sizeof(states)), states);
 
-    int bi = 0;
     for (int i = 0; i < KEY_CNT; ++i) {
       if (test_bit(i, keys)) {
-        ButtonHandle mapped = map_button(i);
-        set_button_map(bi, mapped);
+        ButtonState button;
+        button.handle = map_button(i);
 
-        if (mapped == ButtonHandle::none()) {
+        int button_index = (int)_buttons.size();
+        if (button.handle == ButtonHandle::none()) {
           if (device_cat.is_debug()) {
             device_cat.debug() << "Unmapped /dev/input/event" << _index
-              << " button " << bi << ": 0x" << hex << i << dec << "\n";
+              << " button " << button_index << ": 0x" << hex << i << dec << "\n";
           }
         }
 
         if (test_bit(i, states)) {
-          _buttons[bi].state = S_down;
+          button.state = S_down;
           all_values_zero = false;
         } else {
-          _buttons[bi].state = S_up;
+          button.state = S_up;
         }
-        if (_buttons[bi].handle == GamepadButton::dpad_left()) {
+        if (button.handle == GamepadButton::dpad_left()) {
           emulate_dpad = false;
         }
-        ++bi;
+        _buttons.push_back(button);
+        if (i >= _button_indices.size()) {
+          _button_indices.resize(i + 1, -1);
+        }
+        _button_indices[i] = button_index;
       }
     }
   }
 
   if (has_axes) {
+    _control_indices.resize(num_bits, -1);
+
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
         ControlAxis axis = C_none;
-        if (i >= ABS_HAT0X) {
-          // Emulate D-Pad buttons if necessary.
-          if (i == ABS_HAT0X && emulate_dpad) {
+        switch (i) {
+        case ABS_X:
+          axis = InputDevice::C_left_x;
+          break;
+        case ABS_Y:
+          axis = InputDevice::C_left_y;
+          break;
+        case ABS_Z:
+          if (quirks & QB_rstick_from_z) {
+            axis = InputDevice::C_right_x;
+          } else if (_device_class == DC_gamepad) {
+            axis = InputDevice::C_left_trigger;
+          } else {
+            axis = InputDevice::C_throttle;
+          }
+          break;
+        case ABS_RX:
+          if ((quirks & QB_rstick_from_z) == 0) {
+            axis = InputDevice::C_right_x;
+          }
+          break;
+        case ABS_RY:
+          if ((quirks & QB_rstick_from_z) == 0) {
+            axis = InputDevice::C_right_y;
+          }
+          break;
+        case ABS_RZ:
+          if (quirks & QB_rstick_from_z) {
+            axis = InputDevice::C_right_y;
+          } else if (_device_class == DC_gamepad) {
+            axis = InputDevice::C_right_trigger;
+          } else {
+            axis = InputDevice::C_twist;
+          }
+          break;
+        case ABS_THROTTLE:
+          axis = InputDevice::C_rudder;
+          break;
+        case ABS_RUDDER:
+          axis = InputDevice::C_rudder;
+          break;
+        case ABS_WHEEL:
+          axis = InputDevice::C_wheel;
+          break;
+        case ABS_GAS:
+          if (_device_class == DC_gamepad) {
+            axis = InputDevice::C_right_trigger;
+          } else {
+            axis = InputDevice::C_accelerator;
+          }
+          break;
+        case ABS_BRAKE:
+          if (_device_class == DC_gamepad) {
+            axis = InputDevice::C_left_trigger;
+          } else {
+            axis = InputDevice::C_brake;
+          }
+          break;
+        case ABS_HAT0X:
+          if (emulate_dpad) {
             _dpad_x_axis = i;
             _dpad_left_button = (int)_buttons.size();
             _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
             _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
-
-          } else if (i == ABS_HAT0Y && emulate_dpad) {
+          } else {
+            axis = C_hat_x;
+          }
+          break;
+        case ABS_HAT0Y:
+          if (emulate_dpad) {
             _dpad_y_axis = i;
             _dpad_up_button = (int)_buttons.size();
             _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
             _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
-          } else if (i == ABS_HAT0X) {
-            axis = C_hat_x;
-          } else if (i == ABS_HAT0Y) {
+          } else {
             axis = C_hat_y;
           }
-        } else {
-          axis = axis_map[i];
-          //cerr << "Axis " << axis_map[i] << " is mapped by the driver to " << i << "\n";
+          break;
         }
 
         // Check the initial value and ranges.
         struct input_absinfo absinfo;
         if (ioctl(_fd, EVIOCGABS(i), &absinfo) >= 0) {
-          // Flip Y axis to match Windows implementation.
-          if (i == ABS_Y || i == ABS_RY) {
-            swap(absinfo.minimum, absinfo.maximum);
+          int index;
+          // We'd like to reverse the Y axis to match the XInput behavior.
+          // Also T.Flight Hotas X throttle is reversed and can go backwards.
+          if (axis == C_y || axis == C_left_y || axis == C_right_y ||
+              (axis == C_throttle && (quirks & QB_reversed_throttle) != 0)) {
+            swap(absinfo.maximum, absinfo.minimum);
           }
-
-          add_control(axis, absinfo.minimum, absinfo.maximum);
-          control_changed(axis, absinfo.value);
+          if (axis == C_throttle && (quirks & QB_centered_throttle) != 0) {
+            index = add_control(axis, absinfo.maximum, absinfo.minimum, true);
+          } else {
+            index = add_control(axis, absinfo.minimum, absinfo.maximum);
+          }
+          control_changed(index, absinfo.value);
+          _control_indices[i] = index;
 
           if (absinfo.value != 0) {
             all_values_zero = false;
@@ -472,7 +538,7 @@ init_device() {
   // Special-case fix for Xbox 360 Wireless Receiver: the Linux kernel
   // driver always reports 4 connected gamepads, regardless of the number
   // of gamepads actually present.  This hack partially remedies this.
-  if (all_values_zero && _vendor_id == 0x045e && _product_id == 0x0719) {
+  if (all_values_zero && (quirks & QB_connect_if_nonzero) != 0) {
     _is_connected = false;
   } else {
     _is_connected = true;
@@ -520,6 +586,7 @@ process_events() {
   bool have_pointer = false;
   double time = ClockObject::get_global_clock()->get_frame_time();
   ButtonHandle button;
+  int index;
 
   // It seems that some devices send a single EV_SYN event when being
   // unplugged.  Boo.  Ignore it.
@@ -548,26 +615,18 @@ process_events() {
         button_changed(_dpad_up_button, events[i].value < 0);
         button_changed(_dpad_up_button+1, events[i].value > 0);
       }
-      control_changed(code, events[i].value);
+      nassertd(code >= 0 && code < _control_indices.size()) break;
+      index = _control_indices[code];
+      if (index >= 0) {
+        control_changed(index, events[i].value);
+      }
       break;
 
     case EV_KEY:
-      button = map_button(code);
-      _button_events->add_event(ButtonEvent(button, events[i].value ? ButtonEvent::T_down : ButtonEvent::T_up, time));
-      // set the buttons state
-      State state;
-      if (events[i].value) {
-        state = S_down;
-      } else {
-        state = S_up;
-      }
-      for (int i = 0; i < _buttons.size(); ++i) {
-        if (get_button(i).handle == button) {
-          //NOTE: set_button_state doesn't work correct here.
-          //set_button_state(i, state);
-          _buttons[i].state = state;
-          break;
-        }
+      nassertd(code >= 0 && code < _button_indices.size()) break;
+      index = _button_indices[code];
+      if (index >= 0) {
+        button_changed(index, events[i].value != 0);
       }
       break;
 
@@ -722,6 +781,14 @@ map_button(int code) {
       KeyboardButton::menu(),
     };
     return keyboard_map[code];
+
+  } else if (code == KEY_BACK) {
+    // Used by NVIDIA Shield Controller
+    return GamepadButton::back();
+
+  } else if (code == KEY_SEARCH) {
+    // Used by NVIDIA Shield Controller
+    return GamepadButton::guide();
 
   } else if (code < 0x100) {
     return ButtonHandle::none();
