@@ -23,6 +23,10 @@
 #include "xinputDevice.h"
 #endif
 
+#ifdef __APPLE__
+#include <IOKit/hid/IOHIDManager.h>
+#endif
+
 /**
  * This class keeps track of all the devices on a system, and sends out events
  * when a device has been hot-plugged.
@@ -69,6 +73,12 @@ private:
   XInputDevice _xinput_device2;
   XInputDevice _xinput_device3;
   double _last_detection;
+#endif
+
+#if defined(__APPLE__) && !defined(CPPPARSER)
+  IOHIDManagerRef _hid_manager;
+
+  static void on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device);
 #endif
 
   InputDeviceSet _connected_devices;

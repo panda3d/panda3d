@@ -12,6 +12,7 @@
  */
 
 #include "inputDeviceManager.h"
+#include "ioKitInputDevice.h"
 #include "linuxJoystickDevice.h"
 #include "throw_event.h"
 
@@ -108,6 +109,48 @@ InputDeviceManager() :
     _connected_devices.add_device(&_xinput_device3);
   }
 }
+#elif defined(__APPLE__)
+InputDeviceManager::
+InputDeviceManager() {
+  _hid_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
+  if (!_hid_manager) {
+    device_cat.error()
+      << "Failed to create an IOHIDManager.\n";
+    return;
+  }
+
+  // The types of devices we're interested in.
+  int page = kHIDPage_GenericDesktop;
+  int usages[] = {kHIDUsage_GD_GamePad,
+                  kHIDUsage_GD_Joystick,
+                  kHIDUsage_GD_Mouse,
+                  kHIDUsage_GD_Keyboard,
+                  kHIDUsage_GD_MultiAxisController, 0};
+  int *usage = usages;
+
+  // This giant mess is necessary to create an array of match dictionaries
+  // that will match the devices we're interested in.
+  CFMutableArrayRef match = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+  nassertv(match);
+  while (*usage) {
+    CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFNumberRef page_ref = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
+    CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsagePageKey), page_ref);
+    CFRelease(page_ref);
+    CFNumberRef usage_ref = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, usage);
+    CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsageKey), usage_ref);
+    CFRelease(usage_ref);
+    CFArrayAppendValue(match, dict);
+    CFRelease(dict);
+    ++usage;
+  }
+  IOHIDManagerSetDeviceMatchingMultiple(_hid_manager, match);
+  CFRelease(match);
+
+  IOHIDManagerRegisterDeviceMatchingCallback(_hid_manager, on_match_device, this);
+  IOHIDManagerScheduleWithRunLoop(_hid_manager, CFRunLoopGetMain(), kCFRunLoopCommonModes);
+  IOHIDManagerOpen(_hid_manager, kIOHIDOptionsTypeNone);
+}
 #else
 InputDeviceManager::
 InputDeviceManager() {
@@ -124,6 +167,10 @@ InputDeviceManager::
     close(_inotify_fd);
     _inotify_fd = -1;
   }
+#elif defined(__APPLE__)
+  IOHIDManagerUnscheduleFromRunLoop(_hid_manager, CFRunLoopGetMain(), kCFRunLoopCommonModes);
+  IOHIDManagerClose(_hid_manager, kIOHIDOptionsTypeNone);
+  CFRelease(_hid_manager);
 #endif
 }
 
@@ -318,7 +365,8 @@ remove_device(InputDevice *device) {
 }
 
 /**
- * Polls the system to see if there are any new devices.
+ * Polls the system to see if there are any new devices.  In some
+ * implementations this is a no-op.
  */
 void InputDeviceManager::
 update() {
@@ -426,3 +474,19 @@ update() {
   }
 #endif
 }
+
+#if defined(__APPLE__) && !defined(CPPPARSER)
+void InputDeviceManager::
+on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device) {
+  InputDeviceManager *mgr = (InputDeviceManager *)ctx;
+  nassertv(mgr != nullptr);
+  nassertv(device);
+
+  PT(InputDevice) input_device = new IOKitInputDevice(device);
+  if (device_cat.is_debug()) {
+    device_cat.debug()
+      << "Discovered input device " << *input_device << "\n";
+  }
+  mgr->add_device(input_device);
+}
+#endif
