@@ -593,7 +593,7 @@ class build_apps(distutils.core.Command):
 
         elif magic == b'\x7FELF':
             # Elf magic.  Used on (among others) Linux and FreeBSD.
-            deps = self._read_dependencies_elf(fp, os.path.dirname(source_path), search_path)
+            deps = self._read_dependencies_elf(fp, target_dir, search_path)
 
         elif magic in (b'\xCE\xFA\xED\xFE', b'\xCF\xFA\xED\xFE'):
             # A Mach-O file, as used on macOS.
