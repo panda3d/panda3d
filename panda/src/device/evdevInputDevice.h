@@ -44,12 +44,6 @@ private:
   int _ff_strong;
   int _ff_weak;
 
-  struct AxisRange {
-    double _scale;
-    double _bias;
-  };
-  pvector<AxisRange> _axis_ranges;
-
   // These are used for D-pad emulation.
   int _dpad_x_axis;
   int _dpad_y_axis;

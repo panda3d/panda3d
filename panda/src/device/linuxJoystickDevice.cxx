@@ -322,6 +322,18 @@ open_device() {
         break;
       }
       _controls[i].axis = axis;
+
+      if (axis == C_left_trigger || axis == C_right_trigger || axis == C_trigger) {
+        // We'd like to use 0.0 to indicate the resting position.
+        _controls[i]._scale = 1.0 / 65534.0;
+        _controls[i]._bias = 0.5;
+      } else if (axis == C_left_y || axis == C_right_y || axis == C_y) {
+        _controls[i]._scale = 1.0 / -32767.0;
+        _controls[i]._bias = 0.0;
+      } else {
+        _controls[i]._scale = 1.0 / 32767.0;
+        _controls[i]._bias = 0.0;
+      }
     }
   }
 
@@ -436,27 +448,18 @@ process_events() {
     int index = events[i].number;
 
     if (events[i].type & JS_EVENT_BUTTON) {
-      set_button_state(index, (events[i].value != 0));
+      button_changed(index, (events[i].value != 0));
 
     } else if (events[i].type & JS_EVENT_AXIS) {
       if (index == _dpad_x_axis) {
-        set_button_state(_dpad_left_button, events[i].value < -1000);
-        set_button_state(_dpad_left_button+1, events[i].value > 1000);
+        button_changed(_dpad_left_button, events[i].value < -1000);
+        button_changed(_dpad_left_button+1, events[i].value > 1000);
       } else if (index == _dpad_y_axis) {
-        set_button_state(_dpad_up_button, events[i].value < -1000);
-        set_button_state(_dpad_up_button+1, events[i].value > 1000);
+        button_changed(_dpad_up_button, events[i].value < -1000);
+        button_changed(_dpad_up_button+1, events[i].value > 1000);
       }
 
-      ControlAxis axis = _controls[index].axis;
-
-      if (axis == C_left_trigger || axis == C_right_trigger || axis == C_trigger) {
-        // We'd like to use 0.0 to indicate the resting position.
-        set_control_state(index, (events[i].value + 32767) / 65534.0);
-      } else if (axis == C_left_y || axis == C_right_y || axis == C_y) {
-        set_control_state(index, events[i].value / -32767.0);
-      } else {
-        set_control_state(index, events[i].value / 32767.0);
-      }
+      control_changed(index, events[i].value);
     }
   }
 

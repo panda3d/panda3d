@@ -290,6 +290,18 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
     break;
   }
 
+  _controls[0]._scale = 1.0 / 255.0;
+  _controls[1]._scale = 1.0 / 255.0;
+  _controls[2]._scale = 1.0 / 32767.5;
+  _controls[3]._scale = 1.0 / 32767.5;
+  _controls[4]._scale = 1.0 / 32767.5;
+  _controls[5]._scale = 1.0 / 32767.5;
+
+  _controls[2]._bias = 0.5 / 32767.5;
+  _controls[3]._bias = 0.5 / 32767.5;
+  _controls[4]._bias = 0.5 / 32767.5;
+  _controls[5]._bias = 0.5 / 32767.5;
+
   if (caps.Flags & XINPUT_CAPS_NO_NAVIGATION) {
     set_button_map(0, ButtonHandle::none());
     set_button_map(1, ButtonHandle::none());
@@ -387,12 +399,12 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
     }
   }
 
-  set_control_state(0, state.Gamepad.bLeftTrigger / 255.0);
-  set_control_state(1, state.Gamepad.bRightTrigger / 255.0);
-  set_control_state(2, state.Gamepad.sThumbLX / 32767.0);
-  set_control_state(3, state.Gamepad.sThumbLY / 32767.0);
-  set_control_state(4, state.Gamepad.sThumbRX / 32767.0);
-  set_control_state(5, state.Gamepad.sThumbRY / 32767.0);
+  control_changed(0, state.Gamepad.bLeftTrigger);
+  control_changed(1, state.Gamepad.bRightTrigger);
+  control_changed(2, state.Gamepad.sThumbLX);
+  control_changed(3, state.Gamepad.sThumbLY);
+  control_changed(4, state.Gamepad.sThumbRX);
+  control_changed(5, state.Gamepad.sThumbRY);
 
   _last_buttons = buttons;
   _last_packet = state.dwPacketNumber;
@@ -453,7 +465,7 @@ do_poll() {
   WORD mask = 1;
   for (int i = 0; i < 16; ++i) {
     if (changed_buttons & mask) {
-      set_button_state(i, (state.Gamepad.wButtons & mask) != 0);
+      button_changed(i, (state.Gamepad.wButtons & mask) != 0);
     }
     mask <<= 1;
     if (i == 10) {
@@ -462,12 +474,12 @@ do_poll() {
     }
   }
 
-  set_control_state(0, state.Gamepad.bLeftTrigger / 255.0);
-  set_control_state(1, state.Gamepad.bRightTrigger / 255.0);
-  set_control_state(2, (state.Gamepad.sThumbLX + 0.5) / 32767.5);
-  set_control_state(3, (state.Gamepad.sThumbLY + 0.5) / 32767.5);
-  set_control_state(4, (state.Gamepad.sThumbRX + 0.5) / 32767.5);
-  set_control_state(5, (state.Gamepad.sThumbRY + 0.5) / 32767.5);
+  control_changed(0, state.Gamepad.bLeftTrigger);
+  control_changed(1, state.Gamepad.bRightTrigger);
+  control_changed(2, state.Gamepad.sThumbLX);
+  control_changed(3, state.Gamepad.sThumbLY);
+  control_changed(4, state.Gamepad.sThumbRX);
+  control_changed(5, state.Gamepad.sThumbRY);
 
   _last_buttons = state.Gamepad.wButtons;
   _last_packet = state.dwPacketNumber;

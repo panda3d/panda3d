@@ -114,6 +114,45 @@ get_pointer_events() {
   return result;
 }
 
+
+/**
+ * Called by the implementation to add a new known control.
+ */
+void InputDevice::
+add_control(ControlAxis axis, int minimum, int maximum, bool centered) {
+  AnalogState state;
+  state.axis = axis;
+  if (centered) {
+    // Centered, eg. for sticks.
+    state._scale = 2.0 / (maximum - minimum);
+    state._bias = (maximum + minimum) / (double)(minimum - maximum);
+  } else {
+    // 0-based, eg. for triggers.
+    state._scale = 1.0 / maximum;
+    state._bias = 0.0;
+  }
+  _controls.push_back(state);
+}
+
+/**
+ * Called by the implementation to add a new known control.  This version
+ * tries to guess whether the control is centered or not.
+ */
+void InputDevice::
+add_control(ControlAxis axis, int minimum, int maximum) {
+  bool centered = (minimum < 0)
+    || axis == C_left_x
+    || axis == C_left_y
+    || axis == C_right_x
+    || axis == C_right_y
+    || axis == C_x
+    || axis == C_y
+    || axis == C_wheel
+    || axis == C_twist
+    || axis == C_rudder;
+  add_control(axis, minimum, maximum, centered);
+}
+
 /**
  * Records that a mouse movement has taken place.
  */
@@ -165,6 +204,11 @@ pointer_moved(double x, double y, double time) {
   _pointer_data._xpos += x;
   _pointer_data._ypos += y;
 
+  if (device_cat.is_spam() && (x != 0 || y != 0)) {
+    device_cat.spam()
+      << "Pointer moved by " << x << " x " << y << "\n";
+  }
+
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
     if (_pointer_events.is_null()) {
@@ -184,7 +228,7 @@ pointer_moved(double x, double y, double time) {
  * while this call is made.
  */
 void InputDevice::
-set_button_state(int index, bool down) {
+button_changed(int index, bool down) {
   nassertv(_lock.debug_is_locked());
   nassertv(index >= 0);
   if (index >= (int)_buttons.size()) {
@@ -241,6 +285,34 @@ set_control_state(int index, double state) {
   }
 
   _controls[index].state = state;
+  _controls[index].known = true;
+}
+
+/**
+ * Like set_control_state, but instead passes a raw, unscaled value.
+ */
+void InputDevice::
+control_changed(int index, int state) {
+  nassertv(_lock.debug_is_locked());
+  nassertv(index >= 0);
+  if (index >= (int)_controls.size()) {
+    _controls.resize(index + 1, AnalogState());
+  }
+
+  double new_state = fma((double)state, _controls[index]._scale, _controls[index]._bias);
+
+  if (device_cat.is_spam() && _controls[index].state != new_state) {
+    device_cat.spam()
+      << "Changed control " << index;
+
+    if (_controls[index].axis != C_none) {
+      device_cat.spam(false) << " (" << _controls[index].axis << ")";
+    }
+
+    device_cat.spam(false) << " to " << new_state << " (raw value " << state << ")\n";
+  }
+
+  _controls[index].state = new_state;
   _controls[index].known = true;
 }
 
@@ -467,6 +539,9 @@ operator << (ostream &out, InputDevice::DeviceClass dc) {
   case InputDevice::DC_hmd:
     out << "hmd";
     break;
+
+  case InputDevice::DC_COUNT:
+    break;
   }
   return out;
 }
@@ -516,6 +591,10 @@ operator << (ostream &out, InputDevice::ControlAxis axis) {
 
   case InputDevice::C_throttle:
     out << "throttle";
+    break;
+
+  case InputDevice::C_twist:
+    out << "twist";
     break;
 
   case InputDevice::C_rudder:

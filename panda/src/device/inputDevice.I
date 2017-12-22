@@ -461,6 +461,8 @@ INLINE InputDevice::AnalogState::
 AnalogState() :
   axis(C_none),
   state(0.0),
-  known(false)
+  known(false),
+  _scale(1.0),
+  _bias(0.0)
 {
 }

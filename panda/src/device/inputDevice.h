@@ -108,6 +108,7 @@ PUBLISHED:
     C_y,
     C_trigger,
     C_throttle,
+    C_twist,
     C_rudder,
     C_hat_x,
     C_hat_y,
@@ -183,11 +184,18 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 protected:
+  // Called during the constructor to add new controls or buttons
+  void add_control(ControlAxis axis, int minimum, int maximum, bool centered);
+  void add_control(ControlAxis axis, int minimum, int maximum);
+
   void set_pointer(bool inwin, double x, double y, double time);
   void set_pointer_out_of_window(double time);
+
   void pointer_moved(double x, double y, double time);
-  void set_button_state(int index, bool down);
+  void button_changed(int index, bool down);
+  void control_changed(int index, int value);
   void set_control_state(int index, double state);
+
   void set_tracker(const LPoint3 &pos, const LOrientation &orient, double time);
 
   virtual void do_set_vibration(double low, double high);
@@ -271,6 +279,10 @@ PUBLISHED:
     ControlAxis axis;
     double state;
     bool known;
+
+  public:
+    double _scale;
+    double _bias;
   };
   typedef pvector<AnalogState> Controls;
   Controls _controls;

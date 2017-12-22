@@ -371,17 +371,10 @@ init_device() {
   }
 
   if (has_axes) {
-    AxisRange range;
-    range._scale = 1.0;
-    range._bias = 0.0;
-    _axis_ranges.resize(ABS_CNT, range);
-
-
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
+        ControlAxis axis = C_none;
         if (i >= ABS_HAT0X) {
-          set_control_map(i, C_none);
-
           // Emulate D-Pad buttons if necessary.
           if (i == ABS_HAT0X && emulate_dpad) {
             _dpad_x_axis = i;
@@ -395,38 +388,25 @@ init_device() {
             _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
             _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
           } else if (i == ABS_HAT0X) {
-            set_control_map(i, C_hat_x);
+            axis = C_hat_x;
           } else if (i == ABS_HAT0Y) {
-            set_control_map(i, C_hat_y);
+            axis = C_hat_y;
           }
         } else {
-          set_control_map(i, axis_map[i]);
+          axis = axis_map[i];
           //cerr << "Axis " << axis_map[i] << " is mapped by the driver to " << i << "\n";
         }
 
         // Check the initial value and ranges.
         struct input_absinfo absinfo;
         if (ioctl(_fd, EVIOCGABS(i), &absinfo) >= 0) {
-          double factor, bias;
-          if (absinfo.minimum < 0) {
-            // Centered, eg. for sticks.
-            factor = 2.0 / (absinfo.maximum - absinfo.minimum);
-            bias = (absinfo.maximum + absinfo.minimum) / (double)(absinfo.minimum - absinfo.maximum);
-          } else {
-            // 0-based, eg. for triggers.
-            factor = 1.0 / absinfo.maximum;
-            bias = 0.0;
-          }
-
           // Flip Y axis to match Windows implementation.
           if (i == ABS_Y || i == ABS_RY) {
-            factor = -factor;
-            bias = -bias;
+            swap(absinfo.minimum, absinfo.maximum);
           }
 
-          _axis_ranges[i]._scale = factor;
-          _axis_ranges[i]._bias = bias;
-          _controls[i].state = fma(absinfo.value, factor, bias);
+          add_control(axis, absinfo.minimum, absinfo.maximum);
+          control_changed(axis, absinfo.value);
 
           if (absinfo.value != 0) {
             all_values_zero = false;
@@ -562,13 +542,13 @@ process_events() {
 
     case EV_ABS:
       if (code == _dpad_x_axis) {
-        set_button_state(_dpad_left_button, events[i].value < 0);
-        set_button_state(_dpad_left_button+1, events[i].value > 0);
+        button_changed(_dpad_left_button, events[i].value < 0);
+        button_changed(_dpad_left_button+1, events[i].value > 0);
       } else if (code == _dpad_y_axis) {
-        set_button_state(_dpad_up_button, events[i].value < 0);
-        set_button_state(_dpad_up_button+1, events[i].value > 0);
+        button_changed(_dpad_up_button, events[i].value < 0);
+        button_changed(_dpad_up_button+1, events[i].value > 0);
       }
-      set_control_state(code, fma(events[i].value, _axis_ranges[code]._scale, _axis_ranges[code]._bias));
+      control_changed(code, events[i].value);
       break;
 
     case EV_KEY:
