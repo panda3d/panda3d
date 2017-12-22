@@ -75,6 +75,7 @@ private:
 private:
   PT(GraphicsBuffer) _buffer;
   PT(Texture) _texture;
+  PT(GraphicsWindowInputDevice) _input;
 
   int _fd;
   size_t _mmap_size;

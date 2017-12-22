@@ -88,6 +88,7 @@ private:
   NSView *_view;
   NSUInteger _modifier_keys;
   CGDirectDisplayID _display;
+  PT(GraphicsWindowInputDevice) _input;
   bool _mouse_hidden;
   bool _context_needs_update;
 
