@@ -243,6 +243,9 @@ PUBLISHED:
   INLINE_LINMATH const FLOATTYPE *get_data() const;
   CONSTEXPR static int get_num_components() { return 4; }
 
+  INLINE_LINMATH bool operator == (const FLOATNAME(UnalignedLVecBase4) &other) const;
+  INLINE_LINMATH bool operator != (const FLOATNAME(UnalignedLVecBase4) &other) const;
+
 public:
   typedef FLOATTYPE numeric_type;
   typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 1, 4) UVector4;
