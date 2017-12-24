@@ -43,3 +43,28 @@ def window(graphics_pipe, graphics_engine):
 
     if win is not None:
         graphics_engine.remove_window(win)
+
+
+@pytest.fixture(scope='module')
+def gsg(graphics_pipe, graphics_engine):
+    "Returns a windowless GSG that can be used for offscreen rendering."
+    from panda3d.core import GraphicsPipe, FrameBufferProperties, WindowProperties
+
+    fbprops = FrameBufferProperties()
+    fbprops.force_hardware = True
+
+    buffer = graphics_engine.make_output(
+        graphics_pipe,
+        'buffer',
+        0,
+        fbprops,
+        WindowProperties.size(32, 32),
+        GraphicsPipe.BF_refuse_window
+    )
+    graphics_engine.open_windows()
+
+    assert buffer is not None
+    yield buffer.gsg
+
+    if buffer is not None:
+        graphics_engine.remove_window(buffer)
