@@ -1,22 +1,25 @@
 import pytest
 
-@pytest.fixture
-def graphics_pipe(scope='session'):
+
+@pytest.fixture(scope='session')
+def graphics_pipe():
     from panda3d.core import GraphicsPipeSelection
 
     pipe = GraphicsPipeSelection.get_global_ptr().make_default_pipe()
 
-    if not pipe.is_valid():
-        pytest.xfail("GraphicsPipe is invalid")
+    if pipe is None or not pipe.is_valid():
+        pytest.skip("GraphicsPipe is invalid")
 
     yield pipe
 
-@pytest.fixture
-def graphics_engine(scope='session'):
+
+@pytest.fixture(scope='session')
+def graphics_engine():
     from panda3d.core import GraphicsEngine
 
     engine = GraphicsEngine.get_global_ptr()
     yield engine
+
 
 @pytest.fixture
 def window(graphics_pipe, graphics_engine):
