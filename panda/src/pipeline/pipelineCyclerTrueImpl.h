@@ -122,7 +122,10 @@ private:
   };
   CycleDataNode *_data;
   int _num_stages;
-  bool _dirty;
+
+  // This is 0 if it's clean, or set to Pipeline::_next_cycle_seq if it's
+  // scheduled to be cycled during the next cycle() call.
+  unsigned int _dirty;
 
   CyclerMutex _lock;
 
