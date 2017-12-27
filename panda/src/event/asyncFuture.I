@@ -104,6 +104,11 @@ set_result(TypedReferenceCount *result) {
 }
 
 INLINE void AsyncFuture::
+set_result(TypedWritableReferenceCount *result) {
+  set_result(result, result);
+}
+
+INLINE void AsyncFuture::
 set_result(const EventParameter &result) {
   set_result(result.get_ptr(), result.get_ptr());
 }

@@ -86,6 +86,7 @@ PUBLISHED:
   INLINE void set_result(nullptr_t);
   INLINE void set_result(TypedObject *result);
   INLINE void set_result(TypedReferenceCount *result);
+  INLINE void set_result(TypedWritableReferenceCount *result);
   INLINE void set_result(const EventParameter &result);
 
 public:
