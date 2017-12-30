@@ -67,6 +67,9 @@ LightLensNode(const LightLensNode &copy) :
   _has_specular_color(copy._has_specular_color),
   _attrib_count(0)
 {
+  if (_shadow_caster) {
+    setup_shadow_map();
+  }
 }
 
 /**
@@ -75,20 +78,43 @@ LightLensNode(const LightLensNode &copy) :
  */
 void LightLensNode::
 clear_shadow_buffers() {
+  if (_shadow_map) {
+    // Clear it to all ones, so that any shaders that might still be using
+    // it will see the shadows being disabled.
+    _shadow_map->clear_image();
+  }
+
   ShadowBuffers::iterator it;
   for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
-    PT(Texture) tex = (*it).second->get_texture();
-    if (tex) {
-      // Clear it to all ones, so that any shaders that might still be using
-      // it will see the shadows being disabled.
-      tex->set_clear_color(LColor(1));
-      tex->clear_image();
-    }
     (*it).first->remove_window((*it).second);
   }
   _sbuffers.clear();
 }
 
+/**
+ * Creates the shadow map texture.  Can be overridden.
+ */
+void LightLensNode::
+setup_shadow_map() {
+  if (_shadow_map != nullptr &&
+      _shadow_map->get_x_size() == _sb_size[0] &&
+      _shadow_map->get_y_size() == _sb_size[1]) {
+    // Nothing to do.
+    return;
+  }
+
+  if (_shadow_map == nullptr) {
+    _shadow_map = new Texture(get_name());
+  }
+
+  _shadow_map->setup_2d_texture(_sb_size[0], _sb_size[1], Texture::T_unsigned_byte, Texture::F_depth_component);
+  _shadow_map->set_clear_color(LColor(1));
+  _shadow_map->set_wrap_u(SamplerState::WM_border_color);
+  _shadow_map->set_wrap_v(SamplerState::WM_border_color);
+  _shadow_map->set_border_color(LColor(1));
+  _shadow_map->set_minfilter(SamplerState::FT_shadow);
+  _shadow_map->set_magfilter(SamplerState::FT_shadow);
+}
 
 /**
  * This is called when the light is added to a LightAttrib.

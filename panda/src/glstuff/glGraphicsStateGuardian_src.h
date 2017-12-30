@@ -381,6 +381,8 @@ public:
                           int light_id);
 #endif
 
+  virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
+
   LVecBase4 get_light_color(Light *light) const;
 
 #ifdef SUPPORT_IMMEDIATE_MODE
