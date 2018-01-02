@@ -123,6 +123,8 @@ public:
     TS_do_flip,
     TS_do_release,
     TS_do_windows,
+    TS_do_compute,
+    TS_do_extract,
     TS_terminate,
     TS_done
   };
@@ -299,6 +301,13 @@ private:
     ConditionVar _cv_start;
     ConditionVar _cv_done;
     ThreadState _thread_state;
+
+    // These are stored for extract_texture_data and dispatch_compute.
+    GraphicsStateGuardian *_gsg;
+    Texture *_texture;
+    const RenderState *_state;
+    LVecBase3i _work_groups;
+    bool _result;
   };
 
   WindowRenderer *get_window_renderer(const string &name, int pipeline_stage);

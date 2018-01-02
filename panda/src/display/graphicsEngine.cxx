@@ -1118,17 +1118,34 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
     // has finished its current task.
     WindowRenderer *wr = get_window_renderer(draw_name, 0);
     RenderThread *thread = (RenderThread *)wr;
-    MutexHolder holder2(thread->_cv_mutex);
+    MutexHolder cv_holder(thread->_cv_mutex);
 
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
 
-    // OK, now the draw thread is idle.  That's really good enough for our
-    // purposes; we don't *actually* need to make the draw thread do the work
-    // --it's sufficient that it's not doing anything else while we access the
-    // GSG.
-    return gsg->extract_texture_data(tex);
+    // Temporarily set this so that it accesses data from the current thread.
+    int pipeline_stage = Thread::get_current_pipeline_stage();
+    int draw_pipeline_stage = thread->get_pipeline_stage();
+    thread->set_pipeline_stage(pipeline_stage);
+
+    // Now that the draw thread is idle, signal it to do the extraction task.
+    thread->_gsg = gsg;
+    thread->_texture = tex;
+    thread->_thread_state = TS_do_extract;
+    thread->_cv_start.notify();
+    thread->_cv_mutex.release();
+    thread->_cv_mutex.acquire();
+
+    //XXX is this necessary, or is acquiring the mutex enough?
+    while (thread->_thread_state != TS_wait) {
+      thread->_cv_done.wait();
+    }
+
+    thread->set_pipeline_stage(draw_pipeline_stage);
+    thread->_gsg = nullptr;
+    thread->_texture = nullptr;
+    return thread->_result;
   }
 }
 
@@ -1148,6 +1165,7 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
   nassertv(sattr->get_shader() != (Shader *)NULL);
+  nassertv(gsg != nullptr);
 
   ReMutexHolder holder(_lock);
 
@@ -1156,26 +1174,43 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
     // A single-threaded environment.  No problem.
+    gsg->set_state_and_transform(state, TransformState::make_identity());
+    gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
 
   } else {
     // A multi-threaded environment.  We have to wait until the draw thread
     // has finished its current task.
     WindowRenderer *wr = get_window_renderer(draw_name, 0);
     RenderThread *thread = (RenderThread *)wr;
-    MutexHolder holder2(thread->_cv_mutex);
+    MutexHolder cv_holder(thread->_cv_mutex);
 
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
 
-    // OK, now the draw thread is idle.  That's really good enough for our
-    // purposes; we don't *actually* need to make the draw thread do the work
-    // --it's sufficient that it's not doing anything else while we access the
-    // GSG.
-  }
+    // Temporarily set this so that it accesses data from the current thread.
+    int pipeline_stage = Thread::get_current_pipeline_stage();
+    int draw_pipeline_stage = thread->get_pipeline_stage();
+    thread->set_pipeline_stage(pipeline_stage);
 
-  gsg->set_state_and_transform(state, TransformState::make_identity());
-  gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
+    // Now that the draw thread is idle, signal it to do the compute task.
+    thread->_gsg = gsg;
+    thread->_state = state.p();
+    thread->_work_groups = work_groups;
+    thread->_thread_state = TS_do_compute;
+    thread->_cv_start.notify();
+    thread->_cv_mutex.release();
+    thread->_cv_mutex.acquire();
+
+    //XXX is this necessary, or is acquiring the mutex enough?
+    while (thread->_thread_state != TS_wait) {
+      thread->_cv_done.wait();
+    }
+
+    thread->set_pipeline_stage(draw_pipeline_stage);
+    thread->_gsg = nullptr;
+    thread->_state = nullptr;
+  }
 }
 
 /**
@@ -2582,6 +2617,17 @@ thread_main() {
     case TS_do_windows:
       do_windows(_engine, current_thread);
       do_pending(_engine, current_thread);
+      break;
+
+    case TS_do_compute:
+      nassertd(_gsg != nullptr && _state != nullptr) break;
+      _gsg->set_state_and_transform(_state, TransformState::make_identity());
+      _gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
+      break;
+
+    case TS_do_extract:
+      nassertd(_gsg != nullptr && _texture != nullptr) break;
+      _result = _gsg->extract_texture_data(_texture);
       break;
 
     case TS_terminate:
