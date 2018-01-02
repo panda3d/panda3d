@@ -529,7 +529,11 @@ remove_window(GraphicsOutput *window) {
   // Also check whether it is in _new_windows.
   {
     MutexHolder new_windows_holder(_new_windows_lock, current_thread);
+    size_t old_size = _new_windows.size();
     _new_windows.erase(std::remove(_new_windows.begin(), _new_windows.end(), ptwin), _new_windows.end());
+    if (count == 0 && _new_windows.size() < old_size) {
+      count = 1;
+    }
   }
 
   if (count == 0) {
