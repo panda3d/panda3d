@@ -20,6 +20,9 @@ def graphics_engine():
     engine = GraphicsEngine.get_global_ptr()
     yield engine
 
+    # This causes GraphicsEngine to also terminate the render threads.
+    engine.remove_all_windows()
+
 
 @pytest.fixture
 def window(graphics_pipe, graphics_engine):
