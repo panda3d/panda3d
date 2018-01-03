@@ -233,6 +233,14 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     DeleteBuildFiles(destdir+prefix+"/include/panda3d")
     DeleteEmptyDirs(destdir+prefix+"/include/panda3d")
 
+    # Change permissions on include directory.
+    os.chmod(destdir + prefix + "/include", 0o755)
+    for root, dirs, files in os.walk(destdir + prefix + "/include"):
+        for basename in dirs:
+            os.chmod(os.path.join(root, basename), 0o755)
+        for basename in files:
+            os.chmod(os.path.join(root, basename), 0o644)
+
     # rpmlint doesn't like this file, for some reason.
     if (os.path.isfile(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")):
         os.remove(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")
