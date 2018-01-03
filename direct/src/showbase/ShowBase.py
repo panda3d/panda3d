@@ -389,6 +389,10 @@ class ShowBase(DirectObject.DirectObject):
             builtins.aspect2dp = self.aspect2dp
             builtins.pixel2dp = self.pixel2dp
 
+        # Now add this instance to the ShowBaseGlobal module scope.
+        from . import ShowBaseGlobal
+        ShowBaseGlobal.base = self
+
         if self.__dev__:
             ShowBase.notify.debug('__dev__ == %s' % self.__dev__)
         else:
@@ -514,6 +518,9 @@ class ShowBase(DirectObject.DirectObject):
             del builtins.base
             del builtins.loader
             del builtins.taskMgr
+            ShowBaseGlobal = sys.modules.get('direct.showbase.ShowBaseGlobal', None)
+            if ShowBaseGlobal:
+                del ShowBaseGlobal.base
 
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
