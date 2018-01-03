@@ -6,15 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file cocoaGraphicsPipe.I
+ * @file cocoaGraphicsBuffer.I
  * @author rdb
- * @date 2012-05-14
+ * @date 2017-12-19
  */
-
-/**
- * Returns the Quartz display ID associated with this graphics pipe.
- */
-INLINE CGDirectDisplayID CocoaGraphicsPipe::
-get_display_id() const {
-  return _display;
-}

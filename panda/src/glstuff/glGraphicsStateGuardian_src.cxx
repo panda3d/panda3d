@@ -155,7 +155,11 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // drawing GUIs and such.
 static const string default_vshader =
 #ifndef OPENGLES
+#ifdef __APPLE__ // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
@@ -179,7 +183,11 @@ static const string default_vshader =
 
 static const string default_fshader =
 #ifndef OPENGLES
+#ifdef __APPLE__  // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
@@ -6460,9 +6468,6 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     break;
 
   case Texture::F_depth_component24:
-    component_type = Texture::T_unsigned_int;
-    break;
-
   case Texture::F_depth_component32:
     component_type = Texture::T_float;
     break;
@@ -7555,6 +7560,36 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   report_my_gl_errors();
 }
 #endif  // SUPPORT_FIXED_FUNCTION
+
+/**
+ * Creates a depth buffer for shadow mapping.  A derived GSG can override this
+ * if it knows that a particular buffer type works best for shadow rendering.
+ */
+GraphicsOutput *CLP(GraphicsStateGuardian)::
+make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
+  // We override this to circumvent the fact that GraphicsEngine::make_output
+  // can only be called from the app thread.
+  if (!_supports_framebuffer_object) {
+    return GraphicsStateGuardian::make_shadow_buffer(light, tex, host);
+  }
+
+  bool is_point = light->is_of_type(PointLight::get_class_type());
+
+  // Determine the properties for creating the depth buffer.
+  FrameBufferProperties fbp;
+  fbp.set_depth_bits(shadow_depth_bits);
+
+  WindowProperties props = WindowProperties::size(light->get_shadow_buffer_size());
+  int flags = GraphicsPipe::BF_refuse_window;
+  if (is_point) {
+    flags |= GraphicsPipe::BF_size_square;
+  }
+
+  CLP(GraphicsBuffer) *sbuffer = new GLGraphicsBuffer(get_engine(), get_pipe(), light->get_name(), fbp, props, flags, this, host);
+  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);
+  get_engine()->add_window(sbuffer, light->get_shadow_buffer_sort());
+  return sbuffer;
+}
 
 #ifdef SUPPORT_IMMEDIATE_MODE
 /**
@@ -12326,20 +12361,20 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               if (_supports_clear_texture) {
                 // We can do that with the convenient glClearTexImage
                 // function.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                                 component_type, (void *)clear_data.data());
+                                 component_type, (void *)&clear_data[0]);
                 continue;
               }
             } else {
               if (_supports_clear_buffer) {
                 // For buffer textures we need to clear the underlying
                 // storage.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
-                                   component_type, (const void *)clear_data.data());
+                                   component_type, (const void *)&clear_data[0]);
                 continue;
               }
             }

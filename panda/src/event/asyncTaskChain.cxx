@@ -778,7 +778,8 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
 
   _manager->remove_task_by_name(task);
 
-  if (upon_death && !task->done()) {
+  if (upon_death && task->set_future_state(clean_exit ? AsyncFuture::FS_finished
+                                                      : AsyncFuture::FS_cancelled)) {
     task->notify_done(clean_exit);
   }
 

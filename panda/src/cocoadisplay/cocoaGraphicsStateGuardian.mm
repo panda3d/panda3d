@@ -24,6 +24,10 @@
 #define kCGLRendererIDMatchingMask   0x00FE7F00
 #endif
 
+#ifndef NSAppKitVersionNumber10_7
+#define NSAppKitVersionNumber10_7 1138
+#endif
+
 TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 
 /**
@@ -207,7 +211,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
     attribs.push_back(NSOpenGLPFAAccelerated);
   }
 
-  attribs.push_back(NSOpenGLPFAWindow);
+  // This seems to cause getting a 3.2+ context to fail.
+  //attribs.push_back(NSOpenGLPFAWindow);
 
   if (need_pbuffer) {
     attribs.push_back(NSOpenGLPFAPixelBuffer);
@@ -216,6 +221,16 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // Required when going fullscreen, optional when windowed
   attribs.push_back(NSOpenGLPFAScreenMask);
   attribs.push_back(CGDisplayIDToOpenGLDisplayMask(display));
+
+  // Set OpenGL version if a minimum was requested.
+  if (gl_version.size() >= 1 && NSAppKitVersionNumber >= NSAppKitVersionNumber10_7) {
+    //NB. There is also NSOpenGLProfileVersion4_1Core, but this seems to cause
+    // a software implementation to be selected on my mac mini running 10.11.
+    if (gl_version[0] >= 4 || (gl_version.size() >= 2 && gl_version[0] == 3 && gl_version[1] >= 2)) {
+      attribs.push_back((NSOpenGLPixelFormatAttribute)99); // NSOpenGLPFAOpenGLProfile
+      attribs.push_back((NSOpenGLPixelFormatAttribute)0x3200); // NSOpenGLProfileVersion3_2Core
+    }
+  }
 
   // End of the array
   attribs.push_back((NSOpenGLPixelFormatAttribute)0);

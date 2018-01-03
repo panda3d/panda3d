@@ -512,21 +512,16 @@ CData() :
  *
  */
 INLINE Geom::CData::
-CData(const Geom::CData &copy) :
-  _data(copy._data),
-  _primitives(copy._primitives),
-  _primitive_type(copy._primitive_type),
-  _shade_model(copy._shade_model),
-  _geom_rendering(copy._geom_rendering),
-  _modified(copy._modified),
-  _internal_bounds(copy._internal_bounds),
-  _nested_vertices(copy._nested_vertices),
-  _internal_bounds_stale(copy._internal_bounds_stale),
-  _bounds_type(copy._bounds_type),
-  _user_bounds(copy._user_bounds)
+CData(GeomVertexData *data) :
+  _data(data),
+  _primitive_type(PT_none),
+  _shade_model(SM_uniform),
+  _geom_rendering(0),
+  _nested_vertices(0),
+  _internal_bounds_stale(true),
+  _bounds_type(BoundingVolume::BT_default)
 {
 }
-
 
 /**
  *

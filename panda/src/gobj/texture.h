@@ -265,7 +265,7 @@ PUBLISHED:
   INLINE LColor get_clear_color() const;
   INLINE void set_clear_color(const LColor &color);
   INLINE void clear_clear_color();
-  INLINE string get_clear_data() const;
+  INLINE vector_uchar get_clear_data() const;
   MAKE_PROPERTY2(clear_color, has_clear_color, get_clear_color,
                               set_clear_color, clear_clear_color);
 
@@ -801,7 +801,8 @@ private:
                                int z, const PfmFile &pfm,
                                int num_components, int component_width);
   static bool convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
-                                  int num_components, int component_width,
+                                  int num_components,
+                                  ComponentType component_type, bool is_srgb,
                                   CPTA_uchar image, size_t page_size,
                                   int z);
   static bool convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
@@ -856,6 +857,9 @@ private:
   INLINE static void store_scaled_short(unsigned char *&p, int value, double scale);
   INLINE static double get_unsigned_byte(const unsigned char *&p);
   INLINE static double get_unsigned_short(const unsigned char *&p);
+  INLINE static double get_unsigned_int(const unsigned char *&p);
+  INLINE static double get_float(const unsigned char *&p);
+  INLINE static double get_half_float(const unsigned char *&p);
 
   INLINE static bool is_txo_filename(const Filename &fullpath);
   INLINE static bool is_dds_filename(const Filename &fullpath);

@@ -85,7 +85,16 @@ private:
   // This is true only during cycle().
   bool _cycling;
 
-  ReMutex _lock;
+  // This increases with every cycle run.  If the _dirty field of a cycler is
+  // set to the same value as this, it indicates that it is scheduled for the
+  // next cycle.
+  unsigned int _next_cycle_seq;
+
+  // This lock is always held during cycle().
+  ReMutex _cycle_lock;
+
+  // This lock protects the data stored on this Pipeline.
+  Mutex _lock;
 #endif  // THREADED_PIPELINE
 };
 

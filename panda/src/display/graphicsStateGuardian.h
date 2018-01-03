@@ -424,7 +424,7 @@ public:
 
   PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=NULL);
   PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
-  PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
+  virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
 
   virtual void ensure_generated_shader(const RenderState *state);
 

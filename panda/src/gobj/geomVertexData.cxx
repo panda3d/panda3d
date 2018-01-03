@@ -67,24 +67,10 @@ GeomVertexData(const string &name,
   _char_pcollector(PStatCollector(_animation_pcollector, name)),
   _skinning_pcollector(_char_pcollector, "Skinning"),
   _morphs_pcollector(_char_pcollector, "Morphs"),
-  _blends_pcollector(_char_pcollector, "Calc blends")
+  _blends_pcollector(_char_pcollector, "Calc blends"),
+  _cycler(GeomVertexData::CData(format, usage_hint))
 {
   nassertv(format->is_registered());
-
-  // Create some empty arrays as required by the format.  Let's ensure the
-  // vertex data gets set on all stages at once.
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    cdata->_format = format;
-    cdata->_usage_hint = usage_hint;
-    int num_arrays = format->get_num_arrays();
-    for (int i = 0; i < num_arrays; i++) {
-      PT(GeomVertexArrayData) array = new GeomVertexArrayData
-        (format->get_array(i), usage_hint);
-      cdata->_arrays.push_back(array.p());
-    }
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
 /**

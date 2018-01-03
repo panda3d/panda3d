@@ -4936,7 +4936,7 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
          buffer_start, stride);
 
-  } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
+  } else if ((((uintptr_t)buffer_end ^ (uintptr_t)buffer_start) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
          buffer_start, stride);
@@ -4978,7 +4978,7 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,
        index_data, index_type, buffer, stride);
 
-  } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
+  } else if ((((uintptr_t)buffer_end ^ (uintptr_t)buffer_start) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawIndexedPrimitiveUP
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,

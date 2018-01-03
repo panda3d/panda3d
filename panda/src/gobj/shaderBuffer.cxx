@@ -17,6 +17,14 @@
 TypeHandle ShaderBuffer::_type_handle;
 
 /**
+ * Destructor.
+ */
+ShaderBuffer::
+~ShaderBuffer() {
+  release_all();
+}
+
+/**
  *
  */
 void ShaderBuffer::

@@ -52,6 +52,7 @@ PUBLISHED:
   MAKE_PROPERTY(config_properties, get_config_properties);
   MAKE_PROPERTY(default, get_default, set_default);
 
+  static WindowProperties size(const LVecBase2i &size);
   static WindowProperties size(int x_size, int y_size);
 
   bool operator == (const WindowProperties &other) const;

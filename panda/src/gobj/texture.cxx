@@ -5088,7 +5088,8 @@ do_store_one(CData *cdata, PNMImage &pnmimage, int z, int n) {
   return convert_to_pnmimage(pnmimage,
                              do_get_expected_mipmap_x_size(cdata, n),
                              do_get_expected_mipmap_y_size(cdata, n),
-                             cdata->_num_components, cdata->_component_width,
+                             cdata->_num_components, cdata->_component_type,
+                             is_srgb(cdata->_format),
                              cdata->_ram_images[n]._image,
                              do_get_ram_mipmap_page_size(cdata, n), z);
 }
@@ -5111,12 +5112,14 @@ do_store_one(CData *cdata, PfmFile &pfm, int z, int n) {
   if (cdata->_component_type != T_float) {
     // PfmFile by way of PNMImage.
     PNMImage pnmimage;
-    bool success = convert_to_pnmimage(pnmimage,
-                                       do_get_expected_mipmap_x_size(cdata, n),
-                                       do_get_expected_mipmap_y_size(cdata, n),
-                                       cdata->_num_components, cdata->_component_width,
-                                       cdata->_ram_images[n]._image,
-                                       do_get_ram_mipmap_page_size(cdata, n), z);
+    bool success =
+      convert_to_pnmimage(pnmimage,
+                          do_get_expected_mipmap_x_size(cdata, n),
+                          do_get_expected_mipmap_y_size(cdata, n),
+                          cdata->_num_components, cdata->_component_type,
+                          is_srgb(cdata->_format),
+                          cdata->_ram_images[n]._image,
+                          do_get_ram_mipmap_page_size(cdata, n), z);
     if (!success) {
       return false;
     }
@@ -5584,10 +5587,28 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
   nassertr(cdata->_has_clear_color, 0);
   nassertr(cdata->_num_components <= 4, 0);
 
-  // TODO: encode the color into the sRGB color space if used
   switch (cdata->_component_type) {
   case T_unsigned_byte:
-    {
+    if (is_srgb(cdata->_format)) {
+      xel color;
+      xelval alpha;
+      encode_sRGB_uchar(cdata->_clear_color, color, alpha);
+      switch (cdata->_num_components) {
+      case 2:
+        into[1] = (unsigned char)color.g;
+      case 1:
+        into[0] = (unsigned char)color.r;
+        break;
+      case 4:
+        into[3] = (unsigned char)alpha;
+      case 3: // BGR <-> RGB
+        into[0] = (unsigned char)color.b;
+        into[1] = (unsigned char)color.g;
+        into[2] = (unsigned char)color.r;
+        break;
+      }
+      break;
+    } else {
       LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 255;
       switch (cdata->_num_components) {
@@ -8037,25 +8058,28 @@ convert_from_pfm(PTA_uchar &image, size_t page_size, int z,
  */
 bool Texture::
 convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
-                    int num_components, int component_width,
-                    CPTA_uchar image, size_t page_size, int z) {
+                    int num_components, ComponentType component_type,
+                    bool is_srgb, CPTA_uchar image, size_t page_size, int z) {
   xelval maxval = 0xff;
-  if (component_width > 1) {
+  if (component_type != T_unsigned_byte && component_type != T_byte) {
     maxval = 0xffff;
   }
-  pnmimage.clear(x_size, y_size, num_components, maxval);
+  ColorSpace color_space = is_srgb ? CS_sRGB : CS_linear;
+  pnmimage.clear(x_size, y_size, num_components, maxval, nullptr, color_space);
   bool has_alpha = pnmimage.has_alpha();
   bool is_grayscale = pnmimage.is_grayscale();
 
   int idx = page_size * z;
   nassertr(idx + page_size <= image.size(), false);
-  const unsigned char *p = &image[idx];
 
-  if (component_width == 1) {
-    xel *array = pnmimage.get_array();
+  xel *array = pnmimage.get_array();
+  xelval *alpha = pnmimage.get_alpha_array();
+
+  switch (component_type) {
+  case T_unsigned_byte:
     if (is_grayscale) {
+      const unsigned char *p = &image[idx];
       if (has_alpha) {
-        xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
           xel *row = array + j * x_size;
           xelval *alpha_row = alpha + j * x_size;
@@ -8072,9 +8096,10 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
           }
         }
       }
+      nassertr(p == &image[idx] + page_size, false);
     } else {
+      const unsigned char *p = &image[idx];
       if (has_alpha) {
-        xelval *alpha = pnmimage.get_alpha_array();
         for (int j = y_size-1; j >= 0; j--) {
           xel *row = array + j * x_size;
           xelval *alpha_row = alpha + j * x_size;
@@ -8095,29 +8120,78 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
           }
         }
       }
+      nassertr(p == &image[idx] + page_size, false);
     }
+    break;
 
-  } else if (component_width == 2) {
-    for (int j = y_size-1; j >= 0; j--) {
-      for (int i = 0; i < x_size; i++) {
-        if (is_grayscale) {
-          pnmimage.set_gray(i, j, get_unsigned_short(p));
-        } else {
-          pnmimage.set_blue(i, j, get_unsigned_short(p));
-          pnmimage.set_green(i, j, get_unsigned_short(p));
-          pnmimage.set_red(i, j, get_unsigned_short(p));
-        }
-        if (has_alpha) {
-          pnmimage.set_alpha(i, j, get_unsigned_short(p));
+  case T_unsigned_short:
+    {
+      const uint16_t *p = (const uint16_t *)&image[idx];
+
+      for (int j = y_size-1; j >= 0; j--) {
+        xel *row = array + j * x_size;
+        xelval *alpha_row = alpha + j * x_size;
+        for (int i = 0; i < x_size; i++) {
+          PPM_PUTB(row[i], *p++);
+          if (!is_grayscale) {
+            PPM_PUTG(row[i], *p++);
+            PPM_PUTR(row[i], *p++);
+          }
+          if (has_alpha) {
+            alpha_row[i] = *p++;
+          }
         }
       }
+      nassertr((const unsigned char *)p == &image[idx] + page_size, false);
     }
+    break;
 
-  } else {
+  case T_unsigned_int:
+    {
+      const uint32_t *p = (const uint32_t *)&image[idx];
+
+      for (int j = y_size-1; j >= 0; j--) {
+        xel *row = array + j * x_size;
+        xelval *alpha_row = alpha + j * x_size;
+        for (int i = 0; i < x_size; i++) {
+          PPM_PUTB(row[i], (*p++) >> 16u);
+          if (!is_grayscale) {
+            PPM_PUTG(row[i], (*p++) >> 16u);
+            PPM_PUTR(row[i], (*p++) >> 16u);
+          }
+          if (has_alpha) {
+            alpha_row[i] = (*p++) >> 16u;
+          }
+        }
+      }
+      nassertr((const unsigned char *)p == &image[idx] + page_size, false);
+    }
+    break;
+
+  case T_half_float:
+    {
+      const unsigned char *p = &image[idx];
+
+      for (int j = y_size-1; j >= 0; j--) {
+        for (int i = 0; i < x_size; i++) {
+          pnmimage.set_blue(i, j, get_half_float(p));
+          if (!is_grayscale) {
+            pnmimage.set_green(i, j, get_half_float(p));
+            pnmimage.set_red(i, j, get_half_float(p));
+          }
+          if (has_alpha) {
+            pnmimage.set_alpha(i, j, get_half_float(p));
+          }
+        }
+      }
+      nassertr(p == &image[idx] + page_size, false);
+    }
+    break;
+
+  default:
     return false;
   }
 
-  nassertr(p == &image[idx] + page_size, false);
   return true;
 }
 

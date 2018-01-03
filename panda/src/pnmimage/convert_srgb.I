@@ -153,3 +153,17 @@ encode_sRGB_uchar(const LColorf &color, xel &into, xelval &into_alpha) {
   into_alpha = (xelval) (color[3] * 255.f + 0.5f);
 #endif
 }
+
+
+/**
+ * Double-precision versions of the above.
+ */
+INLINE void
+encode_sRGB_uchar(const LColord &color, xel &into) {
+  return encode_sRGB_uchar(LCAST(float, color), into);
+}
+
+INLINE void
+encode_sRGB_uchar(const LColord &color, xel &into, xelval &into_alpha) {
+  return encode_sRGB_uchar(LCAST(float, color), into, into_alpha);
+}
