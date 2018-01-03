@@ -284,6 +284,7 @@ if (__name__ == "__main__"):
     parser.add_option('', '--destdir', dest = 'destdir', help = 'Destination directory [default=%s]' % destdir, default = destdir)
     parser.add_option('', '--prefix', dest = 'prefix', help = 'Prefix [default=/usr/local]', default = '/usr/local')
     parser.add_option('', '--runtime', dest = 'runtime', help = 'Specify if runtime build [default=no]', action = 'store_true', default = False)
+    parser.add_option('', '--verbose', dest = 'verbose', help = 'Print commands that are executed [default=no]', action = 'store_true', default = False)
     (options, args) = parser.parse_args()
 
     destdir = options.destdir
@@ -293,6 +294,9 @@ if (__name__ == "__main__"):
         destdir = ""
     if (destdir != "" and not os.path.isdir(destdir)):
         exit("Directory '%s' does not exist!" % destdir)
+
+    if options.verbose:
+        SetVerbose(True)
 
     if (options.runtime):
         print("Installing Panda3D Runtime into " + destdir + options.prefix)
