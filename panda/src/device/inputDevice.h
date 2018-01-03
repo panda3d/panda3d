@@ -149,6 +149,7 @@ PUBLISHED:
   INLINE bool has_pointer() const;
   INLINE bool has_keyboard() const;
   INLINE bool has_tracker() const;
+  INLINE bool has_vibration() const;
   INLINE bool has_battery() const;
 
   INLINE PointerData get_pointer() const;

@@ -119,6 +119,16 @@ has_tracker() const {
 }
 
 /**
+ * Returns true if the device has vibration motors that can be controlled by
+ * calling set_vibration().
+ */
+INLINE bool InputDevice::
+has_vibration() const {
+  LightMutexHolder holder(_lock);
+  return ((_flags & IDF_has_vibration) != 0);
+}
+
+/**
  * Returns true if the device may be able to provide information about its
  * battery life.
  */
