@@ -1267,8 +1267,7 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             win = self.win
 
-        if win != None and win.getSideBySideStereo() and \
-                win.hasSize() and win.getSbsLeftYSize() != 0:
+        if win != None and win.hasSize() and win.getSbsLeftYSize() != 0:
             aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
         else:
             if win == None or not hasattr(win, "getRequestedProperties"):
