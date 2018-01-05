@@ -131,6 +131,9 @@ class CommonFilters:
             if (len(configuration) == 0):
                 return
 
+            if not self.manager.win.gsg.getSupportsBasicShaders():
+                return False
+
             auxbits = 0
             needtex = set(["color"])
             needtexcoord = set(["color"])
@@ -338,7 +341,10 @@ class CommonFilters:
                 text += "  o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
 
-            self.finalQuad.setShader(Shader.make(text, Shader.SL_Cg))
+            shader = Shader.make(text, Shader.SL_Cg)
+            if not shader:
+                return False
+            self.finalQuad.setShader(shader)
             for tex in self.textures:
                 self.finalQuad.setShaderInput("tx"+tex, self.textures[tex])
 
