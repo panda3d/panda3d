@@ -103,6 +103,7 @@ OdeTriMeshData(const NodePath& model, bool use_normals) :
 
   write_faces(odetrimeshdata_cat.debug());
 
+#ifdef dSINGLE
   if (!use_normals) {
     build_single(_vertices, sizeof(StridedVertex), _num_vertices,
                  _faces, _num_faces * 3, sizeof(StridedTri));
@@ -111,6 +112,16 @@ OdeTriMeshData(const NodePath& model, bool use_normals) :
                   _faces, _num_faces * 3, sizeof(StridedTri),
                   _normals);
   }
+#else
+  if (!use_normals) {
+    build_double(_vertices, sizeof(StridedVertex), _num_vertices,
+                 _faces, _num_faces * 3, sizeof(StridedTri));
+  } else {
+    build_double1(_vertices, sizeof(StridedVertex), _num_vertices,
+                  _faces, _num_faces * 3, sizeof(StridedTri),
+                  _normals);
+  }
+#endif
 
   preprocess();
 }
