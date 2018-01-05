@@ -1103,8 +1103,8 @@ class Actor(DirectObject, NodePath):
         # Get a handle to the joint.
         joint = bundle.findChild(jointName)
 
-        if node == None:
-            node = self.attachNewNode(jointName)
+        if node is None:
+            node = partDef.partBundleNP.attachNewNode(jointName)
 
         if (joint):
             if localTransform:
