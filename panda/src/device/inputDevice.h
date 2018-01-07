@@ -78,6 +78,9 @@ PUBLISHED:
     // Head-mounted display.
     DC_hmd,
 
+    // 3D mouse, such as produced by 3Dconnexion.
+    DC_3d_mouse,
+
     // Count of this enum, used for loops
     DC_COUNT,
   };
@@ -95,6 +98,16 @@ PUBLISHED:
   enum ControlAxis {
     C_none,
 
+    // Generic translational axes
+    C_x,
+    C_y,
+    C_z,
+
+    // Generic rotational axes, used by joysticks and 3D mice
+    C_yaw,
+    C_pitch,
+    C_roll,
+
     // Gamepad
     C_left_x,
     C_left_y,
@@ -103,15 +116,9 @@ PUBLISHED:
     C_right_y,
     C_right_trigger,
 
-    // Flight stick
-    C_x,
-    C_y,
-    C_trigger,
+    // Flight stick specific
     C_throttle,
-    C_twist,
-    C_rudder,
-    C_hat_x,
-    C_hat_y,
+    C_rudder, // When available separately from yaw
 
     // Steering wheel / pedals
     C_wheel,
@@ -183,6 +190,8 @@ PUBLISHED:
   PT(PointerEventList) get_pointer_events();
 
   virtual void output(ostream &out) const;
+  static string format_device_class(DeviceClass dc);
+  static string format_axis(ControlAxis axis);
 
 protected:
   // Called during the constructor to add new controls or buttons

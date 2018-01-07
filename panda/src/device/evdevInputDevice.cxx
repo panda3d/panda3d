@@ -37,6 +37,9 @@ enum QuirkBits {
 
   // Only consider the device "connected" if all axes are non-zero.
   QB_connect_if_nonzero = 8,
+
+  // ABS_THROTTLE maps to rudder
+  QB_rudder_from_throttle = 16,
 };
 
 static const struct DeviceMapping {
@@ -48,9 +51,25 @@ static const struct DeviceMapping {
   // NVIDIA Shield Controller
   {0x0955, 0x7214, InputDevice::DC_gamepad, QB_rstick_from_z},
   // T.Flight Hotas X
-  {0x044f, 0xb108, InputDevice::DC_flight_stick, QB_centered_throttle | QB_reversed_throttle},
+  {0x044f, 0xb108, InputDevice::DC_flight_stick, QB_centered_throttle | QB_reversed_throttle | QB_rudder_from_throttle},
   // Xbox 360 Wireless Controller
   {0x045e, 0x0719, InputDevice::DC_gamepad, QB_connect_if_nonzero},
+  // Jess Tech Colour Rumble Pad
+  {0x0f30, 0x0111, InputDevice::DC_gamepad, 0},
+  // 3Dconnexion Space Traveller 3D Mouse
+  {0x046d, 0xc623, InputDevice::DC_3d_mouse, 0},
+  // 3Dconnexion Space Pilot 3D Mouse
+  {0x046d, 0xc625, InputDevice::DC_3d_mouse, 0},
+  // 3Dconnexion Space Navigator 3D Mouse
+  {0x046d, 0xc626, InputDevice::DC_3d_mouse, 0},
+  // 3Dconnexion Space Explorer 3D Mouse
+  {0x046d, 0xc627, InputDevice::DC_3d_mouse, 0},
+  // 3Dconnexion Space Navigator for Notebooks
+  {0x046d, 0xc628, InputDevice::DC_3d_mouse, 0},
+  // 3Dconnexion SpacePilot Pro 3D Mouse
+  {0x046d, 0xc629, InputDevice::DC_3d_mouse, 0},
+  // 3Dconnexion Space Mouse Pro
+  {0x046d, 0xc62b, InputDevice::DC_3d_mouse, 0},
   {0},
 };
 
@@ -329,10 +348,6 @@ init_device() {
     //cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
   }
 
-  if (_device_class != DC_gamepad) {
-    emulate_dpad = false;
-  }
-
   if (has_keys) {
     // Also check whether the buttons are currently pressed.
     uint8_t states[(KEY_CNT + 7) >> 3];
@@ -342,7 +357,7 @@ init_device() {
     for (int i = 0; i < KEY_CNT; ++i) {
       if (test_bit(i, keys)) {
         ButtonState button;
-        button.handle = map_button(i);
+        button.handle = map_button(i, _device_class);
 
         int button_index = (int)_buttons.size();
         if (button.handle == ButtonHandle::none()) {
@@ -378,10 +393,22 @@ init_device() {
         ControlAxis axis = C_none;
         switch (i) {
         case ABS_X:
-          axis = InputDevice::C_left_x;
+          if (_device_class == DC_gamepad) {
+            axis = InputDevice::C_left_x;
+          } else if (_device_class == DC_flight_stick) {
+            axis = InputDevice::C_roll;
+          } else {
+            axis = InputDevice::C_x;
+          }
           break;
         case ABS_Y:
-          axis = InputDevice::C_left_y;
+          if (_device_class == DC_gamepad) {
+            axis = InputDevice::C_left_y;
+          } else if (_device_class == DC_flight_stick) {
+            axis = InputDevice::C_pitch;
+          } else {
+            axis = InputDevice::C_y;
+          }
           break;
         case ABS_Z:
           if (quirks & QB_rstick_from_z) {
@@ -408,11 +435,15 @@ init_device() {
           } else if (_device_class == DC_gamepad) {
             axis = InputDevice::C_right_trigger;
           } else {
-            axis = InputDevice::C_twist;
+            axis = InputDevice::C_yaw;
           }
           break;
         case ABS_THROTTLE:
-          axis = InputDevice::C_rudder;
+          if (quirks & QB_rudder_from_throttle) {
+            axis = InputDevice::C_rudder;
+          } else {
+            axis = InputDevice::C_throttle;
+          }
           break;
         case ABS_RUDDER:
           axis = InputDevice::C_rudder;
@@ -438,20 +469,26 @@ init_device() {
           if (emulate_dpad) {
             _dpad_x_axis = i;
             _dpad_left_button = (int)_buttons.size();
-            _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
-            _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
-          } else {
-            axis = C_hat_x;
+            if (_device_class == DC_gamepad) {
+              _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
+              _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+            } else {
+              _buttons.push_back(ButtonState(GamepadButton::hat_left()));
+              _buttons.push_back(ButtonState(GamepadButton::hat_right()));
+            }
           }
           break;
         case ABS_HAT0Y:
           if (emulate_dpad) {
             _dpad_y_axis = i;
             _dpad_up_button = (int)_buttons.size();
-            _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
-            _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
-          } else {
-            axis = C_hat_y;
+            if (_device_class == DC_gamepad) {
+              _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
+              _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+            } else {
+              _buttons.push_back(ButtonState(GamepadButton::hat_up()));
+              _buttons.push_back(ButtonState(GamepadButton::hat_down()));
+            }
           }
           break;
         }
@@ -461,8 +498,9 @@ init_device() {
         if (ioctl(_fd, EVIOCGABS(i), &absinfo) >= 0) {
           int index;
           // We'd like to reverse the Y axis to match the XInput behavior.
+          // Also reverse the yaw axis to match right-hand coordinate system.
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
-          if (axis == C_y || axis == C_left_y || axis == C_right_y ||
+          if (axis == C_yaw || axis == C_left_y || axis == C_right_y ||
               (axis == C_throttle && (quirks & QB_reversed_throttle) != 0)) {
             swap(absinfo.maximum, absinfo.minimum);
           }
@@ -647,7 +685,7 @@ process_events() {
  * Static function to map an evdev code to a ButtonHandle.
  */
 ButtonHandle EvdevInputDevice::
-map_button(int code) {
+map_button(int code, DeviceClass device_class) {
   if (code >= 0 && code < 0x80) {
     // See linux/input.h for the source of this mapping.
     static const ButtonHandle keyboard_map[] = {
@@ -802,12 +840,33 @@ map_button(int code) {
     } else {
       return MouseButton::button(code - BTN_MOUSE);
     }
+
+  } else if ((code & 0xfff0) == BTN_JOYSTICK) {
+    if (device_class == DC_gamepad) {
+      // Based on "Jess Tech Colour Rumble Pad"
+      static const ButtonHandle mapping[] = {
+        GamepadButton::action_x(),
+        GamepadButton::action_y(),
+        GamepadButton::action_a(),
+        GamepadButton::action_b(),
+        GamepadButton::lshoulder(),
+        GamepadButton::ltrigger(),
+        GamepadButton::rshoulder(),
+        GamepadButton::rtrigger(),
+        GamepadButton::back(),
+        GamepadButton::start(),
+        GamepadButton::lstick(),
+        GamepadButton::rstick(),
+      };
+      if ((code & 0xf) < 12) {
+        return mapping[code & 0xf];
+      }
+    } else {
+      return GamepadButton::joystick(code & 0xf);
+    }
   }
 
   switch (code) {
-  case BTN_TRIGGER:
-    return GamepadButton::trigger();
-
   case BTN_A:
     return GamepadButton::action_a();
 

@@ -53,7 +53,13 @@ PUBLISHED:
   static ButtonHandle action_1();
   static ButtonHandle action_2();
 
+  // Flight stick buttons, takes zero-based index.  First is always trigger.
   static ButtonHandle trigger();
+  static ButtonHandle joystick(int button_number);
+  static ButtonHandle hat_up();
+  static ButtonHandle hat_down();
+  static ButtonHandle hat_left();
+  static ButtonHandle hat_right();
 
 public:
   static void init_gamepad_buttons();

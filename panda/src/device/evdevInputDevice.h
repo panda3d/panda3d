@@ -54,7 +54,7 @@ private:
   int _dpad_up_button;
 
 public:
-  static ButtonHandle map_button(int code);
+  static ButtonHandle map_button(int code, DeviceClass device_class = DC_unknown);
 
 public:
   static TypeHandle get_class_type() {

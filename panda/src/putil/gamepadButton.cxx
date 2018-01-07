@@ -48,6 +48,32 @@ DEFINE_GAMEPAD_BUTTON_HANDLE(action_1)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_2)
 
 DEFINE_GAMEPAD_BUTTON_HANDLE(trigger)
+DEFINE_GAMEPAD_BUTTON_HANDLE(hat_up)
+DEFINE_GAMEPAD_BUTTON_HANDLE(hat_down)
+DEFINE_GAMEPAD_BUTTON_HANDLE(hat_left)
+DEFINE_GAMEPAD_BUTTON_HANDLE(hat_right)
+
+/**
+ * Returns the ButtonHandle associated with the particular numbered joystick
+ * button (zero-based), if there is one, or ButtonHandle::none() if there is
+ * not.
+ */
+ButtonHandle GamepadButton::
+joystick(int button_number) {
+  if (button_number >= 0) {
+    // "button1" does not exist, it is called "trigger" instead
+    static pvector<ButtonHandle> buttons(1, _trigger);
+    while (button_number >= buttons.size()) {
+      char numstr[20];
+      sprintf(numstr, "joystick%d", (int)buttons.size() + 1);
+      ButtonHandle handle;
+      ButtonRegistry::ptr()->register_button(handle, numstr);
+      buttons.push_back(handle);
+    }
+    return buttons[button_number];
+  }
+  return ButtonHandle::none();
+}
 
 /**
  * This is intended to be called only once, by the static initialization
@@ -85,4 +111,8 @@ init_gamepad_buttons() {
   ButtonRegistry::ptr()->register_button(_action_2, "action_2");
 
   ButtonRegistry::ptr()->register_button(_trigger, "trigger");
+  ButtonRegistry::ptr()->register_button(_hat_up, "hat_up");
+  ButtonRegistry::ptr()->register_button(_hat_down, "hat_down");
+  ButtonRegistry::ptr()->register_button(_hat_left, "hat_left");
+  ButtonRegistry::ptr()->register_button(_hat_right, "hat_right");
 }

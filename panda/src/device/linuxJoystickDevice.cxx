@@ -251,7 +251,7 @@ open_device() {
         if (_device_class == DC_gamepad) {
           axis = C_left_trigger;
         } else {
-          axis = C_trigger;
+          //axis = C_trigger;
         }
         break;
 
@@ -288,28 +288,34 @@ open_device() {
         break;
 
       case ABS_HAT0X:
-        if (_dpad_left_button == -1 && _device_class == DC_gamepad) {
-          // Emulate D-Pad.
+        if (_dpad_left_button == -1) {
+          // Emulate D-Pad or hat switch.
           _dpad_x_axis = i;
           _dpad_left_button = (int)_buttons.size();
-          _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
-          _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+          if (_device_class == DC_gamepad) {
+            _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
+            _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+          } else {
+            _buttons.push_back(ButtonState(GamepadButton::hat_left()));
+            _buttons.push_back(ButtonState(GamepadButton::hat_right()));
+          }
           axis = C_none;
-        } else {
-          axis = C_hat_x;
         }
         break;
 
       case ABS_HAT0Y:
-        if (_dpad_up_button == -1 && _device_class == DC_gamepad) {
+        if (_dpad_up_button == -1) {
           // Emulate D-Pad.
           _dpad_y_axis = i;
           _dpad_up_button = (int)_buttons.size();
-          _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
-          _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+          if (_device_class == DC_gamepad) {
+            _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
+            _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+          } else {
+            _buttons.push_back(ButtonState(GamepadButton::hat_up()));
+            _buttons.push_back(ButtonState(GamepadButton::hat_down()));
+          }
           axis = C_none;
-        } else {
-          axis = C_hat_y;
         }
         break;
 
@@ -323,7 +329,7 @@ open_device() {
       }
       _controls[i].axis = axis;
 
-      if (axis == C_left_trigger || axis == C_right_trigger || axis == C_trigger) {
+      if (axis == C_left_trigger || axis == C_right_trigger) {
         // We'd like to use 0.0 to indicate the resting position.
         _controls[i]._scale = 1.0 / 65534.0;
         _controls[i]._bias = 0.5;

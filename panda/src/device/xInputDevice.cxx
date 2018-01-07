@@ -271,10 +271,10 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
 
   case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
     _device_class = DC_flight_stick;
-    set_control_map(0, C_rudder);
+    set_control_map(0, C_yaw);
     set_control_map(1, C_throttle);
-    set_control_map(2, C_x);
-    set_control_map(3, C_y);
+    set_control_map(2, C_roll);
+    set_control_map(3, C_pitch);
     set_control_map(4, C_hat_x);
     set_control_map(5, C_hat_y);
     break;

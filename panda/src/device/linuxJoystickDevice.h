@@ -39,7 +39,7 @@ private:
   int _fd;
   int _index;
 
-  // These are used for D-pad emulation.
+  // These are used for D-pad / hat switch emulation.
   int _dpad_x_axis;
   int _dpad_y_axis;
   int _dpad_left_button;

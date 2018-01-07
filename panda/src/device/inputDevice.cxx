@@ -143,14 +143,17 @@ add_control(ControlAxis axis, int minimum, int maximum, bool centered) {
 int InputDevice::
 add_control(ControlAxis axis, int minimum, int maximum) {
   bool centered = (minimum < 0)
+    || axis == C_x
+    || axis == C_y
+    || axis == C_z
+    || axis == C_yaw
+    || axis == C_pitch
+    || axis == C_roll
     || axis == C_left_x
     || axis == C_left_y
     || axis == C_right_x
     || axis == C_right_y
-    || axis == C_x
-    || axis == C_y
     || axis == C_wheel
-    || axis == C_twist
     || axis == C_rudder;
   return add_control(axis, minimum, maximum, centered);
 }
@@ -499,130 +502,125 @@ void InputDevice::
 do_poll() {
 }
 
-ostream &
-operator << (ostream &out, InputDevice::DeviceClass dc) {
+/**
+ * Returns a string describing the given device class enumerant.
+ */
+string InputDevice::
+format_device_class(DeviceClass dc) {
   switch (dc) {
   case InputDevice::DC_unknown:
-    out << "unknown";
-    break;
+    return "unknown";
 
   case InputDevice::DC_virtual:
-    out << "virtual";
-    break;
+    return "virtual";
 
   case InputDevice::DC_keyboard:
-    out << "keyboard";
-    break;
+    return "keyboard";
 
   case InputDevice::DC_mouse:
-    out << "mouse";
-    break;
+    return "mouse";
 
   case InputDevice::DC_touch:
-    out << "touch";
-    break;
+    return "touch";
 
   case InputDevice::DC_gamepad:
-    out << "gamepad";
-    break;
+    return "gamepad";
 
   case InputDevice::DC_flight_stick:
-    out << "flight_stick";
-    break;
+    return "flight_stick";
 
   case InputDevice::DC_steering_wheel:
-    out << "steering_wheel";
-    break;
+    return "steering_wheel";
 
   case InputDevice::DC_dance_pad:
-    out << "dance_pad";
-    break;
+    return "dance_pad";
 
   case InputDevice::DC_hmd:
-    out << "hmd";
-    break;
+    return "hmd";
+
+  case InputDevice::DC_3d_mouse:
+    return "3d_mouse";
 
   case InputDevice::DC_COUNT:
     break;
   }
+  return "**invalid**";
+}
+
+/**
+ * Returns a string describing the given axis enumerant.
+ */
+string InputDevice::
+format_axis(ControlAxis axis) {
+  switch (axis) {
+  case InputDevice::C_none:
+    return "none";
+
+  case InputDevice::C_x:
+    return "x";
+
+  case InputDevice::C_y:
+    return "y";
+
+  case InputDevice::C_z:
+    return "z";
+
+  case InputDevice::C_yaw:
+    return "yaw";
+
+  case InputDevice::C_pitch:
+    return "pitch";
+
+  case InputDevice::C_roll:
+    return "roll";
+
+  case InputDevice::C_left_x:
+    return "left_x";
+
+  case InputDevice::C_left_y:
+    return "left_y";
+
+  case InputDevice::C_left_trigger:
+    return "left_trigger";
+
+  case InputDevice::C_right_x:
+    return "right_x";
+
+  case InputDevice::C_right_y:
+    return "right_y";
+
+  case InputDevice::C_right_trigger:
+    return "right_trigger";
+
+  //case InputDevice::C_trigger:
+  //  return "trigger";
+
+  case InputDevice::C_throttle:
+    return "throttle";
+
+  case InputDevice::C_rudder:
+    return "rudder";
+
+  case InputDevice::C_wheel:
+    return "wheel";
+
+  case InputDevice::C_accelerator:
+    return "accelerator";
+
+  case InputDevice::C_brake:
+    return "brake";
+  }
+  return "**invalid**";
+}
+
+ostream &
+operator << (ostream &out, InputDevice::DeviceClass dc) {
+  out << InputDevice::format_device_class(dc);
   return out;
 }
 
 ostream &
 operator << (ostream &out, InputDevice::ControlAxis axis) {
-  switch (axis) {
-  case InputDevice::C_none:
-    out << "none";
-    break;
-
-  case InputDevice::C_left_x:
-    out << "left_x";
-    break;
-
-  case InputDevice::C_left_y:
-    out << "left_y";
-    break;
-
-  case InputDevice::C_left_trigger:
-    out << "left_trigger";
-    break;
-
-  case InputDevice::C_right_x:
-    out << "right_x";
-    break;
-
-  case InputDevice::C_right_y:
-    out << "right_y";
-    break;
-
-  case InputDevice::C_right_trigger:
-    out << "right_trigger";
-    break;
-
-  case InputDevice::C_x:
-    out << "x";
-    break;
-
-  case InputDevice::C_y:
-    out << "y";
-    break;
-
-  case InputDevice::C_trigger:
-    out << "trigger";
-    break;
-
-  case InputDevice::C_throttle:
-    out << "throttle";
-    break;
-
-  case InputDevice::C_twist:
-    out << "twist";
-    break;
-
-  case InputDevice::C_rudder:
-    out << "rudder";
-    break;
-
-  case InputDevice::C_hat_x:
-    out << "hat_x";
-    break;
-
-  case InputDevice::C_hat_y:
-    out << "hat_y";
-    break;
-
-  case InputDevice::C_wheel:
-    out << "wheel";
-    break;
-
-  case InputDevice::C_accelerator:
-    out << "accelerator";
-    break;
-
-  case InputDevice::C_brake:
-    out << "brake";
-    break;
-  }
-
+  out << InputDevice::format_axis(axis);
   return out;
 }
