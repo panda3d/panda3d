@@ -424,17 +424,23 @@ init_device() {
           } else if (_device_class == DC_gamepad) {
             axis = InputDevice::C_left_trigger;
             have_analog_triggers = true;
+          } else if (_device_class == DC_3d_mouse) {
+            axis = InputDevice::C_z;
           } else {
             axis = InputDevice::C_throttle;
           }
           break;
         case ABS_RX:
-          if ((quirks & QB_rstick_from_z) == 0) {
+          if (_device_class == DC_3d_mouse) {
+            axis = InputDevice::C_pitch;
+          } else if ((quirks & QB_rstick_from_z) == 0) {
             axis = InputDevice::C_right_x;
           }
           break;
         case ABS_RY:
-          if ((quirks & QB_rstick_from_z) == 0) {
+          if (_device_class == DC_3d_mouse) {
+            axis = InputDevice::C_roll;
+          } else if ((quirks & QB_rstick_from_z) == 0) {
             axis = InputDevice::C_right_y;
           }
           break;
@@ -513,7 +519,8 @@ init_device() {
           // Also reverse the yaw axis to match right-hand coordinate system.
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
           if (axis == C_yaw || axis == C_left_y || axis == C_right_y ||
-              (axis == C_throttle && (quirks & QB_reversed_throttle) != 0)) {
+              (axis == C_throttle && (quirks & QB_reversed_throttle) != 0) ||
+              (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z))) {
             swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == C_throttle && (quirks & QB_centered_throttle) != 0) {
