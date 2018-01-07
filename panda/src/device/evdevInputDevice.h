@@ -53,6 +53,11 @@ private:
   int _dpad_left_button;
   int _dpad_up_button;
 
+  // This is used for axis emulation.
+  int _ltrigger_control;
+  int _ltrigger_code;
+  int _rtrigger_code;
+
 public:
   static ButtonHandle map_button(int code, DeviceClass device_class = DC_unknown);
 

@@ -90,7 +90,9 @@ EvdevInputDevice(int index) :
   _dpad_x_axis(-1),
   _dpad_y_axis(-1),
   _dpad_left_button(-1),
-  _dpad_up_button(-1) {
+  _dpad_up_button(-1),
+  _ltrigger_code(-1),
+  _rtrigger_code(-1) {
 
   char path[64];
   sprintf(path, "/dev/input/event%d", index);
@@ -239,6 +241,7 @@ init_device() {
 
   bool all_values_zero = true;
   bool emulate_dpad = true;
+  bool have_analog_triggers = false;
 
   bool has_keys = false;
   bool has_axes = false;
@@ -375,7 +378,12 @@ init_device() {
         }
         if (button.handle == GamepadButton::dpad_left()) {
           emulate_dpad = false;
+        } else if (button.handle == GamepadButton::ltrigger()) {
+          _ltrigger_code = i;
+        } else if (button.handle == GamepadButton::rtrigger()) {
+          _rtrigger_code = i;
         }
+
         _buttons.push_back(button);
         if (i >= _button_indices.size()) {
           _button_indices.resize(i + 1, -1);
@@ -415,6 +423,7 @@ init_device() {
             axis = InputDevice::C_right_x;
           } else if (_device_class == DC_gamepad) {
             axis = InputDevice::C_left_trigger;
+            have_analog_triggers = true;
           } else {
             axis = InputDevice::C_throttle;
           }
@@ -434,6 +443,7 @@ init_device() {
             axis = InputDevice::C_right_y;
           } else if (_device_class == DC_gamepad) {
             axis = InputDevice::C_right_trigger;
+            have_analog_triggers = true;
           } else {
             axis = InputDevice::C_yaw;
           }
@@ -454,6 +464,7 @@ init_device() {
         case ABS_GAS:
           if (_device_class == DC_gamepad) {
             axis = InputDevice::C_right_trigger;
+            have_analog_triggers = true;
           } else {
             axis = InputDevice::C_accelerator;
           }
@@ -461,6 +472,7 @@ init_device() {
         case ABS_BRAKE:
           if (_device_class == DC_gamepad) {
             axis = InputDevice::C_left_trigger;
+            have_analog_triggers = true;
           } else {
             axis = InputDevice::C_brake;
           }
@@ -539,6 +551,16 @@ init_device() {
           << "effects will be unavailable.\n";
       }
     }
+  }
+
+  if (_ltrigger_code >= 0 && _rtrigger_code >= 0 && !have_analog_triggers) {
+    // Emulate analog triggers.
+    _ltrigger_control = (int)_controls.size();
+    add_control(C_left_trigger, 0, 1, false);
+    add_control(C_right_trigger, 0, 1, false);
+  } else {
+    _ltrigger_code = -1;
+    _rtrigger_code = -1;
   }
 
   char path[64];
@@ -665,6 +687,11 @@ process_events() {
       index = _button_indices[code];
       if (index >= 0) {
         button_changed(index, events[i].value != 0);
+      }
+      if (code == _ltrigger_code) {
+        control_changed(_ltrigger_control, events[i].value);
+      } else if (code == _rtrigger_code) {
+        control_changed(_ltrigger_control + 1, events[i].value);
       }
       break;
 

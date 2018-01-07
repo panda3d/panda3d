@@ -45,6 +45,11 @@ private:
   int _dpad_left_button;
   int _dpad_up_button;
 
+  // This is used for axis emulation.
+  int _ltrigger_control;
+  int _ltrigger_button;
+  int _rtrigger_button;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -12,6 +12,7 @@
  */
 
 #include "linuxJoystickDevice.h"
+#include "evdevInputDevice.h"
 
 #ifdef PHAVE_LINUX_INPUT_H
 
@@ -32,7 +33,9 @@ LinuxJoystickDevice(int index) :
   _dpad_x_axis(-1),
   _dpad_y_axis(-1),
   _dpad_left_button(-1),
-  _dpad_up_button(-1)
+  _dpad_up_button(-1),
+  _ltrigger_button(-1),
+  _rtrigger_button(-1)
 {
   LightMutexHolder holder(_lock);
   if (!open_device()) {
@@ -107,6 +110,8 @@ open_device() {
   ioctl(_fd, JSIOCGNAME(sizeof(name)), name);
   _name = name;
 
+  bool have_analog_triggers = false;
+
   // Get the number of axes.
   uint8_t num_axes = 0, num_buttons = 0;
   ioctl(_fd, JSIOCGAXES, &num_axes);
@@ -120,104 +125,18 @@ open_device() {
     ioctl(_fd, JSIOCGBTNMAP, btnmap);
 
     for (uint8_t i = 0; i < num_buttons; ++i) {
-      ButtonHandle handle = ButtonHandle::none();
-      switch (btnmap[i]) {
-      case BTN_A:
-        handle = GamepadButton::action_a();
-        _device_class = DC_gamepad;
-        break;
-
-      case BTN_B:
-        handle = GamepadButton::action_b();
-        break;
-
-      case BTN_C:
-        handle = GamepadButton::action_c();
-        break;
-
-      case BTN_X:
-        handle = GamepadButton::action_x();
-        break;
-
-      case BTN_Y:
-        handle = GamepadButton::action_y();
-        break;
-
-      case BTN_Z:
-        handle = GamepadButton::action_z();
-        break;
-
-      case BTN_TL:
-        handle = GamepadButton::lshoulder();
-        break;
-
-      case BTN_TR:
-        handle = GamepadButton::rshoulder();
-        break;
-
-      case BTN_TL2:
-        handle = GamepadButton::ltrigger();
-        break;
-
-      case BTN_TR2:
-        handle = GamepadButton::rtrigger();
-        break;
-
-      case BTN_1:
-        handle = GamepadButton::action_1();
-        break;
-
-      case BTN_2:
-        handle = GamepadButton::action_2();
-        break;
-
-      case BTN_SELECT:
-      case KEY_PREVIOUS:
-        handle = GamepadButton::back();
-        break;
-
-      case BTN_START:
-      case KEY_NEXT:
-        handle = GamepadButton::start();
-        break;
-
-      case BTN_MODE:
-        handle = GamepadButton::guide();
-        break;
-
-      case BTN_THUMBL:
-        handle = GamepadButton::lstick();
-        break;
-
-      case BTN_THUMBR:
-        handle = GamepadButton::rstick();
-        break;
-
-      case BTN_TRIGGER_HAPPY1:
-        handle = GamepadButton::dpad_left();
-        _dpad_left_button = i;
-        break;
-
-      case BTN_TRIGGER_HAPPY2:
-        handle = GamepadButton::dpad_right();
-        break;
-
-      case BTN_TRIGGER_HAPPY3:
-        handle = GamepadButton::dpad_up();
-        _dpad_up_button = i;
-        break;
-
-      case BTN_TRIGGER_HAPPY4:
-        handle = GamepadButton::dpad_down();
-        break;
-
-      default:
+      ButtonHandle handle = EvdevInputDevice::map_button(btnmap[i]);
+      if (handle == ButtonHandle::none()) {
         if (device_cat.is_debug()) {
           device_cat.debug() << "Unmapped /dev/input/js" << _index
             << " button " << (int)i << ": 0x" << hex << btnmap[i] << "\n";
         }
-        handle = ButtonHandle::none();
-        break;
+      } else if (handle == GamepadButton::action_a()) {
+        _device_class = DC_gamepad;
+      } else if (handle == GamepadButton::ltrigger()) {
+        _ltrigger_button = i;
+      } else if (handle == GamepadButton::rtrigger()) {
+        _rtrigger_button = i;
       }
       _buttons[i].handle = handle;
     }
@@ -333,6 +252,7 @@ open_device() {
         // We'd like to use 0.0 to indicate the resting position.
         _controls[i]._scale = 1.0 / 65534.0;
         _controls[i]._bias = 0.5;
+        have_analog_triggers = true;
       } else if (axis == C_left_y || axis == C_right_y || axis == C_y) {
         _controls[i]._scale = 1.0 / -32767.0;
         _controls[i]._bias = 0.0;
@@ -341,6 +261,16 @@ open_device() {
         _controls[i]._bias = 0.0;
       }
     }
+  }
+
+  if (_ltrigger_button >= 0 && _rtrigger_button >= 0 && !have_analog_triggers) {
+    // Emulate analog triggers.
+    _ltrigger_control = (int)_controls.size();
+    add_control(C_left_trigger, 0, 1, false);
+    add_control(C_right_trigger, 0, 1, false);
+  } else {
+    _ltrigger_button = -1;
+    _rtrigger_button = -1;
   }
 
   // Get additional information from sysfs.
@@ -454,6 +384,11 @@ process_events() {
     int index = events[i].number;
 
     if (events[i].type & JS_EVENT_BUTTON) {
+      if (index == _ltrigger_button) {
+        control_changed(_ltrigger_control, events[i].value);
+      } else if (index == _rtrigger_button) {
+        control_changed(_ltrigger_control + 1, events[i].value);
+      }
       button_changed(index, (events[i].value != 0));
 
     } else if (events[i].type & JS_EVENT_AXIS) {
