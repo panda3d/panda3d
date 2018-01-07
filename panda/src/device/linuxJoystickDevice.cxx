@@ -133,6 +133,8 @@ open_device() {
         }
       } else if (handle == GamepadButton::action_a()) {
         _device_class = DC_gamepad;
+      } else if (handle == GamepadButton::trigger()) {
+        _device_class = DC_flight_stick;
       } else if (handle == GamepadButton::ltrigger()) {
         _ltrigger_button = i;
       } else if (handle == GamepadButton::rtrigger()) {
@@ -152,17 +154,21 @@ open_device() {
       switch (axmap[i]) {
       case ABS_X:
         if (_device_class == DC_gamepad) {
-          axis = C_left_x;
+          axis = InputDevice::C_left_x;
+        } else if (_device_class == DC_flight_stick) {
+          axis = InputDevice::C_roll;
         } else {
-          axis = C_x;
+          axis = InputDevice::C_x;
         }
         break;
 
       case ABS_Y:
         if (_device_class == DC_gamepad) {
-          axis = C_left_y;
+          axis = InputDevice::C_left_y;
+        } else if (_device_class == DC_flight_stick) {
+          axis = InputDevice::C_pitch;
         } else {
-          axis = C_y;
+          axis = InputDevice::C_y;
         }
         break;
 
@@ -183,7 +189,11 @@ open_device() {
         break;
 
       case ABS_RZ:
-        axis = C_right_trigger;
+        if (_device_class == DC_gamepad) {
+          axis = InputDevice::C_right_trigger;
+        } else {
+          axis = InputDevice::C_yaw;
+        }
         break;
 
       case ABS_THROTTLE:
