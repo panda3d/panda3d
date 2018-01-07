@@ -100,9 +100,11 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   CFRelease(elements);
 
   if (_hat_element != nullptr) {
-    _hat_x_axis = _controls.size();
-    add_control(C_hat_x, -1, 1, true);
-    add_control(C_hat_y, -1, 1, true);
+    _hat_left_button = (int)_buttons.size();
+    _buttons.push_back(ButtonState(GamepadButton::hat_left()));
+    _buttons.push_back(ButtonState(GamepadButton::hat_right()));
+    _buttons.push_back(ButtonState(GamepadButton::hat_down()));
+    _buttons.push_back(ButtonState(GamepadButton::hat_up()));
   }
 
   if (_pointer_x != nullptr && _pointer_y != nullptr) {
@@ -163,6 +165,8 @@ parse_element(IOHIDElementRef element) {
       case kHIDUsage_GD_X:
         if (_device_class == DC_gamepad) {
           axis = C_left_x;
+        } else if (_device_class == DC_flight_stick) {
+          axis = C_roll;
         } else if (_device_class == DC_mouse) {
           _pointer_x = element;
           return;
@@ -173,6 +177,8 @@ parse_element(IOHIDElementRef element) {
       case kHIDUsage_GD_Y:
         if (_device_class == DC_gamepad) {
           axis = C_left_y;
+        } else if (_device_class == DC_flight_stick) {
+          axis = C_pitch;
         } else if (_device_class == DC_mouse) {
           _pointer_y = element;
           return;
@@ -197,7 +203,7 @@ parse_element(IOHIDElementRef element) {
         if (_device_class == DC_gamepad) {
           axis = C_right_trigger;
         } else {
-          axis = C_twist;
+          axis = C_yaw;
         }
         break;
       case kHIDUsage_GD_Slider:
@@ -253,8 +259,9 @@ parse_element(IOHIDElementRef element) {
       if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == C_throttle) {
         // T.Flight Hotas X throttle is reversed and can go backwards.
         add_control(axis, max, min, true);
-      } else if (axis == C_y || axis == C_left_y || axis == C_right_y) {
+      } else if (axis == C_yaw || axis == C_left_y || axis == C_right_y) {
         // We'd like to reverse the Y axis to match the XInput behavior.
+        // We also reverse yaw to obey the right-hand rule.
         add_control(axis, max, min);
       } else {
         add_control(axis, min, max);
@@ -614,6 +621,10 @@ parse_element(IOHIDElementRef element) {
         if (usage < sizeof(gamepad_buttons) / sizeof(ButtonHandle)) {
           handle = gamepad_buttons[usage];
         }
+      } else if (_device_class == DC_flight_stick) {
+        if (usage > 0) {
+          handle = GamepadButton::joystick(usage - 1);
+        }
       } else if (_device_class == DC_mouse) {
         // In Panda, wheel and right button are flipped around...
         int button = (usage == 2 || usage == 3) ? (4 - usage) : (usage - 1);
@@ -681,46 +692,10 @@ do_poll() {
     IOHIDValueRef value_ref;
     if (IOHIDDeviceGetValue(_device, _hat_element, &value_ref) == kIOReturnSuccess) {
       int value = IOHIDValueGetIntegerValue(value_ref);
-      int x = 0;
-      int y = 0;
-      switch (value) {
-      case 0:
-        x = 0;
-        y = -1;
-        break;
-      case 1:
-        x = 1;
-        y = -1;
-        break;
-      case 2:
-        x = 1;
-        y = 0;
-        break;
-      case 3:
-        x = 1;
-        y = 1;
-        break;
-      case 4:
-        x = 0;
-        y = 1;
-        break;
-      case 5:
-        x = -1;
-        y = 1;
-        break;
-      case 6:
-        x = -1;
-        y = 0;
-        break;
-      case 7:
-        x = -1;
-        y = -1;
-        break;
-      default:
-        break;
-      }
-      control_changed(_hat_x_axis, x);
-      control_changed(_hat_x_axis + 1, y);
+      button_changed(_hat_left_button + 0, value >= 5 && value <= 7); // left
+      button_changed(_hat_left_button + 1, value >= 1 && value <= 3); // right
+      button_changed(_hat_left_button + 2, value >= 3 && value <= 5); // down
+      button_changed(_hat_left_button + 3, value == 7 || value == 0 || value == 1); // up
     }
   }
 

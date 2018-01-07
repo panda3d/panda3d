@@ -41,7 +41,7 @@ private:
   pvector<IOHIDElementRef> _button_elements;
   pvector<IOHIDElementRef> _analog_elements;
   IOHIDElementRef _hat_element;
-  int _hat_x_axis;
+  int _hat_left_button;
   IOHIDElementRef _pointer_x;
   IOHIDElementRef _pointer_y;
   IOHIDElementRef _scroll_wheel;
