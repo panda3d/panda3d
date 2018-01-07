@@ -6498,6 +6498,29 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   TargetAdd('ai.pyd', opts=['PYTHON'])
 
 #
+# DIRECTORY: contrib/src/rplight/
+#
+if not PkgSkip("CONTRIB") and not PkgSkip("PYTHON") and not RUNTIME:
+  OPTS=['DIR:contrib/src/rplight', 'BUILDING:RPLIGHT', 'PYTHON']
+  TargetAdd('p3rplight_composite1.obj', opts=OPTS, input='p3rplight_composite1.cxx')
+
+  IGATEFILES=GetDirectoryContents('contrib/src/rplight', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3rplight.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3rplight.in', opts=['IMOD:panda3d._rplight', 'ILIB:libp3rplight', 'SRCDIR:contrib/src/rplight'])
+  TargetAdd('libp3rplight_igate.obj', input='libp3rplight.in', opts=["DEPENDENCYONLY"])
+
+  TargetAdd('rplight_module.obj', input='libp3rplight.in')
+  TargetAdd('rplight_module.obj', opts=OPTS)
+  TargetAdd('rplight_module.obj', opts=['IMOD:panda3d._rplight', 'ILIB:_rplight', 'IMPORT:panda3d.core'])
+
+  TargetAdd('_rplight.pyd', input='rplight_module.obj')
+  TargetAdd('_rplight.pyd', input='libp3rplight_igate.obj')
+  TargetAdd('_rplight.pyd', input='p3rplight_composite1.obj')
+  TargetAdd('_rplight.pyd', input='libp3interrogatedb.dll')
+  TargetAdd('_rplight.pyd', input=COMMON_PANDA_LIBS)
+  TargetAdd('_rplight.pyd', opts=['PYTHON'])
+
+#
 # Generate the models directory and samples directory
 #
 
