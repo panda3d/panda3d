@@ -1836,17 +1836,21 @@ do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &d
   bool normalize = false;
   if (data_column->get_contents() == C_normal) {
     // This is to preserve perpendicularity to the surface.
-    LVecBase3 scale, shear, hpr;
-    if (decompose_matrix(mat.get_upper_3(), scale, shear, hpr) &&
-        IS_NEARLY_EQUAL(scale[0], scale[1]) &&
-        IS_NEARLY_EQUAL(scale[0], scale[2])) {
-      if (scale[0] == 1) {
+    LVecBase3 scale_sq(mat.get_row3(0).length_squared(),
+                       mat.get_row3(1).length_squared(),
+                       mat.get_row3(2).length_squared());
+    if (IS_THRESHOLD_EQUAL(scale_sq[0], scale_sq[1], 2.0e-3f) &&
+        IS_THRESHOLD_EQUAL(scale_sq[0], scale_sq[2], 2.0e-3f)) {
+      // There is a uniform scale.
+      LVecBase3 scale, shear, hpr;
+      if (IS_THRESHOLD_EQUAL(scale_sq[0], 1, 2.0e-3f)) {
         // No scale to worry about.
         xform = mat;
-      } else {
-        // Simply take the uniform scale out of the transformation.  Not sure
-        // if it might be better to just normalize?
+      } else if (decompose_matrix(mat.get_upper_3(), scale, shear, hpr)) {
+        // Make a new matrix with scale/translate taken out of the equation.
         compose_matrix(xform, LVecBase3(1, 1, 1), shear, hpr, LVecBase3::zero());
+      } else {
+        normalize = true;
       }
     } else {
       // There is a non-uniform scale, so we need to do all this to preserve
