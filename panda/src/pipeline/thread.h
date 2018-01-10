@@ -89,7 +89,7 @@ PUBLISHED:
   BLOCKING INLINE void join();
   INLINE void preempt();
 
-  INLINE AsyncTask *get_current_task() const;
+  INLINE TypedReferenceCount *get_current_task() const;
 
   INLINE void set_python_index(int index);
 
@@ -142,7 +142,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AsyncTask *_current_task;
+  AtomicAdjust::Pointer _current_task;
 
   int _python_index;
 
