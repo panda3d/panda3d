@@ -1444,7 +1444,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t result.rgb = ";
         text << combine_mode_as_string(tex, combine_rgb, false, i);
         text << ";\n\t result.a = ";
-        text << combine_mode_as_string(tex, combine_alpha, false, i);
+        text << combine_mode_as_string(tex, combine_alpha, true, i);
         text << ";\n";
       }
       if (tex._flags & ShaderKey::TF_rgb_scale_2) {
@@ -1667,6 +1667,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
     csource << "saturate(1.0f - ";
   }
   switch (c_src) {
+    case TextureStage::CS_undefined:
     case TextureStage::CS_texture:
       csource << "tex" << texindex;
       break;
@@ -1684,8 +1685,6 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
       break;
     case TextureStage::CS_last_saved_result:
       csource << "last_saved_result";
-      break;
-    case TextureStage::CS_undefined:
       break;
   }
   if (c_op == TextureStage::CO_one_minus_src_color ||
