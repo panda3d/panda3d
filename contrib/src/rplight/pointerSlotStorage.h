@@ -38,7 +38,14 @@ class PointerSlotStorage {};
 
 
 #include "pandabase.h"
+
+// Apple has an outdated libstdc++, so pull the class from TR1.
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+#include <tr1/array>
+using std::tr1::array;
+#else
 #include <array>
+#endif
 
 /**
  * @brief Class to keep a list of pointers and nullpointers.
@@ -58,7 +65,11 @@ public:
    *   initialized to a nullptr.
    */
   PointerSlotStorage() {
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+    _data.assign(nullptr);
+#else
     _data.fill(nullptr);
+#endif
     _max_index = 0;
     _num_entries = 0;
   }
