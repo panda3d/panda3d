@@ -583,6 +583,8 @@ void GraphicsEngine::
 remove_all_windows() {
   Thread *current_thread = Thread::get_current_thread();
 
+  ReMutexHolder holder(_lock, current_thread);
+
   // Let's move the _windows vector into a local copy first, and walk through
   // that local copy, just in case someone we call during the loop attempts to
   // modify _windows.  I don't know what code would be doing this, but it
