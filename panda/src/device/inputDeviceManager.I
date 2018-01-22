@@ -16,8 +16,10 @@
  */
 INLINE InputDeviceManager *InputDeviceManager::
 get_global_ptr() {
-  if (_global_ptr == (InputDeviceManager *)NULL) {
-    _global_ptr = new InputDeviceManager;
+  if (_global_ptr != nullptr) {
+    return _global_ptr;
+  } else {
+    make_global_ptr();
+    return _global_ptr;
   }
-  return _global_ptr;
 }

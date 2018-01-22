@@ -61,11 +61,11 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
   }
 
   // calculate the battery level in percent and set a warning if the level is to low
-  if (_device->has_battery()) {
+  /*if (_device->has_battery()) {
     short bl = _device->get_battery_level();
     short bl_percent = bl / (_device->get_max_battery_level() / (short)100);
     if (bl_percent <= low_battery_level) {
       output.set_data(_low_battery_event_output, EventParameter(1));
     }
-  }
+  }*/
 }

@@ -13,6 +13,10 @@
 
 #include "inputDevice.h"
 
+#if defined(_MSC_VER) && _MSC_VER < 1700
+#define fma(a, b, c) ((a) * (b) + (c))
+#endif
+
 TypeHandle InputDevice::_type_handle;
 
 /**
@@ -29,7 +33,8 @@ InputDevice(const string &name, DeviceClass dev_class, int flags) :
   _event_sequence(0),
   _enable_pointer_events(false),
   _battery_level(-1),
-  _max_battery_level(-1)
+  _max_battery_level(-1),
+  _lock("InputDevice")
 {
   _button_events = new ButtonEventList;
 }

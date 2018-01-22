@@ -14,6 +14,7 @@
 #include "inputDeviceManager.h"
 #include "ioKitInputDevice.h"
 #include "linuxJoystickDevice.h"
+#include "winInputDeviceManager.h"
 #include "throw_event.h"
 
 #ifdef PHAVE_LINUX_INPUT_H
@@ -22,12 +23,6 @@
 #include <sys/inotify.h>
 #include <sys/ioctl.h>
 #endif
-
-static ConfigVariableDouble xinput_detection_delay
-("xinput-detection-delay", 0.5,
- PRC_DESC("How many seconds to wait between each check to see whether "
-          "an XInput has been connected.  This check is not done every "
-          "frame in order to prevent slowdown."));
 
 InputDeviceManager *InputDeviceManager::_global_ptr = NULL;
 
@@ -80,35 +75,6 @@ InputDeviceManager() : _inotify_fd(-1) {
     return;
   }
 }
-#elif defined(_WIN32)
-InputDeviceManager::
-InputDeviceManager() :
-  _xinput_device0(0),
-  _xinput_device1(1),
-  _xinput_device2(2),
-  _xinput_device3(3),
-  _last_detection(0.0) {
-
-  // XInput provides four device slots, so we simply create four XInputDevice
-  // objects that are bound to the lifetime of the input manager.
-  _xinput_device0.local_object();
-  _xinput_device1.local_object();
-  _xinput_device2.local_object();
-  _xinput_device3.local_object();
-
-  if (_xinput_device0.is_connected()) {
-    _connected_devices.add_device(&_xinput_device0);
-  }
-  if (_xinput_device1.is_connected()) {
-    _connected_devices.add_device(&_xinput_device1);
-  }
-  if (_xinput_device2.is_connected()) {
-    _connected_devices.add_device(&_xinput_device2);
-  }
-  if (_xinput_device3.is_connected()) {
-    _connected_devices.add_device(&_xinput_device3);
-  }
-}
 #elif defined(__APPLE__)
 InputDeviceManager::
 InputDeviceManager() {
@@ -153,7 +119,7 @@ InputDeviceManager() {
 }
 #else
 InputDeviceManager::
-InputDeviceManager() {
+InputDeviceManager() : _lock("InputDeviceManager") {
 }
 #endif
 
@@ -171,6 +137,18 @@ InputDeviceManager::
   IOHIDManagerUnscheduleFromRunLoop(_hid_manager, CFRunLoopGetMain(), kCFRunLoopCommonModes);
   IOHIDManagerClose(_hid_manager, kIOHIDOptionsTypeNone);
   CFRelease(_hid_manager);
+#endif
+}
+
+/**
+ * Creates the global input manager.
+ */
+void InputDeviceManager::
+make_global_ptr() {
+#ifdef _WIN32
+  _global_ptr = new WinInputDeviceManager;
+#else
+  _global_ptr = new InputDeviceManager;
 #endif
 }
 
@@ -453,24 +431,6 @@ update() {
     }
 
     ptr += sizeof(inotify_event) + event->len;
-  }
-#endif
-
-#ifdef _WIN32
-  // XInput doesn't provide a very good hot-plugging interface.  We just check
-  // whether it's connected every so often.  Perhaps we can switch to using
-  // RegisterDeviceNotification in the future.
-  double time_now = ClockObject::get_global_clock()->get_real_time();
-  LightMutexHolder holder(_update_lock);
-
-  if (time_now - _last_detection > xinput_detection_delay.get_value()) {
-    // I've heard this can be quite slow if no device is detected.  We
-    // should probably move it to a thread.
-    _xinput_device0.detect(this);
-    _xinput_device1.detect(this);
-    _xinput_device2.detect(this);
-    _xinput_device3.detect(this);
-    _last_detection = time_now;
   }
 #endif
 }

@@ -21,6 +21,7 @@
 
 #ifdef _WIN32
 #include "xinputDevice.h"
+class WinRawInputDevice;
 #endif
 
 #ifdef __APPLE__
@@ -32,9 +33,11 @@
  * when a device has been hot-plugged.
  */
 class EXPCL_PANDA_DEVICE InputDeviceManager {
-private:
+protected:
   InputDeviceManager();
   ~InputDeviceManager();
+
+  static void make_global_ptr();
 
 #ifdef PHAVE_LINUX_INPUT_H
   InputDevice *consider_add_evdev_device(int index);
@@ -48,14 +51,14 @@ PUBLISHED:
   void add_device(InputDevice *device);
   void remove_device(InputDevice *device);
 
-  void update();
+  virtual void update();
 
   INLINE static InputDeviceManager *get_global_ptr();
 
   // The set of all currently connected devices.
   MAKE_PROPERTY(devices, get_devices);
 
-private:
+protected:
   LightMutex _lock;
 
 #ifdef PHAVE_LINUX_INPUT_H
@@ -63,16 +66,6 @@ private:
 
   pvector<InputDevice *> _evdev_devices;
   InputDeviceSet _inactive_devices;
-#endif
-
-#ifdef _WIN32
-  // There are always exactly four of these in existence.
-  LightMutex _update_lock;
-  XInputDevice _xinput_device0;
-  XInputDevice _xinput_device1;
-  XInputDevice _xinput_device2;
-  XInputDevice _xinput_device3;
-  double _last_detection;
 #endif
 
 #if defined(__APPLE__) && !defined(CPPPARSER)
