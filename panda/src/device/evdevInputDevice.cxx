@@ -572,8 +572,14 @@ init_device() {
 
   char path[64];
   char buffer[256];
+  const char *parent = "";
   sprintf(path, "/sys/class/input/event%d/device/device/../product", _index);
   FILE *f = fopen(path, "r");
+  if (!f) {
+    parent = "../";
+    sprintf(path, "/sys/class/input/event%d/device/device/%s../product", _index, parent);
+    f = fopen(path, "r");
+  }
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != NULL) {
       buffer[strcspn(buffer, "\r\n")] = 0;
@@ -583,7 +589,7 @@ init_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/event%d/device/device/../manufacturer", _index);
+  sprintf(path, "/sys/class/input/event%d/device/device/%s../manufacturer", _index, parent);
   f = fopen(path, "r");
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != NULL) {
@@ -592,7 +598,7 @@ init_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/event%d/device/device/../serial", _index);
+  sprintf(path, "/sys/class/input/event%d/device/device/%s../serial", _index, parent);
   f = fopen(path, "r");
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != NULL) {
