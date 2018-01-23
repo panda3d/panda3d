@@ -518,9 +518,9 @@ init_device() {
           // We'd like to reverse the Y axis to match the XInput behavior.
           // Also reverse the yaw axis to match right-hand coordinate system.
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
-          if (axis == C_yaw || axis == C_left_y || axis == C_right_y ||
+          if (axis == C_yaw || axis == C_rudder || axis == C_left_y || axis == C_right_y ||
               (axis == C_throttle && (quirks & QB_reversed_throttle) != 0) ||
-              (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z))) {
+              (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z || axis == C_roll))) {
             swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == C_throttle && (quirks & QB_centered_throttle) != 0) {
