@@ -60,7 +60,7 @@ class DirectEntry(DirectFrame):
             # NOTE: This overrides the DirectFrame text option
             ('initialText',     '',               DGG.INITOPT),
             # Enable or disable text overflow scrolling
-            ('enableOverflow',  0,                self.setOverflowMode),
+            ('overflow',        0,                self.setOverflowMode),
             # Command to be called on hitting Enter
             ('command',        None,              None),
             ('extraArgs',      [],                None),
@@ -162,7 +162,7 @@ class DirectEntry(DirectFrame):
         PGEntry.setCursorKeysActive(self.guiItem, self['cursorKeys'])
 
     def setOverflowMode(self):
-        PGEntry.set_overflow_mode(self.guiItem, self['enableOverflow'])
+        PGEntry.set_overflow_mode(self.guiItem, self['overflow'])
 
     def setObscureMode(self):
         PGEntry.setObscureMode(self.guiItem, self['obscured'])
