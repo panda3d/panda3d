@@ -18,7 +18,7 @@
 #include "gamepadButton.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
-#include "inputDeviceManager.h"
+#include "linuxInputDeviceManager.h"
 
 #include <fcntl.h>
 #include <linux/input.h>
@@ -79,7 +79,8 @@ TypeHandle EvdevInputDevice::_type_handle;
  * Creates a new device representing the evdev device with the given index.
  */
 EvdevInputDevice::
-EvdevInputDevice(int index) :
+EvdevInputDevice(LinuxInputDeviceManager *manager, int index) :
+  _manager(manager),
   _index(index),
   _fd(-1),
   _can_write(false),
@@ -203,8 +204,9 @@ do_poll() {
     // If we got events, we are obviously connected.  Mark us so.
     if (!_is_connected) {
       _is_connected = true;
-      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
-      mgr->add_device(this);
+      if (_manager != nullptr) {
+        _manager->add_device(this);
+      }
     }
   }
 }

@@ -18,6 +18,8 @@
 
 #ifdef PHAVE_LINUX_INPUT_H
 
+class LinuxInputDeviceManager;
+
 /**
  * This is a type of device that uses the Linux /dev/input/event# API to read
  * data from a raw mouse or other input device.  Unlike the joystick API, the
@@ -25,7 +27,7 @@
  */
 class EXPCL_PANDA_DEVICE EvdevInputDevice : public InputDevice {
 public:
-  EvdevInputDevice(int index);
+  EvdevInputDevice(LinuxInputDeviceManager *manager, int index);
   virtual ~EvdevInputDevice();
 
 private:
@@ -36,8 +38,11 @@ private:
   bool process_events();
 
 private:
-  int _index;
+  LinuxInputDeviceManager *_manager;
+
   int _fd;
+  int _index;
+
   bool _can_write;
   int _ff_id;
   bool _ff_playing;

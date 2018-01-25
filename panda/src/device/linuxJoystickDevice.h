@@ -18,13 +18,15 @@
 
 #ifdef PHAVE_LINUX_INPUT_H
 
+class LinuxInputDeviceManager;
+
 /**
  * This is a type of device that uses the Linux /dev/input/js# API to read
  * data from a game controller.
  */
 class EXPCL_PANDA_DEVICE LinuxJoystickDevice : public InputDevice {
-public:
-  LinuxJoystickDevice(int index);
+PUBLISHED:
+  LinuxJoystickDevice(LinuxInputDeviceManager *manager, int index);
   virtual ~LinuxJoystickDevice();
 
   bool check_events() const;
@@ -36,6 +38,8 @@ private:
   bool process_events();
 
 private:
+  LinuxInputDeviceManager *_manager;
+
   int _fd;
   int _index;
 

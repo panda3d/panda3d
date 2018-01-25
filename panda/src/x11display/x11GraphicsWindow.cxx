@@ -1245,7 +1245,7 @@ open_raw_mice() {
     string fn = fnb.str();
     int fd = open(fn.c_str(), O_RDONLY | O_NONBLOCK, 0);
     if (fd >= 0) {
-      EvdevInputDevice *device = new EvdevInputDevice(fd);
+      EvdevInputDevice *device = new EvdevInputDevice(nullptr, fd);
       nassertd(device != NULL) continue;
 
       if (device->has_pointer()) {

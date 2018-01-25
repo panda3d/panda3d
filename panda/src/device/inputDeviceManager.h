@@ -62,9 +62,6 @@ protected:
   LightMutex _lock;
 
 #ifdef PHAVE_LINUX_INPUT_H
-  int _inotify_fd;
-
-  pvector<InputDevice *> _evdev_devices;
   InputDeviceSet _inactive_devices;
 #endif
 

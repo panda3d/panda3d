@@ -17,6 +17,7 @@
 #ifdef PHAVE_LINUX_INPUT_H
 
 #include "gamepadButton.h"
+#include "linuxInputDeviceManager.h"
 
 #include <fcntl.h>
 #include <linux/joystick.h>
@@ -27,7 +28,8 @@ TypeHandle LinuxJoystickDevice::_type_handle;
  * Creates a new device using the Linux joystick device with the given index.
  */
 LinuxJoystickDevice::
-LinuxJoystickDevice(int index) :
+LinuxJoystickDevice(LinuxInputDeviceManager *manager, int index) :
+  _manager(manager),
   _fd(-1),
   _index(index),
   _dpad_x_axis(-1),
@@ -79,8 +81,9 @@ do_poll() {
     // If we got events, we are obviously connected.  Mark us so.
     if (!_is_connected) {
       _is_connected = true;
-      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
-      mgr->add_device(this);
+      if (_manager != nullptr) {
+        _manager->add_device(this);
+      }
     }
   }
 }
