@@ -409,11 +409,12 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     }
 
     // In fact, perhaps this stage should be disabled altogether?
+    bool skip = false;
     switch (info._mode) {
     case TextureStage::M_normal:
       if (!shader_attrib->auto_normal_on() ||
           (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
-        continue;
+        skip = true;
       } else {
         info._flags = ShaderKey::TF_map_normal;
       }
@@ -422,23 +423,33 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (shader_attrib->auto_glow_on()) {
         info._flags = ShaderKey::TF_map_glow;
       } else {
-        continue;
+        skip = true;
       }
       break;
     case TextureStage::M_gloss:
       if (key._lighting && shader_attrib->auto_gloss_on()) {
         info._flags = ShaderKey::TF_map_gloss;
       } else {
-        continue;
+        skip = true;
       }
       break;
     case TextureStage::M_height:
       if (parallax_mapping_samples > 0) {
         info._flags = ShaderKey::TF_map_height;
       } else {
-        continue;
+        skip = true;
       }
       break;
+    }
+    // We can't just drop a disabled slot from the list, since then the
+    // indices for the texture stages will no longer match up.  So we keep it,
+    // but set it to a noop state to indicate that it should be skipped.
+    if (skip) {
+      info._type = Texture::TT_1d_texture;
+      info._mode = TextureStage::M_modulate;
+      info._flags = 0;
+      key._textures.push_back(info);
+      continue;
     }
 
     // Check if this state has a texture matrix to transform the texture
@@ -947,6 +958,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
+    if (tex._mode == TextureStage::M_modulate && tex._flags == 0) {
+      // Skip this stage.
+      continue;
+    }
+
     text << "\t uniform sampler" << texture_type_as_string(tex._type) << " tex_" << i << ",\n";
 
     if (tex._flags & ShaderKey::TF_has_texscale) {
@@ -1023,6 +1039,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // has a TexMatrixAttrib, also transform them.
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
+    if (tex._mode == TextureStage::M_modulate && tex._flags == 0) {
+      // Skip this stage.
+      continue;
+    }
     switch (tex._gen_mode) {
     case TexGenAttrib::M_off:
       // Cg seems to be able to optimize this temporary away when appropriate.
@@ -1099,6 +1119,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._textures.size(); ++i) {
     ShaderKey::TextureInfo &tex = key._textures[i];
+    if (tex._mode == TextureStage::M_modulate && tex._flags == 0) {
+      // Skip this stage.
+      continue;
+    }
     if ((tex._flags & ShaderKey::TF_map_height) == 0) {
       // Parallax mapping pushes the texture coordinates of the other textures
       // away from the camera.
