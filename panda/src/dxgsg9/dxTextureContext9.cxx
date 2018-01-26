@@ -365,6 +365,12 @@ create_texture(DXScreenData &scrn) {
     shrink_original = true;
   }
 
+  if (target_width == 0 || target_height == 0) {
+    // We can't create a zero-sized texture, so change it to 1x1.
+    target_width = 1;
+    target_height = 1;
+  }
+
   const char *error_message;
 
   error_message = "create_texture failed: couldn't find compatible device Texture Pixel Format for input texture";
@@ -1721,16 +1727,32 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
   bool using_temp_buffer = false;
   HRESULT hr = E_FAIL;
   CPTA_uchar image = get_texture()->get_ram_mipmap_image(mip_level);
-  nassertr(!image.is_null(), E_FAIL);
   BYTE *pixels = (BYTE*) image.p();
   DWORD width  = (DWORD) get_texture()->get_expected_mipmap_x_size(mip_level);
   DWORD height = (DWORD) get_texture()->get_expected_mipmap_y_size(mip_level);
   int component_width = get_texture()->get_component_width();
 
-  size_t view_size = get_texture()->get_ram_mipmap_view_size(mip_level);
-  pixels += view_size * get_view();
   size_t page_size = get_texture()->get_expected_ram_mipmap_page_size(mip_level);
-  pixels += page_size * depth_index;
+  size_t view_size;
+  vector_uchar clear_data;
+  if (page_size > 0) {
+    if (image.is_null()) {
+      // Make an image, filled with the texture's clear color.
+      image = get_texture()->make_ram_mipmap_image(mip_level);
+      nassertr(!image.is_null(), E_FAIL);
+      pixels = (BYTE *)image.p();
+    }
+    view_size = image.size();
+    pixels += view_size * get_view();
+    pixels += page_size * depth_index;
+  } else {
+    // This is a 0x0 texture, which gets loaded as though it were 1x1.
+    width = 1;
+    height = 1;
+    clear_data = get_texture()->get_clear_data();
+    pixels = clear_data.data();
+    view_size = clear_data.size();
+  }
 
   if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
     nassertr(IS_VALID_PTR(_d3d_cube_texture), E_FAIL);
@@ -1909,7 +1931,9 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
                 DWORD flags;
                 D3DCOLOR color;
 
-                color = 0xFF000000;
+                LColor scaled = tex->get_clear_color().fmin(LColor(1)).fmax(LColor::zero());
+                scaled *= 255;
+                color = D3DCOLOR_RGBA((int)scaled[0], (int)scaled[1], (int)scaled[2], (int)scaled[3]);
                 flags = D3DCLEAR_TARGET;
                 if (device -> Clear (NULL, NULL, flags, color, 0.0f, 0) == D3D_OK) {
                 }
@@ -1933,9 +1957,8 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
 
       return S_OK;
     }
-    return E_FAIL;
   }
-  nassertr(IS_VALID_PTR((BYTE*)image.p()), E_FAIL);
+  //nassertr(IS_VALID_PTR((BYTE*)image.p()), E_FAIL);
   nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
 
   PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
