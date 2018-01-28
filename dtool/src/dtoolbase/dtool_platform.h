@@ -51,6 +51,8 @@
 #elif defined(__ANDROID__)
 #if defined(__ARM_ARCH_7A__)
 #define DTOOL_PLATFORM "android_armv7a"
+#elif defined(__aarch64__)
+#define DTOOL_PLATFORM "android_aarch64"
 #elif defined(__arm__)
 #define DTOOL_PLATFORM "android_arm"
 #elif defined(__mips__)

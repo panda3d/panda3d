@@ -864,7 +864,7 @@ if (COMPILER=="GCC"):
 
         if not PkgSkip("PYTHON"):
             python_lib = SDK["PYTHONVERSION"]
-            if not RTDIST:
+            if not RTDIST and GetTarget() != 'android':
                 # We don't link anything in the SDK with libpython.
                 python_lib = ""
             SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
@@ -1259,8 +1259,11 @@ def CompileCxx(obj,src,opts):
         if GetTarget() == "android":
             # Most of the specific optimization flags here were
             # just copied from the default Android Makefiles.
-            cmd += ' -I%s/include' % (SDK["ANDROID_STL"])
-            cmd += ' -I%s/libs/%s/include' % (SDK["ANDROID_STL"], SDK["ANDROID_ABI"])
+            if "ANDROID_API" in SDK:
+                cmd += ' -D__ANDROID_API__=' + str(SDK["ANDROID_API"])
+            if "ANDROID_STL" in SDK:
+                cmd += ' -I%s/include' % (SDK["ANDROID_STL"])
+                cmd += ' -I%s/libs/%s/include' % (SDK["ANDROID_STL"], SDK["ANDROID_ABI"])
             cmd += ' -ffunction-sections -funwind-tables'
             if arch == 'armv7a':
                 cmd += ' -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__'
@@ -1310,7 +1313,7 @@ def CompileCxx(obj,src,opts):
                 if optlevel >= 4 or GetTarget() == "android":
                     cmd += " -fno-rtti"
 
-        if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm"):
+        if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
             cmd += " -msse2"
 
         # Needed by both Python, Panda, Eigen, all of which break aliasing rules.
@@ -1437,12 +1440,19 @@ def CompileIgate(woutd,wsrc,opts):
         cmd += ' -D_MSC_VER=1600 -D"__declspec(param)=" -D__cdecl -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
         cmd += ' -D__attribute__\(x\)='
-        if GetTargetArch() in ("x86_64", "amd64"):
+        target_arch = GetTargetArch()
+        if target_arch in ("x86_64", "amd64"):
             cmd += ' -D_LP64'
+        elif target_arch == 'aarch64':
+            cmd += ' -D_LP64 -D__LP64__ -D__aarch64__'
         else:
             cmd += ' -D__i386__'
-        if GetTarget() == 'darwin':
+
+        target = GetTarget()
+        if target == 'darwin':
             cmd += ' -D__APPLE__'
+        elif target == 'android':
+            cmd += ' -D__ANDROID__'
 
     optlevel = GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
@@ -1744,8 +1754,8 @@ def CompileLink(dll, obj, opts):
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
 
-        # Don't link libraries with Python.
-        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST:
+        # Don't link libraries with Python, except on Android.
+        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST and GetTarget() != 'android':
             opts = opts[:]
             opts.remove("PYTHON")
 
