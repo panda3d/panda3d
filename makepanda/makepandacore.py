@@ -296,6 +296,8 @@ def GetHost():
             osname = subprocess.check_output(["uname", "-o"])
             if osname.strip().lower() == b'android':
                 return 'android'
+            else:
+                return 'linux'
         except:
             return 'linux'
     elif sys.platform.startswith('freebsd'):
