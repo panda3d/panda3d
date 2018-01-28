@@ -31,8 +31,10 @@ PStatCollector BulletDebugNode::_pstat_debug("App:Bullet:DoPhysics:Debug");
  *
  */
 BulletDebugNode::
-BulletDebugNode(const char *name) : PandaNode(name), _debug_stale(true) {
+BulletDebugNode(const char *name) : PandaNode(name) {
 
+  _debug_stale = false;
+  _debug_world = nullptr;
   _wireframe = true;
   _constraints = true;
   _bounds = false;
