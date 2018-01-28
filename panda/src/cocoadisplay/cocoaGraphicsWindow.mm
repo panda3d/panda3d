@@ -15,6 +15,7 @@
 #include "cocoaGraphicsStateGuardian.h"
 #include "config_cocoadisplay.h"
 #include "cocoaGraphicsPipe.h"
+#include "cocoaPandaApp.h"
 
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
@@ -68,6 +69,8 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   // Now that we know for sure we want a window, we can create the Cocoa app.
   // This will cause the application icon to appear and start bouncing.
   if (NSApp == nil) {
+    [CocoaPandaApp sharedApplication];
+
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 #endif

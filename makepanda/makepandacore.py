@@ -37,6 +37,7 @@ TARGET_ARCH = None
 HAS_TARGET_ARCH = False
 TOOLCHAIN_PREFIX = ""
 ANDROID_ABI = None
+ANDROID_API = 14
 SYS_LIB_DIRS = []
 SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
@@ -290,7 +291,13 @@ def GetHost():
     elif sys.platform == 'darwin':
         return 'darwin'
     elif sys.platform.startswith('linux'):
-        return 'linux'
+        try:
+            # Python seems to offer no built-in way to check this.
+            osname = subprocess.check_output(["uname", "-o"])
+            if osname.strip().lower() == b'android':
+                return 'android'
+        except:
+            return 'linux'
     elif sys.platform.startswith('freebsd'):
         return 'freebsd'
     else:
@@ -344,9 +351,19 @@ def SetTarget(target, arch=None):
             if arch not in choices:
                 exit('Mac OS X architecture must be one of %s' % (', '.join(choices)))
 
-    elif target == 'android':
+    elif target == 'android' or target.startswith('android-'):
         if arch is None:
-            arch = 'arm'
+            # If compiling on Android, default to same architecture.  Otherwise, arm.
+            if host == 'android':
+                arch = host_arch
+            else:
+                arch = 'arm'
+
+        # Did we specify an API level?
+        target, _, api = target.partition('-')
+        if api:
+            global ANDROID_API
+            ANDROID_API = int(api)
 
         # Determine the prefix for our gcc tools, eg. arm-linux-androideabi-gcc
         global ANDROID_ABI
@@ -356,14 +373,23 @@ def SetTarget(target, arch=None):
         elif arch == 'arm':
             ANDROID_ABI = 'armeabi'
             TOOLCHAIN_PREFIX = 'arm-linux-androideabi-'
-        elif arch == 'x86':
-            ANDROID_ABI = 'x86'
-            TOOLCHAIN_PREFIX = 'i686-linux-android-'
+        elif arch == 'aarch64':
+            ANDROID_ABI = 'arm64-v8a'
+            TOOLCHAIN_PREFIX = 'aarch64-linux-android-'
         elif arch == 'mips':
             ANDROID_ABI = 'mips'
             TOOLCHAIN_PREFIX = 'mipsel-linux-android-'
+        elif arch == 'mips64':
+            ANDROID_ABI = 'mips64'
+            TOOLCHAIN_PREFIX = 'mips64el-linux-android-'
+        elif arch == 'x86':
+            ANDROID_ABI = 'x86'
+            TOOLCHAIN_PREFIX = 'i686-linux-android-'
+        elif arch == 'x86_64':
+            ANDROID_ABI = 'x86_64'
+            TOOLCHAIN_PREFIX = 'x86_64-linux-android-'
         else:
-            exit('Android architecture must be arm, armv7a, x86 or mips')
+            exit('Android architecture must be arm, armv7a, aarch64, mips, mips64, x86 or x86_64')
 
     elif target == 'linux':
         if arch is not None:
@@ -413,13 +439,13 @@ def CrossCompiling():
     return GetTarget() != GetHost()
 
 def GetCC():
-    if TARGET == 'darwin' or TARGET == 'freebsd':
+    if TARGET in ('darwin', 'freebsd', 'android'):
         return os.environ.get('CC', TOOLCHAIN_PREFIX + 'clang')
     else:
         return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
 
 def GetCXX():
-    if TARGET == 'darwin' or TARGET == 'freebsd':
+    if TARGET in ('darwin', 'freebsd', 'android'):
         return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'clang++')
     else:
         return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
@@ -2339,6 +2365,16 @@ def SdkLocateAndroid():
     if GetTarget() != 'android':
         return
 
+    # Allow ANDROID_API/ANDROID_ABI to be used in makepanda.py.
+    api = ANDROID_API
+    SDK["ANDROID_API"] = api
+
+    abi = ANDROID_ABI
+    SDK["ANDROID_ABI"] = abi
+
+    if GetHost() == 'android':
+        return
+
     # Determine the NDK installation directory.
     if 'NDK_ROOT' not in os.environ:
         exit('NDK_ROOT must be set when compiling for Android!')
@@ -2355,18 +2391,20 @@ def SdkLocateAndroid():
     if arch == 'armv7a' or arch == 'arm':
         arch = 'arm'
         toolchain = 'arm-linux-androideabi-' + gcc_ver
-    elif arch == 'x86':
-        toolchain = 'x86-' + gcc_ver
+    elif arch == 'aarch64':
+        toolchain = 'aarch64-linux-android-' + gcc_ver
     elif arch == 'mips':
         toolchain = 'mipsel-linux-android-' + gcc_ver
+    elif arch == 'mips64':
+        toolchain = 'mips64el-linux-android-' + gcc_ver
+    elif arch == 'x86':
+        toolchain = 'x86-' + gcc_ver
+    elif arch == 'x86_64':
+        toolchain = 'x86_64-' + gcc_ver
     SDK["ANDROID_TOOLCHAIN"] = os.path.join(ndk_root, 'toolchains', toolchain)
 
-    # Allow ANDROID_ABI to be used in makepanda.py.
-    abi = ANDROID_ABI
-    SDK["ANDROID_ABI"] = abi
-
     # Determine the sysroot directory.
-    SDK["SYSROOT"] = os.path.join(ndk_root, 'platforms', 'android-9', 'arch-%s' % (arch))
+    SDK["SYSROOT"] = os.path.join(ndk_root, 'platforms', 'android-%s' % (api), 'arch-%s' % (arch))
     #IncDirectory("ALWAYS", os.path.join(SDK["SYSROOT"], 'usr', 'include'))
 
     stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'gnu-libstdc++', gcc_ver)
@@ -2626,7 +2664,12 @@ def SetupBuildEnvironment(compiler):
         print("Using compiler: %s" % compiler)
         print("Host OS: %s" % GetHost())
         print("Host arch: %s" % GetHostArch())
+
+    target = GetTarget()
+    if target != 'android':
         print("Target OS: %s" % GetTarget())
+    else:
+        print("Target OS: %s (API level %d)" % (GetTarget(), ANDROID_API))
     print("Target arch: %s" % GetTargetArch())
 
     # Set to English so we can safely parse the result of gcc commands.
@@ -2732,7 +2775,7 @@ def SetupBuildEnvironment(compiler):
                 print("  " + dir)
 
     # In the case of Android, we have to put the toolchain on the PATH in order to use it.
-    if GetTarget() == 'android':
+    if GetTarget() == 'android' and GetHost() != 'android':
         # Locate the directory where the toolchain binaries reside.
         prebuilt_dir = os.path.join(SDK['ANDROID_TOOLCHAIN'], 'prebuilt')
         if not os.path.isdir(prebuilt_dir):

@@ -865,7 +865,7 @@ if (COMPILER=="GCC"):
 
         if not PkgSkip("PYTHON"):
             python_lib = SDK["PYTHONVERSION"]
-            if not RTDIST:
+            if not RTDIST and GetTarget() != 'android':
                 # We don't link anything in the SDK with libpython.
                 python_lib = ""
             SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
@@ -1260,8 +1260,11 @@ def CompileCxx(obj,src,opts):
         if GetTarget() == "android":
             # Most of the specific optimization flags here were
             # just copied from the default Android Makefiles.
-            cmd += ' -I%s/include' % (SDK["ANDROID_STL"])
-            cmd += ' -I%s/libs/%s/include' % (SDK["ANDROID_STL"], SDK["ANDROID_ABI"])
+            if "ANDROID_API" in SDK:
+                cmd += ' -D__ANDROID_API__=' + str(SDK["ANDROID_API"])
+            if "ANDROID_STL" in SDK:
+                cmd += ' -I%s/include' % (SDK["ANDROID_STL"])
+                cmd += ' -I%s/libs/%s/include' % (SDK["ANDROID_STL"], SDK["ANDROID_ABI"])
             cmd += ' -ffunction-sections -funwind-tables'
             if arch == 'armv7a':
                 cmd += ' -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__'
@@ -1311,7 +1314,7 @@ def CompileCxx(obj,src,opts):
                 if optlevel >= 4 or GetTarget() == "android":
                     cmd += " -fno-rtti"
 
-        if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm"):
+        if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
             cmd += " -msse2"
 
         # Needed by both Python, Panda, Eigen, all of which break aliasing rules.
@@ -1438,12 +1441,19 @@ def CompileIgate(woutd,wsrc,opts):
         cmd += ' -D_MSC_VER=1600 -D"__declspec(param)=" -D__cdecl -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
         cmd += ' -D__attribute__\(x\)='
-        if GetTargetArch() in ("x86_64", "amd64"):
+        target_arch = GetTargetArch()
+        if target_arch in ("x86_64", "amd64"):
             cmd += ' -D_LP64'
+        elif target_arch == 'aarch64':
+            cmd += ' -D_LP64 -D__LP64__ -D__aarch64__'
         else:
             cmd += ' -D__i386__'
-        if GetTarget() == 'darwin':
+
+        target = GetTarget()
+        if target == 'darwin':
             cmd += ' -D__APPLE__'
+        elif target == 'android':
+            cmd += ' -D__ANDROID__'
 
     optlevel = GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
@@ -1745,8 +1755,8 @@ def CompileLink(dll, obj, opts):
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
 
-        # Don't link libraries with Python.
-        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST:
+        # Don't link libraries with Python, except on Android.
+        if "PYTHON" in opts and GetOrigExt(dll) != ".exe" and not RTDIST and GetTarget() != 'android':
             opts = opts[:]
             opts.remove("PYTHON")
 
@@ -5051,8 +5061,7 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0 and GetTarget() != 'andro
 #
 
 if (not RUNTIME and GetTarget() == 'android'):
-  native_app_glue = os.path.join(SDK['ANDROID_NDK'], 'sources', 'android', 'native_app_glue')
-  OPTS=['DIR:panda/src/android', 'DIR:' + native_app_glue]
+  OPTS=['DIR:panda/src/android']
 
   TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
   TargetAdd('libp3android.dll', input='p3android_composite1.obj')
@@ -5080,7 +5089,7 @@ if (not RUNTIME and GetTarget() == 'android'):
 
 if (GetTarget() == 'android' and PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and not RUNTIME):
   DefSymbol('GLES', 'OPENGLES_1', '')
-  OPTS=['DIR:panda/src/androiddisplay', 'DIR:panda/src/glstuff', 'DIR:' + native_app_glue, 'BUILDING:PANDAGLES',  'GLES', 'EGL']
+  OPTS=['DIR:panda/src/androiddisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES',  'GLES', 'EGL']
   TargetAdd('pandagles_androiddisplay_composite1.obj', opts=OPTS, input='p3androiddisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
@@ -6499,6 +6508,29 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   TargetAdd('ai.pyd', input='libp3interrogatedb.dll')
   TargetAdd('ai.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('ai.pyd', opts=['PYTHON'])
+
+#
+# DIRECTORY: contrib/src/rplight/
+#
+if not PkgSkip("CONTRIB") and not PkgSkip("PYTHON") and not RUNTIME:
+  OPTS=['DIR:contrib/src/rplight', 'BUILDING:RPLIGHT', 'PYTHON']
+  TargetAdd('p3rplight_composite1.obj', opts=OPTS, input='p3rplight_composite1.cxx')
+
+  IGATEFILES=GetDirectoryContents('contrib/src/rplight', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3rplight.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3rplight.in', opts=['IMOD:panda3d._rplight', 'ILIB:libp3rplight', 'SRCDIR:contrib/src/rplight'])
+  TargetAdd('libp3rplight_igate.obj', input='libp3rplight.in', opts=["DEPENDENCYONLY"])
+
+  TargetAdd('rplight_module.obj', input='libp3rplight.in')
+  TargetAdd('rplight_module.obj', opts=OPTS)
+  TargetAdd('rplight_module.obj', opts=['IMOD:panda3d._rplight', 'ILIB:_rplight', 'IMPORT:panda3d.core'])
+
+  TargetAdd('_rplight.pyd', input='rplight_module.obj')
+  TargetAdd('_rplight.pyd', input='libp3rplight_igate.obj')
+  TargetAdd('_rplight.pyd', input='p3rplight_composite1.obj')
+  TargetAdd('_rplight.pyd', input='libp3interrogatedb.dll')
+  TargetAdd('_rplight.pyd', input=COMMON_PANDA_LIBS)
+  TargetAdd('_rplight.pyd', opts=['PYTHON'])
 
 #
 # Generate the models directory and samples directory

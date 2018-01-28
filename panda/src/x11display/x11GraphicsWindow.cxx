@@ -670,6 +670,12 @@ set_properties_now(WindowProperties &properties) {
     } else {
       XDefineCursor(_display, _xwindow, None);
     }
+
+    // Regrab the mouse if we changed the cursor, otherwise it won't update.
+    if (!properties.has_mouse_mode() &&
+        _properties.get_mouse_mode() != WindowProperties::M_absolute) {
+      properties.set_mouse_mode(_properties.get_mouse_mode());
+    }
   }
 
   if (properties.has_foreground()) {

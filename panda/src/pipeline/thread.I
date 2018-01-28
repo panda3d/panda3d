@@ -277,9 +277,9 @@ preempt() {
  * AsyncTaskManager), if any, or NULL if the thread is not currently servicing
  * a task.
  */
-INLINE AsyncTask *Thread::
+INLINE TypedReferenceCount *Thread::
 get_current_task() const {
-  return _current_task;
+  return (TypedReferenceCount *)_current_task;
 }
 
 /**

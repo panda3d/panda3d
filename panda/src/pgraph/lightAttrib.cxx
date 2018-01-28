@@ -841,6 +841,9 @@ compose_impl(const RenderAttrib *other) const {
     lobj->attrib_ref();
   }
 
+  // This is needed since _sorted_on_lights is not yet populated.
+  new_attrib->_sort_seq = UpdateSeq::old();
+
   return return_new(new_attrib);
 }
 
