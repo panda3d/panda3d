@@ -265,6 +265,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, string name) {
                info.hid.usUsage == HID_USAGE_GENERIC_JOYSTICK) {
       _device_class = DC_flight_stick;
 
+      if (_name == "usb gamepad") {
+        // Well, it claims to be a gamepad...
+        _device_class = DC_gamepad;
+      }
+
     // Mice
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_MOUSE) {
@@ -320,6 +325,39 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, string name) {
     return false;
   }
 
+  // Do we have a button mapping?
+  static const ButtonHandle gamepad_buttons_common[] = {
+    ButtonHandle::none(),
+    GamepadButton::action_a(),
+    GamepadButton::action_b(),
+    GamepadButton::action_x(),
+    GamepadButton::action_y(),
+    GamepadButton::lshoulder(),
+    GamepadButton::rshoulder(),
+    GamepadButton::start(),
+    GamepadButton::back(),
+    GamepadButton::lstick(),
+    GamepadButton::rstick(),
+  };
+  const ButtonHandle *gamepad_buttons = gamepad_buttons_common;
+  if (_vendor_id == 0x0810 && _product_id == 0xe501) {
+    // SNES-style USB gamepad
+    static const ButtonHandle gamepad_buttons_snes[] = {
+      ButtonHandle::none(),
+      GamepadButton::action_x(),
+      GamepadButton::action_a(),
+      GamepadButton::action_b(),
+      GamepadButton::action_y(),
+      GamepadButton::lshoulder(),
+      GamepadButton::rshoulder(),
+      ButtonHandle::none(),
+      ButtonHandle::none(),
+      GamepadButton::back(),
+      GamepadButton::start(),
+    };
+    gamepad_buttons = gamepad_buttons_snes;
+  }
+
   // Prepare a mapping of data indices to button/control indices.
   _indices.resize(caps.NumberInputDataIndices);
 
@@ -369,20 +407,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, string name) {
       switch (cap.UsagePage) {
       case HID_USAGE_PAGE_BUTTON:
         if (_device_class == DC_gamepad) {
-          static const ButtonHandle gamepad_buttons[] = {
-            ButtonHandle::none(),
-            GamepadButton::action_a(),
-            GamepadButton::action_b(),
-            GamepadButton::action_x(),
-            GamepadButton::action_y(),
-            GamepadButton::lshoulder(),
-            GamepadButton::rshoulder(),
-            GamepadButton::start(),
-            GamepadButton::back(),
-            GamepadButton::lstick(),
-            GamepadButton::rstick(),
-          };
-          if (usage < sizeof(gamepad_buttons) / sizeof(ButtonHandle)) {
+          if (usage < sizeof(gamepad_buttons_common) / sizeof(ButtonHandle)) {
             handle = gamepad_buttons[usage];
           }
         } else if (_device_class == DC_flight_stick) {

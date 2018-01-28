@@ -245,8 +245,15 @@ on_input_device_arrival(HANDLE handle) {
       if (dev_class == "HIDClass" && _CM_Get_DevNode_PropertyW != nullptr &&
           _CM_Get_DevNode_PropertyW(cur, &bus_reported_device_desc, &type, (PBYTE)buffer, &buflen, 0) == CR_SUCCESS &&
           type == DEVPROP_TYPE_STRING) {
+
+        // Some devices insert quite some trailing space here.
+        wchar_t *wbuffer = (wchar_t *)buffer;
+        size_t wlen = wcslen(wbuffer);
+        while (iswspace(wbuffer[wlen - 1])) {
+          wbuffer[--wlen] = 0;
+        }
         TextEncoder encoder;
-        name.assign(encoder.encode_wtext((wchar_t *)buffer));
+        name.assign(encoder.encode_wtext(wstring(wbuffer, wlen)));
         break;
       } else {
         buflen = 4096;
