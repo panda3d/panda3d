@@ -52,43 +52,58 @@ void android_main(struct android_app* app) {
   // Fetch the path to the data directory.
   jfieldID datadir_field = env->GetFieldID(appinfo_class, "dataDir", "Ljava/lang/String;");
   jstring datadir = (jstring) env->GetObjectField(appinfo, datadir_field);
-  const char *data_path = env->GetStringUTFChars(datadir, NULL);
+  const char *data_path = env->GetStringUTFChars(datadir, nullptr);
 
-  Filename::_internal_data_dir = data_path;
-  android_cat.info() << "Path to data: " << data_path << "\n";
+  if (data_path != nullptr) {
+    Filename::_internal_data_dir = data_path;
+    android_cat.info() << "Path to data: " << data_path << "\n";
 
-  env->ReleaseStringUTFChars(datadir, data_path);
+    env->ReleaseStringUTFChars(datadir, data_path);
+  }
 
   // Fetch the path to the library directory.
-  jfieldID libdir_field = env->GetFieldID(appinfo_class, "nativeLibraryDir", "Ljava/lang/String;");
-  jstring libdir = (jstring) env->GetObjectField(appinfo, libdir_field);
-  const char *lib_path = env->GetStringUTFChars(libdir, NULL);
+  if (ExecutionEnvironment::get_dtool_name().empty()) {
+    jfieldID libdir_field = env->GetFieldID(appinfo_class, "nativeLibraryDir", "Ljava/lang/String;");
+    jstring libdir = (jstring) env->GetObjectField(appinfo, libdir_field);
+    const char *lib_path = env->GetStringUTFChars(libdir, nullptr);
 
-  string dtool_name = string(lib_path) + "/libp3dtool.so";
-  ExecutionEnvironment::set_dtool_name(dtool_name);
-  android_cat.info() << "Path to dtool: " << dtool_name << "\n";
+    if (lib_path != nullptr) {
+      string dtool_name = string(lib_path) + "/libp3dtool.so";
+      ExecutionEnvironment::set_dtool_name(dtool_name);
+      android_cat.info() << "Path to dtool: " << dtool_name << "\n";
 
-  env->ReleaseStringUTFChars(libdir, lib_path);
+      env->ReleaseStringUTFChars(libdir, lib_path);
+    }
+  }
 
   // Get the path to the APK.
   jmethodID methodID = env->GetMethodID(activity_class, "getPackageCodePath", "()Ljava/lang/String;");
   jstring code_path = (jstring) env->CallObjectMethod(activity->clazz, methodID);
 
   const char* apk_path;
-  apk_path = env->GetStringUTFChars(code_path, NULL);
+  apk_path = env->GetStringUTFChars(code_path, nullptr);
+
+  // We're going to set this as binary name, which is better than the
+  // default (which refers to the zygote).  Or should we set it to the
+  // native library?  How do we get the path to that?
   android_cat.info() << "Path to APK: " << apk_path << "\n";
+  ExecutionEnvironment::set_binary_name(apk_path);
 
   // Mount the assets directory.
+  Filename apk_fn(apk_path);
   PT(VirtualFileMountAndroidAsset) asset_mount;
-  asset_mount = new VirtualFileMountAndroidAsset(app->activity->assetManager, apk_path);
+  asset_mount = new VirtualFileMountAndroidAsset(app->activity->assetManager, apk_fn);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->mount(asset_mount, "/android_asset", 0);
+
+  Filename asset_dir(apk_fn.get_dirname(), "assets");
+  vfs->mount(asset_mount, asset_dir, 0);
 
   // Release the apk_path.
   env->ReleaseStringUTFChars(code_path, apk_path);
 
   // Now add the asset directory to the model-path.
-  get_model_path().append_directory("/android_asset");
+  //TODO: prevent it from adding the directory multiple times.
+  get_model_path().append_directory(asset_dir);
 
   // Create bogus argc and argv, then call our main function.
   char *argv[] = {NULL};

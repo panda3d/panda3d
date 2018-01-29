@@ -2353,7 +2353,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_CGGL"] = '1'
         dtool_config["HAVE_CGDX9"] = '1'
 
-    if (GetTarget() != "linux"):
+    if GetTarget() not in ("linux", "android"):
         dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
