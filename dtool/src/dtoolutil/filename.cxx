@@ -48,6 +48,11 @@
 #include <unistd.h>
 #endif
 
+#if defined(__ANDROID__) && !defined(HAVE_LOCKF)
+// Needed for flock.
+#include <sys/file.h>
+#endif
+
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
 TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;
