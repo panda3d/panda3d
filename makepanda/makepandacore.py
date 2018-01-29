@@ -1145,12 +1145,7 @@ def MakeBuildTree():
         MakeDirectory(OUTPUTDIR + "/Frameworks")
 
     elif GetTarget() == 'android':
-        MakeDirectory(OUTPUTDIR + "/libs")
-        MakeDirectory(OUTPUTDIR + "/libs/" + ANDROID_ABI)
-        MakeDirectory(OUTPUTDIR + "/src")
-        MakeDirectory(OUTPUTDIR + "/src/org")
-        MakeDirectory(OUTPUTDIR + "/src/org/panda3d")
-        MakeDirectory(OUTPUTDIR + "/src/org/panda3d/android")
+        MakeDirectory(OUTPUTDIR + "/classes")
 
 ########################################################################
 #
@@ -2892,14 +2887,6 @@ def CopyAllHeaders(dir, skip=[]):
             WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
             JustBuilt([dstfile], [srcfile])
 
-def CopyAllJavaSources(dir, skip=[]):
-    for filename in GetDirectoryContents(dir, ["*.java"], skip):
-        srcfile = dir + "/" + filename
-        dstfile = OUTPUTDIR + "/src/org/panda3d/android/" + filename
-        if (NeedsBuild([dstfile], [srcfile])):
-            WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
-            JustBuilt([dstfile], [srcfile])
-
 def CopyTree(dstdir, srcdir, omitVCS=True):
     if os.path.isdir(dstdir):
         source_entries = os.listdir(srcdir)
@@ -3147,6 +3134,7 @@ def CalcLocation(fn, ipath):
     if fn.startswith("panda3d/") and fn.endswith(".py"):
         return OUTPUTDIR + "/" + fn
 
+    if (fn.endswith(".class")):return OUTPUTDIR+"/classes/"+fn
     if (fn.count("/")): return fn
     dllext = ""
     target = GetTarget()
@@ -3162,6 +3150,7 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".xml")): return CxxFindSource(fn, ipath)
+    if (fn.endswith(".java")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".egg")): return OUTPUTDIR+"/models/"+fn
     if (fn.endswith(".egg.pz")):return OUTPUTDIR+"/models/"+fn
     if (fn.endswith(".pyd")): return OUTPUTDIR+"/panda3d/"+fn[:-4]+GetExtensionSuffix()
@@ -3197,15 +3186,6 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".rsrc")):  return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".app")):   return OUTPUTDIR+"/bin/"+fn
-    elif (target == 'android'):
-        # On Android, we build the libraries into built/tmp, then copy them.
-        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
-        if (fn.endswith(".dll")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".so"
-        if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
-        if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
-        if (fn.endswith(".exe")):   return OUTPUTDIR+"/tmp/lib"+fn[:-4]+".so"
-        if (fn.endswith(".lib")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
-        if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
     else:
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
