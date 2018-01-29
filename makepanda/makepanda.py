@@ -591,18 +591,35 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
-    if (PkgSkip("PNG")==0):      LibName("PNG",      GetThirdpartyDir() + "png/lib/libpng_static.lib")
+    if (PkgSkip("OPENSSL")==0):
+        if os.path.isfile(GetThirdpartyDir() + "openssl/lib/libpandassl.lib"):
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
+        else:
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libeay32.lib")
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/ssleay32.lib")
+    if (PkgSkip("PNG")==0):
+        if os.path.isfile(GetThirdpartyDir() + "png/lib/libpng16_static.lib"):
+            LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
+        else:
+            LibName("PNG", GetThirdpartyDir() + "png/lib/libpng_static.lib")
+    if (PkgSkip("TIFF")==0):
+        if os.path.isfile(GetThirdpartyDir() + "tiff/lib/libtiff.lib"):
+            LibName("TIFF", GetThirdpartyDir() + "tiff/lib/libtiff.lib")
+        else:
+            LibName("TIFF", GetThirdpartyDir() + "tiff/lib/tiff.lib")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF",     GetThirdpartyDir() + "tiff/lib/libtiff.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/quat.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     GetThirdpartyDir() + "nvidiacg/lib/cgGL.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    GetThirdpartyDir() + "nvidiacg/lib/cgD3D9.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", GetThirdpartyDir() + "nvidiacg/lib/cg.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
-    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
+    if (PkgSkip("FREETYPE")==0):
+        LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
+        if os.path.isfile(GetThirdpartyDir() + "harfbuzz/lib/harfbuzz.lib"):
+            # Freetype may be compiled with harfbuzz support and need this library.
+            LibName("FREETYPE", GetThirdpartyDir() + "harfbuzz/lib/harfbuzz.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",GetThirdpartyDir() + "artoolkit/lib/libAR.lib")
