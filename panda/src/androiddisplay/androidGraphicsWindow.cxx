@@ -246,6 +246,13 @@ close_window() {
   }
 
   GraphicsWindow::close_window();
+
+  nassertv(_app != nullptr);
+  if (_app->userData == this) {
+    _app->userData = nullptr;
+    _app->onAppCmd = nullptr;
+    _app->onInputEvent = nullptr;
+  }
 }
 
 /**

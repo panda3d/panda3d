@@ -105,10 +105,49 @@ void android_main(struct android_app* app) {
   //TODO: prevent it from adding the directory multiple times.
   get_model_path().append_directory(asset_dir);
 
-  // Create bogus argc and argv, then call our main function.
-  char *argv[] = {NULL};
+  // Create bogus argc and argv for calling the main function.
+  char *argv[] = {nullptr};
   int argc = 0;
-  main(argc, argv);
+
+  while (!app->destroyRequested) {
+    // Call the main function.  This will not return until the app is done.
+    android_cat.info() << "Calling main()\n";
+    main(argc, argv);
+
+    if (app->destroyRequested) {
+      // The app closed responding to a destroy request.
+      break;
+    }
+
+    // Ask Android to clean up the activity.
+    android_cat.info() << "Exited from main(), finishing activity\n";
+    ANativeActivity_finish(activity);
+
+    // We still need to keep an event loop going until Android gives us leave
+    // to end the process.
+    int looper_id;
+    int events;
+    struct android_poll_source *source;
+    while ((looper_id = ALooper_pollAll(-1, nullptr, &events, (void**)&source)) >= 0) {
+      // Process this event, but intercept application command events.
+      if (looper_id == LOOPER_ID_MAIN) {
+        int8_t cmd = android_app_read_cmd(app);
+        android_app_pre_exec_cmd(app, cmd);
+        android_app_post_exec_cmd(app, cmd);
+
+        // I don't think we can get a resume command after we call finish(),
+        // but let's handle it just in case.
+        if (cmd == APP_CMD_RESUME ||
+            cmd == APP_CMD_DESTROY) {
+          break;
+        }
+      } else if (source != nullptr) {
+        source->process(app, source);
+      }
+    }
+  }
+
+  android_cat.info() << "Destroy requested, exiting from android_main\n";
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();
