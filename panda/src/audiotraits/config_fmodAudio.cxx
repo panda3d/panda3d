@@ -51,6 +51,8 @@ init_libFmodAudio() {
   FmodAudioManager::init_type();
   FmodAudioSound::init_type();
 
+  AudioManager::register_AudioManager_creator(&Create_FmodAudioManager);
+  
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("FMOD");
   ps->add_system("audio");

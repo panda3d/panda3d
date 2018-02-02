@@ -24,7 +24,7 @@ NotifyCategoryDecl(fmodAudio, EXPCL_FMOD_AUDIO, EXPTP_FMOD_AUDIO);
 
 extern ConfigVariableInt fmod_audio_preload_threshold;
 
-extern EXPCL_FMOD_AUDIO void init_libFmodAudio();
+extern "C" EXPCL_FMOD_AUDIO void init_libFmodAudio();
 extern "C" EXPCL_FMOD_AUDIO Create_AudioManager_proc *get_audio_manager_func_fmod_audio();
 
 #endif // CONFIG_FMODAUDIO_H
