@@ -64,9 +64,9 @@ make_from_solid(const CollisionBox *solid) {
   LPoint3 p0 = solid->get_min();
   LPoint3 p1 = solid->get_max();
 
-  LVecBase3 extents(p1.get_x() - p0.get_x() / 2.0,
-                     p1.get_y() - p0.get_y() / 2.0,
-                     p1.get_z() - p0.get_z() / 2.0);
+  LVecBase3 extents((p1.get_x() - p0.get_x()) / 2.0,
+                    (p1.get_y() - p0.get_y()) / 2.0,
+                    (p1.get_z() - p0.get_z()) / 2.0);
 
   return new BulletBoxShape(extents);
 }
