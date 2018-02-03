@@ -422,6 +422,7 @@ class build_apps(distutils.core.Command):
             '__pycache__',
             '*.pyc',
             '*.py',
+            '{}/*'.format(self.build_base),
         ]
         ignore_copy_list += self.exclude_patterns
         ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
