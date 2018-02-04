@@ -24,10 +24,6 @@
 class WinRawInputDevice;
 #endif
 
-#ifdef __APPLE__
-#include <IOKit/hid/IOHIDManager.h>
-#endif
-
 /**
  * This class keeps track of all the devices on a system, and sends out events
  * when a device has been hot-plugged.
@@ -35,14 +31,8 @@ class WinRawInputDevice;
 class EXPCL_PANDA_DEVICE InputDeviceManager {
 protected:
   InputDeviceManager();
-  ~InputDeviceManager();
 
   static void make_global_ptr();
-
-#ifdef PHAVE_LINUX_INPUT_H
-  InputDevice *consider_add_evdev_device(int index);
-  InputDevice *consider_add_js_device(int index);
-#endif
 
 PUBLISHED:
   InputDeviceSet get_devices() const;
@@ -63,12 +53,6 @@ protected:
 
 #ifdef PHAVE_LINUX_INPUT_H
   InputDeviceSet _inactive_devices;
-#endif
-
-#if defined(__APPLE__) && !defined(CPPPARSER)
-  IOHIDManagerRef _hid_manager;
-
-  static void on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device);
 #endif
 
   InputDeviceSet _connected_devices;
