@@ -134,6 +134,7 @@ void BulletWorld::
 clear_debug_node() {
   if (_debug != nullptr) {
     LightMutexHolder holder(_debug->_lock);
+    _debug->_debug_stale = false;
     _debug->_debug_world = nullptr;
     _world->setDebugDrawer(nullptr);
     _debug = nullptr;

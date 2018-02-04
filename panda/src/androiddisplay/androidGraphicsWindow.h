@@ -71,6 +71,8 @@ private:
   EGLDisplay _egl_display;
   EGLSurface _egl_surface;
 
+  int32_t _mouse_button_state;
+
   const ARect *rect;
 
 public:

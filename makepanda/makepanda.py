@@ -944,7 +944,7 @@ if (COMPILER=="GCC"):
 
     if GetTarget() == 'android':
         LibName("ALWAYS", '-llog')
-        LibName("ALWAYS", '-landroid')
+        LibName("ANDROID", '-landroid')
         LibName("JNIGRAPHICS", '-ljnigraphics')
 
     for pkg in MAYAVERSIONS:
@@ -1705,8 +1705,11 @@ def CompileLink(dll, obj, opts):
 
     if COMPILER == "GCC":
         cxx = GetCXX()
-        if GetOrigExt(dll) == ".exe" and GetTarget() != 'android':
+        if GetOrigExt(dll) == ".exe":
             cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
+            if GetTarget() == "android":
+                # Necessary to work around an issue with libandroid depending on vendor libraries
+                cmd += ' -Wl,--allow-shlib-undefined'
         else:
             if (GetTarget() == "darwin"):
                 cmd = cxx + ' -undefined dynamic_lookup'
@@ -1719,6 +1722,7 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
             else:
                 cmd = cxx + ' -shared'
+                # Always set soname on Android to avoid a linker warning when loading the library.
                 if "MODULE" not in opts or GetTarget() == 'android':
                     cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
@@ -1775,14 +1779,7 @@ def CompileLink(dll, obj, opts):
 
         oscmd(cmd)
 
-        if GetTarget() == 'android':
-            # Copy the library to built/libs/$ANDROID_ABI and strip it.
-            # This is the format that Android NDK projects should use.
-            new_path = '%s/libs/%s/%s' % (GetOutputDir(), SDK["ANDROID_ABI"], os.path.basename(dll))
-            CopyFile(new_path, dll)
-            oscmd('%s --strip-unneeded %s' % (GetStrip(), BracketNameWithQuotes(new_path)))
-
-        elif (GetOptimizeOption(opts)==4 and GetTarget() == 'linux'):
+        if GetOptimizeOption(opts) == 4 and GetTarget() in ('linux', 'android'):
             oscmd(GetStrip() + " --strip-unneeded " + BracketNameWithQuotes(dll))
 
         os.system("chmod +x " + BracketNameWithQuotes(dll))
@@ -1889,6 +1886,25 @@ def CompileRsrc(target, src, opts):
                 cmd += " -d " + var + " = " + val
 
     cmd += " " + BracketNameWithQuotes(src)
+    oscmd(cmd)
+
+##########################################################################################
+#
+# CompileJava (Android only)
+#
+##########################################################################################
+
+def CompileJava(target, src, opts):
+    """Compiles a .java file into a .class file."""
+    cmd = "ecj "
+
+    optlevel = GetOptimizeOption(opts)
+    if optlevel >= 4:
+        cmd += "-debug:none "
+
+    cmd += "-cp " + GetOutputDir() + "/classes "
+    cmd += "-d " + GetOutputDir() + "/classes "
+    cmd += BracketNameWithQuotes(src)
     oscmd(cmd)
 
 ##########################################################################################
@@ -2144,6 +2160,9 @@ def CompileAnything(target, inputs, opts, progress = None):
     elif (origsuffix==".rsrc"):
         ProgressOutput(progress, "Building resource object", target)
         return CompileRsrc(target, infile, opts)
+    elif (origsuffix==".class"):
+        ProgressOutput(progress, "Building Java class", target)
+        return CompileJava(target, infile, opts)
     elif (origsuffix==".obj"):
         if (infile.endswith(".cxx")):
             ProgressOutput(progress, "Building C++ object", target)
@@ -2354,7 +2373,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_CGGL"] = '1'
         dtool_config["HAVE_CGDX9"] = '1'
 
-    if (GetTarget() != "linux"):
+    if GetTarget() not in ("linux", "android"):
         dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
@@ -3237,15 +3256,6 @@ if (PkgSkip("CONTRIB")==0):
 
 ########################################################################
 #
-# Copy Java files, if applicable
-#
-########################################################################
-
-if GetTarget() == 'android':
-    CopyAllJavaSources('panda/src/android')
-
-########################################################################
-#
 # These definitions are syntactic shorthand.  They make it easy
 # to link with the usual libraries without listing them all.
 #
@@ -3563,7 +3573,7 @@ TargetAdd('libpandaexpress.dll', input='p3express_composite1.obj')
 TargetAdd('libpandaexpress.dll', input='p3express_composite2.obj')
 TargetAdd('libpandaexpress.dll', input='p3pandabase_pandabase.obj')
 TargetAdd('libpandaexpress.dll', input=COMMON_DTOOL_LIBS)
-TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER'])
+TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'ANDROID'])
 
 #
 # DIRECTORY: panda/src/pipeline/
@@ -5062,6 +5072,8 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0 and GetTarget() != 'andro
 
 if (not RUNTIME and GetTarget() == 'android'):
   OPTS=['DIR:panda/src/android']
+  TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
+  TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java', dep='org/panda3d/android/NativeIStream.class')
 
   TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
   TargetAdd('libp3android.dll', input='p3android_composite1.obj')
@@ -5073,15 +5085,15 @@ if (not RUNTIME and GetTarget() == 'android'):
 
   if (not RTDIST and PkgSkip("PVIEW")==0):
     TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
-    TargetAdd('pview.exe', input='android_native_app_glue.obj')
-    TargetAdd('pview.exe', input='android_main.obj')
-    TargetAdd('pview.exe', input='pview_pview.obj')
-    TargetAdd('pview.exe', input='libp3framework.dll')
+    TargetAdd('libpview.dll', input='android_native_app_glue.obj')
+    TargetAdd('libpview.dll', input='android_main.obj')
+    TargetAdd('libpview.dll', input='pview_pview.obj')
+    TargetAdd('libpview.dll', input='libp3framework.dll')
     if not PkgSkip("EGG"):
-      TargetAdd('pview.exe', input='libpandaegg.dll')
-    TargetAdd('pview.exe', input='libp3android.dll')
-    TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('AndroidManifest.xml', opts=OPTS, input='pview_manifest.xml')
+      TargetAdd('libpview.dll', input='libpandaegg.dll')
+    TargetAdd('libpview.dll', input='libp3android.dll')
+    TargetAdd('libpview.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libpview.dll', opts=['MODULE', 'ANDROID'])
 
 #
 # DIRECTORY: panda/src/androiddisplay/
