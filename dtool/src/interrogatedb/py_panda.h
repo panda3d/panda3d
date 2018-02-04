@@ -22,6 +22,7 @@
 
 #include "pnotify.h"
 #include "vector_uchar.h"
+#include "register_type.h"
 
 #if defined(HAVE_PYTHON) && !defined(CPPPARSER)
 

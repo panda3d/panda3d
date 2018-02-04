@@ -18,6 +18,8 @@
 #include "pipelineCyclerLinks.h"
 #include "namable.h"
 #include "pset.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 #include "reMutex.h"
 #include "reMutexHolder.h"
 #include "selectThreadImpl.h"  // for THREADED_PIPELINE definition

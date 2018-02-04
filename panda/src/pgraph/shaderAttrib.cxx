@@ -25,6 +25,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "nodePath.h"
+#include "paramNodePath.h"
+#include "paramTexture.h"
 #include "shaderBuffer.h"
 
 TypeHandle ShaderAttrib::_type_handle;
