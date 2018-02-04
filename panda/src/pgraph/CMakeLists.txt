@@ -208,6 +208,10 @@ set(P3PGRAPH_IGATEEXT
   pandaNode_ext.h
   renderState_ext.cxx
   renderState_ext.h
+  shaderAttrib_ext.cxx
+  shaderAttrib_ext.h
+  shaderInput_ext.cxx
+  shaderInput_ext.h
   transformState_ext.cxx
   transformState_ext.h
 )

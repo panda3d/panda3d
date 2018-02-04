@@ -23,7 +23,11 @@ set(P3DTOOLUTIL_HEADERS
   stringDecoder.h stringDecoder.I
   textEncoder.h textEncoder.I
   unicodeLatinMap.h
+  vector_double.h
+  vector_float.h
+  vector_int.h
   vector_string.h
+  vector_uchar.h
   vector_src.h
   win32ArgParser.h
 )
@@ -50,7 +54,11 @@ set(P3DTOOLUTIL_SOURCES
   stringDecoder.cxx
   textEncoder.cxx
   unicodeLatinMap.cxx
+  vector_double.cxx
+  vector_float.cxx
+  vector_int.cxx
   vector_string.cxx
+  vector_uchar.cxx
   win32ArgParser.cxx
 )
 

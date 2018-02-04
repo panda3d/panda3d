@@ -50,8 +50,6 @@ set(P3EXPRESS_HEADERS
   threadSafePointerToBase.I threadSafePointerToBase.h
   trueClock.I trueClock.h
   typedReferenceCount.I typedReferenceCount.h typedef.h
-  vector_uchar.h vector_double.h vector_float.h
-  vector_stdfloat.h
   virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h
   virtualFileComposite.h virtualFileComposite.I virtualFile.h
   virtualFileMount.I virtualFileMountMultifile.h
@@ -107,7 +105,6 @@ set(P3EXPRESS_SOURCES
   threadSafePointerToBase.cxx
   trueClock.cxx
   typedReferenceCount.cxx
-  vector_uchar.cxx vector_double.cxx vector_float.cxx
   virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx
   virtualFileMount.cxx
   virtualFileMountMultifile.cxx
@@ -122,22 +119,24 @@ set(P3EXPRESS_SOURCES
   windowsRegistry.cxx
   zStream.cxx zStreamBuf.cxx)
 
+# Some of these reside in dtoolbase/dtoolutil. But dtool isn't run through
+# Interrogate; Panda is. So we're responsible for providing the extensions.
 set(P3EXPRESS_IGATEEXT
-  filename_ext.cxx
-  filename_ext.h
-  globPattern_ext.cxx
-  globPattern_ext.h
+  ../../../dtool/src/dtoolutil/filename_ext.cxx
+  ../../../dtool/src/dtoolutil/filename_ext.h
+  ../../../dtool/src/dtoolutil/globPattern_ext.cxx
+  ../../../dtool/src/dtoolutil/globPattern_ext.h
   memoryUsagePointers_ext.cxx
   memoryUsagePointers_ext.h
   pointerToArray_ext.h
   ramfile_ext.cxx
   ramfile_ext.h
-  streamReader_ext.cxx
-  streamReader_ext.h
-  streamWriter_ext.cxx
-  streamWriter_ext.h
-  typeHandle_ext.cxx
-  typeHandle_ext.h
+  ../../../dtool/src/prc/streamReader_ext.cxx
+  ../../../dtool/src/prc/streamReader_ext.h
+  ../../../dtool/src/prc/streamWriter_ext.cxx
+  ../../../dtool/src/prc/streamWriter_ext.h
+  ../../../dtool/src/dtoolbase/typeHandle_ext.cxx
+  ../../../dtool/src/dtoolbase/typeHandle_ext.h
   virtualFileSystem_ext.cxx
   virtualFileSystem_ext.h
   virtualFile_ext.cxx

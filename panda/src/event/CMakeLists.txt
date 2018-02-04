@@ -1,4 +1,5 @@
 set(P3EVENT_HEADERS
+    asyncFuture.h asyncFuture.I
     asyncTask.h asyncTask.I
     asyncTaskChain.h asyncTaskChain.I
     asyncTaskCollection.h asyncTaskCollection.I
@@ -18,6 +19,7 @@ set(P3EVENT_HEADERS
 )
 
 set(P3EVENT_SOURCES
+    asyncFuture.cxx
     asyncTask.cxx
     asyncTaskChain.cxx
     asyncTaskCollection.cxx
@@ -35,6 +37,8 @@ set(P3EVENT_SOURCES
 )
 
 set(P3EVENT_IGATEEXT
+  asyncFuture_ext.cxx
+  asyncFuture_ext.h
   pythonTask.cxx
   pythonTask.h
   pythonTask.I

@@ -1,13 +1,11 @@
 set(P3GSGBASE_HEADERS
   config_gsgbase.h
-  displayRegionBase.I displayRegionBase.h
   graphicsOutputBase.I graphicsOutputBase.h
   graphicsStateGuardianBase.h
 )
 
 set(P3GSGBASE_SOURCES
   config_gsgbase.cxx
-  displayRegionBase.cxx
   graphicsOutputBase.cxx
   graphicsStateGuardianBase.cxx
 )

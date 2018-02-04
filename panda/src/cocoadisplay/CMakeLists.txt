@@ -8,6 +8,7 @@ if(APPLE AND HAVE_GL AND HAVE_COCOA)
 
   set(P3COCOADISPLAY_SOURCES
       config_cocoadisplay.mm
+      cocoaGraphicsBuffer.mm
       cocoaGraphicsPipe.mm
       cocoaGraphicsStateGuardian.mm
       cocoaGraphicsWindow.mm

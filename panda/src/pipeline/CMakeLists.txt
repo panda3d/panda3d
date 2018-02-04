@@ -1,5 +1,4 @@
 set(P3PIPELINE_HEADERS
-    asyncTaskBase.h asyncTaskBase.I
     contextSwitch.h
     blockerSimple.h blockerSimple.I
     conditionVar.h conditionVar.I
@@ -57,7 +56,6 @@ set(P3PIPELINE_HEADERS
 )
 
 set(P3PIPELINE_SOURCES
-    asyncTaskBase.cxx
     contextSwitch.c
     conditionVar.cxx
     conditionVarDebug.cxx

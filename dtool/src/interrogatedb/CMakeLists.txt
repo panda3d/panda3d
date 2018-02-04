@@ -10,7 +10,7 @@ set(P3INTERROGATEDB_HEADERS
 	interrogateType.I interrogateType.h
 	interrogate_datafile.I interrogate_datafile.h
 	interrogate_interface.h interrogate_request.h
-	extension.h py_panda.h)
+	extension.h py_compat.h py_panda.h py_wrappers.h)
 
 set(P3INTERROGATEDB_SOURCES
 	config_interrogatedb.cxx
@@ -23,7 +23,9 @@ set(P3INTERROGATEDB_SOURCES
 	interrogateManifest.cxx
 	interrogateType.cxx interrogate_datafile.cxx
 	interrogate_interface.cxx interrogate_request.cxx
-	py_panda.cxx)
+	py_compat.cxx
+	py_panda.cxx
+	py_wrappers.cxx)
 
 composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
 

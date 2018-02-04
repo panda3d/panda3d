@@ -10,6 +10,8 @@ set(P3MOVIES_HEADERS
     movieTypeRegistry.h movieTypeRegistry.I
     movieVideo.h movieVideo.I
     movieVideoCursor.h movieVideoCursor.I
+    opusAudio.h opusAudio.I
+    opusAudioCursor.h opusAudioCursor.I
     userDataAudio.h userDataAudio.I
     userDataAudioCursor.h userDataAudioCursor.I
     vorbisAudio.h vorbisAudio.I
@@ -30,6 +32,8 @@ set(P3MOVIES_SOURCES
     movieTypeRegistry.cxx
     movieVideo.cxx
     movieVideoCursor.cxx
+    opusAudio.cxx
+    opusAudioCursor.cxx
     userDataAudio.cxx
     userDataAudioCursor.cxx
     vorbisAudio.cxx

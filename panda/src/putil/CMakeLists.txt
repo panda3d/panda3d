@@ -25,6 +25,7 @@ set(P3PUTIL_HEADERS
   compareTo.I compareTo.h
   config_util.N config_util.h configurable.h
   cPointerCallbackObject.h cPointerCallbackObject.I
+  datagramBuffer.I datagramBuffer.h
   datagramInputFile.I datagramInputFile.h
   datagramOutputFile.I datagramOutputFile.h
   doubleBitMask.I doubleBitMask.h
@@ -84,6 +85,7 @@ set(P3PUTIL_SOURCES
   copyOnWritePointer.cxx
   config_util.cxx configurable.cxx
   cPointerCallbackObject.cxx
+  datagramBuffer.cxx
   datagramInputFile.cxx datagramOutputFile.cxx
   doubleBitMask.cxx
   factoryBase.cxx
