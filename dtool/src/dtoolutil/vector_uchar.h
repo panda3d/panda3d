@@ -6,21 +6,33 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file vector_uchar.cxx
+ * @file vector_uchar.h
  * @author drose
  * @date 2000-05-10
  */
 
-#include "vector_uchar.h"
+#ifndef VECTOR_UCHAR_H
+#define VECTOR_UCHAR_H
 
-#define EXPCL EXPCL_PANDAEXPRESS
-#define EXPTP EXPTP_PANDAEXPRESS
+#include "dtoolbase.h"
+
+/**
+ * A vector of uchars.  This class is defined once here, and exported to
+ * DTOOL.DLL; other packages that want to use a vector of this type
+ * (whether they need to export it or not) should include this header file,
+ * rather than defining the vector again.
+ */
+
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
 #define TYPE unsigned char
 #define NAME vector_uchar
 
-#include "vector_src.cxx"
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
-#pragma implementation
+#pragma interface
+#endif
+
 #endif

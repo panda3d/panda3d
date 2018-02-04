@@ -6,23 +6,21 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file vector_stdfloat.h
+ * @file vector_float.cxx
  * @author drose
- * @date 2011-10-07
+ * @date 2000-05-10
  */
 
-#ifndef VECTOR_STDFLOAT_H
-#define VECTOR_STDFLOAT_H
-
-#include "pandabase.h"
-
-#include "vector_double.h"
 #include "vector_float.h"
 
-#ifndef STDFLOAT_DOUBLE
-typedef vector_float vector_stdfloat;
-#else
-typedef vector_double vector_stdfloat;
-#endif  // STDFLOAT_DOUBLE
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
+#define TYPE float
+#define NAME vector_float
 
+#include "vector_src.cxx"
+
+// Tell GCC that we'll take care of the instantiation explicitly here.
+#ifdef __GNUC__
+#pragma implementation
 #endif

@@ -6,29 +6,27 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file vector_float.h
+ * @file vector_double.h
  * @author drose
  * @date 2000-05-10
  */
 
-#ifndef VECTOR_FLOAT_H
-#define VECTOR_FLOAT_H
+#ifndef VECTOR_DOUBLE_H
+#define VECTOR_DOUBLE_H
 
-#include "pandabase.h"
-
-#include "pvector.h"
+#include "dtoolbase.h"
 
 /**
- * A vector of floats.  This class is defined once here, and exported to
- * PANDA.DLL; other packages that want to use a vector of this type (whether
+ * A vector of doubles.  This class is defined once here, and exported to
+ * DTOOL.DLL; other packages that want to use a vector of this type (whether
  * they need to export it or not) should include this header file, rather than
  * defining the vector again.
  */
 
-#define EXPCL EXPCL_PANDAEXPRESS
-#define EXPTP EXPTP_PANDAEXPRESS
-#define TYPE float
-#define NAME vector_float
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
+#define TYPE double
+#define NAME vector_double
 
 #include "vector_src.h"
 

@@ -6,17 +6,17 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file vector_double.cxx
+ * @file vector_uchar.cxx
  * @author drose
  * @date 2000-05-10
  */
 
-#include "vector_double.h"
+#include "vector_uchar.h"
 
-#define EXPCL EXPCL_PANDAEXPRESS
-#define EXPTP EXPTP_PANDAEXPRESS
-#define TYPE double
-#define NAME vector_double
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
+#define TYPE unsigned char
+#define NAME vector_uchar
 
 #include "vector_src.cxx"
 
