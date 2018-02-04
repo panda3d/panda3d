@@ -23,6 +23,15 @@
 #include <fcntl.h>
 #include <linux/input.h>
 
+// Android introduces these in API level 21.
+#ifndef BTN_TRIGGER_HAPPY
+#define BTN_TRIGGER_HAPPY 0x2c0
+#define BTN_TRIGGER_HAPPY1 0x2c0
+#define BTN_TRIGGER_HAPPY2 0x2c1
+#define BTN_TRIGGER_HAPPY3 0x2c2
+#define BTN_TRIGGER_HAPPY4 0x2c3
+#endif
+
 #define test_bit(bit, array) ((array)[(bit)>>3] & (1<<((bit)&7)))
 
 enum QuirkBits {
@@ -220,7 +229,7 @@ init_device() {
 
   LightMutexHolder holder(_lock);
 
-  uint8_t evtypes[(EV_CNT + 7) >> 3];
+  uint8_t evtypes[(EV_MAX + 8) >> 3];
   memset(evtypes, 0, sizeof(evtypes));
   char name[128];
   if (ioctl(_fd, EVIOCGNAME(sizeof(name)), name) < 0 ||
@@ -248,7 +257,7 @@ init_device() {
   bool has_keys = false;
   bool has_axes = false;
 
-  uint8_t keys[(KEY_CNT + 7) >> 3];
+  uint8_t keys[(KEY_MAX + 8) >> 3];
   if (test_bit(EV_KEY, evtypes)) {
     // Check which buttons are on the device.
     memset(keys, 0, sizeof(keys));
@@ -261,7 +270,7 @@ init_device() {
   }
 
   int num_bits = 0;
-  uint8_t axes[(ABS_CNT + 7) >> 3];
+  uint8_t axes[(ABS_MAX + 8) >> 3];
   if (test_bit(EV_ABS, evtypes)) {
     // Check which axes are on the device.
     memset(axes, 0, sizeof(axes));
@@ -355,11 +364,11 @@ init_device() {
 
   if (has_keys) {
     // Also check whether the buttons are currently pressed.
-    uint8_t states[(KEY_CNT + 7) >> 3];
+    uint8_t states[(KEY_MAX + 8) >> 3];
     memset(states, 0, sizeof(states));
     ioctl(_fd, EVIOCGKEY(sizeof(states)), states);
 
-    for (int i = 0; i < KEY_CNT; ++i) {
+    for (int i = 0; i <= KEY_MAX; ++i) {
       if (test_bit(i, keys)) {
         ButtonState button;
         button.handle = map_button(i, _device_class);
@@ -546,7 +555,7 @@ init_device() {
   }
 
   if (test_bit(EV_FF, evtypes)) {
-    uint8_t effects[(FF_CNT + 7) >> 3];
+    uint8_t effects[(FF_MAX + 8) >> 3];
     memset(effects, 0, sizeof(effects));
     ioctl(_fd, EVIOCGBIT(EV_FF, sizeof(effects)), effects);
 
