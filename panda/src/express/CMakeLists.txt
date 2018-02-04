@@ -156,8 +156,8 @@ else()
   target_include_directories(p3express PUBLIC
     $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
 endif()
-target_link_libraries(p3express p3pandabase p3dtool p3prc p3dconfig
-  ${_TAR_LIBRARY} ${_ZLIB_LIBRARY})
+target_link_libraries(p3express p3pandabase p3dtool p3prc p3dconfig)
+target_use_packages(p3express TAR ZLIB)
 target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
 
 if(WIN32)

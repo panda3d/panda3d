@@ -18,8 +18,8 @@ if(HAVE_AUDIO)
     composite_sources(p3miles_audio P3MILES_SOURCES)
     include_directories(${MILES_INCLUDE_DIR})
     add_library(p3miles_audio ${P3MILES_HEADERS} ${P3MILES_SOURCES})
-    target_link_libraries(p3miles_audio p3audio p3event p3pipeline
-                          ${_MILES_LIBRARY})
+    target_link_libraries(p3miles_audio p3audio p3event p3pipeline)
+    target_use_packages(p3miles_audio MILES)
 
     install(TARGETS p3miles_audio DESTINATION lib)
   endif()
@@ -36,8 +36,8 @@ if(HAVE_AUDIO)
     composite_sources(p3fmod_audio P3FMOD_SOURCES)
     include_directories(${FMODEX_INCLUDE_DIR})
     add_library(p3fmod_audio ${P3FMOD_HEADERS} ${P3FMOD_SOURCES})
-    target_link_libraries(p3fmod_audio p3audio p3event
-                          ${_FMODEX_LIBRARY})
+    target_link_libraries(p3fmod_audio p3audio p3event)
+    target_use_packages(p3fmod_audio FMODEX)
 
     install(TARGETS p3fmod_audio DESTINATION lib)
   endif()
@@ -55,8 +55,8 @@ if(HAVE_AUDIO)
     composite_sources(p3openal_audio P3OPENAL_SOURCES)
     include_directories(${OPENAL_INCLUDE_DIR})
     add_library(p3openal_audio ${P3OPENAL_HEADERS} ${P3OPENAL_SOURCES})
-    target_link_libraries(p3openal_audio p3audio p3event
-                          ${_OPENAL_LIBRARY})
+    target_link_libraries(p3openal_audio p3audio p3event)
+    target_use_packages(p3openal_audio OPENAL)
 
     install(TARGETS p3openal_audio DESTINATION lib)
   endif()

@@ -11,7 +11,8 @@ if(HAVE_GL)
   composite_sources(p3glgsg P3GLGSG_SOURCES)
   add_library(p3glgsg ${P3GLGSG_HEADERS} ${P3GLGSG_SOURCES})
   target_link_libraries(p3glgsg p3glstuff p3display
-    ${OPENGL_LIBRARIES} ${_CG_LIBRARIES})
+    ${OPENGL_LIBRARIES})
+  target_use_packages(p3glgsg CG)
 
   install(TARGETS p3glgsg DESTINATION lib)
   install(FILES ${P3GLGSG_HEADERS} DESTINATION include/panda3d)
