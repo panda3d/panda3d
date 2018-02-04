@@ -46,8 +46,15 @@ IOKitInputDevice(IOHIDDeviceRef device) :
 
   CFStringRef name = (CFStringRef)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey));
   if (name) {
+    buffer[0] = 0;
     CFStringGetCString(name, buffer, sizeof(buffer), kCFStringEncodingUTF8);
-    _name = buffer;
+
+    // Strip trailing spaces.
+    size_t len = strlen(buffer);
+    while (isspace(buffer[len - 1])) {
+      --len;
+    }
+    _name.assign(buffer, len);
   }
 
   CFStringRef mfg = (CFStringRef)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDManufacturerKey));
@@ -89,6 +96,18 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   } else if (_vendor_id == 0x044f && _product_id == 0xb108) {
     // T.Flight Hotas X
     _device_class = DC_flight_stick;
+  } else if (_vendor_id == 0x046d &&
+      (_product_id == 0xc623 ||
+       _product_id == 0xc625 ||
+       _product_id == 0xc626 ||
+       _product_id == 0xc627 ||
+       _product_id == 0xc628 ||
+       _product_id == 0xc629 ||
+       _product_id == 0xc62b)) {
+    // 3Dconnexion SpaceNavigator and friends.
+    _device_class = DC_3d_mouse;
+  } else if (_name == "usb gamepad") {
+    _device_class = DC_gamepad;
   }
 
   CFArrayRef elements = IOHIDDeviceCopyMatchingElements(device, NULL, 0);
@@ -189,15 +208,25 @@ parse_element(IOHIDElementRef element) {
       case kHIDUsage_GD_Z:
         if (_device_class == DC_gamepad) {
           axis = C_left_trigger;
-        } else {
+        } else if (_device_class == DC_flight_stick) {
           axis = C_throttle;
+        } else {
+          axis = C_z;
         }
         break;
       case kHIDUsage_GD_Rx:
-        axis = C_right_x;
+        if (_device_class == DC_gamepad) {
+          axis = C_right_x;
+        } else {
+          axis = C_pitch;
+        }
         break;
       case kHIDUsage_GD_Ry:
-        axis = C_right_y;
+        if (_device_class == DC_gamepad) {
+          axis = C_right_y;
+        } else {
+          axis = C_roll;
+        }
         break;
       case kHIDUsage_GD_Rz:
         if (_device_class == DC_gamepad) {
@@ -259,7 +288,8 @@ parse_element(IOHIDElementRef element) {
       if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == C_throttle) {
         // T.Flight Hotas X throttle is reversed and can go backwards.
         add_control(axis, max, min, true);
-      } else if (axis == C_yaw || axis == C_left_y || axis == C_right_y) {
+      } else if (axis == C_yaw || axis == C_rudder || axis == C_left_y || axis == C_right_y ||
+                 (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z || axis == C_roll))) {
         // We'd like to reverse the Y axis to match the XInput behavior.
         // We also reverse yaw to obey the right-hand rule.
         add_control(axis, max, min);
@@ -598,28 +628,48 @@ parse_element(IOHIDElementRef element) {
 
     case kHIDPage_Button:
       if (_device_class == DC_gamepad) {
-        // These seem to be the button mappings exposed by the 360Controller
-        // driver I don't know if other drivers do the same thing at all.
-        static const ButtonHandle gamepad_buttons[] = {
-          ButtonHandle::none(),
-          GamepadButton::action_a(),
-          GamepadButton::action_b(),
-          GamepadButton::action_x(),
-          GamepadButton::action_y(),
-          GamepadButton::lshoulder(),
-          GamepadButton::rshoulder(),
-          GamepadButton::lstick(),
-          GamepadButton::rstick(),
-          GamepadButton::start(),
-          GamepadButton::back(),
-          GamepadButton::guide(),
-          GamepadButton::dpad_up(),
-          GamepadButton::dpad_down(),
-          GamepadButton::dpad_left(),
-          GamepadButton::dpad_right(),
-        };
-        if (usage < sizeof(gamepad_buttons) / sizeof(ButtonHandle)) {
-          handle = gamepad_buttons[usage];
+        if (_vendor_id == 0x0810 && _product_id == 0xe501) {
+          // SNES-style USB gamepad
+          static const ButtonHandle gamepad_buttons[] = {
+            ButtonHandle::none(),
+            GamepadButton::action_x(),
+            GamepadButton::action_a(),
+            GamepadButton::action_b(),
+            GamepadButton::action_y(),
+            GamepadButton::lshoulder(),
+            GamepadButton::rshoulder(),
+            ButtonHandle::none(),
+            ButtonHandle::none(),
+            GamepadButton::back(),
+            GamepadButton::start(),
+          };
+          if (usage < sizeof(gamepad_buttons) / sizeof(ButtonHandle)) {
+            handle = gamepad_buttons[usage];
+          }
+        } else {
+          // These seem to be the button mappings exposed by the 360Controller
+          // driver.  I don't know if other drivers do the same thing at all.
+          static const ButtonHandle gamepad_buttons[] = {
+            ButtonHandle::none(),
+            GamepadButton::action_a(),
+            GamepadButton::action_b(),
+            GamepadButton::action_x(),
+            GamepadButton::action_y(),
+            GamepadButton::lshoulder(),
+            GamepadButton::rshoulder(),
+            GamepadButton::lstick(),
+            GamepadButton::rstick(),
+            GamepadButton::start(),
+            GamepadButton::back(),
+            GamepadButton::guide(),
+            GamepadButton::dpad_up(),
+            GamepadButton::dpad_down(),
+            GamepadButton::dpad_left(),
+            GamepadButton::dpad_right(),
+          };
+          if (usage < sizeof(gamepad_buttons) / sizeof(ButtonHandle)) {
+            handle = gamepad_buttons[usage];
+          }
         }
       } else if (_device_class == DC_flight_stick) {
         if (usage > 0) {
