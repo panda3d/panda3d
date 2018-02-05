@@ -1,6 +1,12 @@
-# We require 2.8.4 because earlier releases had a bug
-# with invalid HEADER_FILE_ONLY behavior in MSVC 2010.
-cmake_minimum_required(VERSION 2.8.4)
+# We require 2.8.12+ for three reasons:
+# 1) CMake 3 is so common these days that it's really not a burden on the user
+#    to expect them to have it.
+# 2) As of this writing, this is the oldest version included in a supported
+#    release of Ubuntu. Older versions are actually somewhat difficult to track
+#    down, so we don't test against them.
+# 3) CMake's INTERFACE_INCLUDE_DIRECTORIES feature, which we rely on
+#    extensively, finally became stable in this release.
+cmake_minimum_required(VERSION 2.8.12)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON) # Must go before project() below
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
 project(Panda3D)
@@ -25,6 +31,10 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/macros/")
 
+# Set certain CMake flags we expect
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option AND target_use_packages
 
@@ -34,7 +44,6 @@ include(dtool/Package.cmake)
 include(dtool/Config.cmake)
 
 # Include global modules
-include(AutoInclude)        # Implements automatic include_directories finding
 include(AddBisonTarget)     # Defines add_bison_target function
 include(AddFlexTarget)      # Defines add_flex_target function
 include(CompositeSources)   # Defines composite_sources function

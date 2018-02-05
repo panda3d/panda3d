@@ -10,8 +10,6 @@
 #
 
 if(CMAKE_SCRIPT_MODE_FILE)
-  #cmake_minimum_required(VERSION 2.8.4)
-
   if(NOT DEFINED COMPOSITE_FILE)
     message(FATAL_ERROR "COMPOSITE_FILE should be defined when running MakeComposite.cmake!")
     return()

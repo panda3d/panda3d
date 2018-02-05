@@ -167,28 +167,14 @@ function(interrogate_sources target output database module)
     endforeach(source)
 
     # Interrogate also needs the include paths, so we'll extract them from the
-    # target. Usually these are available via a generator expression, however
-    # versions of CMake before 2.8.10 don't support the TARGET_PROPERTY genex
-    # so we have to extract the property at configuration-time. Versions after
-    # 2.8.11 support CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE which ONLY makes
-    # this information available at generator-time (i.e. after
-    # configuration-time) so the generator expression is necessary then.
-    if(CMAKE_VERSION VERSION_LESS 2.8.10)
-      set(include_flags)
-      get_target_property(include_dirs "${target}" INTERFACE_INCLUDE_DIRECTORIES)
-      foreach(include_dir ${include_dirs})
-        list(APPEND include_flags "-I${include_dir}")
-      endforeach(include_dir)
-      # The above must also be included when compiling the resulting _igate.cxx file:
-      include_directories(${include_dirs})
-    else()
-      # Note, the \t is a workaround for a CMake bug where using a plain space in
-      # a JOIN will cause it to be escaped. Tabs are not escaped and will
-      # separate correctly.
-      set(include_flags "-I$<JOIN:$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>,\t-I>")
-      # The above must also be included when compiling the resulting _igate.cxx file:
-      include_directories("$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
-    endif()
+    # target. These are available via a generator expression.
+
+    # Note, the \t is a workaround for a CMake bug where using a plain space in
+    # a JOIN will cause it to be escaped. Tabs are not escaped and will
+    # separate correctly.
+    set(include_flags "-I$<JOIN:$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>,\t-I>")
+    # The above must also be included when compiling the resulting _igate.cxx file:
+    include_directories("$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
 
     # Get the compiler definition flags. These must be passed to Interrogate
     # in the same way that they are passed to the compiler so that Interrogate

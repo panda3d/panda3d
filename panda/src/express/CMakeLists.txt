@@ -144,18 +144,11 @@ set(P3EXPRESS_IGATEEXT
 
 composite_sources(p3express P3EXPRESS_SOURCES)
 
+add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
+
 # p3express needs to include from p3interrogatedb for py_panda.h and extension.h
-if(CMAKE_VERSION VERSION_LESS 2.8.11)
-  get_target_property(interrogatedb_interface_dirs p3interrogatedb INTERFACE_INCLUDE_DIRECTORIES)
-  include_directories(${interrogatedb_interface_dirs})
-  add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
-  set_target_properties(p3express PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
-    "${interrogatedb_interface_dirs};${CMAKE_CURRENT_SOURCE_DIR}")
-else()
-  add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
-  target_include_directories(p3express PUBLIC
-    $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
-endif()
+target_include_directories(p3express PUBLIC
+  $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
 target_link_libraries(p3express p3pandabase p3dtool p3prc p3dconfig)
 target_use_packages(p3express TAR ZLIB)
 target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
