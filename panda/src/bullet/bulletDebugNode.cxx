@@ -13,21 +13,28 @@
 
 #include "bulletDebugNode.h"
 
+#include "cullHandler.h"
+#include "cullTraverser.h"
+#include "cullableObject.h"
 #include "geomLines.h"
 #include "geomVertexData.h"
 #include "geomTriangles.h"
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
 #include "omniBoundingVolume.h"
+#include "pStatTimer.h"
 
 TypeHandle BulletDebugNode::_type_handle;
+PStatCollector BulletDebugNode::_pstat_debug("App:Bullet:DoPhysics:Debug");
 
 /**
  *
  */
 BulletDebugNode::
-BulletDebugNode(const char *name) : GeomNode(name) {
+BulletDebugNode(const char *name) : PandaNode(name) {
 
+  _debug_stale = false;
+  _debug_world = nullptr;
   _wireframe = true;
   _constraints = true;
   _bounds = false;
@@ -37,40 +44,6 @@ BulletDebugNode(const char *name) : GeomNode(name) {
   set_bounds(bounds);
   set_final(true);
   set_overall_hidden(true);
-
-  // Lines
-  {
-    PT(GeomVertexData) vdata;
-    PT(Geom) geom;
-    PT(GeomLines) prim;
-
-    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
-
-    prim = new GeomLines(Geom::UH_stream);
-    prim->set_shade_model(Geom::SM_uniform);
-
-    geom = new Geom(vdata);
-    geom->add_primitive(prim);
-
-    add_geom(geom);
-  }
-
-  // Triangles
-  {
-    PT(GeomVertexData) vdata;
-    PT(Geom) geom;
-    PT(GeomTriangles) prim;
-
-    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
-
-    prim = new GeomTriangles(Geom::UH_stream);
-    prim->set_shade_model(Geom::SM_uniform);
-
-    geom = new Geom(vdata);
-    geom->add_primitive(prim);
-
-    add_geom(geom);
-  }
 }
 
 /**
@@ -175,100 +148,133 @@ draw_mask_changed() {
 }
 
 /**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
+bool BulletDebugNode::
+is_renderable() const {
+  return true;
+}
+
+/**
+ * Adds the node's contents to the CullResult we are building up during the
+ * cull traversal, so that it will be drawn at render time.  For most nodes
+ * other than GeomNodes, this is a do-nothing operation.
+ */
+void BulletDebugNode::
+add_for_draw(CullTraverser *trav, CullTraverserData &data) {
+  PT(Geom) debug_lines;
+  PT(Geom) debug_triangles;
+
+  {
+    LightMutexHolder holder(_lock);
+    if (_debug_world == nullptr) {
+      return;
+    }
+    if (_debug_stale) {
+      nassertv(_debug_world != nullptr);
+      PStatTimer timer(_pstat_debug);
+
+      // Collect debug geometry data
+      _drawer._lines.clear();
+      _drawer._triangles.clear();
+
+      _debug_world->debugDrawWorld();
+
+      // Render lines
+      {
+        PT(GeomVertexData) vdata =
+          new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
+        vdata->unclean_set_num_rows(_drawer._lines.size() * 2);
+
+        GeomVertexWriter vwriter(vdata, InternalName::get_vertex());
+        GeomVertexWriter cwriter(vdata, InternalName::get_color());
+
+        pvector<Line>::const_iterator lit;
+        for (lit = _drawer._lines.begin(); lit != _drawer._lines.end(); lit++) {
+          const Line &line = *lit;
+
+          vwriter.set_data3(line._p0);
+          vwriter.set_data3(line._p1);
+          cwriter.set_data4(LVecBase4(line._color));
+          cwriter.set_data4(LVecBase4(line._color));
+        }
+
+        PT(GeomPrimitive) prim = new GeomLines(Geom::UH_stream);
+        prim->set_shade_model(Geom::SM_uniform);
+        prim->add_next_vertices(_drawer._lines.size() * 2);
+
+        debug_lines = new Geom(vdata);
+        debug_lines->add_primitive(prim);
+        _debug_lines = debug_lines;
+      }
+
+      // Render triangles
+      {
+        PT(GeomVertexData) vdata =
+          new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
+        vdata->unclean_set_num_rows(_drawer._triangles.size() * 3);
+
+        GeomVertexWriter vwriter(vdata, InternalName::get_vertex());
+        GeomVertexWriter cwriter(vdata, InternalName::get_color());
+
+        pvector<Triangle>::const_iterator tit;
+        for (tit = _drawer._triangles.begin(); tit != _drawer._triangles.end(); tit++) {
+          const Triangle &tri = *tit;
+
+          vwriter.set_data3(tri._p0);
+          vwriter.set_data3(tri._p1);
+          vwriter.set_data3(tri._p2);
+          cwriter.set_data4(LVecBase4(tri._color));
+          cwriter.set_data4(LVecBase4(tri._color));
+          cwriter.set_data4(LVecBase4(tri._color));
+        }
+
+        PT(GeomPrimitive) prim = new GeomTriangles(Geom::UH_stream);
+        prim->set_shade_model(Geom::SM_uniform);
+        prim->add_next_vertices(_drawer._triangles.size() * 3);
+
+        debug_triangles = new Geom(vdata);
+        debug_triangles->add_primitive(prim);
+        _debug_triangles = debug_triangles;
+      }
+
+      // Clear collected data.
+      _drawer._lines.clear();
+      _drawer._triangles.clear();
+
+      _debug_stale = false;
+    } else {
+      debug_lines = _debug_lines;
+      debug_triangles = _debug_triangles;
+    }
+  }
+
+  // Record them without any state or transform.
+  trav->_geoms_pcollector.add_level(2);
+  {
+    CullableObject *object =
+      new CullableObject(move(debug_lines), RenderState::make_empty(), trav->get_scene()->get_cs_world_transform());
+    trav->get_cull_handler()->record_object(object, trav);
+  }
+  {
+    CullableObject *object =
+      new CullableObject(move(debug_triangles), RenderState::make_empty(), trav->get_scene()->get_cs_world_transform());
+    trav->get_cull_handler()->record_object(object, trav);
+  }
+}
+
+/**
  *
  */
 void BulletDebugNode::
 sync_b2p(btDynamicsWorld *world) {
+  LightMutexHolder holder(_lock);
 
-  if (is_overall_hidden()) return;
-
-  nassertv(get_num_geoms() == 2);
-
-  // Collect debug geometry data
-  _drawer._lines.clear();
-  _drawer._triangles.clear();
-
-  world->debugDrawWorld();
-
-  // Get inverse of this node's net transform
-  NodePath np = NodePath::any_path((PandaNode *)this);
-  LMatrix4 m = np.get_net_transform()->get_mat();
-  m.invert_in_place();
-
-  // Render lines
-  {
-    PT(GeomVertexData) vdata;
-    PT(Geom) geom;
-    PT(GeomLines) prim;
-
-    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
-
-    prim = new GeomLines(Geom::UH_stream);
-    prim->set_shade_model(Geom::SM_uniform);
-
-    GeomVertexWriter vwriter = GeomVertexWriter(vdata, InternalName::get_vertex());
-    GeomVertexWriter cwriter = GeomVertexWriter(vdata, InternalName::get_color());
-
-    int v = 0;
-
-    pvector<Line>::const_iterator lit;
-    for (lit = _drawer._lines.begin(); lit != _drawer._lines.end(); lit++) {
-      Line line = *lit;
-
-      vwriter.add_data3(m.xform_point(line._p0));
-      vwriter.add_data3(m.xform_point(line._p1));
-      cwriter.add_data4(LVecBase4(line._color));
-      cwriter.add_data4(LVecBase4(line._color));
-
-      prim->add_vertex(v++);
-      prim->add_vertex(v++);
-      prim->close_primitive();
-    }
-
-    geom = new Geom(vdata);
-    geom->add_primitive(prim);
-
-    set_geom(0, geom);
-  }
-
-  // Render triangles
-  {
-    PT(GeomVertexData) vdata;
-    PT(Geom) geom;
-    PT(GeomTriangles) prim;
-
-    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
-
-    prim = new GeomTriangles(Geom::UH_stream);
-    prim->set_shade_model(Geom::SM_uniform);
-
-    GeomVertexWriter vwriter = GeomVertexWriter(vdata, InternalName::get_vertex());
-    GeomVertexWriter cwriter = GeomVertexWriter(vdata, InternalName::get_color());
-
-    int v = 0;
-
-    pvector<Triangle>::const_iterator tit;
-    for (tit = _drawer._triangles.begin(); tit != _drawer._triangles.end(); tit++) {
-      Triangle tri = *tit;
-
-      vwriter.add_data3(m.xform_point(tri._p0));
-      vwriter.add_data3(m.xform_point(tri._p1));
-      vwriter.add_data3(m.xform_point(tri._p2));
-      cwriter.add_data4(LVecBase4(tri._color));
-      cwriter.add_data4(LVecBase4(tri._color));
-      cwriter.add_data4(LVecBase4(tri._color));
-
-      prim->add_vertex(v++);
-      prim->add_vertex(v++);
-      prim->add_vertex(v++);
-      prim->close_primitive();
-    }
-
-    geom = new Geom(vdata);
-    geom->add_primitive(prim);
-
-    set_geom(1, geom);
-  }
+  _debug_world = world;
+  _debug_stale = true;
 }
 
 /**
@@ -431,8 +437,6 @@ register_with_read_factory() {
  */
 void BulletDebugNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  // Don't upcall to GeomNode since we're not interested in storing the actual
-  // debug Geoms in the .bam file.
   PandaNode::write_datagram(manager, dg);
 
   dg.add_bool(_wireframe);
@@ -464,8 +468,6 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletDebugNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  // Don't upcall to GeomNode since we're not interested in storing the actual
-  // debug Geoms in the .bam file.
   PandaNode::fillin(scan, manager);
 
   _wireframe = scan.get_bool();

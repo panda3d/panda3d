@@ -1,4 +1,6 @@
-"""Undocumented Module"""
+"""A DirectCheckButton is a type of button that toggles between two states
+when clicked.  It also has a separate indicator that can be modified
+separately."""
 
 __all__ = ['DirectCheckButton']
 

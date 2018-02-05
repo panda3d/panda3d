@@ -229,6 +229,14 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     DeleteBuildFiles(destdir+prefix+"/include/panda3d")
     DeleteEmptyDirs(destdir+prefix+"/include/panda3d")
 
+    # Change permissions on include directory.
+    os.chmod(destdir + prefix + "/include", 0o755)
+    for root, dirs, files in os.walk(destdir + prefix + "/include"):
+        for basename in dirs:
+            os.chmod(os.path.join(root, basename), 0o755)
+        for basename in files:
+            os.chmod(os.path.join(root, basename), 0o644)
+
     # rpmlint doesn't like this file, for some reason.
     if (os.path.isfile(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")):
         os.remove(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")
@@ -276,6 +284,7 @@ if (__name__ == "__main__"):
     parser.add_option('', '--destdir', dest = 'destdir', help = 'Destination directory [default=%s]' % destdir, default = destdir)
     parser.add_option('', '--prefix', dest = 'prefix', help = 'Prefix [default=/usr/local]', default = '/usr/local')
     parser.add_option('', '--runtime', dest = 'runtime', help = 'Specify if runtime build [default=no]', action = 'store_true', default = False)
+    parser.add_option('', '--verbose', dest = 'verbose', help = 'Print commands that are executed [default=no]', action = 'store_true', default = False)
     (options, args) = parser.parse_args()
 
     destdir = options.destdir
@@ -285,6 +294,9 @@ if (__name__ == "__main__"):
         destdir = ""
     if (destdir != "" and not os.path.isdir(destdir)):
         exit("Directory '%s' does not exist!" % destdir)
+
+    if options.verbose:
+        SetVerbose(True)
 
     if (options.runtime):
         print("Installing Panda3D Runtime into " + destdir + options.prefix)

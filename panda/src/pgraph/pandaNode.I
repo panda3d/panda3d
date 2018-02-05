@@ -348,12 +348,12 @@ has_dirty_prev_transform() const {
 INLINE string PandaNode::
 get_tag(const string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  TagData::const_iterator ti;
-  ti = cdata->_tag_data.find(key);
-  if (ti != cdata->_tag_data.end()) {
-    return (*ti).second;
+  int index = cdata->_tag_data.find(key);
+  if (index >= 0) {
+    return cdata->_tag_data.get_data((size_t)index);
+  } else {
+    return string();
   }
-  return string();
 }
 
 /**
@@ -364,9 +364,25 @@ get_tag(const string &key, Thread *current_thread) const {
 INLINE bool PandaNode::
 has_tag(const string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  TagData::const_iterator ti;
-  ti = cdata->_tag_data.find(key);
-  return (ti != cdata->_tag_data.end());
+  return cdata->_tag_data.find(key) >= 0;
+}
+
+/**
+ * Returns the number of tags applied to this node.
+ */
+INLINE size_t PandaNode::
+get_num_tags() const {
+  CDReader cdata(_cycler);
+  return cdata->_tag_data.size();
+}
+
+/**
+ * Returns the key of the nth tag applied to this node.
+ */
+INLINE string PandaNode::
+get_tag_key(size_t i) const {
+  CDReader cdata(_cycler);
+  return cdata->_tag_data.get_key(i);
 }
 
 /**
@@ -376,7 +392,7 @@ has_tag(const string &key, Thread *current_thread) const {
 INLINE bool PandaNode::
 has_tags() const {
   CDReader cdata(_cycler);
-  if (!cdata->_tag_data.empty()) {
+  if (!cdata->_tag_data.is_empty()) {
     return true;
   }
 #ifdef HAVE_PYTHON
@@ -1448,12 +1464,12 @@ get_prev_transform() const {
  */
 INLINE string PandaNodePipelineReader::
 get_tag(const string &key) const {
-  PandaNode::TagData::const_iterator ti;
-  ti = _cdata->_tag_data.find(key);
-  if (ti != _cdata->_tag_data.end()) {
-    return (*ti).second;
+  int index = _cdata->_tag_data.find(key);
+  if (index >= 0) {
+    return _cdata->_tag_data.get_data((size_t)index);
+  } else {
+    return string();
   }
-  return string();
 }
 
 /**
@@ -1463,9 +1479,7 @@ get_tag(const string &key) const {
  */
 INLINE bool PandaNodePipelineReader::
 has_tag(const string &key) const {
-  PandaNode::TagData::const_iterator ti;
-  ti = _cdata->_tag_data.find(key);
-  return (ti != _cdata->_tag_data.end());
+  return _cdata->_tag_data.find(key) >= 0;
 }
 
 /**
@@ -1482,7 +1496,7 @@ get_net_collide_mask() const {
  * Returns a ClipPlaneAttrib which represents the union of all of the clip
  * planes that have been turned *off* at this level and below.
  */
-INLINE CPT(RenderAttrib) PandaNodePipelineReader::
+INLINE const RenderAttrib *PandaNodePipelineReader::
 get_off_clip_planes() const {
   nassertr(_cdata->_last_update == _cdata->_next_update, _cdata->_off_clip_planes);
   return _cdata->_off_clip_planes;
@@ -1493,7 +1507,7 @@ get_off_clip_planes() const {
  * contains the user bounding volume, the internal bounding volume, and all of
  * the children's bounding volumes.
  */
-INLINE CPT(BoundingVolume) PandaNodePipelineReader::
+INLINE const BoundingVolume *PandaNodePipelineReader::
 get_bounds() const {
   nassertr(_cdata->_last_bounds_update == _cdata->_next_update, _cdata->_external_bounds);
   return _cdata->_external_bounds;

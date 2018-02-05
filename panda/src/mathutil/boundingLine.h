@@ -31,7 +31,7 @@ public:
   INLINE_MATHUTIL BoundingLine();
 
 PUBLISHED:
-  INLINE_MATHUTIL BoundingLine(const LPoint3 &a, const LPoint3 &b);
+  INLINE_MATHUTIL explicit BoundingLine(const LPoint3 &a, const LPoint3 &b);
   ALLOC_DELETED_CHAIN(BoundingLine);
 
 public:

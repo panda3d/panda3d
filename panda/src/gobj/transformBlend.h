@@ -62,8 +62,14 @@ PUBLISHED:
   INLINE const VertexTransform *get_transform(size_t n) const;
   MAKE_SEQ(get_transforms, get_num_transforms, get_transform);
   INLINE PN_stdfloat get_weight(size_t n) const;
+  INLINE void remove_transform(size_t n);
   INLINE void set_transform(size_t n, const VertexTransform *transform);
   INLINE void set_weight(size_t n, PN_stdfloat weight);
+
+  MAKE_SEQ_PROPERTY(transforms, get_num_transforms, get_transform,
+                    set_transform, remove_transform);
+  MAKE_MAP_PROPERTY(weights, has_transform, get_weight);
+  MAKE_MAP_KEYS_SEQ(weights, get_num_transforms, get_transform);
 
   INLINE void update_blend(Thread *current_thread) const;
 

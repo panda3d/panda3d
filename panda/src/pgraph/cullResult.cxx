@@ -105,6 +105,8 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   static const LColor flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
   static const LColor flash_dual_color(0.92, 0.01f, 0.01f, 1.0f);
 
+  nassertv(object->_draw_callback != nullptr || object->_geom != nullptr);
+
   bool force = !traverser->get_effective_incomplete_render();
   Thread *current_thread = traverser->get_current_thread();
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();

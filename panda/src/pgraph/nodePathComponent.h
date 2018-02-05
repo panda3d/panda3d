@@ -39,7 +39,7 @@
  * graph, and the NodePathComponents are stored in the nodes themselves to
  * allow the nodes to keep these up to date as the scene graph is manipulated.
  */
-class EXPCL_PANDA_PGRAPH NodePathComponent : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH NodePathComponent FINAL : public ReferenceCount {
 private:
   NodePathComponent(PandaNode *node, NodePathComponent *next,
                     int pipeline_stage, Thread *current_thread);
@@ -55,7 +55,7 @@ public:
   int get_key() const;
   bool is_top_node(int pipeline_stage, Thread *current_thread) const;
 
-  NodePathComponent *get_next(int pipeline_stage, Thread *current_thread) const;
+  INLINE NodePathComponent *get_next(int pipeline_stage, Thread *current_thread) const;
   int get_length(int pipeline_stage, Thread *current_thread) const;
 
   bool fix_length(int pipeline_stage, Thread *current_thread);
@@ -124,6 +124,10 @@ private:
   friend class PandaNode;
   friend class NodePath;
 };
+
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<NodePathComponent>::update_type(To *ptr) {}
 
 INLINE ostream &operator << (ostream &out, const NodePathComponent &comp);
 

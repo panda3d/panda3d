@@ -96,7 +96,7 @@ protected:
   typedef pvector< PT(AsyncTask) > TaskHeap;
 
   void do_add(AsyncTask *task);
-  bool do_remove(AsyncTask *task);
+  bool do_remove(AsyncTask *task, bool upon_death=false);
   void do_wait_for_tasks();
   void do_cleanup();
 
@@ -172,6 +172,7 @@ protected:
   bool _frame_sync;
   int _num_busy_threads;
   int _num_tasks;
+  int _num_awaiting_tasks;
   TaskHeap _active;
   TaskHeap _this_active;
   TaskHeap _next_active;
@@ -205,6 +206,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskChainThread;
   friend class AsyncTask;
   friend class AsyncTaskManager;

@@ -20,6 +20,7 @@
 #include "camera.h"
 #include "graphicsStateGuardianBase.h"
 #include "graphicsOutputBase.h"
+#include "atomicAdjust.h"
 
 class ShaderGenerator;
 class GraphicsStateGuardian;
@@ -31,12 +32,16 @@ class GraphicsStateGuardian;
  */
 class EXPCL_PANDA_PGRAPHNODES LightLensNode : public Light, public Camera {
 PUBLISHED:
-  LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
+  explicit LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
   virtual ~LightLensNode();
 
-  INLINE bool is_shadow_caster();
+  INLINE bool has_specular_color() const;
+
+  INLINE bool is_shadow_caster() const;
   INLINE void set_shadow_caster(bool caster);
   INLINE void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
+
+  INLINE int get_shadow_buffer_sort() const;
 
   INLINE LVecBase2i get_shadow_buffer_size() const;
   INLINE void set_shadow_buffer_size(const LVecBase2i &size);
@@ -50,16 +55,27 @@ PUBLISHED:
 protected:
   LightLensNode(const LightLensNode &copy);
   void clear_shadow_buffers();
+  virtual void setup_shadow_map();
 
   LVecBase2i _sb_size;
   bool _shadow_caster;
+  bool _has_specular_color;
   int _sb_sort;
+
+  PT(Texture) _shadow_map;
 
   // This is really a map of GSG -> GraphicsOutput.
   typedef pmap<PT(GraphicsStateGuardianBase), PT(GraphicsOutputBase) > ShadowBuffers;
   ShadowBuffers _sbuffers;
 
+  // This counts how many LightAttribs in the world are referencing this
+  // LightLensNode object.
+  AtomicAdjust::Integer _attrib_count;
+
 public:
+  virtual void attrib_ref();
+  virtual void attrib_unref();
+
   virtual PandaNode *as_node();
   virtual Light *as_light();
 
@@ -95,7 +111,6 @@ private:
   static TypeHandle _type_handle;
 
   friend class GraphicsStateGuardian;
-  friend class ShaderGenerator;
 };
 
 INLINE ostream &operator << (ostream &out, const LightLensNode &light) {

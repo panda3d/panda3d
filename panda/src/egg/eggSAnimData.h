@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggSAnimData : public EggAnimData {
 PUBLISHED:
-  INLINE EggSAnimData(const string &name = "");
+  INLINE explicit EggSAnimData(const string &name = "");
   INLINE EggSAnimData(const EggSAnimData &copy);
   INLINE EggSAnimData &operator = (const EggSAnimData &copy);
 

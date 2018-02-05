@@ -91,8 +91,8 @@ public:
   virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
 
-  virtual int getSpeakerSetup();
-  virtual void setSpeakerSetup(SpeakerModeCategory cat);
+  virtual int get_speaker_setup();
+  virtual void set_speaker_setup(SpeakerModeCategory cat);
 
   virtual void set_volume(PN_stdfloat);
   virtual PN_stdfloat get_volume() const;
@@ -123,9 +123,11 @@ public:
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
 
-  // Control the "relative distance factor" for 3D spacialized audio.  Default
-  // is 1.0 Fmod uses meters internally, so give a float in Units-per meter
-  // Don't know what Miles uses.
+  // Control the "relative scale that sets the distance factor" units for 3D
+  // spacialized audio. This is a float in units-per-meter. Default value is
+  // 1.0, which means that Panda units are understood as meters; for e.g.
+  // feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+  // moment.
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_distance_factor() const;
 

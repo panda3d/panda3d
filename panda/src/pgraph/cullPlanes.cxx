@@ -315,11 +315,10 @@ do_cull(int &result, CPT(RenderState) &state,
   result =
     BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
 
-  CPT(ClipPlaneAttrib) orig_cpa = DCAST(ClipPlaneAttrib, state->get_attrib(ClipPlaneAttrib::get_class_slot()));
-
   CPT(CullPlanes) new_planes = this;
 
-  if (orig_cpa == (ClipPlaneAttrib *)NULL) {
+  const ClipPlaneAttrib *orig_cpa;
+  if (!state->get_attrib(orig_cpa)) {
     // If there are no clip planes in the state, the node is completely in
     // front of all zero of the clip planes.  (This can happen if someone
     // directly changes the state during the traversal.)

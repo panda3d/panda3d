@@ -17,7 +17,6 @@
 #include "config_movies.h"
 
 #define DR_FLAC_IMPLEMENTATION
-#define DR_FLAC_NO_STDIO
 extern "C" {
   #include "dr_flac.h"
 }

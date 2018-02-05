@@ -74,7 +74,9 @@ Task = PythonTask
 # Copy the module-level enums above into the class level.  This funny
 # syntax is necessary because it's a C++-wrapped extension type, not a
 # true Python class.
-Task.DtoolClassDict['done'] = done
+# We can't override 'done', which is already a known method.  We have a
+# special check in PythonTask for when the method is being returned.
+#Task.DtoolClassDict['done'] = done
 Task.DtoolClassDict['cont'] = cont
 Task.DtoolClassDict['again'] = again
 Task.DtoolClassDict['pickup'] = pickup
@@ -83,6 +85,8 @@ Task.DtoolClassDict['exit'] = exit
 # Alias the AsyncTaskPause constructor as Task.pause().
 pause = AsyncTaskPause
 Task.DtoolClassDict['pause'] = staticmethod(pause)
+
+gather = Task.gather
 
 def sequence(*taskList):
     seq = AsyncTaskSequence('sequence')
@@ -333,6 +337,7 @@ class TaskManager:
         funcOrTask - either an existing Task object (not already added
         to the task manager), or a callable function object.  If this
         is a function, a new Task object will be created and returned.
+        You may also pass in a coroutine object.
 
         name - the name to assign to the Task.  Required, unless you
         are passing in a Task object that already has a name.
@@ -385,6 +390,15 @@ class TaskManager:
             task = funcOrTask
         elif hasattr(funcOrTask, '__call__'):
             task = PythonTask(funcOrTask)
+            if name is None:
+                name = getattr(funcOrTask, '__qualname__', None) or \
+                       getattr(funcOrTask, '__name__', None)
+        elif hasattr(funcOrTask, 'cr_await') or type(funcOrTask) == types.GeneratorType:
+            # It's a coroutine, or something emulating one.
+            task = PythonTask(funcOrTask)
+            if name is None:
+                name = getattr(funcOrTask, '__qualname__', None) or \
+                       getattr(funcOrTask, '__name__', None)
         else:
             self.notify.error(
                 'add: Tried to add a task that was not a Task or a func')

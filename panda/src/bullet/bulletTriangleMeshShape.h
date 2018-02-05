@@ -31,7 +31,7 @@ private:
   INLINE BulletTriangleMeshShape();
 
 PUBLISHED:
-  BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
+  explicit BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
   INLINE BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
   INLINE void operator = (const BulletTriangleMeshShape &copy);
   INLINE ~BulletTriangleMeshShape();
@@ -52,6 +52,9 @@ private:
   btGImpactMeshShape *_gimpact_shape;
 
   PT(BulletTriangleMesh) _mesh;
+
+  // Stored temporarily during bam read.
+  PN_stdfloat _margin;
 
   bool _dynamic : 1;
   bool _compress : 1;

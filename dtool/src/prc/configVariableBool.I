@@ -67,7 +67,7 @@ operator = (bool value) {
 /**
  * Returns the variable's value.
  */
-INLINE ConfigVariableBool::
+ALWAYS_INLINE ConfigVariableBool::
 operator bool () const {
   return get_value();
 }
@@ -100,12 +100,11 @@ set_value(bool value) {
 /**
  * Returns the variable's value.
  */
-INLINE bool ConfigVariableBool::
+ALWAYS_INLINE bool ConfigVariableBool::
 get_value() const {
   TAU_PROFILE("bool ConfigVariableBool::get_value() const", " ", TAU_USER);
   if (!is_cache_valid(_local_modified)) {
-    mark_cache_valid(((ConfigVariableBool *)this)->_local_modified);
-    ((ConfigVariableBool *)this)->_cache = get_bool_word(0);
+    reload_value();
   }
   return _cache;
 }

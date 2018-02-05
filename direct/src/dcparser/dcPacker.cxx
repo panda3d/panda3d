@@ -708,7 +708,7 @@ pack_object(PyObject *object) {
     pack_int64(PyLong_AsLongLong(object));
 #if PY_MAJOR_VERSION >= 3
   } else if (PyUnicode_Check(object)) {
-    char *buffer;
+    const char *buffer;
     Py_ssize_t length;
     buffer = PyUnicode_AsUTF8AndSize(object, &length);
     if (buffer) {

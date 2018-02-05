@@ -36,7 +36,7 @@
  */
 class EXPCL_PANDA_PGUI PGEntry : public PGItem {
 PUBLISHED:
-  PGEntry(const string &name);
+  explicit PGEntry(const string &name);
   virtual ~PGEntry();
 
 protected:

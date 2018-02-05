@@ -22,10 +22,10 @@
  */
 class EXPCL_PANDAPHYSICS LinearVectorForce : public LinearForce {
 PUBLISHED:
-  LinearVectorForce(const LVector3& vec, PN_stdfloat a = 1.0f, bool mass = false);
+  explicit LinearVectorForce(const LVector3& vec, PN_stdfloat a = 1.0f, bool mass = false);
+  explicit LinearVectorForce(PN_stdfloat x = 0.0f, PN_stdfloat y = 0.0f, PN_stdfloat z = 0.0f,
+                             PN_stdfloat a = 1.0f, bool mass = false);
   LinearVectorForce(const LinearVectorForce &copy);
-  LinearVectorForce(PN_stdfloat x = 0.0f, PN_stdfloat y = 0.0f, PN_stdfloat z = 0.0f,
-              PN_stdfloat a = 1.0f, bool mass = false);
   virtual ~LinearVectorForce();
 
   INLINE void set_vector(const LVector3& v);

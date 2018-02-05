@@ -213,10 +213,12 @@ check_errors(Thread *current_thread) {
  */
 INLINE ClockObject *ClockObject::
 get_global_clock() {
-  if (_global_clock == (ClockObject *)NULL) {
+  ClockObject *clock = (ClockObject *)AtomicAdjust::get_ptr(_global_clock);
+  if (UNLIKELY(clock == nullptr)) {
     make_global_clock();
+    clock = (ClockObject *)_global_clock;
   }
-  return _global_clock;
+  return clock;
 }
 
 /**

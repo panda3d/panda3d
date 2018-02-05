@@ -29,7 +29,7 @@
 class EXPCL_DTOOL IFileStream : public istream {
 PUBLISHED:
   INLINE IFileStream();
-  INLINE IFileStream(const char *filename, ios::openmode mode = ios::in);
+  INLINE explicit IFileStream(const char *filename, ios::openmode mode = ios::in);
   INLINE ~IFileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::in);
@@ -57,7 +57,7 @@ private:
 class EXPCL_DTOOL OFileStream : public ostream {
 PUBLISHED:
   INLINE OFileStream();
-  INLINE OFileStream(const char *filename, ios::openmode mode = ios::out);
+  INLINE explicit OFileStream(const char *filename, ios::openmode mode = ios::out);
   INLINE ~OFileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::out);
@@ -86,7 +86,7 @@ private:
 class EXPCL_DTOOL FileStream : public iostream {
 PUBLISHED:
   INLINE FileStream();
-  INLINE FileStream(const char *filename, ios::openmode mode = ios::in);
+  INLINE explicit FileStream(const char *filename, ios::openmode mode = ios::in);
   INLINE ~FileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::in);

@@ -2,27 +2,41 @@ language: cpp
 sudo: false
 matrix:
   include:
-    - compiler: gcc
-      env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--optimize=4
     - compiler: clang
       env: BUILDSYSTEM=makepanda PYTHONV=python3 FLAGS=--installer
     - compiler: clang
       env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
     - compiler: gcc
+      env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--optimize=4
+      before_install:
+        - export CC=gcc-4.7
+        - export CXX=g++-4.7
+    - compiler: gcc
       dist: precise
       env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+      before_install:
+        - export CC=gcc-4.7
+        - export CXX=g++-4.7
     - compiler: clang
       dist: precise
       env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
     - compiler: gcc
       dist: trusty
       env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+      before_install:
+        - export CC=gcc-4.7
+        - export CXX=g++-4.7
     - compiler: clang
       dist: trusty
       env: BUILDSYSTEM=cmake FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+      env: PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
 addons:
   apt:
+    sources:
+    - ubuntu-toolchain-r-test
     packages:
+    - gcc-4.7
+    - g++-4.7
     - bison
     - flex
     - libfreetype6-dev
@@ -39,10 +53,17 @@ addons:
     - nvidia-cg-toolkit
     - python-dev
     - python3-dev
+    - python-virtualenv
     - zlib1g-dev
+    - fakeroot
 script:
-- '[[ "$BUILDSYSTEM" != "makepanda" ]] || ( $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py )'
-- '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir build && cd build && mv ../makepanda/test_imports.py . && ../makepanda/selfdestruct.py --yes && cmake -DHAVE_GTK2=NO $FLAGS .. && make -j4 && python test_imports.py )'
+install:
+    - virtualenv --python=$PYTHONV venv && source venv/bin/activate
+    - $PYTHONV -m pip install pytest
+script:
+    - '[[ "$BUILDSYSTEM" != "makepanda" ]] || ( $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py )'
+    - '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir build && cd build && mv ../makepanda/test_imports.py . && ../makepanda/selfdestruct.py --yes && cmake -DHAVE_GTK2=NO $FLAGS .. && make -j4 && $PYTHONV test_imports.py && cd .. )'
+    - LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV -m pytest tests
 notifications:
   irc:
     channels:

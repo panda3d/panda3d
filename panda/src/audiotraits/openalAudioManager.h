@@ -84,11 +84,14 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
 
-  // Control the "relative distance factor" for 3D spacialized audio in units-
-  // per-foot.  Default is 1.0 OpenAL has no distance factor but we use this
-  // as a scale on the minmax distances of sounds to preserve FMOD
-  // compatibility.  Also, adjusts the speed of sound to compensate for unit
-  // difference.
+
+  // Control the "relative scale that sets the distance factor" units for 3D
+  // spacialized audio. This is a float in units-per-meter. Default value is
+  // 1.0, which means that Panda units are understood as meters; for e.g.
+  // feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+  // moment.
+  // OpenAL in fact has no distance factor like Fmod, but works with the speed
+  // of sound instead, so we use this factor to scale the speed of sound.
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_distance_factor() const;
 

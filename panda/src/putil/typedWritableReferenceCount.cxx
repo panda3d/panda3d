@@ -26,8 +26,8 @@ as_reference_count() {
 }
 
 /**
- * Reads the string created by a previous call to encode_to_bam_stream(), and
- * extracts and returns the single object on that string.  Returns NULL on
+ * Reads the bytes created by a previous call to encode_to_bam_stream(), and
+ * extracts and returns the single object on those bytes.  Returns NULL on
  * error.
  *
  * This method is intended to replace decode_raw_from_bam_stream() when you
@@ -37,13 +37,13 @@ as_reference_count() {
  * reference count on the return value.
  */
 PT(TypedWritableReferenceCount) TypedWritableReferenceCount::
-decode_from_bam_stream(const string &data, BamReader *reader) {
+decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   TypedWritable *object;
   ReferenceCount *ref_ptr;
 
-  if (!TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, data, reader)) {
-    return NULL;
+  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, move(data), reader)) {
+    return DCAST(TypedWritableReferenceCount, object);
+  } else {
+    return nullptr;
   }
-
-  return DCAST(TypedWritableReferenceCount, object);
 }

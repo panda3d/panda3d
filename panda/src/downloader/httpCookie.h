@@ -32,8 +32,9 @@
 class EXPCL_PANDAEXPRESS HTTPCookie {
 PUBLISHED:
   INLINE HTTPCookie();
-  INLINE HTTPCookie(const string &format, const URLSpec &url);
-  INLINE HTTPCookie(const string &name, const string &path, const string &domain);
+  INLINE explicit HTTPCookie(const string &format, const URLSpec &url);
+  INLINE explicit HTTPCookie(const string &name, const string &path,
+                             const string &domain);
   INLINE ~HTTPCookie();
 
   INLINE void set_name(const string &name);

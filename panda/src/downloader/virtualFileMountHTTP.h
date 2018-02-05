@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDAEXPRESS VirtualFileMountHTTP : public VirtualFileMount {
 PUBLISHED:
-  VirtualFileMountHTTP(const URLSpec &root, HTTPClient *http = HTTPClient::get_global_ptr());
+  explicit VirtualFileMountHTTP(const URLSpec &root, HTTPClient *http = HTTPClient::get_global_ptr());
   virtual ~VirtualFileMountHTTP();
 
   INLINE HTTPClient *get_http_client() const;

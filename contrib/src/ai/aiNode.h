@@ -66,7 +66,7 @@ public:
   AINode *_next;
 
 PUBLISHED:
-  AINode(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h);
+  explicit AINode(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h);
   ~AINode();
 
   bool contains(float x, float y);

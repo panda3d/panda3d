@@ -62,6 +62,9 @@
 // #include <GLESglext.h>
 #endif
 
+// Some implementations (Arch Linux) set this in glext.h
+typedef char GLchar;
+
 #include "panda_esglext.h"
 
 // This helps to keep the source clean of hundreds of ifdefs.

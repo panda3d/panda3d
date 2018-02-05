@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDAEGG EggSurface : public EggPrimitive {
 PUBLISHED:
-  INLINE EggSurface(const string &name = "");
+  INLINE explicit EggSurface(const string &name = "");
   INLINE EggSurface(const EggSurface &copy);
   INLINE EggSurface &operator = (const EggSurface &copy);
 

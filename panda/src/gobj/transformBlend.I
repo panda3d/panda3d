@@ -143,6 +143,17 @@ get_weight(size_t n) const {
 }
 
 /**
+ * Removes the nth transform stored in the blend object.
+ */
+INLINE void TransformBlend::
+remove_transform(size_t n) {
+  nassertv(n < _entries.size());
+  _entries.erase(_entries.begin() + n);
+  Thread *current_thread = Thread::get_current_thread();
+  clear_result(current_thread);
+}
+
+/**
  * Replaces the nth transform stored in the blend object.
  */
 INLINE void TransformBlend::

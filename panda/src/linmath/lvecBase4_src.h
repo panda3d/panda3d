@@ -230,8 +230,10 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
+  INLINE_LINMATH void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
@@ -240,6 +242,9 @@ PUBLISHED:
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
   CONSTEXPR static int get_num_components() { return 4; }
+
+  INLINE_LINMATH bool operator == (const FLOATNAME(UnalignedLVecBase4) &other) const;
+  INLINE_LINMATH bool operator != (const FLOATNAME(UnalignedLVecBase4) &other) const;
 
 public:
   typedef FLOATTYPE numeric_type;

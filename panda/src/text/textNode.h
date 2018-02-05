@@ -45,8 +45,8 @@
  */
 class EXPCL_PANDA_TEXT TextNode : public PandaNode, public TextEncoder, public TextProperties {
 PUBLISHED:
-  TextNode(const string &name);
-  TextNode(const string &name, const TextProperties &copy);
+  explicit TextNode(const string &name);
+  explicit TextNode(const string &name, const TextProperties &copy);
 protected:
   TextNode(const TextNode &copy);
   virtual PandaNode *make_copy() const;

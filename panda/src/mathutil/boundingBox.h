@@ -29,7 +29,7 @@
 class EXPCL_PANDA_MATHUTIL BoundingBox : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingBox();
-  INLINE_MATHUTIL BoundingBox(const LPoint3 &min, const LPoint3 &max);
+  INLINE_MATHUTIL explicit BoundingBox(const LPoint3 &min, const LPoint3 &max);
   ALLOC_DELETED_CHAIN(BoundingBox);
 
 public:

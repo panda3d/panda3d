@@ -62,7 +62,7 @@ PUBLISHED:
     // This function is used to enable or disable the guides for path finding.
     void set_pf_guide(bool pf_guide);
 
-    AICharacter(string model_name, NodePath model_np, double mass, double movt_force, double max_force);
+    explicit AICharacter(string model_name, NodePath model_np, double mass, double movt_force, double max_force);
     ~AICharacter();
 };
 

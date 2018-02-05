@@ -41,7 +41,7 @@ class EXPCL_PANDAPHYSICS ParticleSystem : public Physical {
 PUBLISHED:
   // constructordestructor
 
-  ParticleSystem(int pool_size = 0);
+  explicit ParticleSystem(int pool_size = 0);
   ParticleSystem(const ParticleSystem& copy);
   ~ParticleSystem();
 

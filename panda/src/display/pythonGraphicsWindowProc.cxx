@@ -47,7 +47,7 @@ PythonGraphicsWindowProc::
 LONG PythonGraphicsWindowProc::
 wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
   GraphicsWindowProcCallbackData cdata(graphicsWindow);
-  cdata.set_hwnd((int)hwnd);
+  cdata.set_hwnd((uintptr_t)hwnd);
   cdata.set_msg(msg);
   cdata.set_wparam(wparam);
   cdata.set_lparam(lparam);

@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the ObjectPool utility class."""
 
 __all__ = ['Diff', 'ObjectPool']
 

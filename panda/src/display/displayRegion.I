@@ -883,3 +883,9 @@ INLINE int DisplayRegionPipelineReader::
 get_pixel_height(int i) const {
   return _cdata->_regions[i]._pixels[3] - _cdata->_regions[i]._pixels[2];
 }
+
+INLINE ostream &
+operator << (ostream &out, const DisplayRegion &dr) {
+  dr.output(out);
+  return out;
+}

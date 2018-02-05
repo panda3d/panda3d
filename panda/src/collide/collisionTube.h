@@ -25,11 +25,11 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionTube : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionTube(const LPoint3 &a, const LPoint3 &db,
-                       PN_stdfloat radius);
-  INLINE CollisionTube(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
-                       PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz,
-                       PN_stdfloat radius);
+  INLINE explicit CollisionTube(const LPoint3 &a, const LPoint3 &db,
+                                PN_stdfloat radius);
+  INLINE explicit CollisionTube(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+                                PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz,
+                                PN_stdfloat radius);
 
   virtual LPoint3 get_collision_origin() const;
 

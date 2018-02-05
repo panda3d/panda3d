@@ -12,9 +12,6 @@
  */
 
 #include "memoryUsagePointers.h"
-
-#ifdef DO_MEMORY_USAGE
-
 #include "config_express.h"
 #include "referenceCount.h"
 #include "typedReferenceCount.h"
@@ -38,7 +35,11 @@ MemoryUsagePointers::
  */
 size_t MemoryUsagePointers::
 get_num_pointers() const {
+#ifdef DO_MEMORY_USAGE
   return _entries.size();
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -46,21 +47,26 @@ get_num_pointers() const {
  */
 ReferenceCount *MemoryUsagePointers::
 get_pointer(size_t n) const {
-  nassertr(n < get_num_pointers(), NULL);
+#ifdef DO_MEMORY_USAGE
+  nassertr(n < get_num_pointers(), nullptr);
   return _entries[n]._ref_ptr;
+#else
+  return nullptr;
+#endif
 }
 
 /**
  * Returns the nth pointer of the set, typecast to a TypedObject if possible.
  * If the pointer is not a TypedObject or if the cast cannot be made, returns
- * NULL.
+ * nullptr.
  */
 TypedObject *MemoryUsagePointers::
 get_typed_pointer(size_t n) const {
-  nassertr(n < get_num_pointers(), NULL);
+#ifdef DO_MEMORY_USAGE
+  nassertr(n < get_num_pointers(), nullptr);
   TypedObject *typed_ptr = _entries[n]._typed_ptr;
 
-  if (typed_ptr != (TypedObject *)NULL) {
+  if (typed_ptr != nullptr) {
     return typed_ptr;
   }
 
@@ -85,7 +91,8 @@ get_typed_pointer(size_t n) const {
       type.is_derived_from(TypedReferenceCount::get_class_type())) {
     return (TypedReferenceCount *)ref_ptr;
   }
-  return NULL;
+#endif
+  return nullptr;
 }
 
 /**
@@ -93,8 +100,12 @@ get_typed_pointer(size_t n) const {
  */
 TypeHandle MemoryUsagePointers::
 get_type(size_t n) const {
+#ifdef DO_MEMORY_USAGE
   nassertr(n < get_num_pointers(), TypeHandle::none());
   return _entries[n]._type;
+#else
+  return TypeHandle::none();
+#endif
 }
 
 /**
@@ -102,8 +113,12 @@ get_type(size_t n) const {
  */
 string MemoryUsagePointers::
 get_type_name(size_t n) const {
+#ifdef DO_MEMORY_USAGE
   nassertr(n < get_num_pointers(), "");
   return get_type(n).get_name();
+#else
+  return "";
+#endif
 }
 
 /**
@@ -113,8 +128,12 @@ get_type_name(size_t n) const {
  */
 double MemoryUsagePointers::
 get_age(size_t n) const {
+#ifdef DO_MEMORY_USAGE
   nassertr(n < get_num_pointers(), 0.0);
   return _entries[n]._age;
+#else
+  return 0.0;
+#endif
 }
 
 /**
@@ -122,7 +141,9 @@ get_age(size_t n) const {
  */
 void MemoryUsagePointers::
 clear() {
+#ifdef DO_MEMORY_USAGE
   _entries.clear();
+#endif
 }
 
 /**
@@ -130,7 +151,9 @@ clear() {
  */
 void MemoryUsagePointers::
 output(ostream &out) const {
+#ifdef DO_MEMORY_USAGE
   out << _entries.size() << " pointers.";
+#endif
 }
 
 /**
@@ -139,13 +162,12 @@ output(ostream &out) const {
 void MemoryUsagePointers::
 add_entry(ReferenceCount *ref_ptr, TypedObject *typed_ptr,
           TypeHandle type, double age) {
+#ifdef DO_MEMORY_USAGE
   // We can't safely add pointers with a zero reference count.  They might be
   // statically-allocated or something, and if we try to add them they'll try
   // to destruct when the PointerTo later goes away.
   if (ref_ptr->get_ref_count() != 0) {
     _entries.push_back(Entry(ref_ptr, typed_ptr, type, age));
   }
+#endif
 }
-
-
-#endif  // DO_MEMORY_USAGE

@@ -24,13 +24,13 @@
  */
 class EXPCL_PANDAEGG EggPatch : public EggPrimitive {
 PUBLISHED:
-  INLINE EggPatch(const string &name = "");
+  INLINE explicit EggPatch(const string &name = "");
   INLINE EggPatch(const EggPatch &copy);
   INLINE EggPatch &operator = (const EggPatch &copy);
 
-  virtual EggPatch *make_copy() const OVERRIDE;
+  virtual EggPatch *make_copy() const override;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const override;
 
 public:
   static TypeHandle get_class_type() {
@@ -41,10 +41,13 @@ public:
     register_type(_type_handle, "EggPatch",
                   EggPrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

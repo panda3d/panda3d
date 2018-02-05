@@ -52,7 +52,7 @@ PUBLISHED:
     AQUADRATIC,
   };
 
-  PolylightNode(const string &name);
+  explicit PolylightNode(const string &name);
   INLINE void enable();
   INLINE void disable();
   INLINE void set_pos(const LPoint3 &position);

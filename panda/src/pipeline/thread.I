@@ -78,7 +78,7 @@ get_pipeline_stage() const {
   // However, since we guarantee that this is never less than zero, clang
   // offers a nice way to avoid that.
   int pipeline_stage = _pipeline_stage;
-  __builtin_assume(_pipeline_stage >= 0);
+  __builtin_assume(pipeline_stage >= 0);
   return pipeline_stage;
 #else
   return _pipeline_stage;
@@ -277,9 +277,9 @@ preempt() {
  * AsyncTaskManager), if any, or NULL if the thread is not currently servicing
  * a task.
  */
-INLINE AsyncTaskBase *Thread::
+INLINE TypedReferenceCount *Thread::
 get_current_task() const {
-  return _current_task;
+  return (TypedReferenceCount *)_current_task;
 }
 
 /**

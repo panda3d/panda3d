@@ -48,6 +48,11 @@
 #include <unistd.h>
 #endif
 
+#if defined(__ANDROID__) && !defined(HAVE_LOCKF)
+// Needed for flock.
+#include <sys/file.h>
+#endif
+
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
 TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;
@@ -600,8 +605,14 @@ get_user_appdata_directory() {
     user_appdata_directory.set_basename("files");
 
 #else
-    // Posix case.
-    user_appdata_directory = get_home_directory();
+    // Posix case.  We follow the XDG base directory spec.
+    struct stat st;
+    const char *datadir = getenv("XDG_DATA_HOME");
+    if (datadir != nullptr && stat(datadir, &st) == 0 && S_ISDIR(st.st_mode)) {
+      user_appdata_directory = datadir;
+    } else {
+      user_appdata_directory = Filename(get_home_directory(), ".local/share");
+    }
 
 #endif  // WIN32
 
@@ -649,9 +660,10 @@ get_common_appdata_directory() {
     common_appdata_directory.set_dirname(_internal_data_dir);
     common_appdata_directory.set_basename("files");
 
+#elif defined(__FreeBSD__)
+    common_appdata_directory = "/usr/local/share";
 #else
-    // Posix case.
-    common_appdata_directory = "/var";
+    common_appdata_directory = "/usr/share";
 #endif  // WIN32
 
     if (common_appdata_directory.empty()) {

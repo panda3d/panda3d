@@ -78,9 +78,7 @@ __reduce__(PyObject *self) const {
 
   // Since a TextureCollection is itself an iterator, we can simply pass it as
   // the fourth tuple component.
-  PyObject *result = Py_BuildValue("(O()OO)", this_class, Py_None, self);
-  Py_DECREF(this_class);
-  return result;
+  return Py_BuildValue("(N()OO)", this_class, Py_None, self);
 }
 
 #endif  // HAVE_PYTHON

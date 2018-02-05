@@ -71,8 +71,9 @@ PUBLISHED:
 
   CPT(RenderAttrib) clear_shader() const;
   // Shader Inputs
-  CPT(RenderAttrib) set_shader_input(const ShaderInput *inp) const;
+  CPT(RenderAttrib) set_shader_input(ShaderInput input) const;
 
+public:
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, Texture *tex,       int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0) const;
@@ -90,6 +91,10 @@ PUBLISHED:
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, double n1=0, double n2=0, double n3=0, double n4=1,
                                             int priority=0) const;
 
+PUBLISHED:
+  EXTENSION(CPT(RenderAttrib) set_shader_input(CPT_InternalName, PyObject *, int priority=0) const);
+  EXTENSION(CPT(RenderAttrib) set_shader_inputs(PyObject *args, PyObject *kwargs) const);
+
   CPT(RenderAttrib) set_instance_count(int instance_count) const;
 
   CPT(RenderAttrib) set_flag(int flag, bool value) const;
@@ -104,8 +109,8 @@ PUBLISHED:
   INLINE bool has_shader_input(CPT_InternalName id) const;
 
   const Shader *get_shader() const;
-  const ShaderInput *get_shader_input(const InternalName *id) const;
-  const ShaderInput *get_shader_input(const string &id) const;
+  const ShaderInput &get_shader_input(const InternalName *id) const;
+  const ShaderInput &get_shader_input(const string &id) const;
 
   const NodePath &get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(InternalName *id) const;
@@ -127,7 +132,6 @@ protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
 
@@ -145,10 +149,13 @@ private:
   bool        _auto_ramp_on;
   bool        _auto_shadow_on;
 
-  typedef pmap<CPT_InternalName, CPT(ShaderInput)> Inputs;
+  // We don't keep a reference to the InternalName, since this is also already
+  // stored on the ShaderInput object.
+  typedef pmap<const InternalName *, ShaderInput> Inputs;
   Inputs _inputs;
 
   friend class Extension<NodePath>;
+  friend class Extension<ShaderAttrib>;
 
 PUBLISHED:
   static int get_class_slot() {
@@ -157,6 +164,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
+  MAKE_PROPERTY(class_slot, get_class_slot);
 
 public:
   static TypeHandle get_class_type() {

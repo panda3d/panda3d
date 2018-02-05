@@ -1,4 +1,7 @@
-"""Undocumented Module"""
+"""
+This module defines the various "meta intervals", which execute other
+intervals either in parallel or in a specified sequential order.
+"""
 
 __all__ = ['MetaInterval', 'Sequence', 'Parallel', 'ParallelEndTogether', 'Track']
 

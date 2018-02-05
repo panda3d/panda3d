@@ -29,6 +29,7 @@
 #include "reMutex.h"
 #include "bufferResidencyTracker.h"
 #include "adaptiveLru.h"
+#include "asyncFuture.h"
 
 class TextureContext;
 class SamplerContext;
@@ -38,6 +39,7 @@ class VertexBufferContext;
 class IndexBufferContext;
 class BufferContext;
 class GraphicsStateGuardianBase;
+class SavedContext;
 
 /**
  * A table of objects that are saved within the graphics context for reference
@@ -158,6 +160,56 @@ PUBLISHED:
                             GraphicsStateGuardianBase *gsg);
 
 public:
+  /**
+   * This is a handle to an enqueued object, from which the result can be
+   * obtained upon completion.
+   */
+  class EXPCL_PANDA_GOBJ EnqueuedObject FINAL : public AsyncFuture {
+  public:
+    EnqueuedObject(PreparedGraphicsObjects *pgo, TypedWritableReferenceCount *object);
+
+    TypedWritableReferenceCount *get_object() { return _object.p(); }
+    SavedContext *get_result() { return (SavedContext *)AsyncFuture::get_result(); }
+    void set_result(SavedContext *result);
+
+    void notify_removed();
+    virtual bool cancel() FINAL;
+
+  PUBLISHED:
+    MAKE_PROPERTY(object, get_object);
+
+  private:
+    PreparedGraphicsObjects *_pgo;
+    PT(TypedWritableReferenceCount) const _object;
+
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      AsyncFuture::init_type();
+      register_type(_type_handle, "EnqueuedObject",
+                    AsyncFuture::get_class_type());
+    }
+    virtual TypeHandle get_type() const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  private:
+    static TypeHandle _type_handle;
+  };
+
+  // These are variations of enqueue_xxx that also return a future.  They are
+  // used to implement texture->prepare(), etc.  They are only marked public
+  // so we don't have to define a whole bunch of friend classes.
+  PT(EnqueuedObject) enqueue_texture_future(Texture *tex);
+  //PT(EnqueuedObject) enqueue_geom_future(Geom *geom);
+  PT(EnqueuedObject) enqueue_shader_future(Shader *shader);
+  //PT(EnqueuedObject) enqueue_vertex_buffer_future(GeomVertexArrayData *data);
+  //PT(EnqueuedObject) enqueue_index_buffer_future(GeomPrimitive *data);
+  //PT(EnqueuedObject) enqueue_shader_buffer_future(ShaderBuffer *data);
+
   void begin_frame(GraphicsStateGuardianBase *gsg,
                    Thread *current_thread);
   void end_frame(Thread *current_thread);
@@ -167,11 +219,11 @@ private:
 
 private:
   typedef phash_set<TextureContext *, pointer_hash> Textures;
-  typedef phash_set< PT(Texture) > EnqueuedTextures;
+  typedef phash_map< PT(Texture), PT(EnqueuedObject) > EnqueuedTextures;
   typedef phash_set<GeomContext *, pointer_hash> Geoms;
   typedef phash_set< PT(Geom) > EnqueuedGeoms;
   typedef phash_set<ShaderContext *, pointer_hash> Shaders;
-  typedef phash_set< PT(Shader) > EnqueuedShaders;
+  typedef phash_map< PT(Shader), PT(EnqueuedObject) > EnqueuedShaders;
   typedef phash_set<BufferContext *, pointer_hash> Buffers;
   typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;

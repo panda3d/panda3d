@@ -41,7 +41,7 @@ protected:
   Character(const Character &copy, bool copy_bundles);
 
 PUBLISHED:
-  Character(const string &name);
+  explicit Character(const string &name);
   virtual ~Character();
 
 public:

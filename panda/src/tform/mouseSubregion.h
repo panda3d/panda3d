@@ -32,7 +32,7 @@
  */
 class EXPCL_PANDA_TFORM MouseSubregion : public MouseInterfaceNode {
 PUBLISHED:
-  MouseSubregion(const string &name);
+  explicit MouseSubregion(const string &name);
   ~MouseSubregion();
 
   INLINE PN_stdfloat get_left() const;

@@ -27,6 +27,8 @@
 #include "config_gobj.h"
 #include "throw_event.h"
 
+TypeHandle PreparedGraphicsObjects::EnqueuedObject::_type_handle;
+
 int PreparedGraphicsObjects::_name_index = 0;
 
 /**
@@ -191,7 +193,25 @@ void PreparedGraphicsObjects::
 enqueue_texture(Texture *tex) {
   ReMutexHolder holder(_lock);
 
-  _enqueued_textures.insert(tex);
+  _enqueued_textures.insert(EnqueuedTextures::value_type(tex, nullptr));
+}
+
+/**
+ * Like enqueue_texture, but returns an AsyncFuture that can be used to query
+ * the status of the texture's preparation.
+ */
+PT(PreparedGraphicsObjects::EnqueuedObject) PreparedGraphicsObjects::
+enqueue_texture_future(Texture *tex) {
+  ReMutexHolder holder(_lock);
+
+  pair<EnqueuedTextures::iterator, bool> result =
+    _enqueued_textures.insert(EnqueuedTextures::value_type(tex, nullptr));
+  if (result.first->second == nullptr) {
+    result.first->second = new EnqueuedObject(this, tex);
+  }
+  PT(EnqueuedObject) fut = result.first->second;
+  nassertr(!fut->cancelled(), fut)
+  return fut;
 }
 
 /**
@@ -220,6 +240,9 @@ dequeue_texture(Texture *tex) {
 
   EnqueuedTextures::iterator qi = _enqueued_textures.find(tex);
   if (qi != _enqueued_textures.end()) {
+    if (qi->second != nullptr) {
+      qi->second->notify_removed();
+    }
     _enqueued_textures.erase(qi);
     return true;
   }
@@ -291,6 +314,17 @@ release_all_textures() {
   }
 
   _prepared_textures.clear();
+
+  // Mark any futures as cancelled.
+  EnqueuedTextures::iterator qti;
+  for (qti = _enqueued_textures.begin();
+       qti != _enqueued_textures.end();
+       ++qti) {
+    if (qti->second != nullptr) {
+      qti->second->notify_removed();
+    }
+  }
+
   _enqueued_textures.clear();
 
   return num_textures;
@@ -665,10 +699,28 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
  * when the GSG is next ready to do this (presumably at the next frame).
  */
 void PreparedGraphicsObjects::
-enqueue_shader(Shader *se) {
+enqueue_shader(Shader *shader) {
   ReMutexHolder holder(_lock);
 
-  _enqueued_shaders.insert(se);
+  _enqueued_shaders.insert(EnqueuedShaders::value_type(shader, nullptr));
+}
+
+/**
+ * Like enqueue_shader, but returns an AsyncFuture that can be used to query
+ * the status of the shader's preparation.
+ */
+PT(PreparedGraphicsObjects::EnqueuedObject) PreparedGraphicsObjects::
+enqueue_shader_future(Shader *shader) {
+  ReMutexHolder holder(_lock);
+
+  pair<EnqueuedShaders::iterator, bool> result =
+    _enqueued_shaders.insert(EnqueuedShaders::value_type(shader, nullptr));
+  if (result.first->second == nullptr) {
+    result.first->second = new EnqueuedObject(this, shader);
+  }
+  PT(EnqueuedObject) fut = result.first->second;
+  nassertr(!fut->cancelled(), fut)
+  return fut;
 }
 
 /**
@@ -697,6 +749,9 @@ dequeue_shader(Shader *se) {
 
   EnqueuedShaders::iterator qi = _enqueued_shaders.find(se);
   if (qi != _enqueued_shaders.end()) {
+    if (qi->second != nullptr) {
+      qi->second->notify_removed();
+    }
     _enqueued_shaders.erase(qi);
     return true;
   }
@@ -759,6 +814,17 @@ release_all_shaders() {
   }
 
   _prepared_shaders.clear();
+
+  // Mark any futures as cancelled.
+  EnqueuedShaders::iterator qsi;
+  for (qsi = _enqueued_shaders.begin();
+       qsi != _enqueued_shaders.end();
+       ++qsi) {
+    if (qsi->second != nullptr) {
+      qsi->second->notify_removed();
+    }
+  }
+
   _enqueued_shaders.clear();
 
   return num_shaders;
@@ -1359,6 +1425,73 @@ prepare_shader_buffer_now(ShaderBuffer *data, GraphicsStateGuardianBase *gsg) {
 }
 
 /**
+ * Creates a new future for the given object.
+ */
+PreparedGraphicsObjects::EnqueuedObject::
+EnqueuedObject(PreparedGraphicsObjects *pgo, TypedWritableReferenceCount *object) :
+  _pgo(pgo),
+  _object(object) {
+}
+
+/**
+ * Indicates that the preparation request is done.
+ */
+void PreparedGraphicsObjects::EnqueuedObject::
+set_result(SavedContext *context) {
+  nassertv(!done());
+  AsyncFuture::set_result(context);
+  _pgo = nullptr;
+}
+
+/**
+ * Called by PreparedGraphicsObjects to indicate that the preparation request
+ * has been cancelled.
+ */
+void PreparedGraphicsObjects::EnqueuedObject::
+notify_removed() {
+  _pgo = nullptr;
+  nassertv_always(AsyncFuture::cancel());
+}
+
+/**
+ * Cancels the pending preparation request.  Has no effect if the preparation
+ * is already complete or was already cancelled.
+ */
+bool PreparedGraphicsObjects::EnqueuedObject::
+cancel() {
+  PreparedGraphicsObjects *pgo = _pgo;
+  if (_object == nullptr || pgo == nullptr) {
+    nassertr(done(), false);
+    return false;
+  }
+
+  // We don't upcall here, because the dequeue function will end up calling
+  // notify_removed().
+  _result = nullptr;
+  _pgo = nullptr;
+
+  if (_object->is_of_type(Texture::get_class_type())) {
+    return pgo->dequeue_texture((Texture *)_object.p());
+
+  } else if (_object->is_of_type(Geom::get_class_type())) {
+    return pgo->dequeue_geom((Geom *)_object.p());
+
+  } else if (_object->is_of_type(Shader::get_class_type())) {
+    return pgo->dequeue_shader((Shader *)_object.p());
+
+  } else if (_object->is_of_type(GeomVertexArrayData::get_class_type())) {
+    return pgo->dequeue_vertex_buffer((GeomVertexArrayData *)_object.p());
+
+  } else if (_object->is_of_type(GeomPrimitive::get_class_type())) {
+    return pgo->dequeue_index_buffer((GeomPrimitive *)_object.p());
+
+  } else if (_object->is_of_type(ShaderBuffer::get_class_type())) {
+    return pgo->dequeue_shader_buffer((ShaderBuffer *)_object.p());
+  }
+  return false;
+}
+
+/**
  * This is called by the GraphicsStateGuardian to indicate that it is about to
  * begin processing of the frame.
  *
@@ -1446,11 +1579,15 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   for (qti = _enqueued_textures.begin();
        qti != _enqueued_textures.end();
        ++qti) {
-    Texture *tex = (*qti);
+    Texture *tex = qti->first;
+    TextureContext *first_tc = nullptr;
     for (int view = 0; view < tex->get_num_views(); ++view) {
       TextureContext *tc = tex->prepare_now(view, this, gsg);
-      if (tc != (TextureContext *)NULL) {
+      if (tc != nullptr) {
         gsg->update_texture(tc, true);
+        if (view == 0 && qti->second != nullptr) {
+          qti->second->set_result(tc);
+        }
       }
     }
   }
@@ -1481,8 +1618,11 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   for (qsi = _enqueued_shaders.begin();
        qsi != _enqueued_shaders.end();
        ++qsi) {
-    Shader *shader = (*qsi);
-    shader->prepare_now(this, gsg);
+    Shader *shader = qsi->first;
+    ShaderContext *sc = shader->prepare_now(this, gsg);
+    if (qti->second != nullptr) {
+      qti->second->set_result(sc);
+    }
   }
 
   _enqueued_shaders.clear();

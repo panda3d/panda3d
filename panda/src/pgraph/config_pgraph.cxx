@@ -78,7 +78,6 @@
 #include "scissorAttrib.h"
 #include "scissorEffect.h"
 #include "shadeModelAttrib.h"
-#include "shaderInput.h"
 #include "shaderAttrib.h"
 #include "shader.h"
 #include "showBoundsEffect.h"
@@ -228,7 +227,7 @@ ConfigVariableBool uniquify_states
           "are pointerwise equal.  This may improve caching performance, "
           "but also adds additional overhead to maintain the cache, "
           "including the need to check for a composition cycle in "
-          "the cache."));
+          "the cache.  It is highly recommended to keep this on."));
 
 ConfigVariableBool uniquify_attribs
 ("uniquify-attribs", true,
@@ -449,7 +448,6 @@ init_libpgraph() {
   ScissorAttrib::init_type();
   ScissorEffect::init_type();
   ShadeModelAttrib::init_type();
-  ShaderInput::init_type();
   ShaderAttrib::init_type();
   ShowBoundsEffect::init_type();
   StateMunger::init_type();
@@ -502,7 +500,6 @@ init_libpgraph() {
   ScissorAttrib::register_with_read_factory();
   ScissorEffect::register_with_read_factory();
   ShadeModelAttrib::register_with_read_factory();
-  ShaderInput::register_with_read_factory();
   ShaderAttrib::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();

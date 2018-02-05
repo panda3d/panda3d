@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Defines the DirectScrollBar class."""
 
 __all__ = ['DirectScrollBar']
 

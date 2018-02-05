@@ -17,13 +17,6 @@
  *
  */
 INLINE ShaderInput::
-~ShaderInput() {
-}
-
-/**
- *
- */
-INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, int priority) :
   _name(MOVE(name)),
   _type(M_invalid),
@@ -427,6 +420,89 @@ ShaderInput(CPT_InternalName name, const LVecBase2i &vec, int priority) :
 /**
  *
  */
+INLINE ShaderInput::
+operator bool () const {
+  return _type != M_invalid;
+}
+
+/**
+ *
+ */
+INLINE bool ShaderInput::
+operator == (const ShaderInput &other) const {
+  if (_type != other._type || _name != other._name || _priority != other._priority) {
+    return false;
+  }
+  switch (_type) {
+  case M_invalid:
+    return true;
+
+  case M_vector:
+    return _stored_vector == other._stored_vector;
+
+  case M_numeric:
+    return _stored_ptr._ptr == other._stored_ptr._ptr;
+
+  default:
+    return _value == other._value;
+  }
+}
+
+/**
+ *
+ */
+INLINE bool ShaderInput::
+operator != (const ShaderInput &other) const {
+  if (_type != other._type || _name != other._name || _priority != other._priority) {
+    return true;
+  }
+  switch (_type) {
+  case M_invalid:
+    return false;
+
+  case M_vector:
+    return _stored_vector != other._stored_vector;
+
+  case M_numeric:
+    return _stored_ptr._ptr != other._stored_ptr._ptr;
+
+  default:
+    return _value != other._value;
+  }
+}
+
+/**
+ *
+ */
+INLINE bool ShaderInput::
+operator < (const ShaderInput &other) const {
+  if (_type != other._type) {
+    return (_type < other._type);
+  }
+  if (_name != other._name) {
+    return (_name < other._name);
+  }
+  if (_priority != other._priority) {
+    return (_priority < other._priority);
+  }
+  switch (_type) {
+  case M_invalid:
+    return false;
+
+  case M_vector:
+    return _stored_vector < other._stored_vector;
+
+  case M_numeric:
+    return _stored_ptr._ptr < other._stored_ptr._ptr;
+
+  default:
+    return _value < other._value;
+  }
+}
+
+/**
+ *
+ */
 INLINE const InternalName *ShaderInput::
 get_name() const {
   return _name;
@@ -470,4 +546,12 @@ get_ptr() const {
 INLINE ParamValueBase *ShaderInput::
 get_param() const {
   return DCAST(ParamValueBase, _value);
+}
+
+/**
+ *
+ */
+INLINE TypedWritableReferenceCount *ShaderInput::
+get_value() const {
+  return _value.p();
 }

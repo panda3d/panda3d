@@ -44,6 +44,10 @@
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
 
+#ifdef HAVE_HARFBUZZ
+#include <hb-ft.h>
+#endif
+
 TypeHandle DynamicTextFont::_type_handle;
 
 
@@ -114,7 +118,8 @@ DynamicTextFont(const DynamicTextFont &copy) :
   _has_outline(copy._has_outline),
   _tex_format(copy._tex_format),
   _needs_image_processing(copy._needs_image_processing),
-  _preferred_page(0)
+  _preferred_page(0),
+  _hb_font(nullptr)
 {
 }
 
@@ -123,6 +128,11 @@ DynamicTextFont(const DynamicTextFont &copy) :
  */
 DynamicTextFont::
 ~DynamicTextFont() {
+#ifdef HAVE_HARFBUZZ
+  if (_hb_font != nullptr) {
+    hb_font_destroy(_hb_font);
+  }
+#endif
 }
 
 /**
@@ -203,6 +213,13 @@ clear() {
   _cache.clear();
   _pages.clear();
   _empty_glyphs.clear();
+
+#ifdef HAVE_HARFBUZZ
+  if (_hb_font != nullptr) {
+    hb_font_destroy(_hb_font);
+    _hb_font = nullptr;
+  }
+#endif
 }
 
 /**
@@ -306,6 +323,55 @@ get_kerning(int first, int second) const {
 }
 
 /**
+ * Like get_glyph, but uses a glyph index.
+ */
+bool DynamicTextFont::
+get_glyph_by_index(int character, int glyph_index, CPT(TextGlyph) &glyph) {
+  if (!_is_valid) {
+    glyph = nullptr;
+    return false;
+  }
+
+  Cache::iterator ci = _cache.find(glyph_index);
+  if (ci != _cache.end()) {
+    glyph = (*ci).second;
+  } else {
+    FT_Face face = acquire_face();
+    glyph = make_glyph(character, face, glyph_index);
+    _cache.insert(Cache::value_type(glyph_index, glyph.p()));
+    release_face(face);
+  }
+
+  if (glyph.is_null()) {
+    glyph = get_invalid_glyph();
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * If Panda was compiled with HarfBuzz enabled, returns a HarfBuzz font for
+ * this font.
+ */
+hb_font_t *DynamicTextFont::
+get_hb_font() const {
+#ifdef HAVE_HARFBUZZ
+  if (_hb_font != nullptr) {
+    return _hb_font;
+  }
+
+  FT_Face face = acquire_face();
+  _hb_font = hb_ft_font_create(face, nullptr);
+  release_face(face);
+
+  return _hb_font;
+#else
+  return nullptr;
+#endif
+}
+
+/**
  * Called from both constructors to set up some initial values.
  */
 void DynamicTextFont::
@@ -328,6 +394,8 @@ initialize() {
   _winding_order = WO_default;
 
   _preferred_page = 0;
+
+  _hb_font = nullptr;
 }
 
 /**

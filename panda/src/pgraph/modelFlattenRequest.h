@@ -19,6 +19,7 @@
 #include "asyncTask.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
+#include "nodePath.h"
 
 /**
  * This class object manages a single asynchronous request to flatten a model.
@@ -31,7 +32,7 @@ public:
   ALLOC_DELETED_CHAIN(ModelFlattenRequest);
 
 PUBLISHED:
-  INLINE ModelFlattenRequest(PandaNode *orig);
+  INLINE explicit ModelFlattenRequest(PandaNode *orig);
 
   INLINE PandaNode *get_orig() const;
 
@@ -39,16 +40,12 @@ PUBLISHED:
   INLINE PandaNode *get_model() const;
 
   MAKE_PROPERTY(orig, get_orig);
-  MAKE_PROPERTY(ready, is_ready);
-  MAKE_PROPERTY(model, get_model);
 
 protected:
   virtual DoneStatus do_task();
 
 private:
   PT(PandaNode) _orig;
-  bool _is_ready;
-  PT(PandaNode) _model;
 
 public:
   static TypeHandle get_class_type() {

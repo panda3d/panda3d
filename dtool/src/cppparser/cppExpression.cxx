@@ -1658,7 +1658,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_function:
-    out << _u._fgroup->_name;
+    // Pick any instance; they all have the same name anyway.
+    if (!_u._fgroup->_instances.empty() && _u._fgroup->_instances[0]->_ident != NULL) {
+      _u._fgroup->_instances[0]->_ident->output(out, scope);
+    } else {
+      out << _u._fgroup->_name;
+    }
     break;
 
   case T_unknown_ident:

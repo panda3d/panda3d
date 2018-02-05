@@ -40,6 +40,7 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 #include "updateSeq.h"
+#include "asyncFuture.h"
 
 class PNMImage;
 class GraphicsEngine;
@@ -197,7 +198,7 @@ PUBLISHED:
   INLINE int get_child_sort() const;
   MAKE_PROPERTY(child_sort, get_child_sort, set_child_sort);
 
-  INLINE void trigger_copy();
+  INLINE AsyncFuture *trigger_copy();
 
   INLINE DisplayRegion *make_display_region();
   INLINE DisplayRegion *make_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
@@ -330,7 +331,7 @@ protected:
   int _target_tex_view;
   DisplayRegion *_prev_page_dr;
   PT(GeomNode) _texture_card;
-  bool _trigger_copy;
+  PT(AsyncFuture) _trigger_copy;
 
   class RenderTexture {
   public:

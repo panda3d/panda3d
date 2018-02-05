@@ -14,8 +14,7 @@
 #include "typedWritable.h"
 #include "bamWriter.h"
 #include "bamReader.h"
-#include "datagramOutputFile.h"
-#include "datagramInputFile.h"
+#include "datagramBuffer.h"
 #include "lightMutexHolder.h"
 #include "bam.h"
 
@@ -134,52 +133,43 @@ as_reference_count() {
  * together.
  */
 bool TypedWritable::
-encode_to_bam_stream(string &data, BamWriter *writer) const {
+encode_to_bam_stream(vector_uchar &data, BamWriter *writer) const {
   data.clear();
-  ostringstream stream;
 
-  // We use nested scoping to ensure the destructors get called in the right
-  // order.
-  {
-    DatagramOutputFile dout;
-    if (!dout.open(stream)) {
+  DatagramBuffer buffer;
+  if (writer == nullptr) {
+    // Create our own writer.
+
+    if (!buffer.write_header(_bam_header)) {
       return false;
     }
 
-    if (writer == NULL) {
-      // Create our own writer.
+    BamWriter writer(&buffer);
+    if (!writer.init()) {
+      return false;
+    }
 
-      if (!dout.write_header(_bam_header)) {
-        return false;
-      }
-
-      BamWriter writer(&dout);
-      if (!writer.init()) {
-        return false;
-      }
-
-      if (!writer.write_object(this)) {
-        return false;
-      }
-    } else {
-      // Use the existing writer.
-      writer->set_target(&dout);
-      bool result = writer->write_object(this);
-      writer->set_target(NULL);
-      if (!result) {
-        return false;
-      }
+    if (!writer.write_object(this)) {
+      return false;
+    }
+  } else {
+    // Use the existing writer.
+    writer->set_target(&buffer);
+    bool result = writer->write_object(this);
+    writer->set_target(nullptr);
+    if (!result) {
+      return false;
     }
   }
 
-  data = stream.str();
+  buffer.swap_data(data);
   return true;
 }
 
 /**
- * Reads the string created by a previous call to encode_to_bam_stream(), and
- * extracts the single object on that string.  Returns true on success, false
- * on on error.
+ * Reads the bytes created by a previous call to encode_to_bam_stream(), and
+ * extracts the single object on those bytes.  Returns true on success, false
+ * on error.
  *
  * This variant sets the TypedWritable and ReferenceCount pointers separately;
  * both are pointers to the same object.  The reference count is not
@@ -198,18 +188,14 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
  */
 bool TypedWritable::
 decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
-                           const string &data, BamReader *reader) {
-  istringstream stream(data);
+                           vector_uchar data, BamReader *reader) {
 
-  DatagramInputFile din;
-  if (!din.open(stream)) {
-    return false;
-  }
+  DatagramBuffer buffer(move(data));
 
   if (reader == NULL) {
     // Create a local reader.
     string head;
-    if (!din.read_header(head, _bam_header.size())) {
+    if (!buffer.read_header(head, _bam_header.size())) {
       return false;
     }
 
@@ -217,7 +203,7 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
       return false;
     }
 
-    BamReader reader(&din);
+    BamReader reader(&buffer);
     if (!reader.init()) {
       return false;
     }
@@ -241,7 +227,7 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
 
   } else {
     // Use the existing reader.
-    reader->set_source(&din);
+    reader->set_source(&buffer);
     if (!reader->read_object(ptr, ref_ptr)) {
       reader->set_source(NULL);
       return false;

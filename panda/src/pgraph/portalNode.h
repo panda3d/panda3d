@@ -29,8 +29,8 @@
  */
 class EXPCL_PANDA_PGRAPH PortalNode : public PandaNode {
 PUBLISHED:
-  PortalNode(const string &name);
-  PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale=10.0);
+  explicit PortalNode(const string &name);
+  explicit PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale=10.0);
 
 protected:
   PortalNode(const PortalNode &copy);

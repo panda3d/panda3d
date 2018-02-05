@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_PGUI PGSliderBar : public PGItem, public PGButtonNotify {
 PUBLISHED:
-  PGSliderBar(const string &name = "");
+  explicit PGSliderBar(const string &name = "");
   virtual ~PGSliderBar();
 
 protected:

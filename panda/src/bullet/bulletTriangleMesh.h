@@ -30,10 +30,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
-
 PUBLISHED:
   BulletTriangleMesh();
-  INLINE ~BulletTriangleMesh();
+  ~BulletTriangleMesh() DEFAULT_DTOR;
 
   void add_triangle(const LPoint3 &p0,
                     const LPoint3 &p1,
@@ -49,20 +48,34 @@ PUBLISHED:
   void set_welding_distance(PN_stdfloat distance);
   void preallocate(int num_verts, int num_indices);
 
-  int get_num_triangles() const;
+  size_t get_num_triangles() const;
   PN_stdfloat get_welding_distance() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
-  MAKE_PROPERTY(num_triangles, get_num_triangles);
+public:
+  INLINE size_t get_num_vertices() const;
+  INLINE LPoint3 get_vertex(size_t index) const;
+
+  INLINE LVecBase3i get_triangle(size_t index) const;
+
+PUBLISHED:
   MAKE_PROPERTY(welding_distance, get_welding_distance, set_welding_distance);
 
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
+  MAKE_SEQ_PROPERTY(triangles, get_num_triangles, get_triangle);
+
 public:
-  INLINE btTriangleMesh *ptr() const;
+  INLINE btStridingMeshInterface *ptr() const;
 
 private:
-  btTriangleMesh *_mesh;
+  unsigned int find_or_add_vertex(const LVecBase3 &p);
+
+  btTriangleIndexVertexArray _mesh;
+  btAlignedObjectArray<btVector3> _vertices;
+  btAlignedObjectArray<unsigned int> _indices;
+  PN_stdfloat _welding_distance;
 
 public:
   static void register_with_read_factory();

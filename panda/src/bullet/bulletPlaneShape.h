@@ -32,7 +32,7 @@ private:
   INLINE BulletPlaneShape() : _shape(NULL) {};
 
 PUBLISHED:
-  BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
+  explicit BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
   INLINE BulletPlaneShape(const BulletPlaneShape &copy);
   INLINE void operator = (const BulletPlaneShape &copy);
   INLINE ~BulletPlaneShape();

@@ -213,7 +213,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     portal_viewer->get_reduced_viewport(old_reduced_viewport_min, old_reduced_viewport_max);
     PT(BoundingHexahedron) old_bh = portal_viewer->get_reduced_frustum();
 
-    if (portal_viewer->prepare_portal(data._node_path.get_node_path())) {
+    if (portal_viewer->prepare_portal(data.get_node_path())) {
       if ((reduced_frustum = portal_viewer->get_reduced_frustum())) {
         // remember current clip state, we might change it
         CPT(RenderState) old_clip_state = portal_viewer->get_clip_state();
@@ -241,7 +241,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           // camera space to this portal node's space (because the clip planes
           // are attached to this node)
           PT(BoundingHexahedron) temp_bh = DCAST(BoundingHexahedron, vf->make_copy());
-          CPT(TransformState) temp_frustum_transform = data._node_path.get_node_path().get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
+          CPT(TransformState) temp_frustum_transform = data.get_node_path().get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
 
           portal_cat.spam() << "clipping plane frustum transform " << *temp_frustum_transform << endl;
           portal_cat.spam() << "frustum before transform " << *temp_bh << endl;

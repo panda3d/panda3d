@@ -70,7 +70,8 @@ is_on(NotifySeverity severity) const {
  */
 INLINE bool NotifyCategory::
 is_spam() const {
-  return is_on(NS_spam);
+  // Instruct the compiler to optimize for the usual case.
+  return UNLIKELY(is_on(NS_spam));
 }
 
 /**
@@ -78,7 +79,8 @@ is_spam() const {
  */
 INLINE bool NotifyCategory::
 is_debug() const {
-  return is_on(NS_debug);
+  // Instruct the compiler to optimize for the usual case.
+  return UNLIKELY(is_on(NS_debug));
 }
 #else
 /**

@@ -20,120 +20,15 @@
 #define  Py_DEBUG
 #endif
 
-#ifndef NO_RUNTIME_TYPES
-
-#include "dtoolbase.h"
-#include "typedObject.h"
-#include "typeRegistry.h"
-
-#endif
-
 #include "pnotify.h"
+#include "vector_uchar.h"
+#include "register_type.h"
 
 #if defined(HAVE_PYTHON) && !defined(CPPPARSER)
 
-#ifdef _POSIX_C_SOURCE
-#undef _POSIX_C_SOURCE
-#endif
-
-#ifdef _XOPEN_SOURCE
-#undef _XOPEN_SOURCE
-#endif
-
-#define PY_SSIZE_T_CLEAN 1
-
-#include "Python.h"
+// py_compat.h includes Python.h.
+#include "py_compat.h"
 #include "structmember.h"
-
-#ifndef HAVE_LONG_LONG
-#define PyLong_FromLongLong(x) PyLong_FromLong((long) (x))
-#define PyLong_FromUnsignedLongLong(x) PyLong_FromUnsignedLong((unsigned long) (x))
-#define PyLong_AsLongLong(x) PyLong_AsLong(x)
-#define PyLong_AsUnsignedLongLong(x) PyLong_AsUnsignedLong(x)
-#define PyLong_AsUnsignedLongLongMask(x) PyLong_AsUnsignedLongMask(x)
-#define PyLong_AsLongLongAndOverflow(x) PyLong_AsLongAndOverflow(x)
-#endif
-
-#if PY_VERSION_HEX < 0x02050000
-
-// Prior to Python 2.5, we didn't have Py_ssize_t.
-typedef int Py_ssize_t;
-#define PyInt_FromSsize_t PyInt_FromLong
-#define PyInt_AsSsize_t PyInt_AsLong
-
-#endif  // PY_VERSION_HEX
-
-// 2.4 macros which aren't available in 2.3
-#ifndef Py_RETURN_NONE
-inline PyObject* doPy_RETURN_NONE()
-{   Py_INCREF(Py_None); return Py_None; }
-#define Py_RETURN_NONE return doPy_RETURN_NONE()
-#endif
-
-#ifndef Py_RETURN_TRUE
-inline PyObject* doPy_RETURN_TRUE()
-{Py_INCREF(Py_True); return Py_True;}
-#define Py_RETURN_TRUE return doPy_RETURN_TRUE()
-#endif
-
-#ifndef Py_RETURN_FALSE
-inline PyObject* doPy_RETURN_FALSE()
-{Py_INCREF(Py_False); return Py_False;}
-#define Py_RETURN_FALSE return doPy_RETURN_FALSE()
-#endif
-
-#ifndef PyVarObject_HEAD_INIT
-#define PyVarObject_HEAD_INIT(type, size) \
-  PyObject_HEAD_INIT(type) size,
-#endif
-
-#ifndef Py_TYPE
-#define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
-#endif
-
-#ifndef Py_TPFLAGS_CHECKTYPES
-// Always on in Python 3
-#define Py_TPFLAGS_CHECKTYPES 0
-#endif
-
-#if PY_MAJOR_VERSION >= 3
-// For writing code that will compile in both versions.
-#define nb_nonzero nb_bool
-#define nb_divide nb_true_divide
-#define nb_inplace_divide nb_inplace_true_divide
-
-#define PyLongOrInt_Check(x) PyLong_Check(x)
-#define PyLongOrInt_AS_LONG PyLong_AS_LONG
-#define PyInt_Check PyLong_Check
-#define PyInt_AsLong PyLong_AsLong
-#define PyInt_AS_LONG PyLong_AS_LONG
-#else
-#define PyLongOrInt_Check(x) (PyInt_Check(x) || PyLong_Check(x))
-// PyInt_FromSize_t automatically picks the right type.
-#define PyLongOrInt_AS_LONG PyInt_AsLong
-
-// For more portably defining hash functions.
-typedef long Py_hash_t;
-#endif
-
-#if PY_MAJOR_VERSION >= 3
-// Python 3 versions before 3.3.3 defined this incorrectly.
-#undef _PyErr_OCCURRED
-#define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
-
-// Python versions before 3.3 did not define this.
-#if PY_VERSION_HEX < 0x03030000
-#define PyUnicode_AsUTF8 _PyUnicode_AsString
-#define PyUnicode_AsUTF8AndSize _PyUnicode_AsStringAndSize
-#endif
-#endif
-
-// Which character to use in PyArg_ParseTuple et al for a byte string.
-#if PY_MAJOR_VERSION >= 3
-#define FMTCHAR_BYTES "y"
-#else
-#define FMTCHAR_BYTES "s"
-#endif
 
 using namespace std;
 
@@ -233,7 +128,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 #else // NDEBUG
 #define Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
-  if (((Dtool_PyInstDef *)self)->_ptr_to_object != NULL) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
       cerr << "Detected leak for " << #CLASS_NAME \
            << " which interrogate cannot delete.\n"; \
@@ -245,9 +140,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 
 #define Define_Dtool_FreeInstance(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
-  if (((Dtool_PyInstDef *)self)->_ptr_to_object != NULL) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
-      delete ((CNAME *)((Dtool_PyInstDef *)self)->_ptr_to_object);\
+      delete (CNAME *)DtoolInstance_VOID_PTR(self);\
     }\
   }\
   Py_TYPE(self)->tp_free(self);\
@@ -255,9 +150,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 
 #define Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
-  if (((Dtool_PyInstDef *)self)->_ptr_to_object != NULL) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
-      unref_delete((CNAME *)((Dtool_PyInstDef *)self)->_ptr_to_object);\
+      unref_delete((CNAME *)DtoolInstance_VOID_PTR(self));\
     }\
   }\
   Py_TYPE(self)->tp_free(self);\
@@ -269,8 +164,17 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   Py_TYPE(self)->tp_free(self);\
 }
 
-// Simple Recognition Functions..
-EXPCL_INTERROGATEDB bool DtoolCanThisBeAPandaInstance(PyObject *self);
+// Use DtoolInstance_Check to check whether a PyObject* is a DtoolInstance.
+#define DtoolInstance_Check(obj) \
+  (Py_TYPE(obj)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef) && \
+   ((Dtool_PyInstDef *)obj)->_signature == PY_PANDA_SIGNATURE)
+
+// These macros access the DtoolInstance without error checking.
+#define DtoolInstance_TYPE(obj) (((Dtool_PyInstDef *)obj)->_My_Type)
+#define DtoolInstance_IS_CONST(obj) (((Dtool_PyInstDef *)obj)->_is_const)
+#define DtoolInstance_VOID_PTR(obj) (((Dtool_PyInstDef *)obj)->_ptr_to_object)
+#define DtoolInstance_INIT_PTR(obj, ptr) { ((Dtool_PyInstDef *)obj)->_ptr_to_object = (void*)(ptr); }
+#define DtoolInstance_UPCAST(obj, type) (((Dtool_PyInstDef *)(obj))->_My_Type->_Dtool_UpcastInterface((obj), &(type)))
 
 // ** HACK ** allert.. Need to keep a runtime type dictionary ... that is
 // forward declared of typed object.  We rely on the fact that typed objects
@@ -298,22 +202,16 @@ EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyT
 EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                                               void **answer, const char *method_name);
 
-template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&into);
+template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into);
+template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &classdef);
 
 // Functions related to error reporting.
 EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
 
-// _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.
-// Some implementations of the CPython API (e.g. PyPy's cpyext) do not define
-// it, so in these cases we just silently fall back to PyErr_Occurred.
-#ifndef _PyErr_OCCURRED
-#define _PyErr_OCCURRED() PyErr_Occurred()
-#endif
-
 #ifdef NDEBUG
-#define Dtool_CheckErrorOccurred() (_PyErr_OCCURRED() != NULL)
+#define Dtool_CheckErrorOccurred() (UNLIKELY(_PyErr_OCCURRED() != nullptr))
 #else
-#define Dtool_CheckErrorOccurred() _Dtool_CheckErrorOccurred()
+#define Dtool_CheckErrorOccurred() (UNLIKELY(_Dtool_CheckErrorOccurred()))
 #endif
 
 EXPCL_INTERROGATEDB PyObject *Dtool_Raise_AssertionError();
@@ -330,13 +228,16 @@ EXPCL_INTERROGATEDB PyObject *_Dtool_Raise_BadArgumentsError();
 #define Dtool_Raise_BadArgumentsError(x) Dtool_Raise_TypeError("Arguments must match:\n" x)
 #endif
 
+// These functions are similar to Dtool_WrapValue, except that they also
+// contain code for checking assertions and exceptions when compiling with
+// NDEBUG mode on.
 EXPCL_INTERROGATEDB PyObject *_Dtool_Return_None();
 EXPCL_INTERROGATEDB PyObject *Dtool_Return_Bool(bool value);
 EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
-#define Dtool_Return_None() (_PyErr_OCCURRED() != NULL ? NULL : (Py_INCREF(Py_None), Py_None))
-#define Dtool_Return(value) (_PyErr_OCCURRED() != NULL ? NULL : value)
+#define Dtool_Return_None() (LIKELY(_PyErr_OCCURRED() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
+#define Dtool_Return(value) (LIKELY(_PyErr_OCCURRED() == nullptr) ? value : nullptr)
 #else
 #define Dtool_Return_None() _Dtool_Return_None()
 #define Dtool_Return(value) _Dtool_Return(value)
@@ -456,18 +357,19 @@ EXPCL_INTERROGATEDB PyObject *
 map_deepcopy_to_copy(PyObject *self, PyObject *args);
 
 /**
- * This class is returned from properties that require a settable interface,
- * ie. something.children[i] = 3.
+ * These functions check whether the arguments passed to a function conform to
+ * certain expectations.
  */
-struct Dtool_SequenceWrapper {
-  PyObject_HEAD
-  PyObject *_base;
-  lenfunc _len_func;
-  ssizeargfunc _getitem_func;
-  ssizeobjargproc _setitem_func;
-};
-
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SequenceWrapper_Type;
+ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args);
+ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args, PyObject *kwds);
+EXPCL_INTERROGATEDB bool Dtool_ExtractArg(PyObject **result, PyObject *args,
+                                          PyObject *kwds, const char *keyword);
+EXPCL_INTERROGATEDB bool Dtool_ExtractArg(PyObject **result, PyObject *args,
+                                          PyObject *kwds);
+EXPCL_INTERROGATEDB bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
+                                                  PyObject *kwds, const char *keyword);
+EXPCL_INTERROGATEDB bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
+                                                  PyObject *kwds);
 
 /**
  * These functions convert a C++ value into the corresponding Python object.
@@ -491,8 +393,9 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(char value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value);
-ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::vector<unsigned char> &value);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value);
 
 #if PY_MAJOR_VERSION >= 0x02060000
 ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value);
@@ -507,6 +410,8 @@ EXPCL_INTERROGATEDB extern void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObjec
 #define Dtool_Ptr_DTOOL_SUPER_BASE (&Dtool_DTOOL_SUPER_BASE)
 
 #include "py_panda.I"
+
+#include "py_wrappers.h"
 
 #endif  // HAVE_PYTHON && !CPPPARSER
 

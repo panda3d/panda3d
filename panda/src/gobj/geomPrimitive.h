@@ -59,7 +59,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  GeomPrimitive(UsageHint usage_hint);
+  explicit GeomPrimitive(UsageHint usage_hint);
   GeomPrimitive(const GeomPrimitive &copy);
   void operator = (const GeomPrimitive &copy);
   virtual ~GeomPrimitive();
@@ -371,6 +371,7 @@ public:
   INLINE int get_num_vertices() const;
   int get_vertex(int i) const;
   int get_num_primitives() const;
+  void get_referenced_vertices(BitArray &bits) const;
   INLINE int get_min_vertex() const;
   INLINE int get_max_vertex() const;
   INLINE int get_data_size_bytes() const;

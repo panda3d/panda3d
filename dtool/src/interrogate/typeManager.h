@@ -55,6 +55,7 @@ public:
   static bool is_enum(CPPType *type);
   static bool is_const_enum(CPPType *type);
   static bool is_const_ref_to_enum(CPPType *type);
+  static bool is_nullptr(CPPType *type);
   static bool is_simple(CPPType *type);
   static bool is_const_simple(CPPType *type);
   static bool is_const_ref_to_simple(CPPType *type);
@@ -148,7 +149,6 @@ public:
 
   static bool is_exported(CPPType *type);
   static bool is_local(CPPType *type);
-  static bool is_trivial(CPPType *type);
 };
 
 #endif

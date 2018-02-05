@@ -12,7 +12,7 @@
  */
 
 /**
- * Create the Box by giving a Center and distances of of each of the sides of
+ * Create the Box by giving a Center and distances of each of the sides of
  * box from the Center.
  */
 INLINE CollisionBox::

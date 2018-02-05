@@ -61,7 +61,7 @@
 
 class EXPCL_PANDA_MATHUTIL Mersenne {
 PUBLISHED:
-  Mersenne(unsigned long seed);
+  explicit Mersenne(unsigned long seed);
   unsigned long get_uint31();
 
   enum {

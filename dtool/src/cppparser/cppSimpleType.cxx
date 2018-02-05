@@ -104,6 +104,14 @@ is_copy_constructible() const {
 }
 
 /**
+ * Returns true if the type is copy-assignable.
+ */
+bool CPPSimpleType::
+is_copy_assignable() const {
+  return (_type != T_void);
+}
+
+/**
  * Returns true if the type is destructible.
  */
 bool CPPSimpleType::

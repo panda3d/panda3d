@@ -15,9 +15,6 @@
 #define MEMORYUSAGEPOINTERS_H
 
 #include "pandabase.h"
-
-#ifdef DO_MEMORY_USAGE
-
 #include "typedObject.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
@@ -53,7 +50,9 @@ PUBLISHED:
   string get_type_name(size_t n) const;
   double get_age(size_t n) const;
 
+#ifdef DO_MEMORY_USAGE
   EXTENSION(PyObject *get_python_pointer(size_t n) const);
+#endif
 
   void clear();
 
@@ -93,7 +92,5 @@ INLINE ostream &operator << (ostream &out, const MemoryUsagePointers &mup) {
 }
 
 #include "memoryUsagePointers.I"
-
-#endif  // MEMORY_USAGE_POINTERS
 
 #endif

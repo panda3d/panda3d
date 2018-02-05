@@ -21,12 +21,13 @@ TypeHandle BulletHeightfieldShape::_type_handle;
  *   while rotating it 90 degrees to the right.
  */
 BulletHeightfieldShape::
-BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) {
+BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) :
+  _max_height(max_height), _up(up) {
 
   _num_rows = image.get_x_size();
   _num_cols = image.get_y_size();
 
-  _data = new float[_num_rows * _num_cols];
+  _data = new btScalar[_num_rows * _num_cols];
 
   for (int row=0; row < _num_rows; row++) {
     for (int column=0; column < _num_cols; column++) {
@@ -71,14 +72,15 @@ set_use_diamond_subdivision(bool flag) {
  *   that are non-power-of-two and/or rectangular.
  */
 BulletHeightfieldShape::
-BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
+BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) :
+  _max_height(max_height), _up(up) {
 
   _num_rows = tex->get_x_size() + 1;
   _num_cols = tex->get_y_size() + 1;
-  _data = new float[_num_rows * _num_cols];
+  _data = new btScalar[_num_rows * _num_cols];
 
-  PN_stdfloat step_x = 1.0 / (PN_stdfloat)tex->get_x_size();
-  PN_stdfloat step_y = 1.0 / (PN_stdfloat)tex->get_y_size();
+  btScalar step_x = 1.0 / (btScalar)tex->get_x_size();
+  btScalar step_y = 1.0 / (btScalar)tex->get_y_size();
 
   PT(TexturePeeker) peeker = tex->peek();
   LColor sample;
@@ -100,4 +102,85 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
                                          up,
                                          true, false);
   _shape->setUserPointer(this);
+}
+
+/**
+ * Tells the BamReader how to create objects of type BulletShape.
+ */
+void BulletHeightfieldShape::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void BulletHeightfieldShape::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+  dg.add_stdfloat(get_margin());
+
+  // parameters to serialize:_num_rows,_num_cols,_data,max_height,up,
+  dg.add_int8((int8_t)_up);
+  dg.add_stdfloat(_max_height);
+  dg.add_int32(_num_rows);
+  dg.add_int32(_num_cols);
+
+  size_t size = (size_t)_num_rows * (size_t)_num_cols;
+  for (size_t i = 0; i < size; ++i) {
+    dg.add_stdfloat(_data[i]);
+  }
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BulletShape is encountered in the Bam file.  It should create the
+ * BulletShape and extract its information from the file.
+ */
+TypedWritable *BulletHeightfieldShape::
+make_from_bam(const FactoryParams &params) {
+  // create a default BulletHeightfieldShape
+  BulletHeightfieldShape *param = new BulletHeightfieldShape;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletShape.
+ */
+void BulletHeightfieldShape::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  BulletShape::fillin(scan, manager);
+  nassertv(_shape == nullptr);
+
+  PN_stdfloat margin = scan.get_stdfloat();
+
+  // parameters to serialize: radius, height, up
+  _up = (BulletUpAxis) scan.get_int8();
+  _max_height = scan.get_stdfloat();
+  _num_rows = scan.get_int32();
+  _num_cols = scan.get_int32();
+
+  size_t size = (size_t)_num_rows * (size_t)_num_cols;
+  delete[] _data;
+  _data = new float[size];
+  for (size_t i = 0; i < size; ++i) {
+    _data[i]  = scan.get_stdfloat();
+  }
+
+  _shape = new btHeightfieldTerrainShape(_num_rows,
+                                         _num_cols,
+                                         _data,
+                                         _max_height,
+                                         _up,
+                                         true, false);
+  _shape->setUserPointer(this);
+  _shape->setMargin(margin);
 }

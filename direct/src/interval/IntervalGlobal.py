@@ -1,4 +1,7 @@
-"""IntervalGlobal module"""
+"""
+This module imports all of the other interval modules, to provide a
+single convenient module from which all interval types can be imported.
+"""
 
 # In this unusual case, I'm not going to declare __all__,
 # since the purpose of this module is to add up the contributions

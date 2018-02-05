@@ -97,8 +97,9 @@ is_empty() const {
 
 /**
  * Returns the number of separate effects indicated in the state.
+ * @deprecated in Python, use len(effects) instead, or effects.size() in C++.
  */
-INLINE int RenderEffects::
+INLINE size_t RenderEffects::
 get_num_effects() const {
   return _effects.size();
 }
@@ -107,9 +108,34 @@ get_num_effects() const {
  * Returns the nth effect in the state.
  */
 INLINE const RenderEffect *RenderEffects::
-get_effect(int n) const {
-  nassertr(n >= 0 && n < (int)_effects.size(), NULL);
+get_effect(size_t n) const {
+  nassertr(n < _effects.size(), nullptr);
   return _effects[n]._effect;
+}
+
+/**
+ * Returns the number of separate effects indicated in the state.
+ */
+INLINE size_t RenderEffects::
+size() const {
+  return _effects.size();
+}
+
+/**
+ * Returns the nth effect in the state.
+ */
+INLINE const RenderEffect *RenderEffects::
+operator [](size_t n) const {
+  nassertr(n < _effects.size(), nullptr);
+  return _effects[n]._effect;
+}
+
+/**
+ * Returns the effect in the state with the given type.
+ */
+INLINE const RenderEffect *RenderEffects::
+operator [](TypeHandle type) const {
+  return get_effect(type);
 }
 
 /**

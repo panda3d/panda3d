@@ -28,7 +28,7 @@
 class EXPCL_PANDAEXPRESS Patcher {
 PUBLISHED:
   Patcher();
-  Patcher(PT(Buffer) buffer);
+  explicit Patcher(PT(Buffer) buffer);
   virtual ~Patcher();
 
   int initiate(Filename &patch, Filename &infile);

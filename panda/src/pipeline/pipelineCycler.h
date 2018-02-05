@@ -45,7 +45,9 @@
 template<class CycleDataType>
 struct PipelineCycler : public PipelineCyclerBase {
 public:
-  INLINE PipelineCycler(Pipeline *pipeline = NULL);
+  INLINE PipelineCycler(Pipeline *pipeline = nullptr);
+  INLINE PipelineCycler(CycleDataType &&initial_data, Pipeline *pipeline = nullptr);
+
   INLINE PipelineCycler(const PipelineCycler<CycleDataType> &copy);
   INLINE void operator = (const PipelineCycler<CycleDataType> &copy);
 

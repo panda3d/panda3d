@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDAEGG EggMaterial : public EggNode {
 PUBLISHED:
-  EggMaterial(const string &mref_name);
+  explicit EggMaterial(const string &mref_name);
   EggMaterial(const EggMaterial &copy);
 
   virtual void write(ostream &out, int indent_level) const;

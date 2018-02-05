@@ -55,6 +55,9 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
   _velocity.y = 0;
   _velocity.z = 0;
 
+  _min_dist = 1.0;
+  _max_dist = 1000000000.0;
+
   // Play Rate Variable
   _playrate = 1;
 

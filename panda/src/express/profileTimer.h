@@ -40,7 +40,7 @@
 class EXPCL_PANDAEXPRESS ProfileTimer {
   enum { MaxEntriesDefault=4096 };
 PUBLISHED:
-  ProfileTimer(const char* name=0, int maxEntries=MaxEntriesDefault);
+  explicit ProfileTimer(const char* name=0, int maxEntries=MaxEntriesDefault);
   ProfileTimer(const ProfileTimer& other);
   ~ProfileTimer();
 

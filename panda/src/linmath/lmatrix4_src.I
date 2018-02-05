@@ -1706,3 +1706,19 @@ INLINE_LINMATH int FLOATNAME(UnalignedLMatrix4)::
 get_num_components() const {
   return 16;
 }
+
+/**
+ *
+ */
+INLINE_LINMATH bool FLOATNAME(UnalignedLMatrix4)::
+operator == (const FLOATNAME(UnalignedLMatrix4) &other) const {
+  return memcmp(get_data(), other.get_data(), sizeof(FLOATTYPE) * 16) == 0;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH bool FLOATNAME(UnalignedLMatrix4)::
+operator != (const FLOATNAME(UnalignedLMatrix4) &other) const {
+  return !operator == (other);
+}

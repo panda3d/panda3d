@@ -38,7 +38,7 @@ operator = (const EggCompositePrimitive &copy) {
  * Returns the number of individual component triangles within the composite.
  * Each one of these might have a different set of attributes.
  */
-INLINE int EggCompositePrimitive::
+INLINE size_t EggCompositePrimitive::
 get_num_components() const {
   return _components.size();
 }
@@ -47,8 +47,8 @@ get_num_components() const {
  * Returns the attributes for the nth component triangle.
  */
 INLINE const EggAttributes *EggCompositePrimitive::
-get_component(int i) const {
-  nassertr(i >= 0 && i < (int)_components.size(), NULL);
+get_component(size_t i) const {
+  nassertr(i < _components.size(), nullptr);
   return _components[i];
 }
 
@@ -56,8 +56,8 @@ get_component(int i) const {
  * Returns the attributes for the nth component triangle.
  */
 INLINE EggAttributes *EggCompositePrimitive::
-get_component(int i) {
-  nassertr(i >= 0 && i < (int)_components.size(), NULL);
+get_component(size_t i) {
+  nassertr(i < _components.size(), nullptr);
   return _components[i];
 }
 
@@ -65,8 +65,8 @@ get_component(int i) {
  * Changes the attributes for the nth component triangle.
  */
 INLINE void EggCompositePrimitive::
-set_component(int i, const EggAttributes *attrib) {
-  nassertv(i >= 0 && i < (int)_components.size());
+set_component(size_t i, const EggAttributes *attrib) {
+  nassertv(i < _components.size());
   _components[i] = new EggAttributes(*attrib);
 }
 

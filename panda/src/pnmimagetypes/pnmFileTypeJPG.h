@@ -36,6 +36,10 @@
 #include <png.h>
 #endif
 
+// jconfig.h overrides our INLINE definition.
+#ifdef __GNUC__
+#pragma push_macro("INLINE")
+#endif
 
 // jpeglib sometimes redefines the INLINE macro and breaks inlining
 // (on e.g. Ubuntu 12.04) so we need to preserve it somehow - this uses the
@@ -48,6 +52,11 @@ extern "C" {
 #include <setjmp.h>
 }
 #pragma pop_macro("INLINE")
+
+// Restore our own INLINE definition.
+#ifdef __GNUC__
+#pragma pop_macro("INLINE")
+#endif
 
 /**
  * For reading and writing Jpeg files.

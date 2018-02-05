@@ -56,10 +56,13 @@ public:
   virtual bool is_constructible(const CPPType *arg_type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_copy_assignable() const;
   virtual bool is_destructible() const;
   bool is_default_constructible(CPPVisibility min_vis) const;
   bool is_copy_constructible(CPPVisibility min_vis) const;
-  bool is_move_constructible(CPPVisibility min_vis) const;
+  bool is_move_constructible(CPPVisibility min_vis  = V_public) const;
+  bool is_copy_assignable(CPPVisibility min_vis) const;
+  bool is_move_assignable(CPPVisibility min_vis = V_public) const;
   bool is_destructible(CPPVisibility min_vis) const;
   virtual bool is_convertible_to(const CPPType *other) const;
 
@@ -69,6 +72,9 @@ public:
   CPPInstance *get_default_constructor() const;
   CPPInstance *get_copy_constructor() const;
   CPPInstance *get_move_constructor() const;
+  CPPFunctionGroup *get_assignment_operator() const;
+  CPPInstance *get_copy_assignment_operator() const;
+  CPPInstance *get_move_assignment_operator() const;
   CPPInstance *get_destructor() const;
 
   virtual CPPDeclaration *

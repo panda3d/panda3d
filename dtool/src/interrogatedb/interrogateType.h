@@ -75,6 +75,7 @@ public:
   INLINE bool is_struct() const;
   INLINE bool is_class() const;
   INLINE bool is_union() const;
+  INLINE bool is_final() const;
 
   INLINE bool is_fully_defined() const;
   INLINE bool is_unpublished() const;
@@ -82,6 +83,7 @@ public:
   INLINE FunctionIndex get_constructor(int n) const;
   INLINE bool has_destructor() const;
   INLINE bool destructor_is_inherited() const;
+  INLINE bool destructor_is_implicit() const;
   INLINE FunctionIndex get_destructor() const;
   INLINE int number_of_elements() const;
   INLINE ElementIndex get_element(int n) const;
@@ -138,6 +140,7 @@ private:
     F_typedef              = 0x200000,
     F_array                = 0x400000,
     F_scoped_enum          = 0x800000,
+    F_final                =0x1000000,
   };
 
 public:

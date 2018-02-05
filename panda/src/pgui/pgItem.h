@@ -52,7 +52,7 @@ class ScissorAttrib;
  */
 class EXPCL_PANDA_PGUI PGItem : public PandaNode {
 PUBLISHED:
-  PGItem(const string &name);
+  explicit PGItem(const string &name);
   virtual ~PGItem();
 
   INLINE void set_name(const string &name);

@@ -1,7 +1,3 @@
-"""Undocumented Module"""
-
-__all__ = ['deCygwinify', 'getPaths']
-
 """This module is used only by the VR Studio programmers who are using
 the ctattach tools.  It is imported before any other package, and its
 job is to figure out the correct paths to each of the packages.
@@ -9,6 +5,8 @@ job is to figure out the correct paths to each of the packages.
 This module is not needed if you are not using ctattach; in this case
 all of the Panda packages will be collected under a common directory,
 which you will presumably have already on your PYTHONPATH. """
+
+__all__ = ['deCygwinify', 'getPaths']
 
 import os
 import sys

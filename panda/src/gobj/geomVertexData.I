@@ -129,7 +129,7 @@ reserve_num_rows(int n) {
  * Returns the number of individual arrays stored within the data.  This must
  * match get_format()->get_num_arrays().
  */
-INLINE int GeomVertexData::
+INLINE size_t GeomVertexData::
 get_num_arrays() const {
   CDReader cdata(_cycler);
   return cdata->_arrays.size();
@@ -141,9 +141,9 @@ get_num_arrays() const {
  * data.
  */
 INLINE CPT(GeomVertexArrayData) GeomVertexData::
-get_array(int i) const {
+get_array(size_t i) const {
   CDReader cdata(_cycler);
-  nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
+  nassertr(i < cdata->_arrays.size(), nullptr);
   return cdata->_arrays[i].get_read_pointer();
 }
 
@@ -151,10 +151,10 @@ get_array(int i) const {
  * Equivalent to get_array(i).get_handle().
  */
 INLINE CPT(GeomVertexArrayDataHandle) GeomVertexData::
-get_array_handle(int i) const {
+get_array_handle(size_t i) const {
   Thread *current_thread = Thread::get_current_thread();
   CDReader cdata(_cycler, current_thread);
-  nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
+  nassertr(i < cdata->_arrays.size(), nullptr);
   return new GeomVertexArrayDataHandle(cdata->_arrays[i].get_read_pointer(), current_thread);
 }
 
@@ -168,7 +168,7 @@ get_array_handle(int i) const {
  * away other changes you might have recently made in an upstream thread.
  */
 INLINE PT(GeomVertexArrayData) GeomVertexData::
-modify_array(int i) {
+modify_array(size_t i) {
   GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
   return writer.modify_array(i);
 }
@@ -177,7 +177,7 @@ modify_array(int i) {
  * Equivalent to modify_array(i).modify_handle().
  */
 INLINE PT(GeomVertexArrayDataHandle) GeomVertexData::
-modify_array_handle(int i) {
+modify_array_handle(size_t i) {
   Thread *current_thread = Thread::get_current_thread();
   GeomVertexDataPipelineWriter writer(this, true, current_thread);
   return new GeomVertexArrayDataHandle(writer.modify_array(i), current_thread);
@@ -192,7 +192,7 @@ modify_array_handle(int i) {
  * away other changes you might have recently made in an upstream thread.
  */
 INLINE void GeomVertexData::
-set_array(int i, const GeomVertexArrayData *array) {
+set_array(size_t i, const GeomVertexArrayData *array) {
   GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
   writer.set_array(i, array);
 }
@@ -583,17 +583,14 @@ CData() :
  *
  */
 INLINE GeomVertexData::CData::
-CData(const GeomVertexData::CData &copy) :
-  _usage_hint(copy._usage_hint),
-  _format(copy._format),
-  _arrays(copy._arrays),
-  _transform_table(copy._transform_table),
-  _transform_blend_table(copy._transform_blend_table),
-  _slider_table(copy._slider_table),
-  _animated_vertices(copy._animated_vertices),
-  _animated_vertices_modified(copy._animated_vertices_modified),
-  _modified(copy._modified)
+CData(const GeomVertexFormat *format, GeomVertexData::UsageHint usage_hint) :
+  _format(format),
+  _usage_hint(usage_hint)
 {
+  size_t num_arrays = format->get_num_arrays();
+  for (size_t i = 0; i < num_arrays; ++i) {
+    _arrays.push_back(new GeomVertexArrayData(format->get_array(i), usage_hint));
+  }
 }
 
 /**
@@ -756,7 +753,7 @@ GeomVertexDataPipelineReader(const GeomVertexData *object,
  *
  */
 INLINE void GeomVertexDataPipelineReader::
-set_object(CPT(GeomVertexData) object) {
+set_object(const GeomVertexData *object) {
 #ifdef DO_PIPELINING
   if (_cdata != NULL) {
     unref_delete((CycleData *)_cdata);
@@ -764,7 +761,7 @@ set_object(CPT(GeomVertexData) object) {
 #endif  // DO_PIPELINING
   _array_readers.clear();
 
-  _object.swap(object);
+  _object = (GeomVertexData *)object;
   _cdata = (GeomVertexData::CData *)_object->_cycler.read_unlocked(_current_thread);
   _got_array_readers = false;
 
@@ -888,9 +885,9 @@ check_array_writers() const {
  *
  */
 INLINE GeomVertexArrayDataHandle *GeomVertexDataPipelineWriter::
-get_array_writer(int i) const {
+get_array_writer(size_t i) const {
   nassertr(_got_array_writers, NULL);
-  nassertr(i >= 0 && i < (int)_array_writers.size(), NULL);
+  nassertr(i < _array_writers.size(), nullptr);
   return _array_writers[i];
 }
 

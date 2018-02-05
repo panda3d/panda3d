@@ -93,17 +93,6 @@ get_length(int pipeline_stage, Thread *current_thread) const {
 }
 
 /**
- * Returns the next component in the path.
- */
-NodePathComponent *NodePathComponent::
-get_next(int pipeline_stage, Thread *current_thread) const {
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-  NodePathComponent *next = cdata->_next;
-
-  return next;
-}
-
-/**
  * Checks that the length indicated by the component is one more than the
  * length of its predecessor.  If this is broken, fixes it and returns true
  * indicating the component has been changed; otherwise, returns false.

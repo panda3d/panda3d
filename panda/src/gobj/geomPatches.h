@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomPatches : public GeomPrimitive {
 PUBLISHED:
-  GeomPatches(int num_vertices_per_patch, UsageHint usage_hint);
+  explicit GeomPatches(int num_vertices_per_patch, UsageHint usage_hint);
   GeomPatches(const GeomPatches &copy);
   virtual ~GeomPatches();
   ALLOC_DELETED_CHAIN(GeomPatches);

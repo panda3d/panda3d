@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggExternalReference : public EggFilenameNode {
 PUBLISHED:
-  EggExternalReference(const string &node_name, const string &filename);
+  explicit EggExternalReference(const string &node_name, const string &filename);
   EggExternalReference(const EggExternalReference &copy);
   EggExternalReference &operator = (const EggExternalReference &copy);
 

@@ -168,7 +168,7 @@ upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
   if (data_pointer == NULL) {
     return false;
   }
-  int data_size = reader->get_data_size_bytes();
+  size_t data_size = (size_t)reader->get_data_size_bytes();
 
   if (reader->get_index_type() == GeomEnums::NT_uint8) {
     // We widen 8-bits indices to 16-bits.

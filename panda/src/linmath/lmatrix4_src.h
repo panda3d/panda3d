@@ -345,6 +345,9 @@ PUBLISHED:
   INLINE_LINMATH const FLOATTYPE *get_data() const;
   INLINE_LINMATH int get_num_components() const;
 
+  INLINE_LINMATH bool operator == (const FLOATNAME(UnalignedLMatrix4) &other) const;
+  INLINE_LINMATH bool operator != (const FLOATNAME(UnalignedLMatrix4) &other) const;
+
 public:
   typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 4, 4) UMatrix4;
   UMatrix4 _m;

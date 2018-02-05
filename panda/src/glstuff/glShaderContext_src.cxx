@@ -874,7 +874,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
                  matrix_name.substr(0, 12) == "LightSource[" &&
                  sscanf(matrix_name.c_str(), "LightSource[%d].%s", &bind._index, name_buffer) == 2) {
         // A matrix member of a p3d_LightSource struct.
-        if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
+        if (strncmp(name_buffer, "shadowViewMatrix", 127) == 0) {
           if (inverse) {
             // Tack inverse back onto the end.
             strcpy(name_buffer + strlen(name_buffer), "Inverse");
@@ -884,7 +884,25 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_light_source_i_attrib;
           bind._arg[0] = InternalName::make(name_buffer);
           bind._part[1] = Shader::SMO_identity;
+          bind._arg[1] = NULL;
 
+        } else if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
+          // Only supported for backward compatibility: includes the model
+          // matrix.  Not very efficient to do this.
+          bind._func = Shader::SMF_compose;
+          bind._part[0] = Shader::SMO_model_to_apiview;
+          bind._arg[0] = NULL;
+          bind._part[1] = Shader::SMO_light_source_i_attrib;
+          bind._arg[1] = InternalName::make("shadowViewMatrix");
+
+          static bool warned = false;
+          if (!warned) {
+            warned = true;
+            GLCAT.warning()
+              << "p3d_LightSource[].shadowMatrix is deprecated; use "
+                "shadowViewMatrix instead, which transforms from view space "
+                "instead of model space.\n";
+          }
         } else {
           GLCAT.error() << "p3d_LightSource struct does not provide a matrix named " << matrix_name << "!\n";
           return;
@@ -1163,10 +1181,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._index = index;
           bind._part[0] = Shader::SMO_light_source_i_attrib;
           bind._arg[0] = InternalName::make(member_name);
-          bind._dep[0] = Shader::SSD_general | Shader::SSD_light | Shader::SSD_frame | Shader::SSD_transform;
+          bind._dep[0] = Shader::SSD_general | Shader::SSD_light | Shader::SSD_frame;
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = NULL;
           bind._dep[1] = Shader::SSD_NONE;
+
+          if (member_name == "position" || member_name == "halfVector" ||
+              member_name == "spotDirection") {
+            bind._dep[0] |= Shader::SSD_view_transform;
+          }
 
           switch (param_type) {
           case GL_FLOAT:
@@ -1250,7 +1273,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._func = Shader::SMF_compose;
       bind._part[0] = Shader::SMO_world_to_view;
       bind._part[1] = Shader::SMO_view_to_apiview;
-      bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_view_transform;
       bind._dep[1] = Shader::SSD_general;
       _shader->_mat_spec.push_back(bind);
       _shader->_mat_deps |= bind._dep[0] | bind._dep[1];
@@ -1262,7 +1285,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._part[0] = Shader::SMO_apiview_to_view;
       bind._part[1] = Shader::SMO_view_to_world;
       bind._dep[0] = Shader::SSD_general;
-      bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
+      bind._dep[1] = Shader::SSD_general | Shader::SSD_view_transform;
       _shader->_mat_spec.push_back(bind);
       _shader->_mat_deps |= bind._dep[0] | bind._dep[1];
       return;
@@ -1383,22 +1406,43 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._id = arg_id;
         bind._piece = Shader::SMP_whole;
         bind._func = Shader::SMF_first;
+        bind._part[1] = Shader::SMO_identity;
+        bind._arg[1] = NULL;
+        bind._dep[1] = Shader::SSD_NONE;
         PT(InternalName) iname = InternalName::make(param_name);
         if (iname->get_parent() != InternalName::get_root()) {
           // It might be something like an attribute of a shader input, like a
           // light parameter.  It might also just be a custom struct
           // parameter.  We can't know yet, sadly.
-          bind._part[0] = Shader::SMO_mat_constant_x_attrib;
-          bind._arg[0] = InternalName::make(param_name);
-          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_transform;
+          if (iname->get_basename() == "shadowMatrix") {
+            // Special exception for shadowMatrix, which is deprecated,
+            // because it includes the model transformation.  It is far more
+            // efficient to do that in the shader instead.
+            static bool warned = false;
+            if (!warned) {
+              warned = true;
+              GLCAT.warning()
+                << "light.shadowMatrix inputs are deprecated; use "
+                   "shadowViewMatrix instead, which transforms from view "
+                   "space instead of model space.\n";
+            }
+            bind._func = Shader::SMF_compose;
+            bind._part[0] = Shader::SMO_model_to_apiview;
+            bind._arg[0] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+            bind._part[1] = Shader::SMO_mat_constant_x_attrib;
+            bind._arg[1] = iname->get_parent()->append("shadowViewMatrix");
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
+          } else {
+            bind._part[0] = Shader::SMO_mat_constant_x_attrib;
+            bind._arg[0] = InternalName::make(param_name);
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
+          }
         } else {
           bind._part[0] = Shader::SMO_mat_constant_x;
           bind._arg[0] = InternalName::make(param_name);
           bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
         }
-        bind._part[1] = Shader::SMO_identity;
-        bind._arg[1] = NULL;
-        bind._dep[1] = Shader::SSD_NONE;
         _shader->_mat_spec.push_back(bind);
         _shader->_mat_deps |= bind._dep[0];
         return;
@@ -1430,9 +1474,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._func = Shader::SMF_first;
           bind._part[0] = Shader::SMO_vec_constant_x_attrib;
           bind._arg[0] = iname;
-          // We need SSD_transform since some attributes (eg.  light position)
-          // have to be transformed to view space.
-          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_transform;
+          // We need SSD_view_transform since some attributes (eg. light
+          // position) have to be transformed to view space.
+          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_view_transform;
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = NULL;
           bind._dep[1] = Shader::SSD_NONE;
@@ -1778,6 +1822,20 @@ release_resources() {
 }
 
 /**
+ * Returns true if the shader is "valid", ie, if the compilation was
+ * successful.  The compilation could fail if there is a syntax error in the
+ * shader, or if the current video card isn't shader-capable, or if no shader
+ * languages are compiled into panda.
+ */
+bool CLP(ShaderContext)::
+valid() {
+  if (_shader->get_error_flag()) {
+    return false;
+  }
+  return (_glsl_program != 0);
+}
+
+/**
  * This function is to be called to enable a new shader.  It also initializes
  * all of the shader's input parameters.
  */
@@ -1822,6 +1880,7 @@ unbind() {
 void CLP(ShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
+                        const TransformState *camera_transform,
                         const TransformState *projection_transform) {
 
   // Find out which state properties have changed.
@@ -1829,6 +1888,10 @@ set_state_and_transform(const RenderState *target_rs,
 
   if (_modelview_transform != modelview_transform) {
     _modelview_transform = modelview_transform;
+    altered |= (Shader::SSD_transform & ~Shader::SSD_view_transform);
+  }
+  if (_camera_transform != camera_transform) {
+    _camera_transform = camera_transform;
     altered |= Shader::SSD_transform;
   }
   if (_projection_transform != projection_transform) {
@@ -2128,7 +2191,7 @@ update_slider_table(const SliderTable *table) {
  */
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays() {
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return;
   }
 
@@ -2151,7 +2214,7 @@ disable_shader_vertex_arrays() {
  */
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return true;
   }
 
@@ -2324,7 +2387,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
  */
 void CLP(ShaderContext)::
 disable_shader_texture_bindings() {
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return;
   }
 
@@ -2424,7 +2487,7 @@ void CLP(ShaderContext)::
 update_shader_texture_bindings(ShaderContext *prev) {
   // if (prev) { prev->disable_shader_texture_bindings(); }
 
-  if (!valid()) {
+  if (_glsl_program == 0) {
     return;
   }
 
@@ -2440,17 +2503,17 @@ update_shader_texture_bindings(ShaderContext *prev) {
       const ParamTextureImage *param = NULL;
       Texture *tex;
 
-      const ShaderInput *sinp = _glgsg->_target_shader->get_shader_input(input._name);
-      switch (sinp->get_value_type()) {
+      const ShaderInput &sinp = _glgsg->_target_shader->get_shader_input(input._name);
+      switch (sinp.get_value_type()) {
       case ShaderInput::M_texture_image:
-        param = (const ParamTextureImage *)sinp->get_param();
+        param = (const ParamTextureImage *)sinp.get_param();
         tex = param->get_texture();
         break;
 
       case ShaderInput::M_texture:
         // People find it convenient to be able to pass a texture without
         // further ado.
-        tex = sinp->get_texture();
+        tex = sinp.get_texture();
         break;
 
       case ShaderInput::M_invalid:
@@ -2568,8 +2631,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
         textures[i] = _glgsg->get_white_texture();
         samplers[i] = 0;
       } else {
-        _glgsg->set_active_texture_stage(i);
-        _glgsg->apply_white_texture();
+        _glgsg->apply_white_texture(i);
       }
       continue;
     }

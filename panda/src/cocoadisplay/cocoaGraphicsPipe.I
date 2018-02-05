@@ -18,11 +18,3 @@ INLINE CGDirectDisplayID CocoaGraphicsPipe::
 get_display_id() const {
   return _display;
 }
-
-/**
- * Returns the Cocoa NSScreen pointer associated with this graphics pipe.
- */
-INLINE NSScreen *CocoaGraphicsPipe::
-get_nsscreen() const {
-  return _screen;
-}

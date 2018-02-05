@@ -105,12 +105,14 @@ PUBLISHED:
   INLINE void set_element(size_type n, const Element &value);
   EXTENSION(const Element &__getitem__(size_type n) const);
   EXTENSION(void __setitem__(size_type n, const Element &value));
-  INLINE string get_data() const;
-  INLINE void set_data(const string &data);
-  INLINE string get_subdata(size_type n, size_type count) const;
+  EXTENSION(PyObject *get_data() const);
+  EXTENSION(void set_data(PyObject *data));
+  EXTENSION(PyObject *get_subdata(size_type n, size_type count) const);
   INLINE void set_subdata(size_type n, size_type count, const string &data);
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
+
+  INLINE size_t count(const Element &) const;
 
 #ifdef HAVE_PYTHON
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
@@ -214,6 +216,8 @@ public:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
 
+  INLINE size_t count(const Element &) const;
+
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
   operator = (ReferenceCountedVector<Element> *ptr);
@@ -247,6 +251,8 @@ private:
 template <class Element>
 class ConstPointerToArray : public PointerToArrayBase<Element> {
 public:
+  INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
+
   // By hiding this template from interrogate, we would improve compile-time
   // speed and memory utilization.  However, we do want to export a minimal
   // subset of this class.  So we define just the exportable interface here.
@@ -255,16 +261,16 @@ PUBLISHED:
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
-  EXTENSION(ConstPointerToArray(PyObject *self, PyObject *source));
-
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;
   EXTENSION(const Element &__getitem__(size_type n) const);
-  INLINE string get_data() const;
-  INLINE string get_subdata(size_type n, size_type count) const;
+  EXTENSION(PyObject *get_data() const);
+  EXTENSION(PyObject *get_subdata(size_type n, size_type count) const);
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
+
+  INLINE size_t count(const Element &) const;
 
 #ifdef HAVE_PYTHON
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
@@ -289,7 +295,6 @@ PUBLISHED:
   typedef TYPENAME pvector<Element>::difference_type difference_type;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
-  INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
@@ -341,6 +346,8 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
+
+  INLINE size_t count(const Element &) const;
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &

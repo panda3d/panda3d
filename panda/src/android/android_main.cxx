@@ -52,48 +52,102 @@ void android_main(struct android_app* app) {
   // Fetch the path to the data directory.
   jfieldID datadir_field = env->GetFieldID(appinfo_class, "dataDir", "Ljava/lang/String;");
   jstring datadir = (jstring) env->GetObjectField(appinfo, datadir_field);
-  const char *data_path = env->GetStringUTFChars(datadir, NULL);
+  const char *data_path = env->GetStringUTFChars(datadir, nullptr);
 
-  Filename::_internal_data_dir = data_path;
-  android_cat.info() << "Path to data: " << data_path << "\n";
+  if (data_path != nullptr) {
+    Filename::_internal_data_dir = data_path;
+    android_cat.info() << "Path to data: " << data_path << "\n";
 
-  env->ReleaseStringUTFChars(datadir, data_path);
+    env->ReleaseStringUTFChars(datadir, data_path);
+  }
 
   // Fetch the path to the library directory.
-  jfieldID libdir_field = env->GetFieldID(appinfo_class, "nativeLibraryDir", "Ljava/lang/String;");
-  jstring libdir = (jstring) env->GetObjectField(appinfo, libdir_field);
-  const char *lib_path = env->GetStringUTFChars(libdir, NULL);
+  if (ExecutionEnvironment::get_dtool_name().empty()) {
+    jfieldID libdir_field = env->GetFieldID(appinfo_class, "nativeLibraryDir", "Ljava/lang/String;");
+    jstring libdir = (jstring) env->GetObjectField(appinfo, libdir_field);
+    const char *lib_path = env->GetStringUTFChars(libdir, nullptr);
 
-  string dtool_name = string(lib_path) + "/libp3dtool.so";
-  ExecutionEnvironment::set_dtool_name(dtool_name);
-  android_cat.info() << "Path to dtool: " << dtool_name << "\n";
+    if (lib_path != nullptr) {
+      string dtool_name = string(lib_path) + "/libp3dtool.so";
+      ExecutionEnvironment::set_dtool_name(dtool_name);
+      android_cat.info() << "Path to dtool: " << dtool_name << "\n";
 
-  env->ReleaseStringUTFChars(libdir, lib_path);
+      env->ReleaseStringUTFChars(libdir, lib_path);
+    }
+  }
 
   // Get the path to the APK.
   jmethodID methodID = env->GetMethodID(activity_class, "getPackageCodePath", "()Ljava/lang/String;");
   jstring code_path = (jstring) env->CallObjectMethod(activity->clazz, methodID);
 
   const char* apk_path;
-  apk_path = env->GetStringUTFChars(code_path, NULL);
+  apk_path = env->GetStringUTFChars(code_path, nullptr);
+
+  // We're going to set this as binary name, which is better than the
+  // default (which refers to the zygote).  Or should we set it to the
+  // native library?  How do we get the path to that?
   android_cat.info() << "Path to APK: " << apk_path << "\n";
+  ExecutionEnvironment::set_binary_name(apk_path);
 
   // Mount the assets directory.
+  Filename apk_fn(apk_path);
   PT(VirtualFileMountAndroidAsset) asset_mount;
-  asset_mount = new VirtualFileMountAndroidAsset(app->activity->assetManager, apk_path);
+  asset_mount = new VirtualFileMountAndroidAsset(app->activity->assetManager, apk_fn);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->mount(asset_mount, "/android_asset", 0);
+
+  Filename asset_dir(apk_fn.get_dirname(), "assets");
+  vfs->mount(asset_mount, asset_dir, 0);
 
   // Release the apk_path.
   env->ReleaseStringUTFChars(code_path, apk_path);
 
   // Now add the asset directory to the model-path.
-  get_model_path().append_directory("/android_asset");
+  //TODO: prevent it from adding the directory multiple times.
+  get_model_path().append_directory(asset_dir);
 
-  // Create bogus argc and argv, then call our main function.
-  char *argv[] = {NULL};
+  // Create bogus argc and argv for calling the main function.
+  char *argv[] = {nullptr};
   int argc = 0;
-  main(argc, argv);
+
+  while (!app->destroyRequested) {
+    // Call the main function.  This will not return until the app is done.
+    android_cat.info() << "Calling main()\n";
+    main(argc, argv);
+
+    if (app->destroyRequested) {
+      // The app closed responding to a destroy request.
+      break;
+    }
+
+    // Ask Android to clean up the activity.
+    android_cat.info() << "Exited from main(), finishing activity\n";
+    ANativeActivity_finish(activity);
+
+    // We still need to keep an event loop going until Android gives us leave
+    // to end the process.
+    int looper_id;
+    int events;
+    struct android_poll_source *source;
+    while ((looper_id = ALooper_pollAll(-1, nullptr, &events, (void**)&source)) >= 0) {
+      // Process this event, but intercept application command events.
+      if (looper_id == LOOPER_ID_MAIN) {
+        int8_t cmd = android_app_read_cmd(app);
+        android_app_pre_exec_cmd(app, cmd);
+        android_app_post_exec_cmd(app, cmd);
+
+        // I don't think we can get a resume command after we call finish(),
+        // but let's handle it just in case.
+        if (cmd == APP_CMD_RESUME ||
+            cmd == APP_CMD_DESTROY) {
+          break;
+        }
+      } else if (source != nullptr) {
+        source->process(app, source);
+      }
+    }
+  }
+
+  android_cat.info() << "Destroy requested, exiting from android_main\n";
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();

@@ -16,6 +16,7 @@
 #include <algorithm>
 
 AtomicAdjust::Pointer GraphicsStateGuardianBase::_gsg_list;
+UpdateSeq GraphicsStateGuardianBase::_generated_shader_seq;
 TypeHandle GraphicsStateGuardianBase::_type_handle;
 
 /**
