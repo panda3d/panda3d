@@ -87,6 +87,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   jobject opts = _env->CallStaticObjectMethod(jni_PandaActivity,
                                               jni_PandaActivity_readBitmapSize,
                                               (jlong) _file);
+  _file->clear();
   _file->seekg(pos);
   if (_file->tellg() != pos) {
     android_cat.error()

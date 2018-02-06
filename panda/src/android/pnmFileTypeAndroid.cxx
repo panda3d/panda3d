@@ -21,7 +21,10 @@
 #include "bamReader.h"
 
 static const char * const extensions_android[] = {
-  "jpg", "jpeg", "gif", "png",//"webp" (android 4.0+)
+  "jpg", "jpeg", "gif", "png",
+#if __ANDROID_API__ >= 14
+  "webp"
+#endif
 };
 static const int num_extensions_android = sizeof(extensions_android) / sizeof(const char *);
 
