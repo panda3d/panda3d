@@ -821,9 +821,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
         SmartPkgEnable("HARFBUZZ",  "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
         SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
-        SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
-        SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
-        SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
@@ -836,6 +833,12 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h"))
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+
+        # On Android, these are system libraries.
+        if GetHost() != "android":
+            SmartPkgEnable("GLES",  "glesv1_cm", (), ("GLES/gl.h"), framework = "OpenGLES")
+            SmartPkgEnable("GLES2", "glesv2",    (), ("GLES2/gl2.h")) #framework = "OpenGLES"?
+            SmartPkgEnable("EGL",   "egl",       (), ("EGL/egl.h"))
 
         if not PkgSkip("FFMPEG"):
             if GetTarget() == "darwin":
@@ -1251,7 +1254,13 @@ def CompileCxx(obj,src,opts):
                     cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
-            cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
+            if GetTarget() != "android":
+                cmd += ' --sysroot=%s' % (SDK["SYSROOT"])
+            else:
+                ndk_dir = SDK["ANDROID_NDK"].replace('\\', '/')
+                cmd += ' -isystem %s/sysroot/usr/include' % (ndk_dir)
+                cmd += ' -isystem %s/sysroot/usr/include/%s' % (ndk_dir, SDK["ANDROID_TRIPLE"])
+            cmd += ' -no-canonical-prefixes'
 
         # Android-specific flags.
         arch = GetTargetArch()
@@ -1261,33 +1270,38 @@ def CompileCxx(obj,src,opts):
             # just copied from the default Android Makefiles.
             if "ANDROID_API" in SDK:
                 cmd += ' -D__ANDROID_API__=' + str(SDK["ANDROID_API"])
-            if "ANDROID_STL" in SDK:
-                cmd += ' -I%s/include' % (SDK["ANDROID_STL"])
-                cmd += ' -I%s/libs/%s/include' % (SDK["ANDROID_STL"], SDK["ANDROID_ABI"])
+            if "ANDROID_GCC_TOOLCHAIN" in SDK:
+                cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += ' -ffunction-sections -funwind-tables'
             if arch == 'armv7a':
-                cmd += ' -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__'
-                cmd += ' -fstack-protector -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
+                cmd += ' -target armv7-none-linux-androideabi'
+                cmd += ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
+                cmd += ' -fno-integrated-as'
             elif arch == 'arm':
-                cmd += ' -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__'
-                cmd += ' -fstack-protector -march=armv5te -mtune=xscale -msoft-float'
+                cmd += ' -target armv5te-none-linux-androideabi'
+                cmd += ' -march=armv5te -mtune=xscale -msoft-float'
+                cmd += ' -fno-integrated-as'
+            elif arch == 'aarch64':
+                cmd += ' -target aarch64-none-linux-android'
             elif arch == 'mips':
-                cmd += ' -finline-functions -fmessage-length=0'
-                cmd += ' -fno-inline-functions-called-once -fgcse-after-reload'
-                cmd += ' -frerun-cse-after-loop -frename-registers'
+                cmd += ' -target mipsel-none-linux-android'
+                cmd += ' -mips32'
+            elif arch == 'mips64':
+                cmd += ' -target mips64el-none-linux-android'
+                cmd += ' -fintegrated-as'
+            elif arch == 'x86':
+                cmd += ' -target i686-none-linux-android'
+                cmd += ' -mstackrealign'
+            elif arch == 'x86_64':
+                cmd += ' -target x86_64-none-linux-android'
 
             cmd += " -Wa,--noexecstack"
 
-            # Now add specific release/debug flags.
-            if optlevel >= 3:
-                cmd += " -fomit-frame-pointer"
-                if arch.startswith('arm'):
-                    cmd += ' -finline-limit=64 -mthumb'
-                elif arch == 'mips':
-                    cmd += ' -funswitch-loops -finline-limit=300'
-            else:
-                cmd += ' -fno-omit-frame-pointer'
-                if arch.startswith('arm'):
+            # Do we want thumb or arm instructions?
+            if arch.startswith('arm'):
+                if optlevel >= 3:
+                    cmd += ' -mthumb'
+                else:
                     cmd += ' -marm'
 
             # Enable SIMD instructions if requested
@@ -1745,9 +1759,26 @@ def CompileLink(dll, obj, opts):
                     cmd += " -arch %s" % arch
 
         elif GetTarget() == 'android':
+            arch = GetTargetArch()
+            if "ANDROID_GCC_TOOLCHAIN" in SDK:
+                cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
-            if GetTargetArch() == 'armv7a':
+            if arch == 'armv7a':
+                cmd += ' -target armv7-none-linux-androideabi'
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
+            elif arch == 'arm':
+                cmd += ' -target armv5te-none-linux-androideabi'
+            elif arch == 'aarch64':
+                cmd += ' -target aarch64-none-linux-android'
+            elif arch == 'mips':
+                cmd += ' -target mipsel-none-linux-android'
+                cmd += ' -mips32'
+            elif arch == 'mips64':
+                cmd += ' -target mips64el-none-linux-android'
+            elif arch == 'x86':
+                cmd += ' -target i686-none-linux-android'
+            elif arch == 'x86_64':
+                cmd += ' -target x86_64-none-linux-android'
             cmd += ' -lc -lm'
         else:
             cmd += " -pthread"

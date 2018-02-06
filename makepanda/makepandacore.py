@@ -37,7 +37,8 @@ TARGET_ARCH = None
 HAS_TARGET_ARCH = False
 TOOLCHAIN_PREFIX = ""
 ANDROID_ABI = None
-ANDROID_API = 14
+ANDROID_TRIPLE = None
+ANDROID_API = None
 SYS_LIB_DIRS = []
 SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
@@ -359,39 +360,47 @@ def SetTarget(target, arch=None):
             if host == 'android':
                 arch = host_arch
             else:
-                arch = 'arm'
+                arch = 'armv7a'
 
         # Did we specify an API level?
+        global ANDROID_API
         target, _, api = target.partition('-')
         if api:
-            global ANDROID_API
             ANDROID_API = int(api)
+        elif arch in ('mips64', 'aarch64', 'x86_64'):
+            # 64-bit platforms were introduced in Android 21.
+            ANDROID_API = 21
+        else:
+            # Default to the lowest API level supported by NDK r16.
+            ANDROID_API = 14
 
         # Determine the prefix for our gcc tools, eg. arm-linux-androideabi-gcc
-        global ANDROID_ABI
+        global ANDROID_ABI, ANDROID_TRIPLE
         if arch == 'armv7a':
             ANDROID_ABI = 'armeabi-v7a'
-            TOOLCHAIN_PREFIX = 'arm-linux-androideabi-'
+            ANDROID_TRIPLE = 'arm-linux-androideabi'
         elif arch == 'arm':
             ANDROID_ABI = 'armeabi'
-            TOOLCHAIN_PREFIX = 'arm-linux-androideabi-'
+            ANDROID_TRIPLE = 'arm-linux-androideabi'
         elif arch == 'aarch64':
             ANDROID_ABI = 'arm64-v8a'
-            TOOLCHAIN_PREFIX = 'aarch64-linux-android-'
+            ANDROID_TRIPLE = 'aarch64-linux-android'
         elif arch == 'mips':
             ANDROID_ABI = 'mips'
-            TOOLCHAIN_PREFIX = 'mipsel-linux-android-'
+            ANDROID_TRIPLE = 'mipsel-linux-android'
         elif arch == 'mips64':
             ANDROID_ABI = 'mips64'
-            TOOLCHAIN_PREFIX = 'mips64el-linux-android-'
+            ANDROID_TRIPLE = 'mips64el-linux-android'
         elif arch == 'x86':
             ANDROID_ABI = 'x86'
-            TOOLCHAIN_PREFIX = 'i686-linux-android-'
+            ANDROID_TRIPLE = 'i686-linux-android'
         elif arch == 'x86_64':
             ANDROID_ABI = 'x86_64'
-            TOOLCHAIN_PREFIX = 'x86_64-linux-android-'
+            ANDROID_TRIPLE = 'x86_64-linux-android'
         else:
             exit('Android architecture must be arm, armv7a, aarch64, mips, mips64, x86 or x86_64')
+
+        TOOLCHAIN_PREFIX = ANDROID_TRIPLE + '-'
 
     elif target == 'linux':
         if arch is not None:
@@ -2359,6 +2368,8 @@ def SdkLocateAndroid():
     """This actually locates the Android NDK, not the Android SDK.
     NDK_ROOT must be set to its root directory."""
 
+    global TOOLCHAIN_PREFIX
+
     if GetTarget() != 'android':
         return
 
@@ -2368,6 +2379,7 @@ def SdkLocateAndroid():
 
     abi = ANDROID_ABI
     SDK["ANDROID_ABI"] = abi
+    SDK["ANDROID_TRIPLE"] = ANDROID_TRIPLE
 
     if GetHost() == 'android':
         return
@@ -2383,36 +2395,58 @@ def SdkLocateAndroid():
     SDK["ANDROID_NDK"] = ndk_root
 
     # Determine the toolchain location.
-    gcc_ver = '4.8'
+    prebuilt_dir = os.path.join(ndk_root, 'toolchains', 'llvm', 'prebuilt')
+    if not os.path.isdir(prebuilt_dir):
+        exit('Not found: %s' % (prebuilt_dir))
+
+    host_tag = GetHost() + '-x86'
+    if host_64:
+        host_tag += '_64'
+    elif host_tag == 'windows-x86':
+        host_tag = 'windows'
+
+    prebuilt_dir = os.path.join(prebuilt_dir, host_tag)
+    if host_tag == 'windows-x86_64' and not os.path.isdir(prebuilt_dir):
+        # Try the 32-bits toolchain instead.
+        host_tag = 'windows'
+        prebuilt_dir = os.path.join(prebuilt_dir, host_tag)
+
+    SDK["ANDROID_TOOLCHAIN"] = prebuilt_dir
+
+    # And locate the GCC toolchain, which is needed for some tools (eg. as/ld)
     arch = GetTargetArch()
-    if arch == 'armv7a' or arch == 'arm':
-        arch = 'arm'
-        toolchain = 'arm-linux-androideabi-' + gcc_ver
-    elif arch == 'aarch64':
-        toolchain = 'aarch64-linux-android-' + gcc_ver
-    elif arch == 'mips':
-        toolchain = 'mipsel-linux-android-' + gcc_ver
-    elif arch == 'mips64':
-        toolchain = 'mips64el-linux-android-' + gcc_ver
-    elif arch == 'x86':
-        toolchain = 'x86-' + gcc_ver
-    elif arch == 'x86_64':
-        toolchain = 'x86_64-' + gcc_ver
-    SDK["ANDROID_TOOLCHAIN"] = os.path.join(ndk_root, 'toolchains', toolchain)
+    for opt in (TOOLCHAIN_PREFIX + '4.9', arch + '-4.9', TOOLCHAIN_PREFIX + '4.8', arch + '-4.8'):
+        if os.path.isdir(os.path.join(ndk_root, 'toolchains', opt)):
+            SDK["ANDROID_GCC_TOOLCHAIN"] = os.path.join(ndk_root, 'toolchains', opt, 'prebuilt', host_tag)
+            break
+
+    # The prebuilt binaries have no toolchain prefix.
+    TOOLCHAIN_PREFIX = ''
 
     # Determine the sysroot directory.
-    SDK["SYSROOT"] = os.path.join(ndk_root, 'platforms', 'android-%s' % (api), 'arch-%s' % (arch))
+    if arch == 'armv7a':
+        arch_dir = 'arch-arm'
+    elif arch == 'aarch64':
+        arch_dir = 'arch-arm64'
+    else:
+        arch_dir = 'arch-' + arch
+    SDK["SYSROOT"] = os.path.join(ndk_root, 'platforms', 'android-%s' % (api), arch_dir).replace('\\', '/')
     #IncDirectory("ALWAYS", os.path.join(SDK["SYSROOT"], 'usr', 'include'))
 
-    stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'gnu-libstdc++', gcc_ver)
-    SDK["ANDROID_STL"] = stdlibc
+    # Starting with NDK r16, libc++ is the recommended STL to use.
+    stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'llvm-libc++')
+    IncDirectory("ALWAYS", os.path.join(stdlibc, 'include').replace('\\', '/'))
+    LibDirectory("ALWAYS", os.path.join(stdlibc, 'libs', abi).replace('\\', '/'))
 
-    #IncDirectory("ALWAYS", os.path.join(stdlibc, 'include'))
-    #IncDirectory("ALWAYS", os.path.join(stdlibc, 'libs', abi, 'include'))
+    stl_lib = os.path.join(stdlibc, 'libs', abi, 'libc++_shared.so')
+    LibName("ALWAYS", stl_lib.replace('\\', '/'))
+    CopyFile(os.path.join(GetOutputDir(), 'lib', 'libc++_shared.so'), stl_lib)
 
-    stl_lib = os.path.join(stdlibc, 'libs', abi, 'libgnustl_shared.so')
-    LibName("ALWAYS", stl_lib)
-    CopyFile(os.path.join(GetOutputDir(), 'libs', abi, 'libgnustl_shared.so'), stl_lib)
+    # The Android support library polyfills C++ features not available in the
+    # STL that ships with Android.
+    support = os.path.join(ndk_root, 'sources', 'android', 'support', 'include')
+    IncDirectory("ALWAYS", support.replace('\\', '/'))
+    LibName("ALWAYS", "-landroid_support")
 
 ########################################################################
 ##
@@ -2675,6 +2709,10 @@ def SetupBuildEnvironment(compiler):
     os.environ["LC_ALL"] = "en_US.UTF-8"
     os.environ["LANGUAGE"] = "en"
 
+    # In the case of Android, we have to put the toolchain on the PATH in order to use it.
+    if GetTarget() == 'android' and GetHost() != 'android':
+        AddToPathEnv("PATH", os.path.join(SDK["ANDROID_TOOLCHAIN"], "bin"))
+
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
         SetupVisualStudioEnviron()
@@ -2709,11 +2747,15 @@ def SetupBuildEnvironment(compiler):
                 continue
 
             line = line[12:].strip()
-            for libdir in line.split(':'):
-                libdir = os.path.normpath(libdir)
+            libdirs = line.split(':')
+            while libdirs:
+                libdir = os.path.normpath(libdirs.pop(0))
                 if os.path.isdir(libdir):
                     if libdir not in SYS_LIB_DIRS:
                         SYS_LIB_DIRS.append(libdir)
+                elif len(libdir) == 1:
+                    # Oops, is this a drive letter?  Prepend it to the next.
+                    libdirs[0] = libdir + ':' + libdirs[0]
                 elif GetVerbose():
                     print("Ignoring non-existent library directory %s" % (libdir))
 
@@ -2770,33 +2812,6 @@ def SetupBuildEnvironment(compiler):
             print("System include search path:")
             for dir in SYS_INC_DIRS:
                 print("  " + dir)
-
-    # In the case of Android, we have to put the toolchain on the PATH in order to use it.
-    if GetTarget() == 'android' and GetHost() != 'android':
-        # Locate the directory where the toolchain binaries reside.
-        prebuilt_dir = os.path.join(SDK['ANDROID_TOOLCHAIN'], 'prebuilt')
-        if not os.path.isdir(prebuilt_dir):
-            exit('Not found: %s' % (prebuilt_dir))
-
-        host_tag = GetHost() + '-x86'
-        if host_64:
-            host_tag += '_64'
-        elif host_tag == 'windows-x86':
-            host_tag = 'windows'
-
-        prebuilt_dir = os.path.join(prebuilt_dir, host_tag)
-        if host_64 and not os.path.isdir(prebuilt_dir):
-            # Try the 32-bits toolchain instead.
-            prebuilt_dir = os.path.join(prebuilt_dir, host_tag)
-
-        if not os.path.isdir(prebuilt_dir):
-            if host_64:
-                exit('Not found: %s or %s' % (prebuilt_dir, host_tag))
-            else:
-                exit('Not found: %s' % (prebuilt_dir))
-
-        # Then, add it to the PATH.
-        AddToPathEnv("PATH", os.path.join(prebuilt_dir, 'bin'))
 
     # If we're cross-compiling, no point in putting our output dirs on the path.
     if CrossCompiling():
