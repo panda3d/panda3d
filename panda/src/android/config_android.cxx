@@ -24,6 +24,7 @@ struct android_app *panda_android_app = NULL;
 jclass    jni_PandaActivity;
 jmethodID jni_PandaActivity_readBitmapSize;
 jmethodID jni_PandaActivity_readBitmap;
+jmethodID jni_PandaActivity_showToast;
 
 jclass   jni_BitmapFactory_Options;
 jfieldID jni_BitmapFactory_Options_outWidth;
@@ -62,6 +63,9 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   jni_PandaActivity_readBitmap = env->GetStaticMethodID(jni_PandaActivity,
                    "readBitmap", "(JI)Landroid/graphics/Bitmap;");
 
+  jni_PandaActivity_showToast = env->GetMethodID(jni_PandaActivity,
+                   "showToast", "(Ljava/lang/String;I)V");
+
   jni_BitmapFactory_Options = env->FindClass("android/graphics/BitmapFactory$Options");
   jni_BitmapFactory_Options = (jclass) env->NewGlobalRef(jni_BitmapFactory_Options);
 
@@ -82,4 +86,18 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
 
   env->DeleteGlobalRef(jni_PandaActivity);
   env->DeleteGlobalRef(jni_BitmapFactory_Options);
+}
+
+/**
+ * Shows a toast notification at the bottom of the activity.  The duration
+ * should be 0 for short and 1 for long.
+ */
+void android_show_toast(ANativeActivity *activity, const string &message, int duration) {
+  Thread *thread = Thread::get_current_thread();
+  JNIEnv *env = thread->get_jni_env();
+  nassertv(env != nullptr);
+
+  jstring jmsg = env->NewStringUTF(message.c_str());
+  env->CallVoidMethod(activity->clazz, jni_PandaActivity_showToast, jmsg, (jint)duration);
+  env->DeleteLocalRef(jmsg);
 }

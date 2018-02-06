@@ -25,7 +25,7 @@
 
 // struct android_app* panda_android_app = NULL;
 
-extern int main(int argc, char **argv);
+extern int main(int argc, const char **argv);
 
 /**
  * This function is called by native_app_glue to initialize the program.  It
@@ -100,6 +100,20 @@ void android_main(struct android_app* app) {
     }
   }
 
+  // Get the cache directory.  Set the model-path to this location.
+  methodID = env->GetMethodID(activity_class, "getCacheDirString", "()Ljava/lang/String;");
+  jstring jcache_dir = (jstring) env->CallObjectMethod(activity->clazz, methodID);
+
+  if (jcache_dir != nullptr) {
+    const char *cache_dir;
+    cache_dir = env->GetStringUTFChars(jcache_dir, nullptr);
+    android_cat.info() << "Path to cache: " << cache_dir << "\n";
+
+    ConfigVariableFilename model_cache_dir("model-cache-dir", Filename());
+    model_cache_dir.set_value(cache_dir);
+    env->ReleaseStringUTFChars(jcache_dir, cache_dir);
+  }
+
   // Get the path to the APK.
   methodID = env->GetMethodID(activity_class, "getPackageCodePath", "()Ljava/lang/String;");
   jstring code_path = (jstring) env->CallObjectMethod(activity->clazz, methodID);
@@ -129,9 +143,29 @@ void android_main(struct android_app* app) {
   //TODO: prevent it from adding the directory multiple times.
   get_model_path().append_directory(asset_dir);
 
+  // Also read the intent filename.
+  methodID = env->GetMethodID(activity_class, "getIntentDataPath", "()Ljava/lang/String;");
+  jstring filename = (jstring) env->CallObjectMethod(activity->clazz, methodID);
+  const char *filename_str = nullptr;
+  if (filename != nullptr) {
+    filename_str = env->GetStringUTFChars(filename, nullptr);
+    android_cat.info() << "Got intent filename: " << filename_str << "\n";
+
+    Filename fn(filename_str);
+    if (!fn.exists()) {
+      // Show a toast with the failure message.
+      android_show_toast(activity, string("Unable to access ") + filename_str, 1);
+    }
+  }
+
   // Create bogus argc and argv for calling the main function.
-  char *argv[] = {nullptr};
-  int argc = 0;
+  const char *argv[] = {"pview", nullptr, nullptr};
+  int argc = 1;
+
+  if (filename_str != nullptr) {
+    argv[1] = filename_str;
+    ++argc;
+  }
 
   while (!app->destroyRequested) {
     // Call the main function.  This will not return until the app is done.
@@ -172,6 +206,10 @@ void android_main(struct android_app* app) {
   }
 
   android_cat.info() << "Destroy requested, exiting from android_main\n";
+
+  if (filename_str != nullptr) {
+    env->ReleaseStringUTFChars(filename, filename_str);
+  }
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();

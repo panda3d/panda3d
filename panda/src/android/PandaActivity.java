@@ -14,6 +14,9 @@
 package org.panda3d.android;
 
 import android.app.NativeActivity;
+import android.content.Intent;
+import android.net.Uri;
+import android.widget.Toast;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import org.panda3d.android.NativeIStream;
@@ -45,14 +48,41 @@ public class PandaActivity extends NativeActivity {
         return Thread.currentThread().getName();
     }
 
+    public String getIntentDataPath() {
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        if (data == null) {
+            return null;
+        }
+        String path = data.getPath();
+        if (path.startsWith("//")) {
+          path = path.substring(1);
+        }
+        return path;
+    }
+
+    public String getCacheDirString() {
+        return getCacheDir().toString();
+    }
+
+    public void showToast(final String text, final int duration) {
+        final PandaActivity activity = this;
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast toast = Toast.makeText(activity, text, duration);
+                toast.show();
+            }
+        });
+    }
+
     static {
-        System.loadLibrary("gnustl_shared");
-        System.loadLibrary("p3dtool");
-        System.loadLibrary("p3dtoolconfig");
-        System.loadLibrary("pandaexpress");
-        System.loadLibrary("panda");
-        System.loadLibrary("p3android");
-        System.loadLibrary("p3framework");
+        //System.loadLibrary("gnustl_shared");
+        //System.loadLibrary("p3dtool");
+        //System.loadLibrary("p3dtoolconfig");
+        //System.loadLibrary("pandaexpress");
+        //System.loadLibrary("panda");
+        //System.loadLibrary("p3android");
+        //System.loadLibrary("p3framework");
         System.loadLibrary("pandaegg");
         System.loadLibrary("pandagles");
     }
