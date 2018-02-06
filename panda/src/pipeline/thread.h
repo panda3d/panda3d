@@ -23,6 +23,10 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 
+#ifdef ANDROID
+typedef struct _JNIEnv JNIEnv;
+#endif
+
 class Mutex;
 class ReMutex;
 class MutexDebug;
@@ -127,6 +131,10 @@ public:
   INLINE void set_pstats_index(int pstats_index);
   INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
   INLINE PStatsCallback *get_pstats_callback() const;
+
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+#endif
 
 private:
   static void init_main_thread();

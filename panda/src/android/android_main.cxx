@@ -16,6 +16,7 @@
 #include "virtualFileMountAndroidAsset.h"
 #include "virtualFileSystem.h"
 #include "filename.h"
+#include "thread.h"
 
 #include "config_display.h"
 // #define OPENGLES_1 #include "config_androiddisplay.h"
@@ -29,21 +30,44 @@ extern int main(int argc, char **argv);
 /**
  * This function is called by native_app_glue to initialize the program.  It
  * simply stores the android_app object and calls main() normally.
+ *
+ * Note that this does not run in the main thread, but in a thread created
+ * specifically for this activity by android_native_app_glue.
  */
 void android_main(struct android_app* app) {
   panda_android_app = app;
 
-  // Attach the current thread to the JVM.
+  // Attach the app thread to the Java VM.
   JNIEnv *env;
   ANativeActivity* activity = app->activity;
-  int status = activity->vm->AttachCurrentThread(&env, NULL);
-  if (status < 0 || env == NULL) {
+  int status = activity->vm->AttachCurrentThread(&env, nullptr);
+  if (status < 0 || env == nullptr) {
     android_cat.error() << "Failed to attach thread to JVM!\n";
     return;
   }
 
-  // Fetch the data directory.
   jclass activity_class = env->GetObjectClass(activity->clazz);
+
+  // Get the current Java thread name.  This just helps with debugging.
+  jmethodID methodID = env->GetStaticMethodID(activity_class, "getCurrentThreadName", "()Ljava/lang/String;");
+  jstring jthread_name = (jstring) env->CallStaticObjectMethod(activity_class, methodID);
+
+  string thread_name;
+  if (jthread_name != nullptr) {
+    const char *c_str = env->GetStringUTFChars(jthread_name, nullptr);
+    thread_name.assign(c_str);
+    env->ReleaseStringUTFChars(jthread_name, c_str);
+  }
+
+  // Before we make any Panda calls, we must make the thread known to Panda.
+  // This will also cause the JNIEnv pointer to be stored on the thread.
+  // Note that we must keep a reference to this thread around.
+  PT(Thread) current_thread = Thread::bind_thread(thread_name, "android_app");
+
+  android_cat.info()
+    << "New native activity started on " << *current_thread << "\n";
+
+  // Fetch the data directory.
   jmethodID get_appinfo = env->GetMethodID(activity_class, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
 
   jobject appinfo = env->CallObjectMethod(activity->clazz, get_appinfo);
@@ -77,7 +101,7 @@ void android_main(struct android_app* app) {
   }
 
   // Get the path to the APK.
-  jmethodID methodID = env->GetMethodID(activity_class, "getPackageCodePath", "()Ljava/lang/String;");
+  methodID = env->GetMethodID(activity_class, "getPackageCodePath", "()Ljava/lang/String;");
   jstring code_path = (jstring) env->CallObjectMethod(activity->clazz, methodID);
 
   const char* apk_path;

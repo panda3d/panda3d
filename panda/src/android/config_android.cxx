@@ -49,8 +49,9 @@ init_libandroid() {
 jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   init_libandroid();
 
-  JNIEnv *env = get_jni_env();
-  assert(env != NULL);
+  Thread *thread = Thread::get_current_thread();
+  JNIEnv *env = thread->get_jni_env();
+  nassertr(env != nullptr, -1);
 
   jni_PandaActivity = env->FindClass("org/panda3d/android/PandaActivity");
   jni_PandaActivity = (jclass) env->NewGlobalRef(jni_PandaActivity);
@@ -75,7 +76,9 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
  * references.
  */
 void JNI_OnUnload(JavaVM *jvm, void *reserved) {
-  JNIEnv *env = get_jni_env();
+  Thread *thread = Thread::get_current_thread();
+  JNIEnv *env = thread->get_jni_env();
+  nassertv(env != nullptr);
 
   env->DeleteGlobalRef(jni_PandaActivity);
   env->DeleteGlobalRef(jni_BitmapFactory_Options);

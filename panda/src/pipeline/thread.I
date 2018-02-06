@@ -300,6 +300,17 @@ prepare_for_exit() {
   ThreadImpl::prepare_for_exit();
 }
 
+#ifdef ANDROID
+/**
+ * Enables interaction with the Java VM on Android.  Returns null if the
+ * thread is not attached to the Java VM (or bind_thread was not called).
+ */
+INLINE JNIEnv *Thread::
+get_jni_env() const {
+  return _impl.get_jni_env();
+}
+#endif
+
 /**
  * Stores a PStats index to be associated with this thread.  This is used
  * internally by the PStatClient; you should not need to call this directly.

@@ -41,6 +41,10 @@ public class PandaActivity extends NativeActivity {
         return BitmapFactory.decodeStream(stream, null, options);
     }
 
+    protected static String getCurrentThreadName() {
+        return Thread.currentThread().getName();
+    }
+
     static {
         System.loadLibrary("gnustl_shared");
         System.loadLibrary("p3dtool");
