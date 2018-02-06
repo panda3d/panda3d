@@ -29,9 +29,21 @@ set(P3INTERROGATEDB_SOURCES
 
 composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
 
+set(P3INTERROGATEDB_IGATE_SOURCES
+	config_interrogatedb.cxx
+	indexRemapper.cxx
+	interrogateComponent.cxx interrogateDatabase.cxx
+	interrogateElement.cxx interrogateFunction.cxx
+	interrogateFunctionWrapper.cxx
+	interrogateMakeSeq.cxx
+	interrogateManifest.cxx
+	interrogateType.cxx interrogate_datafile.cxx
+	interrogate_interface.cxx interrogate_request.cxx)
+
 add_library(p3interrogatedb ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
 target_link_libraries(p3interrogatedb p3dconfig)
 target_use_packages(p3interrogatedb PYTHON)
+target_interrogate(p3interrogatedb ${P3INTERROGATEDB_IGATE_SOURCES})
 
 install(TARGETS p3interrogatedb DESTINATION lib)
 install(FILES ${P3INTERROGATEDB_HEADERS} DESTINATION include/panda3d)

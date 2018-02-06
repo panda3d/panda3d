@@ -62,10 +62,19 @@ set(P3DTOOLBASE_SOURCES
     typedObject.cxx
 )
 
+set(P3DTOOLBASE_IGATEEXT
+    typeHandle_ext.cxx
+    typeHandle_ext.h
+)
+
 composite_sources(p3dtoolbase P3DTOOLBASE_SOURCES)
 
 add_library(p3dtoolbase	${P3DTOOLBASE_HEADERS} ${P3DTOOLBASE_SOURCES})
+# The extensions need py_panda.h and extension.h from interrogatedb
+target_include_directories(p3dtoolbase PUBLIC
+  $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
 target_use_packages(p3dtoolbase THREADS)
+target_interrogate(p3dtoolbase ${P3DTOOLBASE_SOURCES} EXTENSIONS ${P3DTOOLBASE_IGATEEXT})
 
 install(TARGETS p3dtoolbase DESTINATION lib)
 install(FILES ${P3DTOOLBASE_HEADERS} DESTINATION include/panda3d)

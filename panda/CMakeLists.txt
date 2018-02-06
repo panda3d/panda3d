@@ -88,7 +88,8 @@ set(CORE_MODULE_COMPONENTS
     p3chan p3char p3collide p3cull p3device p3dgraph p3display p3downloader p3dxml
     p3event p3express p3gobj p3grutil p3gsgbase p3linmath p3mathutil p3nativenet
     p3net p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui p3pipeline
-    p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform)
+    p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
+    p3prc p3dtoolutil p3dtoolbase)
 
 if(HAVE_AUDIO)
   list(APPEND CORE_MODULE_COMPONENTS p3audio)

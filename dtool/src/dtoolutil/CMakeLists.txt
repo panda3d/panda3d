@@ -62,10 +62,21 @@ set(P3DTOOLUTIL_SOURCES
   win32ArgParser.cxx
 )
 
+set(P3DTOOLUTIL_IGATEEXT
+  filename_ext.cxx
+  filename_ext.h
+  globPattern_ext.cxx
+  globPattern_ext.h
+)
+
 composite_sources(p3dtoolutil P3DTOOLUTIL_SOURCES)
 
 add_library(p3dtoolutil ${P3DTOOLUTIL_HEADERS} ${P3DTOOLUTIL_SOURCES})
+# The extensions need py_panda.h and extension.h from interrogatedb
+target_include_directories(p3dtoolutil PUBLIC
+  $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
 target_link_libraries(p3dtoolutil p3dtoolbase ${CMAKE_DL_LIBS})
+target_interrogate(p3dtoolutil ALL EXTENSIONS ${P3DTOOLUTIL_IGATEEXT})
 
 if(APPLE)
   find_library(FOUNDATION_LIBRARY Foundation)

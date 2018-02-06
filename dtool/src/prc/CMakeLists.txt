@@ -62,10 +62,20 @@ set(P3PRC_SOURCES
 	reversedNumericData.cxx
 	streamReader.cxx streamWrapper.cxx streamWriter.cxx)
 
+set(P3PRC_IGATEEXT
+  streamReader_ext.cxx
+  streamReader_ext.h
+  streamWriter_ext.cxx
+  streamWriter_ext.h)
+
 composite_sources(p3prc P3PRC_SOURCES)
 
 add_library(p3prc ${P3PRC_HEADERS} ${P3PRC_SOURCES})
+# The extensions need py_panda.h and extension.h from interrogatedb
+target_include_directories(p3prc PUBLIC
+  $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
 target_link_libraries(p3prc p3dtoolutil p3dtoolbase ${_OPENSSL_LIBRARIES})
+target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
 
 install(TARGETS p3prc DESTINATION lib)
 install(FILES ${P3PRC_HEADERS} DESTINATION include/panda3d)
