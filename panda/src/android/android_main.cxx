@@ -158,6 +158,28 @@ void android_main(struct android_app* app) {
     }
   }
 
+  // Were we given an optional location to write the stdout/stderr streams?
+  methodID = env->GetMethodID(activity_class, "getIntentOutputPath", "()Ljava/lang/String;");
+  jstring joutput_path = (jstring) env->CallObjectMethod(activity->clazz, methodID);
+  if (joutput_path != nullptr) {
+    const char *output_path = env->GetStringUTFChars(joutput_path, nullptr);
+
+    if (output_path != nullptr && output_path[0] != 0) {
+      int fd = open(output_path, O_CREAT | O_TRUNC | O_WRONLY);
+      if (fd != -1) {
+        android_cat.info()
+          << "Writing standard output to file " << output_path << "\n";
+
+        dup2(fd, 1);
+        dup2(fd, 2);
+      } else {
+        android_cat.error()
+          << "Failed to open output path " << output_path << "\n";
+      }
+      env->ReleaseStringUTFChars(joutput_path, output_path);
+    }
+  }
+
   // Create bogus argc and argv for calling the main function.
   const char *argv[] = {"pview", nullptr, nullptr};
   int argc = 1;

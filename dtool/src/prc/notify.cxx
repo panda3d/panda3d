@@ -335,9 +335,8 @@ assert_failure(const char *expression, int line,
 
 #ifdef ANDROID
   __android_log_assert("assert", "Panda3D", "Assertion failed: %s", message.c_str());
-#else
-  nout << "Assertion failed: " << message << "\n";
 #endif
+  nout << "Assertion failed: " << message << "\n";
 
   // This is redefined here, shadowing the defining in config_prc.h, so we can
   // guarantee it has already been constructed.
