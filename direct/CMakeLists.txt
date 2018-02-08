@@ -34,6 +34,10 @@ if(HAVE_PYTHON)
       showbase showutil stdpy task test tkpanels tkwidgets wxwidgets)
 
   foreach(dir ${DIRECT_INSTALL_DIRECTORIES})
+    file(COPY
+      DIRECTORY "src/${dir}"
+      DESTINATION "${PROJECT_BINARY_DIR}/direct"
+      FILES_MATCHING PATTERN "*.py")
     install(
       DIRECTORY "src/${dir}"
       DESTINATION "${PYTHON_LIB_INSTALL_DIR}/direct"
@@ -41,8 +45,8 @@ if(HAVE_PYTHON)
   endforeach()
 
   # We also need an __init__.py file, which we have to generate:
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/src/__init__.py" "")
+  file(WRITE "${PROJECT_BINARY_DIR}/direct/__init__.py" "")
   install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/src/__init__.py"
+    FILES "${PROJECT_BINARY_DIR}/direct/__init__.py"
     DESTINATION "${PYTHON_LIB_INSTALL_DIR}/direct")
 endif()
