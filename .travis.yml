@@ -61,7 +61,7 @@ install:
     - $PYTHONV -m pip install pytest
 script:
     - '[[ "$BUILDSYSTEM" != "makepanda" ]] || ( $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py )'
-    - '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir build && cd build && mv ../makepanda/test_imports.py . && ../makepanda/selfdestruct.py --yes && cmake -DHAVE_GTK2=NO $FLAGS .. && make -j4 && $PYTHONV test_imports.py && cd .. )'
+    - '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir built && cd built && mv ../makepanda/test_imports.py . && ../makepanda/selfdestruct.py --yes && cmake -DHAVE_GTK2=NO $FLAGS .. && make -j4 && $PYTHONV test_imports.py && cd .. )'
     - LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV -m pytest tests
 notifications:
   irc:
