@@ -7444,6 +7444,117 @@ def MakeInstallerFreeBSD():
     WriteFile("+MANIFEST", manifest_txt)
     oscmd("pkg create -p pkg-plist -r %s  -m . -o . %s" % (os.path.abspath("targetroot"), "--verbose" if GetVerbose() else "--quiet"))
 
+def MakeInstallerAndroid():
+    oscmd("rm -rf apkroot")
+    oscmd("mkdir apkroot")
+
+    # Also remove the temporary apks.
+    apk_unaligned = os.path.join(GetOutputDir(), "tmp", "panda3d-unaligned.apk")
+    apk_unsigned = os.path.join(GetOutputDir(), "tmp", "panda3d-unsigned.apk")
+    if os.path.exists(apk_unaligned):
+        os.unlink(apk_unaligned)
+    if os.path.exists(apk_unsigned):
+        os.unlink(apk_unsigned)
+
+    # Compile the Java classes into a Dalvik executable.
+    dx_cmd = "dx --dex --output=apkroot/classes.dex "
+    if GetOptimize() <= 2:
+        dx_cmd += "--debug "
+    if GetVerbose():
+        dx_cmd += "--verbose "
+    if "ANDROID_API" in SDK:
+        dx_cmd += "--min-sdk-version=%d " % (SDK["ANDROID_API"])
+    dx_cmd += os.path.join(GetOutputDir(), "classes")
+    oscmd(dx_cmd)
+
+    # Copy the libraries one by one.  In case of library dependencies, strip
+    # off any suffix (eg. libfile.so.1.0), as Android does not support them.
+    source_dir = os.path.join(GetOutputDir(), "lib")
+    target_dir = os.path.join("apkroot", "lib", SDK["ANDROID_ABI"])
+    oscmd("mkdir -p %s" % (target_dir))
+
+    # Determine the library directories we should look in.
+    libpath = [source_dir]
+    for dir in os.environ.get("LD_LIBRARY_PATH", "").split(':'):
+        dir = os.path.expandvars(dir)
+        dir = os.path.expanduser(dir)
+        if os.path.isdir(dir):
+            dir = os.path.realpath(dir)
+            if not dir.startswith("/system") and not dir.startswith("/vendor"):
+                libpath.append(dir)
+
+    def copy_library(source, base):
+        # Copy file to destination, stripping version suffix.
+        target = os.path.join(target_dir, base)
+        if not target.endswith('.so'):
+            target = target.rpartition('.so.')[0] + '.so'
+
+        if os.path.isfile(target):
+            # Already processed.
+            return
+
+        oscmd("cp %s %s" % (source, target))
+
+        # Walk through the library dependencies.
+        oscmd("ldd %s | grep .so > %s/tmp/otool-libs.txt" % (target, GetOutputDir()), True)
+        for line in open(GetOutputDir() + "/tmp/otool-libs.txt", "r"):
+            line = line.strip()
+            if not line:
+                continue
+            if '.so.' in line:
+                dep = line.rpartition('.so.')[0] + '.so'
+                oscmd("patchelf --replace-needed %s %s %s" % (line, dep, target))
+            else:
+                dep = line
+
+            # Find it on the LD_LIBRARY_PATH.
+            for dir in libpath:
+                fulldep = os.path.join(dir, dep)
+                if os.path.isfile(fulldep):
+                    copy_library(os.path.realpath(fulldep), dep)
+                    break
+
+    for base in os.listdir(source_dir):
+        if not base.startswith('lib'):
+            continue
+        if not base.endswith('.so') and '.so.' not in base:
+            continue
+
+        source = os.path.join(source_dir, base)
+        if os.path.islink(source):
+            continue
+        copy_library(source, base)
+
+    # Copy the models as well.
+    oscmd("mkdir apkroot/assets")
+    oscmd("cp -R %s apkroot/assets/models" % (os.path.join(GetOutputDir(), "models")))
+
+    # Make an empty res folder.  It's needed for the apk to be installable, apparently.
+    oscmd("mkdir apkroot/res")
+
+    # Now package up the application
+    oscmd("cp panda/src/android/pview_manifest.xml apkroot/AndroidManifest.xml")
+    aapt_cmd = "aapt package"
+    aapt_cmd += " -F %s" % (apk_unaligned)
+    aapt_cmd += " -M apkroot/AndroidManifest.xml"
+    aapt_cmd += " -A apkroot/assets -S apkroot/res"
+    aapt_cmd += " -I $PREFIX/share/aapt/android.jar"
+    oscmd(aapt_cmd)
+
+    # And add all the libraries to it.
+    oscmd("cd apkroot && aapt add ../%s classes.dex lib/%s/lib*.so" % (apk_unaligned, SDK["ANDROID_ABI"]))
+
+    # Now align the .apk, which is necessary for Android to load it.
+    oscmd("zipalign -v -p 4 %s %s" % (apk_unaligned, apk_unsigned))
+
+    # Finally, sign it using a debug key.  This is generated if it doesn't exist.
+    oscmd("apksigner debug.ks %s panda3d.apk" % (apk_unsigned))
+
+    # Clean up.
+    oscmd("rm -rf apkroot")
+    os.unlink(apk_unaligned)
+    os.unlink(apk_unsigned)
+
 try:
     if INSTALLER:
         ProgressOutput(100.0, "Building installer")
@@ -7478,6 +7589,8 @@ try:
             MakeInstallerOSX()
         elif (target == 'freebsd'):
             MakeInstallerFreeBSD()
+        elif (target == 'android'):
+            MakeInstallerAndroid()
         else:
             exit("Do not know how to make an installer for this platform")
 
