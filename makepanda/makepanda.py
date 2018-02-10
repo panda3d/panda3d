@@ -1291,9 +1291,11 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -fintegrated-as'
             elif arch == 'x86':
                 cmd += ' -target i686-none-linux-android'
+                cmd += ' -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32'
                 cmd += ' -mstackrealign'
             elif arch == 'x86_64':
                 cmd += ' -target x86_64-none-linux-android'
+                cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel'
 
             cmd += " -Wa,--noexecstack"
 
