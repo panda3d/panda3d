@@ -17,9 +17,9 @@ matrix:
         - export CC=gcc-4.7
         - export CXX=g++-4.7
     - compiler: clang
-      env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+      env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS='-DWANT_PYTHON_VERSION=3 -DCOMPOSITE_SOURCE_LIMIT=0' # Disable unity builds to catch missing #include directives
     - compiler: gcc
-      env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+      env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS='-DWANT_PYTHON_VERSION=3 -DCOMPOSITE_SOURCE_LIMIT=0' # Disable unity builds to catch missing #include directives
       before_install:
         - export CC=gcc-4.7
         - export CXX=g++-4.7
