@@ -24,12 +24,17 @@ test_big_endian(WORDS_BIGENDIAN)
 set(HAVE_NAMESPACE ${CMAKE_STD_NAMESPACE})
 
 # Define if fstream::open() accepts a third parameter for umask.
-#TODO make test case
-#$[cdefine HAVE_OPEN_MASK]
+check_cxx_source_compiles("
+#include <fstream>
+std::fstream fs;
+int main(int argc, char *argv[]) { fs.open(\"file\", std::fstream::out, 0644); return 0; }
+" HAVE_OPEN_MASK)
 
 # Define if we have lockf().
-#TODO make test case
-set(HAVE_LOCKF 1)
+check_cxx_source_compiles("
+#include <unistd.h>
+int main(int argc, char *argv[]) { lockf(0, F_LOCK, 0); return 0; }
+" HAVE_LOCKF)
 
 # Check if we have a wchar_t type.
 check_type_size(wchar_t HAVE_WCHAR_T)
@@ -42,7 +47,7 @@ int main(int argc, char *argv[]) { return 0; }
 " HAVE_WSTRING)
 
 # Define if the C++ compiler supports the typename keyword.
-#TODO make test case (I had one but it broke)
+# Since we now require C++11, this is a given.
 set(HAVE_TYPENAME 1)
 
 # Define if we can trust the compiler not to insert extra bytes in
@@ -97,8 +102,12 @@ int main(int argc, char *argv[]) { return 0; }
 
 # Do the system headers define key ios typedefs like ios::openmode
 # and ios::fmtflags?
-#TODO make test case
-set(HAVE_IOS_TYPEDEFS 1)
+check_cxx_source_compiles("
+#include <ios>
+std::ios::openmode foo;
+std::ios::fmtflags bar;
+int main(int argc, char *argv[]) { return 0; }
+" HAVE_IOS_TYPEDEFS)
 
 # Define if the C++ iostream library defines ios::binary.
 check_cxx_source_compiles("
@@ -108,8 +117,9 @@ int main(int argc, char *argv[]) { return 0; }
 " HAVE_IOS_BINARY)
 
 # Can we safely call getenv() at static init time?
-#TODO make test case? can we make a reliable one?
-#$[cdefine STATIC_INIT_GETENV]
+if(WIN32 OR UNIX)
+  set(STATIC_INIT_GETENV 1)
+endif()
 
 # Can we read the file /proc/self/[*] to determine our
 # environment variables at static init time?
@@ -127,11 +137,12 @@ endif()
 
 # Do we have a global pair of argc/argv variables that we can read at
 # static init time? Should we prototype them? What are they called?
-#TODO make test case
-#$[cdefine HAVE_GLOBAL_ARGV]
-#$[cdefine PROTOTYPE_GLOBAL_ARGV]
-#$[cdefine GLOBAL_ARGV]
-#$[cdefine GLOBAL_ARGC]
+if(WIN32)
+  set(HAVE_GLOBAL_ARGV ON)
+  set(PROTOTYPE_GLOBAL_ARGV OFF)
+  set(GLOBAL_ARGV __argv)
+  set(GLOBAL_ARGC __argc)
+endif()
 
 # Do we have all these header files?
 check_include_file_cxx(io.h PHAVE_IO_H)
