@@ -947,23 +947,6 @@ but it is a hybrid between user-space threads and os-provided threads." ON)
 ### Configure pipelining ###
 option(DO_PIPELINING "If on, compile with pipelined rendering." ON)
 
-
-### Report on threading and pipelining status ###
-if(SIMPLE_THREADS)
-  message(STATUS "Compilation will include simulated threading support.")
-elseif(HAVE_THREADS)
-  if(DO_PIPELINING)
-    message(STATUS "Compilation will include full, pipelined threading support.")
-  else()
-    message(STATUS "Compilation will include nonpipelined threading support.")
-  endif()
-else(NOT SIMPLE_THREADS)
-  message(STATUS "Configuring Panda without threading support.")
-endif()
-
-message(STATUS "")
-message(STATUS "See dtool_config.h for more details about the specified configuration.\n")
-
 ### Miscellaneous configuration
 option(COMPILE_IN_DEFAULT_FONT
   "If on, compiles in a default font, so that every TextNode will always
