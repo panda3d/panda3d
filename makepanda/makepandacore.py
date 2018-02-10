@@ -59,6 +59,13 @@ else:
     # case.
     host_64 = (platform.architecture()[0] == '64bit')
 
+# On Android, get a list of all the public system libraries.
+ANDROID_SYS_LIBS = []
+if os.path.exists("/etc/public.libraries.txt"):
+    for line in open("/etc/public.libraries.txt", "r"):
+        line = line.strip()
+        ANDROID_SYS_LIBS.append(line)
+
 ########################################################################
 ##
 ## Visual C++ Version (MSVC) and Visual Studio Information Map
@@ -1568,7 +1575,14 @@ def LocateLibrary(lib, lpath=[], prefer_static=False):
     return None
 
 def SystemLibraryExists(lib):
-    return LocateLibrary(lib, SYS_LIB_DIRS) is not None
+    result = LocateLibrary(lib, SYS_LIB_DIRS)
+    if result is not None:
+        return True
+
+    if GetHost() == "android" and GetTarget() == "android":
+        return ('lib%s.so' % lib) in ANDROID_SYS_LIBS
+
+    return False
 
 def ChooseLib(libs, thirdparty=None):
     """ Chooses a library from the parameters, in order of preference. Returns the first if none of them were found. """

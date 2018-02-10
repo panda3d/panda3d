@@ -821,6 +821,9 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
         SmartPkgEnable("HARFBUZZ",  "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
         SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
+        SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
+        SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
+        SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
@@ -830,15 +833,9 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
-        SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h"))
+        SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
-
-        # On Android, these are system libraries.
-        if GetHost() != "android":
-            SmartPkgEnable("GLES",  "glesv1_cm", (), ("GLES/gl.h"), framework = "OpenGLES")
-            SmartPkgEnable("GLES2", "glesv2",    (), ("GLES2/gl2.h")) #framework = "OpenGLES"?
-            SmartPkgEnable("EGL",   "egl",       (), ("EGL/egl.h"))
 
         if not PkgSkip("FFMPEG"):
             if GetTarget() == "darwin":
