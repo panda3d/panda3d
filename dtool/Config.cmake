@@ -420,7 +420,7 @@ mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
 #
 
 # Is Eigen installed, and should Eigen replace internal linmath?
-find_package(Eigen3)
+find_package(Eigen3 QUIET)
 
 package_option(EIGEN
   "Enables experimental support for the Eigen linear algebra library.
@@ -513,7 +513,7 @@ your source directory on your PYTHONPATH.")
 
 
 # Is OpenSSL installed, and where?
-find_package(OpenSSL COMPONENTS ssl crypto)
+find_package(OpenSSL COMPONENTS ssl crypto QUIET)
 
 package_option(OPENSSL DEFAULT ON
   "Enable OpenSSL support")
@@ -524,7 +524,7 @@ error messages when they occur." ${IS_DEBUG_BUILD})
 
 
 # Is libjpeg installed, and where?
-find_package(JPEG)
+find_package(JPEG QUIET)
 
 package_option(JPEG DEFAULT ON
   "Enable support for loading .jpg images.")
@@ -538,21 +538,21 @@ option(HAVE_VIDEO4LINUX
 
 
 # Is libpng installed, and where?
-find_package(PNG)
+find_package(PNG QUIET)
 
 package_option(PNG DEFAULT ON
   "Enable support for loading .png images.")
 
 
 # Is libtiff installed, and where?
-find_package(TIFF)
+find_package(TIFF QUIET)
 
 package_option(TIFF
   "Enable support for loading .tif images.")
 
 
 # Is libtar installed, and where?
-find_package(Tar)
+find_package(Tar QUIET)
 
 package_option(TAR
   "This is used to optimize patch generation against tar files.")
@@ -560,7 +560,7 @@ package_option(TAR
 
 # TODO: FFTW2
 # Is libfftw installed, and where?
-#find_package(FFTW2)
+#find_package(FFTW2 QUIET)
 
 #package_option(FFTW
 #  "This enables support for lossless compression of animations in
@@ -570,7 +570,7 @@ package_option(TAR
 
 
 # Is libsquish installed, and where?
-find_package(Squish)
+find_package(Squish QUIET)
 
 package_option(SQUISH
   "Enables support for automatic compression of DXT textures.")
@@ -593,7 +593,7 @@ package_option(CGDX10 "Enable support for Nvidia Cg's DX10 API."
 
 
 # Is VRPN installed, and where?
-find_package(VRPN)
+find_package(VRPN QUIET)
 
 package_option(VRPN
   "Enables support for connecting to VRPN servers.")
@@ -608,15 +608,15 @@ package_option(VRPN
 
 
 # Is ZLIB installed, and where?
-find_package(ZLIB)
+find_package(ZLIB QUIET)
 
 package_option(ZLIB DEFAULT ON
   "Enables support for compression of Panda assets.")
 
 # Is FFMPEG installed, and where?
-find_package(FFMPEG)
-find_package(SWScale)
-find_package(SWResample)
+find_package(FFMPEG QUIET)
+find_package(SWScale QUIET)
+find_package(SWResample QUIET)
 
 package_option(FFMPEG
   "Enables support for audio- and video-decoding using the FFMPEG library.")
@@ -626,7 +626,7 @@ package_option(SWRESAMPLE
   "Enables support for FFMPEG's libresample for audio resampling.")
 
 # Is ODE installed, and where?
-find_package(ODE)
+find_package(ODE QUIET)
 
 package_option(ODE
   "Enables support for ridid-body physics using the Open Dynamics Engine.")
@@ -732,7 +732,7 @@ mark_as_advanced(SDL_LIBRARY_TEMP)
 
 
 # Is X11 insalled, and where?
-find_package(X11)
+find_package(X11 QUIET)
 
 package_option(X11
   "Provides X-server support on Unix platforms. X11 may need to be linked
@@ -887,7 +887,7 @@ set(HAVE_FLEX ${FLEX_FOUND})
 #
 
 ### Configure threading support ###
-find_package(Threads)
+find_package(Threads QUIET)
 
 # Add basic use flag for threading
 if(THREADS_FOUND)
