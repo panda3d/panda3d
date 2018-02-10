@@ -206,7 +206,7 @@ function(interrogate_sources target output database module)
         ${define_flags}
         -S "${PROJECT_BINARY_DIR}/include"
         -S "${PROJECT_SOURCE_DIR}/dtool/src/parser-inc"
-        -S "${PROJECT_BINARY_DIR}/include/parser-inc"
+        -S "${PYTHON_INCLUDE_DIRS}"
         ${include_flags}
         ${scan_sources}
         ${extensions}
