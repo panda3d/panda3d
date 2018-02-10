@@ -12,22 +12,18 @@ matrix:
         - export CC=gcc-4.7
         - export CXX=g++-4.7
     - compiler: gcc
-      dist: precise
       env: BUILDSYSTEM=cmake PYTHONV=python2.7 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
       before_install:
         - export CC=gcc-4.7
         - export CXX=g++-4.7
     - compiler: clang
-      dist: precise
       env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
     - compiler: gcc
-      dist: trusty
       env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
       before_install:
         - export CC=gcc-4.7
         - export CXX=g++-4.7
     - compiler: clang
-      dist: trusty
       env: BUILDSYSTEM=cmake PYTHONV=python2.7 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
 addons:
   apt:
