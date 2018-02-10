@@ -764,6 +764,34 @@ def CxxGetIncludes(path):
     CXXINCLUDECACHE[path] = [date, include]
     return include
 
+JAVAIMPORTCACHE = {}
+
+global JavaImportRegex
+JavaImportRegex = re.compile('[ \t\r\n;]import[ \t]+([a-zA-Z][^;]+)[ \t\r\n]*;')
+
+def JavaGetImports(path):
+    date = GetTimestamp(path)
+    if path in JAVAIMPORTCACHE:
+        cached = JAVAIMPORTCACHE[path]
+        if cached[0] == date:
+            return cached[1]
+    try:
+        source = open(path, 'r').read()
+    except:
+        exit("Cannot open source file \"" + path + "\" for reading.")
+
+    imports = []
+    try:
+        for match in JavaImportRegex.finditer(source, 0):
+            impname = match.group(1)
+            imports.append(impname.strip())
+    except:
+        print("Failed to determine dependencies of \"" + path  +"\".")
+        raise
+
+    JAVAIMPORTCACHE[path] = [date, imports]
+    return imports
+
 ########################################################################
 ##
 ## SaveDependencyCache / LoadDependencyCache
@@ -862,6 +890,13 @@ def CxxFindHeader(srcfile, incfile, ipath):
             if GetTimestamp(full) > 0: return full
         return 0
 
+def JavaFindClasses(impspec, clspath):
+    path = clspath + '/' + impspec.replace('.', '/') + '.class'
+    if '*' in path:
+        return glob.glob(path)
+    else:
+        return [path]
+
 ########################################################################
 ##
 ## CxxCalcDependencies(srcfile, ipath, ignore)
@@ -893,6 +928,22 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
     result = list(dep.keys())
     CxxDependencyCache[srcfile] = result
     return result
+
+global JavaDependencyCache
+JavaDependencyCache = {}
+
+def JavaCalcDependencies(srcfile, clspath):
+    if srcfile in JavaDependencyCache:
+        return JavaDependencyCache[srcfile]
+
+    deps = set((srcfile,))
+    JavaDependencyCache[srcfile] = deps
+
+    imports = JavaGetImports(srcfile)
+    for impspec in imports:
+        for cls in JavaFindClasses(impspec, clspath):
+            deps.add(cls)
+    return deps
 
 ########################################################################
 ##
@@ -3313,6 +3364,9 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
             (base,suffix) = os.path.splitext(x)
             if (SUFFIX_INC.count(suffix)):
                 for d in CxxCalcDependencies(fullinput, ipath, []):
+                    t.deps[d] = 1
+            elif suffix == '.java':
+                for d in JavaCalcDependencies(fullinput, OUTPUTDIR + "/classes"):
                     t.deps[d] = 1
 
         # If we are linking statically, add the source DLL's dynamic dependencies.
