@@ -256,13 +256,6 @@ This is only necessary if you plan to make calls into Panda from a
 program written in Python.  This is done only if HAVE_PYTHON is also
 true." ON)
 
-set(PYTHON_NATIVE
-  "Define this true to use the new interrogate feature to generate
-Python-native objects directly, rather than requiring a separate
-FFI step.  This loads and runs much more quickly than the original
-mechanism.  Define this false (that is, empty) to use the original
-interfaces." ON)
-
 set(INTERROGATE_C_INTERFACE
   "Do you want to generate a C-callable interrogate interface?  This
 generates an interface similar to the Python interface above, with
@@ -294,7 +287,7 @@ and cannot run the built version), specify its name instead.")
 set(INTERROGATE_MODULE "interrogate_module" CACHE STRING
   "Same as INTERROGATE, except for the interrogate_module binary.")
 
-mark_as_advanced(PYTHON_NATIVE INTERROGATE_OPTIONS)
+mark_as_advanced(INTERROGATE_OPTIONS)
 
 if(NOT CMAKE_CROSSCOMPILING)
   mark_as_advanced(INTERROGATE INTERROGATE_MODULE)
