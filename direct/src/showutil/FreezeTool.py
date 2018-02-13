@@ -71,11 +71,6 @@ hiddenImports = {
     'pytest': pytest_imports(),
     'pkg_resources': [
         'pkg_resources.*.*',
-        # TODO why does the above not get these modules too?
-        'pkg_resources._vendor.packaging.*',
-        'pkg_resources._vendor.packaging.version',
-        'pkg_resources._vendor.packaging.specifiers',
-        'pkg_resources._vendor.packaging.requirements',
     ],
     'xml.etree.cElementTree': ['xml.etree.ElementTree'],
     'datetime': ['_strptime'],
@@ -907,6 +902,60 @@ class Freezer:
 
         return modules
 
+    def _gatherSubmodules(self, moduleName, implicit = False, newName = None,
+                          filename = None, guess = False, fromSource = None,
+                          text = None):
+        if not newName:
+            newName = moduleName
+
+        assert(moduleName.endswith('.*'))
+        assert(newName.endswith('.*'))
+
+        mdefs = {}
+
+        # Find the parent module, so we can get its directory.
+        parentName = moduleName[:-2]
+        newParentName = newName[:-2]
+        parentNames = [(parentName, newParentName)]
+
+        if parentName.endswith('.*'):
+            assert(newParentName.endswith('.*'))
+            # Another special case.  The parent name "*" means to
+            # return all possible directories within a particular
+            # directory.
+
+            topName = parentName[:-2]
+            newTopName = newParentName[:-2]
+            parentNames = []
+            modulePath = self.getModulePath(topName)
+            if modulePath:
+                for dirname in modulePath:
+                    for basename in os.listdir(dirname):
+                        if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
+                            parentName = '%s.%s' % (topName, basename)
+                            newParentName = '%s.%s' % (newTopName, basename)
+                            if self.getModulePath(parentName):
+                                parentNames.append((parentName, newParentName))
+
+        for parentName, newParentName in parentNames:
+            modules = self.getModuleStar(parentName)
+
+            if modules == None:
+                # It's actually a regular module.
+                mdef[newParentName] = self.ModuleDef(
+                    parentName, implicit = implicit, guess = guess,
+                    fromSource = fromSource, text = text)
+
+            else:
+                # Now get all the py files in the parent directory.
+                for basename in modules:
+                    moduleName = '%s.%s' % (parentName, basename)
+                    newName = '%s.%s' % (newParentName, basename)
+                    mdefs[newName] = self.ModuleDef(
+                        moduleName, implicit = implicit, guess = True,
+                        fromSource = fromSource)
+        return mdefs
+
     def addModule(self, moduleName, implicit = False, newName = None,
                   filename = None, guess = False, fromSource = None,
                   text = None):
@@ -933,49 +982,9 @@ class Freezer:
             newName = moduleName
 
         if moduleName.endswith('.*'):
-            assert(newName.endswith('.*'))
-            # Find the parent module, so we can get its directory.
-            parentName = moduleName[:-2]
-            newParentName = newName[:-2]
-            parentNames = [(parentName, newParentName)]
-
-            if parentName.endswith('.*'):
-                assert(newParentName.endswith('.*'))
-                # Another special case.  The parent name "*" means to
-                # return all possible directories within a particular
-                # directory.
-
-                topName = parentName[:-2]
-                newTopName = newParentName[:-2]
-                parentNames = []
-                modulePath = self.getModulePath(topName)
-                if modulePath:
-                    for dirname in modulePath:
-                        for basename in os.listdir(dirname):
-                            if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
-                                parentName = '%s.%s' % (topName, basename)
-                                newParentName = '%s.%s' % (newTopName, basename)
-                                if self.getModulePath(parentName):
-                                    parentNames.append((parentName, newParentName))
-
-            for parentName, newParentName in parentNames:
-                modules = self.getModuleStar(parentName)
-
-                if modules == None:
-                    # It's actually a regular module.
-                    self.modules[newParentName] = self.ModuleDef(
-                        parentName, implicit = implicit, guess = guess,
-                        fromSource = fromSource, text = text)
-
-                else:
-                    # Now get all the py files in the parent directory.
-                    for basename in modules:
-                        moduleName = '%s.%s' % (parentName, basename)
-                        newName = '%s.%s' % (newParentName, basename)
-                        mdef = self.ModuleDef(
-                            moduleName, implicit = implicit, guess = True,
-                            fromSource = fromSource)
-                        self.modules[newName] = mdef
+            self.modules.update(self._gatherSubmodules(
+                moduleName, implicit, newName, filename,
+                guess, fromSource, text))
         else:
             # A normal, explicit module name.
             self.modules[newName] = self.ModuleDef(
@@ -1069,7 +1078,16 @@ class Freezer:
         for origName in list(self.mf.modules.keys()):
             hidden = hiddenImports.get(origName, [])
             for modname in hidden:
-                self.__loadModule(self.ModuleDef(modname, implicit = True))
+                print(origName, modname)
+                if modname.endswith('.*'):
+                    mdefs = self._gatherSubmodules(modname, implicit = True)
+                    for mdef in mdefs.values():
+                        try:
+                            self.__loadModule(mdef)
+                        except ImportError:
+                            pass
+                else:
+                    self.__loadModule(self.ModuleDef(modname, implicit = True))
 
         # Now, any new modules we found get added to the export list.
         for origName in list(self.mf.modules.keys()):
