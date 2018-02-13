@@ -2227,7 +2227,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
         if sys.version_info < (3, 0):
             # fallback to original version for Python 2
-            return super.load_module(fqname, fp, pathname, file_info)
+            return modulefinder.ModuleFinder.load_module(self, fqname, fp, pathname, file_info)
 
         suffix, mode, type = file_info
         self.msgin(2, "load_module", fqname, fp and "fp", pathname)
