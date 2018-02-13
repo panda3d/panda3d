@@ -8,7 +8,7 @@ import marshal
 import imp
 import platform
 import struct
-from io import StringIO, BytesIO, TextIOWrapper
+import io
 import distutils.sysconfig as sysconf
 import zipfile
 
@@ -1143,11 +1143,14 @@ class Freezer:
                 stuff = ("", "rb", imp.PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
-                if mdef.text:
-                    fp = StringIO(mdef.text)
-                else:
-                    fp = open(pathname, 'U')
                 stuff = ("", "r", imp.PY_SOURCE)
+                if mdef.text:
+                    fp = io.StringIO(mdef.text)
+                elif sys.version_info >= (3, 0):
+                    fp = open(pathname, 'rb')
+                    stuff = ("", "rb", imp.PY_SOURCE)
+                else:
+                    fp = open(pathname, 'r')
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
 
             if tempPath:
@@ -1910,7 +1913,7 @@ class Freezer:
         if data.startswith(b'MZ'):
             # A Windows PE file.
             pe = pefile.PEFile()
-            pe.read(BytesIO(data))
+            pe.read(io.BytesIO(data))
             addr = pe.get_export_address(symbol_name)
             if addr is not None:
                 # We found it, return its offset in the file.
@@ -2162,8 +2165,8 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         Returns None if the module could not be found. """
 
         if os.path.isfile(path):
-            if sys.version_info >= (3, 0) and 'b' not in mode:
-                return open(path, mode, encoding='utf8')
+            if 'b' not in mode:
+                return io.open(path, mode, encoding='utf8')
             else:
                 return open(path, mode)
 
@@ -2189,7 +2192,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                     return None
 
                 if sys.version_info >= (3, 0) and 'b' not in mode:
-                    return TextIOWrapper(fp, encoding='utf8')
+                    return io.TextIOWrapper(fp, encoding='utf8')
                 return fp
 
             # Look at the parent directory.
@@ -2197,6 +2200,43 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             fn = os.path.join(dirname, fn)
 
         return None
+
+    def load_module(self, fqname, fp, pathname, file_info):
+        """Copied from ModuleFinder.load_module with fixes to handle sending bytes
+        to compile() for PY_SOURCE types. Sending bytes to compile allows it to
+        handle file encodings."""
+
+        if sys.version_info < (3, 0):
+            # fallback to original version for Python 2
+            return super.load_module(fqname, fp, pathname, file_info)
+
+        suffix, mode, type = file_info
+        self.msgin(2, "load_module", fqname, fp and "fp", pathname)
+        if type == imp.PKG_DIRECTORY:
+            m = self.load_package(fqname, pathname)
+            self.msgout(2, "load_module ->", m)
+            return m
+        if type == imp.PY_SOURCE:
+            newline = b'\n' if 'b' in mode else '\n'
+            co = compile(fp.read()+newline, pathname, 'exec')
+        elif type == imp.PY_COMPILED:
+            try:
+                marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
+            except ImportError as exc:
+                self.msgout(2, "raise ImportError: " + str(exc), pathname)
+                raise
+            co = marshal.loads(marshal_data)
+        else:
+            co = None
+        m = self.add_module(fqname)
+        m.__file__ = pathname
+        if co:
+            if self.replace_paths:
+                co = self.replace_paths_in_code(co)
+            m.__code__ = co
+            self.scan_code(co, m)
+        self.msgout(2, "load_module ->", m)
+        return m
 
     def find_module(self, name, path=None, parent=None):
         """ Finds a module with the indicated name on the given search path
