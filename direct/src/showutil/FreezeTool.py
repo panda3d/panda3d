@@ -74,6 +74,7 @@ hiddenImports = {
     ],
     'xml.etree.cElementTree': ['xml.etree.ElementTree'],
     'datetime': ['_strptime'],
+    'keyring.backends': ['keyring.backends.*'],
 }
 
 # These are missing modules that we've reported already this session.
