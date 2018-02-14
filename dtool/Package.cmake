@@ -1,8 +1,12 @@
-# Eigen
+#
+# ------------ Eigen ------------
+#
 find_package(Eigen3 QUIET)
+
 if(Eigen3_FOUND)
   set(EIGEN_FOUND ON)
 endif()
+
 package_option(EIGEN
   "Enables experimental support for the Eigen linear algebra library.
 If this is provided, Panda will use this library as the fundamental
@@ -11,15 +15,35 @@ its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
 is also enabled."
   LICENSE "MPL-2")
+
 option(LINMATH_ALIGN
   "This is required for activating SSE2 support using Eigen.
 Activating this does constrain most objects in Panda to 16-byte
 alignment, which could impact memory usage on very-low-memory
 platforms.  Currently experimental." ON)
+
 if(LINMATH_ALIGN)
   config_package(EIGEN "Eigen linear algebra library" "vectorization enabled in build")
 else()
   config_package(EIGEN "Eigen linear algebra library" "vectorization NOT enabled in build")
+endif()
+
+#
+# ------------ OpenSSL ------------
+#
+find_package(OpenSSL COMPONENTS ssl crypto QUIET)
+
+package_option(OPENSSL DEFAULT ON
+  "Enable OpenSSL support")
+
+option(REPORT_OPENSSL_ERRORS
+  "Define this true to include the OpenSSL code to report verbose
+error messages when they occur." ${IS_DEBUG_BUILD})
+
+if(REPORT_OPENSSL_ERRORS)
+  config_package(OPENSSL "OpenSSL" "with verbose error reporting")
+else()
+  config_package(OPENSSL "OpenSSL")
 endif()
 
 # Find and configure Miles Sound System

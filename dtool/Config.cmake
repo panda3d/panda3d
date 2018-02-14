@@ -487,17 +487,6 @@ without having to reinstall), comment out this definition and put
 your source directory on your PYTHONPATH.")
 
 
-# Is OpenSSL installed, and where?
-find_package(OpenSSL COMPONENTS ssl crypto QUIET)
-
-package_option(OPENSSL DEFAULT ON
-  "Enable OpenSSL support")
-
-option(REPORT_OPENSSL_ERRORS
-  "Define this true to include the OpenSSL code to report verbose
-error messages when they occur." ${IS_DEBUG_BUILD})
-
-
 # Is libjpeg installed, and where?
 find_package(JPEG QUIET)
 

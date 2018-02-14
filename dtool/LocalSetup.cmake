@@ -190,12 +190,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_OPENSSL)
-  message("+ OpenSSL")
-else()
-  message("- Did not find OpenSSL")
-endif()
-
 if(HAVE_JPEG)
   message("+ libjpeg")
 else()
