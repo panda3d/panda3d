@@ -73,7 +73,7 @@ add_library(p3dtoolbase	${P3DTOOLBASE_HEADERS} ${P3DTOOLBASE_SOURCES})
 # The extensions need py_panda.h and extension.h from interrogatedb
 target_include_directories(p3dtoolbase PUBLIC
   $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
-target_use_packages(p3dtoolbase THREADS)
+target_use_packages(p3dtoolbase THREADS EIGEN)
 target_interrogate(p3dtoolbase ${P3DTOOLBASE_SOURCES} EXTENSIONS ${P3DTOOLBASE_IGATEEXT})
 
 install(TARGETS p3dtoolbase DESTINATION lib)

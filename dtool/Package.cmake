@@ -3,10 +3,6 @@
 #
 find_package(Eigen3 QUIET)
 
-if(Eigen3_FOUND)
-  set(EIGEN_FOUND ON)
-endif()
-
 package_option(EIGEN
   "Enables experimental support for the Eigen linear algebra library.
 If this is provided, Panda will use this library as the fundamental
@@ -14,6 +10,7 @@ implementation of its own linmath library; otherwise, it will use
 its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
 is also enabled."
+  FOUND_AS EIGEN3
   LICENSE "MPL-2")
 
 option(LINMATH_ALIGN

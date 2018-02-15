@@ -412,12 +412,6 @@ mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
 # Now let's check for the presence of various thirdparty libraries.
 #
 
-# Always include Eigen, because we include it pretty much everywhere.
-if(EIGEN3_FOUND)
-  include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
-
-
 # Is Python installed, and should Python interfaces be generated?
 set(WANT_PYTHON_VERSION "2.7"
   CACHE STRING "Which Python version to seek out for building Panda3D against.")

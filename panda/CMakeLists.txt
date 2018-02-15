@@ -5,9 +5,6 @@ endif()
 # Not sure where I want to hide these inludes yet, but it is annoying
 # to have to add them to every CMakeLists that either directly, or
 # recursively includes linmath, and other libraries etc...
-if(HAVE_EIGEN)
-  include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
 if(HAVE_FFTW)
   include_directories(${FFTW2_INCLUDE_DIR})
 endif()
