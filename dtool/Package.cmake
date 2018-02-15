@@ -65,6 +65,14 @@ find_package(TIFF QUIET)
 package_option(TIFF "Enable support for loading .tif images.")
 config_package(TIFF "libtiff")
 
+#
+# ------------ LIBTAR ------------
+#
+find_package(Tar QUIET)
+package_option(TAR
+  "This is used to optimize patch generation against tar files.")
+config_package(TAR "libtar")
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")

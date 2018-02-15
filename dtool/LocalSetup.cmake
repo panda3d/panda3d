@@ -190,12 +190,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_TAR)
-  message("+ libtar")
-else()
-  message("- Did not find libtar")
-endif()
-
 if(HAVE_FFTW)
   message("+ fftw")
 else()

@@ -491,13 +491,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is libtar installed, and where?
-find_package(Tar QUIET)
-
-package_option(TAR
-  "This is used to optimize patch generation against tar files.")
-
-
 # TODO: FFTW2
 # Is libfftw installed, and where?
 #find_package(FFTW2 QUIET)
