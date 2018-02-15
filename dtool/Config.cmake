@@ -487,32 +487,8 @@ without having to reinstall), comment out this definition and put
 your source directory on your PYTHONPATH.")
 
 
-# Is libjpeg installed, and where?
-find_package(JPEG QUIET)
-
-package_option(JPEG DEFAULT ON
-  "Enable support for loading .jpg images.")
-
-# Some versions of libjpeg did not provide jpegint.h.  Redefine this
-# to false if you lack this header file.
-#set(PHAVE_JPEGINT_H TRUE)
-
 option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
-
-
-# Is libpng installed, and where?
-find_package(PNG QUIET)
-
-package_option(PNG DEFAULT ON
-  "Enable support for loading .png images.")
-
-
-# Is libtiff installed, and where?
-find_package(TIFF QUIET)
-
-package_option(TIFF
-  "Enable support for loading .tif images.")
 
 
 # Is libtar installed, and where?

@@ -190,24 +190,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_JPEG)
-  message("+ libjpeg")
-else()
-  message("- Did not find libjpeg")
-endif()
-
-if(HAVE_PNG)
-  message("+ libpng")
-else()
-  message("- Did not find libpng")
-endif()
-
-if(HAVE_TIFF)
-  message("+ libtiff")
-else()
-  message("- Did not find libtiff")
-endif()
-
 if(HAVE_TAR)
   message("+ libtar")
 else()

@@ -46,6 +46,25 @@ else()
   config_package(OPENSSL "OpenSSL")
 endif()
 
+#
+# ------------ IMAGE FORMATS ------------
+#
+
+# JPEG:
+find_package(JPEG QUIET)
+package_option(JPEG DEFAULT ON "Enable support for loading .jpg images.")
+config_package(JPEG "libjpeg")
+
+# PNG:
+find_package(PNG QUIET)
+package_option(PNG DEFAULT ON "Enable support for loading .png images.")
+config_package(PNG "libpng")
+
+# TIFF:
+find_package(TIFF QUIET)
+package_option(TIFF "Enable support for loading .tif images.")
+config_package(TIFF "libtiff")
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")
