@@ -539,14 +539,6 @@ package_option(VRPN
   "Enables support for connecting to VRPN servers.")
 
 
-# TODO: Helix
-# Is HELIX installed, and where?
-#find_package(Helix)
-
-#package_option(HELIX
-# "Enables support for Helix media playback.")
-
-
 # Is ZLIB installed, and where?
 find_package(ZLIB QUIET)
 

@@ -92,9 +92,6 @@
 /* Define if we have Berkeley DB installed.  */
 #cmakedefine HAVE_BDB
 
-/* Define if we have HELIX installed.  */
-#cmakedefine HAVE_HELIX
-
 /* Define if we have CG installed.  */
 #cmakedefine HAVE_CG
 
