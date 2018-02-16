@@ -29,18 +29,14 @@
 #undef howmany
 #endif
 
-#ifdef PHAVE_DRFFTW_H
-  #include "drfftw.h"
-#else
-  #include "rfftw.h"
-#endif
+#include "fftw3.h"
 
 // These FFTW support objects can only be defined if we actually have the FFTW
 // library available.
-static rfftw_plan get_real_compress_plan(int length);
-static rfftw_plan get_real_decompress_plan(int length);
+static fftw_plan get_real_compress_plan(int length);
+static fftw_plan get_real_decompress_plan(int length);
 
-typedef pmap<int, rfftw_plan> RealPlans;
+typedef pmap<int, fftw_plan> RealPlans;
 static RealPlans _real_compress_plans;
 static RealPlans _real_decompress_plans;
 
@@ -262,20 +258,31 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
   }
 
   // Now generate the Fourier transform.
-  double *data = (double *)alloca(length * sizeof(double));
+  int fft_length = length / 2 + 1;
+  fftw_complex *fft_bins = (fftw_complex *)alloca(fft_length * sizeof(fftw_complex));
+
+  // This is for an in-place transform. It doesn't violate strict aliasing
+  // rules because &fft_bins[0][0] is still a double pointer. This saves on
+  // precious stack space.
+  double *data = &fft_bins[0][0];
   int i;
   for (i = 0; i < length; i++) {
     data[i] = array[i];
   }
 
-  double *half_complex = (double *)alloca(length * sizeof(double));
-
-  rfftw_plan plan = get_real_compress_plan(length);
-  rfftw_one(plan, data, half_complex);
+  // Note: This is an in-place DFT. `data` and `fft_bins` are aliases.
+  fftw_plan plan = get_real_compress_plan(length);
+  fftw_execute_dft_r2c(plan, data, fft_bins);
 
 
   // Now encode the numbers, run-length encoded by size, so we only write out
   // the number of bits we need for each number.
+  // Note that Panda3D has conventionally always used FFTW2's halfcomplex
+  // format for serializing the bins. In short, this means that for an n-length
+  // FFT, it stores:
+  // 1) The real components for bins 0 through floor(n/2), followed by...
+  // 2) The imaginary components for bins floor((n+1)/2)-1 through 1.
+  //    (Imaginary component for bin 0 is never stored, as that's always zero.)
 
   vector_double run;
   RunWidth run_width = RW_invalid;
@@ -286,8 +293,18 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
     static const double max_range_16 = 32767.0;
     static const double max_range_8 = 127.0;
 
-    double scale_factor = get_scale_factor(i, length);
-    double num = cfloor(half_complex[i] / scale_factor + 0.5);
+    int bin; // which FFT bin we're storing
+    int j; // 0=real; 1=imag
+    if (i < fft_length) {
+      bin = i;
+      j = 0;
+    } else {
+      bin = length - i;
+      j = 1;
+    }
+
+    double scale_factor = get_scale_factor(bin, fft_length);
+    double num = cfloor(fft_bins[bin][j] / scale_factor + 0.5);
 
     // How many bits do we need to encode this integer?
     double a = fabs(num);
@@ -313,16 +330,30 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
     // across a single intervening zero, don't interrupt the run just for
     // that.
     if (run_width == RW_8 && num_width == RW_0) {
-      if (i + 1 >= length || half_complex[i + 1] != 0.0) {
+      if (run.back() != 0) {
         num_width = RW_8;
       }
     }
 
     if (num_width != run_width) {
       // Now we need to flush the last run.
+
+      // First, however, take care of the special case above: if we're
+      // switching from RW_8 to RW_0, there could be a zero at the end, which
+      // should be reclaimed into the RW_0 run.
+      bool reclaimed_zero = (run_width == RW_8 && num_width == RW_0 &&
+                             run.back() == 0);
+      if (reclaimed_zero) {
+        run.pop_back();
+      }
+
       num_written += write_run(datagram, run_width, run);
       run.clear();
       run_width = num_width;
+
+      if (reclaimed_zero) {
+        run.push_back(0);
+      }
     }
 
     run.push_back(num);
@@ -595,14 +626,36 @@ read_reals(DatagramIterator &di, vector_stdfloat &array) {
   nassertr(num_read == length, false);
   nassertr((int)half_complex.size() == length, false);
 
+  int fft_length = length / 2 + 1;
+  fftw_complex *fft_bins = (fftw_complex *)alloca(fft_length * sizeof(fftw_complex));
+
   int i;
-  for (i = 0; i < length; i++) {
-    half_complex[i] *= get_scale_factor(i, length);
+  for (i = 0; i < fft_length; i++) {
+    double scale_factor = get_scale_factor(i, fft_length);
+
+    // For an explanation of this, see the compression code's comment about the
+    // halfcomplex format.
+
+    fft_bins[i][0] = half_complex[i] * scale_factor;
+    if (i == 0) {
+      // First bin doesn't store imaginary component
+      fft_bins[i][1] = 0.0;
+    } else if ((i == fft_length - 1) && !(length & 1)) {
+      // Last bin doesn't store imaginary component with even lengths
+      fft_bins[i][1] = 0.0;
+    } else {
+      fft_bins[i][1] = half_complex[length - i] * scale_factor;
+    }
   }
 
-  double *data = (double *)alloca(length * sizeof(double));
-  rfftw_plan plan = get_real_decompress_plan(length);
-  rfftw_one(plan, &half_complex[0], data);
+  // This is for an in-place transform. It doesn't violate strict aliasing
+  // rules because &fft_bins[0][0] is still a double pointer. This saves on
+  // precious stack space.
+  double *data = &fft_bins[0][0];
+
+  // Note: This is an in-place DFT. `data` and `fft_bins` are aliases.
+  fftw_plan plan = get_real_decompress_plan(length);
+  fftw_execute_dft_c2r(plan, fft_bins, data);
 
   double scale = 1.0 / (double)length;
   array.reserve(array.size() + length);
@@ -770,14 +823,14 @@ free_storage() {
   for (pi = _real_compress_plans.begin();
        pi != _real_compress_plans.end();
        ++pi) {
-    rfftw_destroy_plan((*pi).second);
+    fftw_destroy_plan((*pi).second);
   }
   _real_compress_plans.clear();
 
   for (pi = _real_decompress_plans.begin();
        pi != _real_decompress_plans.end();
        ++pi) {
-    rfftw_destroy_plan((*pi).second);
+    fftw_destroy_plan((*pi).second);
   }
   _real_decompress_plans.clear();
 #endif
@@ -933,17 +986,18 @@ read_run(DatagramIterator &di, vector_double &run) {
 }
 
 /**
- * Returns the appropriate scaling for the given position within the
- * halfcomplex array.
+ * Returns the appropriate scaling for the given bin in the FFT output.
+ *
+ * The scale factor is the value of one integer in the quantized data. As such,
+ * greater bins (higher, more noticeable frequencies) have *lower* scaling
+ * factors, which means greater precision.
  */
 double FFTCompressor::
 get_scale_factor(int i, int length) const {
-  int m = (length / 2) + 1;
-  int k = (i < m) ? i : length - i;
-  nassertr(k >= 0 && k < m, 1.0);
+  nassertr(i < length, 1.0);
 
   return _fft_offset +
-    _fft_factor * pow((double)(m-1 - k) / (double)(m-1), _fft_exponent);
+    _fft_factor * pow((double)(length - i) / (double)(length), _fft_exponent);
 }
 
 /**
@@ -997,7 +1051,7 @@ get_compressability(const PN_stdfloat *data, int length) const {
  * Returns a FFTW plan suitable for compressing a float array of the indicated
  * length.
  */
-static rfftw_plan
+static fftw_plan
 get_real_compress_plan(int length) {
   RealPlans::iterator pi;
   pi = _real_compress_plans.find(length);
@@ -1005,8 +1059,8 @@ get_real_compress_plan(int length) {
     return (*pi).second;
   }
 
-  rfftw_plan plan;
-  plan = rfftw_create_plan(length, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+  fftw_plan plan;
+  plan = fftw_plan_dft_r2c_1d(length, NULL, NULL, FFTW_ESTIMATE);
   _real_compress_plans.insert(RealPlans::value_type(length, plan));
 
   return plan;
@@ -1016,7 +1070,7 @@ get_real_compress_plan(int length) {
  * Returns a FFTW plan suitable for decompressing a float array of the
  * indicated length.
  */
-static rfftw_plan
+static fftw_plan
 get_real_decompress_plan(int length) {
   RealPlans::iterator pi;
   pi = _real_decompress_plans.find(length);
@@ -1024,8 +1078,8 @@ get_real_decompress_plan(int length) {
     return (*pi).second;
   }
 
-  rfftw_plan plan;
-  plan = rfftw_create_plan(length, FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE);
+  fftw_plan plan;
+  plan = fftw_plan_dft_c2r_1d(length, NULL, NULL, FFTW_ESTIMATE);
   _real_decompress_plans.insert(RealPlans::value_type(length, plan));
 
   return plan;
