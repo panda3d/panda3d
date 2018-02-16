@@ -10,6 +10,7 @@
 # Usage:
 #   package_option(package_name package_doc_string
 #                  [DEFAULT ON | OFF]
+#                  [FOUND_AS find_name]
 #                  [LICENSE license])
 # Examples:
 #   package_option(LIBNAME "Enables LIBNAME support." DEFAULT OFF)
@@ -18,6 +19,9 @@
 #       builds is to enable all found third-party packages.
 #       In builds for redistribution, there is the additional requirement that
 #       the package be suitably-licensed.
+#
+#       FOUND_AS indicates the name of the CMake find_package() module, which
+#       may differ from Panda3D's internal name for that package.
 #
 #
 # Function: config_package
@@ -59,6 +63,7 @@ function(package_option name)
   # Parse the arguments.
   set(command)
   set(default)
+  set(found_as "${name}")
   set(license "")
   set(cache_string)
 
@@ -67,12 +72,19 @@ function(package_option name)
       set(default "${arg}")
       set(command)
 
+    elseif(command STREQUAL "FOUND_AS")
+      set(found_as "${arg}")
+      set(command)
+
     elseif(command STREQUAL "LICENSE")
       set(license "${arg}")
       set(command)
 
     elseif(arg STREQUAL "DEFAULT")
       set(command "DEFAULT")
+
+    elseif(arg STREQUAL "FOUND_AS")
+      set(command "FOUND_AS")
 
     elseif(arg STREQUAL "LICENSE")
       set(command "LICENSE")
@@ -95,7 +107,7 @@ function(package_option name)
     if(IS_DIST_BUILD)
       # Accept things that don't have a configured license
       if(license STREQUAL "")
-        set(default "${${name}_FOUND}")
+        set(default "${${found_as}_FOUND}")
 
       else()
         list(FIND PANDA_DIST_USE_LICENSES ${license} license_index)
@@ -104,7 +116,7 @@ function(package_option name)
         if(${license_index} EQUAL "-1")
           set(default OFF)
         else()
-          set(default "${${name}_FOUND}")
+          set(default "${${found_as}_FOUND}")
         endif()
       endif()
 
@@ -112,13 +124,13 @@ function(package_option name)
       set(default OFF)
 
     else()
-      set(default "${${name}_FOUND}")
+      set(default "${${found_as}_FOUND}")
 
     endif()
   endif()
 
   # If it was set by the user but not found, display an error.
-  if(HAVE_${name} AND NOT ${name}_FOUND)
+  if(HAVE_${name} AND NOT ${found_as}_FOUND)
     message(SEND_ERROR "NOT FOUND: ${name}.  Disable HAVE_${name} to continue.")
   endif()
 
@@ -131,15 +143,20 @@ function(package_option name)
     set(PANDA_DID_SET_OPTION_${name} TRUE PARENT_SCOPE)
   endif()
 
-  set(PANDA_PACKAGE_DEFAULT_${name} "${default}")
+  set(PANDA_PACKAGE_DEFAULT_${name} "${default}" PARENT_SCOPE)
 
   # Create the option.
   option("HAVE_${name}" "${cache_string}" "${default}")
   if(HAVE_${name})
-    set(_${name}_LIBRARY ${${name}_LIBRARY} CACHE INTERNAL "<Internal>")
-    set(_${name}_LIBRARIES ${${name}_LIBRARIES} CACHE INTERNAL "<Internal>")
+    set(_${name}_INCLUDES ${${found_as}_INCLUDE_DIRS} ${${found_as}_INCLUDE_DIR}
+      CACHE INTERNAL "<Internal>")
+    if(${found_as}_LIBRARIES)
+      set(_${name}_LIBRARIES ${${found_as}_LIBRARIES} CACHE INTERNAL "<Internal>")
+    else()
+      set(_${name}_LIBRARIES "${${found_as}_LIBRARY}" CACHE INTERNAL "<Internal>")
+    endif()
   else()
-    unset(_${name}_LIBRARY CACHE)
+    unset(_${name}_INCLUDES CACHE)
     unset(_${name}_LIBRARIES CACHE)
   endif()
 endfunction()
@@ -192,7 +209,7 @@ function(show_packages)
     else()
       if(NOT ${package}_FOUND)
         set(reason "not found")
-      elseif(PANDA_PACKAGE_DEFAULT_${package})
+      elseif(NOT PANDA_PACKAGE_DEFAULT_${package})
         set(reason "not requested")
       else()
         set(reason "disabled")
@@ -214,14 +231,8 @@ macro(target_use_packages target)
 
   foreach(lib ${libs})
     if(HAVE_${lib})
-      # N.B. target_include_directories is new in CMake 2.8.11; we target 2.8.4.
-      #target_include_directories("${target}" PUBLIC "${${lib}_INCLUDE_DIRS};${${lib}_INCLUDE_DIR}")
-      include_directories("${${lib}_INCLUDE_DIRS};${${lib}_INCLUDE_DIR}")
-      if(_${lib}_LIBRARIES)
-        target_link_libraries("${target}" ${_${lib}_LIBRARIES})
-      else()
-        target_link_libraries("${target}" ${_${lib}_LIBRARY})
-      endif()
+      target_include_directories("${target}" PUBLIC ${_${lib}_INCLUDES})
+      target_link_libraries("${target}" ${_${lib}_LIBRARIES})
     endif()
   endforeach(lib)
 endmacro(target_use_packages)
