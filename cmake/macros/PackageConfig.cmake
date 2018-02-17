@@ -231,8 +231,13 @@ macro(target_use_packages target)
 
   foreach(lib ${libs})
     if(HAVE_${lib})
-      target_include_directories("${target}" PUBLIC ${_${lib}_INCLUDES})
       target_link_libraries("${target}" ${_${lib}_LIBRARIES})
+
+      # This is gross, but we actually want to hide package include directories
+      # from Interrogate to make sure it relies on parser-inc instead, so we'll
+      # use some generator expressions to do that.
+      target_include_directories("${target}" PUBLIC
+        $<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${_${lib}_INCLUDES}>)
     endif()
   endforeach(lib)
 endmacro(target_use_packages)

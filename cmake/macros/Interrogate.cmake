@@ -166,10 +166,25 @@ function(interrogate_sources target output database language_flags)
   # Interrogate also needs the include paths, so we'll extract them from the
   # target. These are available via a generator expression.
 
+  # When we read the INTERFACE_INCLUDE_DIRECTORIES property, we need to read it
+  # from a target that has the IS_INTERROGATE=1 property.
+  # (See PackageConfig.cmake for an explanation why.)
+  # The problem is, custom commands are not targets, so we can't put target
+  # properties on them. And if you try to use the $<TARGET_PROPERTY:prop>
+  # generator expression from the context of a custom command, it'll instead
+  # read the property from the most recent actual target. As a workaround for
+  # this, we create a fake target with the IS_INTERROGATE property set and pull
+  # the INTERFACE_INCLUDE_DIRECTORIES property out through that.
+  # I hate it, but such is CMake.
+  add_custom_target(${target}_igate_internal EXCLUDE_FROM_ALL)
+  set_target_properties(${target}_igate_internal PROPERTIES
+    IS_INTERROGATE 1
+    INTERFACE_INCLUDE_DIRECTORIES "$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
+
   # Note, the \t is a workaround for a CMake bug where using a plain space in
   # a JOIN will cause it to be escaped. Tabs are not escaped and will
   # separate correctly.
-  set(include_flags "-I$<JOIN:$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>,\t-I>")
+  set(include_flags "-I$<JOIN:$<TARGET_PROPERTY:${target}_igate_internal,INTERFACE_INCLUDE_DIRECTORIES>,\t-I>")
   # The above must also be included when compiling the resulting _igate.cxx file:
   include_directories("$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
 
