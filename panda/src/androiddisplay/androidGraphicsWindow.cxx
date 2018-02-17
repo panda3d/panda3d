@@ -545,6 +545,9 @@ handle_motion_event(const AInputEvent *event) {
     // The up event doesn't let us know which button is up, so we need to
     // keep track of the button state ourselves.
     int32_t button_state = AMotionEvent_getButtonState(event);
+    if (button_state == 0 && action == AMOTION_EVENT_ACTION_DOWN) {
+      button_state = AMOTION_EVENT_BUTTON_PRIMARY;
+    }
     int32_t changed = _mouse_button_state ^ button_state;
     if (changed != 0) {
       if (changed & AMOTION_EVENT_BUTTON_PRIMARY) {
