@@ -3262,7 +3262,7 @@ get_shader() const {
  *
  */
 void NodePath::
-set_shader_input(ShaderInput inp) {
+set_shader_input(const ShaderInput &inp) {
   nassertv_always(!is_empty());
 
   PandaNode *pnode = node();
