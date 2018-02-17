@@ -31,6 +31,8 @@ extern EXPORT_CLASS struct android_app* panda_android_app;
 extern jclass    jni_PandaActivity;
 extern jmethodID jni_PandaActivity_readBitmapHeader;
 extern jmethodID jni_PandaActivity_readBitmap;
+extern jmethodID jni_PandaActivity_createBitmap;
+extern jmethodID jni_PandaActivity_compressBitmap;
 extern jmethodID jni_PandaActivity_showToast;
 
 extern jclass   jni_BitmapFactory_Options;

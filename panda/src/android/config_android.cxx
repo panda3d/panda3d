@@ -24,11 +24,23 @@ struct android_app *panda_android_app = NULL;
 jclass    jni_PandaActivity;
 jmethodID jni_PandaActivity_readBitmapSize;
 jmethodID jni_PandaActivity_readBitmap;
+jmethodID jni_PandaActivity_createBitmap;
+jmethodID jni_PandaActivity_compressBitmap;
 jmethodID jni_PandaActivity_showToast;
 
 jclass   jni_BitmapFactory_Options;
 jfieldID jni_BitmapFactory_Options_outWidth;
 jfieldID jni_BitmapFactory_Options_outHeight;
+
+#ifndef HAVE_JPEG
+static PNMFileTypeAndroid file_type_jpeg(PNMFileTypeAndroid::CF_jpeg);
+#endif
+#ifndef HAVE_PNG
+static PNMFileTypeAndroid file_type_png(PNMFileTypeAndroid::CF_png);
+#endif
+#if __ANDROID_API__ >= 14
+static PNMFileTypeAndroid file_type_webp(PNMFileTypeAndroid::CF_webp);
+#endif
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -37,10 +49,6 @@ jfieldID jni_BitmapFactory_Options_outHeight;
  */
 void
 init_libandroid() {
-  PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
-  PNMFileTypeAndroid::init_type();
-  PNMFileTypeAndroid::register_with_read_factory();
-  tr->register_type(new PNMFileTypeAndroid);
 }
 
 /**
@@ -48,7 +56,7 @@ init_libandroid() {
  * references and the method IDs.
  */
 jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
-  init_libandroid();
+  //init_libandroid();
 
   Thread *thread = Thread::get_current_thread();
   JNIEnv *env = thread->get_jni_env();
@@ -63,6 +71,12 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   jni_PandaActivity_readBitmap = env->GetStaticMethodID(jni_PandaActivity,
                    "readBitmap", "(JI)Landroid/graphics/Bitmap;");
 
+  jni_PandaActivity_createBitmap = env->GetStaticMethodID(jni_PandaActivity,
+                   "createBitmap", "(IIIZ)Landroid/graphics/Bitmap;");
+
+  jni_PandaActivity_compressBitmap = env->GetStaticMethodID(jni_PandaActivity,
+                   "compressBitmap", "(Landroid/graphics/Bitmap;IIJ)Z");
+
   jni_PandaActivity_showToast = env->GetMethodID(jni_PandaActivity,
                    "showToast", "(Ljava/lang/String;I)V");
 
@@ -71,6 +85,25 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
 
   jni_BitmapFactory_Options_outWidth = env->GetFieldID(jni_BitmapFactory_Options, "outWidth", "I");
   jni_BitmapFactory_Options_outHeight = env->GetFieldID(jni_BitmapFactory_Options, "outHeight", "I");
+
+  nassertr(jni_PandaActivity_readBitmapSize, -1);
+  nassertr(jni_PandaActivity_readBitmap, -1);
+  nassertr(jni_PandaActivity_createBitmap, -1);
+  nassertr(jni_PandaActivity_compressBitmap, -1);
+  nassertr(jni_PandaActivity_showToast, -1);
+
+  // We put this in JNI_OnLoad because it relies on Java classes, which
+  // are only available when launched from the Java VM.
+  PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
+#ifndef HAVE_JPEG
+  tr->register_type(&file_type_jpeg);
+#endif
+#ifndef HAVE_PNG
+  tr->register_type(&file_type_png);
+#endif
+#if __ANDROID_API__ >= 14
+  tr->register_type(&file_type_webp);
+#endif
 
   return JNI_VERSION_1_4;
 }
@@ -86,6 +119,20 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
 
   env->DeleteGlobalRef(jni_PandaActivity);
   env->DeleteGlobalRef(jni_BitmapFactory_Options);
+
+  // These will no longer work without JNI, so unregister them.
+  PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
+  if (tr != nullptr) {
+#ifndef HAVE_JPEG
+    tr->unregister_type(&file_type_jpeg);
+#endif
+#ifndef HAVE_PNG
+    tr->unregister_type(&file_type_png);
+#endif
+#if __ANDROID_API__ >= 14
+    tr->unregister_type(&file_type_webp);
+#endif
+  }
 }
 
 /**

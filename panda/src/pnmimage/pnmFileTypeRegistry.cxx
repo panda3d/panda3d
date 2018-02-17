@@ -49,16 +49,19 @@ register_type(PNMFileType *type) {
   }
 
   // Make sure we haven't already registered this type.
-  Handles::iterator hi = _handles.find(type->get_type());
-  if (hi != _handles.end()) {
-    pnmimage_cat->warning()
-      << "Attempt to register PNMFileType " << type->get_name()
-      << " (" << type->get_type() << ") more than once.\n";
-    return;
+  TypeHandle handle = type->get_type();
+  if (handle != PNMFileType::get_class_type()) {
+    Handles::iterator hi = _handles.find(handle);
+    if (hi != _handles.end()) {
+      pnmimage_cat->warning()
+        << "Attempt to register PNMFileType " << type->get_name()
+       << " (" << type->get_type() << ") more than once.\n";
+      return;
+    }
+    _handles.insert(Handles::value_type(handle, type));
   }
 
   _types.push_back(type);
-  _handles.insert(Handles::value_type(type->get_type(), type));
 
   // Collect the unique extensions associated with the type.
   pset<string> unique_extensions;
@@ -77,6 +80,37 @@ register_type(PNMFileType *type) {
   pset<string>::iterator ui;
   for (ui = unique_extensions.begin(); ui != unique_extensions.end(); ++ui) {
     _extensions[*ui].push_back(type);
+  }
+
+  _requires_sort = true;
+}
+
+/**
+ * Removes a PNMFileType previously passed to register_type.
+ */
+void PNMFileTypeRegistry::
+unregister_type(PNMFileType *type) {
+  if (pnmimage_cat->is_debug()) {
+    pnmimage_cat->debug()
+      << "Unregistering image type " << type->get_name() << "\n";
+  }
+
+  TypeHandle handle = type->get_type();
+  if (handle != PNMFileType::get_class_type()) {
+    Handles::iterator hi = _handles.find(handle);
+    if (hi != _handles.end()) {
+      _handles.erase(hi);
+    }
+  }
+
+  _types.erase(std::remove(_types.begin(), _types.end(), type),
+               _types.end());
+
+  Extensions::iterator ei;
+  for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
+    Types &types = ei->second;
+    types.erase(std::remove(types.begin(), types.end(), type),
+                types.end());
   }
 
   _requires_sort = true;

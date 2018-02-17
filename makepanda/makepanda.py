@@ -5100,7 +5100,8 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0 and GetTarget() != 'andro
 if (not RUNTIME and GetTarget() == 'android'):
   OPTS=['DIR:panda/src/android']
   TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
-  TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java', dep='org/panda3d/android/NativeIStream.class')
+  TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
+  TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')
 
   TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
   TargetAdd('libp3android.dll', input='p3android_composite1.obj')
