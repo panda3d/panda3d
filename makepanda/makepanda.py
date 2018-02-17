@@ -7525,9 +7525,10 @@ def MakeInstallerAndroid():
             continue
         copy_library(source, base)
 
-    # Copy the models as well.
+    # Copy the models and config files to the virtual assets filesystem.
     oscmd("mkdir apkroot/assets")
     oscmd("cp -R %s apkroot/assets/models" % (os.path.join(GetOutputDir(), "models")))
+    oscmd("cp -R %s apkroot/assets/etc" % (os.path.join(GetOutputDir(), "etc")))
 
     # Make an empty res folder.  It's needed for the apk to be installable, apparently.
     oscmd("mkdir apkroot/res")

@@ -133,7 +133,8 @@ void android_main(struct android_app* app) {
   asset_mount = new VirtualFileMountAndroidAsset(app->activity->assetManager, apk_fn);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  Filename asset_dir(apk_fn.get_dirname(), "assets");
+  //Filename asset_dir(apk_fn.get_dirname(), "assets");
+  Filename asset_dir("/android_asset");
   vfs->mount(asset_mount, asset_dir, 0);
 
   // Release the apk_path.
@@ -142,6 +143,33 @@ void android_main(struct android_app* app) {
   // Now add the asset directory to the model-path.
   //TODO: prevent it from adding the directory multiple times.
   get_model_path().append_directory(asset_dir);
+
+  // Now load the configuration files.
+  vector<ConfigPage *> pages;
+  ConfigPageManager *cp_mgr;
+  AAssetDir *etc = AAssetManager_openDir(app->activity->assetManager, "etc");
+  if (etc != nullptr) {
+    cp_mgr = ConfigPageManager::get_global_ptr();
+    const char *filename = AAssetDir_getNextFileName(etc);
+    while (filename != nullptr) {
+      // Does it match any of the configured prc patterns?
+      for (size_t i = 0; i < cp_mgr->get_num_prc_patterns(); ++i) {
+        GlobPattern pattern = cp_mgr->get_prc_pattern(i);
+        if (pattern.matches(filename)) {
+          Filename prc_fn("etc", filename);
+          istream *in = asset_mount->open_read_file(prc_fn);
+          if (in != nullptr) {
+            ConfigPage *page = cp_mgr->make_explicit_page(Filename("/android_asset", prc_fn));
+            page->read_prc(*in);
+            pages.push_back(page);
+          }
+          break;
+        }
+      }
+      filename = AAssetDir_getNextFileName(etc);
+    }
+    AAssetDir_close(etc);
+  }
 
   // Also read the intent filename.
   methodID = env->GetMethodID(activity_class, "getIntentDataPath", "()Ljava/lang/String;");
@@ -228,6 +256,11 @@ void android_main(struct android_app* app) {
   }
 
   android_cat.info() << "Destroy requested, exiting from android_main\n";
+
+  for (ConfigPage *page : pages) {
+    cp_mgr->delete_explicit_page(page);
+  }
+  vfs->unmount(asset_mount);
 
   if (filename_str != nullptr) {
     env->ReleaseStringUTFChars(filename, filename_str);
