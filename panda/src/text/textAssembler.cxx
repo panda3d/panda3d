@@ -1626,10 +1626,11 @@ assemble_row(TextAssembler::TextRow &row,
       }
 
       if (first_glyph != (TextGlyph *)NULL) {
-        assert(!first_glyph->is_whitespace());
         advance = first_glyph->get_advance() * advance_scale;
-        swap(placement._glyph, first_glyph);
-        placed_glyphs.push_back(placement);
+        if (!first_glyph->is_whitespace()) {
+          swap(placement._glyph, first_glyph);
+          placed_glyphs.push_back(placement);
+        }
       }
 
       // Check if there is a second glyph to create a hacky ligature or some

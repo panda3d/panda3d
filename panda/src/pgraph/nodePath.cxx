@@ -3262,7 +3262,7 @@ get_shader() const {
  *
  */
 void NodePath::
-set_shader_input(ShaderInput inp) {
+set_shader_input(const ShaderInput &inp) {
   nassertv_always(!is_empty());
 
   PandaNode *pnode = node();
@@ -3275,6 +3275,26 @@ set_shader_input(ShaderInput inp) {
     // Create a new ShaderAttrib for this node.
     CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
     pnode->set_attrib(sa->set_shader_input(inp));
+  }
+}
+
+/**
+ *
+ */
+void NodePath::
+set_shader_input(ShaderInput &&inp) {
+  nassertv_always(!is_empty());
+
+  PandaNode *pnode = node();
+  const RenderAttrib *attrib =
+    pnode->get_attrib(ShaderAttrib::get_class_slot());
+  if (attrib != nullptr) {
+    const ShaderAttrib *sa = (const ShaderAttrib *)attrib;
+    pnode->set_attrib(sa->set_shader_input(move(inp)));
+  } else {
+    // Create a new ShaderAttrib for this node.
+    CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
+    pnode->set_attrib(sa->set_shader_input(move(inp)));
   }
 }
 

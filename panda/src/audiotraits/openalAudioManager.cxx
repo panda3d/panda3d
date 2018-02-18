@@ -443,6 +443,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());
+    delete[] data;
     int err = alGetError();
     if (err != AL_NO_ERROR) {
       audio_error("could not fill OpenAL buffer object with data");

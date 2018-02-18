@@ -57,6 +57,8 @@
 #define DTOOL_PLATFORM "android_arm"
 #elif defined(__mips__)
 #define DTOOL_PLATFORM "android_mips"
+#elif defined(__x86_64)
+#define DTOOL_PLATFORM "android_amd64"
 #elif defined(__i386__)
 #define DTOOL_PLATFORM "android_i386"
 #endif

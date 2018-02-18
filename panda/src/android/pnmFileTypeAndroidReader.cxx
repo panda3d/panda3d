@@ -76,10 +76,18 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   }
 
   streampos pos = _file->tellg();
-  _env = get_jni_env();
+
+  Thread *current_thread = Thread::get_current_thread();
+  _env = current_thread->get_jni_env();
+  nassertd(_env != nullptr) {
+    _is_valid = false;
+    return;
+  }
+
   jobject opts = _env->CallStaticObjectMethod(jni_PandaActivity,
                                               jni_PandaActivity_readBitmapSize,
                                               (jlong) _file);
+  _file->clear();
   _file->seekg(pos);
   if (_file->tellg() != pos) {
     android_cat.error()

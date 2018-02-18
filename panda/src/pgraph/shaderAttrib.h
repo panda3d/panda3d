@@ -71,7 +71,8 @@ PUBLISHED:
 
   CPT(RenderAttrib) clear_shader() const;
   // Shader Inputs
-  CPT(RenderAttrib) set_shader_input(ShaderInput input) const;
+  CPT(RenderAttrib) set_shader_input(const ShaderInput &input) const;
+  CPT(RenderAttrib) set_shader_input(ShaderInput &&input) const;
 
 public:
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, Texture *tex,       int priority=0) const;

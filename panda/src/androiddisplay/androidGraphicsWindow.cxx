@@ -396,8 +396,10 @@ create_surface() {
  */
 void AndroidGraphicsWindow::
 handle_command(struct android_app *app, int32_t command) {
-  AndroidGraphicsWindow* window = (AndroidGraphicsWindow*) app->userData;
-  window->ns_handle_command(command);
+  AndroidGraphicsWindow *window = (AndroidGraphicsWindow *)app->userData;
+  if (window != nullptr) {
+    window->ns_handle_command(command);
+  }
 }
 
 /**
@@ -517,11 +519,15 @@ handle_key_event(const AInputEvent *event) {
   // Is it an up or down event?
   int32_t action = AKeyEvent_getAction(event);
   if (action == AKEY_EVENT_ACTION_DOWN) {
-    _input_devices[0].button_down(button);
+    if (AKeyEvent_getRepeatCount(event) > 0) {
+      _input_devices[0].button_resume_down(button);
+    } else {
+      _input_devices[0].button_down(button);
+    }
   } else if (action == AKEY_EVENT_ACTION_UP) {
     _input_devices[0].button_up(button);
   }
-  // TODO getRepeatCount, ACTION_MULTIPLE
+  // TODO AKEY_EVENT_ACTION_MULTIPLE
 
   return 1;
 }
@@ -539,6 +545,9 @@ handle_motion_event(const AInputEvent *event) {
     // The up event doesn't let us know which button is up, so we need to
     // keep track of the button state ourselves.
     int32_t button_state = AMotionEvent_getButtonState(event);
+    if (button_state == 0 && action == AMOTION_EVENT_ACTION_DOWN) {
+      button_state = AMOTION_EVENT_BUTTON_PRIMARY;
+    }
     int32_t changed = _mouse_button_state ^ button_state;
     if (changed != 0) {
       if (changed & AMOTION_EVENT_BUTTON_PRIMARY) {
