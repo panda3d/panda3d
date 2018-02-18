@@ -6,11 +6,9 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file rfftw.h
- * @author drose
- * @date 2007-06-27
+ * @file fftw.h
+ * @author cfsworks
+ * @date 2018-02-17
  */
 
-typedef struct _rfftw_plan rfftw_plan;
-
-
+typedef struct _fftw_plan fftw_plan;
