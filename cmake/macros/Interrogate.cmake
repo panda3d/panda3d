@@ -258,7 +258,7 @@ function(add_python_module module)
 
     foreach(target ${targets})
       interrogate_sources(${target} "${target}_igate.cxx" "${target}.in"
-        -python-native -module "panda3d.${module}")
+        "-python-native;-module;panda3d.${module}")
       get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
       list(APPEND infiles "${target}.in")
       list(APPEND sources "${target}_igate.cxx" ${target_extensions})
