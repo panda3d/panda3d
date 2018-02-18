@@ -70,6 +70,21 @@ package_option(TAR
   "This is used to optimize patch generation against tar files.")
 config_package(TAR "libtar")
 
+#
+# ------------ FFTW ------------
+#
+
+find_package(FFTW3 QUIET)
+
+package_option(FFTW
+  "This enables support for compression of animations in .bam files.
+  This is only necessary for creating or reading .bam files containing
+  compressed animations."
+  FOUND_AS "FFTW3"
+  LICENSE "GPL")
+
+config_package(FFTW "FFTW")
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")

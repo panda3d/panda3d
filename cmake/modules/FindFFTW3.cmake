@@ -106,4 +106,4 @@ if(NOT FFTW3_INCLUDE_DIR OR NOT FFTW3_LIBRARY_DIR)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(FFTW DEFAULT_MSG FFTW3_LIBRARY FFTW3_INCLUDE_DIR FFTW3_LIBRARY_DIR)
+find_package_handle_standard_args(FFTW3 DEFAULT_MSG FFTW3_LIBRARY FFTW3_INCLUDE_DIR FFTW3_LIBRARY_DIR)

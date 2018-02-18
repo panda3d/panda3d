@@ -163,7 +163,6 @@ check_include_file_cxx(unistd.h PHAVE_UNISTD_H)
 check_include_file_cxx(utime.h PHAVE_UTIME_H)
 check_include_file_cxx(glob.h PHAVE_GLOB_H)
 check_include_file_cxx(dirent.h PHAVE_DIRENT_H)
-check_include_file_cxx(drfftw.h PHAVE_DRFFTW_H)
 check_include_file_cxx(sys/soundcard.h PHAVE_SYS_SOUNDCARD_H)
 check_include_file_cxx(ucontext.h PHAVE_UCONTEXT_H) #TODO doesn't work on OSX, use sys/ucontext.h
 check_include_file_cxx(linux/input.h PHAVE_LINUX_INPUT_H)
@@ -189,12 +188,6 @@ endif()
 
 # Now go through all the packages and report whether we have them.
 show_packages()
-
-if(HAVE_FFTW)
-  message("+ fftw")
-else()
-  message("- Did not find fftw")
-endif()
 
 if(HAVE_SQUISH)
   message("+ squish")

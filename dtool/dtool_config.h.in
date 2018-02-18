@@ -83,7 +83,7 @@
 /* Define if we have libtar installed.  */
 #cmakedefine HAVE_TAR
 
-/* Define if we have libfftw installed.  */
+/* Define if we have libfftw3 installed.  */
 #cmakedefine HAVE_FFTW
 
 /* Define if we have libsquish installed.  */
@@ -405,9 +405,6 @@
 
 /* Define if you have the <dirent.h> header file.  */
 #cmakedefine PHAVE_DIRENT_H
-
-/* Define if you have the <drfftw.h> header file.  */
-#cmakedefine PHAVE_DRFFTW_H
 
 /* Do we have <sys/soundcard.h> (and presumably a Linux-style audio
    interface)? */

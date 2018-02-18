@@ -485,17 +485,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# TODO: FFTW2
-# Is libfftw installed, and where?
-#find_package(FFTW2 QUIET)
-
-#package_option(FFTW
-#  "This enables support for lossless compression of animations in
-#.bam files.  This is rarely used, and you probably don't need it.")
-
-#TODO PHAVE_DRFFTW_H
-
-
 # Is libsquish installed, and where?
 find_package(Squish QUIET)
 

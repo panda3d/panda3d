@@ -62,7 +62,8 @@ set(P3MATHUTIL_SOURCES
 
 composite_sources(p3mathutil P3MATHUTIL_SOURCES)
 add_library(p3mathutil ${P3MATHUTIL_HEADERS} ${P3MATHUTIL_SOURCES})
-target_link_libraries(p3mathutil p3event ${FFTW2_LIBRARY_DIR})
+target_link_libraries(p3mathutil p3event)
+target_use_packages(p3mathutil FFTW)
 target_interrogate(p3mathutil ALL)
 
 install(TARGETS p3mathutil DESTINATION lib)
