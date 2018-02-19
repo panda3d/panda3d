@@ -189,24 +189,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_CG)
-  message("+ Nvidia Cg High Level Shading Language")
-else()
-  message("- Did not find Nvidia Cg High Level Shading Language")
-endif()
-
-if(HAVE_CGGL)
-  message("+ Cg OpenGL API")
-else()
-  message("- Did not find Cg OpenGL API")
-endif()
-
-if(HAVE_CGDX9)
-  message("+ Cg DX9 API")
-else()
-  message("- Did not find Cg DX9 API")
-endif()
-
 if(HAVE_VRPN)
   message("+ VRPN")
 else()

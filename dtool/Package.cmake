@@ -96,6 +96,33 @@ package_option(SQUISH
 
 config_package(SQUISH "libsquish")
 
+#
+# ------------ Nvidia Cg ------------
+#
+
+find_package(Cg QUIET)
+
+package_option(CG
+  "Enable support for Nvidia Cg Shading Language"
+  LICENSE "Nvidia")
+package_option(CGGL
+  "Enable support for Nvidia Cg's OpenGL API."
+  LICENSE "Nvidia")
+package_option(CGDX9
+  "Enable support for Nvidia Cg's DirectX 9 API."
+  LICENSE "Nvidia")
+
+if(HAVE_CGGL AND HAVE_CGDX9)
+  set(cg_apis "supporting OpenGL and DirectX 9")
+elseif(HAVE_CGGL)
+  set(cg_apis "supporting OpenGL")
+elseif(HAVE_CGDX9)
+  set(cg_apis "supporting DirectX 9")
+else()
+  set(cg_apis "WITHOUT rendering backend support")
+endif()
+config_package(CG "Nvidia Cg Shading Language" "${cg_apis}")
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")

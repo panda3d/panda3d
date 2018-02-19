@@ -475,18 +475,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is Cg installed, and where?
-find_package(Cg QUIET)
-package_option(CG
-  "Enable support for Nvidia Cg Shading Language"
-  LICENSE "Nvidia")
-package_option(CGGL
-  "Enable support for Nvidia Cg's OpenGL API."
-  LICENSE "Nvidia")
-package_option(CGDX9 "Enable support for Nvidia Cg's DX9 API."
-  LICENSE "Nvidia")
-
-
 # Is VRPN installed, and where?
 find_package(VRPN QUIET)
 
