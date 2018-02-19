@@ -176,7 +176,7 @@ function(interrogate_sources target output database language_flags)
   # this, we create a fake target with the IS_INTERROGATE property set and pull
   # the INTERFACE_INCLUDE_DIRECTORIES property out through that.
   # I hate it, but such is CMake.
-  add_custom_target(${target}_igate_internal EXCLUDE_FROM_ALL)
+  add_custom_target(${target}_igate_internal)
   set_target_properties(${target}_igate_internal PROPERTIES
     IS_INTERROGATE 1
     INTERFACE_INCLUDE_DIRECTORIES "$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
