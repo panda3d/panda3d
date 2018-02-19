@@ -20,11 +20,6 @@ if(NOT BUILD_SHARED_LIBS)
       ${P3FRAMEWORK_LINK_TARGETS}
       pandagl
     )
-  elseif(HAVE_DX10)
-    set(P3FRAMEWORK_LINK_TARGETS
-      ${P3FRAMEWORK_LINK_TARGETS}
-      pandadx10
-    )
   elseif(HAVE_DX9)
     set(P3FRAMEWORK_LINK_TARGETS
       ${P3FRAMEWORK_LINK_TARGETS}

@@ -483,11 +483,7 @@ package_option(CG
 package_option(CGGL
   "Enable support for Nvidia Cg's OpenGL API."
   LICENSE "Nvidia")
-package_option(CGDX8 "Enable support for Nvidia Cg's DX8 API."
-  LICENSE "Nvidia")
 package_option(CGDX9 "Enable support for Nvidia Cg's DX9 API."
-  LICENSE "Nvidia")
-package_option(CGDX10 "Enable support for Nvidia Cg's DX10 API."
   LICENSE "Nvidia")
 
 

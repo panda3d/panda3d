@@ -98,14 +98,8 @@
 /* Define if we have CGGL installed.  */
 #cmakedefine HAVE_CGGL
 
-/* Define if we have CGDX8 installed.  */
-#cmakedefine HAVE_CGDX8
-
 /* Define if we have CGDX9 installed.  */
 #cmakedefine HAVE_CGDX9
-
-/* Define if we have CGDX10 installed.  */
-#cmakedefine HAVE_CGDX10
 
 /* Define for dxerr.h instead of dxerr9.h. */
 #cmakedefine USE_GENERIC_DXERR_LIBRARY
@@ -157,9 +151,6 @@
 
 /* Define if we have Windows-GL installed and want to build for Wgl.  */
 #cmakedefine HAVE_WGL
-
-/* Define if we have DirectX installed and want to build for DX.  */
-#cmakedefine HAVE_DX8
 
 /* Define if we have DirectX installed and want to build for DX.  */
 #cmakedefine HAVE_DX9
