@@ -475,13 +475,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is libsquish installed, and where?
-find_package(Squish QUIET)
-
-package_option(SQUISH
-  "Enables support for automatic compression of DXT textures.")
-
-
 # Is Cg installed, and where?
 find_package(Cg QUIET)
 package_option(CG

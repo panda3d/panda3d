@@ -189,12 +189,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_SQUISH)
-  message("+ squish")
-else()
-  message("- Did not find squish")
-endif()
-
 if(HAVE_CG)
   message("+ Nvidia Cg High Level Shading Language")
 else()

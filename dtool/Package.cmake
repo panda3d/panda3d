@@ -85,6 +85,17 @@ package_option(FFTW
 
 config_package(FFTW "FFTW")
 
+#
+# ------------ libsquish ------------
+#
+
+find_package(Squish QUIET)
+
+package_option(SQUISH
+  "Enables support for automatic compression of DXT textures.")
+
+config_package(SQUISH "libsquish")
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")
