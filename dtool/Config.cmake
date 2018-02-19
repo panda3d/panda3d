@@ -461,16 +461,6 @@ else()
   set(USE_DEBUG_PYTHON OFF)
 endif()
 
-set(GENPYCODE_LIBS
-  "libpandaexpress;libpanda;libpandaphysics;libp3direct;libpandafx;libp3vision;libpandaode;libp3vrpn"
-  CACHE STRING
-  "Define the default set of libraries to be instrumented by
-genPyCode.  You may wish to add to this list to add your own
-libraries, or if you want to use some of the more obscure
-interfaces like libpandaegg and libpandafx.")
-
-mark_as_advanced(GENPYCODE_LIBS)
-
 option(INSTALL_PYTHON_SOURCE
   "Normally, Python source files are copied into the CMake library
 install directory, along with the compiled C++ library objects, when
