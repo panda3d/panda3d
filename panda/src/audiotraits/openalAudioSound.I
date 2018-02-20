@@ -37,16 +37,19 @@ get_calibrated_clock(double rtc) const {
 
 /**
  * Makes sure the sound data record is present, and if not, obtains it.
+ *
+ * Returns true on success, false on failure.
  */
-void OpenALAudioSound::
+bool OpenALAudioSound::
 require_sound_data() {
   if (_sd==0) {
     _sd = _manager->get_sound_data(_movie, _desired_mode);
     if (_sd==0) {
       audio_error("Could not open audio " << _movie->get_filename());
-      cleanup();
+      return false;
     }
   }
+  return true;
 }
 
 /**
