@@ -461,15 +461,6 @@ else()
   set(USE_DEBUG_PYTHON OFF)
 endif()
 
-option(INSTALL_PYTHON_SOURCE
-  "Normally, Python source files are copied into the CMake library
-install directory, along with the compiled C++ library objects, when
-you make install.  If you prefer not to copy these Python source
-files, but would rather run them directly out of the source
-directory (presumably so you can develop them and make changes
-without having to reinstall), comment out this definition and put
-your source directory on your PYTHONPATH.")
-
 
 option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
