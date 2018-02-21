@@ -291,12 +291,6 @@ else()
   message("- Did not find OpenCV")
 endif()
 
-if(HAVE_FFMPEG)
-  message("+ FFMPEG")
-else()
-  message("- Did not find FFMPEG")
-endif()
-
 if(HAVE_ODE)
   message("+ ODE")
 else()

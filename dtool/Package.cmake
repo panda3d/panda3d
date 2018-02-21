@@ -146,6 +146,33 @@ package_option(ZLIB
 
 config_package(ZLIB "zlib")
 
+#
+# ------------ FFmpeg ------------
+#
+
+find_package(FFMPEG QUIET)
+find_package(SWScale QUIET)
+find_package(SWResample QUIET)
+
+package_option(FFMPEG
+  "Enables support for audio- and video-decoding using the FFmpeg library.")
+package_option(SWSCALE
+  "Enables support for FFmpeg's libswscale for video rescaling.")
+package_option(SWRESAMPLE
+  "Enables support for FFmpeg's libresample for audio resampling.")
+
+if(HAVE_SWSCALE AND HAVE_SWRESAMPLE)
+  set(ffmpeg_features "with swscale and swresample")
+elseif(HAVE_SWSCALE)
+  set(ffmpeg_features "with swscale")
+elseif(HAVE_SWRESAMPLE)
+  set(ffmpeg_features "with swresample")
+else()
+  set(ffmpeg_features "without resampling/rescaling support")
+endif()
+config_package(FFMPEG "FFmpeg" "${ffmpeg_features}")
+
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")

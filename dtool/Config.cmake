@@ -466,18 +466,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is FFMPEG installed, and where?
-find_package(FFMPEG QUIET)
-find_package(SWScale QUIET)
-find_package(SWResample QUIET)
-
-package_option(FFMPEG
-  "Enables support for audio- and video-decoding using the FFMPEG library.")
-package_option(SWSCALE
-  "Enables support for FFMPEG's libswscale for video rescaling.")
-package_option(SWRESAMPLE
-  "Enables support for FFMPEG's libresample for audio resampling.")
-
 # Is ODE installed, and where?
 find_package(ODE QUIET)
 
