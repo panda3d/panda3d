@@ -135,6 +135,17 @@ package_option(VRPN
 
 config_package(VRPN "VRPN")
 
+#
+# ------------ zlib ------------
+#
+
+find_package(zlib QUIET)
+
+package_option(ZLIB
+  "Enables support for compression of Panda assets.")
+
+config_package(ZLIB "zlib")
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")

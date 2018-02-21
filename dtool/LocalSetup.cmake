@@ -189,12 +189,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_ZLIB)
-  message("+ zlib")
-else()
-  message("- Did not find zlib")
-endif()
-
 if(HAVE_RAD_MSS)
   message("+ Miles Sound System")
 else()

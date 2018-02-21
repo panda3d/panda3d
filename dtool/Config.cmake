@@ -466,12 +466,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is ZLIB installed, and where?
-find_package(ZLIB QUIET)
-
-package_option(ZLIB DEFAULT ON
-  "Enables support for compression of Panda assets.")
-
 # Is FFMPEG installed, and where?
 find_package(FFMPEG QUIET)
 find_package(SWScale QUIET)
