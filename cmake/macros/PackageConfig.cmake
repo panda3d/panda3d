@@ -99,7 +99,7 @@ function(package_option name)
   endforeach()
 
   if(command STREQUAL "DEFAULT")
-    message(SEND_ERROR "DEFAULT in package_option takes an argument")    
+    message(SEND_ERROR "DEFAULT in package_option takes an argument")
   endif()
 
   # If the default is not set, we set it.
