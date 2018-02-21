@@ -85,6 +85,38 @@ BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale) {
 }
 
 /**
+ *
+ */
+BulletConvexPointCloudShape::
+BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _scale = copy._scale;
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
+void BulletConvexPointCloudShape::
+operator = (const BulletConvexPointCloudShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _scale = copy._scale;
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
+int BulletConvexPointCloudShape::
+get_num_points() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _shape->getNumPoints();
+}
+
+/**
  * Tells the BamReader how to create objects of type BulletShape.
  */
 void BulletConvexPointCloudShape::

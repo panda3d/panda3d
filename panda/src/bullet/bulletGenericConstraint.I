@@ -19,21 +19,3 @@ INLINE BulletGenericConstraint::
 
   delete _constraint;
 }
-
-/**
- *
- */
-INLINE CPT(TransformState) BulletGenericConstraint::
-get_frame_a() const {
-
-  return btTrans_to_TransformState(_constraint->getFrameOffsetA());
-}
-
-/**
- *
- */
-INLINE CPT(TransformState) BulletGenericConstraint::
-get_frame_b() const {
-
-  return btTrans_to_TransformState(_constraint->getFrameOffsetB());
-}

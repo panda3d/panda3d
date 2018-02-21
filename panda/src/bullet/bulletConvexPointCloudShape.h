@@ -33,11 +33,11 @@ private:
 PUBLISHED:
   explicit BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale=LVecBase3(1.));
   explicit BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale=LVecBase3(1.));
-  INLINE BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy);
-  INLINE void operator = (const BulletConvexPointCloudShape &copy);
+  BulletConvexPointCloudShape(const BulletConvexPointCloudShape &copy);
+  void operator = (const BulletConvexPointCloudShape &copy);
   INLINE ~BulletConvexPointCloudShape();
 
-  INLINE int get_num_points() const;
+  int get_num_points() const;
 
   MAKE_PROPERTY(num_points, get_num_points);
 

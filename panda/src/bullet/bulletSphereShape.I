@@ -21,24 +21,6 @@ INLINE BulletSphereShape::
 }
 
 /**
- *
- */
-INLINE BulletSphereShape::
-BulletSphereShape(const BulletSphereShape &copy) :
-  _shape(copy._shape),
-  _radius(copy._radius) {
-}
-
-/**
- *
- */
-INLINE void BulletSphereShape::
-operator = (const BulletSphereShape &copy) {
-  _shape = copy._shape;
-  _radius = copy._radius;
-}
-
-/**
  * Returns the radius that was used to construct this sphere.
  */
 INLINE PN_stdfloat BulletSphereShape::

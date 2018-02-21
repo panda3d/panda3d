@@ -50,10 +50,10 @@ PUBLISHED:
   void set_angular_velocity(const LVector3 &velocity);
 
   // Damping
-  INLINE PN_stdfloat get_linear_damping() const;
-  INLINE PN_stdfloat get_angular_damping() const;
-  INLINE void set_linear_damping(PN_stdfloat value);
-  INLINE void set_angular_damping(PN_stdfloat value);
+  PN_stdfloat get_linear_damping() const;
+  PN_stdfloat get_angular_damping() const;
+  void set_linear_damping(PN_stdfloat value);
+  void set_angular_damping(PN_stdfloat value);
 
   // Forces
   void clear_forces();
@@ -108,14 +108,18 @@ public:
 
   virtual void output(ostream &out) const;
 
-  void sync_p2b();
-  void sync_b2p();
+  void do_sync_p2b();
+  void do_sync_b2p();
 
 protected:
   virtual void transform_changed();
 
 private:
-  virtual void shape_changed();
+  virtual void do_shape_changed();
+  void do_transform_changed();
+
+  void do_set_mass(PN_stdfloat mass);
+  PN_stdfloat do_get_mass() const;
 
   // The motion state is used for synchronisation between Bullet and the
   // Panda3D scene graph.

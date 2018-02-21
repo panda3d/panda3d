@@ -32,8 +32,8 @@ private:
 
 PUBLISHED:
   explicit BulletSphereShape(PN_stdfloat radius);
-  INLINE BulletSphereShape(const BulletSphereShape &copy);
-  INLINE void operator = (const BulletSphereShape &copy);
+  BulletSphereShape(const BulletSphereShape &copy);
+  void operator = (const BulletSphereShape &copy);
   INLINE ~BulletSphereShape();
 
   INLINE PN_stdfloat get_radius() const;

@@ -70,8 +70,8 @@ PUBLISHED:
 
   // Frames
   void set_frames(const TransformState *ts_a, const TransformState *ts_b);
-  INLINE CPT(TransformState) get_frame_a() const;
-  INLINE CPT(TransformState) get_frame_b() const;
+  CPT(TransformState) get_frame_a() const;
+  CPT(TransformState) get_frame_b() const;
 
   MAKE_PROPERTY(linear_pos, get_linear_pos);
   MAKE_PROPERTY(angular_pos, get_angular_pos);

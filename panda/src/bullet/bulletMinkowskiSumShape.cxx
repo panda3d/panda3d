@@ -36,10 +36,76 @@ BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b) 
 /**
  *
  */
+BulletMinkowskiSumShape::
+BulletMinkowskiSumShape(const BulletMinkowskiSumShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _shape_a = copy._shape_a;
+  _shape_b = copy._shape_b;
+}
+
+/**
+ *
+ */
+void BulletMinkowskiSumShape::
+operator = (const BulletMinkowskiSumShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _shape_a = copy._shape_a;
+  _shape_b = copy._shape_b;
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletMinkowskiSumShape::
 ptr() const {
 
   return _shape;
+}
+
+/**
+ *
+ */
+void BulletMinkowskiSumShape::
+set_transform_a(const TransformState *ts) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertv(ts);
+  _shape->setTransformA(TransformState_to_btTrans(ts));
+}
+
+/**
+ *
+ */
+void BulletMinkowskiSumShape::
+set_transform_b(const TransformState *ts) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertv(ts);
+  _shape->setTransformB(TransformState_to_btTrans(ts));
+}
+
+/**
+ *
+ */
+CPT(TransformState) BulletMinkowskiSumShape::
+get_transform_a() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_shape->getTransformA());
+}
+
+/**
+ *
+ */
+CPT(TransformState) BulletMinkowskiSumShape::
+get_transform_b() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_shape->GetTransformB());
 }
 
 /**

@@ -30,8 +30,8 @@ private:
 
 PUBLISHED:
   explicit BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
-  INLINE BulletCapsuleShape(const BulletCapsuleShape &copy);
-  INLINE void operator = (const BulletCapsuleShape &copy);
+  BulletCapsuleShape(const BulletCapsuleShape &copy);
+  void operator = (const BulletCapsuleShape &copy);
   INLINE ~BulletCapsuleShape();
 
   INLINE PN_stdfloat get_radius() const;
