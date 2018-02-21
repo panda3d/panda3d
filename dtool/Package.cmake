@@ -225,6 +225,36 @@ find_package(GTK2 QUIET COMPONENTS gtk)
 #config_package(GTK2 "gtk+-2")
 package_option(GTK2)
 
+#
+# ------------ Physics engines ------------
+#
+
+# Bullet
+find_package(Bullet QUIET)
+
+package_option(Bullet
+  "Enable this option to support game dynamics with the Bullet physics library.")
+
+config_package(Bullet "Bullet physics")
+
+# ODE
+find_package(ODE QUIET)
+
+package_option(ODE
+  "Enable this option to support game dynamics with the Open Dynamics Engine (ODE)."
+  LICENSE "BSD-3")
+
+config_package(ODE "Open Dynamics Engine")
+
+# PhysX
+find_package(PhysX QUIET)
+
+package_option(PhysX
+  "Enable this option to support game dynamics with Nvidia PhysX."
+  LICENSE "Nvidia")
+
+config_package(PhysX "Nvidia PhysX")
+
 # Find and configure WxWidgets
 find_package(wxWidgets QUIET)
 if(WXWIDGETS_FOUND)

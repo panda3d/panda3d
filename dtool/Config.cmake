@@ -466,12 +466,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is ODE installed, and where?
-find_package(ODE QUIET)
-
-package_option(ODE
-  "Enables support for ridid-body physics using the Open Dynamics Engine.")
-
 # Is OpenGL installed, and where?
 find_package(OpenGL QUIET)
 set(GL_FOUND ${OPENGL_FOUND})

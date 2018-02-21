@@ -189,12 +189,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_PHYSX)
-  message("+ Ageia PhysX")
-else()
-  message("- Did not find Ageia PhysX")
-endif()
-
 if(HAVE_SPEEDTREE)
   message("+ SpeedTree")
 else()
@@ -261,12 +255,6 @@ else()
   message("- Did not find OpenCV")
 endif()
 
-if(HAVE_ODE)
-  message("+ ODE")
-else()
-  message("- Did not find ODE")
-endif()
-
 if(HAVE_AWESOMIUM)
   message("+ AWESOMIUM")
 else()
@@ -305,12 +293,6 @@ if(HAVE_ROCKET)
   endif()
 else()
   message("- Did not find libRocket")
-endif()
-
-if(HAVE_BULLET)
-  message("+ Bullet Physics")
-else()
-  message("- Did not find Bullet Physics")
 endif()
 
 if(HAVE_VORBIS)
