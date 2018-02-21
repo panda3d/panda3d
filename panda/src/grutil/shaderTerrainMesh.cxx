@@ -150,6 +150,8 @@ void ShaderTerrainMesh::do_extract_heightfield() {
   }
   _heightfield_tex->set_minfilter(SamplerState::FT_linear);
   _heightfield_tex->set_magfilter(SamplerState::FT_linear);
+  _heightfield_tex->set_wrap_u(SamplerState::WM_clamp);
+  _heightfield_tex->set_wrap_v(SamplerState::WM_clamp);
 }
 
 /**
