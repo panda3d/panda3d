@@ -89,10 +89,11 @@ config_package(FFTW "FFTW")
 # ------------ libsquish ------------
 #
 
-find_package(Squish QUIET)
+find_package(LibSquish QUIET)
 
 package_option(SQUISH
-  "Enables support for automatic compression of DXT textures.")
+  "Enables support for automatic compression of DXT textures."
+  FOUND_AS LIBSQUISH)
 
 config_package(SQUISH "libsquish")
 
