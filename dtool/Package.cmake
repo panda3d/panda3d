@@ -274,21 +274,9 @@ mark_as_advanced(FLTK_MATH_LIBRARY)
 #find_package(GLES)
 #config_package(GLES COMMENT "OpenGL ES 2")
 
-# Find and configure DirectX 8
-#find_package(DX8)
-#config_package(DX8 COMMENT "DirectX8")
-
 # Find and configure DirectX 9
 #find_package(DX9)
 #config_package(DX9 COMMENT "DirectX9")
-
-# Find and configure DirectX 11
-#find_package(DX11)
-#config_package(DX11 COMMENT "DirectX11")
-
-# Find and configure Mesa
-#find_package(Mesa)
-#config_package(MESA COMMENT "Mesa")
 
 # Find and configure OpenCV
 #find_package(OpenCV)
