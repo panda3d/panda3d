@@ -123,6 +123,18 @@ else()
 endif()
 config_package(CG "Nvidia Cg Shading Language" "${cg_apis}")
 
+#
+# ------------ VRPN ------------
+#
+
+find_package(VRPN QUIET)
+
+package_option(VRPN
+  "Enables support for connecting to VRPN servers. This is only needed if you
+  are building Panda3D for a fixed VRPN-based VR installation.")
+
+config_package(VRPN "VRPN")
+
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")

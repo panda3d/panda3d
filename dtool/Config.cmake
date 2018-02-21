@@ -466,13 +466,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is VRPN installed, and where?
-find_package(VRPN QUIET)
-
-package_option(VRPN
-  "Enables support for connecting to VRPN servers.")
-
-
 # Is ZLIB installed, and where?
 find_package(ZLIB QUIET)
 

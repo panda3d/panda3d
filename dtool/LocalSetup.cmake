@@ -189,12 +189,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_VRPN)
-  message("+ VRPN")
-else()
-  message("- Did not find VRPN")
-endif()
-
 if(HAVE_ZLIB)
   message("+ zlib")
 else()
