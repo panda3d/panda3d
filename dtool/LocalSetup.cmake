@@ -189,24 +189,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_RAD_MSS)
-  message("+ Miles Sound System")
-else()
-  message("- Did not find Miles Sound System")
-endif()
-
-if(HAVE_FMODEX)
-  message("+ FMOD Ex sound library")
-else()
-  message("- Did not find FMOD Ex sound library")
-endif()
-
-if(HAVE_OPENAL)
-  message("+ OpenAL sound library")
-else()
-  message("- Did not find OpenAL sound library")
-endif()
-
 if(HAVE_PHYSX)
   message("+ Ageia PhysX")
 else()

@@ -61,4 +61,9 @@ if(HAVE_AUDIO)
     install(TARGETS p3openal_audio DESTINATION lib)
   endif()
 
+  if(NOT HAVE_RAD_MSS AND NOT HAVE_FMODEX AND NOT HAVE_OPENAL)
+    message(SEND_ERROR
+      "You must have an audio backend for audio support! Turn off HAVE_AUDIO to ignore this.")
+  endif()
+
 endif()

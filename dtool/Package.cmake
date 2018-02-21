@@ -172,22 +172,37 @@ else()
 endif()
 config_package(FFMPEG "FFmpeg" "${ffmpeg_features}")
 
+#
+# ------------ Audio libraries ------------
+#
 
-# Find and configure Miles Sound System
+# Miles Sound System
 find_package(Miles QUIET)
-#config_package(RAD_MSS "Miles Sound System")
-package_option(RAD_MSS)
+package_option(RAD_MSS
+  "This enables support for audio output via the Miles Sound System,
+  by RAD Game Tools. This requires a commercial license to use, so you'll know
+  if you need to enable this option."
+  FOUND_AS Miles
+  LICENSE "Miles")
+config_package(RAD_MSS "Miles Sound System")
 
-# Find and configure FMOD Ex
+# FMOD Ex
 find_package(FMODEx QUIET)
-#config_package(FMODEX "FMOD Ex sound library")
-package_option(FMODEX)
+package_option(FMODEX
+  "This enables support for the FMOD Ex sound library,
+  from Firelight Technologies. This audio library is free for non-commercial
+  use."
+  LICENSE "FMOD")
+config_package(FMODEX "FMOD Ex sound library")
 
-# Find and configure OpenAL
+# OpenAL
 find_package(OpenAL QUIET)
-#config_package(OPENAL "OpenAL sound library")
-package_option(OPENAL)
-
+package_option(OPENAL
+  "This enables support for audio output via OpenAL. Some platforms, such as
+  macOS, provide their own OpenAL implementation, which Panda3D can use. But,
+  on most platforms this will imply OpenAL Soft, which is LGPL licensed."
+  LICENSE "LGPL")
+config_package(OPENAL "OpenAL sound library")
 
 # Find and configure Freetype
 find_package(Freetype QUIET)
