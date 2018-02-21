@@ -205,10 +205,18 @@ package_option(OPENAL
   LICENSE "LGPL")
 config_package(OPENAL "OpenAL sound library")
 
-# Find and configure Freetype
+
+#
+# ------------ FreeType ------------
+#
+
 find_package(Freetype QUIET)
-#config_package(FREETYPE "Freetype")
-package_option(FREETYPE)
+
+package_option(FREETYPE
+  "This enables support for the FreeType font-rendering library. If disabled,
+  Panda3D will only be able to read fonts specially made with egg-mkfont.")
+
+config_package(FREETYPE "FreeType")
 
 # Find and configure GTK
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2

@@ -207,12 +207,6 @@ else()
   message("- Did not find gtk+-2")
 endif()
 
-if(HAVE_FREETYPE)
-  message("+ Freetype")
-else()
-  message("- Did not find Freetype")
-endif()
-
 if(HAVE_WX)
   message("+ WxWidgets")
 else()
