@@ -135,14 +135,6 @@
 /* Define if we have AWESOMIUM installed and want to build for AWESOMIUM.  */
 #cmakedefine HAVE_AWESOMIUM
 
-/* Define if we have Mesa installed and want to build mesadisplay.  */
-#cmakedefine HAVE_MESA
-#cmakedefine MESA_MGL
-#if HAVE_MESA
-#cmakedefine MIN_MESA_VERSION_MAJOR
-#cmakedefine MIN_MESA_VERSION_MINOR
-#endif
-
 /* Define if we have GLX installed and want to build for GLX.  */
 #cmakedefine HAVE_GLX
 

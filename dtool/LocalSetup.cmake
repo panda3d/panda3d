@@ -279,12 +279,6 @@ else()
   message("- Did not find X11")
 endif()
 
-if(HAVE_MESA)
-  message("+ Mesa")
-else()
-  message("- Did not find Mesa")
-endif()
-
 if(HAVE_OPENCV)
   message("+ OpenCV")
 else()
