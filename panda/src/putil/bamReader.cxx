@@ -1345,35 +1345,39 @@ resolve_object_pointers(TypedWritable *object,
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
       references.push_back((TypedWritable *)NULL);
-
-    } else {
-      // See if we have the pointer available now.
-      CreatedObjs::const_iterator oi = _created_objs.find(child_id);
-      if (oi == _created_objs.end()) {
-        // No, too bad.
-        is_complete = false;
-
-      } else {
-        const CreatedObj &child_obj = (*oi).second;
-        if (!child_obj._created) {
-          // The child object hasn't yet been created.
-          is_complete = false;
-        } else if (child_obj._change_this != NULL || child_obj._change_this_ref != NULL) {
-          // It's been created, but the pointer might still change.
-          is_complete = false;
-        } else {
-          if (require_fully_complete &&
-              _object_pointers.find(child_id) != _object_pointers.end()) {
-            // It's not yet complete itself.
-            is_complete = false;
-
-          } else {
-            // Yes, it's ready.
-            references.push_back(child_obj._ptr);
-          }
-        }
-      }
+      continue;
     }
+
+    // See if we have the pointer available now.
+    CreatedObjs::const_iterator oi = _created_objs.find(child_id);
+    if (oi == _created_objs.end()) {
+      // No, too bad.
+      is_complete = false;
+      break;
+    }
+
+    const CreatedObj &child_obj = (*oi).second;
+    if (!child_obj._created) {
+      // The child object hasn't yet been created.
+      is_complete = false;
+      break;
+    }
+
+    if (child_obj._change_this != NULL || child_obj._change_this_ref != NULL) {
+      // It's been created, but the pointer might still change.
+      is_complete = false;
+      break;
+    }
+
+    if (require_fully_complete &&
+        _object_pointers.find(child_id) != _object_pointers.end()) {
+      // It's not yet complete itself.
+      is_complete = false;
+      break;
+    }
+
+    // Yes, it's ready.
+    references.push_back(child_obj._ptr);
   }
 
   if (is_complete) {
@@ -1433,33 +1437,33 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
       references.push_back((TypedWritable *)NULL);
-
-    } else {
-      // See if we have the pointer available now.
-      CreatedObjs::const_iterator oi = _created_objs.find(child_id);
-      if (oi == _created_objs.end()) {
-        // No, too bad.
-        is_complete = false;
-
-      } else {
-        const CreatedObj &child_obj = (*oi).second;
-        if (child_obj._change_this != NULL || child_obj._change_this_ref != NULL) {
-          // It's been created, but the pointer might still change.
-          is_complete = false;
-
-        } else {
-          if (require_fully_complete &&
-              _object_pointers.find(child_id) != _object_pointers.end()) {
-            // It's not yet complete itself.
-            is_complete = false;
-
-          } else {
-            // Yes, it's ready.
-            references.push_back(child_obj._ptr);
-          }
-        }
-      }
+      continue;
     }
+
+    // See if we have the pointer available now.
+    CreatedObjs::const_iterator oi = _created_objs.find(child_id);
+    if (oi == _created_objs.end()) {
+      // No, too bad.
+      is_complete = false;
+      break;
+    }
+
+    const CreatedObj &child_obj = (*oi).second;
+    if (child_obj._change_this != NULL || child_obj._change_this_ref != NULL) {
+      // It's been created, but the pointer might still change.
+      is_complete = false;
+      break;
+    }
+
+    if (require_fully_complete &&
+        _object_pointers.find(child_id) != _object_pointers.end()) {
+      // It's not yet complete itself.
+      is_complete = false;
+      break;
+    }
+
+    // Yes, it's ready.
+    references.push_back(child_obj._ptr);
   }
 
   if (is_complete) {
