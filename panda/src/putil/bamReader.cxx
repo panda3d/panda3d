@@ -1159,6 +1159,16 @@ p_read_object() {
       // This object had already existed; thus, we are just receiving an
       // update for it.
 
+      if (_object_pointers.find(object_id) != _object_pointers.end()) {
+        // Aieee! This object isn't even complete from the last time we
+        // encountered it in the stream! This should never happen. Something's
+        // corrupt or the stream was maliciously crafted.
+        bam_cat.error()
+          << "Found object " << object_id << " in bam stream again while "
+          << "trying to resolve its own pointers.\n";
+        return 0;
+      }
+
       // Update _now_creating during this call so if this function calls
       // read_pointer() or register_change_this() we'll match it up properly.
       // This might recursively call back into this p_read_object(), so be
