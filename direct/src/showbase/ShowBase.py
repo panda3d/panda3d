@@ -400,7 +400,8 @@ class ShowBase(DirectObject.DirectObject):
         if self.__dev__ or self.config.GetBool('want-e3-hacks', False):
             if self.config.GetBool('track-gui-items', True):
                 # dict of guiId to gui item, for tracking down leaks
-                self.guiItems = {}
+                if not hasattr(ShowBase, 'guiItems'):
+                    ShowBase.guiItems = {}
 
         # optionally restore the default gui sounds from 1.7.2 and earlier
         if ConfigVariableBool('orig-gui-sounds', False).getValue():
@@ -519,6 +520,8 @@ class ShowBase(DirectObject.DirectObject):
             ShowBaseGlobal = sys.modules.get('direct.showbase.ShowBaseGlobal', None)
             if ShowBaseGlobal:
                 del ShowBaseGlobal.base
+
+        self.aspect2d.node().removeAllChildren()
 
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
@@ -1102,13 +1105,18 @@ class ShowBase(DirectObject.DirectObject):
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
 
+        # We've already created aspect2d in ShowBaseGlobal, for the
+        # benefit of creating DirectGui elements before ShowBase.
+        from . import ShowBaseGlobal
+
         ## The normal 2-d DisplayRegion has an aspect ratio that
         ## matches the window, but its coordinate system is square.
         ## This means anything we parent to render2d gets stretched.
         ## For things where that makes a difference, we set up
         ## aspect2d, which scales things back to the right aspect
         ## ratio along the X axis (Z is still from -1 to 1)
-        self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
+        self.aspect2d = ShowBaseGlobal.aspect2d
+        self.aspect2d.reparentTo(self.render2d)
 
         aspectRatio = self.getAspectRatio()
         self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)

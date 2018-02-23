@@ -11,6 +11,7 @@ from .ShowBase import ShowBase, WindowControls
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager
+from panda3d.core import NodePath, PGTop
 from panda3d.direct import get_config_showbase
 
 config = get_config_showbase()
@@ -22,6 +23,9 @@ globalClock = ClockObject.getGlobalClock()
 cpMgr = ConfigPageManager.getGlobalPtr()
 cvMgr = ConfigVariableManager.getGlobalPtr()
 pandaSystem = PandaSystem.getGlobalPtr()
+
+# This is defined here so GUI elements can be instantiated before ShowBase.
+aspect2d = NodePath(PGTop("aspect2d"))
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
