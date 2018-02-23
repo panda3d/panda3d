@@ -729,7 +729,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             guiObjectCollector.addLevel(1)
             guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
-            if ShowBase.config.GetBool('track-gui-items', True):
+            if ShowBase.config.GetBool('track-gui-items', False):
                 if not hasattr(ShowBase, 'guiItems'):
                     ShowBase.guiItems = {}
                 if self.guiId in ShowBase.guiItems:

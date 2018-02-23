@@ -397,11 +397,10 @@ class ShowBase(DirectObject.DirectObject):
 
         self.createBaseAudioManagers()
 
-        if self.__dev__ or self.config.GetBool('want-e3-hacks', False):
-            if self.config.GetBool('track-gui-items', True):
-                # dict of guiId to gui item, for tracking down leaks
-                if not hasattr(ShowBase, 'guiItems'):
-                    ShowBase.guiItems = {}
+        if self.__dev__ and self.config.GetBool('track-gui-items', False):
+            # dict of guiId to gui item, for tracking down leaks
+            if not hasattr(ShowBase, 'guiItems'):
+                ShowBase.guiItems = {}
 
         # optionally restore the default gui sounds from 1.7.2 and earlier
         if ConfigVariableBool('orig-gui-sounds', False).getValue():
