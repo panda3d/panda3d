@@ -946,9 +946,9 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
   bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
 
   if (has_optional_fields) {
-    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER);
+    packer.raw_pack_uint16(STATESERVER_CREATE_OBJECT_WITH_REQUIRED_OTHER);
   } else {
-    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
+    packer.raw_pack_uint16(STATESERVER_CREATE_OBJECT_WITH_REQUIRED);
   }
 
   // Parent is a bit overloaded; this parent is not about inheritance, this
@@ -1027,7 +1027,7 @@ ai_database_generate_context(
   packer.RAW_PACK_CHANNEL(database_server_id);
   packer.RAW_PACK_CHANNEL(from_channel_id);
   // packer.raw_pack_uint8('A');
-  packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
+  packer.raw_pack_uint16(STATESERVER_OBJECT_ENTER_WITH_REQUIRED_CONTEXT);
   packer.raw_pack_uint32(parent_id);
   packer.raw_pack_uint32(zone_id);
   packer.RAW_PACK_CHANNEL(owner_channel);
@@ -1060,7 +1060,7 @@ ai_database_generate_context_old(
   packer.RAW_PACK_CHANNEL(database_server_id);
   packer.RAW_PACK_CHANNEL(from_channel_id);
   // packer.raw_pack_uint8('A');
-  packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
+  packer.raw_pack_uint16(STATESERVER_OBJECT_ENTER_WITH_REQUIRED_CONTEXT);
   packer.raw_pack_uint32(parent_id);
   packer.raw_pack_uint32(zone_id);
   packer.raw_pack_uint16(_number); // DCD class ID

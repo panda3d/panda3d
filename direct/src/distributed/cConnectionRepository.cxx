@@ -301,8 +301,8 @@ check_datagram() {
 
     switch (_msg_type) {
 #ifdef HAVE_PYTHON
-    case CLIENT_OBJECT_UPDATE_FIELD:
-    case STATESERVER_OBJECT_UPDATE_FIELD:
+    case CLIENT_OBJECT_SET_FIELD:
+    case STATESERVER_OBJECT_SET_FIELD:
       if (_handle_c_updates) {
         if (_has_owner_view) {
           if (!handle_update_field_owner()) {
@@ -494,7 +494,7 @@ send_message_bundle(unsigned int channel, unsigned int sender_channel) {
     dg.add_int8(1);
     dg.add_uint64(channel);
     dg.add_uint64(sender_channel);
-    dg.add_uint16(STATESERVER_BOUNCE_MESSAGE);
+    //dg.add_uint16(STATESERVER_BOUNCE_MESSAGE);
     // add each bundled message
     BundledMsgVector::const_iterator bmi;
     for (bmi = _bundle_msgs.begin(); bmi != _bundle_msgs.end(); bmi++) {
@@ -899,11 +899,11 @@ describe_message(ostream &out, const string &prefix,
 
     packer.RAW_UNPACK_CHANNEL();  // msg_sender
     msg_type = packer.raw_unpack_uint16();
-    is_update = (msg_type == STATESERVER_OBJECT_UPDATE_FIELD);
+    is_update = (msg_type == STATESERVER_OBJECT_SET_FIELD);
 
   } else {
     msg_type = packer.raw_unpack_uint16();
-    is_update = (msg_type == CLIENT_OBJECT_UPDATE_FIELD);
+    is_update = (msg_type == CLIENT_OBJECT_SET_FIELD);
   }
 
   if (!is_update) {
