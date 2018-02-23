@@ -47,10 +47,6 @@ if __debug__:
     from . import OnScreenDebug
 from . import AppRunnerGlobal
 
-def legacyRun():
-    assert builtins.base.notify.warning("run() is deprecated, use base.run() instead")
-    builtins.base.run()
-
 @atexit.register
 def exitfunc():
     if getattr(builtins, 'base', None) is not None:
@@ -369,7 +365,6 @@ class ShowBase(DirectObject.DirectObject):
         builtins.bboard = self.bboard
         # Config needs to be defined before ShowBase is constructed
         #builtins.config = self.config
-        builtins.run = legacyRun
         builtins.ostream = Notify.out()
         builtins.directNotify = directNotify
         builtins.giveNotify = giveNotify
@@ -391,7 +386,9 @@ class ShowBase(DirectObject.DirectObject):
 
         # Now add this instance to the ShowBaseGlobal module scope.
         from . import ShowBaseGlobal
+        builtins.run = ShowBaseGlobal.run
         ShowBaseGlobal.base = self
+        ShowBaseGlobal.__dev__ = self.__dev__
 
         if self.__dev__:
             ShowBase.notify.debug('__dev__ == %s' % self.__dev__)
@@ -515,6 +512,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Remove the built-in base reference
         if getattr(builtins, 'base', None) is self:
+            del builtins.run
             del builtins.base
             del builtins.loader
             del builtins.taskMgr

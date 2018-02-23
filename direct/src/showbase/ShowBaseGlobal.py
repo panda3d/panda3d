@@ -14,6 +14,7 @@ from panda3d.core import ConfigPageManager, ConfigVariableManager
 from panda3d.direct import get_config_showbase
 
 config = get_config_showbase()
+__dev__ = config.GetBool('want-dev', __debug__)
 
 vfs = VirtualFileSystem.getGlobalPtr()
 ostream = Notify.out()
@@ -24,6 +25,10 @@ pandaSystem = PandaSystem.getGlobalPtr()
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
+
+def run():
+    assert ShowBase.notify.warning("run() is deprecated, use base.run() instead")
+    base.run()
 
 def inspect(anObject):
     # Don't use a regular import, to prevent ModuleFinder from picking
@@ -41,6 +46,4 @@ builtins.inspect = inspect
 
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:
-    notify = directNotify.newCategory('ShowBaseGlobal')
-    notify.error("You must set 'want-dev' to false in non-debug mode.")
-    del notify
+    ShowBase.notify.error("You must set 'want-dev' to false in non-debug mode.")
