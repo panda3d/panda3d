@@ -16,6 +16,9 @@
  */
 INLINE_MATHUTIL GeometricBoundingVolume::
 GeometricBoundingVolume() {
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
 }
 
 /**

@@ -84,7 +84,7 @@ draw(bool force, Thread *current_thread) {
       data_reader.set_object(object->_munged_data);
       data_reader.check_array_readers();
       geom_reader.set_object(object->_geom);
-      geom_reader.draw(_gsg, object->_munger, &data_reader, force);
+      geom_reader.draw(_gsg, &data_reader, force);
     } else {
       // It has a callback associated.
       object->draw_callback(_gsg, force, current_thread);

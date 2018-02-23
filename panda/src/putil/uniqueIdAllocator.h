@@ -37,7 +37,7 @@
  */
 class EXPCL_PANDA_PUTIL UniqueIdAllocator {
 PUBLISHED:
-  UniqueIdAllocator(uint32_t min=0, uint32_t max=20);
+  explicit UniqueIdAllocator(uint32_t min=0, uint32_t max=20);
   ~UniqueIdAllocator();
 
   uint32_t allocate();

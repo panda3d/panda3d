@@ -32,6 +32,26 @@ BulletConvexHullShape() {
 /**
  *
  */
+BulletConvexHullShape::
+BulletConvexHullShape(const BulletConvexHullShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
+void BulletConvexHullShape::
+operator = (const BulletConvexHullShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletConvexHullShape::
 ptr() const {
 
@@ -43,6 +63,7 @@ ptr() const {
  */
 void BulletConvexHullShape::
 add_point(const LPoint3 &p) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _shape->addPoint(LVecBase3_to_btVector3(p));
 }
@@ -52,6 +73,10 @@ add_point(const LPoint3 &p) {
  */
 void BulletConvexHullShape::
 add_array(const PTA_LVecBase3 &points) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  if (_shape)
+      delete _shape;
 
   _shape = new btConvexHullShape(NULL, 0);
   _shape->setUserPointer(this);
@@ -75,6 +100,7 @@ add_array(const PTA_LVecBase3 &points) {
  */
 void BulletConvexHullShape::
 add_geom(const Geom *geom, const TransformState *ts) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(geom);
   nassertv(ts);
@@ -125,6 +151,7 @@ register_with_read_factory() {
  */
 void BulletConvexHullShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
   dg.add_stdfloat(get_margin());
 
   unsigned int num_points = _shape->getNumPoints();
@@ -161,7 +188,10 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletConvexHullShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  PN_stdfloat margin = scan.get_stdfloat();
+  BulletShape::fillin(scan, manager);
+  nassertv(_shape == nullptr);
+
+  _shape->setMargin(scan.get_stdfloat());
   unsigned int num_points = scan.get_uint32();
 
 #if BT_BULLET_VERSION >= 282

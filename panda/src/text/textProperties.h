@@ -49,6 +49,11 @@ PUBLISHED:
     A_boxed_center
   };
 
+  enum Direction {
+    D_ltr,
+    D_rtl,
+  };
+
   TextProperties();
   TextProperties(const TextProperties &copy);
   void operator = (const TextProperties &copy);
@@ -160,6 +165,11 @@ PUBLISHED:
   INLINE bool has_text_scale() const;
   INLINE PN_stdfloat get_text_scale() const;
 
+  INLINE void set_direction(Direction direction);
+  INLINE void clear_direction();
+  INLINE bool has_direction() const;
+  INLINE Direction get_direction() const;
+
   void add_properties(const TextProperties &other);
 
   void write(ostream &out, int indent_level = 0) const;
@@ -197,6 +207,8 @@ PUBLISHED:
                               set_glyph_shift, clear_glyph_shift);
   MAKE_PROPERTY2(text_scale, has_text_scale, get_text_scale,
                              set_text_scale, clear_text_scale);
+  MAKE_PROPERTY2(direction, has_direction, get_direction,
+                            set_direction, clear_direction);
 
 public:
   const RenderState *get_text_state() const;
@@ -225,6 +237,7 @@ private:
     F_has_underscore                   = 0x00010000,
     F_has_underscore_height            = 0x00020000,
     F_has_text_scale                   = 0x00040000,
+    F_has_direction                    = 0x00080000,
   };
 
   int _specified;
@@ -248,6 +261,7 @@ private:
   PN_stdfloat _glyph_scale;
   PN_stdfloat _glyph_shift;
   PN_stdfloat _text_scale;
+  Direction _direction;
 
   mutable CPT(RenderState) _text_state;
   mutable CPT(RenderState) _shadow_state;

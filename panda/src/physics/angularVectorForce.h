@@ -22,8 +22,8 @@
  */
 class EXPCL_PANDAPHYSICS AngularVectorForce : public AngularForce {
 PUBLISHED:
-  AngularVectorForce(const LRotation& quat);
-  AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  explicit AngularVectorForce(const LRotation& quat);
+  explicit AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   AngularVectorForce(const AngularVectorForce &copy);
   virtual ~AngularVectorForce();
 

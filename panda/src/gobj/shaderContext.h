@@ -32,7 +32,10 @@ class EXPCL_PANDA_GOBJ ShaderContext: public SavedContext {
 public:
   INLINE ShaderContext(Shader *se);
 
-  INLINE virtual void set_state_and_transform(const RenderState *, const TransformState *, const TransformState*) {};
+  virtual void set_state_and_transform(const RenderState *,
+                                       const TransformState *,
+                                       const TransformState *,
+                                       const TransformState *) {};
 
   INLINE virtual bool valid() { return false; }
   INLINE virtual void bind() {};

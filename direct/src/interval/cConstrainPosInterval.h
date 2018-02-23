@@ -25,9 +25,9 @@
  */
 class EXPCL_DIRECT CConstrainPosInterval : public CConstraintInterval {
 PUBLISHED:
-  CConstrainPosInterval(const string &name, double duration,
-                        const NodePath &node, const NodePath &target,
-                        bool wrt, const LVecBase3 posOffset=LVector3::zero());
+  explicit CConstrainPosInterval(const string &name, double duration,
+                                 const NodePath &node, const NodePath &target,
+                                 bool wrt, const LVecBase3 posOffset=LVector3::zero());
 
   INLINE const NodePath &get_node() const;
   INLINE const NodePath &get_target() const;

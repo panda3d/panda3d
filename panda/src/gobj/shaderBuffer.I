@@ -19,7 +19,8 @@ INLINE ShaderBuffer::
 ShaderBuffer(const string &name, uint64_t size, UsageHint usage_hint) :
   Namable(name),
   _data_size_bytes(size),
-  _usage_hint(usage_hint) {
+  _usage_hint(usage_hint),
+  _contexts(nullptr) {
 }
 
 /**
@@ -31,7 +32,8 @@ ShaderBuffer(const string &name, pvector<unsigned char> initial_data, UsageHint 
   Namable(name),
   _data_size_bytes(initial_data.size()),
   _usage_hint(usage_hint),
-  _initial_data(initial_data) {
+  _initial_data(initial_data),
+  _contexts(nullptr) {
 }
 
 /**

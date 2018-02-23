@@ -470,7 +470,6 @@ end_frame(Thread *current_thread) {
  */
 bool TinyGraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
 #ifndef NDEBUG
@@ -479,7 +478,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif  // NDEBUG
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -1734,11 +1733,7 @@ release_texture(TextureContext *tc) {
  */
 void TinyGraphicsStateGuardian::
 do_issue_light() {
-  // Initialize the current ambient light total and newly enabled light list
-  LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
-
   int num_enabled = 0;
-  int num_on_lights = 0;
 
   const LightAttrib *target_light = DCAST(LightAttrib, _target_rs->get_attrib_def(LightAttrib::get_class_slot()));
   if (display_cat.is_spam()) {
@@ -1750,43 +1745,35 @@ do_issue_light() {
   clear_light_state();
 
   // Now, assign new lights.
-  if (target_light != (LightAttrib *)NULL) {
-    CPT(LightAttrib) new_light = target_light->filter_to_max(_max_lights);
-    if (display_cat.is_spam()) {
-      new_light->write(display_cat.spam(false), 2);
-    }
-
-    num_on_lights = new_light->get_num_on_lights();
-    for (int li = 0; li < num_on_lights; li++) {
-      NodePath light = new_light->get_on_light(li);
-      nassertv(!light.is_empty());
-      Light *light_obj = light.node()->as_light();
-      nassertv(light_obj != (Light *)NULL);
-
+  if (target_light != nullptr) {
+    if (target_light->has_any_on_light()) {
       _lighting_enabled = true;
       _c->lighting_enabled = true;
+    }
 
-      if (light_obj->get_type() == AmbientLight::get_class_type()) {
-        // Accumulate all of the ambient lights together into one.
-        cur_ambient_light += light_obj->get_color();
+    size_t filtered_lights = min((size_t)_max_lights, target_light->get_num_non_ambient_lights());
+    for (size_t li = 0; li < filtered_lights; ++li) {
+      NodePath light = target_light->get_on_light(li);
+      nassertv(!light.is_empty());
+      Light *light_obj = light.node()->as_light();
+      nassertv(light_obj != nullptr);
 
-      } else {
-        // Other kinds of lights each get their own GLLight object.
-        light_obj->bind(this, light, num_enabled);
-        num_enabled++;
+      // Other kinds of lights each get their own GLLight object.
+      light_obj->bind(this, light, num_enabled);
+      num_enabled++;
 
-        // Handle the diffuse color here, since all lights have this property.
-        GLLight *gl_light = _c->first_light;
-        nassertv(gl_light != NULL);
-        const LColor &diffuse = light_obj->get_color();
-        gl_light->diffuse.v[0] = diffuse[0];
-        gl_light->diffuse.v[1] = diffuse[1];
-        gl_light->diffuse.v[2] = diffuse[2];
-        gl_light->diffuse.v[3] = diffuse[3];
-      }
+      // Handle the diffuse color here, since all lights have this property.
+      GLLight *gl_light = _c->first_light;
+      nassertv(gl_light != NULL);
+      const LColor &diffuse = light_obj->get_color();
+      gl_light->diffuse.v[0] = diffuse[0];
+      gl_light->diffuse.v[1] = diffuse[1];
+      gl_light->diffuse.v[2] = diffuse[2];
+      gl_light->diffuse.v[3] = diffuse[3];
     }
   }
 
+  LColor cur_ambient_light = target_light->get_ambient_contribution();
   _c->ambient_light_model.v[0] = cur_ambient_light[0];
   _c->ambient_light_model.v[1] = cur_ambient_light[1];
   _c->ambient_light_model.v[2] = cur_ambient_light[2];
@@ -2410,9 +2397,6 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
 
   PStatTimer timer(_load_texture_pcollector);
   CPTA_uchar src_image = tex->get_uncompressed_ram_image();
-  if (src_image.is_null()) {
-    return false;
-  }
 
 #ifdef DO_PSTATS
   _data_transferred_pcollector.add_level(tex->get_ram_image_size());
@@ -2451,56 +2435,70 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
   for (int level = 0; level < gltex->num_levels; ++level) {
     ZTextureLevel *dest = &gltex->levels[level];
 
-    switch (tex->get_format()) {
-    case Texture::F_rgb:
-    case Texture::F_rgb5:
-    case Texture::F_rgb8:
-    case Texture::F_rgb12:
-    case Texture::F_rgb332:
-      copy_rgb_image(dest, xsize, ysize, gtc, level);
-      break;
+    if (tex->has_ram_mipmap_image(level)) {
+      switch (tex->get_format()) {
+      case Texture::F_rgb:
+      case Texture::F_rgb5:
+      case Texture::F_rgb8:
+      case Texture::F_rgb12:
+      case Texture::F_rgb332:
+        copy_rgb_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_rgba:
-    case Texture::F_rgbm:
-    case Texture::F_rgba4:
-    case Texture::F_rgba5:
-    case Texture::F_rgba8:
-    case Texture::F_rgba12:
-    case Texture::F_rgba16:
-    case Texture::F_rgba32:
-      copy_rgba_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_rgba:
+      case Texture::F_rgbm:
+      case Texture::F_rgba4:
+      case Texture::F_rgba5:
+      case Texture::F_rgba8:
+      case Texture::F_rgba12:
+      case Texture::F_rgba16:
+      case Texture::F_rgba32:
+        copy_rgba_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_luminance:
-      copy_lum_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_luminance:
+        copy_lum_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_red:
-      copy_one_channel_image(dest, xsize, ysize, gtc, level, 0);
-      break;
+      case Texture::F_red:
+        copy_one_channel_image(dest, xsize, ysize, gtc, level, 0);
+        break;
 
-    case Texture::F_green:
-      copy_one_channel_image(dest, xsize, ysize, gtc, level, 1);
-      break;
+      case Texture::F_green:
+        copy_one_channel_image(dest, xsize, ysize, gtc, level, 1);
+        break;
 
-    case Texture::F_blue:
-      copy_one_channel_image(dest, xsize, ysize, gtc, level, 2);
-      break;
+      case Texture::F_blue:
+        copy_one_channel_image(dest, xsize, ysize, gtc, level, 2);
+        break;
 
-    case Texture::F_alpha:
-      copy_alpha_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_alpha:
+        copy_alpha_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_luminance_alphamask:
-    case Texture::F_luminance_alpha:
-      copy_la_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_luminance_alphamask:
+      case Texture::F_luminance_alpha:
+        copy_la_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    default:
-      tinydisplay_cat.error()
-        << "Unsupported texture format "
-        << tex->get_format() << "!\n";
-      return false;
+      default:
+        tinydisplay_cat.error()
+          << "Unsupported texture format "
+          << tex->get_format() << "!\n";
+        return false;
+      }
+    } else {
+      // Fill the mipmap with a solid color.
+      LColor scaled = tex->get_clear_color().fmin(LColor(1)).fmax(LColor::zero());
+      scaled *= 255;
+      unsigned int clear = RGBA8_TO_PIXEL((int)scaled[0], (int)scaled[1],
+                                          (int)scaled[2], (int)scaled[3]);
+      unsigned int *dpix = (unsigned int *)dest->pixmap;
+      int pixel_count = xsize * ysize;
+      while (pixel_count-- > 0) {
+        *dpix = clear;
+        ++dpix;
+      }
     }
 
     bytecount += xsize * ysize * 4;
@@ -2572,6 +2570,13 @@ upload_simple_texture(TinyTextureContext *gtc) {
  */
 bool TinyGraphicsStateGuardian::
 setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
+  if (x_size == 0 || y_size == 0) {
+    // A texture without pixels gets turned into a 1x1 texture.
+    x_size = 1;
+    y_size = 1;
+    num_levels = 1;
+  }
+
   int s_bits = get_tex_shift(x_size);
   int t_bits = get_tex_shift(y_size);
 

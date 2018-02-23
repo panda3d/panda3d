@@ -213,7 +213,7 @@ make_default() {
 /**
  * Returns the basic operation type of the ClipPlaneAttrib.  If this is O_set,
  * the planes listed here completely replace any planes that were already on.
- * If this is O_add, the planes here are added to the set of of planes that
+ * If this is O_add, the planes here are added to the set of planes that
  * were already on, and if O_remove, the planes here are removed from the set
  * of planes that were on.
  *
@@ -831,14 +831,6 @@ invert_compose_impl(const RenderAttrib *other) const {
   // bit more thought.  It's hard to imagine that it's even important to
   // compute this properly.
   return other;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) ClipPlaneAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
 }
 
 /**

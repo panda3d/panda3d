@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomTristrips : public GeomPrimitive {
 PUBLISHED:
-  GeomTristrips(UsageHint usage_hint);
+  explicit GeomTristrips(UsageHint usage_hint);
   GeomTristrips(const GeomTristrips &copy);
   virtual ~GeomTristrips();
   ALLOC_DELETED_CHAIN(GeomTristrips);

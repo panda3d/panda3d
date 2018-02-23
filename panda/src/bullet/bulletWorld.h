@@ -37,6 +37,7 @@
 #include "callbackObject.h"
 #include "collideMask.h"
 #include "luse.h"
+#include "lightMutex.h"
 
 class BulletPersistentManifold;
 class BulletShape;
@@ -62,48 +63,43 @@ PUBLISHED:
   BulletSoftBodyWorldInfo get_world_info();
 
   // Debug
-  INLINE void set_debug_node(BulletDebugNode *node);
-  INLINE void clear_debug_node();
+  void set_debug_node(BulletDebugNode *node);
+  void clear_debug_node();
   INLINE BulletDebugNode *get_debug_node() const;
   INLINE bool has_debug_node() const;
 
   // AttachRemove
   void attach(TypedObject *object);
+  void remove(TypedObject *object);
   void attach_constraint(BulletConstraint *constraint, bool linked_collision=false);
 
-  void remove(TypedObject *object);
-
   // Ghost object
-  INLINE int get_num_ghosts() const;
-  INLINE BulletGhostNode *get_ghost(int idx) const;
+  int get_num_ghosts() const;
+  BulletGhostNode *get_ghost(int idx) const;
   MAKE_SEQ(get_ghosts, get_num_ghosts, get_ghost);
 
   // Rigid body
-  INLINE int get_num_rigid_bodies() const;
-  INLINE BulletRigidBodyNode *get_rigid_body(int idx) const;
+  int get_num_rigid_bodies() const;
+  BulletRigidBodyNode *get_rigid_body(int idx) const;
   MAKE_SEQ(get_rigid_bodies, get_num_rigid_bodies, get_rigid_body);
 
   // Soft body
-  INLINE int get_num_soft_bodies() const;
-  INLINE BulletSoftBodyNode *get_soft_body(int idx) const;
+  int get_num_soft_bodies() const;
+  BulletSoftBodyNode *get_soft_body(int idx) const;
   MAKE_SEQ(get_soft_bodies, get_num_soft_bodies, get_soft_body);
 
   // Character controller
-  INLINE int get_num_characters() const;
-  INLINE BulletBaseCharacterControllerNode *get_character(int idx) const;
+  int get_num_characters() const;
+  BulletBaseCharacterControllerNode *get_character(int idx) const;
   MAKE_SEQ(get_characters, get_num_characters, get_character);
 
-  // Vehicle
-  void attach_vehicle(BulletVehicle *vehicle);
-  void remove_vehicle(BulletVehicle *vehicle);
-
-  INLINE int get_num_vehicles() const;
-  INLINE BulletVehicle *get_vehicle(int idx) const;
+  int get_num_vehicles() const;
+  BulletVehicle *get_vehicle(int idx) const;
   MAKE_SEQ(get_vehicles, get_num_vehicles, get_vehicle);
 
   // Constraint
-  INLINE int get_num_constraints() const;
-  INLINE BulletConstraint *get_constraint(int idx) const;
+  int get_num_constraints() const;
+  BulletConstraint *get_constraint(int idx) const;
   MAKE_SEQ(get_constraints, get_num_constraints, get_constraint);
 
   // Raycast and other queries
@@ -130,7 +126,7 @@ PUBLISHED:
   bool filter_test(PandaNode *node0, PandaNode *node1) const;
 
   // Manifolds
-  INLINE int get_num_manifolds() const;
+  int get_num_manifolds() const;
   BulletPersistentManifold *get_manifold(int idx) const;
   MAKE_SEQ(get_manifolds, get_num_manifolds, get_manifold);
 
@@ -171,7 +167,7 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(constraints, get_num_constraints, get_constraint);
   MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, get_manifold);
 
-PUBLISHED: // Deprecated methods, will become private soon
+PUBLISHED: // Deprecated methods, will be removed soon
   void attach_ghost(BulletGhostNode *node);
   void remove_ghost(BulletGhostNode *node);
 
@@ -184,6 +180,9 @@ PUBLISHED: // Deprecated methods, will become private soon
   void attach_character(BulletBaseCharacterControllerNode *node);
   void remove_character(BulletBaseCharacterControllerNode *node);
 
+  void attach_vehicle(BulletVehicle *vehicle);
+  void remove_vehicle(BulletVehicle *vehicle);
+
   void remove_constraint(BulletConstraint *constraint);
 
 public:
@@ -193,9 +192,29 @@ public:
   INLINE btBroadphaseInterface *get_broadphase() const;
   INLINE btDispatcher *get_dispatcher() const;
 
+  static LightMutex &get_global_lock();
+
 private:
-  void sync_p2b(PN_stdfloat dt, int num_substeps);
-  void sync_b2p();
+  void do_sync_p2b(PN_stdfloat dt, int num_substeps);
+  void do_sync_b2p();
+
+  void do_attach_ghost(BulletGhostNode *node);
+  void do_remove_ghost(BulletGhostNode *node);
+
+  void do_attach_rigid_body(BulletRigidBodyNode *node);
+  void do_remove_rigid_body(BulletRigidBodyNode *node);
+
+  void do_attach_soft_body(BulletSoftBodyNode *node);
+  void do_remove_soft_body(BulletSoftBodyNode *node);
+
+  void do_attach_character(BulletBaseCharacterControllerNode *node);
+  void do_remove_character(BulletBaseCharacterControllerNode *node);
+
+  void do_attach_vehicle(BulletVehicle *vehicle);
+  void do_remove_vehicle(BulletVehicle *vehicle);
+
+  void do_attach_constraint(BulletConstraint *constraint, bool linked_collision=false);
+  void do_remove_constraint(BulletConstraint *constraint);
 
   static void tick_callback(btDynamicsWorld *world, btScalar timestep);
 
@@ -208,7 +227,6 @@ private:
 
   static PStatCollector _pstat_physics;
   static PStatCollector _pstat_simulation;
-  static PStatCollector _pstat_debug;
   static PStatCollector _pstat_p2b;
   static PStatCollector _pstat_b2p;
 

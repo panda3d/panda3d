@@ -28,6 +28,7 @@ PUBLISHED:
   static int             get_num_options();
   static PT(WebcamVideo) get_option(int n);
   MAKE_SEQ(get_options, get_num_options, get_option);
+  MAKE_SEQ_PROPERTY(options, get_num_options, get_option);
 
   INLINE int get_size_x() const;
   INLINE int get_size_y() const;

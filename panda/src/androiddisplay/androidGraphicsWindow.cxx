@@ -44,7 +44,8 @@ AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       int flags,
                       GraphicsStateGuardian *gsg,
                       GraphicsOutput *host) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
+  _mouse_button_state(0)
 {
   AndroidGraphicsPipe *android_pipe;
   DCAST_INTO_V(android_pipe, _pipe);
@@ -246,6 +247,13 @@ close_window() {
   }
 
   GraphicsWindow::close_window();
+
+  nassertv(_app != nullptr);
+  if (_app->userData == this) {
+    _app->userData = nullptr;
+    _app->onAppCmd = nullptr;
+    _app->onInputEvent = nullptr;
+  }
 }
 
 /**
@@ -388,8 +396,10 @@ create_surface() {
  */
 void AndroidGraphicsWindow::
 handle_command(struct android_app *app, int32_t command) {
-  AndroidGraphicsWindow* window = (AndroidGraphicsWindow*) app->userData;
-  window->ns_handle_command(command);
+  AndroidGraphicsWindow *window = (AndroidGraphicsWindow *)app->userData;
+  if (window != nullptr) {
+    window->ns_handle_command(command);
+  }
 }
 
 /**
@@ -509,11 +519,15 @@ handle_key_event(const AInputEvent *event) {
   // Is it an up or down event?
   int32_t action = AKeyEvent_getAction(event);
   if (action == AKEY_EVENT_ACTION_DOWN) {
-    _input_devices[0].button_down(button);
+    if (AKeyEvent_getRepeatCount(event) > 0) {
+      _input_devices[0].button_resume_down(button);
+    } else {
+      _input_devices[0].button_down(button);
+    }
   } else if (action == AKEY_EVENT_ACTION_UP) {
     _input_devices[0].button_up(button);
   }
-  // TODO getRepeatCount, ACTION_MULTIPLE
+  // TODO AKEY_EVENT_ACTION_MULTIPLE
 
   return 1;
 }
@@ -526,10 +540,32 @@ handle_motion_event(const AInputEvent *event) {
   int32_t action = AMotionEvent_getAction(event);
   action &= AMOTION_EVENT_ACTION_MASK;
 
-  if (action == AMOTION_EVENT_ACTION_DOWN) {
-    _input_devices[0].button_down(MouseButton::one());
-  } else if (action == AMOTION_EVENT_ACTION_UP) {
-    _input_devices[0].button_up(MouseButton::one());
+  if (action == AMOTION_EVENT_ACTION_DOWN ||
+      action == AMOTION_EVENT_ACTION_UP) {
+    // The up event doesn't let us know which button is up, so we need to
+    // keep track of the button state ourselves.
+    int32_t button_state = AMotionEvent_getButtonState(event);
+    if (button_state == 0 && action == AMOTION_EVENT_ACTION_DOWN) {
+      button_state = AMOTION_EVENT_BUTTON_PRIMARY;
+    }
+    int32_t changed = _mouse_button_state ^ button_state;
+    if (changed != 0) {
+      if (changed & AMOTION_EVENT_BUTTON_PRIMARY) {
+        if (button_state & AMOTION_EVENT_BUTTON_PRIMARY) {
+          _input_devices[0].button_down(MouseButton::one());
+        } else {
+          _input_devices[0].button_up(MouseButton::one());
+        }
+      }
+      if (changed & AMOTION_EVENT_BUTTON_SECONDARY) {
+        if (button_state & AMOTION_EVENT_BUTTON_SECONDARY) {
+          _input_devices[0].button_down(MouseButton::three());
+        } else {
+          _input_devices[0].button_up(MouseButton::three());
+        }
+      }
+      _mouse_button_state = button_state;
+    }
   }
 
   float x = AMotionEvent_getX(event, 0) - _app->contentRect.left;
@@ -668,7 +704,7 @@ map_button(int32_t keycode) {
     case AKEYCODE_ENTER:
       return KeyboardButton::enter();
     case AKEYCODE_DEL:
-      return KeyboardButton::del();
+      return KeyboardButton::backspace();
     case AKEYCODE_GRAVE:
       return KeyboardButton::ascii_key('`');
     case AKEYCODE_MINUS:
@@ -696,6 +732,7 @@ map_button(int32_t keycode) {
     case AKEYCODE_PLUS:
       return KeyboardButton::ascii_key('+');
     case AKEYCODE_MENU:
+      return KeyboardButton::menu();
     case AKEYCODE_NOTIFICATION:
     case AKEYCODE_SEARCH:
     case AKEYCODE_MEDIA_PLAY_PAUSE:
@@ -727,6 +764,61 @@ map_button(int32_t keycode) {
     case AKEYCODE_BUTTON_START:
     case AKEYCODE_BUTTON_SELECT:
     case AKEYCODE_BUTTON_MODE:
+      break;
+    case AKEYCODE_ESCAPE:
+      return KeyboardButton::escape();
+    case AKEYCODE_FORWARD_DEL:
+      return KeyboardButton::del();
+    case AKEYCODE_CTRL_LEFT:
+      return KeyboardButton::lcontrol();
+    case AKEYCODE_CTRL_RIGHT:
+      return KeyboardButton::rcontrol();
+    case AKEYCODE_CAPS_LOCK:
+      return KeyboardButton::caps_lock();
+    case AKEYCODE_SCROLL_LOCK:
+      return KeyboardButton::scroll_lock();
+    case AKEYCODE_META_LEFT:
+      return KeyboardButton::lmeta();
+    case AKEYCODE_META_RIGHT:
+      return KeyboardButton::rmeta();
+    case AKEYCODE_FUNCTION:
+      break;
+    case AKEYCODE_SYSRQ:
+      return KeyboardButton::print_screen();
+    case AKEYCODE_BREAK:
+      return KeyboardButton::pause();
+    case AKEYCODE_MOVE_HOME:
+      return KeyboardButton::home();
+    case AKEYCODE_MOVE_END:
+      return KeyboardButton::end();
+    case AKEYCODE_INSERT:
+      return KeyboardButton::insert();
+    case AKEYCODE_F1:
+      return KeyboardButton::f1();
+    case AKEYCODE_F2:
+      return KeyboardButton::f2();
+    case AKEYCODE_F3:
+      return KeyboardButton::f3();
+    case AKEYCODE_F4:
+      return KeyboardButton::f4();
+    case AKEYCODE_F5:
+      return KeyboardButton::f5();
+    case AKEYCODE_F6:
+      return KeyboardButton::f6();
+    case AKEYCODE_F7:
+      return KeyboardButton::f7();
+    case AKEYCODE_F8:
+      return KeyboardButton::f8();
+    case AKEYCODE_F9:
+      return KeyboardButton::f9();
+    case AKEYCODE_F10:
+      return KeyboardButton::f10();
+    case AKEYCODE_F11:
+      return KeyboardButton::f11();
+    case AKEYCODE_F12:
+      return KeyboardButton::f12();
+    case AKEYCODE_NUM_LOCK:
+      return KeyboardButton::num_lock();
     default:
       break;
   }

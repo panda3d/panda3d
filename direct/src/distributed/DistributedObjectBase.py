@@ -95,7 +95,8 @@ class DistributedObjectBase(DirectObject):
 
     def delete(self):
         """
-        Overwrite this to handle cleanup right before this object
+        Override this to handle cleanup right before this object
         gets deleted.
         """
+
         pass

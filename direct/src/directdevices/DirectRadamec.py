@@ -21,7 +21,7 @@ class DirectRadamec(DirectObject):
     radamecCount = 0
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectRadamec')
 
-    def __init__(self, device = 'Analog0', nodePath = base.direct.camera):
+    def __init__(self, device = 'Analog0', nodePath = None):
         # See if device manager has been initialized
         if base.direct.deviceManager == None:
             base.direct.deviceManager = DirectDeviceManager()

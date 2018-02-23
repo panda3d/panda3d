@@ -27,9 +27,9 @@
 class EXPCL_PANDA_COLLIDE CollisionRay : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionRay();
-  INLINE CollisionRay(const LPoint3 &origin, const LVector3 &direction);
-  INLINE CollisionRay(PN_stdfloat ox, PN_stdfloat oy, PN_stdfloat oz,
-                      PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz);
+  INLINE explicit CollisionRay(const LPoint3 &origin, const LVector3 &direction);
+  INLINE explicit CollisionRay(PN_stdfloat ox, PN_stdfloat oy, PN_stdfloat oz,
+                               PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz);
 
   virtual LPoint3 get_collision_origin() const;
 

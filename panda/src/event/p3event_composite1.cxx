@@ -1,3 +1,4 @@
+#include "asyncFuture.cxx"
 #include "asyncTask.cxx"
 #include "asyncTaskChain.cxx"
 #include "asyncTaskCollection.cxx"

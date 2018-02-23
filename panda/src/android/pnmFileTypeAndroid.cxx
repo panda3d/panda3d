@@ -17,21 +17,11 @@
 
 #include "config_pnmimagetypes.h"
 
-#include "pnmFileTypeRegistry.h"
-#include "bamReader.h"
-
-static const char * const extensions_android[] = {
-  "jpg", "jpeg", "gif", "png",//"webp" (android 4.0+)
-};
-static const int num_extensions_android = sizeof(extensions_android) / sizeof(const char *);
-
-TypeHandle PNMFileTypeAndroid::_type_handle;
-
 /**
  *
  */
 PNMFileTypeAndroid::
-PNMFileTypeAndroid() {
+PNMFileTypeAndroid(CompressFormat format) : _format(format) {
 }
 
 /**
@@ -48,7 +38,16 @@ get_name() const {
  */
 int PNMFileTypeAndroid::
 get_num_extensions() const {
-  return num_extensions_android;
+  switch (_format) {
+  case CF_jpeg:
+    return 3;
+  case CF_png:
+    return 1;
+  case CF_webp:
+    return 1;
+  default:
+    return 0;
+  }
 }
 
 /**
@@ -57,8 +56,17 @@ get_num_extensions() const {
  */
 string PNMFileTypeAndroid::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_android, string());
-  return extensions_android[n];
+  static const char *const jpeg_extensions[] = {"jpg", "jpeg", "jpe"};
+  switch (_format) {
+  case CF_jpeg:
+    return jpeg_extensions[n];
+  case CF_png:
+    return "png";
+  case CF_webp:
+    return "webp";
+  default:
+    return 0;
+  }
 }
 
 /**
@@ -77,30 +85,17 @@ has_magic_number() const {
  */
 PNMReader *PNMFileTypeAndroid::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
 /**
- * Registers the current object as something that can be read from a Bam file.
+ * Allocates and returns a new PNMWriter suitable for reading from this file
+ * type, if possible.  If writing files of this type is not supported, returns
+ * NULL.
  */
-void PNMFileTypeAndroid::
-register_with_read_factory() {
-  BamReader::get_factory()->
-    register_factory(get_class_type(), make_PNMFileTypeAndroid);
-}
-
-/**
- * This method is called by the BamReader when an object of this type is
- * encountered in a Bam file; it should allocate and return a new object with
- * all the data read.
- *
- * In the case of the PNMFileType objects, since these objects are all shared,
- * we just pull the object from the registry.
- */
-TypedWritable *PNMFileTypeAndroid::
-make_PNMFileTypeAndroid(const FactoryParams &params) {
-  return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
+PNMWriter *PNMFileTypeAndroid::
+make_writer(ostream *file, bool owns_file) {
+  return new Writer(this, file, owns_file, _format);
 }
 
 #endif  // ANDROID

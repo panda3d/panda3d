@@ -115,7 +115,7 @@ public:
 
 PUBLISHED:
   // The primary interface for a caller.
-  BamReader(DatagramGenerator *source = NULL);
+  explicit BamReader(DatagramGenerator *source = NULL);
   ~BamReader();
 
   void set_source(DatagramGenerator *source);

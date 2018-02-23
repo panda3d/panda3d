@@ -106,6 +106,8 @@ find_on_stage(const TextureStage *stage) const {
  */
 CPT(RenderAttrib) TextureAttrib::
 add_on_stage(TextureStage *stage, Texture *tex, int override) const {
+  nassertr(tex != nullptr, this);
+
   TextureAttrib *attrib = new TextureAttrib(*this);
   Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
   (*si)._override = override;
@@ -127,6 +129,8 @@ add_on_stage(TextureStage *stage, Texture *tex, int override) const {
  */
 CPT(RenderAttrib) TextureAttrib::
 add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int override) const {
+  nassertr(tex != nullptr, this);
+
   TextureAttrib *attrib = new TextureAttrib(*this);
   Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
   (*si)._override = override;
@@ -381,10 +385,9 @@ output(ostream &out) const {
     const StageNode &sn = *(*ri);
     TextureStage *stage = sn._stage;
     Texture *tex = sn._texture;
-    if (tex != NULL) {
-      out << " " << stage->get_name() << ":" << tex->get_name();
-    } else {
-      out << " " << stage->get_name();
+    out << " " << stage->get_name();
+    if (tex != nullptr) {
+      out << ":" << tex->get_name();
     }
     if (sn._override != 0) {
       out << "^" << sn._override;
@@ -735,14 +738,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) TextureAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
  * Tells the BamReader how to create objects of type TextureAttrib.
  */
 void TextureAttrib::
@@ -830,6 +825,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     }
   }
   _on_stages.sort();
+  _off_stages.sort();
   _sort_seq = UpdateSeq::old();
   _filtered_seq = UpdateSeq::old();
 

@@ -33,14 +33,17 @@ public:
   ALLOC_DELETED_CHAIN(TextureReloadRequest);
 
 PUBLISHED:
-  INLINE TextureReloadRequest(const string &name,
-                              PreparedGraphicsObjects *pgo, Texture *texture,
-                              bool allow_compressed);
+  INLINE explicit TextureReloadRequest(const string &name,
+                                       PreparedGraphicsObjects *pgo,
+                                       Texture *texture,
+                                       bool allow_compressed);
 
   INLINE PreparedGraphicsObjects *get_prepared_graphics_objects() const;
   INLINE Texture *get_texture() const;
   INLINE bool get_allow_compressed() const;
   INLINE bool is_ready() const;
+
+  MAKE_PROPERTY(texture, get_texture);
 
 protected:
   virtual DoneStatus do_task();
@@ -49,7 +52,6 @@ private:
   PT(PreparedGraphicsObjects) _pgo;
   PT(Texture) _texture;
   bool _allow_compressed;
-  bool _is_ready;
 
 public:
   static TypeHandle get_class_type() {

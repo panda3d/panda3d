@@ -694,9 +694,9 @@ read_datagram(DatagramIterator &scan) {
  *
  */
 INLINE Shader::ShaderFile::
-ShaderFile(const string &shared) :
+ShaderFile(string shared) :
   _separate(false),
-  _shared(shared)
+  _shared(move(shared))
 {
 }
 
@@ -704,17 +704,14 @@ ShaderFile(const string &shared) :
  *
  */
 INLINE Shader::ShaderFile::
-ShaderFile(const string &vertex,
-           const string &fragment,
-           const string &geometry,
-           const string &tess_control,
-           const string &tess_evaluation) :
+ShaderFile(string vertex, string fragment, string geometry,
+           string tess_control, string tess_evaluation) :
   _separate(true),
-  _vertex(vertex),
-  _fragment(fragment),
-  _geometry(geometry),
-  _tess_control(tess_control),
-  _tess_evaluation(tess_evaluation)
+  _vertex(move(vertex)),
+  _fragment(move(fragment)),
+  _geometry(move(geometry)),
+  _tess_control(move(tess_control)),
+  _tess_evaluation(move(tess_evaluation))
 {
 }
 

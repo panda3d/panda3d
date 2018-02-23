@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the DirectWaitBar class, a progress bar widget."""
 
 __all__ = ['DirectWaitBar']
 

@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_PGUI PGButton : public PGItem {
 PUBLISHED:
-  PGButton(const string &name);
+  explicit PGButton(const string &name);
   virtual ~PGButton();
 
 protected:
@@ -73,6 +73,7 @@ PUBLISHED:
 
   INLINE static string get_click_prefix();
   INLINE string get_click_event(const ButtonHandle &button) const;
+  MAKE_PROPERTY(click_prefix, get_click_prefix);
 
 private:
   typedef pset<ButtonHandle> Buttons;

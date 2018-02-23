@@ -12,47 +12,55 @@
  */
 
 /**
+ * Creates an UpdateSeq in the given state.
+ */
+CONSTEXPR UpdateSeq::
+UpdateSeq(unsigned int seq) : _seq(seq) {
+}
+
+/**
  * Creates an UpdateSeq in the 'initial' state.
  */
-INLINE UpdateSeq::
-UpdateSeq() {
-  _seq = (unsigned int)SC_initial;
+CONSTEXPR UpdateSeq::
+UpdateSeq() : _seq((unsigned int)SC_initial) {
 }
 
 /**
  * Returns an UpdateSeq in the 'initial' state.
  */
-INLINE UpdateSeq UpdateSeq::
+CONSTEXPR UpdateSeq UpdateSeq::
 initial() {
-  return UpdateSeq();
+  return UpdateSeq((unsigned int)SC_initial);
 }
 
 /**
  * Returns an UpdateSeq in the 'old' state.
  */
-INLINE UpdateSeq UpdateSeq::
+CONSTEXPR UpdateSeq UpdateSeq::
 old() {
-  UpdateSeq result;
-  result._seq = (unsigned int)SC_old;
-  return result;
+  return UpdateSeq((unsigned int)SC_old);
 }
 
 /**
  * Returns an UpdateSeq in the 'fresh' state.
  */
-INLINE UpdateSeq UpdateSeq::
+CONSTEXPR UpdateSeq UpdateSeq::
 fresh() {
-  UpdateSeq result;
-  result._seq = (unsigned int)SC_fresh;
-  return result;
+  return UpdateSeq((unsigned int)SC_fresh);
 }
 
 /**
  *
  */
 INLINE UpdateSeq::
-UpdateSeq(const UpdateSeq &copy) {
-  _seq = AtomicAdjust::get(copy._seq);
+UpdateSeq(const UpdateSeq &copy) : _seq(AtomicAdjust::get(copy._seq)) {
+}
+
+/**
+ *
+ */
+CONSTEXPR UpdateSeq::
+UpdateSeq(const UpdateSeq &&from) NOEXCEPT : _seq(from._seq) {
 }
 
 /**

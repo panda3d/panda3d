@@ -119,7 +119,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Cull:Sort",                        { 0.3, 0.3, 0.6 } },
   { 1, "*",                                { 0.1, 0.1, 0.5 } },
   { 1, "*:Show fps",                       { 0.5, 0.8, 1.0 } },
-  { 0, "*:Munge",                          { 0.3, 0.3, 0.9 } },
+  { 1, "*:Munge",                          { 0.3, 0.3, 0.9 } },
   { 1, "*:Munge:Geom",                     { 0.4, 0.2, 0.8 } },
   { 1, "*:Munge:Sprites",                  { 0.2, 0.8, 0.4 } },
   { 0, "*:Munge:Data",                     { 0.7, 0.5, 0.2 } },

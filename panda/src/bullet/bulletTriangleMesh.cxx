@@ -23,150 +23,328 @@ TypeHandle BulletTriangleMesh::_type_handle;
  *
  */
 BulletTriangleMesh::
-BulletTriangleMesh() {
-
-  _mesh = new btTriangleMesh();
+BulletTriangleMesh()
+ : _welding_distance(0) {
+  btIndexedMesh mesh;
+  mesh.m_numTriangles = 0;
+  mesh.m_numVertices = 0;
+  mesh.m_indexType = PHY_INTEGER;
+  mesh.m_triangleIndexBase = nullptr;
+  mesh.m_triangleIndexStride = 3 * sizeof(int);
+  mesh.m_vertexBase = nullptr;
+  mesh.m_vertexStride = sizeof(btVector3);
+  _mesh.addIndexedMesh(mesh);
 }
 
 /**
- *
+ * Returns the number of vertices in this triangle mesh.
  */
-int BulletTriangleMesh::
-get_num_triangles() const {
+size_t BulletTriangleMesh::
+get_num_vertices() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  return _mesh->getNumTriangles();
+  return _vertices.size();
 }
 
 /**
- *
+ * Returns the vertex at the given vertex index.
+ */
+LPoint3 BulletTriangleMesh::
+get_vertex(size_t index) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertr(index < _vertices.size(), LPoint3::zero());
+  const btVector3 &vertex = _vertices[index];
+  return LPoint3(vertex[0], vertex[1], vertex[2]);
+}
+
+/**
+ * Returns the vertex indices making up the given triangle index.
+ */
+LVecBase3i BulletTriangleMesh::
+get_triangle(size_t index) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  index *= 3;
+  nassertr(index + 2 < _indices.size(), LVecBase3i::zero());
+  return LVecBase3i(_indices[index], _indices[index + 1], _indices[index + 2]);
+}
+
+/**
+ * Returns the number of triangles in this triangle mesh.
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
+size_t BulletTriangleMesh::
+do_get_num_triangles() const {
+
+  return _indices.size() / 3;
+}
+
+/**
+ * Returns the number of triangles in this triangle mesh.
+ */
+size_t BulletTriangleMesh::
+get_num_triangles() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return do_get_num_triangles();
+}
+
+/**
+ * Used to reserve memory in anticipation of the given amount of vertices and
+ * indices being added to the triangle mesh.  This is useful if you are about
+ * to call add_triangle() many times, to prevent unnecessary reallocations.
  */
 void BulletTriangleMesh::
 preallocate(int num_verts, int num_indices) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _mesh->preallocateVertices(num_verts);
-  _mesh->preallocateIndices(num_indices);
+  _vertices.reserve(num_verts);
+  _indices.reserve(num_indices);
+
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
+  mesh.m_vertexBase = (unsigned char*)&_vertices[0];
+  mesh.m_triangleIndexBase = (unsigned char *)&_indices[0];
 }
 
 /**
+ * Adds a triangle with the indicated coordinates.
  *
+ * If remove_duplicate_vertices is true, it will make sure that it does not
+ * add duplicate vertices if they already exist in the triangle mesh, within
+ * the tolerance specified by set_welding_distance().  This comes at a
+ * significant performance cost, especially for large meshes.
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletTriangleMesh::
-add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
+do_add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
 
   nassertv(!p0.is_nan());
   nassertv(!p1.is_nan());
   nassertv(!p2.is_nan());
 
-  _mesh->addTriangle(
-    LVecBase3_to_btVector3(p0),
-    LVecBase3_to_btVector3(p1),
-    LVecBase3_to_btVector3(p2),
-    remove_duplicate_vertices);
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
+  mesh.m_numTriangles++;
+
+  if (!remove_duplicate_vertices) {
+    unsigned int index = _vertices.size();
+    _indices.push_back(index++);
+    _indices.push_back(index++);
+    _indices.push_back(index++);
+
+    _vertices.push_back(LVecBase3_to_btVector3(p0));
+    _vertices.push_back(LVecBase3_to_btVector3(p1));
+    _vertices.push_back(LVecBase3_to_btVector3(p2));
+    mesh.m_numVertices += 3;
+    mesh.m_vertexBase = (unsigned char*)&_vertices[0];
+  } else {
+    _indices.push_back(find_or_add_vertex(p0));
+    _indices.push_back(find_or_add_vertex(p1));
+    _indices.push_back(find_or_add_vertex(p2));
+  }
+
+  mesh.m_triangleIndexBase = (unsigned char *)&_indices[0];
 }
 
 /**
+ * Adds a triangle with the indicated coordinates.
  *
+ * If remove_duplicate_vertices is true, it will make sure that it does not
+ * add duplicate vertices if they already exist in the triangle mesh, within
+ * the tolerance specified by set_welding_distance().  This comes at a
+ * significant performance cost, especially for large meshes.
+ */
+void BulletTriangleMesh::
+add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_add_triangle(p0, p1, p2, remove_duplicate_vertices);
+}
+
+/**
+ * Sets the square of the distance at which vertices will be merged
+ * together when adding geometry with remove_duplicate_vertices set to true.
+ *
+ * The default is 0, meaning vertices will only be merged if they have the
+ * exact same position.
  */
 void BulletTriangleMesh::
 set_welding_distance(PN_stdfloat distance) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _mesh->m_weldingThreshold = distance;
+  _welding_distance = distance;
 }
 
 /**
- *
+ * Returns the value previously set with set_welding_distance(), or the
+ * value of 0 if none was set.
  */
 PN_stdfloat BulletTriangleMesh::
 get_welding_distance() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  return _mesh->m_weldingThreshold;
+  return _welding_distance;
 }
 
 /**
+ * Adds the geometry from the indicated Geom from the triangle mesh.  This is
+ * a one-time copy operation, and future updates to the Geom will not be
+ * reflected.
  *
+ * If remove_duplicate_vertices is true, it will make sure that it does not
+ * add duplicate vertices if they already exist in the triangle mesh, within
+ * the tolerance specified by set_welding_distance().  This comes at a
+ * significant performance cost, especially for large meshes.
  */
 void BulletTriangleMesh::
 add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState *ts) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(geom);
   nassertv(ts);
 
-  LMatrix4 m = ts->get_mat();
-
-  // Collect points
-  pvector<LPoint3> points;
-
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
+  size_t num_vertices = vdata->get_num_rows();
   GeomVertexReader reader = GeomVertexReader(vdata, InternalName::get_vertex());
 
-  while (!reader.is_at_end()) {
-    points.push_back(m.xform_point(reader.get_data3()));
-  }
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
 
-  // Convert points
-  btVector3 *vertices = new btVector3[points.size()];
+  if (!remove_duplicate_vertices) {
+    // Fast path: directly copy the vertices and indices.
+    mesh.m_numVertices += num_vertices;
+    unsigned int index_offset = _vertices.size();
+    _vertices.reserve(_vertices.size() + num_vertices);
 
-  int i = 0;
-  pvector<LPoint3>::const_iterator it;
-  for (it=points.begin(); it!=points.end(); it++) {
-    LPoint3 v = *it;
-    vertices[i] = LVecBase3_to_btVector3(v);
-    i++;
-  }
-
-  // Add triangles
-  for (int k=0; k<geom->get_num_primitives(); k++) {
-
-    CPT(GeomPrimitive) prim = geom->get_primitive(k);
-    prim = prim->decompose();
-
-    for (int l=0; l<prim->get_num_primitives(); l++) {
-
-      int s = prim->get_primitive_start(l);
-      int e = prim->get_primitive_end(l);
-
-      nassertv(e - s == 3);
-
-      btVector3 v0 = vertices[prim->get_vertex(s)];
-      btVector3 v1 = vertices[prim->get_vertex(s+1)];
-      btVector3 v2 = vertices[prim->get_vertex(s+2)];
-
-      _mesh->addTriangle(v0, v1, v2, remove_duplicate_vertices);
+    if (ts->is_identity()) {
+      while (!reader.is_at_end()) {
+        _vertices.push_back(LVecBase3_to_btVector3(reader.get_data3()));
+      }
+    } else {
+      LMatrix4 m = ts->get_mat();
+      while (!reader.is_at_end()) {
+        _vertices.push_back(LVecBase3_to_btVector3(m.xform_point(reader.get_data3())));
+      }
     }
+
+    for (int k = 0; k < geom->get_num_primitives(); ++k) {
+      CPT(GeomPrimitive) prim = geom->get_primitive(k);
+      prim = prim->decompose();
+
+      if (prim->is_of_type(GeomTriangles::get_class_type())) {
+        int num_vertices = prim->get_num_vertices();
+        _indices.reserve(_indices.size() + num_vertices);
+        mesh.m_numTriangles += num_vertices / 3;
+
+        CPT(GeomVertexArrayData) vertices = prim->get_vertices();
+        if (vertices != nullptr) {
+          GeomVertexReader index(move(vertices), 0);
+          while (!index.is_at_end()) {
+            _indices.push_back(index_offset + index.get_data1i());
+          }
+        } else {
+          int index = index_offset + prim->get_first_vertex();
+          int end_index = index + num_vertices;
+          while (index < end_index) {
+            _indices.push_back(index++);
+          }
+        }
+      }
+    }
+    nassertv(mesh.m_numTriangles * 3 == _indices.size());
+
+  } else {
+    // Collect points
+    pvector<LPoint3> points;
+    points.reserve(_vertices.size() + num_vertices);
+
+    if (ts->is_identity()) {
+      while (!reader.is_at_end()) {
+        points.push_back(reader.get_data3());
+      }
+    } else {
+      LMatrix4 m = ts->get_mat();
+      while (!reader.is_at_end()) {
+        points.push_back(m.xform_point(reader.get_data3()));
+      }
+    }
+
+    // Add triangles
+    for (int k = 0; k < geom->get_num_primitives(); ++k) {
+      CPT(GeomPrimitive) prim = geom->get_primitive(k);
+      prim = prim->decompose();
+
+      if (prim->is_of_type(GeomTriangles::get_class_type())) {
+        int num_vertices = prim->get_num_vertices();
+        _indices.reserve(_indices.size() + num_vertices);
+        mesh.m_numTriangles += num_vertices / 3;
+
+        CPT(GeomVertexArrayData) vertices = prim->get_vertices();
+        if (vertices != nullptr) {
+          GeomVertexReader index(move(vertices), 0);
+          while (!index.is_at_end()) {
+            _indices.push_back(find_or_add_vertex(points[index.get_data1i()]));
+          }
+        } else {
+          int index = prim->get_first_vertex();
+          int end_index = index + num_vertices;
+          while (index < end_index) {
+            _indices.push_back(find_or_add_vertex(points[index]));
+          }
+        }
+      }
+    }
+    nassertv(mesh.m_numTriangles * 3 == _indices.size());
   }
 
-  delete [] vertices;
+  // Reset the pointers, since the vectors may have been reallocated.
+  mesh.m_vertexBase = (unsigned char*)&_vertices[0];
+  mesh.m_triangleIndexBase = (unsigned char *)&_indices[0];
 }
 
 /**
+ * Adds triangle information from an array of points and indices referring to
+ * these points.  This is more efficient than adding triangles one at a time.
  *
+ * If remove_duplicate_vertices is true, it will make sure that it does not
+ * add duplicate vertices if they already exist in the triangle mesh, within
+ * the tolerance specified by set_welding_distance().  This comes at a
+ * significant performance cost, especially for large meshes.
  */
 void BulletTriangleMesh::
 add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_duplicate_vertices) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  // Convert vertices
-  btVector3 *vertices = new btVector3[points.size()];
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
 
-  int i = 0;
-  PTA_LVecBase3::const_iterator it;
-  for (it=points.begin(); it!=points.end(); it++) {
-    LVecBase3 v = *it;
-    vertices[i] = LVecBase3_to_btVector3(v);
-    i++;
+  _indices.reserve(_indices.size() + indices.size());
+
+  if (!remove_duplicate_vertices) {
+    unsigned int index_offset = _vertices.size();
+    for (size_t i = 0; i < indices.size(); ++i) {
+      _indices.push_back(index_offset + indices[i]);
+    }
+
+    _vertices.reserve(_vertices.size() + points.size());
+    for (size_t i = 0; i < points.size(); ++i) {
+      _vertices.push_back(LVecBase3_to_btVector3(points[i]));
+    }
+
+    mesh.m_numVertices += points.size();
+
+  } else {
+    // Add the points one by one.
+    _indices.reserve(_indices.size() + indices.size());
+    for (size_t i = 0; i < indices.size(); ++i) {
+      LVecBase3 p = points[indices[i]];
+      _indices.push_back(find_or_add_vertex(p));
+    }
   }
 
-  // Add triangles
-  int j = 0;
-  while (j+2 < (int)indices.size()) {
+  mesh.m_numTriangles += indices.size() / 3;
 
-    btVector3 v0 = vertices[indices[j++]];
-    btVector3 v1 = vertices[indices[j++]];
-    btVector3 v2 = vertices[indices[j++]];
-
-    _mesh->addTriangle(v0, v1, v2, remove_duplicate_vertices);
-  }
-
-  delete [] vertices;
+  // Reset the pointers, since the vectors may have been reallocated.
+  mesh.m_vertexBase = (unsigned char*)&_vertices[0];
+  mesh.m_triangleIndexBase = (unsigned char *)&_indices[0];
 }
 
 /**
@@ -174,8 +352,9 @@ add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_dupli
  */
 void BulletTriangleMesh::
 output(ostream &out) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  out << get_type() << ", " << _mesh->getNumTriangles();
+  out << get_type() << ", " << _indices.size() / 3 << " triangles";
 }
 
 /**
@@ -183,17 +362,37 @@ output(ostream &out) const {
  */
 void BulletTriangleMesh::
 write(ostream &out, int indent_level) const {
-
   indent(out, indent_level) << get_type() << ":" << endl;
 
-  IndexedMeshArray& array = _mesh->getIndexedMeshArray();
-  for (int i=0; i < array.size(); i++) {
+  const IndexedMeshArray &array = _mesh.getIndexedMeshArray();
+  for (size_t i = 0; i < array.size(); ++i) {
     indent(out, indent_level + 2) << "IndexedMesh " << i << ":" << endl;
-    btIndexedMesh meshPart = array.at(i);
-
-    indent(out, indent_level + 4) << "num triangles:" << meshPart.m_numTriangles << endl;
-    indent(out, indent_level + 4) << "num vertices:" << meshPart.m_numVertices << endl;
+    const btIndexedMesh &mesh = array[0];
+    indent(out, indent_level + 4) << "num triangles:" << mesh.m_numTriangles << endl;
+    indent(out, indent_level + 4) << "num vertices:" << mesh.m_numVertices << endl;
   }
+}
+
+/**
+ * Finds the indicated vertex and returns its index.  If it was not found,
+ * adds it as a new vertex and returns its index.
+ */
+unsigned int BulletTriangleMesh::
+find_or_add_vertex(const LVecBase3 &p) {
+  btVector3 vertex = LVecBase3_to_btVector3(p);
+
+  for (int i = 0; i < _vertices.size(); ++i) {
+    if ((_vertices[i] - vertex).length2() <= _welding_distance) {
+      return i;
+    }
+  }
+
+  _vertices.push_back(vertex);
+
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
+  mesh.m_numVertices++;
+  mesh.m_vertexBase = (unsigned char*)&_vertices[0];
+  return _vertices.size() - 1;
 }
 
 /**
@@ -215,7 +414,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // In case we ever want to represent more than 1 indexed mesh.
   dg.add_int32(1);
 
-  btIndexedMesh &mesh = _mesh->getIndexedMeshArray()[0];
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
   dg.add_int32(mesh.m_numVertices);
   dg.add_int32(mesh.m_numTriangles);
 
@@ -238,22 +437,12 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   const unsigned char *iptr = mesh.m_triangleIndexBase;
   nassertv(iptr != NULL || mesh.m_numTriangles == 0);
 
-  if (_mesh->getUse32bitIndices()) {
-    for (int i = 0; i < mesh.m_numTriangles; ++i) {
-      int *triangle = (int *)iptr;
-      dg.add_int32(triangle[0]);
-      dg.add_int32(triangle[1]);
-      dg.add_int32(triangle[2]);
-      iptr += mesh.m_triangleIndexStride;
-    }
-  } else {
-    for (int i = 0; i < mesh.m_numTriangles; ++i) {
-      short int *triangle = (short int *)iptr;
-      dg.add_int32(triangle[0]);
-      dg.add_int32(triangle[1]);
-      dg.add_int32(triangle[2]);
-      iptr += mesh.m_triangleIndexStride;
-    }
+  for (int i = 0; i < mesh.m_numTriangles; ++i) {
+    int *triangle = (int *)iptr;
+    dg.add_int32(triangle[0]);
+    dg.add_int32(triangle[1]);
+    dg.add_int32(triangle[2]);
+    iptr += mesh.m_triangleIndexStride;
   }
 }
 
@@ -287,23 +476,26 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int num_triangles = scan.get_int32();
   nassertv(scan.get_bool() == true);
 
+  btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
+  mesh.m_numVertices = num_vertices;
+  mesh.m_numTriangles = num_triangles;
+
   // Read and add the vertices.
-  _mesh->preallocateVertices(num_vertices);
+  _vertices.clear();
+  _vertices.reserve(num_vertices);
   for (int i = 0; i < num_vertices; ++i) {
     PN_stdfloat x = scan.get_stdfloat();
     PN_stdfloat y = scan.get_stdfloat();
     PN_stdfloat z = scan.get_stdfloat();
-    _mesh->findOrAddVertex(btVector3(x, y, z), false);
+    _vertices.push_back(btVector3(x, y, z));
   }
 
   // Now read and add the indices.
-  int num_indices = num_triangles * 3;
-  _mesh->preallocateIndices(num_indices);
-  for (int i = 0; i < num_indices; ++i) {
-    _mesh->addIndex(scan.get_int32());
-  }
+  size_t num_indices = (size_t)num_triangles * 3;
+  _indices.resize(num_indices);
+  scan.extract_bytes((unsigned char *)&_indices[0], num_indices * sizeof(int));
 
-  // Since we manually added the vertices individually, we have to update the
-  // triangle count appropriately.
-  _mesh->getIndexedMeshArray()[0].m_numTriangles = num_triangles;
+  // Reset the pointers, since the vectors may have been reallocated.
+  mesh.m_vertexBase = (unsigned char*)&_vertices[0];
+  mesh.m_triangleIndexBase = (unsigned char *)&_indices[0];
 }

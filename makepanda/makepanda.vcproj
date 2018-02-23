@@ -2371,12 +2371,9 @@
 			</Filter>
 			<Filter Name="gsgbase">
 				<File RelativePath="..\panda\src\gsgbase\graphicsOutputBase.cxx"></File>
-				<File RelativePath="..\panda\src\gsgbase\displayRegionBase.h"></File>
-				<File RelativePath="..\panda\src\gsgbase\displayRegionBase.I"></File>
 				<File RelativePath="..\panda\src\gsgbase\gsgbase_composite.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\config_gsgbase.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\graphicsOutputBase.I"></File>
-				<File RelativePath="..\panda\src\gsgbase\displayRegionBase.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\gsgbase_composite1.cxx"></File>
 				<File RelativePath="..\panda\src\gsgbase\config_gsgbase.h"></File>
 				<File RelativePath="..\panda\src\gsgbase\test_gsgbase.cxx"></File>
@@ -3738,18 +3735,6 @@
 				<File RelativePath="..\panda\src\cull\cull_composite2.cxx"></File>
 				<File RelativePath="..\panda\src\cull\cullBinFrontToBack.cxx"></File>
 				<File RelativePath="..\panda\src\cull\config_cull.h"></File>
-			</Filter>
-			<Filter Name="cftalk">
-				<File RelativePath="..\panda\src\cftalk\cfChannel.I"></File>
-				<File RelativePath="..\panda\src\cftalk\cfCommand.h"></File>
-				<File RelativePath="..\panda\src\cftalk\config_cftalk.h"></File>
-				<File RelativePath="..\panda\src\cftalk\cfCommand.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\config_cftalk.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\cfChannel.h"></File>
-				<File RelativePath="..\panda\src\cftalk\cfCommand.I"></File>
-				<File RelativePath="..\panda\src\cftalk\cfChannel.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\cftalk_composite2.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\cftalk_composite1.cxx"></File>
 			</Filter>
 			<Filter Name="audiotraits">
 				<File RelativePath="..\panda\src\audiotraits\milesAudioSequence.cxx"></File>

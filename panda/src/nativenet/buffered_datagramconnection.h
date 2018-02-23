@@ -82,7 +82,7 @@ PUBLISHED:
   inline bool GetMessage(Datagram &val);
   inline bool DoConnect(void);           // all the real state magic is in here
   inline bool IsConnected(void);
-  inline Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) ;
+  inline explicit Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) ;
   virtual ~Buffered_DatagramConnection(void) ;
   // the reason thsi all exists
   bool SendMessage(const Datagram &msg);

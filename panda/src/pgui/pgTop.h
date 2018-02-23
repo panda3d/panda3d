@@ -37,7 +37,7 @@ class PGMouseWatcherGroup;
  */
 class EXPCL_PANDA_PGUI PGTop : public PandaNode {
 PUBLISHED:
-  PGTop(const string &name);
+  explicit PGTop(const string &name);
   virtual ~PGTop();
 
 protected:

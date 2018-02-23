@@ -20,12 +20,34 @@ TypeHandle BulletBoxShape::_type_handle;
  *
  */
 BulletBoxShape::
-BulletBoxShape(const LVecBase3 &halfExtents) {
+BulletBoxShape(const LVecBase3 &halfExtents) : _half_extents(halfExtents) {
 
   btVector3 btHalfExtents = LVecBase3_to_btVector3(halfExtents);
 
   _shape = new btBoxShape(btHalfExtents);
   _shape->setUserPointer(this);
+}
+
+/**
+ *
+ */
+BulletBoxShape::
+BulletBoxShape(const BulletBoxShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _half_extents = copy._half_extents;
+}
+
+/**
+ *
+ */
+void BulletBoxShape::
+operator = (const BulletBoxShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _half_extents = copy._half_extents;
 }
 
 /**
@@ -42,6 +64,7 @@ ptr() const {
  */
 LVecBase3 BulletBoxShape::
 get_half_extents_without_margin() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVecBase3(_shape->getHalfExtentsWithoutMargin());
 }
@@ -51,6 +74,7 @@ get_half_extents_without_margin() const {
  */
 LVecBase3 BulletBoxShape::
 get_half_extents_with_margin() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVecBase3(_shape->getHalfExtentsWithMargin());
 }
@@ -64,9 +88,9 @@ make_from_solid(const CollisionBox *solid) {
   LPoint3 p0 = solid->get_min();
   LPoint3 p1 = solid->get_max();
 
-  LVecBase3 extents(p1.get_x() - p0.get_x() / 2.0,
-                     p1.get_y() - p0.get_y() / 2.0,
-                     p1.get_z() - p0.get_z() / 2.0);
+  LVecBase3 extents((p1.get_x() - p0.get_x()) / 2.0,
+                    (p1.get_y() - p0.get_y()) / 2.0,
+                    (p1.get_z() - p0.get_z()) / 2.0);
 
   return new BulletBoxShape(extents);
 }
@@ -85,8 +109,9 @@ register_with_read_factory() {
  */
 void BulletBoxShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
   dg.add_stdfloat(get_margin());
-  get_half_extents_with_margin().write_datagram(dg);
+  _half_extents.write_datagram(dg);
 }
 
 /**
@@ -112,14 +137,14 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletBoxShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
+  nassertv(_shape == nullptr);
 
   PN_stdfloat margin = scan.get_stdfloat();
 
-  LVector3 half_extents;
-  half_extents.read_datagram(scan);
+  _half_extents.read_datagram(scan);
 
-  _shape = new btBoxShape(LVecBase3_to_btVector3(half_extents));
+  _shape = new btBoxShape(LVecBase3_to_btVector3(_half_extents));
   _shape->setUserPointer(this);
   _shape->setMargin(margin);
 }

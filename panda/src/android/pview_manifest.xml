@@ -5,17 +5,52 @@
         android:versionCode="1"
         android:versionName="1.0">
 
-    <uses-sdk android:minSdkVersion="9" />
-    <application android:label="Panda Viewer" android:hasCode="true">
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-sdk android:minSdkVersion="21" />
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
+    <application android:label="Panda Viewer" android:hasCode="true" android:debuggable="true">
         <activity android:name="org.panda3d.android.PandaActivity"
                 android:label="Panda Viewer" android:theme="@android:style/Theme.NoTitleBar"
-                android:configChanges="orientation|keyboardHidden">
+                android:configChanges="orientation|keyboardHidden"
+                android:launchMode="singleInstance">
 
             <meta-data android:name="android.app.lib_name"
                        android:value="pview" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="model/x-egg" />
+                <data android:mimeType="model/x-compressed-egg" />
+                <data android:mimeType="model/x-bam" />
+                <data android:mimeType="model/x-compressed-bam" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" android:scheme="file" />
+                <data android:pathPattern=".*\\.egg" />
+                <data android:pathPattern=".*\\.egg.pz" />
+                <data android:pathPattern=".*\\.egg.gz" />
+                <data android:pathPattern=".*\\.bam" />
+                <data android:pathPattern=".*\\.bam.pz" />
+                <data android:pathPattern=".*\\.bam.gz" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" scheme="content" host="com.termux.files" />
+                <data android:pathPattern=".*\\.egg" />
+                <data android:pathPattern=".*\\.egg.pz" />
+                <data android:pathPattern=".*\\.egg.gz" />
+                <data android:pathPattern=".*\\.bam" />
+                <data android:pathPattern=".*\\.bam.pz" />
+                <data android:pathPattern=".*\\.bam.gz" />
             </intent-filter>
         </activity>
     </application>

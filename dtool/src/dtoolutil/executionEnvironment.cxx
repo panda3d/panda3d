@@ -341,6 +341,22 @@ ns_get_environment_variable(const string &var) const {
     }
   }
 
+#elif !defined(__APPLE__)
+  // Similarly, we define fallbacks on POSIX systems for the variables defined
+  // in the XDG Base Directory specification, so that they can be safely used
+  // in Config.prc files.
+  if (var == "XDG_CONFIG_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.config";
+
+  } else if (var == "XDG_CACHE_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.cache";
+
+  } else if (var == "XDG_DATA_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.local/share";
+  }
 #endif // _WIN32
 
   return string();
@@ -524,7 +540,6 @@ read_environment_variables() {
  */
 void ExecutionEnvironment::
 read_args() {
-#ifndef ANDROID
   // First, we need to fill in _dtool_name.  This contains the full path to
   // the p3dtool library.
 
@@ -562,7 +577,7 @@ read_args() {
   }
 #endif
 
-#if defined(IS_FREEBSD) || defined(IS_LINUX)
+#if defined(IS_FREEBSD) || (defined(IS_LINUX) && !defined(__ANDROID__))
   // FreeBSD and Linux have a function to get the origin of a loaded library.
 
   char origin[PATH_MAX + 1];
@@ -816,8 +831,6 @@ read_args() {
     }
   }
 #endif  // _WIN32
-
-#endif  // ANDROID
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;

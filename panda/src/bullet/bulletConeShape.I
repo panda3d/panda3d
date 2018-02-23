@@ -12,6 +12,16 @@
  */
 
 /**
+ * Only used by make_from_bam.
+ */
+INLINE BulletConeShape::
+BulletConeShape() :
+  _shape(nullptr),
+  _radius(0),
+  _height(0) {
+}
+
+/**
  *
  */
 INLINE BulletConeShape::
@@ -21,35 +31,17 @@ INLINE BulletConeShape::
 }
 
 /**
- *
- */
-INLINE BulletConeShape::
-BulletConeShape(const BulletConeShape &copy) :
-  _shape(copy._shape) {
-}
-
-/**
- *
- */
-INLINE void BulletConeShape::
-operator = (const BulletConeShape &copy) {
-  _shape = copy._shape;
-}
-
-/**
- *
+ * Returns the radius that was passed into the constructor.
  */
 INLINE PN_stdfloat BulletConeShape::
 get_radius() const {
-
-  return (PN_stdfloat)_shape->getRadius();
+  return _radius;
 }
 
 /**
- *
+ * Returns the height that was passed into the constructor.
  */
 INLINE PN_stdfloat BulletConeShape::
 get_height() const {
-
-  return (PN_stdfloat)_shape->getHeight();
+  return _height;
 }

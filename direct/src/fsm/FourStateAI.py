@@ -1,8 +1,6 @@
-"""Undocumented Module"""
+"""Contains the FourStateAI class.  See also :mod:`.FourState`."""
 
 __all__ = ['FourStateAI']
-
-
 
 from direct.directnotify import DirectNotifyGlobal
 #import DistributedObjectAI
@@ -21,7 +19,7 @@ class FourStateAI:
     Inherit from FourStateFSM and pass in your states.  Two of
     the states should be oposites of each other and the other
     two should be the transition states between the first two.
-    E.g.
+    E.g::
 
                     +--------+
                  -->| closed | --

@@ -23,6 +23,11 @@
 #include <errno.h>
 #endif  // _WIN32
 
+#if defined(__ANDROID__) && !defined(HAVE_LOCKF)
+// Needed for flock.
+#include <sys/file.h>
+#endif
+
 /**
  *
  */

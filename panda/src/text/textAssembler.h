@@ -28,6 +28,7 @@
 
 #include "pmap.h"
 
+typedef struct hb_buffer_t hb_buffer_t;
 
 class TextEncoder;
 class TextGraphic;
@@ -41,7 +42,7 @@ class TextAssembler;
  */
 class EXPCL_PANDA_TEXT TextAssembler {
 PUBLISHED:
-  TextAssembler(TextEncoder *encoder);
+  explicit TextAssembler(TextEncoder *encoder);
   TextAssembler(const TextAssembler &copy);
   void operator = (const TextAssembler &copy);
   ~TextAssembler();
@@ -246,6 +247,9 @@ private:
                     PlacedGlyphs &row_placed_glyphs,
                     PN_stdfloat &row_width, PN_stdfloat &line_height,
                     TextProperties::Alignment &align, PN_stdfloat &wordwrap);
+
+  void shape_buffer(hb_buffer_t *buf, PlacedGlyphs &glyphs, PN_stdfloat &xpos,
+                    const TextProperties &properties);
 
   // These interfaces are for implementing cheesy accent marks and ligatures
   // when the font doesn't support them.

@@ -105,13 +105,13 @@ PUBLISHED:
   INLINE bool reserve_num_rows(int n);
   void clear_rows();
 
-  INLINE int get_num_arrays() const;
-  INLINE CPT(GeomVertexArrayData) get_array(int i) const;
-  INLINE CPT(GeomVertexArrayDataHandle) get_array_handle(int i) const;
+  INLINE size_t get_num_arrays() const;
+  INLINE CPT(GeomVertexArrayData) get_array(size_t i) const;
+  INLINE CPT(GeomVertexArrayDataHandle) get_array_handle(size_t i) const;
   MAKE_SEQ(get_arrays, get_num_arrays, get_array);
-  INLINE PT(GeomVertexArrayData) modify_array(int i);
-  INLINE PT(GeomVertexArrayDataHandle) modify_array_handle(int i);
-  INLINE void set_array(int i, const GeomVertexArrayData *array);
+  INLINE PT(GeomVertexArrayData) modify_array(size_t i);
+  INLINE PT(GeomVertexArrayDataHandle) modify_array_handle(size_t i);
+  INLINE void set_array(size_t i, const GeomVertexArrayData *array);
   MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array);
 
   INLINE const TransformTable *get_transform_table() const;
@@ -293,7 +293,8 @@ private:
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
-    INLINE CData(const CData &copy);
+    INLINE CData(const GeomVertexFormat *format, UsageHint usage_hint);
+
     ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
@@ -432,7 +433,7 @@ public:
   INLINE UpdateSeq get_modified() const;
 
 protected:
-  PT(GeomVertexData) _object;
+  GeomVertexData *_object;
   Thread *_current_thread;
   GeomVertexData::CData *_cdata;
 };
@@ -440,6 +441,8 @@ protected:
 /**
  * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
  * the pipeline.
+ * Does not hold a reference to the GeomVertexData, so make sure it does not
+ * go out of scope.
  */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
 public:
@@ -448,7 +451,7 @@ public:
 
   ALLOC_DELETED_CHAIN(GeomVertexDataPipelineReader);
 
-  INLINE void set_object(CPT(GeomVertexData) object);
+  INLINE void set_object(const GeomVertexData *object);
   INLINE const GeomVertexData *get_object() const;
 
   INLINE void check_array_readers() const;
@@ -504,6 +507,8 @@ private:
 /**
  * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
  * the pipeline.
+ * Does not hold a reference to the GeomVertexData, so make sure it does not
+ * go out of scope.
  */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
 public:
@@ -516,10 +521,10 @@ public:
   INLINE GeomVertexData *get_object() const;
 
   INLINE void check_array_writers() const;
-  INLINE GeomVertexArrayDataHandle *get_array_writer(int i) const;
+  INLINE GeomVertexArrayDataHandle *get_array_writer(size_t i) const;
 
-  PT(GeomVertexArrayData) modify_array(int i);
-  void set_array(int i, const GeomVertexArrayData *array);
+  PT(GeomVertexArrayData) modify_array(size_t i);
+  void set_array(size_t i, const GeomVertexArrayData *array);
 
   int get_num_rows() const;
   bool set_num_rows(int n);

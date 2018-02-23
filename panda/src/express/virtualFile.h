@@ -56,12 +56,12 @@ PUBLISHED:
   BLOCKING void ls(ostream &out = cout) const;
   BLOCKING void ls_all(ostream &out = cout) const;
 
-  EXTENSION(BLOCKING PyObject *read_file(bool auto_unwrap) const);
+  EXTENSION(PyObject *read_file(bool auto_unwrap) const);
   BLOCKING virtual istream *open_read_file(bool auto_unwrap) const;
   BLOCKING virtual void close_read_file(istream *stream) const;
   virtual bool was_read_successful() const;
 
-  EXTENSION(BLOCKING PyObject *write_file(PyObject *data, bool auto_wrap));
+  EXTENSION(PyObject *write_file(PyObject *data, bool auto_wrap));
   BLOCKING virtual ostream *open_write_file(bool auto_wrap, bool truncate);
   BLOCKING virtual ostream *open_append_file();
   BLOCKING virtual void close_write_file(ostream *stream);

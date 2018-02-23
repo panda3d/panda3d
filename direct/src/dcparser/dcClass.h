@@ -117,7 +117,7 @@ PUBLISHED:
   Datagram client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
                                       ZONEID_TYPE zone_id,                                                           PyObject *optional_fields) const;
 
-#endif 
+#endif
 
 public:
   virtual void output(ostream &out, bool brief) const;

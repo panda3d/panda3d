@@ -18,6 +18,7 @@
 
 #include "event.h"
 #include "pt_Event.h"
+#include "asyncFuture.h"
 
 #include "pset.h"
 #include "pmap.h"
@@ -40,11 +41,14 @@ public:
   typedef void EventCallbackFunction(const Event *, void *);
 
 PUBLISHED:
-  EventHandler(EventQueue *ev_queue);
+  explicit EventHandler(EventQueue *ev_queue);
+  ~EventHandler() {}
+
+  AsyncFuture *get_future(const string &event_name);
 
   void process_events();
 
-  virtual void dispatch_event(const Event *);
+  virtual void dispatch_event(const Event *event);
 
   void write(ostream &out) const;
 
@@ -55,6 +59,9 @@ public:
   bool add_hook(const string &event_name, EventCallbackFunction *function,
                 void *data);
   bool has_hook(const string &event_name) const;
+  bool has_hook(const string &event_name, EventFunction *function) const;
+  bool has_hook(const string &event_name, EventCallbackFunction *function,
+                void *data) const;
   bool remove_hook(const string &event_name, EventFunction *function);
   bool remove_hook(const string &event_name, EventCallbackFunction *function,
                    void *data);
@@ -71,9 +78,11 @@ protected:
   typedef pair<EventCallbackFunction*, void*> CallbackFunction;
   typedef pset<CallbackFunction> CallbackFunctions;
   typedef pmap<string, CallbackFunctions> CallbackHooks;
+  typedef pmap<string, PT(AsyncFuture)> Futures;
 
   Hooks _hooks;
   CallbackHooks _cbhooks;
+  Futures _futures;
   EventQueue &_queue;
 
   static EventHandler *_global_event_handler;

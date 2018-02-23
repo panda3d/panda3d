@@ -47,9 +47,7 @@ public:
   Classes _parent_classes;
   Classes _child_classes;
 
-#ifdef DO_MEMORY_USAGE
   AtomicAdjust::Integer _memory_usage[TypeHandle::MC_limit];
-#endif
 
   static bool _paranoid_inheritance;
 

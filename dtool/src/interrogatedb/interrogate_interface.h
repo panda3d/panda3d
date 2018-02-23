@@ -82,7 +82,11 @@ enum AtomicToken {
   // string means whatever the native string representation is.
   AT_string = 7,
 
-  AT_longlong = 8
+  AT_longlong = 8,
+
+  // This is not a type that C has, but C++ and many scripting languages do;
+  // it indicates a null value, or the absence of any value.
+  AT_null = 9,
 };
 
 EXPCL_INTERROGATEDB void interrogate_add_search_directory(const char *dirname);

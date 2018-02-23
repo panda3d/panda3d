@@ -11,20 +11,54 @@
  * @date 2016-06-06
  */
 
+#ifdef _MSC_VER
+#define _IS_FINAL(T) (__is_sealed(T))
+#elif defined(__GNUC__)
+#define _IS_FINAL(T) (__is_final(T))
+#else
+#define _IS_FINAL(T) (0)
+#endif
+
 /**
  * Template function that can be used to extract any TypedObject pointer from
  * a wrapped Python object.
  */
 template<class T> INLINE bool
-DTOOL_Call_ExtractThisPointer(PyObject *self, T *&into) {
-  if (DtoolCanThisBeAPandaInstance(self)) {
+DtoolInstance_GetPointer(PyObject *self, T *&into) {
+  if (DtoolInstance_Check(self)) {
     Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-    if (target_class != NULL) {
-      into = (T*) ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, target_class);
-      return (into != NULL);
+    if (target_class != nullptr) {
+      if (_IS_FINAL(T)) {
+        if (DtoolInstance_TYPE(self) == target_class) {
+          into = (T *)DtoolInstance_VOID_PTR(self);
+        }
+      } else {
+        into = (T *)DtoolInstance_UPCAST(self, *target_class);
+      }
+      return (into != nullptr);
     }
   }
-  into = NULL;
+  into = nullptr;
+  return false;
+}
+
+/**
+ * Template function that can be used to extract any TypedObject pointer from
+ * a wrapped Python object.  In this case, the Dtool_PyTypedObject is known.
+ */
+template<class T> INLINE bool
+DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &target_class) {
+  if (DtoolInstance_Check(self)) {
+    if (_IS_FINAL(T)) {
+      if (DtoolInstance_TYPE(self) == &target_class) {
+        into = (T *)DtoolInstance_VOID_PTR(self);
+      }
+    } else {
+      into = (T *)DtoolInstance_UPCAST(self, target_class);
+    }
+    return (into != nullptr);
+  }
+  into = nullptr;
   return false;
 }
 
@@ -57,6 +91,23 @@ DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
   Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
   nassertr(known_class != NULL, NULL);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
+}
+
+/**
+ * Checks that the tuple is empty.
+ */
+ALWAYS_INLINE bool
+Dtool_CheckNoArgs(PyObject *args) {
+  return PyTuple_GET_SIZE(args) == 0;
+}
+
+/**
+ * Checks that the tuple is empty, and that the dict is empty or NULL.
+ */
+ALWAYS_INLINE bool
+Dtool_CheckNoArgs(PyObject *args, PyObject *kwds) {
+  return PyTuple_GET_SIZE(args) == 0 &&
+    (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0);
 }
 
 /**
@@ -196,11 +247,16 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value) {
   return PyUnicode_FromWideChar(&value, 1);
 }
 
+ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t) {
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value) {
   return value;
 }
 
-ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::vector<unsigned char> &value) {
+ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value) {
 #if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
 #else

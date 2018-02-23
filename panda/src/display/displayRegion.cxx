@@ -84,22 +84,30 @@ DisplayRegion::
  */
 void DisplayRegion::
 cleanup() {
-  set_camera(NodePath());
+  CDStageWriter cdata(_cycler, 0);
+  if (cdata->_camera_node != nullptr) {
+    // We need to tell the old camera we're not using it anymore.
+    cdata->_camera_node->remove_display_region(this);
+  }
+  cdata->_camera_node = nullptr;
+  cdata->_camera = NodePath();
 
-  CDCullWriter cdata(_cycler_cull, true);
-  cdata->_cull_result = NULL;
+  CDCullWriter cdata_cull(_cycler_cull, true);
+  cdata_cull->_cull_result = nullptr;
 }
 
 /**
  * Sets the lens index, allows for multiple lenses to be attached to a camera.
  * This is useful for a variety of setups, such as fish eye rendering.  The
  * default is 0.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
  */
 void DisplayRegion::
 set_lens_index(int index) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-  CDWriter cdata(_cycler);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_lens_index = index;
 }
 
@@ -107,12 +115,14 @@ set_lens_index(int index) {
  * Changes the portion of the framebuffer this DisplayRegion corresponds to.
  * The parameters range from 0 to 1, where 0,0 is the lower left corner and
  * 1,1 is the upper right; (0, 1, 0, 1) represents the whole screen.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
  */
 void DisplayRegion::
 set_dimensions(int i, const LVecBase4 &dimensions) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-  CDWriter cdata(_cycler);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
 
   cdata->_regions[i]._dimensions = dimensions;
 
@@ -145,15 +155,13 @@ is_stereo() const {
  *
  * The camera is actually set via a NodePath, which clarifies which instance
  * of the camera (if there happen to be multiple instances) we should use.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
  */
 void DisplayRegion::
 set_camera(const NodePath &camera) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-
-  // We allow set_camera(NodePath()) to happen in cleanup(), which can be
-  // called from any pipeline stage.
-  nassertv(pipeline_stage == 0 || camera.is_empty());
-  CDStageWriter cdata(_cycler, 0);
+  CDWriter cdata(_cycler, true);
 
   Camera *camera_node = (Camera *)NULL;
   if (!camera.is_empty()) {
@@ -181,16 +189,17 @@ set_camera(const NodePath &camera) {
 /**
  * Sets the active flag associated with the DisplayRegion.  If the
  * DisplayRegion is marked inactive, nothing is rendered.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
  */
 void DisplayRegion::
 set_active(bool active) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-  CDLockedReader cdata(_cycler);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
 
   if (active != cdata->_active) {
-    CDWriter cdataw(_cycler, cdata);
-    cdataw->_active = active;
+    cdata->_active = active;
     win_display_regions_changed();
   }
 }
@@ -199,15 +208,17 @@ set_active(bool active) {
  * Sets the sort value associated with the DisplayRegion.  Within a window,
  * DisplayRegions will be rendered in order from the lowest sort value to the
  * highest.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
  */
 void DisplayRegion::
 set_sort(int sort) {
-  nassertv(Thread::get_current_pipeline_stage() == 0);
-  CDLockedReader cdata(_cycler);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
 
   if (sort != cdata->_sort) {
-    CDWriter cdataw(_cycler, cdata);
-    cdataw->_sort = sort;
+    cdata->_sort = sort;
     win_display_regions_changed();
   }
 }
@@ -332,12 +343,14 @@ get_cull_traverser() {
  *
  * This is particularly useful when rendering cube maps and/or stereo
  * textures.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
  */
 void DisplayRegion::
 set_target_tex_page(int page) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-  CDWriter cdata(_cycler);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_target_tex_page = page;
 }
 
@@ -555,9 +568,6 @@ compute_pixels() {
  */
 void DisplayRegion::
 compute_pixels_all_stages() {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-
   if (_window != (GraphicsOutput *)NULL) {
     OPEN_ITERATE_ALL_STAGES(_cycler) {
       CDStageWriter cdata(_cycler, pipeline_stage);

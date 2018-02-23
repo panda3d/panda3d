@@ -77,6 +77,7 @@ BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const
  */
 void BulletCharacterControllerNode::
 set_linear_movement(const LVector3 &movement, bool is_local) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!movement.is_nan());
 
@@ -89,18 +90,19 @@ set_linear_movement(const LVector3 &movement, bool is_local) {
  */
 void BulletCharacterControllerNode::
 set_angular_movement(PN_stdfloat omega) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _angular_movement = omega;
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletCharacterControllerNode::
-sync_p2b(PN_stdfloat dt, int num_substeps) {
+do_sync_p2b(PN_stdfloat dt, int num_substeps) {
 
   // Synchronise global transform
-  transform_changed();
+  do_transform_changed();
 
   // Angular rotation
   btScalar angle = dt * deg_2_rad(_angular_movement);
@@ -131,10 +133,10 @@ sync_p2b(PN_stdfloat dt, int num_substeps) {
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletCharacterControllerNode::
-sync_b2p() {
+do_sync_b2p() {
 
   NodePath np = NodePath::any_path((PandaNode *)this);
   LVecBase3 scale = np.get_net_transform()->get_scale();
@@ -154,10 +156,10 @@ sync_b2p() {
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletCharacterControllerNode::
-transform_changed() {
+do_transform_changed() {
 
   if (_sync_disable) return;
 
@@ -187,8 +189,21 @@ transform_changed() {
     _ghost->getWorldTransform().setBasis(m);
 
     // Set scale
-    _shape->set_local_scale(scale);
+    _shape->do_set_local_scale(scale);
   }
+}
+
+/**
+ *
+ */
+void BulletCharacterControllerNode::
+transform_changed() {
+
+  if (_sync_disable) return;
+
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_transform_changed();
 }
 
 /**
@@ -205,6 +220,7 @@ get_shape() const {
  */
 bool BulletCharacterControllerNode::
 is_on_ground() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _character->onGround();
 }
@@ -214,6 +230,7 @@ is_on_ground() const {
  */
 bool BulletCharacterControllerNode::
 can_jump() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _character->canJump();
 }
@@ -223,6 +240,7 @@ can_jump() const {
  */
 void BulletCharacterControllerNode::
 do_jump() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _character->jump();
 }
@@ -232,6 +250,7 @@ do_jump() {
  */
 void BulletCharacterControllerNode::
 set_fall_speed(PN_stdfloat fall_speed) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _character->setFallSpeed((btScalar)fall_speed);
 }
@@ -241,6 +260,7 @@ set_fall_speed(PN_stdfloat fall_speed) {
  */
 void BulletCharacterControllerNode::
 set_jump_speed(PN_stdfloat jump_speed) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _character->setJumpSpeed((btScalar)jump_speed);
 }
@@ -250,6 +270,7 @@ set_jump_speed(PN_stdfloat jump_speed) {
  */
 void BulletCharacterControllerNode::
 set_max_jump_height(PN_stdfloat max_jump_height) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _character->setMaxJumpHeight((btScalar)max_jump_height);
 }
@@ -259,6 +280,7 @@ set_max_jump_height(PN_stdfloat max_jump_height) {
  */
 void BulletCharacterControllerNode::
 set_max_slope(PN_stdfloat max_slope) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _character->setMaxSlope((btScalar)max_slope);
 }
@@ -268,6 +290,7 @@ set_max_slope(PN_stdfloat max_slope) {
  */
 PN_stdfloat BulletCharacterControllerNode::
 get_max_slope() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_character->getMaxSlope();
 }
@@ -277,6 +300,8 @@ get_max_slope() const {
  */
 PN_stdfloat BulletCharacterControllerNode::
 get_gravity() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
 #if BT_BULLET_VERSION >= 285
   return -(PN_stdfloat)_character->getGravity()[_up];
 #else
@@ -289,6 +314,8 @@ get_gravity() const {
  */
 void BulletCharacterControllerNode::
 set_gravity(PN_stdfloat gravity) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
 #if BT_BULLET_VERSION >= 285
   _character->setGravity(up_vectors[_up] * -(btScalar)gravity);
 #else
@@ -301,6 +328,7 @@ set_gravity(PN_stdfloat gravity) {
  */
 void BulletCharacterControllerNode::
 set_use_ghost_sweep_test(bool value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _character->setUseGhostSweepTest(value);
 }

@@ -64,7 +64,11 @@ out(NotifySeverity severity, bool prefix) const {
     // logging system.  We use a special type of stream that redirects it to
     // Android's log system.
     if (prefix) {
-      return AndroidLogStream::out(severity) << *this << ": ";
+      if (severity == NS_info) {
+        return AndroidLogStream::out(severity) << *this << ": ";
+      } else {
+        return AndroidLogStream::out(severity) << *this << "(" << severity << "): ";
+      }
     } else {
       return AndroidLogStream::out(severity);
     }

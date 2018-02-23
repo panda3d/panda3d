@@ -58,18 +58,6 @@
 #pragma warning (disable : 4267)
 /* C4577: 'noexcept' used with no exception handling mode specified */
 #pragma warning (disable : 4577)
-
-#if _MSC_VER >= 1300
- #if _MSC_VER >= 1310
-   #define USING_MSVC7_1
-// #pragma message("VC 7.1")
- #else
-// #pragma message("VC 7.0")
- #endif
-#define USING_MSVC7
-#else
-// #pragma message("VC 6.0")
-#endif
 #endif  /* WIN32_VC */
 
 #ifndef __has_builtin
@@ -104,6 +92,14 @@
 #define RETURNS_ALIGNED(x) __attribute__((assume_aligned(x)))
 #else
 #define RETURNS_ALIGNED(x)
+#endif
+
+#ifdef __GNUC__
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define LIKELY(x) (x)
+#define UNLIKELY(x) (x)
 #endif
 
 /*
@@ -344,7 +340,7 @@ typedef struct _object PyObject;
 
 #ifdef __WORDSIZE
 #define NATIVE_WORDSIZE __WORDSIZE
-#elif defined(_LP64)
+#elif defined(_LP64) || defined(_WIN64)
 #define NATIVE_WORDSIZE 64
 #else
 #define NATIVE_WORDSIZE 32
@@ -468,6 +464,8 @@ typedef struct _object PyObject;
 #define MAKE_PROPERTY2(property_name, ...) __make_property2(property_name, __VA_ARGS__)
 #define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...) __make_seq_property(property_name, __VA_ARGS__)
+#define MAKE_MAP_PROPERTY(property_name, ...) __make_map_property(property_name, __VA_ARGS__)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...) __make_map_keys_seq(property_name, __VA_ARGS__)
 #define EXTENSION(x) __extension x
 #define EXTEND __extension
 #else
@@ -478,6 +476,8 @@ typedef struct _object PyObject;
 #define MAKE_PROPERTY2(property_name, ...)
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...)
+#define MAKE_MAP_PROPERTY(property_name, ...)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...)
 #define EXTENSION(x)
 #define EXTEND
 #endif

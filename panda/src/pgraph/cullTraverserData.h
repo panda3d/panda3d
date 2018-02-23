@@ -44,11 +44,8 @@ public:
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
                            Thread *current_thread);
-  INLINE CullTraverserData(const CullTraverserData &copy);
-  INLINE void operator = (const CullTraverserData &copy);
   INLINE CullTraverserData(const CullTraverserData &parent,
                            PandaNode *child);
-  INLINE ~CullTraverserData();
 
 PUBLISHED:
   INLINE PandaNode *node() const;
@@ -56,6 +53,8 @@ PUBLISHED:
 public:
   INLINE PandaNodePipelineReader *node_reader();
   INLINE const PandaNodePipelineReader *node_reader() const;
+
+  INLINE NodePath get_node_path() const;
 
 PUBLISHED:
   INLINE CPT(TransformState) get_modelview_transform(const CullTraverser *trav) const;
@@ -66,14 +65,15 @@ PUBLISHED:
   INLINE bool is_this_node_hidden(const DrawMask &camera_mask) const;
 
   void apply_transform_and_state(CullTraverser *trav);
-  void apply_transform_and_state(CullTraverser *trav,
-                                 CPT(TransformState) node_transform,
-                                 CPT(RenderState) node_state,
-                                 CPT(RenderEffects) node_effects,
-                                 const RenderAttrib *off_clip_planes);
+  void apply_transform(const TransformState *node_transform);
+
+private:
+  // We store a chain leading all the way to the root, so that we can compose
+  // a NodePath.  We may be able to eliminate this requirement in the future.
+  const CullTraverserData *_next;
+  NodePathComponent *_start;
 
 public:
-  WorkingNodePath _node_path;
   PandaNodePipelineReader _node_reader;
   CPT(TransformState) _net_transform;
   CPT(RenderState) _state;
@@ -83,8 +83,10 @@ public:
   int _portal_depth;
 
 private:
+  PT(NodePathComponent) r_get_node_path() const;
+
   bool is_in_view_impl();
-  static CPT(RenderState) get_fake_view_frustum_cull_state();
+  static const RenderState *get_fake_view_frustum_cull_state();
 };
 
 /* okcircular */

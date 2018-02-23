@@ -20,38 +20,3 @@ INLINE BulletRigidBodyNode::
   delete _rigid;
 }
 
-/**
- *
- */
-INLINE void BulletRigidBodyNode::
-set_linear_damping(PN_stdfloat value) {
-
-  _rigid->setDamping(value, _rigid->getAngularDamping());
-}
-
-/**
- *
- */
-INLINE void BulletRigidBodyNode::
-set_angular_damping(PN_stdfloat value) {
-
-  _rigid->setDamping(_rigid->getLinearDamping(), value);
-}
-
-/**
- *
- */
-INLINE PN_stdfloat BulletRigidBodyNode::
-get_linear_damping() const {
-
-  return (PN_stdfloat)_rigid->getLinearDamping();
-}
-
-/**
- *
- */
-INLINE PN_stdfloat BulletRigidBodyNode::
-get_angular_damping() const {
-
-  return (PN_stdfloat)_rigid->getAngularDamping();
-}

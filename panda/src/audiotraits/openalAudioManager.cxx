@@ -97,7 +97,7 @@ OpenALAudioManager() {
   _is_valid = true;
 
   // Init 3D attributes
-  _distance_factor = 3.28;
+  _distance_factor = 1;
   _drop_off_factor = 1;
 
   _position[0] = 0;
@@ -443,6 +443,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());
+    delete[] data;
     int err = alGetError();
     if (err != AL_NO_ERROR) {
       audio_error("could not fill OpenAL buffer object with data");
@@ -469,6 +470,12 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
   }
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, sound, positional, mode);
+
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
 
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
@@ -498,6 +505,12 @@ get_sound(const string &file_name, bool positional, int mode) {
 
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
+
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
 
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
@@ -715,12 +728,11 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
   *uz = _forward_up[4];
 }
 
-
 /**
- * Set units per foot WARNING: OpenAL has no distance factor but we use this
- * as a scale on the min/max distances of sounds to preserve FMOD
- * compatibility.  Also, adjusts the speed of sound to compensate for unit
- * difference.  OpenAL's default speed of sound is 343.3 m/s == 1126.3 ft/s
+ * Set value in units per meter
+ * WARNING: OpenAL has no distance factor but we use this as a scale
+ *          on the min/max distances of sounds to preserve FMOD compatibility.
+ *          Also adjusts the speed of sound to compensate for unit difference.
  */
 void OpenALAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
@@ -732,7 +744,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
   alGetError(); // clear errors
 
   if (_distance_factor>0) {
-    alSpeedOfSound(1126.3*_distance_factor);
+    alSpeedOfSound(343.3*_distance_factor);
     al_audio_errcheck("alSpeedOfSound()");
     // resets the doppler factor to the correct setting in case it was set to
     // 0.0 by a distance_factor<=0.0
@@ -752,7 +764,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
 }
 
 /**
- * Sets units per foot
+ * Get value in units per meter
  */
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_distance_factor() const {

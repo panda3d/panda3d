@@ -151,7 +151,7 @@ transform_vertices(GeomNode *node, const LMatrix4 &mat) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
-        entry._geom = new_geom;
+        entry._geom = move(new_geom);
         any_changed = true;
       }
     }
@@ -1439,13 +1439,8 @@ remove_unused_vertices(const GeomVertexData *vdata) {
     any_referenced = true;
     int num_primitives = geom->get_num_primitives();
     for (int i = 0; i < num_primitives; ++i) {
-      CPT(GeomPrimitive) prim = geom->get_primitive(i);
-
-      GeomPrimitivePipelineReader reader(prim, current_thread);
-      int num_vertices = reader.get_num_vertices();
-      for (int vi = 0; vi < num_vertices; ++vi) {
-        referenced_vertices.set_bit(reader.get_vertex(vi));
-      }
+      GeomPrimitivePipelineReader reader(geom->get_primitive(i), current_thread);
+      reader.get_referenced_vertices(referenced_vertices);
     }
   }
 

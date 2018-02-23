@@ -158,6 +158,20 @@ get_attenuation() const {
 }
 
 /**
+ * This is called when the light is added to a LightAttrib.
+ */
+void Light::
+attrib_ref() {
+}
+
+/**
+ * This is called when the light is removed from a LightAttrib.
+ */
+void Light::
+attrib_unref() {
+}
+
+/**
  * Computes the vector from a particular vertex to this light.  The exact
  * vector depends on the type of light (e.g.  point lights return a different
  * result than directional lights).

@@ -24,7 +24,7 @@
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   _pipeline(pipeline),
-  _dirty(false),
+  _dirty(0),
   _lock(this)
 {
   if (_pipeline == (Pipeline *)NULL) {
@@ -46,7 +46,7 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   _pipeline(copy._pipeline),
-  _dirty(false),
+  _dirty(0),
   _lock(this)
 {
   ReMutexHolder holder(_lock);
@@ -278,7 +278,7 @@ cycle() {
   }
 
   // No longer dirty.
-  _dirty = false;
+  _dirty = 0;
   return last_val;
 }
 

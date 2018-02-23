@@ -20,6 +20,7 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 
+#include <android/native_activity.h>
 #include <jni.h>
 
 NotifyCategoryDecl(android, EXPORT_CLASS, EXPORT_TEMPL);
@@ -30,9 +31,14 @@ extern EXPORT_CLASS struct android_app* panda_android_app;
 extern jclass    jni_PandaActivity;
 extern jmethodID jni_PandaActivity_readBitmapHeader;
 extern jmethodID jni_PandaActivity_readBitmap;
+extern jmethodID jni_PandaActivity_createBitmap;
+extern jmethodID jni_PandaActivity_compressBitmap;
+extern jmethodID jni_PandaActivity_showToast;
 
 extern jclass   jni_BitmapFactory_Options;
 extern jfieldID jni_BitmapFactory_Options_outWidth;
 extern jfieldID jni_BitmapFactory_Options_outHeight;
+
+EXPORT_CLASS void android_show_toast(ANativeActivity *activity, const string &message, int duration);
 
 #endif

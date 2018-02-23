@@ -62,7 +62,7 @@
 
 static const char *const stb_extensions[] = {
   // Expose the extensions that we don't already expose through other loaders.
-#ifndef HAVE_JPEG
+#if !defined(HAVE_JPEG) && !defined(ANDROID)
   "jpg", "jpeg",
 #endif
 #ifndef HAVE_PNG
@@ -240,11 +240,27 @@ StbImageReader(PNMFileType *type, istream *file, bool owns_file, string magic_nu
   _context.img_buffer_end = _buffer + length;
   _context.img_buffer_original_end = _context.img_buffer_end;
 
+#ifndef STBI_NO_PNG
+  stbi__png png;
+  png.s = &_context;
+#endif
+
   // Invoke stbi_info to read the image size and channel count.
-  if (strncmp(magic_number.c_str(), "#?", 2) == 0 &&
+  if (magic_number[0] == '#' && magic_number[1] == '?' &&
       stbi__hdr_info(&_context, &_x_size, &_y_size, &_num_channels)) {
     _is_valid = true;
     _is_float = true;
+
+#ifndef STBI_NO_PNG
+  } else if (magic_number[0] == '\x89' && magic_number[1] == 'P' &&
+             stbi__png_info_raw(&png, &_x_size, &_y_size, &_num_channels)) {
+    // Detect the case of using PNGs so that we can determine whether to do a
+    // 16-bit load instead.
+    if (png.depth == 16) {
+      _maxval = 65535;
+    }
+    _is_valid = true;
+#endif
 
   } else if (stbi__info_main(&_context, &_x_size, &_y_size, &_num_channels)) {
     _is_valid = true;
@@ -254,8 +270,6 @@ StbImageReader(PNMFileType *type, istream *file, bool owns_file, string magic_nu
     pnmimage_cat.error()
       << "stb_info failure: " << stbi_failure_reason() << "\n";
   }
-
-  _maxval = 255;
 }
 
 /**
@@ -307,11 +321,13 @@ read_pfm(PfmFile &pfm) {
   int len;
   unsigned char count, value;
   int i, j, k, c1, c2, z;
+  const char *headerToken;
 
   // Check identifier
-  if (strcmp(stbi__hdr_gettoken(&_context, buffer), "#?RADIANCE") != 0) {
+  headerToken = stbi__hdr_gettoken(&_context, buffer);
+  if (strcmp(headerToken, "#?RADIANCE") != 0 && strcmp(headerToken, "#?RGBE") != 0) {
     pnmimage_cat.error()
-      << "Missing #?RADIANCE header.\n";
+      << "Missing #?RADIANCE or #?RGBE header.\n";
     return false;
   }
 
@@ -387,27 +403,43 @@ main_decode_loop:
       len <<= 8;
       len |= stbi__get8(&_context);
       if (len != width) {
-        STBI_FREE(scanline);
         pnmimage_cat.error() << "Corrupt HDR: invalid decoded scanline length.\n";
+        STBI_FREE(scanline);
         return false;
       }
-      if (scanline == NULL) {
-        scanline = (stbi_uc *) stbi__malloc(width * 4);
+      if (scanline == nullptr) {
+        scanline = (stbi_uc *) stbi__malloc_mad2(width, 4, 0);
+        if (!scanline) {
+          pnmimage_cat.error() << "Out of memory while reading HDR file.\n";
+          STBI_FREE(hdr_data);
+          return false;
+        }
       }
 
       for (k = 0; k < 4; ++k) {
+        int nleft;
         i = 0;
-        while (i < width) {
+        while ((nleft = width - i) > 0) {
           count = stbi__get8(&_context);
           if (count > 128) {
             // Run
             value = stbi__get8(&_context);
             count -= 128;
+            if (count > nleft) {
+              pnmimage_cat.error() << "Bad RLE data in HDR file.\n";
+              STBI_FREE(scanline);
+              return false;
+            }
             for (z = 0; z < count; ++z) {
               scanline[i++ * 4 + k] = value;
             }
           } else {
             // Dump
+            if (count > nleft) {
+              pnmimage_cat.error() << "Bad RLE data in HDR file.\n";
+              STBI_FREE(scanline);
+              return false;
+            }
             for (z = 0; z < count; ++z) {
               scanline[i++ * 4 + k] = stbi__get8(&_context);
             }
@@ -418,7 +450,9 @@ main_decode_loop:
         stbi__hdr_convert(hdr_data+(j*width + i)*3, scanline + i*4, 3);
       }
     }
-    STBI_FREE(scanline);
+    if (scanline) {
+      STBI_FREE(scanline);
+    }
   }
 
   pfm.swap_table(table);
@@ -460,9 +494,14 @@ read_data(xel *array, xelval *alpha) {
   int cols = 0;
   int rows = 0;
   int comp = _num_channels;
-  stbi_uc *data = stbi__load_main(&_context, &cols, &rows, &comp, _num_channels);
+  void *data;
+  if (_maxval != 65535) {
+    data = stbi__load_and_postprocess_8bit(&_context, &cols, &rows, &comp, _num_channels);
+  } else {
+    data = stbi__load_and_postprocess_16bit(&_context, &cols, &rows, &comp, _num_channels);
+  }
 
-  if (data == NULL) {
+  if (data == nullptr) {
     pnmimage_cat.error()
       << "stbi_load failure: " << stbi_failure_reason() << "\n";
     return 0;
@@ -472,36 +511,67 @@ read_data(xel *array, xelval *alpha) {
   nassertr(comp == _num_channels, 0);
 
   size_t pixels = (size_t)_x_size * (size_t)rows;
-  stbi_uc *ptr = data;
-  switch (_num_channels) {
-  case 1:
-    for (size_t i = 0; i < pixels; ++i) {
-      PPM_ASSIGN(array[i], ptr[i], ptr[i], ptr[i]);
-    }
-    break;
+  if (_maxval != 65535) {
+    uint8_t *ptr = (uint8_t *)data;
+    switch (_num_channels) {
+    case 1:
+      for (size_t i = 0; i < pixels; ++i) {
+        PPM_ASSIGN(array[i], ptr[i], ptr[i], ptr[i]);
+      }
+      break;
 
-  case 2:
-    for (size_t i = 0; i < pixels; ++i) {
-      PPM_ASSIGN(array[i], ptr[0], ptr[0], ptr[0]);
-      alpha[i] = ptr[1];
-      ptr += 2;
-    }
-    break;
+    case 2:
+      for (size_t i = 0; i < pixels; ++i) {
+        PPM_ASSIGN(array[i], ptr[0], ptr[0], ptr[0]);
+        alpha[i] = ptr[1];
+        ptr += 2;
+      }
+      break;
 
-  case 3:
-    for (size_t i = 0; i < pixels; ++i) {
-      PPM_ASSIGN(array[i], ptr[0], ptr[1], ptr[2]);
-      ptr += 3;
-    }
-    break;
+    case 3:
+      for (size_t i = 0; i < pixels; ++i) {
+        PPM_ASSIGN(array[i], ptr[0], ptr[1], ptr[2]);
+        ptr += 3;
+      }
+      break;
 
-  case 4:
-    for (size_t i = 0; i < pixels; ++i) {
-      PPM_ASSIGN(array[i], ptr[0], ptr[1], ptr[2]);
-      alpha[i] = ptr[3];
-      ptr += 4;
+    case 4:
+      for (size_t i = 0; i < pixels; ++i) {
+        PPM_ASSIGN(array[i], ptr[0], ptr[1], ptr[2]);
+        alpha[i] = ptr[3];
+        ptr += 4;
+      }
+      break;
     }
-    break;
+  } else {
+    uint16_t *ptr = (uint16_t *)data;
+    switch (_num_channels) {
+    case 1:
+      for (size_t i = 0; i < pixels; ++i) {
+        PPM_ASSIGN(array[i], ptr[i], ptr[i], ptr[i]);
+      }
+      break;
+
+    case 2:
+      for (size_t i = 0; i < pixels; ++i) {
+        PPM_ASSIGN(array[i], ptr[0], ptr[0], ptr[0]);
+        alpha[i] = ptr[1];
+        ptr += 2;
+      }
+      break;
+
+    case 3:
+      memcpy(array, ptr, pixels * sizeof(uint16_t) * 3);
+      break;
+
+    case 4:
+      for (size_t i = 0; i < pixels; ++i) {
+        PPM_ASSIGN(array[i], ptr[0], ptr[1], ptr[2]);
+        alpha[i] = ptr[3];
+        ptr += 4;
+      }
+      break;
+    }
   }
 
   stbi_image_free(data);

@@ -24,9 +24,18 @@
 #include <linux/videodev2.h>
 
 #ifdef HAVE_JPEG
+// jconfig.h overrides our INLINE definition.
+#ifdef __GNUC__
+#pragma push_macro("INLINE")
+#endif
+
 extern "C" {
   #include <jpeglib.h>
 }
+
+#ifdef __GNUC__
+#pragma pop_macro("INLINE")
+#endif
 #endif
 
 class WebcamVideoV4L;

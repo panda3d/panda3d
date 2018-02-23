@@ -358,6 +358,20 @@ release_resources() {
 }
 
 /**
+ * Returns true if the shader is "valid", ie, if the compilation was
+ * successful.  The compilation could fail if there is a syntax error in the
+ * shader, or if the current video card isn't shader-capable, or if no shader
+ * languages are compiled into panda.
+ */
+bool CLP(CgShaderContext)::
+valid() {
+  if (_shader == nullptr || _shader->get_error_flag()) {
+    return false;
+  }
+  return (_cg_program != 0);
+}
+
+/**
  * This function is to be called to enable a new shader.  It also initializes
  * all of the shader's input parameters.
  */
@@ -399,6 +413,7 @@ unbind() {
 void CLP(CgShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
+                        const TransformState *camera_transform,
                         const TransformState *projection_transform) {
 
   if (!valid()) {
@@ -410,6 +425,10 @@ set_state_and_transform(const RenderState *target_rs,
 
   if (_modelview_transform != modelview_transform) {
     _modelview_transform = modelview_transform;
+    altered |= (Shader::SSD_transform & ~Shader::SSD_view_transform);
+  }
+  if (_camera_transform != camera_transform) {
+    _camera_transform = camera_transform;
     altered |= Shader::SSD_transform;
   }
   if (_projection_transform != projection_transform) {
@@ -1073,8 +1092,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     if (tex.is_null()) {
       // Apply a white texture in order to make it easier to use a shader that
       // takes a texture on a model that doesn't have a texture applied.
-      _glgsg->set_active_texture_stage(i);
-      _glgsg->apply_white_texture();
+      _glgsg->apply_white_texture(i);
       continue;
     }
 

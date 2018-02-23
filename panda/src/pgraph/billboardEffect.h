@@ -60,7 +60,7 @@ public:
   virtual bool has_adjust_transform() const;
   virtual void adjust_transform(CPT(TransformState) &net_transform,
                                 CPT(TransformState) &node_transform,
-                                PandaNode *node) const;
+                                const PandaNode *node) const;
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;

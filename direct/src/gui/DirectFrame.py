@@ -1,4 +1,17 @@
-"""Undocumented Module"""
+"""A DirectFrame is a basic DirectGUI component that acts as the base
+class for various other components, and can also serve as a basic
+container to hold other DirectGUI components.
+
+A DirectFrame can have:
+
+* A background texture (pass in path to image, or Texture Card)
+* A midground geometry item (pass in geometry)
+* A foreground text Node (pass in text string or OnscreenText)
+
+Each of these has 1 or more states.  The same object can be used for
+all states or each state can have a different text/geom/image (for
+radio button and check button indicators, for example).
+"""
 
 __all__ = ['DirectFrame']
 
@@ -19,14 +32,6 @@ class DirectFrame(DirectGuiWidget):
     DefDynGroups = ('text', 'geom', 'image')
     def __init__(self, parent = None, **kw):
         # Inherits from DirectGuiWidget
-        # A Direct Frame can have:
-        # - A background texture (pass in path to image, or Texture Card)
-        # - A midground geometry item (pass in geometry)
-        # - A foreground text Node (pass in text string or Onscreen Text)
-        # Each of these has 1 or more states
-        # The same object can be used for all states or each
-        # state can have a different text/geom/image (for radio button
-        # and check button indicators, for example).
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',          PGItem,     None),

@@ -31,26 +31,27 @@ TypeHandle TextProperties::_type_handle;
  *
  */
 TextProperties::
-TextProperties() {
-  _specified = 0;
+TextProperties() :
+  _specified(0),
 
-  _small_caps = text_small_caps;
-  _small_caps_scale = text_small_caps_scale;
-  _slant = 0.0f;
-  _underscore = false;
-  _underscore_height = 0.0f;
-  _align = A_left;
-  _indent_width = 0.0f;
-  _wordwrap_width = 0.0f;
-  _preserve_trailing_whitespace = false;
-  _text_color.set(1.0f, 1.0f, 1.0f, 1.0f);
-  _shadow_color.set(0.0f, 0.0f, 0.0f, 1.0f);
-  _shadow_offset.set(0.0f, 0.0f);
-  _draw_order = 1;
-  _tab_width = text_tab_width;
-  _glyph_scale = 1.0f;
-  _glyph_shift = 0.0f;
-  _text_scale = 1.0f;
+  _small_caps(text_small_caps),
+  _small_caps_scale(text_small_caps_scale),
+  _slant(0.0f),
+  _underscore(false),
+  _underscore_height(0.0f),
+  _align(A_left),
+  _indent_width(0.0f),
+  _wordwrap_width(0.0f),
+  _preserve_trailing_whitespace(false),
+  _text_color(1.0f, 1.0f, 1.0f, 1.0f),
+  _shadow_color(0.0f, 0.0f, 0.0f, 1.0f),
+  _shadow_offset(0.0f, 0.0f),
+  _draw_order(1),
+  _tab_width(text_tab_width),
+  _glyph_scale(1.0f),
+  _glyph_shift(0.0f),
+  _text_scale(1.0f),
+  _direction(D_rtl) {
 }
 
 /**
@@ -89,6 +90,7 @@ operator = (const TextProperties &copy) {
   _glyph_scale = copy._glyph_scale;
   _glyph_shift = copy._glyph_shift;
   _text_scale = copy._text_scale;
+  _direction = copy._direction;
 
   _text_state.clear();
   _shadow_state.clear();
@@ -161,6 +163,9 @@ operator == (const TextProperties &other) const {
     return false;
   }
   if ((_specified & F_has_text_scale) && _text_scale != other._text_scale) {
+    return false;
+  }
+  if ((_specified & F_has_direction) && _direction != other._direction) {
     return false;
   }
   return true;
@@ -237,6 +242,9 @@ add_properties(const TextProperties &other) {
 
   if (other.has_text_scale()) {
     set_text_scale(other.get_text_scale());
+  }
+  if (other.has_direction()) {
+    set_direction(other.get_direction());
   }
 }
 
@@ -360,6 +368,20 @@ write(ostream &out, int indent_level) const {
   if (has_text_scale()) {
     indent(out, indent_level)
       << "text scale is " << get_text_scale() << "\n";
+  }
+
+  if (has_direction()) {
+    indent(out, indent_level)
+      << "direction is ";
+    switch (get_direction()) {
+    case D_ltr:
+      out << "D_ltr\n";
+      break;
+
+    case D_rtl:
+      out << "D_rtl\n";
+      break;
+    }
   }
 }
 

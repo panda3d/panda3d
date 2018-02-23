@@ -34,8 +34,8 @@
 class EXPCL_DTOOLCONFIG IDecryptStream : public istream {
 PUBLISHED:
   INLINE IDecryptStream();
-  INLINE IDecryptStream(istream *source, bool owns_source,
-                        const string &password);
+  INLINE explicit IDecryptStream(istream *source, bool owns_source,
+                                 const string &password);
 
 #if _MSC_VER >= 1800
   INLINE IDecryptStream(const IDecryptStream &copy) = delete;
@@ -69,8 +69,8 @@ private:
 class EXPCL_DTOOLCONFIG OEncryptStream : public ostream {
 PUBLISHED:
   INLINE OEncryptStream();
-  INLINE OEncryptStream(ostream *dest, bool owns_dest,
-                        const string &password);
+  INLINE explicit OEncryptStream(ostream *dest, bool owns_dest,
+                                 const string &password);
 
 #if _MSC_VER >= 1800
   INLINE OEncryptStream(const OEncryptStream &copy) = delete;

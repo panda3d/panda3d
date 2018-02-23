@@ -284,7 +284,6 @@ public:
   virtual void end_frame(Thread *current_thread);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                                     const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader,
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
@@ -381,6 +380,8 @@ public:
   virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
 #endif
+
+  virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
 
   LVecBase4 get_light_color(Light *light) const;
 
@@ -567,7 +568,7 @@ protected:
   void update_shader_vertex_format(const GeomVertexFormat *format);
 #endif
 
-  void apply_white_texture();
+  void apply_white_texture(GLuint unit);
   GLuint get_white_texture();
 
 #ifndef NDEBUG

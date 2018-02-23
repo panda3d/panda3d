@@ -43,7 +43,6 @@ do_task() {
       _texture->prepare(_pgo);
     }
   }
-  _is_ready = true;
 
   // Don't continue the task; we're done.
   return DS_done;

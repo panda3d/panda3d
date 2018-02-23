@@ -23,12 +23,16 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 
+#ifdef ANDROID
+typedef struct _JNIEnv JNIEnv;
+#endif
+
 class Mutex;
 class ReMutex;
 class MutexDebug;
 class ConditionVarDebug;
 class ConditionVarFullDebug;
-class AsyncTaskBase;
+class AsyncTask;
 
 /**
  * A thread; that is, a lightweight process.  This is an abstract base class;
@@ -89,7 +93,7 @@ PUBLISHED:
   BLOCKING INLINE void join();
   INLINE void preempt();
 
-  INLINE AsyncTaskBase *get_current_task() const;
+  INLINE TypedReferenceCount *get_current_task() const;
 
   INLINE void set_python_index(int index);
 
@@ -100,6 +104,16 @@ PUBLISHED:
   MAKE_PROPERTY(python_index, get_python_index);
   MAKE_PROPERTY(unique_id, get_unique_id);
   MAKE_PROPERTY(pipeline_stage, get_pipeline_stage, set_pipeline_stage);
+
+  MAKE_PROPERTY(main_thread, get_main_thread);
+  MAKE_PROPERTY(external_thread, get_external_thread);
+  MAKE_PROPERTY(current_thread, get_current_thread);
+  MAKE_PROPERTY(current_pipeline_stage, get_current_pipeline_stage);
+
+  MAKE_PROPERTY(threading_supported, is_threading_supported);
+  MAKE_PROPERTY(true_threads, is_true_threads);
+  MAKE_PROPERTY(simple_threads, is_simple_threads);
+
   MAKE_PROPERTY(started, is_started);
   MAKE_PROPERTY(joinable, is_joinable);
   MAKE_PROPERTY(current_task, get_current_task);
@@ -118,6 +132,10 @@ public:
   INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
   INLINE PStatsCallback *get_pstats_callback() const;
 
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+#endif
+
 private:
   static void init_main_thread();
   static void init_external_thread();
@@ -132,7 +150,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AsyncTaskBase *_current_task;
+  AtomicAdjust::Pointer _current_task;
 
   int _python_index;
 
@@ -174,7 +192,7 @@ private:
   friend class ThreadPosixImpl;
   friend class ThreadSimpleImpl;
   friend class MainThread;
-  friend class AsyncTaskBase;
+  friend class AsyncTask;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

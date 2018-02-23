@@ -45,7 +45,7 @@ get_num_stages() const {
  */
 INLINE int Pipeline::
 get_num_cyclers() const {
-  ReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _num_cyclers;
 }
 #endif  // THREADED_PIPELINE
@@ -58,7 +58,7 @@ get_num_cyclers() const {
  */
 INLINE int Pipeline::
 get_num_dirty_cyclers() const {
-  ReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _num_dirty_cyclers;
 }
 #endif  // THREADED_PIPELINE

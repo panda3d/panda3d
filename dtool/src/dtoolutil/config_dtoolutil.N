@@ -1,0 +1,9 @@
+forcetype ofstream
+forcetype ifstream
+forcetype fstream
+
+forcetype ios_base
+forcetype ios
+forcetype istream
+forcetype ostream
+forcetype iostream

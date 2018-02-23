@@ -89,14 +89,6 @@ get_hash_impl() const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) LogicOpAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return RenderAttribRegistry::quick_get_global_ptr()->get_slot_default(_attrib_slot);
-}
-
-/**
  * Tells the BamReader how to create objects of type LogicOpAttrib.
  */
 void LogicOpAttrib::

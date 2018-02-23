@@ -1,4 +1,13 @@
-"""Undocumented Module"""
+"""
+>>> from direct.showbase import ObjectReport
+
+>>> o=ObjectReport.ObjectReport('baseline')
+>>> run()
+...
+
+>>> o2=ObjectReport.ObjectReport('')
+>>> o.diff(o2)
+"""
 
 __all__ = ['ExclusiveObjectPool', 'ObjectReport']
 
@@ -12,17 +21,6 @@ if sys.version_info >= (3, 0):
     import builtins
 else:
     import __builtin__ as builtins
-
-"""
->>> from direct.showbase import ObjectReport
-
->>> o=ObjectReport.ObjectReport('baseline')
->>> run()
-...
-
->>> o2=ObjectReport.ObjectReport('')
->>> o.diff(o2)
-"""
 
 class ExclusiveObjectPool(DirectObject.DirectObject):
     # ObjectPool specialization that excludes particular objects

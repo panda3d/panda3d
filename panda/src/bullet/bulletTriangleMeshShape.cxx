@@ -36,6 +36,7 @@ BulletTriangleMeshShape() :
 /**
  * The parameters 'compress' and 'bvh' are only used if 'dynamic' is set to
  * FALSE.
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 BulletTriangleMeshShape::
 BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, bool bvh) :
@@ -50,7 +51,7 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
   }
 
   // Assert that mesh has at least one triangle
-  if (mesh->get_num_triangles() == 0) {
+  if (mesh->do_get_num_triangles() == 0) {
     bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << endl;
     mesh->add_triangle(LPoint3::zero(), LPoint3::zero(), LPoint3::zero());
   }
@@ -81,6 +82,30 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
 /**
  *
  */
+BulletTriangleMeshShape::
+BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _bvh_shape = copy._bvh_shape;
+  _gimpact_shape = copy._gimpact_shape;
+  _mesh = copy._mesh;
+}
+
+/**
+ *
+ */
+void BulletTriangleMeshShape::
+operator = (const BulletTriangleMeshShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _bvh_shape = copy._bvh_shape;
+  _gimpact_shape = copy._gimpact_shape;
+  _mesh = copy._mesh;
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletTriangleMeshShape::
 ptr() const {
 
@@ -100,6 +125,7 @@ ptr() const {
  */
 void BulletTriangleMeshShape::
 refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!aabb_max.is_nan());
   nassertv(!aabb_max.is_nan());
@@ -124,6 +150,8 @@ register_with_read_factory() {
  */
 void BulletTriangleMeshShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
   dg.add_stdfloat(get_margin());
 
   manager->write_pointer(dg, _mesh);
@@ -145,16 +173,18 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   _mesh = DCAST(BulletTriangleMesh, p_list[pi++]);
 
-  btTriangleMesh *mesh_ptr = _mesh->ptr();
+  btStridingMeshInterface *mesh_ptr = _mesh->ptr();
   nassertr(mesh_ptr != NULL, pi);
 
   if (_dynamic) {
     _gimpact_shape = new btGImpactMeshShape(mesh_ptr);
     _gimpact_shape->updateBound();
     _gimpact_shape->setUserPointer(this);
+    _gimpact_shape->setMargin(_margin);
   } else {
     _bvh_shape = new btBvhTriangleMeshShape(mesh_ptr, _compress, _bvh);
     _bvh_shape->setUserPointer(this);
+    _bvh_shape->setMargin(_margin);
   }
 
   return pi;
@@ -183,7 +213,9 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletTriangleMeshShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  PN_stdfloat margin = scan.get_stdfloat();
+  BulletShape::fillin(scan, manager);
+
+  _margin = scan.get_stdfloat();
 
   manager->read_pointer(scan);
 

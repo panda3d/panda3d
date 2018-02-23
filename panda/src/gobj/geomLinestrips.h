@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomLinestrips : public GeomPrimitive {
 PUBLISHED:
-  GeomLinestrips(UsageHint usage_hint);
+  explicit GeomLinestrips(UsageHint usage_hint);
   GeomLinestrips(const GeomLinestrips &copy);
   virtual ~GeomLinestrips();
   ALLOC_DELETED_CHAIN(GeomLinestrips);

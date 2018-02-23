@@ -150,6 +150,8 @@ void ShaderTerrainMesh::do_extract_heightfield() {
   }
   _heightfield_tex->set_minfilter(SamplerState::FT_linear);
   _heightfield_tex->set_magfilter(SamplerState::FT_linear);
+  _heightfield_tex->set_wrap_u(SamplerState::WM_clamp);
+  _heightfield_tex->set_wrap_v(SamplerState::WM_clamp);
 }
 
 /**
@@ -513,15 +515,15 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   nassertv(current_shader_attrib != NULL);
 
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.terrain_size", LVecBase2i(_size)) );
+    ShaderInput("ShaderTerrainMesh.terrain_size", LVecBase2i(_size)));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.chunk_size", LVecBase2i(_chunk_size)));
+    ShaderInput("ShaderTerrainMesh.chunk_size", LVecBase2i(_chunk_size)));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.view_index", LVecBase2i(_current_view_index)));
+    ShaderInput("ShaderTerrainMesh.view_index", LVecBase2i(_current_view_index)));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.data_texture", _data_texture));
+    ShaderInput("ShaderTerrainMesh.data_texture", _data_texture));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
-    new ShaderInput("ShaderTerrainMesh.heightfield", _heightfield_tex));
+    ShaderInput("ShaderTerrainMesh.heightfield", _heightfield_tex));
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_instance_count(
     traversal_data.emitted_chunks);
 

@@ -6,19 +6,21 @@ from . import DistributedNode
 from . import DistributedSmoothNodeBase
 from direct.task.Task import cont
 
+config = get_config_showbase()
+
 # This number defines our tolerance for out-of-sync telemetry packets.
 # If a packet appears to have originated from more than MaxFuture
 # seconds in the future, assume we're out of sync with the other
 # avatar and suggest a resync for both.
-MaxFuture = base.config.GetFloat("smooth-max-future", 0.2)
+MaxFuture = config.GetFloat("smooth-max-future", 0.2)
 
 # How frequently can we suggest a resynchronize with another client?
-MinSuggestResync = base.config.GetFloat("smooth-min-suggest-resync", 15)
+MinSuggestResync = config.GetFloat("smooth-min-suggest-resync", 15)
 
 # These flags indicate whether global smoothing and/or prediction is
 # allowed or disallowed.
-EnableSmoothing = base.config.GetBool("smooth-enable-smoothing", 1)
-EnablePrediction = base.config.GetBool("smooth-enable-prediction", 1)
+EnableSmoothing = config.GetBool("smooth-enable-smoothing", 1)
+EnablePrediction = config.GetBool("smooth-enable-prediction", 1)
 
 # These values represent the amount of time, in seconds, to delay the
 # apparent position of other avatars, when non-predictive and
@@ -26,8 +28,8 @@ EnablePrediction = base.config.GetBool("smooth-enable-prediction", 1)
 # addition to the automatic delay of the observed average latency from
 # each avatar, which is intended to compensate for relative clock
 # skew.
-Lag = base.config.GetDouble("smooth-lag", 0.2)
-PredictionLag = base.config.GetDouble("smooth-prediction-lag", 0.0)
+Lag = config.GetDouble("smooth-lag", 0.2)
+PredictionLag = config.GetDouble("smooth-prediction-lag", 0.0)
 
 
 GlobalSmoothing = 0

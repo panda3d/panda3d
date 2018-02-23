@@ -33,6 +33,7 @@ is_alive() const {
   case S_servicing:
   case S_sleeping:
   case S_active_nested:
+  case S_awaiting:
     return true;
 
   case S_inactive:
@@ -178,15 +179,6 @@ INLINE void AsyncTask::
 set_done_event(const string &done_event) {
   nassertv(_state == S_inactive);
   _done_event = done_event;
-}
-
-/**
- * Returns the event name that will be triggered when the task finishes.  See
- * set_done_event().
- */
-INLINE const string &AsyncTask::
-get_done_event() const {
-  return _done_event;
 }
 
 /**

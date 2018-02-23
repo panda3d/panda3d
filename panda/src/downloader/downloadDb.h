@@ -72,8 +72,8 @@ PUBLISHED:
   };
 
   DownloadDb();
-  DownloadDb(Ramfile &server_file, Filename &client_file);
-  DownloadDb(Filename &server_file, Filename &client_file);
+  explicit DownloadDb(Ramfile &server_file, Filename &client_file);
+  explicit DownloadDb(Filename &server_file, Filename &client_file);
   ~DownloadDb();
 
   void output(ostream &out) const;

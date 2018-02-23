@@ -124,8 +124,19 @@ get_vertex(int i) const {
  */
 INLINE int GeomPrimitive::
 get_num_primitives() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
-  return reader.get_num_primitives();
+  int num_vertices_per_primitive = get_num_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    // This is a complex primitive type like a triangle strip: each primitive
+    // uses a different number of vertices.
+    CDReader cdata(_cycler);
+    return cdata->_ends.size();
+
+  } else {
+    // This is a simple primitive type like a triangle: each primitive uses
+    // the same number of vertices.
+    return (get_num_vertices() / num_vertices_per_primitive);
+  }
 }
 
 /**

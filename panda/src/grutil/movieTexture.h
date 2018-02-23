@@ -32,8 +32,8 @@
  */
 class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
-  MovieTexture(const string &name);
-  MovieTexture(MovieVideo *video);
+  explicit MovieTexture(const string &name);
+  explicit MovieTexture(MovieVideo *video);
 private:
   MovieTexture(const MovieTexture &copy);
 PUBLISHED:

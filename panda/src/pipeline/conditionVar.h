@@ -42,7 +42,7 @@ class EXPCL_PANDA_PIPELINE ConditionVar : public ConditionVarDirect
 #endif  // DEBUG_THREADS
 {
 PUBLISHED:
-  INLINE ConditionVar(Mutex &mutex);
+  INLINE explicit ConditionVar(Mutex &mutex);
   INLINE ~ConditionVar();
 private:
   INLINE ConditionVar(const ConditionVar &copy);

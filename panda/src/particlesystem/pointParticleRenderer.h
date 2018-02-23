@@ -39,12 +39,12 @@ PUBLISHED:
   };
 
   PointParticleRenderer(const PointParticleRenderer& copy);
-  PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
-                        PN_stdfloat point_size = 1.0f,
-                        PointParticleBlendType bt = PP_ONE_COLOR,
-                        ParticleRendererBlendMethod bm = PP_NO_BLEND,
-                        const LColor& sc = LColor(1.0f, 1.0f, 1.0f, 1.0f),
-                        const LColor& ec = LColor(1.0f, 1.0f, 1.0f, 1.0f));
+  explicit PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
+                                 PN_stdfloat point_size = 1.0f,
+                                 PointParticleBlendType bt = PP_ONE_COLOR,
+                                 ParticleRendererBlendMethod bm = PP_NO_BLEND,
+                                 const LColor& sc = LColor(1.0f, 1.0f, 1.0f, 1.0f),
+                                 const LColor& ec = LColor(1.0f, 1.0f, 1.0f, 1.0f));
 
   virtual ~PointParticleRenderer();
 

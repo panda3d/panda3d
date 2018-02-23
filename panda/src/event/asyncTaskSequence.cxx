@@ -106,6 +106,7 @@ do_task() {
   case DS_pickup:
   case DS_exit:
   case DS_interrupt:
+  case DS_await:
     // Just return these results through.
     return result;
   }

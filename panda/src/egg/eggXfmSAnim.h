@@ -27,8 +27,8 @@ class EggXfmAnimData;
  */
 class EXPCL_PANDAEGG EggXfmSAnim : public EggGroupNode {
 PUBLISHED:
-  INLINE EggXfmSAnim(const string &name = "",
-                     CoordinateSystem cs = CS_default);
+  INLINE explicit EggXfmSAnim(const string &name = "",
+                              CoordinateSystem cs = CS_default);
   EggXfmSAnim(const EggXfmAnimData &convert_from);
 
   INLINE EggXfmSAnim(const EggXfmSAnim &copy);

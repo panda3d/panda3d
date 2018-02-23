@@ -51,6 +51,15 @@ PUBLISHED:
 
   static Filename get_cwd();
 
+PUBLISHED:
+  MAKE_MAP_PROPERTY(environment_variables, has_environment_variable,
+                    get_environment_variable, set_environment_variable);
+
+  MAKE_SEQ_PROPERTY(args, get_num_args, get_arg);
+  MAKE_PROPERTY(binary_name, get_binary_name, set_binary_name);
+  MAKE_PROPERTY(dtool_name, get_dtool_name, set_dtool_name);
+  MAKE_PROPERTY(cwd, get_cwd);
+
 private:
   bool ns_has_environment_variable(const string &var) const;
   string ns_get_environment_variable(const string &var) const;

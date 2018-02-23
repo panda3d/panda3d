@@ -160,7 +160,7 @@ has_adjust_transform() const {
  */
 void RenderEffect::
 adjust_transform(CPT(TransformState) &, CPT(TransformState) &,
-                 PandaNode *) const {
+                 const PandaNode *) const {
 }
 
 /**

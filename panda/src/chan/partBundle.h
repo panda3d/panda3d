@@ -55,7 +55,7 @@ protected:
   PartBundle(const PartBundle &copy);
 
 PUBLISHED:
-  PartBundle(const string &name = "");
+  explicit PartBundle(const string &name = "");
   virtual PartGroup *make_copy() const;
 
   INLINE CPT(AnimPreloadTable) get_anim_preload() const;

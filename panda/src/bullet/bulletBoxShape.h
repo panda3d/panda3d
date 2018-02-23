@@ -29,12 +29,12 @@
 class EXPCL_PANDABULLET BulletBoxShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletBoxShape() : _shape(NULL) {};
+  INLINE BulletBoxShape();
 
 PUBLISHED:
-  BulletBoxShape(const LVecBase3 &halfExtents);
-  INLINE BulletBoxShape(const BulletBoxShape &copy);
-  INLINE void operator = (const BulletBoxShape &copy);
+  explicit BulletBoxShape(const LVecBase3 &halfExtents);
+  BulletBoxShape(const BulletBoxShape &copy);
+  void operator = (const BulletBoxShape &copy);
   INLINE ~BulletBoxShape();
 
   LVecBase3 get_half_extents_without_margin() const;
@@ -50,6 +50,7 @@ public:
 
 private:
   btBoxShape *_shape;
+  LVecBase3 _half_extents;
 
 public:
   static void register_with_read_factory();

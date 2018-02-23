@@ -15,6 +15,7 @@
 #include "cocoaGraphicsStateGuardian.h"
 #include "config_cocoadisplay.h"
 #include "cocoaGraphicsPipe.h"
+#include "cocoaPandaApp.h"
 
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
@@ -64,6 +65,18 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _context_needs_update = true;
   _fullscreen_mode = NULL;
   _windowed_mode = NULL;
+
+  // Now that we know for sure we want a window, we can create the Cocoa app.
+  // This will cause the application icon to appear and start bouncing.
+  if (NSApp == nil) {
+    [CocoaPandaApp sharedApplication];
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+#endif
+    [NSApp finishLaunching];
+    [NSApp activateIgnoringOtherApps:YES];
+  }
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
@@ -144,7 +157,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   nassertr(_view != nil, false);
 
   // Place a lock on the context.
-  CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+  cocoagsg->lock_context();
 
   // Set the drawable.
   if (_properties.get_fullscreen()) {
@@ -210,7 +223,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   CocoaGraphicsStateGuardian *cocoagsg;
   DCAST_INTO_V(cocoagsg, _gsg);
 
-  CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+  cocoagsg->unlock_context();
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -239,7 +252,7 @@ end_flip() {
     CocoaGraphicsStateGuardian *cocoagsg;
     DCAST_INTO_V(cocoagsg, _gsg);
 
-    CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+    cocoagsg->lock_context();
 
     // Swap the front and back buffer.
     [cocoagsg->_context flushBuffer];
@@ -247,7 +260,7 @@ end_flip() {
     // Flush the window
     [[_view window] flushWindow];
 
-    CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+    cocoagsg->unlock_context();
   }
   GraphicsWindow::end_flip();
 }
@@ -277,7 +290,21 @@ process_events() {
       break;
     }
 
-    [NSApp sendEvent: event];
+    // If we're in fullscreen mode, send mouse events directly to the window.
+    NSEventType type = [event type];
+    if (_properties.get_fullscreen() && (
+        type == NSLeftMouseDown || type == NSLeftMouseUp ||
+        type == NSRightMouseDown || type == NSRightMouseUp ||
+        type == NSOtherMouseDown || type == NSOtherMouseUp ||
+        type == NSLeftMouseDragged ||
+        type == NSRightMouseDragged ||
+        type == NSOtherMouseDragged ||
+        type == NSMouseMoved ||
+        type == NSScrollWheel)) {
+      [_window sendEvent: event];
+    } else {
+      [NSApp sendEvent: event];
+    }
   }
 
   if (_window != nil) {
@@ -385,6 +412,16 @@ open_window() {
     }
   }
 
+  // Iterate over the screens to find the one with our display ID.
+  NSScreen *screen;
+  NSEnumerator *e = [[NSScreen screens] objectEnumerator];
+  while (screen = (NSScreen *) [e nextObject]) {
+    NSNumber *num = [[screen deviceDescription] objectForKey: @"NSScreenNumber"];
+    if (cocoa_pipe->_display == (CGDirectDisplayID) [num longValue]) {
+      break;
+    }
+  }
+
   // Center the window if coordinates were set to -1 or -2 TODO: perhaps in
   // future, in the case of -1, it should use the origin used in a previous
   // run of Panda
@@ -392,7 +429,7 @@ open_window() {
   if (parent_nsview != NULL) {
     container = [parent_nsview bounds];
   } else {
-    container = [cocoa_pipe->_screen frame];
+    container = [screen frame];
     container.origin = NSMakePoint(0, 0);
   }
   int x = _properties.get_x_origin();
@@ -439,7 +476,7 @@ open_window() {
     _window = [[CocoaPandaWindow alloc]
                initWithContentRect: rect
                styleMask:windowStyle
-               screen:cocoa_pipe->_screen
+               screen:screen
                window:this];
 
     if (_window == nil) {
@@ -450,7 +487,7 @@ open_window() {
   }
 
   // Lock the context, so we can safely operate on it.
-  CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+  cocoagsg->lock_context();
 
   // Create the NSView to render to.
   NSRect rect = NSMakeRect(0, 0, _properties.get_x_size(), _properties.get_y_size());
@@ -574,7 +611,7 @@ open_window() {
   cocoagsg->reset_if_new();
 
   // Release the context.
-  CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+  cocoagsg->unlock_context();
 
   if (!cocoagsg->is_valid()) {
     close_window();
@@ -623,9 +660,9 @@ close_window() {
     cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
 
     if (cocoagsg != NULL && cocoagsg->_context != nil) {
-      CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+      cocoagsg->lock_context();
       [cocoagsg->_context clearDrawable];
-      CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+      cocoagsg->unlock_context();
     }
     _gsg.clear();
   }
@@ -1415,9 +1452,9 @@ handle_close_event() {
     cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
 
     if (cocoagsg != NULL && cocoagsg->_context != nil) {
-      CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+      cocoagsg->lock_context();
       [cocoagsg->_context clearDrawable];
-      CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+      cocoagsg->unlock_context();
     }
     _gsg.clear();
   }

@@ -149,14 +149,6 @@ get_hash_impl() const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) ColorBlendAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
  * Tells the BamReader how to create objects of type ColorBlendAttrib.
  */
 void ColorBlendAttrib::

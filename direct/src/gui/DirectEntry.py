@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""Contains the DirectEntry class, a type of DirectGUI widget that accepts
+text entered using the keyboard."""
 
 __all__ = ['DirectEntry']
 
@@ -58,6 +59,8 @@ class DirectEntry(DirectFrame):
             # Text used for the PGEntry text node
             # NOTE: This overrides the DirectFrame text option
             ('initialText',     '',               DGG.INITOPT),
+            # Enable or disable text overflow scrolling
+            ('overflow',        0,                self.setOverflowMode),
             # Command to be called on hitting Enter
             ('command',        None,              None),
             ('extraArgs',      [],                None),
@@ -157,6 +160,9 @@ class DirectEntry(DirectFrame):
 
     def setCursorKeysActive(self):
         PGEntry.setCursorKeysActive(self.guiItem, self['cursorKeys'])
+
+    def setOverflowMode(self):
+        PGEntry.set_overflow_mode(self.guiItem, self['overflow'])
 
     def setObscureMode(self):
         PGEntry.setObscureMode(self.guiItem, self['obscured'])

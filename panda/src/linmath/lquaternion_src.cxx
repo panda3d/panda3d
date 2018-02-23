@@ -27,6 +27,29 @@ pure_imaginary(const FLOATNAME(LVector3) &v) {
 }
 
 /**
+ * Returns a new quaternion that represents this quaternion raised to the
+ * given power.
+ */
+FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
+__pow__(FLOATTYPE power) const {
+  if (IS_NEARLY_ZERO(power)) {
+    return FLOATNAME(LQuaternion)(1, 0, 0, 0);
+  }
+
+  FLOATTYPE l = length();
+  FLOATTYPE norm = _v(0) / l;
+  if (IS_NEARLY_EQUAL(cabs(norm), (FLOATTYPE)1)) {
+    return FLOATNAME(LQuaternion)(cpow(_v(0), power), 0, 0, 0);
+  }
+
+  FLOATTYPE angle = acos(norm);
+  FLOATTYPE angle2 = angle * power;
+  FLOATTYPE mag = cpow(l, power - 1);
+  FLOATTYPE mult = mag * (sin(angle2) / sin(angle));
+  return FLOATNAME(LQuaternion)(cos(angle2) * mag * l, _v(1) * mult, _v(2) * mult, _v(3) * mult);
+}
+
+/**
  * Based on the quat lib from VRPN.
  */
 void FLOATNAME(LQuaternion)::

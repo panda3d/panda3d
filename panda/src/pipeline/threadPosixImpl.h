@@ -25,6 +25,10 @@
 
 #include <pthread.h>
 
+#ifdef ANDROID
+typedef struct _JNIEnv JNIEnv;
+#endif
+
 class Thread;
 
 /**
@@ -53,6 +57,12 @@ public:
   INLINE static void yield();
   INLINE static void consider_yield();
 
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+  bool attach_java_vm();
+  static void bind_java_thread();
+#endif
+
 private:
   static void *root_func(void *data);
   static void init_pt_ptr_index();
@@ -71,6 +81,10 @@ private:
   bool _joinable;
   bool _detached;
   PStatus _status;
+
+#ifdef ANDROID
+  JNIEnv *_jni_env;
+#endif
 
   static pthread_key_t _pt_ptr_index;
   static bool _got_pt_ptr_index;

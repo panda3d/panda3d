@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDAPHYSICS LinearJitterForce : public LinearRandomForce {
 PUBLISHED:
-  LinearJitterForce(PN_stdfloat a = 1.0f, bool m = false);
+  explicit LinearJitterForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);
   virtual ~LinearJitterForce();
 

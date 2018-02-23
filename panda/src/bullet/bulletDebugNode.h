@@ -18,15 +18,12 @@
 
 #include "bullet_includes.h"
 
-#include "geomNode.h"
-
 /**
  *
  */
-class EXPCL_PANDABULLET BulletDebugNode : public GeomNode {
-
+class EXPCL_PANDABULLET BulletDebugNode : public PandaNode {
 PUBLISHED:
-  BulletDebugNode(const char *name="debug");
+  explicit BulletDebugNode(const char *name="debug");
   INLINE ~BulletDebugNode();
 
   virtual void draw_mask_changed();
@@ -53,8 +50,11 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
+  virtual bool is_renderable() const;
+  virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
+
 private:
-  void sync_b2p(btDynamicsWorld *world);
+  void do_sync_b2p(btDynamicsWorld *world);
 
   struct Line {
     LVecBase3 _p0;
@@ -102,11 +102,18 @@ private:
 
   DebugDraw _drawer;
 
+  bool _debug_stale;
+  btDynamicsWorld *_debug_world;
+  PT(Geom) _debug_lines;
+  PT(Geom) _debug_triangles;
+
   bool _wireframe;
   bool _constraints;
   bool _bounds;
 
   friend class BulletWorld;
+
+  static PStatCollector _pstat_debug;
 
 public:
   static void register_with_read_factory();
@@ -121,9 +128,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    GeomNode::init_type();
+    PandaNode::init_type();
     register_type(_type_handle, "BulletDebugNode",
-                  GeomNode::get_class_type());
+                  PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

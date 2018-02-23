@@ -35,7 +35,6 @@ AsyncTask(const string &name) :
   _priority(0),
   _state(S_inactive),
   _servicing_thread(NULL),
-  _manager(NULL),
   _chain(NULL),
   _start_time(0.0),
   _start_frame(0),
@@ -68,11 +67,27 @@ AsyncTask::
  * S_inactive (or possible S_servicing_removed).  This is a no-op if the state
  * is already S_inactive.
  */
-void AsyncTask::
+bool AsyncTask::
 remove() {
-  if (_manager != (AsyncTaskManager *)NULL) {
-    _manager->remove(this);
+  AsyncTaskManager *manager = _manager;
+  if (manager != nullptr) {
+    nassertr(_chain->_manager == manager, false);
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Removing " << *this << "\n";
+    }
+    MutexHolder holder(manager->_lock);
+    if (_chain->do_remove(this, true)) {
+      return true;
+    } else {
+      if (task_cat.is_debug()) {
+        task_cat.debug()
+          << "  (unable to remove " << *this << ")\n";
+      }
+      return false;
+    }
   }
+  return false;
 }
 
 /**
@@ -379,11 +394,25 @@ jump_to_task_chain(AsyncTaskManager *manager) {
  */
 AsyncTask::DoneStatus AsyncTask::
 unlock_and_do_task() {
-  nassertr(_manager != (AsyncTaskManager *)NULL, DS_done);
+  nassertr(_manager != nullptr, DS_done);
   PT(ClockObject) clock = _manager->get_clock();
 
+  // Indicate that this task is now the current task running on the thread.
   Thread *current_thread = Thread::get_current_thread();
-  record_task(current_thread);
+  nassertr(current_thread->_current_task == nullptr, DS_interrupt);
+
+  void *ptr = AtomicAdjust::compare_and_exchange_ptr
+    (current_thread->_current_task, nullptr, (TypedReferenceCount *)this);
+
+  // If the return value is other than nullptr, someone else must have
+  // assigned the task first, in another thread.  That shouldn't be possible.
+
+  // But different versions of gcc appear to have problems compiling these
+  // assertions correctly.
+#ifndef __GNUC__
+  nassertr(ptr == nullptr, DS_interrupt);
+  nassertr(current_thread->_current_task == this, DS_interrupt);
+#endif  // __GNUC__
 
   // It's important to release the lock while the task is being serviced.
   _manager->_lock.release();
@@ -403,9 +432,33 @@ unlock_and_do_task() {
 
   _chain->_time_in_frame += _dt;
 
-  clear_task(current_thread);
+  // Now indicate that this is no longer the current task.
+  nassertr(current_thread->_current_task == this, status);
+
+  ptr = AtomicAdjust::compare_and_exchange_ptr
+    (current_thread->_current_task, (TypedReferenceCount *)this, nullptr);
+
+  // If the return value is other than this, someone else must have assigned
+  // the task first, in another thread.  That shouldn't be possible.
+
+  // But different versions of gcc appear to have problems compiling these
+  // assertions correctly.
+#ifndef __GNUC__
+  nassertr(ptr == this, DS_interrupt);
+  nassertr(current_thread->_current_task == nullptr, DS_interrupt);
+#endif  // __GNUC__
 
   return status;
+}
+
+/**
+ * Cancels this task.  This is equivalent to remove().
+ */
+bool AsyncTask::
+cancel() {
+  bool result = remove();
+  nassertr(done(), false);
+  return result;
 }
 
 /**
@@ -477,22 +530,16 @@ upon_birth(AsyncTaskManager *manager) {
  * task has been removed because it exited normally (returning DS_done), or
  * false if it was removed for some other reason (e.g.
  * AsyncTaskManager::remove()).  By the time this method is called, _manager
- * has been cleared, so the parameter manager indicates the original
+ * may have been cleared, so the parameter manager indicates the original
  * AsyncTaskManager that owned this task.
- *
- * The normal behavior is to throw the done_event only if clean_exit is true.
  *
  * This function is called with the lock *not* held.
  */
 void AsyncTask::
 upon_death(AsyncTaskManager *manager, bool clean_exit) {
-  if (clean_exit && !_done_event.empty()) {
-    PT_Event event = new Event(_done_event);
-    event->add_parameter(EventParameter(this));
-    throw_event(event);
-  }
+  //NB. done_event is now being thrown in AsyncFuture::notify_done().
 
-  // Also throw a generic remove event for the manager.
+  // Throw a generic remove event for the manager.
   if (manager != (AsyncTaskManager *)NULL) {
     string remove_name = manager->get_name() + "-removeTask";
     PT_Event event = new Event(remove_name);

@@ -77,14 +77,14 @@ public:
   void unregister_shared_depth_buffer(GraphicsOutput *graphics_output);
 
 protected:
+  virtual GraphicsOutput *get_host();
+
   virtual void close_buffer();
   virtual bool open_buffer();
 
   void check_host_valid();
 
   void report_my_errors(int line, const char *file);
-
-private:
 
   void bind_slot(int layer, bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);

@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionNode : public PandaNode {
 PUBLISHED:
-  CollisionNode(const string &name);
+  explicit CollisionNode(const string &name);
 
 protected:
   CollisionNode(const CollisionNode &copy);
@@ -61,20 +61,22 @@ PUBLISHED:
                                    set_into_collide_mask);
 
   INLINE void clear_solids();
-  INLINE int get_num_solids() const;
-  INLINE CPT(CollisionSolid) get_solid(int n) const;
+  INLINE size_t get_num_solids() const;
+  INLINE CPT(CollisionSolid) get_solid(size_t n) const;
   MAKE_SEQ(get_solids, get_num_solids, get_solid);
-  INLINE PT(CollisionSolid) modify_solid(int n);
-  INLINE void set_solid(int n, CollisionSolid *solid);
-  INLINE void remove_solid(int n);
-  INLINE int add_solid(const CollisionSolid *solid);
-  MAKE_SEQ_PROPERTY(solids, get_num_solids, get_solid, set_solid, remove_solid);
+  INLINE PT(CollisionSolid) modify_solid(size_t n);
+  INLINE void set_solid(size_t n, CollisionSolid *solid);
+  INLINE void insert_solid(size_t n, const CollisionSolid *solid);
+  INLINE void remove_solid(size_t n);
+  INLINE size_t add_solid(const CollisionSolid *solid);
+  MAKE_SEQ_PROPERTY(solids, get_num_solids, get_solid, set_solid, remove_solid, insert_solid);
 
   INLINE int get_collider_sort() const;
   INLINE void set_collider_sort(int sort);
   MAKE_PROPERTY(collider_sort, get_collider_sort, set_collider_sort);
 
   INLINE static CollideMask get_default_collide_mask();
+  MAKE_PROPERTY(default_collide_mask, get_default_collide_mask);
 
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
@@ -92,6 +94,8 @@ private:
 
   typedef pvector< COWPT(CollisionSolid) > Solids;
   Solids _solids;
+
+  friend class CollisionTraverser;
 
 public:
   static void register_with_read_factory();

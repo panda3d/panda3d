@@ -797,3 +797,39 @@ INLINE PN_stdfloat TextProperties::
 get_text_scale() const {
   return _text_scale;
 }
+
+/**
+ * Specifies the text direction.  If none is specified, it will be guessed
+ * based on the contents of the string.
+ */
+INLINE void TextProperties::
+set_direction(Direction direction) {
+  _direction = direction;
+  _specified |= F_has_direction;
+}
+
+/**
+ * Clears the text direction setting.  If no text direction is specified, it
+ * will be guessed based on the contents of the string.
+ */
+INLINE void TextProperties::
+clear_direction() {
+  _specified &= ~F_has_direction;
+  _direction = D_ltr;
+}
+
+/**
+ *
+ */
+INLINE bool TextProperties::
+has_direction() const {
+  return (_specified & F_has_direction) != 0;
+}
+
+/**
+ * Returns the direction of the text as specified by set_direction().
+ */
+INLINE TextProperties::Direction TextProperties::
+get_direction() const {
+  return _direction;
+}

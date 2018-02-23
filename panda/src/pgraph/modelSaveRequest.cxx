@@ -30,7 +30,6 @@ ModelSaveRequest(const string &name,
   _options(options),
   _node(node),
   _loader(loader),
-  _is_ready(false),
   _success(false)
 {
 }
@@ -46,7 +45,6 @@ do_task() {
   }
 
   _success = _loader->save_sync(_filename, _options, _node);
-  _is_ready = true;
 
   // Don't continue the task; we're done.
   return DS_done;

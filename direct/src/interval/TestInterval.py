@@ -1,10 +1,8 @@
-"""Undocumented Module"""
+"""
+Contains the TestInterval class
+"""
 
 __all__ = ['TestInterval']
-
-"""
-Contains the ParticleInterval class
-"""
 
 from panda3d.core import *
 from panda3d.direct import *

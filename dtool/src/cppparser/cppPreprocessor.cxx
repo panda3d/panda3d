@@ -2641,6 +2641,7 @@ check_keyword(const string &name) {
   if (name == "__is_trivial") return KW_IS_TRIVIAL;
   if (name == "__is_union") return KW_IS_UNION;
   if (name == "long") return KW_LONG;
+  if (name == "__make_map_keys_seq") return KW_MAKE_MAP_KEYS_SEQ;
   if (name == "__make_map_property") return KW_MAKE_MAP_PROPERTY;
   if (name == "__make_property") return KW_MAKE_PROPERTY;
   if (name == "__make_property2") return KW_MAKE_PROPERTY2;

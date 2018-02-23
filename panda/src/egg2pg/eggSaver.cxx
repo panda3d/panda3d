@@ -52,6 +52,7 @@
 #include "modelNode.h"
 #include "animBundleNode.h"
 #include "animChannelMatrixXfmTable.h"
+#include "characterJointEffect.h"
 #include "characterJoint.h"
 #include "character.h"
 #include "string_utils.h"
@@ -155,6 +156,16 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
     convert_character_node(DCAST(Character, node), node_path, egg_parent, has_decal);
 
   } else {
+    // Is this a ModelNode that represents an exposed joint?  If so, skip it,
+    // as we'll take care of it when building the joint hierarchy.
+    if (node->get_type() == ModelNode::get_class_type()) {
+      ModelNode *model_node = (ModelNode *)node;
+      if (model_node->get_preserve_transform() == ModelNode::PT_net &&
+          model_node->has_effect(CharacterJointEffect::get_class_type())) {
+        return;
+      }
+    }
+
     // Just a generic node.
     EggGroup *egg_group = new EggGroup(node->get_name());
     egg_parent->add_child(egg_group);
@@ -354,6 +365,17 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
     EggGroup *joint = new EggGroup(bundleNode->get_name());
     joint->add_matrix4(transformd);
     joint->set_group_type(EggGroup::GT_joint);
+
+    // Is this joint exposed?
+    NodePathCollection coll = character_joint->get_net_transforms();
+    for (size_t i = 0; i < coll.size(); ++i) {
+      const NodePath &np = coll[i];
+      if (np.get_name() == bundleNode->get_name() && np.node()->is_of_type(ModelNode::get_class_type())) {
+        joint->set_dcs_type(EggGroup::DC_net);
+        break;
+      }
+    }
+
     joint_group = joint;
     egg_parent->add_child(joint_group);
     if (joint_map != NULL) {
@@ -384,16 +406,33 @@ convert_character_node(Character *node, const WorkingNodePath &node_path,
 
   // A sequence node gets converted to an ordinary EggGroup, we only apply the
   // appropriate switch attributes to turn it into a sequence.
-  // We have to use DT_structured since it is the only mode that preserves the
-  // node hierarchy, including LODNodes and CollisionNodes that may be under
-  // this Character node.
   EggGroup *egg_group = new EggGroup(node->get_name());
-  egg_group->set_dart_type(EggGroup::DT_structured);
   egg_parent->add_child(egg_group);
   apply_node_properties(egg_group, node);
 
   CharacterJointMap joint_map;
-  recurse_nodes(node_path, egg_group, has_decal, &joint_map);
+  bool is_structured = false;
+
+  int num_children = node->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = node->get_child(i);
+    convert_node(WorkingNodePath(node_path, child), egg_parent, has_decal, &joint_map);
+
+    TypeHandle type = child->get_type();
+    if (child->get_num_children() > 0 ||
+        (type != GeomNode::get_class_type() && type != ModelNode::get_class_type())) {
+      is_structured = true;
+    }
+  }
+
+  // We have to use DT_structured if it is necessary to preserve any node
+  // hierarchy, such as LODNodes and CollisionNodes that may be under this
+  // Character node.
+  if (is_structured) {
+    egg_group->set_dart_type(EggGroup::DT_structured);
+  } else {
+    egg_group->set_dart_type(EggGroup::DT_default);
+  }
 
   // turn it into a switch.. egg_group->set_switch_flag(true);
 
@@ -940,6 +979,9 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
     ModelNode *model_node = DCAST(ModelNode, node);
     switch (model_node->get_preserve_transform()) {
     case ModelNode::PT_none:
+      egg_group->set_model_flag(true);
+      break;
+
     case ModelNode::PT_drop_node:
       break;
 

@@ -18,6 +18,25 @@ resources. If you get stuck, ask for help from our active
 Panda3D is licensed under the Modified BSD License.  See the LICENSE file for
 more details.
 
+Installing Panda3D
+==================
+
+By far, the easiest way to install the latest development build of Panda3D
+into an existing Python installation is using the following command:
+
+```bash
+pip install --pre --extra-index-url https://archive.panda3d.org/ panda3d
+```
+
+If this command fails, please make sure your version of pip is up-to-date.
+
+If you prefer to install the full SDK with all tools, the latest development
+builds can be obtained from this page:
+
+https://www.panda3d.org/download.php?sdk&version=devel
+
+These are automatically kept up-to-date with the latest GitHub version of Panda.
+
 Building Panda3D
 ================
 
@@ -31,8 +50,11 @@ are included as part of the Windows 7.1 SDK.
 You will also need to have the third-party dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
 depending on whether you are on a 32-bit or 64-bit system:
-https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-win32.zip
-https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-win64.zip
+https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win32.zip
+https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win64.zip
+
+(It is also possible to build using MSVC 2015 and 2017, which requires a
+different set of thirdparty libraries, but that is not described here.)
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command:
@@ -64,7 +86,7 @@ for you to install, depending on your distribution).
 The following command illustrates how to build Panda3D with some common
 options:
 ```bash
-python2.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
 ```
 
 You will probably see some warnings saying that it's unable to find several
@@ -93,11 +115,14 @@ may have to use the installpanda.py script instead, which will directly copy the
 files into the appropriate locations on your computer.  You may have to run the
 `ldconfig` tool in order to update your library cache after installing Panda3D.
 
+Alternatively, you can add the `--wheel` option, which will produce a .whl
+file that can be installed into a Python installation using `pip`.
+
 macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.3/panda3d-1.9.3-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -114,13 +139,46 @@ If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
 package file in order to install the SDK onto your system.
 
+FreeBSD
+-------
+
+Building on FreeBSD is very similar to building on Linux.  You will need to
+install the requisite packages using the system package manager.  To install
+the recommended set of dependencies, you can use this command:
+
+```bash
+pkg install pkgconf png jpeg-turbo tiff freetype2 eigen squish openal opusfile libvorbis libX11 libGL ode bullet assimp openexr
+```
+
+You will also need to choose which version of Python you want to use.
+Install the appropriate package for it (such as `python2` or `python36`) and
+run the makepanda script with your chosen Python version:
+
+```bash
+python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+```
+
+If successful, this will produce a .pkg file in the root of the source
+directory which you can install using `pkg install`.
+
+Running Tests
+=============
+
+Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation)
+and run the `pytest` command.  If you have not installed Panda3D, you will
+need to configure your enviroment by pointing the `PYTHONPATH` variable at
+the `built` directory.  On Linux, you will also need to point the
+`LD_LIBRARY_PATH` variable at the `built/lib` directory.
+
+As a convenience, you can alternatively pass the `--tests` option to makepanda.
+
 Reporting Issues
 ================
 
 If you encounter any bugs when using Panda3D, please report them in the bug
 tracker.  This is hosted at:
 
-  https://bugs.launchpad.net/panda3d
+  https://github.com/panda3d/panda3d/issues
 
 Make sure to first use the search function to see if the bug has already been
 reported.  When filling out a bug report, make sure that you include as much

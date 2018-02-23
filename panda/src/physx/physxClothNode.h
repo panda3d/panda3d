@@ -31,9 +31,8 @@ class PhysxCloth;
  * Renderable geometry which represents a cloth mesh.
  */
 class EXPCL_PANDAPHYSX PhysxClothNode : public GeomNode {
-
 PUBLISHED:
-  INLINE PhysxClothNode(const char *name);
+  INLINE explicit PhysxClothNode(const char *name);
   INLINE ~PhysxClothNode();
 
   bool set_texcoords(const Filename &filename);

@@ -1,8 +1,6 @@
-"""Undocumented Module"""
+"""Contains the FourState class."""
 
 __all__ = ['FourState']
-
-
 
 from direct.directnotify import DirectNotifyGlobal
 #import DistributedObject
@@ -20,7 +18,7 @@ class FourState:
     Inherit from FourStateFSM and pass in your states.  Two of
     the states should be oposites of each other and the other
     two should be the transition states between the first two.
-    E.g.
+    E.g::
 
                     +--------+
                  -->| closed | --

@@ -42,9 +42,9 @@ class EXPCL_PANDA_PIPELINE LightMutex : public LightMutexDirect
 PUBLISHED:
   INLINE LightMutex();
 public:
-  INLINE LightMutex(const char *name);
+  INLINE explicit LightMutex(const char *name);
 PUBLISHED:
-  INLINE LightMutex(const string &name);
+  INLINE explicit LightMutex(const string &name);
   INLINE ~LightMutex();
 private:
   INLINE LightMutex(const LightMutex &copy);

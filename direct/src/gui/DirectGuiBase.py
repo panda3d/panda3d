@@ -1,32 +1,7 @@
-"""Undocumented Module"""
-
-__all__ = ['DirectGuiBase', 'DirectGuiWidget']
-
-
-from panda3d.core import *
-from panda3d.direct import get_config_showbase
-from . import DirectGuiGlobals as DGG
-from .OnscreenText import *
-from .OnscreenGeom import *
-from .OnscreenImage import *
-from direct.directtools.DirectUtil import ROUND_TO
-from direct.showbase import DirectObject
-from direct.task import Task
-import sys
-
-if sys.version_info >= (3, 0):
-    stringType = str
-else:
-    stringType = basestring
-
-guiObjectCollector = PStatCollector("Client::GuiObjects")
-
 """
 Base class for all Direct Gui items.  Handles composite widgets and
 command line argument parsing.
-"""
 
-"""
 Code Overview:
 
 1   Each widget defines a set of options (optiondefs) as a list of tuples
@@ -101,7 +76,32 @@ Code Overview:
     are left unused.  If so, an error is raised.
 """
 
+__all__ = ['DirectGuiBase', 'DirectGuiWidget']
+
+
+from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
+from direct.showbase.ShowBase import ShowBase
+from . import DirectGuiGlobals as DGG
+from .OnscreenText import *
+from .OnscreenGeom import *
+from .OnscreenImage import *
+from direct.directtools.DirectUtil import ROUND_TO
+from direct.showbase import DirectObject
+from direct.task import Task
+import sys
+
+if sys.version_info >= (3, 0):
+    stringType = str
+else:
+    stringType = basestring
+
+guiObjectCollector = PStatCollector("Client::GuiObjects")
+
+
 class DirectGuiBase(DirectObject.DirectObject):
+    """Base class of all DirectGUI widgets."""
+
     def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'
@@ -634,7 +634,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        if get_config_showbase().GetBool('debug-directgui-msgs', False):
+        if ShowBase.config.GetBool('debug-directgui-msgs', False):
             from direct.showbase.PythonUtil import StackTrace
             print(gEvent)
             print(StackTrace())
@@ -663,7 +663,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    guiEdit = get_config_showbase().GetBool('direct-gui-edit', 0)
+    guiEdit = ShowBase.config.GetBool('direct-gui-edit', False)
     if guiEdit:
         inactiveInitState = DGG.NORMAL
     else:
@@ -724,21 +724,24 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         if self['guiId']:
             self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
-        if __dev__:
+
+        if ShowBaseGlobal.__dev__:
             guiObjectCollector.addLevel(1)
             guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
-            if hasattr(base, 'guiItems'):
-                if self.guiId in base.guiItems:
-                    base.notify.warning('duplicate guiId: %s (%s stomping %s)' %
-                                        (self.guiId, self,
-                                         base.guiItems[self.guiId]))
-                base.guiItems[self.guiId] = self
-                if hasattr(base, 'printGuiCreates'):
-                    printStack()
+            if ShowBase.config.GetBool('track-gui-items', False):
+                if not hasattr(ShowBase, 'guiItems'):
+                    ShowBase.guiItems = {}
+                if self.guiId in ShowBase.guiItems:
+                    ShowBase.notify.warning('duplicate guiId: %s (%s stomping %s)' %
+                                            (self.guiId, self,
+                                             ShowBase.guiItems[self.guiId]))
+                ShowBase.guiItems[self.guiId] = self
+
         # Attach button to parent and make that self
-        if (parent == None):
-            parent = aspect2d
+        if parent is None:
+            parent = ShowBaseGlobal.aspect2d
+
         self.assign(parent.attachNewNode(self.guiItem, self['sortOrder']))
         # Update pose to initial values
         if self['pos']:
@@ -1025,17 +1028,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
     def destroy(self):
         if hasattr(self, "frameStyle"):
-            if __dev__:
+            if ShowBaseGlobal.__dev__:
                 guiObjectCollector.subLevel(1)
                 guiObjectCollector.flushLevel()
-                if hasattr(base, 'guiItems'):
-                    if self.guiId in base.guiItems:
-                        del base.guiItems[self.guiId]
-                    else:
-                        base.notify.warning(
-                            'DirectGuiWidget.destroy(): '
-                            'gui item %s not in base.guiItems' %
-                            self.guiId)
+                if hasattr(ShowBase, 'guiItems'):
+                    ShowBase.guiItems.pop(self.guiId, None)
+
             # Destroy children
             for child in self.getChildren():
                 childGui = self.guiDict.get(child.getName())

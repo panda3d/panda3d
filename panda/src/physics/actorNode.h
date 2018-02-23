@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDAPHYSICS ActorNode : public PhysicalNode {
 PUBLISHED:
-  ActorNode(const string &name = "");
+  explicit ActorNode(const string &name = "");
   ActorNode(const ActorNode &copy);
   virtual ~ActorNode();
 

@@ -26,7 +26,6 @@ do_task() {
   // There is no need to store or return a result.  The GeomVertexData caches
   // the result and it will be used later in the rendering process.
   _geom_vertex_data->animate_vertices(true, current_thread);
-  _is_ready = true;
 
   // Don't continue the task; we're done.
   return AsyncTask::DS_done;

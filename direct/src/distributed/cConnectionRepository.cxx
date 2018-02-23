@@ -708,7 +708,7 @@ handle_update_field() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
       Py_DECREF(dclass_this);
 
       // If in quiet zone mode, throw update away unless distobj has
@@ -799,7 +799,7 @@ handle_update_field_owner() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
@@ -841,7 +841,7 @@ handle_update_field_owner() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
@@ -974,7 +974,7 @@ describe_message(ostream &out, const string &prefix,
         Py_DECREF(dclass_obj);
         nassertv(dclass_this != NULL);
 
-        dclass = (DCClass *)PyLong_AsLong(dclass_this);
+        dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
         Py_DECREF(dclass_this);
       }
     }

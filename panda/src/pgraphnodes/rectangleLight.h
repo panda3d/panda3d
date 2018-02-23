@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES RectangleLight : public LightLensNode {
 PUBLISHED:
-  RectangleLight(const string &name);
+  explicit RectangleLight(const string &name);
 
 protected:
   RectangleLight(const RectangleLight &copy);

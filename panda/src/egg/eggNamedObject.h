@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDAEGG EggNamedObject : public EggObject, public Namable {
 PUBLISHED:
-  INLINE EggNamedObject(const string &name = "");
+  INLINE explicit EggNamedObject(const string &name = "");
   INLINE EggNamedObject(const EggNamedObject &copy);
   INLINE EggNamedObject &operator = (const EggNamedObject &copy);
 

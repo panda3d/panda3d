@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_PIPELINE ConditionVarDebug {
 public:
-  ConditionVarDebug(MutexDebug &mutex);
+  explicit ConditionVarDebug(MutexDebug &mutex);
   virtual ~ConditionVarDebug();
 private:
   INLINE ConditionVarDebug(const ConditionVarDebug &copy);

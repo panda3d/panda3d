@@ -15,7 +15,7 @@ implementation. """
 
 import sys as _sys
 
-from direct.stdpy import thread
+from direct.stdpy import thread as _thread
 from direct.stdpy.thread import stack_size, _newname, _local as local
 from panda3d import core
 _sleep = core.Thread.sleep
@@ -23,16 +23,19 @@ _sleep = core.Thread.sleep
 from time import time as _time
 from traceback import format_exc as _format_exc
 
-# Rename some stuff so "from threading import *" is safe
-__all__ = ['activeCount', 'Condition', 'currentThread', 'enumerate', 'Event',
-           'Lock', 'RLock', 'Semaphore', 'BoundedSemaphore', 'Thread',
-           'Timer', 'setprofile', 'settrace', 'local', 'stack_size']
+__all__ = ['get_ident', 'active_count', 'Condition', 'current_thread',
+           'enumerate', 'main_thread', 'TIMEOUT_MAX',
+           'Event', 'Lock', 'RLock', 'Semaphore', 'BoundedSemaphore', 'Thread',
+           'Timer', 'ThreadError',
+           'setprofile', 'settrace', 'local', 'stack_size']
 
-_start_new_thread = thread.start_new_thread
-_allocate_lock = thread.allocate_lock
-_get_ident = thread.get_ident
-ThreadError = thread.error
-del thread
+# Rename some stuff so "from threading import *" is safe
+_start_new_thread = _thread.start_new_thread
+_allocate_lock = _thread.allocate_lock
+get_ident = _thread.get_ident
+ThreadError = _thread.error
+TIMEOUT_MAX = _thread.TIMEOUT_MAX
+del _thread
 
 
 # Debug support (adapted from ihooks.py).
@@ -446,7 +449,7 @@ class Thread(_Verbose):
         try:
             self.__started = True
             _active_limbo_lock.acquire()
-            _active[_get_ident()] = self
+            _active[get_ident()] = self
             del _limbo[self]
             _active_limbo_lock.release()
             if __debug__:
@@ -537,7 +540,7 @@ class Thread(_Verbose):
         _active_limbo_lock.acquire()
         try:
             try:
-                del _active[_get_ident()]
+                del _active[get_ident()]
             except KeyError:
                 if 'dummy_threading' not in _sys.modules:
                     raise
@@ -581,9 +584,11 @@ class Thread(_Verbose):
         assert self.__initialized, "Thread.__init__() not called"
         self.__name = str(name)
 
-    def isAlive(self):
+    def is_alive(self):
         assert self.__initialized, "Thread.__init__() not called"
         return self.__started and not self.__stopped
+
+    isAlive = is_alive
 
     def isDaemon(self):
         assert self.__initialized, "Thread.__init__() not called"
@@ -634,7 +639,7 @@ class _MainThread(Thread):
         Thread.__init__(self, name="MainThread")
         self._Thread__started = True
         _active_limbo_lock.acquire()
-        _active[_get_ident()] = self
+        _active[get_ident()] = self
         _active_limbo_lock.release()
 
     def _set_daemon(self):
@@ -652,12 +657,6 @@ class _MainThread(Thread):
         if __debug__:
             self._note("%s: exiting", self)
         self._Thread__delete()
-
-def _pickSomeNonDaemonThread():
-    for t in enumerate():
-        if not t.isDaemon() and t.isAlive():
-            return t
-    return None
 
 
 # Dummy thread class to represent threads not started here.
@@ -680,7 +679,7 @@ class _DummyThread(Thread):
 
         self._Thread__started = True
         _active_limbo_lock.acquire()
-        _active[_get_ident()] = self
+        _active[get_ident()] = self
         _active_limbo_lock.release()
 
     def _set_daemon(self):
@@ -692,18 +691,22 @@ class _DummyThread(Thread):
 
 # Global API functions
 
-def currentThread():
+def current_thread():
     try:
-        return _active[_get_ident()]
+        return _active[get_ident()]
     except KeyError:
-        ##print "currentThread(): no current thread for", _get_ident()
+        ##print "current_thread(): no current thread for", get_ident()
         return _DummyThread()
 
-def activeCount():
+currentThread = current_thread
+
+def active_count():
     _active_limbo_lock.acquire()
     count = len(_active) + len(_limbo)
     _active_limbo_lock.release()
     return count
+
+activeCount = active_count
 
 def enumerate():
     _active_limbo_lock.acquire()
@@ -717,7 +720,21 @@ def enumerate():
 # and make it available for the interpreter
 # (Py_Main) as threading._shutdown.
 
-_shutdown = _MainThread()._exitfunc
+_main_thread = _MainThread()
+_shutdown = _main_thread._exitfunc
+
+def _pickSomeNonDaemonThread():
+    for t in enumerate():
+        if not t.isDaemon() and t.isAlive():
+            return t
+    return None
+
+def main_thread():
+    """Return the main thread object.
+    In normal conditions, the main thread is the thread from which the
+    Python interpreter was started.
+    """
+    return _main_thread
 
 # get thread-local implementation, either from the thread
 # module, or from the python fallback

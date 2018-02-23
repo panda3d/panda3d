@@ -40,7 +40,7 @@ class TransformState;
  */
 class EXPCL_PANDA_PGRAPH Fog : public PandaNode {
 PUBLISHED:
-  Fog(const string &name);
+  explicit Fog(const string &name);
 
 protected:
   Fog(const Fog &copy);

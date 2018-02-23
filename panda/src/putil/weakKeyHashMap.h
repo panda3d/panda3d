@@ -45,15 +45,15 @@ public:
   INLINE Value &operator [] (const Key *key);
 
   INLINE size_t get_size() const;
-  INLINE bool has_element(int n) const;
-  INLINE const Key *get_key(int n) const;
-  INLINE const Value &get_data(int n) const;
-  INLINE Value &modify_data(int n);
-  INLINE void set_data(int n, const Value &data);
+  INLINE bool has_element(size_t n) const;
+  INLINE const Key *get_key(size_t n) const;
+  INLINE const Value &get_data(size_t n) const;
+  INLINE Value &modify_data(size_t n);
+  INLINE void set_data(size_t n, const Value &data);
 #ifdef USE_MOVE_SEMANTICS
-  INLINE void set_data(int n, Value &&data);
+  INLINE void set_data(size_t n, Value &&data);
 #endif
-  void remove_element(int n);
+  void remove_element(size_t n);
 
   INLINE size_t get_num_entries() const;
   INLINE bool is_empty() const;
@@ -65,9 +65,9 @@ public:
 private:
   INLINE size_t get_hash(const Key *key) const;
 
-  INLINE bool is_element(int n, const Key *key) const;
-  INLINE void store_new_element(int n, const Key *key, const Value &data);
-  INLINE void clear_element(int n);
+  INLINE bool is_element(size_t n, const Key *key) const;
+  INLINE void store_new_element(size_t n, const Key *key, const Value &data);
+  INLINE void clear_element(size_t n);
   INLINE unsigned char *get_exists_array() const;
 
   void new_table();

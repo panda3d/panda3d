@@ -26,9 +26,22 @@
  */
 PyObject *Extension<VirtualFileSystem>::
 read_file(const Filename &filename, bool auto_unwrap) const {
+  // Release the GIL while we do this potentially slow operation.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyThreadState *_save;
+  Py_UNBLOCK_THREADS
+#endif
+
   vector_uchar pv;
   bool okflag = _this->read_file(filename, pv, auto_unwrap);
-  nassertr(okflag, NULL);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  Py_BLOCK_THREADS
+#endif
+
+  if (!okflag) {
+    return PyErr_Format(PyExc_IOError, "Failed to read file: '%s'", filename.c_str());
+  }
 
 #if PY_MAJOR_VERSION >= 3
   if (pv.empty()) {

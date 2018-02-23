@@ -20,6 +20,7 @@
 #include "collisionSolid.h"
 #include "nodePath.h"
 #include "pmap.h"
+#include "lightMutex.h"
 
 #ifdef DO_COLLISION_RECORDING
 
@@ -33,7 +34,8 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionVisualizer : public PandaNode, public CollisionRecorder {
 PUBLISHED:
-  CollisionVisualizer(const string &name);
+  explicit CollisionVisualizer(const string &name);
+  CollisionVisualizer(const CollisionVisualizer &copy);
   virtual ~CollisionVisualizer();
 
   INLINE void set_point_scale(PN_stdfloat point_scale);
@@ -89,6 +91,7 @@ private:
     Points _points;
   };
 
+  LightMutex _lock;
   typedef pmap<CPT(TransformState), VizInfo> Data;
   Data _data;
 

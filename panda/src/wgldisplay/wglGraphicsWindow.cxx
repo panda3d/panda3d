@@ -386,7 +386,7 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
 
   wgldisplay_cat.debug()
     << msg << ", " << OGLDrvStrings[drvtype] << " driver\n"
-    << "PFD flags: 0x" << (void*)pfd->dwFlags << " ("
+    << "PFD flags: 0x" << hex << pfd->dwFlags << dec << " ("
     << PRINT_FLAG(GENERIC_ACCELERATED)
     << PRINT_FLAG(GENERIC_FORMAT)
     << PRINT_FLAG(DOUBLEBUFFER)

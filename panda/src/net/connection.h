@@ -28,7 +28,7 @@ class NetDatagram;
  */
 class EXPCL_PANDA_NET Connection : public ReferenceCount {
 PUBLISHED:
-  Connection(ConnectionManager *manager, Socket_IP *socket);
+  explicit Connection(ConnectionManager *manager, Socket_IP *socket);
   ~Connection();
 
   NetAddress get_address() const;

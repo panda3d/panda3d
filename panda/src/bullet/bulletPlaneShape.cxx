@@ -30,10 +30,50 @@ BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant) {
 /**
  *
  */
+BulletPlaneShape::
+BulletPlaneShape(const BulletPlaneShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
+void BulletPlaneShape::
+operator = (const BulletPlaneShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletPlaneShape::
 ptr() const {
 
   return _shape;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletPlaneShape::
+get_plane_constant() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_shape->getPlaneConstant();
+}
+
+/**
+ *
+ */
+LVector3 BulletPlaneShape::
+get_plane_normal() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVector3(_shape->getPlaneNormal());
 }
 
 /**
@@ -62,6 +102,8 @@ register_with_read_factory() {
  */
 void BulletPlaneShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
   dg.add_stdfloat(get_margin());
   get_plane_normal().write_datagram(dg);
   dg.add_stdfloat(get_plane_constant());
@@ -90,7 +132,8 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletPlaneShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
+  nassertv(_shape == nullptr);
 
   PN_stdfloat margin = scan.get_stdfloat();
 

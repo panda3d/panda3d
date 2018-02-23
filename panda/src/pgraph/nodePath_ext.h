@@ -34,6 +34,7 @@ public:
   PyObject *__reduce__(PyObject *self) const;
   PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
 
+  PyObject *get_tags() const;
   INLINE PyObject *get_tag_keys() const;
 
   INLINE PyObject *get_python_tags();
@@ -49,14 +50,15 @@ public:
   // This is defined to implement cycle detection in Python tags.
   INLINE int __traverse__(visitproc visit, void *arg);
 
+  void set_shader_input(CPT_InternalName id, PyObject *value, int priority=0);
   void set_shader_inputs(PyObject *args, PyObject *kwargs);
 
   PyObject *get_tight_bounds(const NodePath &other = NodePath()) const;
 };
 
 BEGIN_PUBLISH
-NodePath py_decode_NodePath_from_bam_stream(const string &data);
-NodePath py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data);
+NodePath py_decode_NodePath_from_bam_stream(vector_uchar data);
+NodePath py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar data);
 END_PUBLISH
 
 #include "nodePath_ext.I"

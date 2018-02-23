@@ -28,12 +28,14 @@
  *
  */
 class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
+private:
+  INLINE BulletHeightfieldShape();
 
 PUBLISHED:
-  BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
-  BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up=Z_up);
-  INLINE BulletHeightfieldShape(const BulletHeightfieldShape &copy);
-  INLINE void operator = (const BulletHeightfieldShape &copy);
+  explicit BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
+  explicit BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up=Z_up);
+  BulletHeightfieldShape(const BulletHeightfieldShape &copy);
+  void operator = (const BulletHeightfieldShape &copy);
   INLINE ~BulletHeightfieldShape();
 
   void set_use_diamond_subdivision(bool flag=true);
@@ -44,8 +46,18 @@ public:
 private:
   int _num_rows;
   int _num_cols;
-  float *_data;
+  btScalar *_data;
   btHeightfieldTerrainShape *_shape;
+  PN_stdfloat _max_height;
+  BulletUpAxis _up;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

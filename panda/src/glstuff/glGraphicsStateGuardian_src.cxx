@@ -155,7 +155,11 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // drawing GUIs and such.
 static const string default_vshader =
 #ifndef OPENGLES
+#ifdef __APPLE__ // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
@@ -174,12 +178,16 @@ static const string default_vshader =
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
   "  texcoord = p3d_MultiTexCoord0;\n"
-  "  color = p3d_Color;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
 static const string default_fshader =
 #ifndef OPENGLES
+#ifdef __APPLE__  // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
@@ -1139,7 +1147,7 @@ reset() {
   _supports_multisample = false;
 #else
   _supports_multisample =
-    has_extension("GL_ARB_multisample") || is_at_least_gl_version(1, 3);
+    is_at_least_gl_version(1, 3) || has_extension("GL_ARB_multisample");
 #endif
 
 #ifdef OPENGLES_1
@@ -1305,7 +1313,7 @@ reset() {
   if (gl_support_shadow_filter &&
       _supports_depth_texture &&
       (is_at_least_gl_version(1, 4) || has_extension("GL_ARB_shadow")) &&
-      has_extension("GL_ARB_fragment_program_shadow")) {
+      (is_at_least_gl_version(2, 0) || has_extension("GL_ARB_fragment_program_shadow"))) {
     _supports_shadow_filter = true;
   }
 #endif
@@ -2135,7 +2143,7 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
       get_extension_func("glGenerateMipmap");
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
-      get_extension_func("glRenderbufferStorageMultisampleEXT");
+      get_extension_func("glRenderbufferStorageMultisample");
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)
       get_extension_func("glBlitFramebuffer");
 
@@ -2550,8 +2558,8 @@ reset() {
   _border_clamp = _edge_clamp;
 #ifndef OPENGLES
   if (gl_support_clamp_to_border &&
-      (has_extension("GL_ARB_texture_border_clamp") ||
-       is_at_least_gl_version(1, 3))) {
+      (is_at_least_gl_version(1, 3) ||
+       has_extension("GL_ARB_texture_border_clamp"))) {
     _border_clamp = GL_CLAMP_TO_BORDER;
   }
 #endif
@@ -2580,6 +2588,11 @@ reset() {
     _mirror_clamp = GL_MIRROR_CLAMP_EXT;
     _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE_EXT;
     _mirror_border_clamp = GL_MIRROR_CLAMP_TO_BORDER_EXT;
+
+  } else if (is_at_least_gl_version(4, 4) ||
+             has_extension("GL_ARB_texture_mirror_clamp_to_edge")) {
+    _mirror_clamp = GL_MIRROR_CLAMP_TO_EDGE;
+    _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE;
   }
 #endif
 
@@ -3121,6 +3134,10 @@ reset() {
     }
   }
 #endif
+
+  // Do we guarantee that we can apply the color scale via a shader?  We set
+  // this false if there is a chance that the fixed-function pipeline is used.
+  _runtime_color_scale = !has_fixed_function_pipeline();
 
 #ifndef OPENGLES
   if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
@@ -3929,7 +3946,6 @@ end_frame(Thread *current_thread) {
  */
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                      const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
 #ifndef NDEBUG
@@ -3948,7 +3964,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -4013,10 +4029,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
+    //const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
 
     UpdateSeq modified = max(geom_reader->get_modified(), _data_reader->get_modified());
-    if (ggc->get_display_list(_geom_display_list, gmunger, modified)) {
+    if (ggc->get_display_list(_geom_display_list, nullptr, modified)) {
       // If it hasn't been modified, just play the display list again.
       if (GLCAT.is_spam()) {
         GLCAT.spam()
@@ -6447,6 +6463,15 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     break;
 
+  case Texture::F_depth_component16:
+    component_type = Texture::T_unsigned_short;
+    break;
+
+  case Texture::F_depth_component24:
+  case Texture::F_depth_component32:
+    component_type = Texture::T_float;
+    break;
+
   default:
     if (_current_properties->get_srgb_color()) {
       if (_current_properties->get_alpha_bits()) {
@@ -7535,6 +7560,36 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   report_my_gl_errors();
 }
 #endif  // SUPPORT_FIXED_FUNCTION
+
+/**
+ * Creates a depth buffer for shadow mapping.  A derived GSG can override this
+ * if it knows that a particular buffer type works best for shadow rendering.
+ */
+GraphicsOutput *CLP(GraphicsStateGuardian)::
+make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
+  // We override this to circumvent the fact that GraphicsEngine::make_output
+  // can only be called from the app thread.
+  if (!_supports_framebuffer_object) {
+    return GraphicsStateGuardian::make_shadow_buffer(light, tex, host);
+  }
+
+  bool is_point = light->is_of_type(PointLight::get_class_type());
+
+  // Determine the properties for creating the depth buffer.
+  FrameBufferProperties fbp;
+  fbp.set_depth_bits(shadow_depth_bits);
+
+  WindowProperties props = WindowProperties::size(light->get_shadow_buffer_size());
+  int flags = GraphicsPipe::BF_refuse_window;
+  if (is_point) {
+    flags |= GraphicsPipe::BF_size_square;
+  }
+
+  CLP(GraphicsBuffer) *sbuffer = new CLP(GraphicsBuffer)(get_engine(), get_pipe(), light->get_name(), fbp, props, flags, this, host);
+  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);
+  get_engine()->add_window(sbuffer, light->get_shadow_buffer_sort());
+  return sbuffer;
+}
 
 #ifdef SUPPORT_IMMEDIATE_MODE
 /**
@@ -9260,18 +9315,22 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_RGBA16F;
     } else
 #endif
-#ifndef OPENGLES
+#ifdef OPENGLES
+    {
+      // In OpenGL ES, the internal format must match the external format.
+      return _supports_bgr ? GL_BGRA : GL_RGBA;
+    }
+#else
     if (tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_RGBA16;
     } else if (tex->get_component_type() == Texture::T_short) {
       return GL_RGBA16_SNORM;
     } else if (tex->get_component_type() == Texture::T_byte) {
       return GL_RGBA8_SNORM;
-    } else
-#endif
-    {
+    } else {
       return force_sized ? GL_RGBA8 : GL_RGBA;
     }
+#endif
 
   case Texture::F_rgba4:
     return GL_RGBA4;
@@ -10333,8 +10392,7 @@ set_state_and_transform(const RenderState *target,
   _target_rs = target;
 
 #ifndef OPENGLES_1
-  _target_shader = (const ShaderAttrib *)
-    _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
+  determine_target_shader();
   _instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
@@ -10350,7 +10408,7 @@ set_state_and_transform(const RenderState *target,
 
   // Update all of the state that is bound to the shader program.
   if (_current_shader_context != NULL) {
-    _current_shader_context->set_state_and_transform(target, transform, _projection_mat);
+    _current_shader_context->set_state_and_transform(target, transform, _scene_setup->get_camera_transform(), _projection_mat);
   }
 #endif
 
@@ -10897,25 +10955,20 @@ update_standard_texture_bindings() {
 
 /**
  * Applies a white dummy texture.  This is useful to bind to a texture slot
- * when a texture is missing.
+ * when a texture is missing.  Also binds the default sampler to the unit.
  */
 void CLP(GraphicsStateGuardian)::
-apply_white_texture() {
-  if (_white_texture != 0) {
-    glBindTexture(GL_TEXTURE_2D, _white_texture);
-    return;
+apply_white_texture(GLuint unit) {
+  set_active_texture_stage(unit);
+  glBindTexture(GL_TEXTURE_2D, get_white_texture());
+
+  // Also apply the default sampler, if there's a chance we'd applied anything
+  // else.
+#ifndef OPENGLES_1
+  if (_supports_sampler_objects) {
+    _glBindSampler(unit, 0);
   }
-
-  glGenTextures(1, &_white_texture);
-  glBindTexture(GL_TEXTURE_2D, _white_texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, data);
+#endif
 }
 
 /**
@@ -10925,7 +10978,16 @@ apply_white_texture() {
 GLuint CLP(GraphicsStateGuardian)::
 get_white_texture() {
   if (_white_texture == 0) {
-    apply_white_texture();
+    glGenTextures(1, &_white_texture);
+    glBindTexture(GL_TEXTURE_2D, _white_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, data);
   }
   return _white_texture;
 }
@@ -12299,20 +12361,20 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               if (_supports_clear_texture) {
                 // We can do that with the convenient glClearTexImage
                 // function.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                                 component_type, (void *)clear_data.data());
+                                 component_type, (void *)&clear_data[0]);
                 continue;
               }
             } else {
               if (_supports_clear_buffer) {
                 // For buffer textures we need to clear the underlying
                 // storage.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
-                                   component_type, (const void *)clear_data.data());
+                                   component_type, (const void *)&clear_data[0]);
                 continue;
               }
             }
@@ -12702,6 +12764,9 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   _data_transferred_pcollector.add_level(image_size);
 #endif
 
+#ifdef OPENGLES
+  internal_format = external_format;
+#endif
   glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
                width, height, 0,
                external_format, component_type, image_ptr);
