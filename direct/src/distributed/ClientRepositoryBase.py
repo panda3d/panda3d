@@ -263,7 +263,7 @@ class ClientRepositoryBase(ConnectionRepository):
             distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
-            print("New DO:%s, dclass:%s"%(doId, dclass.getName()))
+            self.notify.debug("New DO:%s, dclass:%s" % (doId, dclass.getName()))
         return distObj
 
     def generateWithRequiredOtherFields(self, dclass, doId, di,
