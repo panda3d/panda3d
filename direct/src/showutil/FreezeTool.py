@@ -1079,7 +1079,6 @@ class Freezer:
         for origName in list(self.mf.modules.keys()):
             hidden = hiddenImports.get(origName, [])
             for modname in hidden:
-                print(origName, modname)
                 if modname.endswith('.*'):
                     mdefs = self._gatherSubmodules(modname, implicit = True)
                     for mdef in mdefs.values():
