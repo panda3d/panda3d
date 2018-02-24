@@ -506,6 +506,9 @@ def makewheel(version, output_dir, platform=None):
     whl = WheelFile('panda3d', version, platform)
     whl.lib_path = [libs_dir]
 
+    if sys.platform == "win32":
+        whl.lib_path.append(join(output_dir, "python", "DLLs"))
+
     # Add the trees with Python modules.
     whl.write_directory('direct', direct_dir)
 

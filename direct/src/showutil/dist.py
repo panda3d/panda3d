@@ -10,6 +10,7 @@ import zipfile
 import shutil
 import struct
 import io
+import imp
 
 import distutils.core
 import distutils.log
@@ -272,6 +273,7 @@ class build_apps(distutils.core.Command):
         # Create runtimes
         freezer_extras = set()
         freezer_modules = set()
+        ext_suffixes = set()
         def create_runtime(appname, mainscript, use_console):
             freezer = FreezeTool.Freezer(platform=platform, path=path)
             freezer.addModule('__main__', filename=mainscript)
@@ -320,6 +322,9 @@ class build_apps(distutils.core.Command):
 
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
+            for suffix in freezer.moduleSuffixes:
+                if suffix[2] == imp.C_EXTENSION:
+                    ext_suffixes.add(suffix[0])
 
         for appname, scriptname in self.gui_apps.items():
             create_runtime(appname, scriptname, False)
@@ -332,14 +337,18 @@ class build_apps(distutils.core.Command):
         whl_modules_ext = ''
         if use_wheels:
             # Get the module libs
-            whl_modules = [
-                i.replace('deploy_libs/', '') for i in p3dwhl.namelist() if i.startswith('deploy_libs/')
-            ]
+            whl_modules = []
 
-            # Pull off extension
-            if whl_modules:
-                whl_modules_ext = '.'.join(whl_modules[0].split('.')[1:])
-            whl_modules = [i.split('.')[0] for i in whl_modules]
+            for i in p3dwhl.namelist():
+                if not i.startswith('deploy_libs/'):
+                    continue
+
+                if not any(i.endswith(suffix) for suffix in ext_suffixes):
+                    continue
+
+                base = os.path.basename(i)
+                whl_modules.append(base)
+                whl_modules_ext = base.partition('.')[2]
 
         # Make sure to copy any builtins that have shared objects in the
         # deploy libs, assuming they are not already in freezer_extras.
