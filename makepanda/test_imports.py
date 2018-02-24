@@ -98,7 +98,6 @@ import direct.distributed.InterestWatcher
 import direct.distributed.MsgTypes
 import direct.distributed.MsgTypesCMU
 import direct.distributed.NetMessenger
-import direct.distributed.OldClientRepository
 import direct.distributed.ParentMgr
 import direct.distributed.PyDatagram
 import direct.distributed.PyDatagramIterator
