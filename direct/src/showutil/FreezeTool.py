@@ -751,6 +751,11 @@ class Freezer:
         # Suffix/extension for Python C extension modules
         if self.platform == PandaSystem.getPlatform():
             self.moduleSuffixes = imp.get_suffixes()
+
+            # Set extension for Python files to binary mode
+            for i, suffix in enumerate(self.moduleSuffixes):
+                if suffix[2] == imp.PY_SOURCE:
+                    self.moduleSuffixes[i] = (suffix[0], 'rb', imp.PY_SOURCE)
         else:
             self.moduleSuffixes = [('.py', 'rb', 1), ('.pyc', 'rb', 2)]
             if 'linux' in self.platform:
