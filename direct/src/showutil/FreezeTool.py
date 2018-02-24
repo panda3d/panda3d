@@ -752,7 +752,7 @@ class Freezer:
         if self.platform == PandaSystem.getPlatform():
             self.moduleSuffixes = imp.get_suffixes()
         else:
-            self.moduleSuffixes = [('.py', 'r', 1), ('.pyc', 'rb', 2)]
+            self.moduleSuffixes = [('.py', 'rb', 1), ('.pyc', 'rb', 2)]
             if 'linux' in self.platform:
                 self.moduleSuffixes += [
                     ('.cpython-{0}{1}m-x86_64-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
@@ -1161,14 +1161,11 @@ class Freezer:
                 stuff = ("", "rb", imp.PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
-                stuff = ("", "r", imp.PY_SOURCE)
+                stuff = ("", "rb", imp.PY_SOURCE)
                 if mdef.text:
                     fp = io.StringIO(mdef.text)
-                elif sys.version_info >= (3, 0):
-                    fp = open(pathname, 'rb')
-                    stuff = ("", "rb", imp.PY_SOURCE)
                 else:
-                    fp = open(pathname, 'r')
+                    fp = open(pathname, 'rb')
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
 
             if tempPath:
@@ -2223,10 +2220,6 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         """Copied from ModuleFinder.load_module with fixes to handle sending bytes
         to compile() for PY_SOURCE types. Sending bytes to compile allows it to
         handle file encodings."""
-
-        if sys.version_info < (3, 0):
-            # fallback to original version for Python 2
-            return modulefinder.ModuleFinder.load_module(self, fqname, fp, pathname, file_info)
 
         suffix, mode, type = file_info
         self.msgin(2, "load_module", fqname, fp and "fp", pathname)
