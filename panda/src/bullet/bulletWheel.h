@@ -30,14 +30,14 @@ class EXPCL_PANDABULLET BulletWheelRaycastInfo {
 PUBLISHED:
   INLINE ~BulletWheelRaycastInfo();
 
-  INLINE bool is_in_contact() const;
-  INLINE PN_stdfloat get_suspension_length() const;
-  INLINE LVector3 get_contact_normal_ws() const;
-  INLINE LVector3 get_wheel_direction_ws() const;
-  INLINE LVector3 get_wheel_axle_ws() const;
-  INLINE LPoint3 get_contact_point_ws() const;
-  INLINE LPoint3 get_hard_point_ws() const;
-  INLINE PandaNode *get_ground_object() const;
+  bool is_in_contact() const;
+  PN_stdfloat get_suspension_length() const;
+  LVector3 get_contact_normal_ws() const;
+  LVector3 get_wheel_direction_ws() const;
+  LVector3 get_wheel_axle_ws() const;
+  LPoint3 get_contact_point_ws() const;
+  LPoint3 get_hard_point_ws() const;
+  PandaNode *get_ground_object() const;
 
   MAKE_PROPERTY(in_contact, is_in_contact);
   MAKE_PROPERTY(suspension_length, get_suspension_length);

@@ -471,6 +471,12 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, sound, positional, mode);
 
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
+
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
   return res;
@@ -499,6 +505,12 @@ get_sound(const string &file_name, bool positional, int mode) {
 
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
+
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
 
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;

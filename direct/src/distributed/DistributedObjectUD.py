@@ -270,10 +270,10 @@ class DistributedObjectUD(DistributedObjectBase):
             self.air.sendUpdate(self, fieldName, args)
 
     def GetPuppetConnectionChannel(self, doId):
-        return doId + (1 << 32)
+        return doId + (1001L << 32)
 
     def GetAccountConnectionChannel(self, doId):
-        return doId + (3 << 32)
+        return doId + (1003L << 32)
 
     def GetAccountIDFromChannelCode(self, channel):
         return channel >> 32

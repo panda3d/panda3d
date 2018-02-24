@@ -31,13 +31,13 @@ private:
 PUBLISHED:
   explicit BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   explicit BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up=Z_up);
-  INLINE BulletCylinderShape(const BulletCylinderShape &copy);
-  INLINE void operator = (const BulletCylinderShape &copy);
+  BulletCylinderShape(const BulletCylinderShape &copy);
+  void operator = (const BulletCylinderShape &copy);
   INLINE ~BulletCylinderShape();
 
-  INLINE PN_stdfloat get_radius() const;
-  INLINE LVecBase3 get_half_extents_without_margin() const;
-  INLINE LVecBase3 get_half_extents_with_margin() const;
+  PN_stdfloat get_radius() const;
+  LVecBase3 get_half_extents_without_margin() const;
+  LVecBase3 get_half_extents_with_margin() const;
 
   MAKE_PROPERTY(radius, get_radius);
   MAKE_PROPERTY(half_extents_without_margin, get_half_extents_without_margin);

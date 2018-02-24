@@ -69,8 +69,8 @@ OpenALAudioSound(OpenALAudioManager* manager,
 
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  require_sound_data();
-  if (_manager == NULL) {
+  if (!require_sound_data()) {
+    cleanup();
     return;
   }
 
@@ -130,10 +130,12 @@ play() {
 
   stop();
 
-  require_sound_data();
-  if (_manager == 0) return;
-  _manager->starting_sound(this);
+  if (!require_sound_data()) {
+    cleanup();
+    return;
+  }
 
+  _manager->starting_sound(this);
   if (!_source) {
     return;
   }

@@ -1,4 +1,3 @@
-#from otp.ai.AIBaseGlobal import *
 from .DistributedObjectUD import DistributedObjectUD
 
 class DistributedNodeUD(DistributedObjectUD):

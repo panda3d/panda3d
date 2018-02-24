@@ -408,6 +408,17 @@ get_array() const {
  */
 INLINE PTA_uchar Datagram::
 modify_array() {
+  if (_data == (uchar *)NULL) {
+    // Create a new array.
+    _data = PTA_uchar::empty_array(0);
+
+  } else if (_data.get_ref_count() != 1) {
+    // Copy on write.
+    PTA_uchar new_data = PTA_uchar::empty_array(0);
+    new_data.v() = _data.v();
+    _data = new_data;
+  }
+
   return _data;
 }
 

@@ -38,7 +38,32 @@ BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
+}
+
+/**
+ *
+ */
+BulletConeShape::
+BulletConeShape(const BulletConeShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _radius = copy._radius;
+  _height = copy._height;
+}
+
+/**
+ *
+ */
+void BulletConeShape::
+operator = (const BulletConeShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _radius = copy._radius;
+  _height = copy._height;
 }
 
 /**
@@ -122,6 +147,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
   _shape->setMargin(margin);
 }

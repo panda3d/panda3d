@@ -147,37 +147,34 @@ get_datagram(Datagram &data) {
   // Make sure we have a reasonable datagram size for putting into memory.
   nassertr(num_bytes == (size_t)num_bytes, false);
 
-  // Now, read the datagram itself.
+  // Now, read the datagram itself. We construct an empty datagram, use
+  // pad_bytes to make it big enough, and read *directly* into the datagram's
+  // internal buffer. Doing this saves us a copy operation.
+  data = Datagram();
 
-  // If the number of bytes is large, we will need to allocate a temporary
-  // buffer from the heap.  Otherwise, we can get away with allocating it on
-  // the stack, via alloca().
-  if (num_bytes > 65536) {
-    char *buffer = (char *)PANDA_MALLOC_ARRAY(num_bytes);
-    nassertr(buffer != (char *)NULL, false);
+  streamsize bytes_read = 0;
+  while (bytes_read < num_bytes) {
+    streamsize bytes_left = num_bytes - bytes_read;
 
-    _in->read(buffer, num_bytes);
-    if (_in->fail() || _in->eof()) {
-      _error = true;
-      PANDA_FREE_ARRAY(buffer);
-      return false;
-    }
+    // Hold up a second - datagrams >4MB are pretty large by bam/network
+    // standards. Let's take it 4MB at a time just in case the length is
+    // corrupt, so we don't allocate potentially a few GBs of RAM only to
+    // find a truncated file.
+    bytes_left = min(bytes_left, (streamsize)4*1024*1024);
 
-    data = Datagram(buffer, num_bytes);
-    PANDA_FREE_ARRAY(buffer);
+    PTA_uchar buffer = data.modify_array();
+    buffer.resize(buffer.size() + bytes_left);
+    unsigned char *ptr = &buffer.p()[bytes_read];
 
-  } else {
-    char *buffer = (char *)alloca(num_bytes);
-    nassertr(buffer != (char *)NULL, false);
-
-    _in->read(buffer, num_bytes);
+    _in->read((char *)ptr, bytes_left);
     if (_in->fail() || _in->eof()) {
       _error = true;
       return false;
     }
 
-    data = Datagram(buffer, num_bytes);
+    bytes_read += bytes_left;
   }
+
   Thread::consider_yield();
 
   return true;

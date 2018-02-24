@@ -15,6 +15,8 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             self.DistributedNode_initialized = 1
             self.gotStringParentToken = 0
             DistributedObject.DistributedObject.__init__(self, cr)
+            if not self.this:
+                NodePath.__init__(self, "DistributedNode")
 
             # initialize gridParent
             self.gridParent = None

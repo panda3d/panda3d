@@ -10,6 +10,7 @@ from .PyDatagramIterator import PyDatagramIterator
 import types
 import gc
 
+__all__ = ["ConnectionRepository", "GCTrigger"]
 
 class ConnectionRepository(
         DoInterestManager, DoCollectionManager, CConnectionRepository):
