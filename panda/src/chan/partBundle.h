@@ -149,6 +149,7 @@ public:
   // The following functions aren't really part of the public interface;
   // they're just public so we don't have to declare a bunch of friends.
   virtual void control_activated(AnimControl *control);
+  void control_removed(AnimControl *control);
   INLINE void set_update_delay(double delay);
 
   bool do_bind_anim(AnimControl *control, AnimBundle *anim,
@@ -204,6 +205,7 @@ private:
   typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   static void register_with_read_factory();
