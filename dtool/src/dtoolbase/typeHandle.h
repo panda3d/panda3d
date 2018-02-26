@@ -78,7 +78,7 @@ class TypedObject;
  * that ancestry of a particular type may be queried, and the type name may be
  * retrieved for run-time display.
  */
-class EXPCL_DTOOL TypeHandle FINAL {
+class EXPCL_DTOOL_DTOOLBASE TypeHandle FINAL {
 PUBLISHED:
   TypeHandle() NOEXCEPT DEFAULT_CTOR;
 
@@ -162,7 +162,7 @@ INLINE ostream &operator << (ostream &out, TypeHandle type) {
   return out;
 }
 
-EXPCL_DTOOL ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
+EXPCL_DTOOL_DTOOLBASE ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
 
 // We must include typeRegistry at this point so we can call it from our
 // inline functions.  This is a circular include that is strategically placed

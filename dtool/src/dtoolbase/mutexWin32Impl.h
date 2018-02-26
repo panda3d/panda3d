@@ -26,7 +26,7 @@
 /**
  * Uses Windows native calls to implement a mutex.
  */
-class EXPCL_DTOOL MutexWin32Impl {
+class EXPCL_DTOOL_DTOOLBASE MutexWin32Impl {
 public:
   MutexWin32Impl();
   INLINE ~MutexWin32Impl();

@@ -22,7 +22,7 @@
  * stream itself.  Useful for indenting a series of lines of text by a given
  * amount.
  */
-EXPCL_DTOOL ostream &
+EXPCL_DTOOL_DTOOLBASE ostream &
 indent(ostream &out, int indent_level);
 
 /**
