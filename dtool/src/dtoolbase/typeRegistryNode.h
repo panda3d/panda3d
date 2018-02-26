@@ -27,7 +27,7 @@
  * directly access this class; this class is hidden within the TypeRegistry
  * accessors.
  */
-class EXPCL_DTOOL TypeRegistryNode {
+class EXPCL_DTOOL_DTOOLBASE TypeRegistryNode {
 public:
   TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
 
