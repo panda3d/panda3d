@@ -2596,12 +2596,12 @@ PANDAVERSION_H_RUNTIME="""
 
 CHECKPANDAVERSION_CXX="""
 # include "dtoolbase.h"
-EXPCL_DTOOL int panda_version_$VERSION1_$VERSION2 = 0;
+EXPCL_DTOOL_DTOOLUTIL int panda_version_$VERSION1_$VERSION2 = 0;
 """
 
 CHECKPANDAVERSION_H="""
 # include "dtoolbase.h"
-extern EXPCL_DTOOL int panda_version_$VERSION1_$VERSION2;
+extern EXPCL_DTOOL_DTOOLUTIL int panda_version_$VERSION1_$VERSION2;
 # ifndef WIN32
 /* For Windows, exporting the symbol from the DLL is sufficient; the
       DLL will not load unless all expected public symbols are defined.

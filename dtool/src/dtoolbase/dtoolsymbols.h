@@ -103,6 +103,9 @@
 #define EXPCL_DTOOL_DTOOLBASE EXPCL_DTOOL
 #define EXPTP_DTOOL_DTOOLBASE EXPTP_DTOOL
 
+#define EXPCL_DTOOL_DTOOLUTIL EXPCL_DTOOL
+#define EXPTP_DTOOL_DTOOLUTIL EXPTP_DTOOL
+
 
 /* These two are always defined empty, because pystub is statically
    built.  But we leave the symbol around in case we change our minds

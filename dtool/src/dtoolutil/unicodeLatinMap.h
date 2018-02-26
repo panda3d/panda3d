@@ -25,7 +25,7 @@
  * equivalent without the accent mark; as well as how to switch case from
  * upper to lower while retaining the Unicode accent marks.
  */
-class EXPCL_DTOOL UnicodeLatinMap {
+class EXPCL_DTOOL_DTOOLUTIL UnicodeLatinMap {
 public:
   enum AccentType {
     AT_none,

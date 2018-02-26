@@ -21,7 +21,7 @@
  * byte streams.  Give it a string, then ask it to pull the characters out one
  * at a time.  This also serves as the plain old byte-at-a-time decoder.
  */
-class EXPCL_DTOOL StringDecoder {
+class EXPCL_DTOOL_DTOOLUTIL StringDecoder {
 public:
   INLINE StringDecoder(const string &input);
   virtual ~StringDecoder();

@@ -28,7 +28,7 @@
 /**
  * The streambuf object that implements pifstream and pofstream.
  */
-class EXPCL_DTOOL PandaFileStreamBuf : public streambuf {
+class EXPCL_DTOOL_DTOOLUTIL PandaFileStreamBuf : public streambuf {
 public:
   PandaFileStreamBuf();
   virtual ~PandaFileStreamBuf();
@@ -95,10 +95,10 @@ private:
   streampos _gpos;
 };
 
-EXPCL_DTOOL ostream &
+EXPCL_DTOOL_DTOOLUTIL ostream &
 operator << (ostream &out, PandaFileStreamBuf::NewlineMode newline_mode);
 
-EXPCL_DTOOL istream &
+EXPCL_DTOOL_DTOOLUTIL istream &
 operator >> (istream &in, PandaFileStreamBuf::NewlineMode &newline_mode);
 
 #endif  // USE_PANDAFILESTREAM
