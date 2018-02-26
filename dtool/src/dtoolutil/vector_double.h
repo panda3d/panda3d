@@ -23,8 +23,8 @@
  * defining the vector again.
  */
 
-#define EXPCL EXPCL_DTOOL
-#define EXPTP EXPTP_DTOOL
+#define EXPCL EXPCL_DTOOL_DTOOLUTIL
+#define EXPTP EXPTP_DTOOL_DTOOLUTIL
 #define TYPE double
 #define NAME vector_double
 
