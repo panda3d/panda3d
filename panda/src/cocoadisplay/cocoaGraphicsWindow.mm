@@ -30,6 +30,7 @@
 
 #import "cocoaPandaView.h"
 #import "cocoaPandaWindow.h"
+#import "cocoaPandaAppDelegate.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Foundation/NSAutoreleasePool.h>
@@ -69,13 +70,32 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   // Now that we know for sure we want a window, we can create the Cocoa app.
   // This will cause the application icon to appear and start bouncing.
   if (NSApp == nil) {
+      
     [CocoaPandaApp sharedApplication];
-
+    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] init];
+    [NSApp setDelegate:delegate];
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 #endif
+    NSMenu *mainMenu = [[NSMenu alloc] init];
+
+    NSMenuItem *applicationMenuItem = [[NSMenuItem alloc] init];
+    [mainMenu addItem:applicationMenuItem];
+
+    NSMenu *applicationMenu = [[NSMenu alloc] init];
+
+    NSMenuItem *item = [[NSMenuItem alloc] init];
+    item.action = @selector(terminate:);
+    item.keyEquivalent = @"q";
+
+    NSString *appName = [NSRunningApplication currentApplication].localizedName;
+    item.title = [NSString stringWithFormat:@"Quit %@", appName];
+
+    [applicationMenu addItem:item];
+
+    [mainMenu setSubmenu:applicationMenu forItem:applicationMenuItem];
+    [NSApp setMainMenu:mainMenu];
     [NSApp finishLaunching];
-    [NSApp activateIgnoringOtherApps:YES];
   }
 
   GraphicsWindowInputDevice device =
