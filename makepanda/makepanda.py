@@ -6937,15 +6937,18 @@ This package contains the SDK for development with Panda3D, install panda3d-runt
 /etc/Confauto.prc
 /etc/Config.prc
 /usr/share/panda3d
-/usr/share/mime-info/panda3d.mime
-/usr/share/mime-info/panda3d.keys
-/usr/share/mime/packages/panda3d.xml
-/usr/share/application-registry/panda3d.applications
-/usr/share/applications/*.desktop
 /etc/ld.so.conf.d/panda3d.conf
 /usr/%_lib/panda3d
 """ + PYTHON_SITEPACKAGES + """
 /usr/include/panda3d
+"""
+if not PkgSkip("PVIEW"):
+    INSTALLER_SPEC_FILE += \
+"""/usr/share/applications/pview.desktop
+/usr/share/mime-info/panda3d.mime
+/usr/share/mime-info/panda3d.keys
+/usr/share/mime/packages/panda3d.xml
+/usr/share/application-registry/panda3d.applications
 """
 
 RUNTIME_INSTALLER_SPEC_FILE="""
