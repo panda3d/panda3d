@@ -3500,6 +3500,10 @@ write_function_for_name(ostream &out, Object *obj,
 
   out << " */\n";
 
+  if (has_this && obj == nullptr) {
+    assert(obj != nullptr);
+  }
+
   out << function_name << " {\n";
 
   if (has_this) {
@@ -7007,7 +7011,7 @@ record_object(TypeIndex type_index) {
           object->_methods.push_back(function);
         }
       }
-      if (itype.derivation_has_downcast(di)) {
+      /*if (itype.derivation_has_downcast(di)) {
         // Downcasts are methods of the base class, not the child class.
         TypeIndex base_type_index = itype.get_derivation(di);
 
@@ -7020,7 +7024,7 @@ record_object(TypeIndex type_index) {
             pobject->_methods.push_back(function);
           }
         }
-      }
+      }*/
     }
   }
 
