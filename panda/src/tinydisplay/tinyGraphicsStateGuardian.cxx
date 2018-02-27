@@ -2397,9 +2397,6 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
 
   PStatTimer timer(_load_texture_pcollector);
   CPTA_uchar src_image = tex->get_uncompressed_ram_image();
-  if (src_image.is_null()) {
-    return false;
-  }
 
 #ifdef DO_PSTATS
   _data_transferred_pcollector.add_level(tex->get_ram_image_size());
@@ -2438,56 +2435,70 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
   for (int level = 0; level < gltex->num_levels; ++level) {
     ZTextureLevel *dest = &gltex->levels[level];
 
-    switch (tex->get_format()) {
-    case Texture::F_rgb:
-    case Texture::F_rgb5:
-    case Texture::F_rgb8:
-    case Texture::F_rgb12:
-    case Texture::F_rgb332:
-      copy_rgb_image(dest, xsize, ysize, gtc, level);
-      break;
+    if (tex->has_ram_mipmap_image(level)) {
+      switch (tex->get_format()) {
+      case Texture::F_rgb:
+      case Texture::F_rgb5:
+      case Texture::F_rgb8:
+      case Texture::F_rgb12:
+      case Texture::F_rgb332:
+        copy_rgb_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_rgba:
-    case Texture::F_rgbm:
-    case Texture::F_rgba4:
-    case Texture::F_rgba5:
-    case Texture::F_rgba8:
-    case Texture::F_rgba12:
-    case Texture::F_rgba16:
-    case Texture::F_rgba32:
-      copy_rgba_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_rgba:
+      case Texture::F_rgbm:
+      case Texture::F_rgba4:
+      case Texture::F_rgba5:
+      case Texture::F_rgba8:
+      case Texture::F_rgba12:
+      case Texture::F_rgba16:
+      case Texture::F_rgba32:
+        copy_rgba_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_luminance:
-      copy_lum_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_luminance:
+        copy_lum_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_red:
-      copy_one_channel_image(dest, xsize, ysize, gtc, level, 0);
-      break;
+      case Texture::F_red:
+        copy_one_channel_image(dest, xsize, ysize, gtc, level, 0);
+        break;
 
-    case Texture::F_green:
-      copy_one_channel_image(dest, xsize, ysize, gtc, level, 1);
-      break;
+      case Texture::F_green:
+        copy_one_channel_image(dest, xsize, ysize, gtc, level, 1);
+        break;
 
-    case Texture::F_blue:
-      copy_one_channel_image(dest, xsize, ysize, gtc, level, 2);
-      break;
+      case Texture::F_blue:
+        copy_one_channel_image(dest, xsize, ysize, gtc, level, 2);
+        break;
 
-    case Texture::F_alpha:
-      copy_alpha_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_alpha:
+        copy_alpha_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    case Texture::F_luminance_alphamask:
-    case Texture::F_luminance_alpha:
-      copy_la_image(dest, xsize, ysize, gtc, level);
-      break;
+      case Texture::F_luminance_alphamask:
+      case Texture::F_luminance_alpha:
+        copy_la_image(dest, xsize, ysize, gtc, level);
+        break;
 
-    default:
-      tinydisplay_cat.error()
-        << "Unsupported texture format "
-        << tex->get_format() << "!\n";
-      return false;
+      default:
+        tinydisplay_cat.error()
+          << "Unsupported texture format "
+          << tex->get_format() << "!\n";
+        return false;
+      }
+    } else {
+      // Fill the mipmap with a solid color.
+      LColor scaled = tex->get_clear_color().fmin(LColor(1)).fmax(LColor::zero());
+      scaled *= 255;
+      unsigned int clear = RGBA8_TO_PIXEL((int)scaled[0], (int)scaled[1],
+                                          (int)scaled[2], (int)scaled[3]);
+      unsigned int *dpix = (unsigned int *)dest->pixmap;
+      int pixel_count = xsize * ysize;
+      while (pixel_count-- > 0) {
+        *dpix = clear;
+        ++dpix;
+      }
     }
 
     bytecount += xsize * ysize * 4;
@@ -2559,6 +2570,13 @@ upload_simple_texture(TinyTextureContext *gtc) {
  */
 bool TinyGraphicsStateGuardian::
 setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
+  if (x_size == 0 || y_size == 0) {
+    // A texture without pixels gets turned into a 1x1 texture.
+    x_size = 1;
+    y_size = 1;
+    num_levels = 1;
+  }
+
   int s_bits = get_tex_shift(x_size);
   int t_bits = get_tex_shift(y_size);
 

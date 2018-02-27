@@ -17,6 +17,7 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "config_pgraphnodes.h"
 
 TypeHandle PointLight::_type_handle;
 
@@ -182,6 +183,35 @@ get_class_priority() const {
 void PointLight::
 bind(GraphicsStateGuardianBase *gsg, const NodePath &light, int light_id) {
   gsg->bind_light(this, light, light_id);
+}
+
+/**
+ * Creates the shadow map texture.  Can be overridden.
+ */
+void PointLight::
+setup_shadow_map() {
+  if (_shadow_map != nullptr && _shadow_map->get_x_size() == _sb_size[0]) {
+    // Nothing to do.
+    return;
+  }
+
+  if (_sb_size[0] != _sb_size[1]) {
+    pgraphnodes_cat.error()
+      << "PointLight shadow buffers must have an equal width and height!\n";
+  }
+
+  if (_shadow_map == nullptr) {
+    _shadow_map = new Texture(get_name());
+  }
+
+  _shadow_map->setup_cube_map(_sb_size[0], Texture::T_unsigned_byte, Texture::F_depth_component);
+  _shadow_map->set_clear_color(LColor(1));
+  _shadow_map->set_wrap_u(SamplerState::WM_clamp);
+  _shadow_map->set_wrap_v(SamplerState::WM_clamp);
+
+  // Note: cube map shadow filtering doesn't seem to work in Cg.
+  _shadow_map->set_minfilter(SamplerState::FT_linear);
+  _shadow_map->set_magfilter(SamplerState::FT_linear);
 }
 
 /**

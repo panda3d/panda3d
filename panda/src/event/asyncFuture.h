@@ -86,6 +86,7 @@ PUBLISHED:
   INLINE void set_result(nullptr_t);
   INLINE void set_result(TypedObject *result);
   INLINE void set_result(TypedReferenceCount *result);
+  INLINE void set_result(TypedWritableReferenceCount *result);
   INLINE void set_result(const EventParameter &result);
 
 public:
@@ -185,10 +186,10 @@ public:
     register_type(_type_handle, "AsyncGatheringFuture",
                   AsyncFuture::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

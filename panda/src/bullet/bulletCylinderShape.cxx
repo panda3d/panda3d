@@ -39,6 +39,7 @@ BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) :
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
 }
 
@@ -66,7 +67,30 @@ BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
+}
+
+/**
+ *
+ */
+BulletCylinderShape::
+BulletCylinderShape(const BulletCylinderShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _half_extents = copy._half_extents;
+}
+
+/**
+ *
+ */
+void BulletCylinderShape::
+operator = (const BulletCylinderShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _half_extents = copy._half_extents;
 }
 
 /**
@@ -76,6 +100,36 @@ btCollisionShape *BulletCylinderShape::
 ptr() const {
 
   return _shape;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletCylinderShape::
+get_radius() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_shape->getRadius();
+}
+
+/**
+ *
+ */
+LVecBase3 BulletCylinderShape::
+get_half_extents_without_margin() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithoutMargin());
+}
+
+/**
+ *
+ */
+LVecBase3 BulletCylinderShape::
+get_half_extents_with_margin() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithMargin());
 }
 
 /**
@@ -150,6 +204,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
   _shape->setMargin(margin);
 }

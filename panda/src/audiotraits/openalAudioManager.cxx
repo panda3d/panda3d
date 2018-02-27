@@ -443,6 +443,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());
+    delete[] data;
     int err = alGetError();
     if (err != AL_NO_ERROR) {
       audio_error("could not fill OpenAL buffer object with data");
@@ -469,6 +470,12 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
   }
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, sound, positional, mode);
+
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
 
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
@@ -498,6 +505,12 @@ get_sound(const string &file_name, bool positional, int mode) {
 
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
+
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
 
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;

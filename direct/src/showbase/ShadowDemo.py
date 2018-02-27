@@ -201,13 +201,13 @@ def arbitraryShadow(node):
 ##b.reparentTo((base.localAvatar))
 ##a = AmbientLight('cloudAmbientHi')
 ##a.setColor(Vec4(0.9, 0.9, 0.9, 1.000))
-##aNP = s.attachNewNode(a.upcastToPandaNode())
+##aNP = s.attachNewNode(a)
 ##b.setLight(aNP)
 ##d = DirectionalLight("chernabogDirectionalLight")
 ##d.setDirection(Vec3(0, 1, 0))
 ##d.setColor(Vec4(1))
 ###d.setColor(Vec4(0.9, 0.7, 0.7, 1.000))
-##dNP = s.attachNewNode(d.upcastToPandaNode())
+##dNP = s.attachNewNode(d)
 ##b.setLight(dNP)
 ##
 ##ival = Sequence(LerpPosInterval(bs.lightPath, 0.0, Vec3(-200, 0, 50)),

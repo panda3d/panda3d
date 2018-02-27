@@ -32,19 +32,19 @@ class BulletWheel;
 class EXPCL_PANDABULLET BulletVehicleTuning {
 
 PUBLISHED:
-  INLINE void set_suspension_stiffness(PN_stdfloat value);
-  INLINE void set_suspension_compression(PN_stdfloat value);
-  INLINE void set_suspension_damping(PN_stdfloat value);
-  INLINE void set_max_suspension_travel_cm(PN_stdfloat value);
-  INLINE void set_friction_slip(PN_stdfloat value);
-  INLINE void set_max_suspension_force(PN_stdfloat value);
+  void set_suspension_stiffness(PN_stdfloat value);
+  void set_suspension_compression(PN_stdfloat value);
+  void set_suspension_damping(PN_stdfloat value);
+  void set_max_suspension_travel_cm(PN_stdfloat value);
+  void set_friction_slip(PN_stdfloat value);
+  void set_max_suspension_force(PN_stdfloat value);
 
-  INLINE PN_stdfloat get_suspension_stiffness() const;
-  INLINE PN_stdfloat get_suspension_compression() const;
-  INLINE PN_stdfloat get_suspension_damping() const;
-  INLINE PN_stdfloat get_max_suspension_travel_cm() const;
-  INLINE PN_stdfloat get_friction_slip() const;
-  INLINE PN_stdfloat get_max_suspension_force() const;
+  PN_stdfloat get_suspension_stiffness() const;
+  PN_stdfloat get_suspension_compression() const;
+  PN_stdfloat get_suspension_damping() const;
+  PN_stdfloat get_max_suspension_travel_cm() const;
+  PN_stdfloat get_friction_slip() const;
+  PN_stdfloat get_max_suspension_force() const;
 
   MAKE_PROPERTY(suspension_stiffness, get_suspension_stiffness, set_suspension_stiffness);
   MAKE_PROPERTY(suspension_compression, get_suspension_compression, set_suspension_compression);
@@ -87,7 +87,7 @@ PUBLISHED:
   // Wheels
   BulletWheel create_wheel();
 
-  INLINE int get_num_wheels() const;
+  int get_num_wheels() const;
   BulletWheel get_wheel(int idx) const;
   MAKE_SEQ(get_wheels, get_num_wheels, get_wheel);
 
@@ -102,8 +102,9 @@ PUBLISHED:
 
 public:
   INLINE btRaycastVehicle *get_vehicle() const;
+  BulletRigidBodyNode *do_get_chassis();
 
-  void sync_b2p();
+  void do_sync_b2p();
 
 private:
   btRaycastVehicle *_vehicle;

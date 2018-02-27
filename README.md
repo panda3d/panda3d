@@ -28,6 +28,8 @@ into an existing Python installation is using the following command:
 pip install --pre --extra-index-url https://archive.panda3d.org/ panda3d
 ```
 
+If this command fails, please make sure your version of pip is up-to-date.
+
 If you prefer to install the full SDK with all tools, the latest development
 builds can be obtained from this page:
 
@@ -50,6 +52,9 @@ the build scripts to use.  These are available from one of these two URLs,
 depending on whether you are on a 32-bit or 64-bit system:
 https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win32.zip
 https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win64.zip
+
+(It is also possible to build using MSVC 2015 and 2017, which requires a
+different set of thirdparty libraries, but that is not described here.)
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command:

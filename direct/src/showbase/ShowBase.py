@@ -47,10 +47,6 @@ if __debug__:
     from . import OnScreenDebug
 from . import AppRunnerGlobal
 
-def legacyRun():
-    assert builtins.base.notify.warning("run() is deprecated, use base.run() instead")
-    builtins.base.run()
-
 @atexit.register
 def exitfunc():
     if getattr(builtins, 'base', None) is not None:
@@ -369,7 +365,6 @@ class ShowBase(DirectObject.DirectObject):
         builtins.bboard = self.bboard
         # Config needs to be defined before ShowBase is constructed
         #builtins.config = self.config
-        builtins.run = legacyRun
         builtins.ostream = Notify.out()
         builtins.directNotify = directNotify
         builtins.giveNotify = giveNotify
@@ -389,6 +384,12 @@ class ShowBase(DirectObject.DirectObject):
             builtins.aspect2dp = self.aspect2dp
             builtins.pixel2dp = self.pixel2dp
 
+        # Now add this instance to the ShowBaseGlobal module scope.
+        from . import ShowBaseGlobal
+        builtins.run = ShowBaseGlobal.run
+        ShowBaseGlobal.base = self
+        ShowBaseGlobal.__dev__ = self.__dev__
+
         if self.__dev__:
             ShowBase.notify.debug('__dev__ == %s' % self.__dev__)
         else:
@@ -396,10 +397,10 @@ class ShowBase(DirectObject.DirectObject):
 
         self.createBaseAudioManagers()
 
-        if self.__dev__ or self.config.GetBool('want-e3-hacks', False):
-            if self.config.GetBool('track-gui-items', True):
-                # dict of guiId to gui item, for tracking down leaks
-                self.guiItems = {}
+        if self.__dev__ and self.config.GetBool('track-gui-items', False):
+            # dict of guiId to gui item, for tracking down leaks
+            if not hasattr(ShowBase, 'guiItems'):
+                ShowBase.guiItems = {}
 
         # optionally restore the default gui sounds from 1.7.2 and earlier
         if ConfigVariableBool('orig-gui-sounds', False).getValue():
@@ -511,9 +512,15 @@ class ShowBase(DirectObject.DirectObject):
 
         # Remove the built-in base reference
         if getattr(builtins, 'base', None) is self:
+            del builtins.run
             del builtins.base
             del builtins.loader
             del builtins.taskMgr
+            ShowBaseGlobal = sys.modules.get('direct.showbase.ShowBaseGlobal', None)
+            if ShowBaseGlobal:
+                del ShowBaseGlobal.base
+
+        self.aspect2d.node().removeAllChildren()
 
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
@@ -1097,13 +1104,18 @@ class ShowBase(DirectObject.DirectObject):
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
 
+        # We've already created aspect2d in ShowBaseGlobal, for the
+        # benefit of creating DirectGui elements before ShowBase.
+        from . import ShowBaseGlobal
+
         ## The normal 2-d DisplayRegion has an aspect ratio that
         ## matches the window, but its coordinate system is square.
         ## This means anything we parent to render2d gets stretched.
         ## For things where that makes a difference, we set up
         ## aspect2d, which scales things back to the right aspect
         ## ratio along the X axis (Z is still from -1 to 1)
-        self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
+        self.aspect2d = ShowBaseGlobal.aspect2d
+        self.aspect2d.reparentTo(self.render2d)
 
         aspectRatio = self.getAspectRatio()
         self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
@@ -1260,8 +1272,7 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             win = self.win
 
-        if win != None and win.getSideBySideStereo() and \
-                win.hasSize() and win.getSbsLeftYSize() != 0:
+        if win != None and win.hasSize() and win.getSbsLeftYSize() != 0:
             aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
         else:
             if win == None or not hasattr(win, "getRequestedProperties"):
@@ -1542,8 +1553,7 @@ class ShowBase(DirectObject.DirectObject):
             # mouse activity.
             mw = self.buttonThrowers[0].getParent()
             mouseRecorder = MouseRecorder('mouse')
-            self.recorder.addRecorder(
-                'mouse', mouseRecorder.upcastToRecorderBase())
+            self.recorder.addRecorder('mouse', mouseRecorder)
             np = mw.getParent().attachNewNode(mouseRecorder)
             mw.reparentTo(np)
 
@@ -2726,9 +2736,10 @@ class ShowBase(DirectObject.DirectObject):
             # changed and update the camera lenses and aspect2d parameters
             self.adjustWindowAspectRatio(self.getAspectRatio())
 
-            if win.getSideBySideStereo() and win.hasSize() and win.getSbsLeftYSize() != 0:
+            if win.hasSize() and win.getSbsLeftYSize() != 0:
                 self.pixel2d.setScale(2.0 / win.getSbsLeftXSize(), 1.0, 2.0 / win.getSbsLeftYSize())
-                self.pixel2dp.setScale(2.0 / win.getSbsLeftXSize(), 1.0, 2.0 / win.getSbsLeftYSize())
+                if self.wantRender2dp:
+                    self.pixel2dp.setScale(2.0 / win.getSbsLeftXSize(), 1.0, 2.0 / win.getSbsLeftYSize())
             else:
                 xsize, ysize = self.getSize()
                 if xsize > 0 and ysize > 0:

@@ -68,7 +68,7 @@ PUBLISHED:
     M_integer_limited,
   };
 
-  ClockObject();
+  ClockObject(Mode mode = M_normal);
   ClockObject(const ClockObject &copy);
   INLINE ~ClockObject();
 
@@ -172,7 +172,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
 
-  static ClockObject *_global_clock;
+  static AtomicAdjust::Pointer _global_clock;
 
 public:
   static TypeHandle get_class_type() {

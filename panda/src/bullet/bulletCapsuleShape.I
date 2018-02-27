@@ -31,26 +31,6 @@ INLINE BulletCapsuleShape::
 }
 
 /**
- *
- */
-INLINE BulletCapsuleShape::
-BulletCapsuleShape(const BulletCapsuleShape &copy) :
-  _shape(copy._shape),
-  _radius(copy._radius),
-  _height(copy._height) {
-}
-
-/**
- *
- */
-INLINE void BulletCapsuleShape::
-operator = (const BulletCapsuleShape &copy) {
-  _shape = copy._shape;
-  _radius = copy._radius;
-  _height = copy._height;
-}
-
-/**
  * Returns the radius that was used to construct this capsule.
  */
 INLINE PN_stdfloat BulletCapsuleShape::

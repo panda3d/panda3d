@@ -15,7 +15,6 @@
 #include "cocoaGraphicsBuffer.h"
 #include "cocoaGraphicsWindow.h"
 #include "cocoaGraphicsStateGuardian.h"
-#include "cocoaPandaApp.h"
 #include "config_cocoadisplay.h"
 #include "frameBufferProperties.h"
 #include "displayInformation.h"

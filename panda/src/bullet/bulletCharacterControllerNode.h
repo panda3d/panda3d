@@ -64,8 +64,8 @@ public:
   INLINE virtual btPairCachingGhostObject *get_ghost() const;
   INLINE virtual btCharacterControllerInterface *get_character() const;
 
-  virtual void sync_p2b(PN_stdfloat dt, int num_substeps);
-  virtual void sync_b2p();
+  virtual void do_sync_p2b(PN_stdfloat dt, int num_substeps);
+  virtual void do_sync_b2p();
 
 protected:
   virtual void transform_changed();
@@ -84,6 +84,8 @@ private:
   LVector3 _linear_movement;
   bool _linear_movement_is_local;
   PN_stdfloat _angular_movement;
+
+  void do_transform_changed();
 
 public:
   static TypeHandle get_class_type() {

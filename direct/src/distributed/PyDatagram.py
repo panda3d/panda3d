@@ -7,7 +7,7 @@ from panda3d.core import Datagram
 from panda3d.direct import *
 # Import the type numbers
 
-#from otp.ai.AIMsgTypes import *
+from direct.distributed.MsgTypes import *
 
 class PyDatagram(Datagram):
 
@@ -47,13 +47,10 @@ class PyDatagram(Datagram):
         self.addUint16(code)
 
 
-#    def addServerControlHeader(self,   code):
-#        self.addInt8(1)
-#        self.addChannel(CONTROL_MESSAGE)
-#        self.addUint16(code)
-#    def addOldServerControlHeader(self,   code):
-#        self.addChannel(CONTROL_MESSAGE)
-#        self.addUint16(code)
+    def addServerControlHeader(self, code):
+        self.addInt8(1)
+        self.addChannel(CONTROL_CHANNEL)
+        self.addUint16(code)
 
     def putArg(self, arg, subatomicType, divisor=1):
         if (divisor == 1):

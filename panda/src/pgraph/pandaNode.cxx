@@ -3798,9 +3798,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
   // Get the state and transform pointers.
-  _state = DCAST(RenderState, p_list[pi++]);
-  _transform = DCAST(TransformState, p_list[pi++]);
-  _prev_transform = _transform;
+  RenderState *state;
+  DCAST_INTO_R(state, p_list[pi++], pi);
+  _state = state;
+
+  TransformState *transform;
+  DCAST_INTO_R(transform, p_list[pi++], pi);
+  _prev_transform = _transform = transform;
 
 /*
  * Finalize these pointers now to decrement their artificially-held reference
@@ -3817,7 +3821,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
 
   // Get the effects pointer.
-  _effects = DCAST(RenderEffects, p_list[pi++]);
+  RenderEffects *effects;
+  DCAST_INTO_R(effects, p_list[pi++], pi);
+  _effects = effects;
 
 /*
  * Finalize these pointers now to decrement their artificially-held reference

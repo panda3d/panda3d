@@ -127,7 +127,7 @@ get_safe_buffer_start() {
     // buffer, and then pointing to the first multiple of 0x10000 within that
     // buffer.
     _temp_buffer = new unsigned char[0x1ffff];
-    _safe_buffer_start = (unsigned char *)(((long)_temp_buffer + 0xffff) & ~0xffff);
+    _safe_buffer_start = (unsigned char *)(((uintptr_t)_temp_buffer + 0xffff) & ~0xffff);
   }
 
   return _safe_buffer_start;

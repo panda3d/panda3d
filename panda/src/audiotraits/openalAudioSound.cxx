@@ -69,8 +69,8 @@ OpenALAudioSound(OpenALAudioManager* manager,
 
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  require_sound_data();
-  if (_manager == NULL) {
+  if (!require_sound_data()) {
+    cleanup();
     return;
   }
 
@@ -130,10 +130,12 @@ play() {
 
   stop();
 
-  require_sound_data();
-  if (_manager == 0) return;
-  _manager->starting_sound(this);
+  if (!require_sound_data()) {
+    cleanup();
+    return;
+  }
 
+  _manager->starting_sound(this);
   if (!_source) {
     return;
   }
@@ -435,7 +437,11 @@ pull_used_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   while (_stream_queued.size()) {
     ALuint buffer = 0;
-    alGetError();
+    ALint num_buffers = 0;
+    alGetSourcei(_source, AL_BUFFERS_PROCESSED, &num_buffers);
+    if (num_buffers <= 0) {
+      break;
+    }
     alSourceUnqueueBuffers(_source, 1, &buffer);
     int err = alGetError();
     if (err == AL_NO_ERROR) {

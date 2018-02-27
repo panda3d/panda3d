@@ -402,8 +402,7 @@ unlock_and_do_task() {
   nassertr(current_thread->_current_task == nullptr, DS_interrupt);
 
   void *ptr = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)current_thread->_current_task,
-     (void *)nullptr, (void *)this);
+    (current_thread->_current_task, nullptr, (TypedReferenceCount *)this);
 
   // If the return value is other than nullptr, someone else must have
   // assigned the task first, in another thread.  That shouldn't be possible.
@@ -437,8 +436,7 @@ unlock_and_do_task() {
   nassertr(current_thread->_current_task == this, status);
 
   ptr = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)current_thread->_current_task,
-     (void *)this, (void *)nullptr);
+    (current_thread->_current_task, (TypedReferenceCount *)this, nullptr);
 
   // If the return value is other than this, someone else must have assigned
   // the task first, in another thread.  That shouldn't be possible.

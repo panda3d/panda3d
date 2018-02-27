@@ -196,7 +196,7 @@ private:
 
   void reset_geom_rendering(CData *cdata);
 
-  void combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
+  void combine_primitives(GeomPrimitive *a_prim, CPT(GeomPrimitive) b_prim,
                           Thread *current_thread);
 
 private:
@@ -302,7 +302,8 @@ private:
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
-    INLINE CData(const CData &copy);
+    INLINE CData(GeomVertexData *data);
+
     ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;

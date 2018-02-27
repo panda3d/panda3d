@@ -3179,7 +3179,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
  * Loads the shader, using the string as shader body.
  */
 PT(Shader) Shader::
-make(const string &body, ShaderLanguage lang) {
+make(string body, ShaderLanguage lang) {
   if (lang == SL_GLSL) {
     shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
@@ -3197,7 +3197,7 @@ make(const string &body, ShaderLanguage lang) {
   }
 #endif
 
-  ShaderFile sbody(body);
+  ShaderFile sbody(move(body));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3208,7 +3208,7 @@ make(const string &body, ShaderLanguage lang) {
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  shader->_text = sbody;
+  shader->_text = move(sbody);
 
 #ifdef HAVE_CG
   if (lang == SL_Cg) {
@@ -3223,7 +3223,7 @@ make(const string &body, ShaderLanguage lang) {
 #endif
 
   if (cache_generated_shaders) {
-    _make_table[sbody] = shader;
+    _make_table[shader->_text] = shader;
   }
 
   if (dump_generated_shaders) {
@@ -3235,7 +3235,7 @@ make(const string &body, ShaderLanguage lang) {
 
     pofstream s;
     s.open(fn.c_str(), ios::out | ios::trunc);
-    s << body;
+    s << shader->get_text();
     s.close();
   }
   return shader;
@@ -3245,9 +3245,8 @@ make(const string &body, ShaderLanguage lang) {
  * Loads the shader, using the strings as shader bodies.
  */
 PT(Shader) Shader::
-make(ShaderLanguage lang, const string &vertex, const string &fragment,
-     const string &geometry, const string &tess_control,
-     const string &tess_evaluation) {
+make(ShaderLanguage lang, string vertex, string fragment, string geometry,
+     string tess_control, string tess_evaluation) {
 #ifndef HAVE_CG
   if (lang == SL_Cg) {
     shader_cat.error() << "Support for Cg shaders is not enabled.\n";
@@ -3260,7 +3259,8 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
     return NULL;
   }
 
-  ShaderFile sbody(vertex, fragment, geometry, tess_control, tess_evaluation);
+  ShaderFile sbody(move(vertex), move(fragment), move(geometry),
+                   move(tess_control), move(tess_evaluation));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3271,7 +3271,7 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  shader->_text = sbody;
+  shader->_text = move(sbody);
 
 #ifdef HAVE_CG
   if (lang == SL_Cg) {
@@ -3284,7 +3284,7 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
 #endif
 
   if (cache_generated_shaders) {
-    _make_table[sbody] = shader;
+    _make_table[shader->_text] = shader;
   }
 
   return shader;
@@ -3294,7 +3294,7 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
  * Loads the compute shader from the given string.
  */
 PT(Shader) Shader::
-make_compute(ShaderLanguage lang, const string &body) {
+make_compute(ShaderLanguage lang, string body) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
@@ -3303,7 +3303,7 @@ make_compute(ShaderLanguage lang, const string &body) {
 
   ShaderFile sbody;
   sbody._separate = true;
-  sbody._compute = body;
+  sbody._compute = move(body);
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3314,10 +3314,10 @@ make_compute(ShaderLanguage lang, const string &body) {
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  shader->_text = sbody;
+  shader->_text = move(sbody);
 
   if (cache_generated_shaders) {
-    _make_table[sbody] = shader;
+    _make_table[shader->_text] = shader;
   }
 
   return shader;

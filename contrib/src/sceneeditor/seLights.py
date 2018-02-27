@@ -63,13 +63,8 @@ class seLight(NodePath):
         self.lence = lence
         self.active = True
 
-        if isinstance(light, Spotlight):
-            node = light.upcastToLensNode()
-        else:
-            node = light.upcastToPandaNode()
-
         # Attach node to self
-        self.LightNode=parent.attachNewNode(node)
+        self.LightNode=parent.attachNewNode(light)
         self.LightNode.setTag("Metadata",tag)
         if(self.type=='spot'):
             self.LightNode.setHpr(self.orientation)
@@ -417,8 +412,6 @@ class seLightManager(NodePath):
         # only Spotlight obj nneds to be specified a lens node first. i.e. setLens() first!
         #################################################################
         type = lower(light.getType().getName())
-
-        light.upcastToNamable()
 
         specularColor = VBase4(1)
         position = Point3(0,0,0)

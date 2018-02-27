@@ -825,6 +825,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     }
   }
   _on_stages.sort();
+  _off_stages.sort();
   _sort_seq = UpdateSeq::old();
   _filtered_seq = UpdateSeq::old();
 

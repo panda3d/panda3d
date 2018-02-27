@@ -38,8 +38,34 @@ BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
 }
+
+/**
+ *
+ */
+BulletCapsuleShape::
+BulletCapsuleShape(const BulletCapsuleShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _radius = copy._radius;
+  _height = copy._height;
+}
+
+/**
+ *
+ */
+void BulletCapsuleShape::
+operator = (const BulletCapsuleShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _radius = copy._radius;
+  _height = copy._height;
+}
+
 
 /**
  *
@@ -122,6 +148,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
   _shape->setMargin(margin);
 }

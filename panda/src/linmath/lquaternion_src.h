@@ -57,6 +57,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &);
   INLINE_LINMATH FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &);
 
+  FLOATNAME(LQuaternion) __pow__(FLOATTYPE) const;
+
   INLINE_LINMATH bool almost_equal(
       const FLOATNAME(LQuaternion) &other) const;
   INLINE_LINMATH bool almost_equal(

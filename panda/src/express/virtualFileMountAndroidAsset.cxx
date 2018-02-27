@@ -78,7 +78,7 @@ is_regular_file(const Filename &file) const {
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_UNKNOWN);
 
-  express_cat.error() << "is_regular_file " << file << " - " << asset << "\n";
+  //express_cat.error() << "is_regular_file " << file << " - " << asset << "\n";
 
   if (asset == NULL) {
     return false;

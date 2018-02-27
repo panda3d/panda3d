@@ -582,6 +582,19 @@ node_unref() const {
 }
 
 /**
+ * Counts the frequency at which the given element occurs in the vector.
+ */
+template<class Element>
+INLINE size_t PointerToArray<Element>::
+count(const Element &value) const {
+  if ((this->_void_ptr) != nullptr) {
+    return std::count(begin(), end(), value);
+  } else {
+    return 0;
+  }
+}
+
+/**
  *
  */
 template<class Element>
@@ -1004,6 +1017,19 @@ INLINE bool ConstPointerToArray<Element>::
 node_unref() const {
   nassertr((this->_void_ptr) != NULL, true);
   return ((To *)(this->_void_ptr))->node_unref();
+}
+
+/**
+ * Counts the frequency at which the given element occurs in the vector.
+ */
+template<class Element>
+INLINE size_t ConstPointerToArray<Element>::
+count(const Element &value) const {
+  if ((this->_void_ptr) != nullptr) {
+    return std::count(begin(), end(), value);
+  } else {
+    return 0;
+  }
 }
 
 /**

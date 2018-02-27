@@ -15,6 +15,7 @@
 #define DATAGRAMBUFFER_H
 
 #include "pandabase.h"
+#include "datagramGenerator.h"
 #include "datagramSink.h"
 #include "vector_uchar.h"
 

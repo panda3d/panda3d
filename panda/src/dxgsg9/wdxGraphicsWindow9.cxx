@@ -880,10 +880,10 @@ choose_device() {
       << ", Driver: " << adapter_info.Driver << ", DriverVersion: ("
       << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "."
       << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart)
-      << ")\nVendorID: 0x" << (void*) adapter_info.VendorId
-      << " DeviceID: 0x" <<  (void*) adapter_info.DeviceId
-      << " SubsysID: 0x" << (void*) adapter_info.SubSysId
-      << " Revision: 0x" << (void*) adapter_info.Revision << endl;
+      << ")\nVendorID: 0x" << hex << adapter_info.VendorId
+      << " DeviceID: 0x" << adapter_info.DeviceId
+      << " SubsysID: 0x" << adapter_info.SubSysId
+      << " Revision: 0x" << adapter_info.Revision << dec << endl;
 
     HMONITOR _monitor = dxpipe->__d3d9->GetAdapterMonitor(i);
     if (_monitor == NULL) {

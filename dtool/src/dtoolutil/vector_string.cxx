@@ -13,8 +13,8 @@
 
 #include "vector_string.h"
 
-#define EXPCL EXPCL_DTOOLCONFIG
-#define EXPTP EXPTP_DTOOLCONFIG
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
 #define TYPE std::string
 #define NAME vector_string
 

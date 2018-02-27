@@ -509,6 +509,12 @@ interrogate_get_type_by_true_name(const char *type_name) {
   return InterrogateDatabase::get_ptr()->lookup_type_by_true_name(type_name);
 }
 
+bool
+interrogate_type_is_global(TypeIndex type) {
+  // cerr << "interrogate_type_is_global(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_global();
+}
+
 const char *
 interrogate_type_name(TypeIndex type) {
   // cerr << "interrogate_type_name(" << type << ")\n";

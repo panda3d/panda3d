@@ -133,6 +133,12 @@ clear_default() {
  * size is the only property that matters to buffers.
  */
 WindowProperties WindowProperties::
+size(const LVecBase2i &size) {
+  WindowProperties props;
+  props.set_size(size);
+  return props;
+}
+WindowProperties WindowProperties::
 size(int x_size, int y_size) {
   WindowProperties props;
   props.set_size(x_size, y_size);

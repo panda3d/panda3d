@@ -31,6 +31,28 @@ BulletBoxShape(const LVecBase3 &halfExtents) : _half_extents(halfExtents) {
 /**
  *
  */
+BulletBoxShape::
+BulletBoxShape(const BulletBoxShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _half_extents = copy._half_extents;
+}
+
+/**
+ *
+ */
+void BulletBoxShape::
+operator = (const BulletBoxShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+  _half_extents = copy._half_extents;
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletBoxShape::
 ptr() const {
 
@@ -42,6 +64,7 @@ ptr() const {
  */
 LVecBase3 BulletBoxShape::
 get_half_extents_without_margin() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVecBase3(_shape->getHalfExtentsWithoutMargin());
 }
@@ -51,6 +74,7 @@ get_half_extents_without_margin() const {
  */
 LVecBase3 BulletBoxShape::
 get_half_extents_with_margin() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVecBase3(_shape->getHalfExtentsWithMargin());
 }
@@ -64,9 +88,9 @@ make_from_solid(const CollisionBox *solid) {
   LPoint3 p0 = solid->get_min();
   LPoint3 p1 = solid->get_max();
 
-  LVecBase3 extents(p1.get_x() - p0.get_x() / 2.0,
-                     p1.get_y() - p0.get_y() / 2.0,
-                     p1.get_z() - p0.get_z() / 2.0);
+  LVecBase3 extents((p1.get_x() - p0.get_x()) / 2.0,
+                    (p1.get_y() - p0.get_y()) / 2.0,
+                    (p1.get_z() - p0.get_z()) / 2.0);
 
   return new BulletBoxShape(extents);
 }

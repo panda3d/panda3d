@@ -583,17 +583,14 @@ CData() :
  *
  */
 INLINE GeomVertexData::CData::
-CData(const GeomVertexData::CData &copy) :
-  _usage_hint(copy._usage_hint),
-  _format(copy._format),
-  _arrays(copy._arrays),
-  _transform_table(copy._transform_table),
-  _transform_blend_table(copy._transform_blend_table),
-  _slider_table(copy._slider_table),
-  _animated_vertices(copy._animated_vertices),
-  _animated_vertices_modified(copy._animated_vertices_modified),
-  _modified(copy._modified)
+CData(const GeomVertexFormat *format, GeomVertexData::UsageHint usage_hint) :
+  _format(format),
+  _usage_hint(usage_hint)
 {
+  size_t num_arrays = format->get_num_arrays();
+  for (size_t i = 0; i < num_arrays; ++i) {
+    _arrays.push_back(new GeomVertexArrayData(format->get_array(i), usage_hint));
+  }
 }
 
 /**

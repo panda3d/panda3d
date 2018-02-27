@@ -277,9 +277,9 @@ preempt() {
  * AsyncTaskManager), if any, or NULL if the thread is not currently servicing
  * a task.
  */
-INLINE AsyncTask *Thread::
+INLINE TypedReferenceCount *Thread::
 get_current_task() const {
-  return _current_task;
+  return (TypedReferenceCount *)_current_task;
 }
 
 /**
@@ -299,6 +299,17 @@ INLINE void Thread::
 prepare_for_exit() {
   ThreadImpl::prepare_for_exit();
 }
+
+#ifdef ANDROID
+/**
+ * Enables interaction with the Java VM on Android.  Returns null if the
+ * thread is not attached to the Java VM (or bind_thread was not called).
+ */
+INLINE JNIEnv *Thread::
+get_jni_env() const {
+  return _impl.get_jni_env();
+}
+#endif
 
 /**
  * Stores a PStats index to be associated with this thread.  This is used

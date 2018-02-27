@@ -971,3 +971,22 @@ INLINE_LINMATH const FLOATTYPE *FLOATNAME(UnalignedLVecBase4)::
 get_data() const {
   return &_v(0);
 }
+
+/**
+ *
+ */
+INLINE_LINMATH bool FLOATNAME(UnalignedLVecBase4)::
+operator == (const FLOATNAME(UnalignedLVecBase4) &other) const {
+  return (_v(0) == other._v(0) &&
+          _v(1) == other._v(1) &&
+          _v(2) == other._v(2) &&
+          _v(3) == other._v(3));
+}
+
+/**
+ *
+ */
+INLINE_LINMATH bool FLOATNAME(UnalignedLVecBase4)::
+operator != (const FLOATNAME(UnalignedLVecBase4) &other) const {
+  return !operator == (other);
+}
