@@ -2046,7 +2046,7 @@ def SdkLocateMax():
                         if (os.path.isdir(top + "\\" + subdir)!=0):
                             SDK[version+"CS"] = top + subdir
 
-def SdkLocatePython(prefer_thirdparty_python=False):
+def SdkLocatePython(prefer_thirdparty_python=False, use_homebrew=False):
     if PkgSkip("PYTHON"):
         # We're not compiling with Python support.  We still need to set this
         # in case we want to run any scripts that use Python, though.
@@ -2124,7 +2124,12 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         sysroot = SDK.get("MACOSX", "")
         version = sysconfig.get_python_version()
 
-        py_fwx = "{0}/System/Library/Frameworks/Python.framework/Versions/{1}".format(sysroot, version)
+        py_fwx = None
+        if(use_homebrew):
+            py_fwx = os.popen(LocateBinary("brew") + " --prefix").read()[:-1]
+        else:
+            py_fwx = "{0}/System/Library".format(sysroot)
+        py_fwx = "{0}/Frameworks/Python.framework/Versions/{1}".format(py_fwx, version)
 
         if not os.path.exists(py_fwx):
             # Fall back to looking on the system.

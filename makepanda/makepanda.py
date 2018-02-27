@@ -37,38 +37,39 @@ import sys
 ##
 ########################################################################
 
-COMPILER=0
-INSTALLER=0
-WHEEL=0
-RUNTESTS=0
-GENMAN=0
-COMPRESSOR="zlib"
-THREADCOUNT=0
-CFLAGS=""
-CXXFLAGS=""
-LDFLAGS=""
-RTDIST=0
-RTDIST_VERSION=None
-RUNTIME=0
-DISTRIBUTOR=""
-VERSION=None
-DEBVERSION=None
-WHLVERSION=None
-RPMRELEASE="1"
-GIT_COMMIT=None
-P3DSUFFIX=None
-MAJOR_VERSION=None
-COREAPI_VERSION=None
-PLUGIN_VERSION=None
-OSXTARGET=None
-OSX_ARCHS=[]
-HOST_URL=None
+COMPILER        = 0
+INSTALLER       = 0
+WHEEL           = 0
+RUNTESTS        = 0
+GENMAN          = 0
+COMPRESSOR      = "zlib"
+THREADCOUNT     = 0
+CFLAGS          = ""
+CXXFLAGS        = ""
+LDFLAGS         = ""
+RTDIST          = 0
+RTDIST_VERSION  = None
+RUNTIME         = 0
+DISTRIBUTOR     = ""
+VERSION         = None
+DEBVERSION      = None
+WHLVERSION      = None
+RPMRELEASE      = "1"
+GIT_COMMIT      = None
+P3DSUFFIX       = None
+MAJOR_VERSION   = None
+COREAPI_VERSION = None
+PLUGIN_VERSION  = None
+OSXTARGET       = None
+OSX_ARCHS       = []
+HOST_URL        = None
 global STRDXSDKVERSION, BOOUSEINTELCOMPILER
-STRDXSDKVERSION = 'default'
-WINDOWS_SDK = None
-MSVC_VERSION = None
+STRDXSDKVERSION     = 'default'
+WINDOWS_SDK         = None
+MSVC_VERSION        = None
 BOOUSEINTELCOMPILER = False
-OPENCV_VER_23 = False
+HOMEBREW            = False
+OPENCV_VER_23       = False
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -157,6 +158,7 @@ def usage(problem):
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.0, 7.1 or 10.  Default is 7.1)")
     print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14.  Default is 10)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
+    print("  --use-homebrew    (experimental instruction to use homebrew packages instead of Library entries for third-party tools. Darwin Only.)")
     print("")
     print("The simplest way to compile panda is to just type:")
     print("")
@@ -166,7 +168,7 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,WHEEL,RUNTESTS,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
+    global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL, HOMEBREW
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
@@ -176,7 +178,7 @@ def parseopts(args):
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
         "universal", "target=", "arch=", "git-commit=", "no-directscripts",
-        "use-touchinput", "no-touchinput"]
+        "use-touchinput", "no-touchinput", "use-homebrew"]
     anything = 0
     optimize = ""
     target = None
@@ -239,6 +241,7 @@ def parseopts(args):
             elif (option=="--msvc-version"):
                 MSVC_VERSION = value.strip().lower()
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
+            elif (option=="--use-homebrew"): HOMEBREW=True
             elif (option=="--clean"): clean_build = True
             else:
                 for pkg in PkgListGet():
@@ -475,7 +478,7 @@ SdkLocateDirectX(STRDXSDKVERSION)
 SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
-SdkLocatePython(RTDIST)
+SdkLocatePython(RTDIST, HOMEBREW)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
