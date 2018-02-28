@@ -139,6 +139,15 @@ If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
 package file in order to install the SDK onto your system.
 
+If you use homebrew, you can specify `--use-homebrew` to the build.  This
+will have the effect of linking your preferred python from the 
+`$(brew --prefix python[2|3])` location rather than the sytem installed python.
+In additoin, it will pick up supported third party libraries installed via
+homebrew that are not included in the above tar.gz.
+
+*note: for opus you will actually need to install libogg and opusfile as well:
+`brew install opus opusfile libogg`*
+
 FreeBSD
 -------
 
