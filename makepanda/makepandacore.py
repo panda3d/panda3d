@@ -1604,7 +1604,9 @@ def ChooseLib(libs, thirdparty=None):
             print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
-def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config", thirdparty_dir = None):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None,
+        defs = None, framework = None, target_pkg = None, tool = "pkg-config",
+        thirdparty_dir = None, use_homebrew = False):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
@@ -1637,7 +1639,13 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     # Determine the location of the thirdparty directory.
     if not thirdparty_dir:
         thirdparty_dir = pkg.lower()
-    pkg_dir = os.path.join(GetThirdpartyDir(), thirdparty_dir)
+    pkg_dir = None
+    if GetTarget() == 'darwin' and use_homebrew:
+        # much much much easier to do things this way
+        pkg_dir = os.popen('brew --prefix {}'.format(thirdparty_dir)).\
+                read().strip()
+    else:
+        pkg_dir = os.path.join(GetThirdpartyDir(), thirdparty_dir)
 
     # First check if the library can be found in the thirdparty directory.
     if not custom_loc and os.path.isdir(pkg_dir):
