@@ -52,6 +52,18 @@ ConfigVariableInt stm_max_views
           "with. Each camera rendering the terrain corresponds to a view. Lowering this "
           "value will reduce the data that has to be transferred to the GPU."));
 
+ConfigVariableEnum<SamplerState::FilterType> stm_heightfield_minfilter
+("stm-heightfield-minfilter", SamplerState::FT_linear,
+ PRC_DESC("This specifies the minfilter that is applied for a heightfield texture. This "
+         "can be used to create heightfield that is visual correct with collision "
+         "geometry (for example bullet terrain mesh) by changing it to nearest"));
+
+ConfigVariableEnum<SamplerState::FilterType> stm_heightfield_magfilter
+("stm-heightfield-magfilter", SamplerState::FT_linear,
+ PRC_DESC("This specifies the magfilter that is applied for a heightfield texture. This "
+         "can be used to create heightfield that is visual correct with collision "
+         "geometry (for example bullet terrain mesh) by changing it to nearest"));
+
 PStatCollector ShaderTerrainMesh::_basic_collector("Cull:ShaderTerrainMesh:Setup");
 PStatCollector ShaderTerrainMesh::_lod_collector("Cull:ShaderTerrainMesh:CollectLOD");
 
@@ -148,8 +160,8 @@ void ShaderTerrainMesh::do_extract_heightfield() {
   } else {
     _heightfield_tex->set_format(Texture::F_r16);
   }
-  _heightfield_tex->set_minfilter(SamplerState::FT_linear);
-  _heightfield_tex->set_magfilter(SamplerState::FT_linear);
+  _heightfield_tex->set_minfilter(stm_heightfield_minfilter);
+  _heightfield_tex->set_magfilter(stm_heightfield_magfilter);
   _heightfield_tex->set_wrap_u(SamplerState::WM_clamp);
   _heightfield_tex->set_wrap_v(SamplerState::WM_clamp);
 }

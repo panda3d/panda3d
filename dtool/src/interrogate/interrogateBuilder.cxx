@@ -2603,7 +2603,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     const CPPStructType::Base &base = (*bi);
     if (base._vis <= V_public) {
       CPPType *base_type = TypeManager::resolve_type(base._base, scope);
-      TypeIndex base_index = get_type(base_type, true);
+      TypeIndex base_index = get_type(base_type, false);
 
       if (base_index == 0) {
         if (base_type != NULL) {

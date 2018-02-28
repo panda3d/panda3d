@@ -3424,5 +3424,9 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
             t.deps[FindLocation("interrogate.exe", [])] = 1
         t.deps[FindLocation("dtool_have_python.dat", [])] = 1
 
+    if target.endswith(".obj") and any(x.endswith(".in") for x in input):
+        if not CrossCompiling():
+            t.deps[FindLocation("interrogate_module.exe", [])] = 1
+
     if target.endswith(".pz") and not CrossCompiling():
         t.deps[FindLocation("pzip.exe", [])] = 1
