@@ -18,9 +18,9 @@ setup(
             ],
             'platforms': [
                 'manylinux1_x86_64',
-                'macosx_10_6_x86_64',
-                'win32',
-                'win_amd64',
+                #'macosx_10_6_x86_64',
+                #'win32',
+                #'win_amd64',
             ],
         }
     }
