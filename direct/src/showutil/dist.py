@@ -24,6 +24,28 @@ if 'basestring' not in globals():
     basestring = str
 
 
+def _parse_list(input):
+    if isinstance(input, basestring):
+        input = input.strip().replace(',', '\n')
+        if input:
+            return [item.strip() for item in input.split('\n') if item.strip()]
+        else:
+            return []
+    else:
+        return input
+
+
+def _parse_dict(input):
+    if isinstance(input, dict):
+        return input
+    d = {}
+    for item in _parse_list(input):
+        key, sep, value = item.partition('=')
+        d[key.strip()] = value.strip()
+    return d
+
+
+
 def egg2bam(_build_cmd, srcpath, dstpath):
     dstpath = dstpath + '.bam'
     subprocess.call([
@@ -96,25 +118,6 @@ class build_apps(distutils.core.Command):
     def finalize_options(self):
         # We need to massage the inputs a bit in case they came from a
         # setup.cfg file.
-        def _parse_list(input):
-            if isinstance(input, basestring):
-                input = input.strip().replace(',', '\n')
-                if input:
-                    return [item.strip() for item in input.split('\n') if item.strip()]
-                else:
-                    return []
-            else:
-                return input
-
-        def _parse_dict(input):
-            if isinstance(input, dict):
-                return input
-            d = {}
-            for item in _parse_list(input):
-                key, sep, value = item.partition('=')
-                d[key.strip()] = value.strip()
-            return d
-
         self.gui_apps = _parse_dict(self.gui_apps)
         self.console_apps = _parse_dict(self.console_apps)
 
@@ -758,14 +761,22 @@ class build_apps(distutils.core.Command):
 
 
 class bdist_apps(distutils.core.Command):
+    DEFAULT_INSTALLERS = {
+        'manylinux1_x86_64': ['gztar'],
+        'manylinux1_i386': ['gztar'],
+        # Everything else defaults to ['zip']
+    }
+
     description = 'bundle built Panda3D applications into distributable forms'
     user_options = []
 
     def initialize_options(self):
-        pass
+        self.installers = {}
 
     def finalize_options(self):
-        pass
+        # We need to massage the inputs a bit in case they came from a
+        # setup.cfg file.
+        self.installers = _parse_dict(self.installers)
 
     def run(self):
         build_cmd = self.get_finalized_command('build_apps')
@@ -780,20 +791,26 @@ class bdist_apps(distutils.core.Command):
 
         for platform in platforms:
             build_dir = os.path.join(build_base, platform)
-            base_dir = self.distribution.get_name()
-            temp_dir = os.path.join(build_base, base_dir)
-            archive_format = 'gztar' if 'linux' in platform else 'zip'
             basename = '{}_{}'.format(self.distribution.get_fullname(), platform)
+            installers = self.installers.get(platform, self.DEFAULT_INSTALLERS.get(platform, ['zip']))
+            print(installers)
 
-            if (os.path.exists(temp_dir)):
-                shutil.rmtree(temp_dir)
-            shutil.copytree(build_dir, temp_dir)
+            for installer in installers:
+                self.announce('\nBuilding {} for platform: {}'.format(installer, platform), distutils.log.INFO)
 
-            self.announce('Building {} for platform: {}'.format(archive_format, platform), distutils.log.INFO)
+                if installer in ('zip', 'gztar'):
+                    base_dir = self.distribution.get_name()
+                    temp_dir = os.path.join(build_base, base_dir)
+                    if (os.path.exists(temp_dir)):
+                        shutil.rmtree(temp_dir)
+                    shutil.copytree(build_dir, temp_dir)
 
-            distutils.archive_util.make_archive(basename, archive_format, root_dir=build_base, base_dir=base_dir)
+                    distutils.archive_util.make_archive(basename, installer, root_dir=build_base, base_dir=base_dir)
 
-            shutil.rmtree(temp_dir)
+                    shutil.rmtree(temp_dir)
+                else:
+                    self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
+
 
 def setup(**attrs):
     commandClasses = attrs.setdefault("cmdclass", {})
