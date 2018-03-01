@@ -1022,6 +1022,15 @@ make_patches() const {
 }
 
 /**
+ * Adds adjacency information to this primitive.  May return null if this type
+ * of geometry does not support adjacency information.
+ */
+CPT(GeomPrimitive) GeomPrimitive::
+make_adjacency() const {
+  return nullptr;
+}
+
+/**
  * Returns the number of bytes consumed by the primitive and its index
  * table(s).
  */
