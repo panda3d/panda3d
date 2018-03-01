@@ -446,18 +446,34 @@ pull_used_buffers() {
     int err = alGetError();
     if (err == AL_NO_ERROR) {
       if (_stream_queued[0]._buffer != buffer) {
-        audio_error("corruption in stream queue");
-        cleanup();
-        return;
-      }
-      _stream_queued.pop_front();
-      if (_stream_queued.size()) {
-        double al = _stream_queued[0]._time_offset + _stream_queued[0]._loop_index * _length;
-        double rtc = TrueClock::get_global_ptr()->get_short_time();
-        correct_calibrated_clock(rtc, al);
-      }
-      if (buffer != _sd->_sample) {
-        alDeleteBuffers(1,&buffer);
+        // This is certainly atypical: most implementations of OpenAL unqueue
+        // buffers in FIFO order. However, some (e.g. Apple's) can unqueue
+        // buffers out-of-order if playback is interrupted. So, we don't freak
+        // out unless `buffer` isn't in _stream_queued at all.
+        bool found_culprit = false;
+        for (auto it = _stream_queued.begin(); it != _stream_queued.end(); ++it) {
+          if (it->_buffer == buffer) {
+            // Phew. Found it. Just remove that.
+            _stream_queued.erase(it);
+            found_culprit = true;
+            break;
+          }
+        }
+        if (!found_culprit) {
+          audio_error("corruption in stream queue");
+          cleanup();
+          return;
+        }
+      } else {
+        _stream_queued.pop_front();
+        if (_stream_queued.size()) {
+          double al = _stream_queued[0]._time_offset + _stream_queued[0]._loop_index * _length;
+          double rtc = TrueClock::get_global_ptr()->get_short_time();
+          correct_calibrated_clock(rtc, al);
+        }
+        if (buffer != _sd->_sample) {
+          alDeleteBuffers(1,&buffer);
+        }
       }
     } else {
       break;
