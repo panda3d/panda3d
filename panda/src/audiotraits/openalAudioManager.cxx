@@ -1052,7 +1052,7 @@ OpenALAudioManager::SoundData::
   if (_sample != 0) {
     if (_manager->_is_valid) {
       _manager->make_current();
-      alDeleteBuffers(1,&_sample);
+      _manager->delete_buffer(_sample);
     }
     _sample = 0;
   }
@@ -1127,4 +1127,43 @@ discard_excess_cache(int sample_limit) {
     audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
     delete sd;
   }
+}
+
+/**
+ * Deletes an OpenAL buffer.  This is a special function because some
+ * implementations of OpenAL (e.g. Apple's) don't unlock the buffers
+ * immediately, due to needing to coordinate with another thread.  If this is
+ * the case, the alDeleteBuffers call will error back with AL_INVALID_OPERATION
+ * as if trying to delete an actively-used buffer, which will tell us to wait a
+ * bit and try again.
+ */
+void OpenALAudioManager::
+delete_buffer(ALuint buffer) {
+  ReMutexHolder holder(_lock);
+  int attempt = 0;
+  ALuint error;
+
+  // Keep trying until we succeed (or give up).
+  while (true) {
+    alDeleteBuffers(1, &buffer);
+    error = alGetError();
+
+    if (error == AL_NO_ERROR) {
+      // Success!  This will happen right away 99% of the time.
+      return;
+    } else if (error != AL_INVALID_OPERATION) {
+      // We weren't expecting that.  This should be reported.
+      break;
+    } else if (attempt >= openal_buffer_delete_reattempts.get_value()) {
+      // We ran out of reattempts.  Give up.
+      break;
+    } else {
+      // Make another attempt after (delay * 2^n) seconds.
+      Thread::sleep(openal_buffer_delete_delay.get_value() * (1 << attempt));
+      attempt++;
+    }
+  }
+
+  // If we got here, one of the breaks above happened, indicating an error.
+  audio_error("failed to delete a buffer: " << alGetString(error) );
 }

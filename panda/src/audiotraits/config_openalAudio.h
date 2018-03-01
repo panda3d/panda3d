@@ -26,5 +26,7 @@ extern "C" EXPCL_OPENAL_AUDIO void init_libOpenALAudio();
 extern "C" EXPCL_OPENAL_AUDIO Create_AudioManager_proc *get_audio_manager_func_openal_audio();
 
 extern ConfigVariableString openal_device;
+extern ConfigVariableInt openal_buffer_delete_reattempts;
+extern ConfigVariableDouble openal_buffer_delete_delay;
 
 #endif // CONFIG_OPENALAUDIO_H
