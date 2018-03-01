@@ -208,8 +208,7 @@ stop() {
     for (int i=0; i<((int)(_stream_queued.size())); i++) {
       ALuint buffer = _stream_queued[i]._buffer;
       if (buffer != _sd->_sample) {
-        alDeleteBuffers(1, &buffer);
-        al_audio_errcheck("deleting a buffer");
+        _manager->delete_buffer(buffer);
       }
     }
     _stream_queued.resize(0);
@@ -472,7 +471,7 @@ pull_used_buffers() {
           correct_calibrated_clock(rtc, al);
         }
         if (buffer != _sd->_sample) {
-          alDeleteBuffers(1,&buffer);
+          _manager->delete_buffer(buffer);
         }
       }
     } else {
