@@ -350,8 +350,9 @@ class build_apps(distutils.core.Command):
                     continue
 
                 base = os.path.basename(i)
-                whl_modules.append(base)
-                whl_modules_ext = base.partition('.')[2]
+                module, _, ext = base.partition('.')
+                whl_modules.append(module)
+                whl_modules_ext = ext
 
         # Make sure to copy any builtins that have shared objects in the
         # deploy libs, assuming they are not already in freezer_extras.
