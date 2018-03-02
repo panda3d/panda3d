@@ -40,7 +40,7 @@ get_calibrated_clock(double rtc) const {
  *
  * Returns true on success, false on failure.
  */
-bool OpenALAudioSound::
+INLINE bool OpenALAudioSound::
 require_sound_data() {
   if (_sd==0) {
     _sd = _manager->get_sound_data(_movie, _desired_mode);
@@ -61,7 +61,7 @@ require_sound_data() {
  * so.  The `force` argument overrides this, indicating we don't intend to
  * reacquire the sound data.
  */
-void OpenALAudioSound::
+INLINE void OpenALAudioSound::
 release_sound_data(bool force) {
   if (!has_sound_data()) return;
 
@@ -74,7 +74,7 @@ release_sound_data(bool force) {
 /**
  * Checks if the sound has NOT been cleaned up yet.
  */
-bool OpenALAudioSound::
+INLINE bool OpenALAudioSound::
 is_valid() const {
   return _manager != NULL;
 }
@@ -85,7 +85,7 @@ is_valid() const {
  *
  * This is mainly intended for use in asserts.
  */
-bool OpenALAudioSound::
+INLINE bool OpenALAudioSound::
 is_playing() const {
   // Manager only gives us a _source if we need it (to talk to OpenAL), so:
   return _source != 0;
@@ -96,7 +96,7 @@ is_playing() const {
  *
  * This is mainly intended for use in asserts.
  */
-bool OpenALAudioSound::
+INLINE bool OpenALAudioSound::
 has_sound_data() const {
   return _sd != 0;
 }
