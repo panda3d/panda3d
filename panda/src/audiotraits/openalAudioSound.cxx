@@ -99,13 +99,13 @@ OpenALAudioSound::
 void OpenALAudioSound::
 cleanup() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager == 0) {
+  if (!is_valid()) {
     return;
   }
-  if (_source) {
+  if (is_playing()) {
     stop();
   }
-  if (_sd) {
+  if (has_sound_data()) {
     _manager->decrement_client_count(_sd);
     _sd = 0;
   }
@@ -119,7 +119,7 @@ cleanup() {
 void OpenALAudioSound::
 play() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager == 0) return;
+  if (!is_valid()) return;
 
   PN_stdfloat px,py,pz,vx,vy,vz;
 
@@ -136,7 +136,7 @@ play() {
   }
 
   _manager->starting_sound(this);
-  if (!_source) {
+  if (!is_playing()) {
     return;
   }
 
@@ -195,9 +195,9 @@ play() {
 void OpenALAudioSound::
 stop() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager==0) return;
+  if (!is_valid()) return;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
@@ -254,7 +254,7 @@ get_loop() const {
 void OpenALAudioSound::
 set_loop_count(unsigned long loop_count) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager==0) return;
+  if (!is_valid()) return;
 
   if (loop_count >= 1000000000) {
     loop_count = 0;
@@ -434,7 +434,7 @@ correct_calibrated_clock(double rtc, double t) {
 void OpenALAudioSound::
 pull_used_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager == 0) return;
+  if (!is_valid()) return;
   while (_stream_queued.size()) {
     ALuint buffer = 0;
     ALint num_buffers = 0;
@@ -490,7 +490,7 @@ push_fresh_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   static unsigned char data[65536];
 
-  if (_manager == 0) return;
+  if (!is_valid()) return;
 
   if (_sd->_sample) {
     while ((_loops_completed < _playing_loops) &&
@@ -517,9 +517,9 @@ push_fresh_buffers() {
         break;
       }
       ALuint buffer = make_buffer(samples, channels, rate, data);
-      if (_manager == 0) return;
+      if (!is_valid()) return;
       queue_buffer(buffer, samples, loop_index, time_offset);
-      if (_manager == 0) return;
+      if (!is_valid()) return;
       fill += samples;
     }
   }
@@ -541,7 +541,7 @@ set_time(PN_stdfloat time) {
 PN_stdfloat OpenALAudioSound::
 get_time() const {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager == 0) {
+  if (!is_valid()) {
     return 0.0;
   }
   return _current_time;
@@ -553,7 +553,7 @@ get_time() const {
 void OpenALAudioSound::
 cache_time(double rtc) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  assert(_source != 0);
+  assert(is_playing());
   double t=get_calibrated_clock(rtc);
   double max = _length * _playing_loops;
   if (t >= max) {
@@ -571,7 +571,7 @@ set_volume(PN_stdfloat volume) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _volume=volume;
 
-  if (_source) {
+  if (is_playing()) {
     volume*=_manager->get_volume();
     _manager->make_current();
     alGetError(); // clear errors
@@ -615,7 +615,7 @@ void OpenALAudioSound::
 set_play_rate(PN_stdfloat play_rate) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _play_rate = play_rate;
-  if (_source) {
+  if (is_playing()) {
     alSourcef(_source, AL_PITCH, play_rate);
   }
 }
@@ -657,7 +657,7 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
   _velocity[1] = vz;
   _velocity[2] = -vy;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
@@ -693,7 +693,7 @@ set_3d_min_distance(PN_stdfloat dist) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _min_dist = dist;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
@@ -718,7 +718,7 @@ set_3d_max_distance(PN_stdfloat dist) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _max_dist = dist;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
@@ -743,7 +743,7 @@ set_3d_drop_off_factor(PN_stdfloat factor) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _drop_off_factor = factor;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
@@ -831,7 +831,7 @@ get_name() const {
 AudioSound::SoundStatus OpenALAudioSound::
 status() const {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_source==0) {
+  if (!is_playing()) {
     return AudioSound::READY;
   }
   if ((_loops_completed >= _playing_loops)&&(_stream_queued.size()==0)) {
