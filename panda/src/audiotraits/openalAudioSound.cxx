@@ -201,7 +201,7 @@ stop() {
   if (is_playing()) {
     _manager->make_current();
 
-    assert(has_sound_data());
+    nassertv(has_sound_data());
 
     alGetError(); // clear errors
     alSourceStop(_source);
@@ -290,7 +290,7 @@ restart_stalled_audio() {
   ALenum status;
 
   if (!is_valid()) return;
-  assert(is_playing());
+  nassertv(is_playing());
 
   if (_stream_queued.size() == 0) {
     return;
@@ -310,7 +310,7 @@ void OpenALAudioSound::
 queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  assert(is_playing());
+  nassertv(is_playing());
 
   // Now push the buffer into the stream queue.
   alGetError();
@@ -336,7 +336,7 @@ ALuint OpenALAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char *data) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  assert(is_playing());
+  nassertr(is_playing(), 0);
 
   // Allocate a buffer to hold the data.
   alGetError();
@@ -370,7 +370,7 @@ int OpenALAudioSound::
 read_stream_data(int bytelen, unsigned char *buffer) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  assert(has_sound_data());
+  nassertr(has_sound_data(), 0);
 
   MovieAudioCursor *cursor = _sd->_stream;
   double length = cursor->length();
@@ -423,7 +423,7 @@ void OpenALAudioSound::
 correct_calibrated_clock(double rtc, double t) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  assert(is_playing());
+  nassertv(is_playing());
 
   double cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
   double diff = cc-t;
@@ -458,8 +458,8 @@ pull_used_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
   if (!is_valid()) return;
-  assert(is_playing());
-  assert(has_sound_data());
+  nassertv(is_playing());
+  nassertv(has_sound_data());
 
   while (_stream_queued.size()) {
     ALuint buffer = 0;
@@ -517,8 +517,8 @@ push_fresh_buffers() {
   static unsigned char data[65536];
 
   if (!is_valid()) return;
-  assert(is_playing());
-  assert(has_sound_data());
+  nassertv(is_playing());
+  nassertv(has_sound_data());
 
   if (_sd->_sample) {
     while ((_loops_completed < _playing_loops) &&
@@ -545,7 +545,7 @@ push_fresh_buffers() {
         break;
       }
       ALuint buffer = make_buffer(samples, channels, rate, data);
-      if (!is_valid()) return;
+      if (!is_valid() || !buffer) return;
       queue_buffer(buffer, samples, loop_index, time_offset);
       if (!is_valid()) return;
       fill += samples;
@@ -582,7 +582,7 @@ void OpenALAudioSound::
 cache_time(double rtc) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  assert(is_playing());
+  nassertv(is_playing());
 
   double t=get_calibrated_clock(rtc);
   double max = _length * _playing_loops;

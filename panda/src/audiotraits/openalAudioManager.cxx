@@ -524,7 +524,7 @@ get_sound(const string &file_name, bool positional, int mode) {
 void OpenALAudioManager::
 uncache_sound(const string& file_name) {
   ReMutexHolder holder(_lock);
-  assert(is_valid());
+  nassertv(is_valid());
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -910,7 +910,7 @@ reduce_sounds_playing_to(unsigned int count) {
   int limit = _sounds_playing.size() - count;
   while (limit-- > 0) {
     SoundsPlaying::iterator sound = _sounds_playing.begin();
-    assert(sound != _sounds_playing.end());
+    nassertv(sound != _sounds_playing.end());
     // When the user stops a sound, there is still a PT in the user's hand.
     // When we stop a sound here, however, this can remove the last PT.  This
     // can cause an ugly recursion where stop calls the destructor, and the
@@ -1111,8 +1111,8 @@ discard_excess_cache(int sample_limit) {
 
   while (((int)_expiring_samples.size()) > sample_limit) {
     SoundData *sd = (SoundData*)(_expiring_samples.front());
-    assert(sd->_client_count == 0);
-    assert(sd->_expire == _expiring_samples.begin());
+    nassertv(sd->_client_count == 0);
+    nassertv(sd->_expire == _expiring_samples.begin());
     _expiring_samples.pop_front();
     _sample_cache.erase(_sample_cache.find(sd->_movie->get_filename()));
     audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
@@ -1121,8 +1121,8 @@ discard_excess_cache(int sample_limit) {
 
   while (((int)_expiring_streams.size()) > stream_limit) {
     SoundData *sd = (SoundData*)(_expiring_streams.front());
-    assert(sd->_client_count == 0);
-    assert(sd->_expire == _expiring_streams.begin());
+    nassertv(sd->_client_count == 0);
+    nassertv(sd->_expire == _expiring_streams.begin());
     _expiring_streams.pop_front();
     audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
     delete sd;
