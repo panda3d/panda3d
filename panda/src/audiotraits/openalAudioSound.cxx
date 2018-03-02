@@ -119,6 +119,7 @@ cleanup() {
 void OpenALAudioSound::
 play() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
   if (!is_valid()) return;
 
   PN_stdfloat px,py,pz,vx,vy,vz;
@@ -195,10 +196,13 @@ play() {
 void OpenALAudioSound::
 stop() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
   if (!is_valid()) return;
 
   if (is_playing()) {
     _manager->make_current();
+
+    assert(has_sound_data());
 
     alGetError(); // clear errors
     alSourceStop(_source);
@@ -224,6 +228,9 @@ stop() {
 void OpenALAudioSound::
 finished() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  if (!is_valid()) return;
+
   stop();
   _current_time = _length;
   if (!_finished_event.empty()) {
@@ -254,6 +261,7 @@ get_loop() const {
 void OpenALAudioSound::
 set_loop_count(unsigned long loop_count) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
   if (!is_valid()) return;
 
   if (loop_count >= 1000000000) {
@@ -281,9 +289,14 @@ void OpenALAudioSound::
 restart_stalled_audio() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   ALenum status;
+
+  if (!is_valid()) return;
+  assert(is_playing());
+
   if (_stream_queued.size() == 0) {
     return;
   }
+
   alGetError();
   alGetSourcei(_source, AL_SOURCE_STATE, &status);
   if (status != AL_PLAYING) {
@@ -297,6 +310,9 @@ restart_stalled_audio() {
 void OpenALAudioSound::
 queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  assert(is_playing());
+
   // Now push the buffer into the stream queue.
   alGetError();
   alSourceQueueBuffers(_source,1,&buffer);
@@ -320,6 +336,8 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 ALuint OpenALAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char *data) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  assert(is_playing());
 
   // Allocate a buffer to hold the data.
   alGetError();
@@ -352,6 +370,8 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
 int OpenALAudioSound::
 read_stream_data(int bytelen, unsigned char *buffer) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  assert(has_sound_data());
 
   MovieAudioCursor *cursor = _sd->_stream;
   double length = cursor->length();
@@ -403,6 +423,9 @@ read_stream_data(int bytelen, unsigned char *buffer) {
 void OpenALAudioSound::
 correct_calibrated_clock(double rtc, double t) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  assert(is_playing());
+
   double cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
   double diff = cc-t;
   _calibrated_clock_decavg = (_calibrated_clock_decavg * 0.95) + (diff * 0.05);
@@ -434,7 +457,11 @@ correct_calibrated_clock(double rtc, double t) {
 void OpenALAudioSound::
 pull_used_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
   if (!is_valid()) return;
+  assert(is_playing());
+  assert(has_sound_data());
+
   while (_stream_queued.size()) {
     ALuint buffer = 0;
     ALint num_buffers = 0;
@@ -491,6 +518,8 @@ push_fresh_buffers() {
   static unsigned char data[65536];
 
   if (!is_valid()) return;
+  assert(is_playing());
+  assert(has_sound_data());
 
   if (_sd->_sample) {
     while ((_loops_completed < _playing_loops) &&
@@ -553,7 +582,9 @@ get_time() const {
 void OpenALAudioSound::
 cache_time(double rtc) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
   assert(is_playing());
+
   double t=get_calibrated_clock(rtc);
   double max = _length * _playing_loops;
   if (t >= max) {
@@ -761,13 +792,16 @@ get_3d_drop_off_factor() const {
 }
 
 /**
- * Sets whether the sound is marked "active".  By default, the active flag
+ * Sets whether the sound is marked "active".  By default, the active flag is
  * true for all sounds.  If the active flag is set to false for any particular
  * sound, the sound will not be heard.
  */
 void OpenALAudioSound::
 set_active(bool active) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  if (!is_valid()) return;
+
   if (_active!=active) {
     _active=active;
     if (_active) {
