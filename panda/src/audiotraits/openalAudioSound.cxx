@@ -434,6 +434,7 @@ correct_calibrated_clock(double rtc, double t) {
 void OpenALAudioSound::
 pull_used_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+  if (_manager == 0) return;
   while (_stream_queued.size()) {
     ALuint buffer = 0;
     ALint num_buffers = 0;
@@ -488,6 +489,8 @@ void OpenALAudioSound::
 push_fresh_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   static unsigned char data[65536];
+
+  if (_manager == 0) return;
 
   if (_sd->_sample) {
     while ((_loops_completed < _playing_loops) &&
