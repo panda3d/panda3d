@@ -1140,7 +1140,7 @@ discard_excess_cache(int sample_limit) {
 void OpenALAudioManager::
 delete_buffer(ALuint buffer) {
   ReMutexHolder holder(_lock);
-  int attempt = 0;
+  int tries = 0;
   ALuint error;
 
   // Keep trying until we succeed (or give up).
@@ -1154,13 +1154,13 @@ delete_buffer(ALuint buffer) {
     } else if (error != AL_INVALID_OPERATION) {
       // We weren't expecting that.  This should be reported.
       break;
-    } else if (attempt >= openal_buffer_delete_reattempts.get_value()) {
-      // We ran out of reattempts.  Give up.
+    } else if (tries >= openal_buffer_delete_retries.get_value()) {
+      // We ran out of retries.  Give up.
       break;
     } else {
-      // Make another attempt after (delay * 2^n) seconds.
-      Thread::sleep(openal_buffer_delete_delay.get_value() * (1 << attempt));
-      attempt++;
+      // Make another try after (delay * 2^n) seconds.
+      Thread::sleep(openal_buffer_delete_delay.get_value() * (1 << tries));
+      tries++;
     }
   }
 
