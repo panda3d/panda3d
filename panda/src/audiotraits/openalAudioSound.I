@@ -55,10 +55,17 @@ require_sound_data() {
 /**
  * Checks if the sound data record is present and releasable, and if so,
  * releases it.
+ *
+ * The sound data is "releasable" if it's from an ordinary, local file.  Remote
+ * streams cannot necessarily be reopened if lost, so we'll hold onto them if
+ * so.  The `force` argument overrides this, indicating we don't intend to
+ * reacquire the sound data.
  */
 void OpenALAudioSound::
-release_sound_data() {
-  if ((_sd!=0) && (!_movie->get_filename().empty())) {
+release_sound_data(bool force) {
+  if (!has_sound_data()) return;
+
+  if (force || !_movie->get_filename().empty()) {
     _manager->decrement_client_count(_sd);
     _sd = 0;
   }

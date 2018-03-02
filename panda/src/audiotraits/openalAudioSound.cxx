@@ -80,7 +80,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
       audio_warning("stereo sound " << movie->get_filename() << " will not be spatialized");
     }
   }
-  release_sound_data();
+  release_sound_data(false);
 }
 
 
@@ -106,8 +106,7 @@ cleanup() {
     stop();
   }
   if (has_sound_data()) {
-    _manager->decrement_client_count(_sd);
-    _sd = 0;
+    release_sound_data(true);
   }
   _manager->release_sound(this);
   _manager = 0;
@@ -219,7 +218,7 @@ stop() {
   }
 
   _manager->stopping_sound(this);
-  release_sound_data();
+  release_sound_data(false);
 }
 
 /**
