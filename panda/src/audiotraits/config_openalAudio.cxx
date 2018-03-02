@@ -30,21 +30,21 @@ ConfigVariableString openal_device
  PRC_DESC("Specify the OpenAL device string for audio playback (no quotes).  If this "
           "is not specified, the OpenAL default device is used."));
 
-ConfigVariableInt openal_buffer_delete_reattempts
-("openal-buffer-delete-reattempts", 5,
+ConfigVariableInt openal_buffer_delete_retries
+("openal-buffer-delete-retries", 5,
  PRC_DESC("If deleting a buffer fails due to still being in use, the OpenAL "
-          "sound plugin will wait a moment and reattempt deletion, with an "
-          "exponentially-increasing delay for each attempt.  This number "
-          "specifies how many repeat attempts (not counting the initial attempt) "
+          "sound plugin will wait a moment and retry deletion, with an "
+          "exponentially-increasing delay for each try.  This number "
+          "specifies how many repeat tries (not counting the initial try) "
           "should be made before giving up and raising an error."));
 
 ConfigVariableDouble openal_buffer_delete_delay
 ("openal-buffer-delete-delay", 0.001,
  PRC_DESC("If deleting a buffer fails due to still being in use, the OpenAL "
-          "sound plugin will wait a moment and reattempt deletion, with an "
-          "exponentially-increasing delay for each attempt.  This number "
+          "sound plugin will wait a moment and retry deletion, with an "
+          "exponentially-increasing delay for each try.  This number "
           "specifies how long, in seconds, the OpenAL plugin will wait after "
-          "its first failed attempt.  The second attempt will be double this "
+          "its first failed try.  The second try will be double this "
           "delay, the third quadruple, and so on."));
 
 
