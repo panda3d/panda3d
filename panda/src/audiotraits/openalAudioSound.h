@@ -117,7 +117,7 @@ private:
   void pull_used_buffers();
   void push_fresh_buffers();
   INLINE bool require_sound_data();
-  INLINE void release_sound_data();
+  INLINE void release_sound_data(bool force);
 
   INLINE bool is_valid() const;
   INLINE bool is_playing() const;
