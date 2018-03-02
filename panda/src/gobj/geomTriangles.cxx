@@ -17,6 +17,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "graphicsStateGuardianBase.h"
+#include "geomTrianglesAdjacency.h"
 
 TypeHandle GeomTriangles::_type_handle;
 
@@ -64,6 +65,76 @@ make_copy() const {
 GeomPrimitive::PrimitiveType GeomTriangles::
 get_primitive_type() const {
   return PT_polygons;
+}
+
+/**
+ * Adds adjacency information to this primitive.  May return null if this type
+ * of geometry does not support adjacency information.
+ */
+CPT(GeomPrimitive) GeomTriangles::
+make_adjacency() const {
+  Thread *current_thread = Thread::get_current_thread();
+  PT(GeomTrianglesAdjacency) adj = new GeomTrianglesAdjacency(get_usage_hint());
+
+  GeomPrimitivePipelineReader from(this, current_thread);
+  int num_vertices = from.get_num_vertices();
+
+  PT(GeomVertexArrayData) new_vertices = adj->make_index_data();
+  new_vertices->set_num_rows(num_vertices * 2);
+
+  // First, build a map of each triangle's halfedges to its opposing vertices.
+  map<pair<int, int>, int> edge_map;
+  for (int i = 0; i < num_vertices; i += 3) {
+    int v0 = from.get_vertex(i);
+    int v1 = from.get_vertex(i + 1);
+    int v2 = from.get_vertex(i + 2);
+    edge_map[make_pair(v0, v1)] = v2;
+    edge_map[make_pair(v1, v2)] = v0;
+    edge_map[make_pair(v2, v0)] = v1;
+  }
+
+  // Now build up the new vertex data.  For each edge, we insert the
+  // appropriate connecting vertex.
+  {
+    GeomVertexWriter to(new_vertices, 0);
+    for (int i = 0; i < num_vertices; i += 3) {
+      int v0 = from.get_vertex(i);
+      int v1 = from.get_vertex(i + 1);
+      int v2 = from.get_vertex(i + 2);
+
+      // Get the third vertex of the triangle adjoining this edge.
+      to.set_data1(v0);
+      auto it = edge_map.find(make_pair(v1, v0));
+      if (it != edge_map.end()) {
+        to.set_data1i(it->second);
+      } else {
+        // Um, no adjoining triangle?  Just repeat the vertex, I guess.
+        to.set_data1i(v0);
+      }
+
+      // Do the same for the other two edges.
+      to.set_data1(v1);
+      it = edge_map.find(make_pair(v2, v1));
+      if (it != edge_map.end()) {
+        to.set_data1i(it->second);
+      } else {
+        to.set_data1i(v1);
+      }
+
+      to.set_data1(v2);
+      it = edge_map.find(make_pair(v0, v2));
+      if (it != edge_map.end()) {
+        to.set_data1i(it->second);
+      } else {
+        to.set_data1i(v2);
+      }
+    }
+
+    nassertr(to.is_at_end(), nullptr);
+  }
+
+  adj->set_vertices(move(new_vertices));
+  return adj.p();
 }
 
 /**

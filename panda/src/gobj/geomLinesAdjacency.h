@@ -6,44 +6,40 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file geomTriangles.h
- * @author drose
- * @date 2005-03-06
+ * @file geomLinesAdjacency.h
+ * @author rdb
+ * @date 2018-03-01
  */
 
-#ifndef GEOMTRIANGLES_H
-#define GEOMTRIANGLES_H
+#ifndef GEOMLINESADJACENCY_H
+#define GEOMLINESADJACENCY_H
 
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
 /**
- * Defines a series of disconnected triangles.
+ * Defines a series of disconnected line segments with adjacency information,
+ * for use with geometry shaders.
  */
-class EXPCL_PANDA_GOBJ GeomTriangles : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomLinesAdjacency : public GeomPrimitive {
 PUBLISHED:
-  explicit GeomTriangles(UsageHint usage_hint);
-  GeomTriangles(const GeomTriangles &copy);
-  virtual ~GeomTriangles();
-  ALLOC_DELETED_CHAIN(GeomTriangles);
+  explicit GeomLinesAdjacency(UsageHint usage_hint);
+  GeomLinesAdjacency(const GeomLinesAdjacency &copy);
+  virtual ~GeomLinesAdjacency();
+  ALLOC_DELETED_CHAIN(GeomLinesAdjacency);
 
 public:
   virtual PT(GeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
-
-  CPT(GeomPrimitive) make_adjacency() const;
+  virtual int get_geom_rendering() const;
 
   virtual int get_num_vertices_per_primitive() const;
+  virtual int get_min_num_vertices_per_primitive() const;
 
 public:
   virtual bool draw(GraphicsStateGuardianBase *gsg,
                     const GeomPrimitivePipelineReader *reader,
                     bool force) const;
-
-protected:
-  virtual CPT(GeomPrimitive) doubleside_impl() const;
-  virtual CPT(GeomPrimitive) reverse_impl() const;
-  virtual CPT(GeomVertexArrayData) rotate_impl() const;
 
 public:
   static void register_with_read_factory();
@@ -57,7 +53,7 @@ public:
   }
   static void init_type() {
     GeomPrimitive::init_type();
-    register_type(_type_handle, "GeomTriangles",
+    register_type(_type_handle, "GeomLinesAdjacency",
                   GeomPrimitive::get_class_type());
   }
   virtual TypeHandle get_type() const {

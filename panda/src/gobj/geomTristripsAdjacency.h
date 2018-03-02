@@ -6,34 +6,33 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file geomTriangles.h
- * @author drose
- * @date 2005-03-06
+ * @file geomTristripsAdjacency.h
+ * @author rdb
+ * @date 2018-03-01
  */
 
-#ifndef GEOMTRIANGLES_H
-#define GEOMTRIANGLES_H
+#ifndef GEOMTRISTRIPSADJACENCY_H
+#define GEOMTRISTRIPSADJACENCY_H
 
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
 /**
- * Defines a series of disconnected triangles.
+ * Defines a series of triangle strips.
  */
-class EXPCL_PANDA_GOBJ GeomTriangles : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomTristripsAdjacency : public GeomPrimitive {
 PUBLISHED:
-  explicit GeomTriangles(UsageHint usage_hint);
-  GeomTriangles(const GeomTriangles &copy);
-  virtual ~GeomTriangles();
-  ALLOC_DELETED_CHAIN(GeomTriangles);
+  explicit GeomTristripsAdjacency(UsageHint usage_hint);
+  GeomTristripsAdjacency(const GeomTristripsAdjacency &copy);
+  virtual ~GeomTristripsAdjacency();
+  ALLOC_DELETED_CHAIN(GeomTristripsAdjacency);
 
 public:
   virtual PT(GeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
-
-  CPT(GeomPrimitive) make_adjacency() const;
-
-  virtual int get_num_vertices_per_primitive() const;
+  virtual int get_geom_rendering() const;
+  virtual int get_min_num_vertices_per_primitive() const;
+  virtual int get_num_unused_vertices_per_primitive() const;
 
 public:
   virtual bool draw(GraphicsStateGuardianBase *gsg,
@@ -41,9 +40,9 @@ public:
                     bool force) const;
 
 protected:
-  virtual CPT(GeomPrimitive) doubleside_impl() const;
-  virtual CPT(GeomPrimitive) reverse_impl() const;
-  virtual CPT(GeomVertexArrayData) rotate_impl() const;
+  virtual bool requires_unused_vertices() const;
+  virtual void append_unused_vertices(GeomVertexArrayData *vertices,
+                                      int vertex);
 
 public:
   static void register_with_read_factory();
@@ -57,7 +56,7 @@ public:
   }
   static void init_type() {
     GeomPrimitive::init_type();
-    register_type(_type_handle, "GeomTriangles",
+    register_type(_type_handle, "GeomTristripsAdjacency",
                   GeomPrimitive::get_class_type());
   }
   virtual TypeHandle get_type() const {
