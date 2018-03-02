@@ -119,9 +119,11 @@ private:
   INLINE bool require_sound_data();
   INLINE void release_sound_data();
 
-private:
+  INLINE bool is_valid() const;
+  INLINE bool is_playing() const;
+  INLINE bool has_sound_data() const;
 
-  void do_stop();
+private:
 
   PT(MovieAudio) _movie;
   OpenALAudioManager::SoundData *_sd;

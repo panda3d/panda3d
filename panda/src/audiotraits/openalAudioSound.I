@@ -63,3 +63,33 @@ release_sound_data() {
     _sd = 0;
   }
 }
+
+/**
+ * Checks if the sound has NOT been cleaned up yet.
+ */
+bool OpenALAudioSound::
+is_valid() const {
+  return _manager != NULL;
+}
+
+/**
+ * Checks if the sound is playing.  This is per the OpenALAudioManager's
+ * definition of "playing" -- as in, "will be called upon every update"
+ *
+ * This is mainly intended for use in asserts.
+ */
+bool OpenALAudioSound::
+is_playing() const {
+  // Manager only gives us a _source if we need it (to talk to OpenAL), so:
+  return _source != 0;
+}
+
+/**
+ * Checks if the sound has its SoundData structure open at the moment.
+ *
+ * This is mainly intended for use in asserts.
+ */
+bool OpenALAudioSound::
+has_sound_data() const {
+  return _sd != 0;
+}
