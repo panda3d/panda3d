@@ -1017,7 +1017,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _on_planes.resize(num_on_planes);
   if (manager->get_file_minor_ver() >= 40) {
     for (int i = 0; i < num_on_planes; i++) {
-      manager->read_pointer(scan);
+      _on_planes[i].fillin(scan, manager);
     }
   } else {
     manager->read_pointers(scan, num_on_planes);
