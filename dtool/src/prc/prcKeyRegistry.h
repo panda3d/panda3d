@@ -33,7 +33,7 @@ typedef struct evp_pkey_st EVP_PKEY;
  *
  * This class requires the OpenSSL library.
  */
-class EXPCL_DTOOLCONFIG PrcKeyRegistry {
+class EXPCL_DTOOL_PRC PrcKeyRegistry {
 protected:
   PrcKeyRegistry();
   ~PrcKeyRegistry();
