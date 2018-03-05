@@ -22,7 +22,7 @@
  * This is a convenience class to specialize ConfigVariable as a 64-bit
  * integer type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableInt64 : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableInt64 : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableInt64(const string &name);
   INLINE ConfigVariableInt64(const string &name, int64_t default_value,

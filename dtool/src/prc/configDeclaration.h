@@ -30,7 +30,7 @@ class ConfigVariableCore;
  * pairing of a string name (actually, a ConfigVariableCore pointer) to a
  * string value.
  */
-class EXPCL_DTOOLCONFIG ConfigDeclaration : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigDeclaration : public ConfigFlags {
 private:
   ConfigDeclaration(ConfigPage *page, ConfigVariableCore *variable,
                     const string &string_value, int decl_seq);

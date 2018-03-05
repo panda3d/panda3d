@@ -31,7 +31,7 @@
  *
  * Seeking is not supported.
  */
-class EXPCL_DTOOLCONFIG IDecryptStream : public istream {
+class EXPCL_DTOOL_PRC IDecryptStream : public istream {
 PUBLISHED:
   INLINE IDecryptStream();
   INLINE explicit IDecryptStream(istream *source, bool owns_source,
@@ -66,7 +66,7 @@ private:
  *
  * Seeking is not supported.
  */
-class EXPCL_DTOOLCONFIG OEncryptStream : public ostream {
+class EXPCL_DTOOL_PRC OEncryptStream : public ostream {
 PUBLISHED:
   INLINE OEncryptStream();
   INLINE explicit OEncryptStream(ostream *dest, bool owns_dest,

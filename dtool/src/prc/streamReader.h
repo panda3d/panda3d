@@ -24,7 +24,7 @@
  * A class to read sequential binary data directly from an istream.  Its
  * interface is similar to DatagramIterator by design; see also StreamWriter.
  */
-class EXPCL_DTOOLCONFIG StreamReader {
+class EXPCL_DTOOL_PRC StreamReader {
 public:
   INLINE StreamReader(istream &in);
 PUBLISHED:
