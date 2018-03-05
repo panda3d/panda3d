@@ -116,8 +116,8 @@ class ObjectPool:
         lengths = list(self._len2obj.keys())
         lengths.sort()
         lengths.reverse()
-        for count in counts:
-            pass
+        for length in lengths:
+            print(length)
 
     def printReferrers(self, numEach=3):
         """referrers of the first few of each type of object"""
