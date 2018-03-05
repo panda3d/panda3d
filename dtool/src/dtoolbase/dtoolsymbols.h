@@ -109,6 +109,9 @@
 #define EXPCL_DTOOL_PRC EXPCL_DTOOLCONFIG
 #define EXPTP_DTOOL_PRC EXPTP_DTOOLCONFIG
 
+#define EXPCL_DTOOL_DCONFIG EXPCL_DTOOLCONFIG
+#define EXPTP_DTOOL_DCONFIG EXPTP_DTOOLCONFIG
+
 
 /* These two are always defined empty, because pystub is statically
    built.  But we leave the symbol around in case we change our minds
