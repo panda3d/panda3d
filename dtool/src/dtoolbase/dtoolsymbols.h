@@ -67,8 +67,6 @@
   can define all of these stupid symbols to the empty string.
   */
 
-#define EXPCL_EMPTY
-
 #ifdef BUILDING_DTOOL
   #define EXPCL_DTOOL EXPORT_CLASS
   #define EXPTP_DTOOL EXPORT_TEMPL
