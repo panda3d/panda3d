@@ -278,8 +278,7 @@ class Semaphore(core.Semaphore):
     threading.Semaphore object. """
 
     def __init__(self, value = 1):
-        
-        .Semaphore.__init__(self, value)
+        core.Semaphore.__init__(self, value)
 
     def acquire(self, blocking = True):
         if blocking:
