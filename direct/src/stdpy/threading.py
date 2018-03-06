@@ -278,7 +278,8 @@ class Semaphore(core.Semaphore):
     threading.Semaphore object. """
 
     def __init__(self, value = 1):
-        core.Semaphore.__init__(self, value)
+        
+        .Semaphore.__init__(self, value)
 
     def acquire(self, blocking = True):
         if blocking:
@@ -302,7 +303,7 @@ class BoundedSemaphore(Semaphore):
         Semaphore.__init__(value)
 
     def release(self):
-        if self.getCount() > value:
+        if self.getCount() > self.__max:
             raise ValueError
 
         Semaphore.release(self)
