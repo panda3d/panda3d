@@ -98,5 +98,5 @@ is_playing() const {
  */
 INLINE bool OpenALAudioSound::
 has_sound_data() const {
-  return _sd != 0;
+  return _sd != NULL;
 }
