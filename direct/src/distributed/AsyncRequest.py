@@ -1,4 +1,3 @@
-#from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
 from .ConnectionRepository import *
@@ -50,13 +49,13 @@ class AsyncRequest(DirectObject):
         timeoutTime is how many seconds to wait before aborting the request.
         numRetries is the number of times to retry the request before giving up.
         """
-        assert AsyncRequest.notify.debugCall()
+        assert self.notify.debugCall()
         if __debug__:
             if _overrideTimeoutTimeForAllAsyncRequests.getValue() >= 0.0:
                 timeoutTime = _overrideTimeoutTimeForAllAsyncRequests.getValue()
             if _overrideNumRetriesForAllAsyncRequests.getValue() >= 0:
                 numRetries = _overrideNumRetriesForAllAsyncRequests.getValue()
-        AsyncRequest._asyncRequests[id(self)] = self
+        self._asyncRequests[id(self)] = self
         self.deletingMessage = "AsyncRequest-deleting-%s"%(id(self,))
         self.air = air
         self.replyToChannelId = replyToChannelId
@@ -66,8 +65,8 @@ class AsyncRequest(DirectObject):
         self._initialNumRetries = numRetries
 
     def delete(self):
-        assert AsyncRequest.notify.debugCall()
-        del AsyncRequest._asyncRequests[id(self)]
+        assert self.notify.debugCall()
+        del self._asyncRequests[id(self)]
         self.ignoreAll()
         self._resetTimeoutTask(False)
         messenger.send(self.deletingMessage, [])
@@ -80,7 +79,7 @@ class AsyncRequest(DirectObject):
         """
         Request an already created object, i.e. read from database.
         """
-        assert AsyncRequest.notify.debugCall()
+        assert self.notify.debugCall()
         if key is None:
             # default the dictionary key to the fieldName
             key = fieldName
@@ -102,7 +101,7 @@ class AsyncRequest(DirectObject):
         """
         Request an already created object, i.e. read from database.
         """
-        assert AsyncRequest.notify.debugCall()
+        assert self.notify.debugCall()
         if key is None:
             # default the dictionary key to the fieldName
             key = fieldNames[0]
@@ -117,7 +116,7 @@ class AsyncRequest(DirectObject):
         self._resetTimeoutTask()
 
     def askForObjectFieldsByString(self, dbId, dclassName, objString, fieldNames, key=None, context=None):
-        assert AsyncRequest.notify.debugCall()
+        assert self.notify.debugCall()
         assert dbId
         if key is None:
             # default the dictionary key to the fieldNames
@@ -135,7 +134,7 @@ class AsyncRequest(DirectObject):
         """
         Request an already created object, i.e. read from database.
         """
-        assert AsyncRequest.notify.debugCall()
+        assert self.notify.debugCall()
         assert doId
         if context is None:
             context = self.air.allocateContext()
@@ -157,7 +156,7 @@ class AsyncRequest(DirectObject):
         object (which it is).  This is useful on the AI where we really
         do want the object on the AI.
         """
-        assert AsyncRequest.notify.debugCall()
+        assert self.notify.debugCall()
         assert name
         assert className
         self.neededObjects[name] = None
@@ -181,7 +180,7 @@ class AsyncRequest(DirectObject):
         object on the UD, we just want the object created and the UD wants
         to send messages to it using the ID.
         """
-        assert AsyncRequest.notify.debugCall()
+        assert self.notify.debugCall()
         assert name
         assert className
         self.neededObjects[name] = None
@@ -239,10 +238,10 @@ class AsyncRequest(DirectObject):
                 "AsyncRequestTimer-%s"%(id(self,)))
 
     def timeout(self, task):
-        assert AsyncRequest.notify.debugCall(
+        assert self.notify.debugCall(
             "neededObjects: %s"%(self.neededObjects,))
         if self.numRetries > 0:
-            assert AsyncRequest.notify.debug(
+            assert self.notify.debug(
                 'Timed out. Trying %d more time(s) : %s' %
                 (self.numRetries + 1, repr(self.neededObjects)))
             self.numRetries -= 1
