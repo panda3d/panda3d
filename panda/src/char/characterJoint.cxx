@@ -60,7 +60,7 @@ CharacterJoint(Character *character,
   // update_internals() to get our _net_transform set properly.
   update_internals(root, parent, true, false, current_thread);
 
-  // And then compute its inverse.  This is needed for ComputedVertices,
+  // And then compute its inverse.  This is needed for JointVertexTransform,
   // during animation.
   _initial_net_transform_inverse = invert(_net_transform);
 }
