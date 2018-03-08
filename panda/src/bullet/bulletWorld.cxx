@@ -1108,6 +1108,24 @@ get_group_collision_flag(unsigned int group1, unsigned int group2) const {
  *
  */
 void BulletWorld::
+set_force_update_all_aabbs(bool force) {
+  LightMutexHolder holder(get_global_lock());
+  _world->setForceUpdateAllAabbs(force);
+}
+
+/**
+ *
+ */
+bool BulletWorld::
+get_force_update_all_aabbs() const {
+  LightMutexHolder holder(get_global_lock());
+  return _world->getForceUpdateAllAabbs();
+}
+
+/**
+ *
+ */
+void BulletWorld::
 set_contact_added_callback(CallbackObject *obj) {
   LightMutexHolder holder(get_global_lock());
 
