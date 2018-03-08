@@ -39,7 +39,8 @@ CharacterJoint(const CharacterJoint &copy) :
   MovingPartMatrix(copy),
   _character(NULL),
   _net_transform(copy._net_transform),
-  _initial_net_transform_inverse(copy._initial_net_transform_inverse)
+  _initial_net_transform_inverse(copy._initial_net_transform_inverse),
+  _skinning_matrix(copy._skinning_matrix)
 {
   // We don't copy the sets of transform nodes.
 }
@@ -60,9 +61,12 @@ CharacterJoint(Character *character,
   // update_internals() to get our _net_transform set properly.
   update_internals(root, parent, true, false, current_thread);
 
-  // And then compute its inverse.  This is needed for JointVertexTransform,
-  // during animation.
+  // And then compute its inverse.  This is needed to track changes in
+  // _net_transform as the joint moves, so we can recompute _skinning_matrix,
+  // which maps vertices from their initial positions to their animated
+  // positions.
   _initial_net_transform_inverse = invert(_net_transform);
+  _skinning_matrix = LMatrix4::ident_mat();
 }
 
 /**
@@ -141,11 +145,13 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
       }
     }
 
-    // Also tell our related JointVertexTransforms that they now need to
-    // recompute themselves.
+    // Recompute the transform used by any vertices animated by this joint.
+    _skinning_matrix = _initial_net_transform_inverse * _net_transform;
+
+    // Also tell our related JointVertexTransforms that we've changed their
+    // underlying matrix.
     VertexTransforms::iterator vti;
     for (vti = _vertex_transforms.begin(); vti != _vertex_transforms.end(); ++vti) {
-      (*vti)->_matrix_stale = true;
       (*vti)->mark_modified(current_thread);
     }
   }
