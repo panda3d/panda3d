@@ -247,6 +247,10 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
     _num_components = 4;
     break;
 
+  case V4L2_PIX_FMT_GREY:
+    _num_components = 1;
+    break;
+
   default:
     vision_cat.error() << "Unsupported pixel format " << src->get_pixel_format() << "!\n";
     _ready = false;
@@ -484,6 +488,7 @@ fetch_buffer() {
 
   case V4L2_PIX_FMT_BGR24:
   case V4L2_PIX_FMT_BGR32:
+  case V4L2_PIX_FMT_GREY:
     // Simplest case: copying every row verbatim.
     nassertr(old_bpl == new_bpl, NULL);
 
