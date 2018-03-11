@@ -209,7 +209,13 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
 
   _buffers = NULL;
   _buflens = NULL;
-  _fd = open(src->_device.c_str(), O_RDWR);
+
+  int mode = O_RDWR;
+  if (!v4l_blocking) {
+    mode = O_NONBLOCK;
+  }
+
+  _fd = open(src->_device.c_str(), mode);
   if (-1 == _fd) {
     vision_cat.error() << "Failed to open " << src->_device.c_str() << "\n";
     return;
@@ -397,6 +403,10 @@ fetch_buffer() {
   vbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   vbuf.memory = V4L2_MEMORY_MMAP;
   if (-1 == ioctl(_fd, VIDIOC_DQBUF, &vbuf) && errno != EIO) {
+    if (errno == EAGAIN) {
+      // Simply nothing is available yet.
+      return NULL;
+    }
     vision_cat.error() << "Failed to dequeue buffer!\n";
     return NULL;
   }
