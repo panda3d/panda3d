@@ -1278,7 +1278,8 @@ p_read_object() {
       } else {
         if (bam_cat.is_spam()) {
           bam_cat.spam()
-            << "Read a " << object->get_type() << ": " << (void *)object << "\n";
+            << "Read a " << object->get_type() << ": " << (void *)object
+            << " (id=" << object_id << ")\n";
         }
       }
     }

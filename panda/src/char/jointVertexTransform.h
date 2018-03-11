@@ -47,14 +47,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 private:
-  INLINE void check_matrix() const;
-  void compute_matrix();
-
   PT(CharacterJoint) _joint;
-
-  LMatrix4 _matrix;
-  bool _matrix_stale;
-  LightMutex _lock;
 
 public:
   static void register_with_read_factory();

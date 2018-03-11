@@ -126,10 +126,25 @@ PUBLISHED:
   MAKE_PROPERTY(class_slot, get_class_slot);
 
 public:
+  // This data is only needed when reading from a bam file.
+  typedef pvector<PT(PandaNode) > NodeList;
+  class BamAuxData : public BamReader::AuxData {
+  public:
+    // We hold a pointer to each of the PandaNodes on the on_list and
+    // off_list.  We will later convert these to NodePaths in
+    // finalize().
+    int _num_off_planes;
+    int _num_on_planes;
+    NodeList _off_list;
+    NodeList _on_list;
+  };
+
+public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
-  virtual bool require_fully_complete() const;
+
+  virtual void finalize(BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

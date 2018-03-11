@@ -244,7 +244,6 @@ add_waiting_task(AsyncTask *task) {
  */
 void AsyncFuture::
 wake_task(AsyncTask *task) {
-  cerr << "waking task\n";
   AsyncTaskManager *manager = task->_manager;
   if (manager == nullptr) {
     // If it's an unscheduled task, schedule it on the same manager as the

@@ -5179,7 +5179,7 @@ if (PkgSkip("SPEEDTREE")==0):
 # DIRECTORY: panda/src/testbed/
 #
 
-if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0 and GetTarget() != 'android'):
+if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0):
   OPTS=['DIR:panda/src/testbed']
   TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
   TargetAdd('pview.exe', input='pview_pview.obj')
@@ -5198,6 +5198,7 @@ if (not RUNTIME and GetTarget() == 'android'):
   TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
   TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
   TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')
+  TargetAdd('org/panda3d/android/PythonActivity.class', opts=OPTS, input='PythonActivity.java')
 
   TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
   TargetAdd('libp3android.dll', input='p3android_composite1.obj')
@@ -5208,16 +5209,27 @@ if (not RUNTIME and GetTarget() == 'android'):
   TargetAdd('android_main.obj', opts=OPTS, input='android_main.cxx')
 
   if (not RTDIST and PkgSkip("PVIEW")==0):
-    TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
+    TargetAdd('libpview_pview.obj', opts=OPTS, input='pview.cxx')
     TargetAdd('libpview.dll', input='android_native_app_glue.obj')
     TargetAdd('libpview.dll', input='android_main.obj')
-    TargetAdd('libpview.dll', input='pview_pview.obj')
+    TargetAdd('libpview.dll', input='libpview_pview.obj')
     TargetAdd('libpview.dll', input='libp3framework.dll')
     if not PkgSkip("EGG"):
       TargetAdd('libpview.dll', input='libpandaegg.dll')
     TargetAdd('libpview.dll', input='libp3android.dll')
     TargetAdd('libpview.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libpview.dll', opts=['MODULE', 'ANDROID'])
+
+  if (not RTDIST and PkgSkip("PYTHON")==0):
+    OPTS += ['PYTHON']
+    TargetAdd('ppython_ppython.obj', opts=OPTS, input='python_main.cxx')
+    TargetAdd('libppython.dll', input='android_native_app_glue.obj')
+    TargetAdd('libppython.dll', input='android_main.obj')
+    TargetAdd('libppython.dll', input='ppython_ppython.obj')
+    TargetAdd('libppython.dll', input='libp3framework.dll')
+    TargetAdd('libppython.dll', input='libp3android.dll')
+    TargetAdd('libppython.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libppython.dll', opts=['MODULE', 'ANDROID', 'PYTHON'])
 
 #
 # DIRECTORY: panda/src/androiddisplay/
@@ -7632,7 +7644,7 @@ def MakeInstallerAndroid():
                 continue
             if '.so.' in line:
                 dep = line.rpartition('.so.')[0] + '.so'
-                oscmd("patchelf --replace-needed %s %s %s" % (line, dep, target))
+                oscmd("patchelf --replace-needed %s %s %s" % (line, dep, target), True)
             else:
                 dep = line
 
@@ -7643,6 +7655,7 @@ def MakeInstallerAndroid():
                     copy_library(os.path.realpath(fulldep), dep)
                     break
 
+    # Now copy every lib in the lib dir, and its dependencies.
     for base in os.listdir(source_dir):
         if not base.startswith('lib'):
             continue
@@ -7653,6 +7666,59 @@ def MakeInstallerAndroid():
         if os.path.islink(source):
             continue
         copy_library(source, base)
+
+    # Same for Python extension modules.  However, Android is strict about
+    # library naming, so we have a special naming scheme for these, in
+    # conjunction with a custom import hook to find these modules.
+    if not PkgSkip("PYTHON"):
+        suffix = GetExtensionSuffix()
+        source_dir = os.path.join(GetOutputDir(), "panda3d")
+        for base in os.listdir(source_dir):
+            if not base.endswith(suffix):
+                continue
+            modname = base[:-len(suffix)]
+            source = os.path.join(source_dir, base)
+            copy_library(source, "libpy.panda3d.{}.so".format(modname))
+
+        # Same for standard Python modules.
+        import _ctypes
+        source_dir = os.path.dirname(_ctypes.__file__)
+        for base in os.listdir(source_dir):
+            if not base.endswith('.so'):
+                continue
+            modname = base.partition('.')[0]
+            source = os.path.join(source_dir, base)
+            copy_library(source, "libpy.{}.so".format(modname))
+
+    def copy_python_tree(source_root, target_root):
+        for source_dir, dirs, files in os.walk(source_root):
+            if 'site-packages' in dirs:
+                dirs.remove('site-packages')
+
+            if not any(base.endswith('.py') for base in files):
+                continue
+
+            target_dir = os.path.join(target_root, os.path.relpath(source_dir, source_root))
+            target_dir = os.path.normpath(target_dir)
+            os.makedirs(target_dir, 0o755)
+
+            for base in files:
+                if base.endswith('.py'):
+                    target = os.path.join(target_dir, base)
+                    shutil.copy(os.path.join(source_dir, base), target)
+
+    # Copy the Python standard library to the .apk as well.
+    from distutils.sysconfig import get_python_lib
+    stdlib_source = get_python_lib(False, True)
+    stdlib_target = os.path.join("apkroot", "lib", "python{0}.{1}".format(*sys.version_info))
+    copy_python_tree(stdlib_source, stdlib_target)
+
+    # But also copy over our custom site.py.
+    shutil.copy("panda/src/android/site.py", os.path.join(stdlib_target, "site.py"))
+
+    # And now make a site-packages directory containing our direct/panda3d/pandac modules.
+    for tree in "panda3d", "direct", "pandac":
+        copy_python_tree(os.path.join(GetOutputDir(), tree), os.path.join(stdlib_target, "site-packages", tree))
 
     # Copy the models and config files to the virtual assets filesystem.
     oscmd("mkdir apkroot/assets")
@@ -7672,7 +7738,11 @@ def MakeInstallerAndroid():
     oscmd(aapt_cmd)
 
     # And add all the libraries to it.
-    oscmd("cd apkroot && aapt add ../%s classes.dex lib/%s/lib*.so" % (apk_unaligned, SDK["ANDROID_ABI"]))
+    oscmd("cd apkroot && aapt add ../%s classes.dex" % (apk_unaligned))
+    for path, dirs, files in os.walk('apkroot/lib'):
+        if files:
+            rel = os.path.relpath(path, 'apkroot')
+            oscmd("cd apkroot && aapt add ../%s %s/*" % (apk_unaligned, rel))
 
     # Now align the .apk, which is necessary for Android to load it.
     oscmd("zipalign -v -p 4 %s %s" % (apk_unaligned, apk_unsigned))
