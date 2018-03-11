@@ -87,9 +87,9 @@ public class PandaActivity extends NativeActivity {
         return path;
     }
 
-    public String getIntentOutputPath() {
+    public String getIntentOutputUri() {
         Intent intent = getIntent();
-        return intent.getStringExtra("org.panda3d.OUTPUT_PATH");
+        return intent.getStringExtra("org.panda3d.OUTPUT_URI");
     }
 
     public String getCacheDirString() {
