@@ -124,8 +124,8 @@ class build_apps(distutils.core.Command):
         self.rename_paths = _parse_dict(self.rename_paths)
         self.include_patterns = _parse_list(self.include_patterns)
         self.exclude_patterns = _parse_list(self.exclude_patterns)
-        self.include_modules = _parse_list(self.include_modules)
-        self.exclude_modules = _parse_list(self.exclude_modules)
+        self.include_modules = _parse_dict(self.include_modules)
+        self.exclude_modules = _parse_dict(self.exclude_modules)
         self.plugins = _parse_list(self.plugins)
 
         num_gui_apps = len(self.gui_apps)
@@ -276,6 +276,7 @@ class build_apps(distutils.core.Command):
         # Create runtimes
         freezer_extras = set()
         freezer_modules = set()
+        freezer_modpaths = set()
         ext_suffixes = set()
         def create_runtime(appname, mainscript, use_console):
             freezer = FreezeTool.Freezer(platform=platform, path=path)
@@ -325,6 +326,10 @@ class build_apps(distutils.core.Command):
 
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
+            freezer_modpaths.update({
+                mod[1].filename.to_os_specific()
+                for mod in freezer.getModuleDefs() if mod[1].filename
+            })
             for suffix in freezer.moduleSuffixes:
                 if suffix[2] == imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
@@ -434,10 +439,10 @@ class build_apps(distutils.core.Command):
         ignore_copy_list = [
             '__pycache__',
             '*.pyc',
-            '*.py',
             '{}/*'.format(self.build_base),
         ]
         ignore_copy_list += self.exclude_patterns
+        ignore_copy_list += freezer_modpaths
         ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
 
         include_copy_list = [p3d.GlobPattern(i) for i in self.include_patterns]
