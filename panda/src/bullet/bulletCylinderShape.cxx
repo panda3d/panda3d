@@ -151,7 +151,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   // parameters to serialize: radius, height, up
   _half_extents.write_datagram(dg);
-  dg.add_int8((int8_t)_shape->getUpAxis());
+  dg.add_int8((int8_t)_up);
 }
 
 /**
