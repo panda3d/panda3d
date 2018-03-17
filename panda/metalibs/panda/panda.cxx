@@ -20,6 +20,10 @@
 
 #include "checkPandaVersion.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_LIBPANDA)
+  #error Buildsystem error: BUILDING_LIBPANDA not defined
+#endif
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

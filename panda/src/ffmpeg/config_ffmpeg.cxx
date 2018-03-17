@@ -24,6 +24,10 @@ extern "C" {
   #include "libavcodec/avcodec.h"
 }
 
+#if !defined(CPPPARSER) && !defined(BUILDING_FFMPEG)
+  #error Buildsystem error: BUILDING_FFMPEG not defined
+#endif
+
 ConfigureDef(config_ffmpeg);
 NotifyCategoryDef(ffmpeg, "");
 

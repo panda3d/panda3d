@@ -21,6 +21,10 @@
 #include "nullAudioSound.h"
 #include "string_utils.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_AUDIO)
+  #error Buildsystem error: BUILDING_PANDA_AUDIO not defined
+#endif
+
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
 

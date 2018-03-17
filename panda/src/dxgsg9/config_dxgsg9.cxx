@@ -27,6 +27,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDADX)
+  #error Buildsystem error: BUILDING_PANDADX not defined
+#endif
+
 DToolConfigure(config_dxgsg9);
 NotifyCategoryDef(dxgsg9, ":display:gsg");
 NotifyCategoryDef(wdxdisplay9, "display");

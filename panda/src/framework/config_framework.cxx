@@ -22,6 +22,10 @@
 
 #include "checkPandaVersion.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_FRAMEWORK)
+  #error Buildsystem error: BUILDING_FRAMEWORK not defined
+#endif
+
 Configure(config_framework);
 NotifyCategoryDef(framework, "");
 
