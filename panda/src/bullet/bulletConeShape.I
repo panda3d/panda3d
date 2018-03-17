@@ -18,7 +18,8 @@ INLINE BulletConeShape::
 BulletConeShape() :
   _shape(nullptr),
   _radius(0),
-  _height(0) {
+  _height(0),
+  _up(X_up) {
 }
 
 /**

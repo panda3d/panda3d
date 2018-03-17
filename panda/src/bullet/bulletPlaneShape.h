@@ -34,7 +34,6 @@ private:
 PUBLISHED:
   explicit BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
   BulletPlaneShape(const BulletPlaneShape &copy);
-  void operator = (const BulletPlaneShape &copy);
   INLINE ~BulletPlaneShape();
 
   LVector3 get_plane_normal() const;

@@ -17,7 +17,8 @@
 INLINE BulletCylinderShape::
 BulletCylinderShape() :
   _half_extents(LVector3::zero()),
-  _shape(nullptr) {
+  _shape(nullptr),
+  _up(X_up) {
 }
 
 /**

@@ -34,7 +34,6 @@ private:
 PUBLISHED:
   explicit BulletBoxShape(const LVecBase3 &halfExtents);
   BulletBoxShape(const BulletBoxShape &copy);
-  void operator = (const BulletBoxShape &copy);
   INLINE ~BulletBoxShape();
 
   LVecBase3 get_half_extents_without_margin() const;
