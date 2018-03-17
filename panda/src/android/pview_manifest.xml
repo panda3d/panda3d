@@ -7,6 +7,7 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-sdk android:minSdkVersion="21" />
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
 
@@ -44,13 +45,38 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" scheme="content" host="com.termux.files" />
-                <data android:pathPattern=".*\\.egg" />
-                <data android:pathPattern=".*\\.egg.pz" />
-                <data android:pathPattern=".*\\.egg.gz" />
-                <data android:pathPattern=".*\\.bam" />
-                <data android:pathPattern=".*\\.bam.pz" />
-                <data android:pathPattern=".*\\.bam.gz" />
+                <data android:mimeType="*/*" android:scheme="content" android:host="com.termux.files" android:pathPattern=".*\\.egg" />
+            </intent-filter>
+        </activity>
+        <activity android:name="org.panda3d.android.PythonActivity"
+                android:label="Panda Python" android:theme="@android:style/Theme.NoTitleBar"
+                android:configChanges="orientation|keyboardHidden"
+                android:launchMode="singleInstance">
+
+            <meta-data android:name="android.app.lib_name"
+                       android:value="ppython" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/x-python" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" android:scheme="file" />
+                <data android:pathPattern=".*\\.py" />
+                <data android:pathPattern=".*\\.pyw" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" android:scheme="content" android:host="com.termux.files" />
+                <data android:pathPattern=".*\\.py" />
+                <data android:pathPattern=".*\\.pyw" />
             </intent-filter>
         </activity>
     </application>

@@ -446,6 +446,21 @@ process_events() {
         XConfigureWindow(_display, _xwindow, value_mask, &changes);
       }
     }
+
+    // If the window was reconfigured, we may need to re-confine the mouse
+    // pointer.  See GitHub bug #280.
+    if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
+      X11_Cursor cursor = None;
+      if (_properties.get_cursor_hidden()) {
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+        cursor = x11_pipe->get_hidden_cursor();
+      }
+
+      XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync, GrabModeAsync,
+                   _xwindow, cursor, CurrentTime);
+    }
+
     changed_properties = true;
   }
 

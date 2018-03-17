@@ -174,6 +174,7 @@ void find_all_webcams_v4l() {
             case V4L2_PIX_FMT_BGR32:
             case V4L2_PIX_FMT_RGB24:
             case V4L2_PIX_FMT_RGB32:
+            case V4L2_PIX_FMT_GREY:
               break;
 
             default:

@@ -302,7 +302,7 @@ class BoundedSemaphore(Semaphore):
         Semaphore.__init__(value)
 
     def release(self):
-        if self.getCount() > value:
+        if self.getCount() > self.__max:
             raise ValueError
 
         Semaphore.release(self)

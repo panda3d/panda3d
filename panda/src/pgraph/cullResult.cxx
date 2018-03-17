@@ -128,6 +128,29 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     object->_state = object->_state->compose(get_rescale_normal_state(mode));
   }
 
+  // Check for a special wireframe setting.
+  const RenderModeAttrib *rmode;
+  if (object->_state->get_attrib(rmode)) {
+    if (rmode->get_mode() == RenderModeAttrib::M_filled_wireframe) {
+      CullableObject *wireframe_part = new CullableObject(*object);
+      wireframe_part->_state = get_wireframe_overlay_state(rmode);
+
+      if (wireframe_part->munge_geom
+          (_gsg, _gsg->get_geom_munger(wireframe_part->_state, current_thread),
+           traverser, force)) {
+        int wireframe_bin_index = bin_manager->find_bin("fixed");
+        CullBin *bin = get_bin(wireframe_bin_index);
+        nassertv(bin != (CullBin *)NULL);
+        check_flash_bin(wireframe_part->_state, bin_manager, wireframe_bin_index);
+        bin->add_object(wireframe_part, current_thread);
+      } else {
+        delete wireframe_part;
+      }
+
+      object->_state = object->_state->compose(get_wireframe_filled_state());
+    }
+  }
+
   // Check to see if there's a special transparency setting.
   const TransparencyAttrib *trans;
   if (object->_state->get_attrib(trans)) {
@@ -213,29 +236,6 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     default:
       // Other kinds of transparency need no special handling.
       break;
-    }
-  }
-
-  // Check for a special wireframe setting.
-  const RenderModeAttrib *rmode;
-  if (object->_state->get_attrib(rmode)) {
-    if (rmode->get_mode() == RenderModeAttrib::M_filled_wireframe) {
-      CullableObject *wireframe_part = new CullableObject(*object);
-      wireframe_part->_state = get_wireframe_overlay_state(rmode);
-
-      if (wireframe_part->munge_geom
-          (_gsg, _gsg->get_geom_munger(wireframe_part->_state, current_thread),
-           traverser, force)) {
-        int wireframe_bin_index = bin_manager->find_bin("fixed");
-        CullBin *bin = get_bin(wireframe_bin_index);
-        nassertv(bin != (CullBin *)NULL);
-        check_flash_bin(wireframe_part->_state, bin_manager, wireframe_bin_index);
-        bin->add_object(wireframe_part, current_thread);
-      } else {
-        delete wireframe_part;
-      }
-
-      object->_state = object->_state->compose(get_wireframe_filled_state());
     }
   }
 

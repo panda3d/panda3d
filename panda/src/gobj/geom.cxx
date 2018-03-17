@@ -835,6 +835,42 @@ make_patches_in_place() {
 }
 
 /**
+ * Replaces the GeomPrimitives within this Geom with corresponding versions
+ * with adjacency information.  See GeomPrimitive::make_adjacency().
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
+ */
+void Geom::
+make_adjacency_in_place() {
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->make_adjacency();
+    if (new_prim != nullptr) {
+      (*pi) = (GeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+      if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+        all_is_valid = false;
+      }
+#endif
+    }
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+  reset_geom_rendering(cdata);
+  clear_cache_stage(current_thread);
+
+  nassertv(all_is_valid);
+}
+
+/**
  * Copies the primitives from the indicated Geom into this one.  This does
  * require that both Geoms contain the same fundamental type primitives, both
  * have a compatible shade model, and both use the same GeomVertexData.  Both

@@ -129,6 +129,8 @@ private:
   void decrement_client_count(SoundData *sd);
   void discard_excess_cache(int limit);
 
+  void delete_buffer(ALuint buffer);
+
   void starting_sound(OpenALAudioSound* audio);
   void stopping_sound(OpenALAudioSound* audio);
 

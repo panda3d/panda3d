@@ -26,6 +26,10 @@
 Configure(config_vision);
 NotifyCategoryDef(vision, "");
 
+ConfigVariableBool v4l_blocking
+("v4l-blocking", false,
+ PRC_DESC("Set this to true if you want to block waiting for webcam frames."));
+
 ConfigureFn(config_vision) {
   init_libvision();
 }
