@@ -18,6 +18,10 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAX11)
+  #error Buildsystem error: BUILDING_PANDAX11 not defined
+#endif
+
 Configure(config_x11display);
 NotifyCategoryDef(x11display, "display");
 

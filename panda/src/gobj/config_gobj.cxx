@@ -70,6 +70,10 @@
 #include "dconfig.h"
 #include "string_utils.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_GOBJ)
+  #error Buildsystem error: BUILDING_PANDA_GOBJ not defined
+#endif
+
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
 NotifyCategoryDef(shader, "");

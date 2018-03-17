@@ -26,6 +26,10 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_MATHUTIL)
+  #error Buildsystem error: BUILDING_PANDA_MATHUTIL not defined
+#endif
+
 Configure(config_mathutil);
 NotifyCategoryDef(mathutil, "");
 

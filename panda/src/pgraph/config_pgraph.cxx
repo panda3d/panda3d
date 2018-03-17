@@ -92,6 +92,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PGRAPH)
+  #error Buildsystem error: BUILDING_PANDA_PGRAPH not defined
+#endif
+
 ConfigureDef(config_pgraph);
 NotifyCategoryDef(pgraph, "");
 NotifyCategoryDef(loader, "");

@@ -21,6 +21,10 @@
 #include "loaderFileTypeRegistry.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDASPEEDTREE)
+  #error Buildsystem error: BUILDING_PANDASPEEDTREE not defined
+#endif
+
 ConfigureDef(config_speedtree);
 NotifyCategoryDef(speedtree, "");
 

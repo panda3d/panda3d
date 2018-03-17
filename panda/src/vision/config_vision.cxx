@@ -23,6 +23,10 @@
 #include "texturePool.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_VISION)
+  #error Buildsystem error: BUILDING_VISION not defined
+#endif
+
 Configure(config_vision);
 NotifyCategoryDef(vision, "");
 

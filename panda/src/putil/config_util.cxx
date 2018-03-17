@@ -47,6 +47,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PUTIL)
+  #error Buildsystem error: BUILDING_PANDA_PUTIL not defined
+#endif
+
 ConfigureDef(config_util);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);

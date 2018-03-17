@@ -14,6 +14,10 @@
 #include "config_motiontrail.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_MOTIONTRAIL)
+  #error Buildsystem error: BUILDING_DIRECT_MOTIONTRAIL not defined
+#endif
+
 extern EXPCL_DIRECT_MOTIONTRAIL void init_libmotiontrail();
 
 Configure(config_motiontrail);
