@@ -82,6 +82,7 @@ class build_apps(distutils.core.Command):
         self.exclude_modules = {}
         self.platforms = []
         self.plugins = []
+        self.embed_prc_data = True
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
         self.file_handlers= {
@@ -273,6 +274,51 @@ class build_apps(distutils.core.Command):
 
         self.announce('Building runtime for platform: {}'.format(platform), distutils.log.INFO)
 
+        # Gather PRC data
+        prcstring = ''
+        if not use_wheels:
+            dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
+            libdir = os.path.dirname(dtool_fn.to_os_specific())
+            etcdir = os.path.join(libdir, '..', 'etc')
+
+            for fn in os.listdir(etcdir):
+                if fn.lower().endswith('.prc'):
+                    with open(os.path.join(etcdir, fn)) as f:
+                        prcstring += f.read()
+        else:
+            etcfiles = [i for i in p3dwhl.namelist() if i.endswith('.prc')]
+            for fn in etcfiles:
+                with p3dwhl.open(fn) as f:
+                    prcstring += f.read().decode('utf8')
+
+        # Clenup PRC data
+        prcexport = []
+        check_plugins = [
+            'pandaegg',
+            'p3ffmpeg',
+            'p3ptloader',
+        ]
+        for ln in prcstring.split('\n'):
+            useline = True
+            if ln.startswith('#') or not ln:
+                useline = False
+            else:
+                for plugin in check_plugins:
+                    if plugin in ln and plugin not in self.plugins:
+                        useline = False
+                        break
+
+            if useline:
+                prcexport.append(ln)
+
+        # Export PRC data
+        prcexport = '\n'.join(prcexport)
+        if not self.embed_prc_data:
+            etcdir = os.path.join(builddir, 'etc')
+            os.makedirs(etcdir)
+            with open (os.path.join(etcdir, '00-panda3d.prc'), 'w') as f:
+                f.write(prcexport)
+
         # Create runtimes
         freezer_extras = set()
         freezer_modules = set()
@@ -306,7 +352,7 @@ class build_apps(distutils.core.Command):
                 stub_file = open(stub_path, 'rb')
 
             freezer.generateRuntimeFromStub(target_path, stub_file, use_console, {
-                'prc_data': None,
+                'prc_data': prcexport if self.embed_prc_data else None,
                 'default_prc_dir': None,
                 'prc_dir_envvars': None,
                 'prc_path_envvars': None,
@@ -408,31 +454,6 @@ class build_apps(distutils.core.Command):
 
             target_path = os.path.join(builddir, basename)
             self.copy_with_dependencies(source_path, target_path, search_path)
-
-        # Copy Panda3D files
-        etcdir = os.path.join(builddir, 'etc')
-        if not use_wheels:
-            # etc
-            dtool_fn = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name())
-            libdir = os.path.dirname(dtool_fn.to_os_specific())
-            src = os.path.join(libdir, '..', 'etc')
-            shutil.copytree(src, etcdir)
-        else:
-            os.makedirs(etcdir)
-
-            # Combine prc files with libs and copy the whole list
-            panda_files = [i for i in p3dwhl.namelist() if i.endswith('.prc')]
-            for pf in panda_files:
-                dstdir = etcdir if pf.endswith('.prc') else builddir
-                target_path = os.path.join(dstdir, os.path.basename(pf))
-                source_path = os.path.join(p3dwhlfn, pf)
-
-                # If this is a dynamic library, search for dependencies.
-                search_path = [os.path.dirname(source_path)]
-                if use_wheels:
-                    search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
-
-                self.copy_with_dependencies(source_path, target_path, search_path)
 
         # Copy Game Files
         self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
