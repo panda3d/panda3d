@@ -139,6 +139,8 @@ class ControlManager:
         for controls in self.controls.values():
             controls.setWalkSpeed(
                 forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
+            self.currentControls.setSpeeds(
+                forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
 
     def delete(self):
         assert self.notify.debugCall(id(self))
@@ -342,4 +344,3 @@ class ControlManager:
 
             inputState.set("turnLeft", False, inputSource=inputState.WASD)
             inputState.set("turnRight", False, inputSource=inputState.WASD)
-
