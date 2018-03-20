@@ -29,7 +29,7 @@
  * own begin and end times.  Some of them may overlap and some of them may
  * not.
  */
-class EXPCL_DIRECT CMetaInterval : public CInterval {
+class EXPCL_DIRECT_INTERVAL CMetaInterval : public CInterval {
 PUBLISHED:
   explicit CMetaInterval(const string &name);
   virtual ~CMetaInterval();

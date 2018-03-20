@@ -17,7 +17,7 @@
 #include "directbase.h"
 #include "typedReferenceCount.h"
 
-class EXPCL_DIRECT LerpBlendType : public TypedReferenceCount {
+class EXPCL_DIRECT_INTERVAL LerpBlendType : public TypedReferenceCount {
 PUBLISHED:
   LerpBlendType() {}
   virtual ~LerpBlendType();
@@ -47,7 +47,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_DIRECT EaseInBlendType : public LerpBlendType {
+class EXPCL_DIRECT_INTERVAL EaseInBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInBlendType() {}
   virtual ~EaseInBlendType();
@@ -77,7 +77,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_DIRECT EaseOutBlendType : public LerpBlendType {
+class EXPCL_DIRECT_INTERVAL EaseOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseOutBlendType() {}
   virtual ~EaseOutBlendType();
@@ -107,7 +107,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_DIRECT EaseInOutBlendType : public LerpBlendType {
+class EXPCL_DIRECT_INTERVAL EaseInOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInOutBlendType() {}
   virtual ~EaseInOutBlendType();
@@ -136,7 +136,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_DIRECT NoBlendType : public LerpBlendType {
+class EXPCL_DIRECT_INTERVAL NoBlendType : public LerpBlendType {
 PUBLISHED:
   NoBlendType() {}
   virtual ~NoBlendType();
