@@ -14,7 +14,7 @@
 #include "config_motiontrail.h"
 #include "dconfig.h"
 
-extern EXPCL_DIRECT void init_libmotiontrail();
+extern EXPCL_DIRECT_MOTIONTRAIL void init_libmotiontrail();
 
 Configure(config_motiontrail);
 NotifyCategoryDef(motiontrail, "");

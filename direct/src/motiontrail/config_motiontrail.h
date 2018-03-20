@@ -20,8 +20,8 @@
 
 #include "cMotionTrail.h"
 
-NotifyCategoryDecl(motiontrail, EXPCL_DIRECT, EXPTP_DIRECT);
+NotifyCategoryDecl(motiontrail, EXPCL_DIRECT_MOTIONTRAIL, EXPTP_DIRECT_MOTIONTRAIL);
 
-extern EXPCL_DIRECT void init_libmotiontrail();
+extern EXPCL_DIRECT_MOTIONTRAIL void init_libmotiontrail();
 
 #endif
