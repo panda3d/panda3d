@@ -2253,7 +2253,6 @@ DTOOL_CONFIG=[
     ("SUPPORT_FIXED_FUNCTION",         '1',                      '1'),
     ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
     ("DO_PIPELINING",                  '1',                      '1'),
-    ("EXPORT_TEMPLATES",               'yes',                    'yes'),
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
     ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
     ("HAVE_NAMESPACE",                 '1',                      '1'),
