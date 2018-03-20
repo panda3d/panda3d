@@ -13,11 +13,6 @@
 
 #include "pta_LMatrix4.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class PointerToBase<ReferenceCountedVector<UnalignedLMatrix4f> >;
 template class PointerToArrayBase<UnalignedLMatrix4f>;
 template class PointerToArray<UnalignedLMatrix4f>;
