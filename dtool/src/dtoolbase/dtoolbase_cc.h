@@ -257,7 +257,7 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #endif
 
 
-#if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
+#ifndef LINK_ALL_STATIC
 // This macro must be used to export an instantiated template class from a
 // DLL.  If the template class name itself contains commas, it may be
 // necessary to first define a macro for the class name, to allow proper macro
