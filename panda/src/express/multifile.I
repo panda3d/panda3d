@@ -278,12 +278,12 @@ remove_subfile(const string &subfile_name) {
 }
 
 /**
- * Returns a string that contains the entire contents of the indicated
+ * Returns a vector_uchar that contains the entire contents of the indicated
  * subfile.
  */
-INLINE string Multifile::
+INLINE vector_uchar Multifile::
 read_subfile(int index) {
-  string result;
+  vector_uchar result;
   read_subfile(index, result);
   return result;
 }
