@@ -83,6 +83,8 @@ class build_apps(distutils.core.Command):
         self.platforms = []
         self.plugins = []
         self.embed_prc_data = True
+        self.extra_prc_files = []
+        self.extra_prc_data = ''
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
         self.file_handlers= {
@@ -128,6 +130,7 @@ class build_apps(distutils.core.Command):
         self.include_modules = _parse_dict(self.include_modules)
         self.exclude_modules = _parse_dict(self.exclude_modules)
         self.plugins = _parse_list(self.plugins)
+        self.extra_prc_files = _parse_list(self.extra_prc_files)
 
         num_gui_apps = len(self.gui_apps)
         num_console_apps = len(self.console_apps)
@@ -290,26 +293,38 @@ class build_apps(distutils.core.Command):
             for fn in etcfiles:
                 with p3dwhl.open(fn) as f:
                     prcstring += f.read().decode('utf8')
+        user_prcstring = self.extra_prc_data
+        for fn in self.extra_prc_files:
+            with open(fn) as f:
+                user_prcstring += f.read()
 
         # Clenup PRC data
-        prcexport = []
         check_plugins = [
+            #TODO find a better way to get this list
             'pandaegg',
             'p3ffmpeg',
             'p3ptloader',
         ]
-        for ln in prcstring.split('\n'):
-            useline = True
-            if ln.startswith('#') or not ln:
-                useline = False
-            else:
-                for plugin in check_plugins:
-                    if plugin in ln and plugin not in self.plugins:
-                        useline = False
-                        break
-
-            if useline:
-                prcexport.append(ln)
+        def parse_prc(prcstr, warn_on_missing_plugin):
+            out = []
+            for ln in prcstr.split('\n'):
+                ln = ln.strip()
+                useline = True
+                if ln.startswith('#') or not ln:
+                    useline = False
+                else:
+                    for plugin in check_plugins:
+                        if plugin in ln and plugin not in self.plugins:
+                            useline = False
+                            if warn_on_missing_plugin:
+                                self.warn(
+                                    "Missing plugin ({0}) referenced in user PRC data".format(plugin)
+                                )
+                            break
+                if useline:
+                    out.append(ln)
+            return out
+        prcexport = parse_prc(prcstring, 0) + parse_prc(user_prcstring, 1)
 
         # Export PRC data
         prcexport = '\n'.join(prcexport)
@@ -464,6 +479,7 @@ class build_apps(distutils.core.Command):
         ]
         ignore_copy_list += self.exclude_patterns
         ignore_copy_list += freezer_modpaths
+        ignore_copy_list += self.extra_prc_files
         ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
 
         include_copy_list = [p3d.GlobPattern(i) for i in self.include_patterns]
