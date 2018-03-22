@@ -33,7 +33,6 @@ private:
 PUBLISHED:
   explicit BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b);
   BulletMinkowskiSumShape(const BulletMinkowskiSumShape &copy);
-  void operator = (const BulletMinkowskiSumShape &copy);
   INLINE ~BulletMinkowskiSumShape();
 
   void set_transform_a(const TransformState *ts);
