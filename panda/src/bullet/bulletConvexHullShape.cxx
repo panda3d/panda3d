@@ -39,10 +39,16 @@ BulletConvexHullShape(const BulletConvexHullShape &copy) {
   _shape = new btConvexHullShape(NULL, 0);
   _shape->setUserPointer(this);
 
-  for(int i = 0; i < copy._shape->getNumPoints(); i++)
-      _shape->addPoint(copy._shape->getUnscaledPoints()[i], false);
-
+#if BT_BULLET_VERSION >= 282
+  for (int i = 0; i < copy._shape->getNumPoints(); ++i) {
+    _shape->addPoint(copy._shape->getUnscaledPoints()[i], false);
+  }
   _shape->recalcLocalAabb();
+#else
+  for (int i = 0; i < copy._shape->getNumPoints(); ++i) {
+    _shape->addPoint(copy._shape->getUnscaledPoints()[i]);
+  }
+#endif
 }
 
 /**
