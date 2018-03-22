@@ -21,7 +21,8 @@ TypeHandle BulletCapsuleShape::_type_handle;
 BulletCapsuleShape::
 BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
   _radius(radius),
-  _height(height) {
+  _height(height),
+  _up(up) {
 
   switch (up) {
   case X_up:
@@ -49,23 +50,28 @@ BulletCapsuleShape::
 BulletCapsuleShape(const BulletCapsuleShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = copy._shape;
   _radius = copy._radius;
   _height = copy._height;
+  _up = copy._up;
+
+  switch (_up) {
+  case X_up:
+    _shape = new btCapsuleShapeX(_radius, _height);
+    break;
+  case Y_up:
+    _shape = new btCapsuleShape(_radius, _height);
+    break;
+  case Z_up:
+    _shape = new btCapsuleShapeZ(_radius, _height);
+    break;
+  default:
+    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    break;
+  }
+
+  nassertv(_shape);
+  _shape->setUserPointer(this);
 }
-
-/**
- *
- */
-void BulletCapsuleShape::
-operator = (const BulletCapsuleShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  _shape = copy._shape;
-  _radius = copy._radius;
-  _height = copy._height;
-}
-
 
 /**
  *
@@ -131,9 +137,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // parameters to serialize: radius, height, up
   _radius = scan.get_stdfloat();
   _height = scan.get_stdfloat();
-  int up = (int) scan.get_int8();
+  _up = (BulletUpAxis) scan.get_int8();
 
-  switch (up) {
+  switch (_up) {
   case X_up:
     _shape = new btCapsuleShapeX(_radius, _height);
     break;
@@ -144,7 +150,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shape = new btCapsuleShapeZ(_radius, _height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << endl;
     break;
   }
 

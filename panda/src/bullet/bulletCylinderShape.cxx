@@ -20,7 +20,8 @@ TypeHandle BulletCylinderShape::_type_handle;
  */
 BulletCylinderShape::
 BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) :
-  _half_extents(half_extents){
+  _half_extents(half_extents),
+  _up(up) {
 
   btVector3 btHalfExtents = LVecBase3_to_btVector3(half_extents);
 
@@ -47,7 +48,8 @@ BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) :
  *
  */
 BulletCylinderShape::
-BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
+BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
+  _up(up) {
 
   switch (up) {
   case X_up:
@@ -78,19 +80,28 @@ BulletCylinderShape::
 BulletCylinderShape(const BulletCylinderShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = copy._shape;
+  _up = copy._up;
   _half_extents = copy._half_extents;
-}
 
-/**
- *
- */
-void BulletCylinderShape::
-operator = (const BulletCylinderShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
+  btVector3 btHalfExtents = LVecBase3_to_btVector3(_half_extents);
 
-  _shape = copy._shape;
-  _half_extents = copy._half_extents;
+  switch (_up) {
+  case X_up:
+    _shape = new btCylinderShapeX(btHalfExtents);
+    break;
+  case Y_up:
+    _shape = new btCylinderShape(btHalfExtents);
+    break;
+  case Z_up:
+    _shape = new btCylinderShapeZ(btHalfExtents);
+    break;
+  default:
+    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    break;
+  }
+
+  nassertv(_shape);
+  _shape->setUserPointer(this);
 }
 
 /**
@@ -151,7 +162,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   // parameters to serialize: radius, height, up
   _half_extents.write_datagram(dg);
-  dg.add_int8((int8_t)_shape->getUpAxis());
+  dg.add_int8((int8_t)_up);
 }
 
 /**
@@ -185,11 +196,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   // parameters to serialize: radius, height, up
   _half_extents.read_datagram(scan);
-  int up = (int) scan.get_int8();
+  _up = (BulletUpAxis) scan.get_int8();
 
   btVector3 btHalfExtents = LVecBase3_to_btVector3(_half_extents);
 
-  switch (up) {
+  switch (_up) {
   case X_up:
     _shape = new btCylinderShapeX(btHalfExtents);
     break;
@@ -200,7 +211,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shape = new btCylinderShapeZ(btHalfExtents);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << endl;
     break;
   }
 

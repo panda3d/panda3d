@@ -32,7 +32,6 @@ PUBLISHED:
   explicit BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   explicit BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up=Z_up);
   BulletCylinderShape(const BulletCylinderShape &copy);
-  void operator = (const BulletCylinderShape &copy);
   INLINE ~BulletCylinderShape();
 
   PN_stdfloat get_radius() const;
@@ -49,6 +48,7 @@ public:
 private:
   LVector3 _half_extents;
   btCylinderShape *_shape;
+  BulletUpAxis _up;
 
 public:
   static void register_with_read_factory();
