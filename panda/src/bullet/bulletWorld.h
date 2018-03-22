@@ -265,6 +265,7 @@ private:
 
   btGhostPairCallback _ghost_cb;
 
+  FilterAlgorithm _filter_algorithm;
   btFilterCallback1 _filter_cb1;
   btFilterCallback2 _filter_cb2;
   btFilterCallback3 _filter_cb3;
