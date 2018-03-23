@@ -85,6 +85,7 @@ class build_apps(distutils.core.Command):
         self.embed_prc_data = True
         self.extra_prc_files = []
         self.extra_prc_data = ''
+        self.default_prc_dir = None
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
         self.file_handlers= {
@@ -131,6 +132,9 @@ class build_apps(distutils.core.Command):
         self.exclude_modules = _parse_dict(self.exclude_modules)
         self.plugins = _parse_list(self.plugins)
         self.extra_prc_files = _parse_list(self.extra_prc_files)
+
+        if self.default_prc_dir is None:
+            self.default_prc_dir = '<auto>etc' if not self.embed_prc_data else ''
 
         num_gui_apps = len(self.gui_apps)
         num_console_apps = len(self.console_apps)
@@ -329,9 +333,10 @@ class build_apps(distutils.core.Command):
         # Export PRC data
         prcexport = '\n'.join(prcexport)
         if not self.embed_prc_data:
-            etcdir = os.path.join(builddir, 'etc')
-            os.makedirs(etcdir)
-            with open (os.path.join(etcdir, '00-panda3d.prc'), 'w') as f:
+            prcdir = self.default_prc_dir.replace('<auto>', '')
+            prcdir = os.path.join(builddir, prcdir)
+            os.makedirs(prcdir)
+            with open (os.path.join(prcdir, '00-panda3d.prc'), 'w') as f:
                 f.write(prcexport)
 
         # Create runtimes
@@ -368,7 +373,7 @@ class build_apps(distutils.core.Command):
 
             freezer.generateRuntimeFromStub(target_path, stub_file, use_console, {
                 'prc_data': prcexport if self.embed_prc_data else None,
-                'default_prc_dir': None,
+                'default_prc_dir': self.default_prc_dir,
                 'prc_dir_envvars': None,
                 'prc_path_envvars': None,
                 'prc_patterns': None,
