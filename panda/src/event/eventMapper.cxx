@@ -99,6 +99,15 @@ reload_config() {
         string inevent = cvar.get_word(j);
         auto search = this->_event_map.find(inevent);
 
+        if (inevent == outevent) {
+            // Prevent circular reference
+            event_cat->warning()
+              << "skipping circular reference mapping "
+              << inevent << " to " << outevent
+              << endl;
+            continue;
+        }
+
         if (search != this->_event_map.end()) {
           search->second.insert(outevent);
         }
