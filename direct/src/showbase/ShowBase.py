@@ -306,6 +306,8 @@ class ShowBase(DirectObject.DirectObject):
 
         self.AppHasAudioFocus = 1
 
+        self.eventMapper = EventMapper.get_global_ptr()
+
         # Get a pointer to Panda's global ClockObject, used for
         # synchronizing events between Python and C.
         globalClock = ClockObject.getGlobalClock()

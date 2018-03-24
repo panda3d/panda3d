@@ -4,5 +4,6 @@
 #include "eventParameter.cxx"
 #include "eventQueue.cxx"
 #include "eventReceiver.cxx"
+#include "eventMapper.cxx"
 #include "pt_Event.cxx"
 
