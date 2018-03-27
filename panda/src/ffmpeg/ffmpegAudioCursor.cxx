@@ -63,11 +63,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _format_ctx = _ffvfile.get_format_context();
   nassertv(_format_ctx != NULL);
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 6, 0)
   if (avformat_find_stream_info(_format_ctx, NULL) < 0) {
-#else
-  if (av_find_stream_info(_format_ctx) < 0) {
-#endif
     cleanup();
     return;
   }
@@ -94,31 +90,20 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     return;
   }
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
   AVDictionary *opts = NULL;
   av_dict_set(&opts, "request_sample_fmt", "s16", 0);
   if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
-#else
-  if (avcodec_open(_audio_ctx, pAudioCodec) < 0) {
-#endif
     cleanup();
     return;
   }
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
   av_dict_free(&opts);
-#endif
 
   // Set up the resample context if necessary.
   if (_audio_ctx->sample_fmt != AV_SAMPLE_FMT_S16) {
 #ifdef HAVE_SWRESAMPLE
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 25, 0)
-    ffmpeg_cat.error()
-      << "Codec does not use signed 16-bit sample format.  Upgrade libavcodec to 53.25.0 or higher.\n";
-#else
     ffmpeg_cat.debug()
       << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
-#endif
 
     _resample_ctx = swr_alloc();
     av_opt_set_int(_resample_ctx, "in_channel_layout", _audio_ctx->channel_layout, 0);
@@ -191,10 +176,8 @@ cleanup() {
   if (_frame) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 45, 101)
     av_frame_free(&_frame);
-#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
-    avcodec_free_frame(&_frame);
 #else
-    av_free(&_frame);
+    avcodec_free_frame(&_frame);
 #endif
     _frame = NULL;
   }
@@ -284,25 +267,6 @@ reload_buffer() {
       return true;
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
-#if LIBAVCODEC_VERSION_INT < 3349504
-      int len = avcodec_decode_audio(_audio_ctx, _buffer, &bufsize,
-                                    _packet_data, _packet_size);
-      movies_debug("avcodec_decode_audio returned " << len);
-#elif LIBAVCODEC_VERSION_INT < 3414272
-      int len = avcodec_decode_audio2(_audio_ctx, _buffer, &bufsize,
-                                      _packet_data, _packet_size);
-      movies_debug("avcodec_decode_audio2 returned " << len);
-#elif LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 25, 0)
-      // We should technically also consider resampling in this case, but
-      // whatever.  Just upgrade your ffmpeg version if you get garbage.
-      AVPacket pkt;
-      av_init_packet(&pkt);
-      pkt.data = _packet_data;
-      pkt.size = _packet_size;
-      int len = avcodec_decode_audio3(_audio_ctx, _buffer, &bufsize, &pkt);
-      movies_debug("avcodec_decode_audio3 returned " << len);
-      av_free_packet(&pkt);
-#else
       int got_frame;
       AVPacket pkt;
       av_init_packet(&pkt);
@@ -332,7 +296,6 @@ reload_buffer() {
       }
 #if LIBAVUTIL_VERSION_INT > AV_VERSION_INT(52, 19, 100)
       av_frame_unref(_frame);
-#endif
 #endif
 
       if (len < 0) {
@@ -376,11 +339,7 @@ seek(double t) {
     cleanup();
     return;
   }
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
   if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
-#else
-  if (avcodec_open(_audio_ctx, pAudioCodec) < 0) {
-#endif
     cleanup();
     return;
   }

@@ -36,19 +36,8 @@ PStatCollector FfmpegVideoCursor::_fetch_buffer_pcollector("*:FFMPEG Video Decod
 PStatCollector FfmpegVideoCursor::_seek_pcollector("*:FFMPEG Video Decoding:Seek");
 PStatCollector FfmpegVideoCursor::_export_frame_pcollector("*:FFMPEG Convert Video to BGR");
 
-#if LIBAVFORMAT_VERSION_MAJOR < 53
-  #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
-#endif
-
 #if LIBAVCODEC_VERSION_MAJOR < 54
 #define AV_CODEC_ID_VP8 CODEC_ID_VP8
-#endif
-
-#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 74, 100)
-#define AV_PIX_FMT_NONE PIX_FMT_NONE
-#define AV_PIX_FMT_BGR24 PIX_FMT_BGR24
-#define AV_PIX_FMT_BGRA PIX_FMT_BGRA
-typedef PixelFormat AVPixelFormat;
 #endif
 
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 32, 100)
@@ -120,7 +109,6 @@ init_from(FfmpegVideo *source) {
   _eof_known = false;
   _eof_frame = 0;
 
-#if LIBAVUTIL_VERSION_MAJOR >= 52
   // Check if we got an alpha format.  Please note that some video codecs
   // (eg. libvpx) change the pix_fmt after decoding the first frame, which is
   // why we didn't do this earlier.
@@ -128,9 +116,7 @@ init_from(FfmpegVideo *source) {
   if (desc && (desc->flags & AV_PIX_FMT_FLAG_ALPHA) != 0) {
     _num_components = 4;
     _pixel_format = (int)AV_PIX_FMT_BGRA;
-  } else
-#endif
-  {
+  } else {
     _num_components = 3;
     _pixel_format = (int)AV_PIX_FMT_BGR24;
   }
@@ -493,11 +479,7 @@ open_stream() {
   _format_ctx = _ffvfile.get_format_context();
   nassertr(_format_ctx != NULL, false);
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 6, 0)
   if (avformat_find_stream_info(_format_ctx, NULL) < 0) {
-#else
-  if (av_find_stream_info(_format_ctx) < 0) {
-#endif
     ffmpeg_cat.info()
       << "Couldn't find stream info\n";
     close_stream();
@@ -539,11 +521,7 @@ open_stream() {
     close_stream();
     return false;
   }
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
   if (avcodec_open2(_video_ctx, pVideoCodec, NULL) < 0) {
-#else
-  if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
-#endif
     ffmpeg_cat.info()
       << "Couldn't open codec\n";
     close_stream();
@@ -883,12 +861,7 @@ decode_frame(int &finished) {
  */
 void FfmpegVideoCursor::
 do_decode_frame(int &finished) {
-#if LIBAVCODEC_VERSION_INT < 3414272
-  avcodec_decode_video(_video_ctx, _frame,
-                       &finished, _packet->data, _packet->size);
-#else
   avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
-#endif
 }
 
 /**
