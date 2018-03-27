@@ -22,10 +22,24 @@
 
 extern "C" {
   #include "libavcodec/avcodec.h"
+  #include "libavformat/avformat.h"
+  #include "libavutil/avutil.h"
 }
 
 #if !defined(CPPPARSER) && !defined(BUILDING_FFMPEG)
   #error Buildsystem error: BUILDING_FFMPEG not defined
+#endif
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 86, 100)
+  #error Minimum supported version of libavcodec is 54.86.100.
+#endif
+
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(54, 59, 106)
+  #error Minimum supported version of libavformat is 54.59.106.
+#endif
+
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 13, 100)
+  #error Minimum supported version of libavutil is 52.13.100.
 #endif
 
 ConfigureDef(config_ffmpeg);
