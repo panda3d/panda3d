@@ -94,8 +94,12 @@ init_from(FfmpegVideo *source) {
     return;
   }
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+  _packet = av_packet_alloc();
+#else
   _packet = new AVPacket;
-  memset(_packet, 0, sizeof(AVPacket));
+  av_init_packet(_packet);
+#endif
 
   fetch_packet(0);
   fetch_frame(-1);
@@ -624,15 +628,15 @@ cleanup() {
   }
 
   if (_packet) {
-    if (_packet->data) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
-      av_packet_unref(_packet);
+    av_packet_free(&_packet);
 #else
+    if (_packet->data) {
       av_free_packet(_packet);
-#endif
     }
     delete _packet;
     _packet = NULL;
+#endif
   }
 }
 

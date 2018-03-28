@@ -164,7 +164,12 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _frame = avcodec_alloc_frame();
 #endif
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+  _packet = av_packet_alloc();
+#else
   _packet = new AVPacket;
+#endif
+
   _buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE / 2;
   _buffer_alloc = new int16_t[_buffer_size + 64];
 
@@ -213,15 +218,15 @@ cleanup() {
   }
 
   if (_packet) {
-    if (_packet->data) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
-      av_packet_unref(_packet);
+    av_packet_free(&_packet);
 #else
+    if (_packet->data) {
       av_free_packet(_packet);
-#endif
     }
     delete _packet;
     _packet = NULL;
+#endif
   }
 
   if (_buffer_alloc) {
@@ -303,16 +308,25 @@ reload_buffer() {
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
       int got_frame;
-      AVPacket pkt;
-      av_init_packet(&pkt);
-      pkt.data = _packet_data;
-      pkt.size = _packet_size;
-      int len = avcodec_decode_audio4(_audio_ctx, _frame, &got_frame, &pkt);
-      movies_debug("avcodec_decode_audio4 returned " << len);
+
+      AVPacket *pkt;
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
-      av_packet_unref(&pkt);
+      pkt = av_packet_alloc();
 #else
-      av_free_packet(&pkt);
+      AVPacket _pkt;
+      pkt = &_pkt;
+      av_init_packet(pkt);
+#endif
+      pkt->data = _packet_data;
+      pkt->size = _packet_size;
+
+      int len = avcodec_decode_audio4(_audio_ctx, _frame, &got_frame, pkt);
+      movies_debug("avcodec_decode_audio4 returned " << len);
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+      av_packet_free(&pkt);
+#else
+      av_free_packet(pkt);
 #endif
 
       bufsize = 0;
