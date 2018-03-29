@@ -625,6 +625,9 @@ open_window() {
   }
   _fb_properties = cocoagsg->get_fb_properties();
 
+  // Reset dead key state.
+  _dead_key_state = 0;
+
   // Get the initial mouse position.
   NSPoint pos = [_window mouseLocationOutsideOfEventStream];
   NSPoint loc = [_view convertPoint:pos fromView:nil];
@@ -1391,6 +1394,8 @@ handle_foreground_event(bool foreground) {
     }
   }
 
+  _dead_key_state = 0;
+
   WindowProperties properties;
   properties.set_foreground(foreground);
   system_changed_properties(properties);
@@ -1564,25 +1569,43 @@ handle_key_event(NSEvent *event) {
     return;
   }
 
+  if ([event type] == NSKeyDown) {
+    // Translate it to a unicode character for keystrokes.  I would use
+    // interpretKeyEvents and insertText, but that doesn't handle dead keys.
+    TISInputSourceRef input_source = TISCopyCurrentKeyboardInputSource();
+    CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
+    const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+
+    UInt32 modifier_state = (modifierFlags >> 16) & 0xFF;
+    UniChar ustr[8];
+    UniCharCount length;
+
+    UCKeyTranslate(layout, [event keyCode], kUCKeyActionDown, modifier_state,
+                   LMGetKbdType(), 0, &_dead_key_state, sizeof(ustr), &length, ustr);
+    CFRelease(input_source);
+
+    for (int i = 0; i < length; ++i) {
+      UniChar c = ustr[i];
+      if (cocoadisplay_cat.is_spam()) {
+        cocoadisplay_cat.spam()
+          << "Handling keystroke, character " << (int)c;
+        if (c < 128 && isprint(c)) {
+          cocoadisplay_cat.spam(false) << " '" << (char)c << "'";
+        }
+        cocoadisplay_cat.spam(false) << "\n";
+      }
+      _input->keystroke(c);
+    }
+  }
+
   NSString *str = [event charactersIgnoringModifiers];
   if (str == nil || [str length] == 0) {
     return;
   }
-  nassertv([str length] == 1);
+  nassertv_always([str length] == 1);
   unichar c = [str characterAtIndex: 0];
 
   ButtonHandle button = map_key(c);
-
-  if (c < 0xF700 || c >= 0xF900) {
-    // If a down event and not a special function key, process it as keystroke
-    // as well.
-    if ([event type] == NSKeyDown) {
-      NSString *origstr = [event characters];
-      c = [str characterAtIndex: 0];
-      _input_devices[0].keystroke(c);
-    }
-  }
-
   if (button == ButtonHandle::none()) {
     // That done, continue trying to find out the button handle.
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
