@@ -1615,7 +1615,7 @@ handle_key_event(NSEvent *event) {
         }
         cocoadisplay_cat.spam(false) << "\n";
       }
-      _input->keystroke(c);
+      _input_devices[0].keystroke(c);
     }
   }
 
