@@ -155,7 +155,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009, mar2009, aug2006)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.0, 7.1 or 10.  Default is 7.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14.  Default is 10)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14.  Default is 14)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -315,16 +315,32 @@ def parseopts(args):
         usage("Invalid SHA-1 hash given for --git-commit option!")
 
     if GetTarget() == 'windows':
+        show_warning = False
         if not MSVC_VERSION:
-            print("No MSVC version specified. Defaulting to 10 (Visual Studio 2010).")
-            MSVC_VERSION = (10, 0)
+            show_warning = True
+            print("No MSVC version specified. Defaulting to 14 (Visual Studio 2015).")
+            MSVC_VERSION = (14, 0)
         else:
             try:
                 MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
                 if (len(MSVC_VERSION) == 1):
                     MSVC_VERSION += (0,)
+                if MSVC_VERSION < (14, 0):
+                    show_warning = True
             except:
                 usage("Invalid setting for --msvc-version")
+
+        if show_warning:
+            warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
+            print("=========================================================================")
+            print(warn_prefix + "Support for MSVC versions before 2015 will soon be discontinued.")
+            print(warn_prefix + "If you wish to keep using MSVC 2010, make your voice heard at:")
+            print(warn_prefix + "  https://github.com/panda3d/panda3d/issues/288")
+            if MSVC_VERSION >= (14, 0):
+                print(warn_prefix + "To squelch this warning, pass --msvc-version {0}.{1}".format(*MSVC_VERSION))
+            print("=========================================================================")
+            sys.stdout.flush()
+            time.sleep(1.0)
 
         if not WINDOWS_SDK:
             print("No Windows SDK version specified. Defaulting to '7.1'.")
