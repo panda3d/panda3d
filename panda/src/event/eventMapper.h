@@ -43,6 +43,7 @@ protected:
 PUBLISHED:
   INLINE static EventMapper *get_global_ptr();
   void reload_config();
+  EventSet get_inputs_for_event(const string event_name);
 
 public:
   static TypeHandle get_class_type() {

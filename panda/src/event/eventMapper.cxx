@@ -160,3 +160,18 @@ reload_config() {
     );
   }
 }
+
+/**
+ * Description: Return a list of events that will map to the given event.
+ */
+EventMapper::EventSet EventMapper::
+get_inputs_for_event(const string event_name) {
+    EventSet events;
+    for (const auto& map_pair: this->_event_map) {
+        if (map_pair.second.count(event_name) != 0) {
+            events.insert(map_pair.first);
+        }
+    }
+
+    return events;
+}
