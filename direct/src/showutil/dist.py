@@ -315,16 +315,17 @@ class build_apps(distutils.core.Command):
                 ln = ln.strip()
                 useline = True
                 if ln.startswith('#') or not ln:
-                    useline = False
-                else:
-                    for plugin in check_plugins:
-                        if plugin in ln and plugin not in self.plugins:
-                            useline = False
-                            if warn_on_missing_plugin:
-                                self.warn(
-                                    "Missing plugin ({0}) referenced in user PRC data".format(plugin)
-                                )
-                            break
+                    continue
+                if 'model-cache-dir' in ln:
+                    ln = ln.replace('/panda3d', '/{}'.format(self.distribution.get_name()))
+                for plugin in check_plugins:
+                    if plugin in ln and plugin not in self.plugins:
+                        useline = False
+                        if warn_on_missing_plugin:
+                            self.warn(
+                                "Missing plugin ({0}) referenced in user PRC data".format(plugin)
+                            )
+                        break
                 if useline:
                     out.append(ln)
             return out
