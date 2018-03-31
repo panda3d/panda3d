@@ -96,7 +96,7 @@ init_from(FfmpegVideo *source) {
 
   ReMutexHolder av_holder(_av_lock);
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 45, 101)
   _frame = av_frame_alloc();
   _frame_out = av_frame_alloc();
 #else

@@ -143,7 +143,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _can_seek = true;
   _can_seek_fast = true;
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 45, 101)
   _frame = av_frame_alloc();
 #else
   _frame = avcodec_alloc_frame();
