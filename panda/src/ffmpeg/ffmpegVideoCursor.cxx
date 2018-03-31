@@ -36,12 +36,8 @@ PStatCollector FfmpegVideoCursor::_fetch_buffer_pcollector("*:FFMPEG Video Decod
 PStatCollector FfmpegVideoCursor::_seek_pcollector("*:FFMPEG Video Decoding:Seek");
 PStatCollector FfmpegVideoCursor::_export_frame_pcollector("*:FFMPEG Convert Video to BGR");
 
-#if LIBAVCODEC_VERSION_MAJOR < 54
-#define AV_CODEC_ID_VP8 CODEC_ID_VP8
-#endif
-
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 32, 100)
-#define AV_PIX_FMT_FLAG_ALPHA PIX_FMT_ALPHA
+  #define AV_PIX_FMT_FLAG_ALPHA PIX_FMT_ALPHA
 #endif
 
 /**
@@ -506,9 +502,12 @@ open_stream() {
 
   AVCodec *pVideoCodec = NULL;
   if (ffmpeg_prefer_libvpx) {
-    if ((int)_video_ctx->codec_id == 168) { // AV_CODEC_ID_VP9
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 0, 0)
+    if (_video_ctx->codec_id == AV_CODEC_ID_VP9) {
       pVideoCodec = avcodec_find_decoder_by_name("libvpx-vp9");
-    } else if (_video_ctx->codec_id == AV_CODEC_ID_VP8) {
+    } else
+#endif
+    if (_video_ctx->codec_id == AV_CODEC_ID_VP8) {
       pVideoCodec = avcodec_find_decoder_by_name("libvpx");
     }
   }
