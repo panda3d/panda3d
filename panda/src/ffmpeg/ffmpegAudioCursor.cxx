@@ -297,71 +297,67 @@ fetch_packet() {
  */
 bool FfmpegAudioCursor::
 reload_buffer() {
-
-  while (_buffer_head == _buffer_tail) {
+  int got_frame = 0;
+  while (!got_frame) {
     // If we're out of packets, generate silence.
-    if (_packet->data == 0) {
+    if (_packet->data == nullptr) {
       _buffer_head = 0;
       _buffer_tail = _buffer_size;
       memset(_buffer, 0, _buffer_size * 2);
       return true;
-    } else if (_packet_size > 0) {
-      int bufsize = _buffer_size * 2;
-      int got_frame;
-
-      AVPacket *pkt;
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
-      pkt = av_packet_alloc();
-#else
-      AVPacket _pkt;
-      pkt = &_pkt;
-      av_init_packet(pkt);
-#endif
-      pkt->data = _packet_data;
-      pkt->size = _packet_size;
-
-      int len = avcodec_decode_audio4(_audio_ctx, _frame, &got_frame, pkt);
-      movies_debug("avcodec_decode_audio4 returned " << len);
-
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
-      av_packet_free(&pkt);
-#else
-      av_free_packet(pkt);
-#endif
-
-      bufsize = 0;
-      if (got_frame) {
-#ifdef HAVE_SWRESAMPLE
-        if (_resample_ctx) {
-          // Resample the data to signed 16-bit sample format.
-          bufsize = swr_convert(_resample_ctx, (uint8_t **)&_buffer, _buffer_size / 2, (const uint8_t**)_frame->extended_data, _frame->nb_samples);
-          bufsize *= _audio_channels * 2;
-        } else
-#endif
-        {
-          bufsize = _frame->linesize[0];
-          memcpy(_buffer, _frame->data[0], bufsize);
-        }
-      }
-#if LIBAVUTIL_VERSION_INT > AV_VERSION_INT(52, 19, 100)
-      av_frame_unref(_frame);
-#endif
-
-      if (len < 0) {
-        return false;
-      } else if (len == 0){
-        return true;
-      }
-      _packet_data += len;
-      _packet_size -= len;
-      if (bufsize > 0) {
-        _buffer_head = 0;
-        _buffer_tail = (bufsize/2);
-        return true;
-      }
-    } else {
+    } else if (_packet_size == 0) {
       fetch_packet();
     }
+
+    AVPacket *pkt;
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    pkt = av_packet_alloc();
+#else
+    AVPacket _pkt;
+    pkt = &_pkt;
+    av_init_packet(pkt);
+#endif
+    pkt->data = _packet_data;
+    pkt->size = _packet_size;
+
+    int len = avcodec_decode_audio4(_audio_ctx, _frame, &got_frame, pkt);
+    movies_debug("avcodec_decode_audio4 returned " << len);
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    av_packet_free(&pkt);
+#else
+    av_free_packet(pkt);
+#endif
+
+    if (len < 0) {
+      return false;
+    } else if (len == 0) {
+      return true;
+    }
+    _packet_data += len;
+    _packet_size -= len;
+  }
+
+  int bufsize;
+#ifdef HAVE_SWRESAMPLE
+  if (_resample_ctx) {
+    // Resample the data to signed 16-bit sample format.
+    bufsize = swr_convert(_resample_ctx, (uint8_t **)&_buffer, _buffer_size / 2, (const uint8_t**)_frame->extended_data, _frame->nb_samples);
+    bufsize *= _audio_channels * 2;
+  } else
+#endif
+  {
+    bufsize = _frame->linesize[0];
+    memcpy(_buffer, _frame->data[0], bufsize);
+  }
+#if LIBAVUTIL_VERSION_INT > AV_VERSION_INT(52, 19, 100)
+  av_frame_unref(_frame);
+#endif
+
+  if (bufsize > 0) {
+    _buffer_head = 0;
+    _buffer_tail = (bufsize/2);
+    return true;
   }
   return true;
 }
