@@ -903,7 +903,18 @@ decode_frame(int &finished) {
  */
 void FfmpegVideoCursor::
 do_decode_frame(int &finished) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
+  // While the audio cursor has a really nice async loop for decoding, we
+  // don't really do that much with video since we're already delegated to
+  // another thread here.  This is just to silence the deprecation warning
+  // on avcodec_decode_video2.
+  avcodec_send_packet(_video_ctx, _packet);
+
+  int ret = avcodec_receive_frame(_video_ctx, _frame);
+  finished = (ret == 0);
+#else
   avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
+#endif
 }
 
 /**
