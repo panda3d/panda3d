@@ -12,6 +12,7 @@ if(WIN32)
 
   composite_sources(p3windisplay P3WINDISPLAY_SOURCES)
   add_library(p3windisplay ${P3WINDISPLAY_HEADERS} ${P3WINDISPLAY_SOURCES})
+  set_target_properties(p3windisplay PROPERTIES DEFINE_SYMBOL BUILDING_PANDAWIN)
   target_link_libraries(p3windisplay p3display p3putil
     Imm32.lib)
 endif()

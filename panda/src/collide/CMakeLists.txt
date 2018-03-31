@@ -64,6 +64,7 @@ set(P3COLLIDE_SOURCES
 
 composite_sources(p3collide P3COLLIDE_SOURCES)
 add_library(p3collide ${P3COLLIDE_HEADERS} ${P3COLLIDE_SOURCES})
+set_target_properties(p3collide PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_COLLIDE)
 target_link_libraries(p3collide p3tform)
 target_interrogate(p3collide ALL)
 

@@ -37,6 +37,7 @@ set(P3PHYSICS_SOURCES
 
 composite_sources(p3physics P3PHYSICS_SOURCES)
 add_library(p3physics ${P3PHYSICS_HEADERS} ${P3PHYSICS_SOURCES})
+set_target_properties(p3physics PROPERTIES DEFINE_SYMBOL BUILDING_PANDAPHYSICS)
 target_link_libraries(p3physics p3pgraph p3linmath p3collide)
 target_interrogate(p3physics ALL)
 

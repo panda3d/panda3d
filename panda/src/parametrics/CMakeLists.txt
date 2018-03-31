@@ -35,6 +35,7 @@ set(P3PARAMETRICS_SOURCES
 
 composite_sources(p3parametrics P3PARAMETRICS_SOURCES)
 add_library(p3parametrics ${P3PARAMETRICS_HEADERS} ${P3PARAMETRICS_SOURCES})
+set_target_properties(p3parametrics PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PARAMETRICS)
 target_link_libraries(p3parametrics p3pgraph)
 target_interrogate(p3parametrics ALL)
 

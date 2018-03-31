@@ -1,4 +1,3 @@
-add_definitions(-DBUILDING_PANDA)
 set(PANDA_LINK_TARGETS
     p3chan p3char p3collide p3cull p3device p3dgraph p3display p3downloader p3dxml
     p3event p3express p3gobj p3grutil p3gsgbase p3linmath p3mathutil p3nativenet
@@ -21,6 +20,7 @@ if(LINK_IN_PHYSX)
 endif()
 
 add_library(panda panda.cxx)
+set_target_properties(panda PROPERTIES DEFINE_SYMBOL BUILDING_LIBPANDA)
 target_link_libraries(panda ${PANDA_LINK_TARGETS})
 
 install(TARGETS panda DESTINATION lib)

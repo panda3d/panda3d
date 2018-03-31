@@ -32,6 +32,7 @@ set(P3PNMIMAGETYPES_SOURCES
 
 composite_sources(p3pnmimagetypes P3PNMIMAGETYPES_SOURCES)
 add_library(p3pnmimagetypes ${P3PNMIMAGETYPES_HEADERS} ${P3PNMIMAGETYPES_SOURCES})
+set_target_properties(p3pnmimagetypes PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PNMIMAGETYPES)
 target_link_libraries(p3pnmimagetypes p3pnmimage)
 target_use_packages(p3pnmimagetypes JPEG TIFF PNG)
 

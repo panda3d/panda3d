@@ -7,6 +7,7 @@ set(P3DEADREC_SOURCES
     smoothMover.cxx)
 
 add_library(p3deadrec ${P3DEADREC_HEADERS} ${P3DEADREC_SOURCES})
+set_target_properties(p3deadrec PROPERTIES DEFINE_SYMBOL BUILDING_DIRECT_DEADREC)
 target_link_libraries(p3deadrec p3directbase p3linmath p3pgraph p3prc)
 target_interrogate(p3deadrec ALL)
 

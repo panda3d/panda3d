@@ -22,6 +22,7 @@ set(P3PSTATCLIENT_SOURCES
 
 composite_sources(p3pstatclient P3PSTATCLIENT_SOURCES)
 add_library(p3pstatclient ${P3PSTATCLIENT_HEADERS} ${P3PSTATCLIENT_SOURCES})
+set_target_properties(p3pstatclient PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PSTATCLIENT)
 target_link_libraries(p3pstatclient p3net p3putil p3express)
 target_interrogate(p3pstatclient ALL)
 

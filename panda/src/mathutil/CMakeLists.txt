@@ -62,6 +62,7 @@ set(P3MATHUTIL_SOURCES
 
 composite_sources(p3mathutil P3MATHUTIL_SOURCES)
 add_library(p3mathutil ${P3MATHUTIL_HEADERS} ${P3MATHUTIL_SOURCES})
+set_target_properties(p3mathutil PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_MATHUTIL)
 target_link_libraries(p3mathutil p3event)
 target_use_packages(p3mathutil FFTW)
 target_interrogate(p3mathutil ALL)

@@ -69,6 +69,7 @@ set(P3DOWNLOADER_IGATEEXT
 
 composite_sources(p3downloader P3DOWNLOADER_SOURCES)
 add_library(p3downloader ${P3DOWNLOADER_HEADERS} ${P3DOWNLOADER_SOURCES})
+set_target_properties(p3downloader PROPERTIES DEFINE_SYMBOL BUILDING_PANDAEXPRESS)
 target_link_libraries(p3downloader p3express p3pipeline)
 target_interrogate(p3downloader ALL EXTENSIONS ${P3DOWNLOADER_IGATEEXT})
 

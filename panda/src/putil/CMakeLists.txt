@@ -125,6 +125,7 @@ set(P3PUTIL_IGATEEXT
 
 composite_sources(p3putil P3PUTIL_SOURCES)
 add_library(p3putil ${P3PUTIL_HEADERS} ${P3PUTIL_SOURCES})
+set_target_properties(p3putil PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PUTIL)
 target_link_libraries(p3putil p3linmath p3pipeline)
 target_interrogate(p3putil ALL EXTENSIONS ${P3PUTIL_IGATEEXT})
 

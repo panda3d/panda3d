@@ -10,6 +10,7 @@ if(HAVE_X11)
 
   composite_sources(p3x11display P3X11DISPLAY_SOURCES)
   add_library(p3x11display ${P3X11DISPLAY_HEADERS} ${P3X11DISPLAY_SOURCES})
+  set_target_properties(p3x11display PROPERTIES DEFINE_SYMBOL BUILDING_PANDAX11)
   target_link_libraries(p3x11display p3display ${X11_LIBRARIES})
 
   install(TARGETS p3x11display DESTINATION lib)

@@ -1,4 +1,5 @@
 add_library(p3showbase showBase.cxx showBase.h)
+set_target_properties(p3showbase PROPERTIES DEFINE_SYMBOL BUILDING_DIRECT_SHOWBASE)
 target_link_libraries(p3showbase p3directbase p3express p3event p3chan p3display p3dconfig p3prc)
 target_interrogate(p3showbase ALL)
 

@@ -11,6 +11,7 @@ if(APPLE AND HAVE_GL AND HAVE_CARBON)
 
   composite_sources(p3osxdisplay P3OSXDISPLAY_SOURCES)
   add_library(p3osxdisplay ${P3OSXDISPLAY_HEADERS} ${P3OSXDISPLAY_SOURCES})
+  set_target_properties(p3osxdisplay PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
   target_link_libraries(p3osxdisplay p3display p3putil p3glgsg)
 
   # Frameworks:

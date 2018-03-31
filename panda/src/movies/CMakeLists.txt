@@ -43,6 +43,7 @@ set(P3MOVIES_SOURCES
 
 composite_sources(p3movies P3MOVIES_SOURCES)
 add_library(p3movies ${P3MOVIES_HEADERS} ${P3MOVIES_SOURCES})
+set_target_properties(p3movies PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_MOVIES)
 target_link_libraries(p3movies p3pandabase p3express p3pstatclient p3gobj p3dconfig p3prc)
 target_interrogate(p3movies ALL)
 

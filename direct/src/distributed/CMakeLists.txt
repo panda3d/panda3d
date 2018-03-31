@@ -12,6 +12,7 @@ if(HAVE_PYTHON)
       cDistributedSmoothNodeBase.cxx)
 
   add_library(p3distributed ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_SOURCES})
+  set_target_properties(p3distributed PROPERTIES DEFINE_SYMBOL BUILDING_DIRECT_DISTRIBUTED)
   set_target_properties(p3distributed PROPERTIES COMPILE_DEFINITIONS WITHIN_PANDA)
   target_link_libraries(p3distributed p3directbase p3dcparser p3pgraph)
   target_use_packages(p3distributed PYTHON)

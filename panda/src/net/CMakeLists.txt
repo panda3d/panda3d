@@ -27,6 +27,7 @@ if(HAVE_NET AND WANT_NATIVE_NET)
 
   composite_sources(p3net P3NET_SOURCES)
   add_library(p3net ${P3NET_HEADERS} ${P3NET_SOURCES})
+  set_target_properties(p3net PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_NET)
   target_link_libraries(p3net p3express p3downloader p3pandabase p3nativenet p3pipeline)
   target_interrogate(p3net ALL)
 

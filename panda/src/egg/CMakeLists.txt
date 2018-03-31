@@ -100,6 +100,7 @@ if(HAVE_EGG)
 
   composite_sources(p3egg P3EGG_SOURCES)
   add_library(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} ${P3EGG_PARSER_SOURCES})
+  set_target_properties(p3egg PROPERTIES DEFINE_SYMBOL BUILDING_PANDAEGG)
   target_link_libraries(p3egg p3prc p3pandabase p3express p3linmath p3mathutil)
   target_interrogate(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} EXTENSIONS ${P3EGG_IGATEEXT})
 

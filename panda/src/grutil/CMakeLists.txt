@@ -39,6 +39,7 @@ set(P3GRUTIL_SOURCES
 
 composite_sources(p3grutil P3GRUTIL_SOURCES)
 add_library(p3grutil ${P3GRUTIL_HEADERS} ${P3GRUTIL_SOURCES})
+set_target_properties(p3grutil PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_GRUTIL)
 target_link_libraries(p3grutil p3display p3text p3movies)
 if(HAVE_AUDIO)
   target_link_libraries(p3grutil p3audio)

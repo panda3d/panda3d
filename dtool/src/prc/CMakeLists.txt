@@ -71,6 +71,7 @@ set(P3PRC_IGATEEXT
 composite_sources(p3prc P3PRC_SOURCES)
 
 add_library(p3prc ${P3PRC_HEADERS} ${P3PRC_SOURCES})
+set_target_properties(p3prc PROPERTIES DEFINE_SYMBOL BUILDING_DTOOL_PRC)
 # The extensions need py_panda.h and extension.h from interrogatedb
 target_include_directories(p3prc PUBLIC
   $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
