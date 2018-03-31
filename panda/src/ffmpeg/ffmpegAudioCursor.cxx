@@ -136,6 +136,8 @@ FfmpegAudioCursor(FfmpegAudio *src) :
       << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
 
     _resample_ctx = swr_alloc();
+    av_opt_set_int(_resample_ctx, "in_channel_count", _audio_channels, 0);
+    av_opt_set_int(_resample_ctx, "out_channel_count", _audio_channels, 0);
     av_opt_set_int(_resample_ctx, "in_channel_layout", _audio_ctx->channel_layout, 0);
     av_opt_set_int(_resample_ctx, "out_channel_layout", _audio_ctx->channel_layout, 0);
     av_opt_set_int(_resample_ctx, "in_sample_rate", _audio_ctx->sample_rate, 0);
