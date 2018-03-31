@@ -32,9 +32,4 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, ConstPointerTo<Event
 typedef PointerTo<Event> PT_Event;
 typedef ConstPointerTo<Event> CPT_Event;
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

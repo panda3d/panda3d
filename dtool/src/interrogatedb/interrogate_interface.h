@@ -367,6 +367,7 @@ EXPCL_INTERROGATEDB TypeIndex interrogate_get_type(int n);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_name(const char *type_name);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_scoped_name(const char *type_name);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_true_name(const char *type_name);
+EXPCL_INTERROGATEDB bool interrogate_type_is_global(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_scoped_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_true_name(TypeIndex type);

@@ -23,7 +23,7 @@
  * A constraint interval that will constrain the position of one node to the
  * position of another.
  */
-class EXPCL_DIRECT CConstrainPosInterval : public CConstraintInterval {
+class EXPCL_DIRECT_INTERVAL CConstrainPosInterval : public CConstraintInterval {
 PUBLISHED:
   explicit CConstrainPosInterval(const string &name, double duration,
                                  const NodePath &node, const NodePath &target,

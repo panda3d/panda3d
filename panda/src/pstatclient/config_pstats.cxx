@@ -15,6 +15,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PSTATCLIENT)
+  #error Buildsystem error: BUILDING_PANDA_PSTATCLIENT not defined
+#endif
+
 ConfigureDef(config_pstats);
 NotifyCategoryDef(pstats, "");
 

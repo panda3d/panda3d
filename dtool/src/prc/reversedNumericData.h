@@ -39,7 +39,7 @@ static const int max_numeric_size = 8;
  * typedeffed to be one of these or the other, according to the machine's
  * architecture.
  */
-class EXPCL_DTOOLCONFIG ReversedNumericData {
+class EXPCL_DTOOL_PRC ReversedNumericData {
 public:
   INLINE ReversedNumericData(const void *data, size_t length);
   INLINE ReversedNumericData(const void *data, size_t start, size_t length);

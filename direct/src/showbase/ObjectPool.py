@@ -110,15 +110,6 @@ class ObjectPool:
                 print('TYPE: %s, %s objects' % (repr(typ), len(self._type2objs[typ])))
                 print(getNumberedTypedSortedString(self._type2objs[typ]))
 
-    def containerLenStr(self):
-        s  =   'Object Pool: Container Lengths'
-        s += '\n=============================='
-        lengths = list(self._len2obj.keys())
-        lengths.sort()
-        lengths.reverse()
-        for count in counts:
-            pass
-
     def printReferrers(self, numEach=3):
         """referrers of the first few of each type of object"""
         counts = list(set(self._count2types.keys()))

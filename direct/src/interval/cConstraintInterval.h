@@ -21,7 +21,7 @@
  * The base class for a family of intervals that constrain some property to a
  * value over time.
  */
-class EXPCL_DIRECT CConstraintInterval : public CInterval {
+class EXPCL_DIRECT_INTERVAL CConstraintInterval : public CInterval {
 PUBLISHED:
  bool bogus_variable;
 

@@ -21,7 +21,7 @@
  * The base class for a family of intervals that linearly interpolate one or
  * more numeric values over time.
  */
-class EXPCL_DIRECT CLerpInterval : public CInterval {
+class EXPCL_DIRECT_INTERVAL CLerpInterval : public CInterval {
 PUBLISHED:
   enum BlendType {
     BT_no_blend,

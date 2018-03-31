@@ -112,7 +112,6 @@ BulletHeightfieldShape::
 BulletHeightfieldShape(const BulletHeightfieldShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = copy._shape;
   _num_rows = copy._num_rows;
   _num_cols = copy._num_cols;
   _max_height = copy._max_height;
@@ -121,24 +120,14 @@ BulletHeightfieldShape(const BulletHeightfieldShape &copy) {
   size_t size = (size_t)_num_rows * (size_t)_num_cols;
   _data = new btScalar[size];
   memcpy(_data, copy._data, size * sizeof(btScalar));
-}
 
-/**
- *
- */
-void BulletHeightfieldShape::
-operator = (const BulletHeightfieldShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  _shape = copy._shape;
-  _num_rows = copy._num_rows;
-  _num_cols = copy._num_cols;
-  _max_height = copy._max_height;
-  _up = copy._up;
-
-  size_t size = (size_t)_num_rows * (size_t)_num_cols;
-  _data = new btScalar[size];
-  memcpy(_data, copy._data, size * sizeof(btScalar));
+  _shape = new btHeightfieldTerrainShape(_num_rows,
+                                         _num_cols,
+                                         _data,
+                                         _max_height,
+                                         _up,
+                                         true, false);
+  _shape->setUserPointer(this);
 }
 
 /**

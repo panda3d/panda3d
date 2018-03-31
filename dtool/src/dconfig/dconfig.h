@@ -30,7 +30,7 @@
  * used primarily by Python code.  For modern code, use the new
  * ConfigVariable* interface instead of this deprecated interface.
  */
-class EXPCL_DTOOLCONFIG DConfig {
+class EXPCL_DTOOL_DCONFIG DConfig {
 PUBLISHED:
   static INLINE bool GetBool(const string &sym, bool def = false);
   static INLINE int GetInt(const string &sym, int def = 0);

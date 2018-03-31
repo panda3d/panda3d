@@ -20,7 +20,7 @@
 /**
  * This is a convenience class to specialize ConfigVariable as a boolean type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableBool : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableBool : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableBool(const string &name);
   INLINE ConfigVariableBool(const string &name, bool default_value,

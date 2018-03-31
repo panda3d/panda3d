@@ -27,7 +27,7 @@
  * specific application on a specific SMP machine, and you are confident that
  * you have at least as many CPU's as you have threads.
  */
-class EXPCL_DTOOL MutexSpinlockImpl {
+class EXPCL_DTOOL_DTOOLBASE MutexSpinlockImpl {
 public:
   CONSTEXPR MutexSpinlockImpl();
 

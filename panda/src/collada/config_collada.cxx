@@ -17,6 +17,10 @@
 #include "loaderFileTypeDae.h"
 #include "loaderFileTypeRegistry.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_COLLADA)
+  #error Buildsystem error: BUILDING_COLLADA not defined
+#endif
+
 ConfigureDef(config_collada);
 NotifyCategoryDef(collada, "");
 

@@ -23,6 +23,10 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGL)
+  #error Buildsystem error: BUILDING_PANDAGL not defined
+#endif
+
 Configure(config_glxdisplay);
 NotifyCategoryDef(glxdisplay, "display");
 

@@ -21,7 +21,7 @@
  * The base class for both IStreamWrapper and OStreamWrapper, this provides
  * the common locking interface.
  */
-class EXPCL_DTOOLCONFIG StreamWrapperBase {
+class EXPCL_DTOOL_PRC StreamWrapperBase {
 protected:
   INLINE StreamWrapperBase();
 
@@ -48,7 +48,7 @@ private:
  * A thread may use this class to perform an atomic seek/read/gcount
  * operation.
  */
-class EXPCL_DTOOLCONFIG IStreamWrapper : virtual public StreamWrapperBase {
+class EXPCL_DTOOL_PRC IStreamWrapper : virtual public StreamWrapperBase {
 public:
   INLINE IStreamWrapper(istream *stream, bool owns_pointer);
 PUBLISHED:
@@ -75,7 +75,7 @@ private:
  * This class provides a locking wrapper around an arbitrary ostream pointer.
  * A thread may use this class to perform an atomic seek/write operation.
  */
-class EXPCL_DTOOLCONFIG OStreamWrapper : virtual public StreamWrapperBase {
+class EXPCL_DTOOL_PRC OStreamWrapper : virtual public StreamWrapperBase {
 public:
   INLINE OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:
@@ -111,7 +111,7 @@ private:
  * This class provides a locking wrapper around a combination ostream/istream
  * pointer.
  */
-class EXPCL_DTOOLCONFIG StreamWrapper : public IStreamWrapper, public OStreamWrapper {
+class EXPCL_DTOOL_PRC StreamWrapper : public IStreamWrapper, public OStreamWrapper {
 public:
   INLINE StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:

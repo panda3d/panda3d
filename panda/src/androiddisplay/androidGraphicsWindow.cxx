@@ -309,8 +309,6 @@ open_window() {
 
   _fb_properties = androidgsg->get_fb_properties();
 
-  androiddisplay_cat.error() << "open_window done\n";
-
   return true;
 }
 
@@ -366,7 +364,6 @@ create_surface() {
 
   // Create a context.
   if (androidgsg->_context == EGL_NO_CONTEXT) {
-    androiddisplay_cat.error() << "creating context\n";
     if (!androidgsg->create_context()) {
       return false;
     }

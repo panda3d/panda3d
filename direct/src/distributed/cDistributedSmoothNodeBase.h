@@ -28,7 +28,7 @@ class CConnectionRepository;
  * This class defines some basic methods of DistributedSmoothNodeBase which
  * have been moved into C++ as a performance optimization.
  */
-class EXPCL_DIRECT CDistributedSmoothNodeBase {
+class EXPCL_DIRECT_DISTRIBUTED CDistributedSmoothNodeBase {
 PUBLISHED:
   CDistributedSmoothNodeBase();
   ~CDistributedSmoothNodeBase();

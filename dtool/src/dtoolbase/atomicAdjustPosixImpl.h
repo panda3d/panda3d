@@ -26,7 +26,7 @@
 /**
  * Uses POSIX to implement atomic adjustments.
  */
-class EXPCL_DTOOL AtomicAdjustPosixImpl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustPosixImpl {
 public:
   // In Posix, "long" is generally the native word size (32- or 64-bit), which
   // is what we'd prefer.

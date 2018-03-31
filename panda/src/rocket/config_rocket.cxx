@@ -26,6 +26,10 @@
 #include <Rocket/Core.h>
 #undef Factory
 
+#if !defined(CPPPARSER) && !defined(BUILDING_ROCKET)
+  #error Buildsystem error: BUILDING_ROCKET not defined
+#endif
+
 Configure(config_rocket);
 NotifyCategoryDef(rocket, "");
 

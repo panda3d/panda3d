@@ -33,7 +33,6 @@ private:
 PUBLISHED:
   explicit BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
   BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
-  void operator = (const BulletTriangleMeshShape &copy);
   INLINE ~BulletTriangleMeshShape();
 
   void refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max);

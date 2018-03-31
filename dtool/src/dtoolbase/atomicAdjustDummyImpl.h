@@ -24,7 +24,7 @@
  * require multiprogramming, and therefore don't require special atomic
  * operations.
  */
-class EXPCL_DTOOL AtomicAdjustDummyImpl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustDummyImpl {
 public:
   typedef long Integer;
   typedef void *Pointer;

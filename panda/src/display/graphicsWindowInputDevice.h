@@ -142,9 +142,4 @@ private:
 
 #include "vector_src.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

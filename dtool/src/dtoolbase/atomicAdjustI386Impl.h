@@ -26,7 +26,7 @@
  * Although this class is named i386, it actually uses instructions that are
  * specific to 486 and higher.
  */
-class EXPCL_DTOOL AtomicAdjustI386Impl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustI386Impl {
 public:
   typedef ALIGN_4BYTE int32_t Integer;
   typedef void *UnalignedPointer;

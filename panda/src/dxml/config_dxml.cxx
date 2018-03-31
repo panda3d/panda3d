@@ -19,6 +19,10 @@ BEGIN_PUBLISH
 #include "tinyxml.h"
 END_PUBLISH
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_DXML)
+  #error Buildsystem error: BUILDING_PANDA_DXML not defined
+#endif
+
 Configure(config_dxml);
 NotifyCategoryDef(dxml, "");
 

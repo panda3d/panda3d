@@ -21,7 +21,7 @@
  * A fake mutex implementation for single-threaded applications that don't
  * need any synchronization control.  This does nothing at all.
  */
-class EXPCL_DTOOL MutexDummyImpl {
+class EXPCL_DTOOL_DTOOLBASE MutexDummyImpl {
 public:
   CONSTEXPR MutexDummyImpl() DEFAULT_CTOR;
 

@@ -19,6 +19,10 @@
 #include "pandaSystem.h"
 
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAEXPRESS)
+  #error Buildsystem error: BUILDING_PANDAEXPRESS not defined
+#endif
+
 ConfigureDef(config_downloader);
 NotifyCategoryDef(downloader, "");
 

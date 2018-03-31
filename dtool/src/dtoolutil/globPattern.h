@@ -29,7 +29,7 @@
  * the pattern or not.  It can be used, for example, to scan a directory for
  * all files matching a particular pattern.
  */
-class EXPCL_DTOOL GlobPattern {
+class EXPCL_DTOOL_DTOOLUTIL GlobPattern {
 PUBLISHED:
   INLINE GlobPattern(const string &pattern = string());
   INLINE GlobPattern(const GlobPattern &copy);
