@@ -482,37 +482,55 @@ open_stream() {
     return false;
   }
 
-  // Find the video stream
   nassertr(_video_ctx == NULL, false);
+
+  // As of libavformat version 57.41.100, AVStream.codec is deprecated in favor
+  // of AVStream.codecpar.  Fortunately, the two structures have
+  // similarly-named members, so we can just switch out the declaration.
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 41, 100)
+  AVCodecParameters *codecpar;
+#else
+  AVCodecContext *codecpar;
+#endif
+
+  // Find the video stream
+  AVStream *stream = nullptr;
   for (int i = 0; i < (int)_format_ctx->nb_streams; ++i) {
-    if (_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 41, 100)
+    codecpar = _format_ctx->streams[i]->codecpar;
+#else
+    codecpar = _format_ctx->streams[i]->codec;
+#endif
+    if (codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
       _video_index = i;
-      _video_ctx = _format_ctx->streams[i]->codec;
-      _video_timebase = av_q2d(_format_ctx->streams[i]->time_base);
-      _min_fseek = (int)(3.0 / _video_timebase);
+      stream = _format_ctx->streams[i];
+      break;
     }
   }
 
-  if (_video_ctx == NULL) {
+  if (stream == nullptr) {
     ffmpeg_cat.info()
-      << "Couldn't find video_ctx\n";
+      << "Couldn't find stream\n";
     close_stream();
     return false;
   }
 
+  _video_timebase = av_q2d(stream->time_base);
+  _min_fseek = (int)(3.0 / _video_timebase);
+
   AVCodec *pVideoCodec = NULL;
   if (ffmpeg_prefer_libvpx) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 0, 0)
-    if (_video_ctx->codec_id == AV_CODEC_ID_VP9) {
+    if (codecpar->codec_id == AV_CODEC_ID_VP9) {
       pVideoCodec = avcodec_find_decoder_by_name("libvpx-vp9");
     } else
 #endif
-    if (_video_ctx->codec_id == AV_CODEC_ID_VP8) {
+    if (codecpar->codec_id == AV_CODEC_ID_VP8) {
       pVideoCodec = avcodec_find_decoder_by_name("libvpx");
     }
   }
   if (pVideoCodec == NULL) {
-    pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+    pVideoCodec = avcodec_find_decoder(codecpar->codec_id);
   }
   if (pVideoCodec == NULL) {
     ffmpeg_cat.info()
@@ -520,6 +538,22 @@ open_stream() {
     close_stream();
     return false;
   }
+
+  _video_ctx = avcodec_alloc_context3(pVideoCodec);
+
+  if (_video_ctx == nullptr) {
+    ffmpeg_cat.info()
+      << "Couldn't allocate _video_ctx\n";
+    close_stream();
+    return false;
+  }
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 41, 100)
+  avcodec_parameters_to_context(_video_ctx, codecpar);
+#else
+  avcodec_copy_context(_video_ctx, codecpar);
+#endif
+
   if (avcodec_open2(_video_ctx, pVideoCodec, NULL) < 0) {
     ffmpeg_cat.info()
       << "Couldn't open codec\n";
@@ -547,6 +581,11 @@ close_stream() {
 
   if ((_video_ctx)&&(_video_ctx->codec)) {
     avcodec_close(_video_ctx);
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
+    avcodec_free_context(&_video_ctx);
+#else
+    delete _video_ctx;
+#endif
   }
   _video_ctx = NULL;
 

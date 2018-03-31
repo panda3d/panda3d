@@ -68,27 +68,57 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     return;
   }
 
+  // As of libavformat version 57.41.100, AVStream.codec is deprecated in favor
+  // of AVStream.codecpar.  Fortunately, the two structures have
+  // similarly-named members, so we can just switch out the declaration.
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 41, 100)
+  AVCodecParameters *codecpar;
+#else
+  AVCodecContext *codecpar;
+#endif
+
   // Find the audio stream
+  AVStream *stream = nullptr;
   for (int i = 0; i < (int)_format_ctx->nb_streams; i++) {
-    if (_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 41, 100)
+    codecpar = _format_ctx->streams[i]->codecpar;
+#else
+    codecpar = _format_ctx->streams[i]->codec;
+#endif
+    if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
       _audio_index = i;
-      _audio_ctx = _format_ctx->streams[i]->codec;
-      _audio_timebase = av_q2d(_format_ctx->streams[i]->time_base);
-      _audio_rate = _audio_ctx->sample_rate;
-      _audio_channels = _audio_ctx->channels;
+      stream = _format_ctx->streams[i];
+      break;
     }
   }
 
-  if (_audio_ctx == 0) {
+  if (stream == nullptr) {
     cleanup();
     return;
   }
 
-  AVCodec *pAudioCodec = avcodec_find_decoder(_audio_ctx->codec_id);
+  _audio_timebase = av_q2d(stream->time_base);
+  _audio_rate = codecpar->sample_rate;
+  _audio_channels = codecpar->channels;
+
+  AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
   if (pAudioCodec == 0) {
     cleanup();
     return;
   }
+
+  _audio_ctx = avcodec_alloc_context3(pAudioCodec);
+
+  if (_audio_ctx == nullptr) {
+    cleanup();
+    return;
+  }
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 41, 100)
+  avcodec_parameters_to_context(_audio_ctx, codecpar);
+#else
+  avcodec_copy_context(_audio_ctx, codecpar);
+#endif
 
   AVDictionary *opts = NULL;
   av_dict_set(&opts, "request_sample_fmt", "s16", 0);
@@ -202,6 +232,11 @@ cleanup() {
 
   if ((_audio_ctx)&&(_audio_ctx->codec)) {
     avcodec_close(_audio_ctx);
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
+    avcodec_free_context(&_audio_ctx);
+#else
+    delete _audio_ctx;
+#endif
   }
   _audio_ctx = NULL;
 
