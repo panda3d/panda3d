@@ -437,16 +437,7 @@ seek(double t) {
     cleanup();
     return;
   }
-  avcodec_close(_audio_ctx);
-  AVCodec *pAudioCodec = avcodec_find_decoder(_audio_ctx->codec_id);
-  if(pAudioCodec == 0) {
-    cleanup();
-    return;
-  }
-  if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
-    cleanup();
-    return;
-  }
+  avcodec_flush_buffers(_audio_ctx);
   _buffer_head = 0;
   _buffer_tail = 0;
   fetch_packet();
