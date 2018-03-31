@@ -30,16 +30,19 @@ extern "C" {
   #error Buildsystem error: BUILDING_FFMPEG not defined
 #endif
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 86, 100)
-  #error Minimum supported version of libavcodec is 54.86.100.
+// Minimum supported versions:
+// FFmpeg: 1.1
+// libav: 9.20 (for Ubuntu 14.04)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 35, 1)
+  #error Minimum supported version of libavcodec is 54.35.1.
 #endif
 
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(54, 59, 106)
-  #error Minimum supported version of libavformat is 54.59.106.
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(54, 20, 4)
+  #error Minimum supported version of libavformat is 54.20.4.
 #endif
 
-#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 13, 100)
-  #error Minimum supported version of libavutil is 52.13.100.
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 3, 0)
+  #error Minimum supported version of libavutil is 52.3.0.
 #endif
 
 ConfigureDef(config_ffmpeg);
