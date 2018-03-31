@@ -28,7 +28,7 @@
 
 #include "dtoolbase.h"
 
-extern EXPCL_DTOOL int @PANDA_VERSION_SYMBOL@;
+extern EXPCL_DTOOL_DTOOLUTIL int @PANDA_VERSION_SYMBOL@;
 
 #ifndef WIN32
 /* For Windows, exporting the symbol from the DLL is sufficient; the

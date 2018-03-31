@@ -12,10 +12,14 @@ set(P3GOBJ_HEADERS
   geomPrimitive.h geomPrimitive.I
   geomPatches.h
   geomTriangles.h
+  geomTrianglesAdjacency.h
   geomTristrips.h
+  geomTristripsAdjacency.h
   geomTrifans.h
   geomLines.h
+  geomLinesAdjacency.h
   geomLinestrips.h
+  geomLinestripsAdjacency.h
   geomPoints.h
   geomVertexArrayData.h geomVertexArrayData.I
   geomVertexArrayFormat.h geomVertexArrayFormat.I
@@ -86,10 +90,14 @@ set(P3GOBJ_SOURCES
   geomPrimitive.cxx
   geomPatches.cxx
   geomTriangles.cxx
+  geomTrianglesAdjacency.cxx
   geomTristrips.cxx
+  geomTristripsAdjacency.cxx
   geomTrifans.cxx
   geomLines.cxx
+  geomLinesAdjacency.cxx
   geomLinestrips.cxx
+  geomLinestripsAdjacency.cxx
   geomPoints.cxx
   geomVertexArrayData.cxx
   geomVertexArrayFormat.cxx

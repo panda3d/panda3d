@@ -233,10 +233,6 @@
    to compile them out.  */
 #cmakedefine NOTIFY_DEBUG
 
-/* Define if we want to export template classes from the DLL.  Only
-   makes sense to MSVC++. */
-#cmakedefine EXPORT_TEMPLATES
-
 /* Define if we are linking PANDAPHYSX in with PANDA. */
 #cmakedefine LINK_IN_PHYSX
 
