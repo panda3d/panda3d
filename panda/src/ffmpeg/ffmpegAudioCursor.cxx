@@ -299,6 +299,62 @@ fetch_packet() {
  */
 bool FfmpegAudioCursor::
 reload_buffer() {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
+  // lavc >= 57.37.100 deprecates the old (avcodec_decode_audio*) API in favor
+  // of a newer, asynchronous API.  This is great for our purposes - it gives
+  // the codec the opportunity to decode in the background (e.g. in another
+  // thread or on a dedicated hardware coprocessor).
+
+  // First, let's fill the codec's input buffer with as many packets as it'll
+  // take:
+  int ret;
+  while (_packet->data != nullptr) {
+    ret = avcodec_send_packet(_audio_ctx, _packet);
+
+    if (ret != 0) {
+      // Nonzero return code is an error.
+      break;
+    }
+
+    // If we got here, the codec took the packet!  Fetch another one.
+    fetch_packet();
+    if (_packet->data == nullptr) {
+      // fetch_packet() says we're out of packets.  Let the codec know.
+      ret = avcodec_send_packet(_audio_ctx, NULL);
+    }
+  }
+
+  // Expected ret codes are 0 (we ran out of packets) and EAGAIN (codec full)
+  if ((ret != 0) && (ret != AVERROR(EAGAIN))) {
+    // Some odd error happened.  We can't proceed.
+    ffmpeg_cat.error()
+      << "avcodec_send_packet returned " << ret << "\n";
+    return false;
+  }
+
+  // Now we retrieve our frame!
+  ret = avcodec_receive_frame(_audio_ctx, _frame);
+
+  if (ret == AVERROR_EOF) {
+    // The only way for this to happen is if we're out of packets.
+    nassertr(_packet->data == nullptr, false);
+
+    // Synthesize silence:
+    _buffer_head = 0;
+    _buffer_tail = _buffer_size;
+    memset(_buffer, 0, _buffer_size * 2);
+    return true;
+
+  } else if (ret != 0) {
+    // Some odd error happened.  We can't proceed.
+    ffmpeg_cat.error()
+      << "avcodec_receive_frame returned " << ret << "\n";
+    return false;
+  }
+
+  // We now have _frame.  It will be handled below.
+
+#else
   int got_frame = 0;
   while (!got_frame) {
     // If we're out of packets, generate silence.
@@ -339,6 +395,7 @@ reload_buffer() {
     _packet_data += len;
     _packet_size -= len;
   }
+#endif
 
   int bufsize;
 #ifdef HAVE_SWRESAMPLE
