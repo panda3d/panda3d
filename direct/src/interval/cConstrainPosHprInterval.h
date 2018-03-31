@@ -24,7 +24,7 @@
  * A constraint interval that will constrain the position and orientation of
  * one node to the position and orientation of another.
  */
-class EXPCL_DIRECT CConstrainPosHprInterval : public CConstraintInterval {
+class EXPCL_DIRECT_INTERVAL CConstrainPosHprInterval : public CConstraintInterval {
 PUBLISHED:
   explicit CConstrainPosHprInterval(const string &name, double duration,
                                     const NodePath &node, const NodePath &target,

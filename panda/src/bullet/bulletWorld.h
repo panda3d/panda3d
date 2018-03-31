@@ -134,6 +134,9 @@ PUBLISHED:
   void set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable);
   bool get_group_collision_flag(unsigned int group1, unsigned int group2) const;
 
+  void set_force_update_all_aabbs(bool force);
+  bool get_force_update_all_aabbs() const;
+
   // Callbacks
   void set_contact_added_callback(CallbackObject *obj);
   void clear_contact_added_callback();
@@ -166,6 +169,8 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(vehicles, get_num_vehicles, get_vehicle);
   MAKE_SEQ_PROPERTY(constraints, get_num_constraints, get_constraint);
   MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, get_manifold);
+  MAKE_PROPERTY(force_update_all_aabbs, get_force_update_all_aabbs,
+                                        set_force_update_all_aabbs);
 
 PUBLISHED: // Deprecated methods, will be removed soon
   void attach_ghost(BulletGhostNode *node);
@@ -260,6 +265,7 @@ private:
 
   btGhostPairCallback _ghost_cb;
 
+  FilterAlgorithm _filter_algorithm;
   btFilterCallback1 _filter_cb1;
   btFilterCallback2 _filter_cb2;
   btFilterCallback3 _filter_cb3;

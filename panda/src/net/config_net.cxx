@@ -18,6 +18,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_NET)
+  #error Buildsystem error: BUILDING_PANDA_NET not defined
+#endif
+
 Configure(config_net);
 NotifyCategoryDef(net, "");
 

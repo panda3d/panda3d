@@ -41,7 +41,9 @@ def window(graphics_pipe, graphics_engine):
     )
     graphics_engine.open_windows()
 
-    assert win is not None
+    if win is None:
+        pytest.skip("GraphicsPipe cannot make windows")
+
     yield win
 
     if win is not None:

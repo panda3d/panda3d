@@ -23,7 +23,7 @@
  * whose contents can be continuously extracted as a sequence of lines of
  * text.
  */
-class EXPCL_DTOOL LineStreamBuf : public streambuf {
+class EXPCL_DTOOL_DTOOLUTIL LineStreamBuf : public streambuf {
 public:
   LineStreamBuf();
   virtual ~LineStreamBuf();

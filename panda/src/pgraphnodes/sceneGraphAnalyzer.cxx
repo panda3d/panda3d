@@ -485,7 +485,7 @@ collect_statistics(Texture *texture) {
     _textures.insert(Textures::value_type(texture, 1));
 
     // Attempt to guess how many bytes of texture memory this one requires.
-    int bytes =
+    size_t bytes =
       texture->get_x_size() * texture->get_y_size() *
       texture->get_num_components() * texture->get_component_width();
 

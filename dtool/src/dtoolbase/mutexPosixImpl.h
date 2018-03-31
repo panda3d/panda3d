@@ -26,7 +26,7 @@
 /**
  * Uses Posix threads to implement a mutex.
  */
-class EXPCL_DTOOL MutexPosixImpl {
+class EXPCL_DTOOL_DTOOLBASE MutexPosixImpl {
 public:
   CONSTEXPR MutexPosixImpl() NOEXCEPT;
   INLINE ~MutexPosixImpl();
@@ -50,7 +50,7 @@ private:
 /**
  * Uses Posix threads to implement a reentrant mutex.
  */
-class EXPCL_DTOOL ReMutexPosixImpl {
+class EXPCL_DTOOL_DTOOLBASE ReMutexPosixImpl {
 public:
 #ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
   CONSTEXPR ReMutexPosixImpl() NOEXCEPT;

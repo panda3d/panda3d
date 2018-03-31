@@ -24,7 +24,7 @@
  * put OS-specific filenames, or filenames based on environment variables, in
  * the prc file.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableFilename : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableFilename : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableFilename(const string &name);
   INLINE ConfigVariableFilename(const string &name, const Filename &default_value,

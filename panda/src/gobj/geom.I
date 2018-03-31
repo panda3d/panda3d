@@ -213,6 +213,17 @@ make_patches() const {
 }
 
 /**
+ * Returns a new Geom with each primitive converted into a corresponding
+ * version with adjacency information.
+ */
+INLINE PT(Geom) Geom::
+make_adjacency() const {
+  PT(Geom) new_geom = make_copy();
+  new_geom->make_adjacency_in_place();
+  return new_geom;
+}
+
+/**
  * Returns a sequence number which is guaranteed to change at least every time
  * any of the primitives in the Geom is modified, or the set of primitives is
  * modified.  However, this does not include modifications to the vertex data,

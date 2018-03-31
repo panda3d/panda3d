@@ -32,6 +32,10 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PNMIMAGETYPES)
+  #error Buildsystem error: BUILDING_PANDA_PNMIMAGETYPES not defined
+#endif
+
 Configure(config_pnmimagetypes);
 NotifyCategoryDefName(pnmimage_sgi, "sgi", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tga, "tga", pnmimage_cat);

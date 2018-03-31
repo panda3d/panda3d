@@ -34,17 +34,11 @@ BulletPlaneShape::
 BulletPlaneShape(const BulletPlaneShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = copy._shape;
-}
+  btVector3 btNormal = copy._shape->getPlaneNormal();
+  PN_stdfloat constant = (PN_stdfloat)_shape->getPlaneConstant();
 
-/**
- *
- */
-void BulletPlaneShape::
-operator = (const BulletPlaneShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  _shape = copy._shape;
+  _shape = new btStaticPlaneShape(btNormal, constant);
+  _shape->setUserPointer(this);
 }
 
 /**

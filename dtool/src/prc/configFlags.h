@@ -23,7 +23,7 @@
  * It exists only to provide a convenient name scoping for some enumerated
  * values common to both classes.
  */
-class EXPCL_DTOOLCONFIG ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigFlags {
 PUBLISHED:
   enum ValueType {
     VT_undefined,

@@ -2238,6 +2238,8 @@ output_instance(ostream &out, bool brief, const string &prename,
       }
       break;
 
+    case ST_blob:
+    case ST_blob32:
     case ST_string:
       if (!_uint_range.is_empty()) {
         out << "(";

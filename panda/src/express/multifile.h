@@ -24,6 +24,7 @@
 #include "indirectLess.h"
 #include "referenceCount.h"
 #include "pvector.h"
+#include "vector_uchar.h"
 
 #ifdef HAVE_OPENSSL
 typedef struct x509_st X509;
@@ -125,7 +126,7 @@ PUBLISHED:
   streampos get_subfile_internal_start(int index) const;
   size_t get_subfile_internal_length(int index) const;
 
-  BLOCKING INLINE string read_subfile(int index);
+  BLOCKING INLINE vector_uchar read_subfile(int index);
   BLOCKING istream *open_read_subfile(int index);
   BLOCKING static void close_read_subfile(istream *stream);
   BLOCKING bool extract_subfile(int index, const Filename &filename);

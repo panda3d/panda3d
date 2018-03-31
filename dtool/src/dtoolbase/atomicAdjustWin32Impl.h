@@ -29,7 +29,7 @@
 /**
  * Uses Windows native calls to implement atomic adjustments.
  */
-class EXPCL_DTOOL AtomicAdjustWin32Impl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustWin32Impl {
 public:
 #ifdef _WIN64
   // For 64-bit builds, we'd prefer to use a 64-bit integer.

@@ -28,7 +28,7 @@ class ConfigVariableCore;
  * ConfigVariableCores) everywhere in the world, and keeps them in sorted
  * order.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableManager {
+class EXPCL_DTOOL_PRC ConfigVariableManager {
 protected:
   ConfigVariableManager();
   ~ConfigVariableManager();

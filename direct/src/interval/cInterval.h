@@ -32,7 +32,7 @@ class CIntervalManager;
  * C++ will inherit from this class; Intervals that must be implemented in
  * Python will inherit from the similar Python class.
  */
-class EXPCL_DIRECT CInterval : public TypedReferenceCount {
+class EXPCL_DIRECT_INTERVAL CInterval : public TypedReferenceCount {
 public:
   CInterval(const string &name, double duration, bool open_ended);
   virtual ~CInterval();
@@ -202,7 +202,7 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const CInterval &ival);
-EXPCL_DIRECT ostream &operator << (ostream &out, CInterval::State state);
+EXPCL_DIRECT_INTERVAL ostream &operator << (ostream &out, CInterval::State state);
 
 #include "cInterval.I"
 

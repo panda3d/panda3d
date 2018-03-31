@@ -78,8 +78,10 @@ class TypedObject;
  * that ancestry of a particular type may be queried, and the type name may be
  * retrieved for run-time display.
  */
-class EXPCL_DTOOL TypeHandle FINAL {
+class EXPCL_DTOOL_DTOOLBASE TypeHandle FINAL {
 PUBLISHED:
+  TypeHandle() NOEXCEPT DEFAULT_CTOR;
+
   enum MemoryClass {
     MC_singleton,
     MC_array,
@@ -127,7 +129,7 @@ PUBLISHED:
 
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;
-  INLINE static TypeHandle none();
+  CONSTEXPR static TypeHandle none();
   INLINE operator bool () const;
 
   MAKE_PROPERTY(index, get_index);
@@ -140,12 +142,15 @@ public:
   void *reallocate_array(void *ptr, size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void deallocate_array(void *ptr);
 
-  INLINE static TypeHandle from_index(int index);
+  CONSTEXPR static TypeHandle from_index(int index);
 
 private:
-  int _index;
+  CONSTEXPR TypeHandle(int index);
+
+  // Only kept temporarily for ABI compatibility.
   static TypeHandle _none;
 
+  int _index;
   friend class TypeRegistry;
 };
 
@@ -157,7 +162,7 @@ INLINE ostream &operator << (ostream &out, TypeHandle type) {
   return out;
 }
 
-EXPCL_DTOOL ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
+EXPCL_DTOOL_DTOOLBASE ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
 
 // We must include typeRegistry at this point so we can call it from our
 // inline functions.  This is a circular include that is strategically placed

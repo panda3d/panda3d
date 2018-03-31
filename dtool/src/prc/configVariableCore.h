@@ -31,7 +31,7 @@ class ConfigDeclaration;
  * make() method, which may return a shared instance.  Once created, these
  * objects are never destructed.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableCore : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigVariableCore : public ConfigFlags {
 private:
   ConfigVariableCore(const string &name);
   ConfigVariableCore(const ConfigVariableCore &templ, const string &name);

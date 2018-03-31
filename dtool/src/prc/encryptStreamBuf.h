@@ -24,7 +24,7 @@ typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
 /**
  * The streambuf object that implements IDecompressStream and OCompressStream.
  */
-class EXPCL_DTOOLCONFIG EncryptStreamBuf : public streambuf {
+class EXPCL_DTOOL_PRC EncryptStreamBuf : public streambuf {
 public:
   EncryptStreamBuf();
   virtual ~EncryptStreamBuf();

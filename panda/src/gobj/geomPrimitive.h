@@ -134,6 +134,7 @@ PUBLISHED:
   CPT(GeomPrimitive) make_points() const;
   CPT(GeomPrimitive) make_lines() const;
   CPT(GeomPrimitive) make_patches() const;
+  virtual CPT(GeomPrimitive) make_adjacency() const;
 
   int get_num_bytes() const;
   INLINE int get_data_size_bytes() const;

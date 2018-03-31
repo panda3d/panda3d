@@ -36,7 +36,7 @@
  * typedeffed to be one of these or the other, according to the machine's
  * architecture.
  */
-class EXPCL_DTOOLCONFIG NativeNumericData {
+class EXPCL_DTOOL_PRC NativeNumericData {
 public:
   INLINE NativeNumericData(const void *data, size_t length);
   INLINE NativeNumericData(const void *data, size_t start, size_t length);

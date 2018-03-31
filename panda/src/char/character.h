@@ -30,7 +30,6 @@
 #include "sliderTable.h"
 
 class CharacterJointBundle;
-class ComputedVertices;
 
 /**
  * An animated character, with skeleton-morph animation and either soft-

@@ -27,9 +27,4 @@ typedef ParamVecBase2 EventStoreVec2;
 typedef ParamVecBase3 EventStoreVec3;
 typedef ParamMatrix4 EventStoreMat4;
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

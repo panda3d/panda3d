@@ -2381,11 +2381,28 @@ draw_triangles(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
+
+/**
+ * Draws a series of disconnected triangles with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_triangles_adj(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
 /**
  * Draws a series of triangle strips.
  */
 bool GraphicsStateGuardian::
 draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of triangle strips with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_tristrips_adj(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
@@ -2415,10 +2432,26 @@ draw_lines(const GeomPrimitivePipelineReader *, bool) {
 }
 
 /**
+ * Draws a series of disconnected line segments with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_lines_adj(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
  * Draws a series of line strips.
  */
 bool GraphicsStateGuardian::
 draw_linestrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of line strips with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_linestrips_adj(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 

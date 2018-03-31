@@ -16,6 +16,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGL)
+  #error Buildsystem error: BUILDING_PANDAGL not defined
+#endif
+
 ConfigureDef(config_glgsg);
 NotifyCategoryDef(glgsg, ":display:gsg");
 
