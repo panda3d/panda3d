@@ -2,9 +2,6 @@
 # by the top CMakeLists.txt, which puts it in the global namespace for
 # all CMake scripts for Panda.
 
-set(PANDA_VERSION "1.9.0" CACHE STRING
-  "Use dots to separate the major, minor, and sequence numbers.")
-
 option(PANDA_OFFICIAL_VERSION
   "This variable will be defined to false in the CVS repository, but
 scripts that generate source tarballs and/or binary releases for
@@ -59,12 +56,6 @@ mark_as_advanced(PANDA_VERSION PANDA_OFFICIAL_VERSION
   PANDA_PACKAGE_VERSION P3D_PLUGIN_VERSION P3D_COREAPI_VERSION
   PANDA_DIST_USE_LICENSES)
 
-# Separate the Panda3D version into its three components.
-string(REPLACE "." ";" PANDA_VERSION_LIST "${PANDA_VERSION}")
-list(GET PANDA_VERSION_LIST 0 PANDA_MAJOR_VERSION)
-list(GET PANDA_VERSION_LIST 1 PANDA_MINOR_VERSION)
-list(GET PANDA_VERSION_LIST 2 PANDA_SEQUENCE_VERSION)
-
 # The version gets a "c" at the end if it's not an official one.
 if(PANDA_OFFICIAL_VERSION)
   set(VERSION_SUFFIX "")
@@ -72,15 +63,15 @@ else()
   set(VERSION_SUFFIX "c")
 endif()
 
-set(PANDA_VERSION_STR "${PANDA_VERSION}${VERSION_SUFFIX}")
+set(PANDA_VERSION_STR "${PROJECT_VERSION}${VERSION_SUFFIX}")
 
 # This symbol is used to enforce ABI incompatibility between
 # major versions of Panda3D.
-set(PANDA_VERSION_SYMBOL panda_version_${PANDA_MAJOR_VERSION}_${PANDA_MINOR_VERSION})
+set(PANDA_VERSION_SYMBOL panda_version_${PROJECT_VERSION_MAJOR}_${PROJECT_VERSION_MINOR})
 
 # The Panda version as a number, with three digits reserved
 # for each component.
-math(EXPR PANDA_NUMERIC_VERSION "${PANDA_MAJOR_VERSION}*1000000 + ${PANDA_MINOR_VERSION}*1000 + ${PANDA_SEQUENCE_VERSION}")
+math(EXPR PANDA_NUMERIC_VERSION "${PROJECT_VERSION_MAJOR}*1000000 + ${PROJECT_VERSION_MINOR}*1000 + ${PROJECT_VERSION_PATCH}")
 
 # Separate the plugin version into its three components.
 string(REPLACE "." ";" P3D_PLUGIN_VERSION_LIST "${P3D_PLUGIN_VERSION}")

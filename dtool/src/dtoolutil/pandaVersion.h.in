@@ -33,9 +33,9 @@
    included in a .h file, then any other files which also include that
    .h file will need to be rebuilt when the version number changes. */
 
-#define PANDA_MAJOR_VERSION @PANDA_MAJOR_VERSION@
-#define PANDA_MINOR_VERSION @PANDA_MINOR_VERSION@
-#define PANDA_SEQUENCE_VERSION @PANDA_SEQUENCE_VERSION@
+#define PANDA_MAJOR_VERSION @PROJECT_VERSION_MAJOR@
+#define PANDA_MINOR_VERSION @PROJECT_VERSION_MINOR@
+#define PANDA_SEQUENCE_VERSION @PROJECT_VERSION_PATCH@
 
 /* Define if this is an "official" version, undefine otherwise. */
 #cmakedefine PANDA_OFFICIAL_VERSION
@@ -53,7 +53,7 @@
    This usually means the major and minor version. It should be the
    same for Panda3D versions that are supposed to be backward
    ABI compatible with each other. */
-#define PANDA_ABI_VERSION_STR "@PANDA_MAJOR_VERSION@.@PANDA_MINOR_VERSION@"
+#define PANDA_ABI_VERSION_STR "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@"
 
 /* This is a string indicating who has provided this distribution. */
 #define PANDA_DISTRIBUTOR "@PANDA_DISTRIBUTOR@"

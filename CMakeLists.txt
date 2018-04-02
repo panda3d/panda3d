@@ -1,15 +1,7 @@
-# We require 2.8.12+ for three reasons:
-# 1) CMake 3 is so common these days that it's really not a burden on the user
-#    to expect them to have it.
-# 2) As of this writing, this is the oldest version included in a supported
-#    release of Ubuntu. Older versions are actually somewhat difficult to track
-#    down, so we don't test against them.
-# 3) CMake's INTERFACE_INCLUDE_DIRECTORIES feature, which we rely on
-#    extensively, finally became stable in this release.
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0.2)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON) # Must go before project() below
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
-project(Panda3D)
+project(Panda3D VERSION 1.10.0)
 enable_testing()
 
 # Panda3D is now a C++11 project. Newer versions of CMake support this out of
