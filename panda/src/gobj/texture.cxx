@@ -4207,7 +4207,9 @@ bool Texture::
 do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only) {
   StreamReader ktx(in);
 
-  if (ktx.extract_bytes(12) != "\xABKTX 11\xBB\r\n\x1A\n") {
+  unsigned char magic[12];
+  if (ktx.extract_bytes(magic, 12) != 12 ||
+      memcmp(magic, "\xABKTX 11\xBB\r\n\x1A\n", 12) != 0) {
     gobj_cat.error()
       << filename << " is not a KTX file.\n";
     return false;

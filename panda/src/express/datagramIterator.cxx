@@ -119,18 +119,18 @@ get_wstring() {
  * Extracts the indicated number of bytes in the datagram and returns them as
  * a string.
  */
-string DatagramIterator::
+vector_uchar DatagramIterator::
 extract_bytes(size_t size) {
-  nassertr((int)size >= 0, "");
-  nassertr(_datagram != (const Datagram *)NULL, "");
-  nassertr(_current_index + size <= _datagram->get_length(), "");
+  nassertr((int)size >= 0, vector_uchar());
+  nassertr(_datagram != (const Datagram *)NULL, vector_uchar());
+  nassertr(_current_index + size <= _datagram->get_length(), vector_uchar());
 
-  const char *ptr = (const char *)_datagram->get_data();
-  size_t last_index = _current_index;
+  const unsigned char *ptr = (const unsigned char *)_datagram->get_data();
+  ptr += _current_index;
 
   _current_index += size;
 
-  return string(ptr + last_index, size);
+  return vector_uchar(ptr, ptr + size);
 }
 
 /**

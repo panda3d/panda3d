@@ -803,8 +803,9 @@ handle_update_field_owner() {
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
+      vector_uchar data = _di.get_remaining_bytes();
       DCPacker packer;
-      packer.set_unpack_data(_di.get_remaining_bytes());
+      packer.set_unpack_data((const char *)data.data(), data.size(), false);
       int field_id = packer.raw_unpack_uint16();
       DCField *field = dclass->get_field_by_index(field_id);
       if (field->is_ownrecv()) {
@@ -845,8 +846,9 @@ handle_update_field_owner() {
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
+      vector_uchar data = _di.get_remaining_bytes();
       DCPacker packer;
-      packer.set_unpack_data(_di.get_remaining_bytes());
+      packer.set_unpack_data((const char *)data.data(), data.size(), false);
       int field_id = packer.raw_unpack_uint16();
       DCField *field = dclass->get_field_by_index(field_id);
       if (true) {//field->is_broadcast()) {

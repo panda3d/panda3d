@@ -42,57 +42,15 @@ Datagram(const void *data, size_t size) :
  * Constructs a datagram from an existing block of data.
  */
 INLINE Datagram::
-Datagram(const string &data) :
+Datagram(vector_uchar data) :
+  _data(move(data)),
 #ifdef STDFLOAT_DOUBLE
   _stdfloat_double(true)
 #else
   _stdfloat_double(false)
 #endif
 {
-  append_data(data);
 }
-
-/**
- *
- */
-INLINE Datagram::
-Datagram(const Datagram &copy) :
-  _data(copy._data),
-  _stdfloat_double(copy._stdfloat_double)
-{
-}
-
-/**
- *
- */
-INLINE void Datagram::
-operator = (const Datagram &copy) {
-  _data = copy._data;
-  _stdfloat_double = copy._stdfloat_double;
-}
-
-#ifdef USE_MOVE_SEMANTICS
-/**
- *
- */
-INLINE Datagram::
-Datagram(Datagram &&from) NOEXCEPT :
-  _data(move(from._data)),
-  _stdfloat_double(from._stdfloat_double)
-{
-}
-#endif  // USE_MOVE_SEMANTICS
-
-#ifdef USE_MOVE_SEMANTICS
-/**
- *
- */
-INLINE void Datagram::
-operator = (Datagram &&from) NOEXCEPT {
-  _data = move(from._data);
-  _stdfloat_double = from._stdfloat_double;
-}
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Adds a boolean value to the datagram.
@@ -291,7 +249,7 @@ add_string(const string &str) {
   add_uint16((uint16_t)str.length());
 
   // Add the string
-  append_data(str);
+  append_data(str.data(), str.length());
 }
 
 /**
@@ -304,18 +262,18 @@ add_string32(const string &str) {
   add_uint32((uint32_t)str.length());
 
   // Add the string
-  append_data(str);
+  append_data(str.data(), str.length());
 }
 
 /**
  * Adds a variable-length string to the datagram, as a NULL-terminated string.
  */
 INLINE void Datagram::
-add_z_string(string str) {
+add_z_string(const string &str) {
   // We must not have any nested null characters in the string.
   size_t null_pos = str.find('\0');
   // Add the string (sans the null character).
-  append_data(str.substr(0, null_pos));
+  append_data(str.data(), std::min<size_t>(null_pos, str.length()));
 
   // And the null character.
   add_uint8('\0');
@@ -329,11 +287,11 @@ add_z_string(string str) {
 INLINE void Datagram::
 add_fixed_string(const string &str, size_t size) {
   if (str.length() < size) {
-    append_data(str);
+    append_data(str.data(), str.length());
     pad_bytes(size - str.length());
 
   } else { // str.length() >= size
-    append_data(str.substr(0, size));
+    append_data(str.data(), size);
   }
 }
 
@@ -341,8 +299,8 @@ add_fixed_string(const string &str, size_t size) {
  * Appends some more raw data to the end of the datagram.
  */
 INLINE void Datagram::
-append_data(const string &data) {
-  append_data(data.data(), data.length());
+append_data(const vector_uchar &data) {
+  append_data(data.data(), data.size());
 }
 
 /**
