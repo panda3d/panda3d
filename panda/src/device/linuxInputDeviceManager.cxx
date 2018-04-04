@@ -32,12 +32,8 @@
 LinuxInputDeviceManager::
 LinuxInputDeviceManager() {
   // Use inotify to watch /dev/input for hotplugging of devices.
-#if !defined(__ANDROID_API__) || __ANDROID_API__ >= 21
-  _inotify_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
-#else
   _inotify_fd = inotify_init();
   fcntl(_inotify_fd, O_NONBLOCK | O_CLOEXEC);
-#endif
 
   if (_inotify_fd < 0) {
     device_cat.error()
