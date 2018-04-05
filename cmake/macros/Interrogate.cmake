@@ -286,7 +286,11 @@ function(add_python_module module)
       COMMENT "Generating module ${module}"
     )
 
-    add_library(${module} "${module}_module.cxx" ${sources})
+    if(BUILD_SHARED_LIBS)
+      add_library(${module} MODULE "${module}_module.cxx" ${sources})
+    else()
+      add_library(${module} STATIC "${module}_module.cxx" ${sources})
+    endif()
     target_link_libraries(${module}
       ${link_targets} ${PYTHON_LIBRARIES} p3interrogatedb)
 

@@ -1,9 +1,15 @@
 add_definitions(-DBUILDING_DTOOLCONFIG)
 
-if(HAVE_PYTHON)
-  add_library(p3dtoolconfig dtoolconfig.cxx pydtool.cxx)
+if(BUILD_SHARED_LIBS)
+  set(libtype MODULE)
 else()
-  add_library(p3dtoolconfig dtoolconfig.cxx)
+  set(libtype STATIC)
+endif()
+
+if(HAVE_PYTHON)
+  add_library(p3dtoolconfig ${libtype} dtoolconfig.cxx pydtool.cxx)
+else()
+  add_library(p3dtoolconfig ${libtype} dtoolconfig.cxx)
 endif()
 
 target_use_packages(p3dtoolconfig PYTHON)
