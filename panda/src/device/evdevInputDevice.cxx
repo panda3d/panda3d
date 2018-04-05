@@ -971,15 +971,19 @@ map_button(int code, DeviceClass device_class) {
   case BTN_THUMBR:
     return GamepadButton::rstick();
 
+  case BTN_DPAD_LEFT:
   case BTN_TRIGGER_HAPPY1:
     return GamepadButton::dpad_left();
 
+  case BTN_DPAD_RIGHT:
   case BTN_TRIGGER_HAPPY2:
     return GamepadButton::dpad_right();
 
+  case BTN_DPAD_UP:
   case BTN_TRIGGER_HAPPY3:
     return GamepadButton::dpad_up();
 
+  case BTN_DPAD_DOWN:
   case BTN_TRIGGER_HAPPY4:
     return GamepadButton::dpad_down();
 
