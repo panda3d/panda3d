@@ -33,7 +33,8 @@ LinuxInputDeviceManager::
 LinuxInputDeviceManager() {
   // Use inotify to watch /dev/input for hotplugging of devices.
   _inotify_fd = inotify_init();
-  fcntl(_inotify_fd, O_NONBLOCK | O_CLOEXEC);
+  fcntl(_inotify_fd, F_SETFL, O_NONBLOCK);
+  fcntl(_inotify_fd, F_SETFD, FD_CLOEXEC);
 
   if (_inotify_fd < 0) {
     device_cat.error()
