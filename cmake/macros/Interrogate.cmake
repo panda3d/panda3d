@@ -229,24 +229,34 @@ function(interrogate_sources target output database language_flags)
 endfunction(interrogate_sources)
 
 #
-# Function: add_python_module(module [lib1 [lib2 ...]] [LINK lib1 ...])
+# Function: add_python_module(module [lib1 [lib2 ...]] [LINK lib1 ...]
+#    [IMPORT mod1 ...])
 # Uses interrogate to create a Python module. If the LINK keyword is specified,
 # the Python module is linked against the specified libraries instead of those
-# listed before.
+# listed before. The IMPORT keyword makes the output module import another
+# Python module when it's initialized.
 #
 function(add_python_module module)
   if(INTERROGATE_PYTHON_INTERFACE)
     set(targets)
     set(link_targets)
+    set(import_flags)
     set(infiles)
     set(sources)
 
     set(link_keyword OFF)
+    set(import_keyword OFF)
     foreach(arg ${ARGN})
       if(arg STREQUAL "LINK")
         set(link_keyword ON)
+        set(import_keyword OFF)
+      elseif(arg STREQUAL "IMPORT")
+        set(link_keyword OFF)
+        set(import_keyword ON)
       elseif(link_keyword)
         list(APPEND link_targets "${arg}")
+      elseif(import_keyword)
+        list(APPEND import_flags "-import" "${arg}")
       else()
         list(APPEND targets "${arg}")
       endif()
@@ -269,6 +279,7 @@ function(add_python_module module)
       COMMAND interrogate_module
         -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
         -module ${module} -library ${module}
+        ${import_flags}
         ${INTERROGATE_MODULE_OPTIONS}
         ${IMOD_FLAGS} ${infiles}
       DEPENDS interrogate_module ${infiles}

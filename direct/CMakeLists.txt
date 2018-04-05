@@ -17,8 +17,7 @@ add_subdirectory(src/interval)
 add_subdirectory(src/showbase)
 
 if(HAVE_PYTHON)
-  add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase)
-  target_link_libraries(direct core)
+  add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase IMPORT panda3d.core)
 
   # Make an __init__.py pointing at the source directory so users can run
   # Panda3D code straight from their build path:
