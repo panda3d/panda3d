@@ -16,6 +16,7 @@
 
 #include "dcbase.h"
 #include "dcSubatomicType.h"
+#include "vector_uchar.h"
 
 class DCFile;
 class DCField;
@@ -37,8 +38,8 @@ enum DCPackType {
 
   // These PackTypes are all fundamental types, and should be packed (or
   // unpacked) with the corresponding call to pack_double(), pack_int(), etc.
-  // PT_blob is the same as PT_string, but implies that the string contains
-  // binary data.
+  // PT_blob is similar to PT_string, except that it contains arbitrary binary
+  // data instead of just UTF-8 text.
   PT_double,
   PT_int,
   PT_uint,
@@ -113,6 +114,8 @@ public:
                            bool &pack_error, bool &range_error) const;
   virtual void pack_string(DCPackData &pack_data, const std::string &value,
                            bool &pack_error, bool &range_error) const;
+  virtual void pack_blob(DCPackData &pack_data, const vector_uchar &value,
+                         bool &pack_error, bool &range_error) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
   virtual void unpack_double(const char *data, size_t length, size_t &p,
@@ -127,6 +130,8 @@ public:
                              uint64_t &value, bool &pack_error, bool &range_error) const;
   virtual void unpack_string(const char *data, size_t length, size_t &p,
                              std::string &value, bool &pack_error, bool &range_error) const;
+  virtual void unpack_blob(const char *data, size_t length, size_t &p,
+                           vector_uchar &value, bool &pack_error, bool &range_error) const;
   virtual bool unpack_validate(const char *data, size_t length, size_t &p,
                                bool &pack_error, bool &range_error) const;
   virtual bool unpack_skip(const char *data, size_t length, size_t &p,

@@ -16,6 +16,7 @@
 
 #include "dcbase.h"
 #include "dcSubatomicType.h"
+#include "vector_uchar.h"
 
 class DCFile;
 class DCClass;
@@ -61,6 +62,7 @@ public:
     const DCKeyword *keyword;
   } u;
   std::string str;
+  vector_uchar bytes;
 };
 
 // The yacc-generated code expects to use the symbol 'YYSTYPE' to refer to the

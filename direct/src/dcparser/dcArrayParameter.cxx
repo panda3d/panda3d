@@ -263,6 +263,38 @@ pack_string(DCPackData &pack_data, const string &value,
 }
 
 /**
+ * Packs the indicated numeric or string value into the stream.
+ */
+void DCArrayParameter::
+pack_blob(DCPackData &pack_data, const vector_uchar &value,
+          bool &pack_error, bool &range_error) const {
+  // We can only pack a string if the array element type is char or int8.
+  DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
+  if (simple_type == (DCSimpleParameter *)NULL) {
+    pack_error = true;
+    return;
+  }
+
+  size_t blob_size = value.size();
+
+  switch (simple_type->get_type()) {
+  case ST_char:
+  case ST_uint8:
+  case ST_int8:
+    _array_size_range.validate(blob_size, range_error);
+    if (_num_length_bytes != 0) {
+      nassertv(_num_length_bytes == 2);
+      do_pack_uint16(pack_data.get_write_pointer(2), blob_size);
+    }
+    pack_data.append_data((const char *)value.data(), blob_size);
+    break;
+
+  default:
+    pack_error = true;
+  }
+}
+
+/**
  * Packs the arrayParameter's specified default value (or a sensible default
  * if no value is specified) into the stream.  Returns true if the default
  * value is packed, false if the arrayParameter doesn't know how to pack its
@@ -332,6 +364,46 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
     }
     value.assign(data + p, string_length);
     p += string_length;
+    break;
+
+  default:
+    pack_error = true;
+  }
+}
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+void DCArrayParameter::
+unpack_blob(const char *data, size_t length, size_t &p, vector_uchar &value,
+            bool &pack_error, bool &range_error) const {
+  // We can only unpack a string if the array element type is char or int8.
+  DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
+  if (simple_type == (DCSimpleParameter *)NULL) {
+    pack_error = true;
+    return;
+  }
+
+  size_t blob_size;
+
+  switch (simple_type->get_type()) {
+  case ST_char:
+  case ST_uint8:
+  case ST_int8:
+    if (_num_length_bytes != 0) {
+      blob_size = do_unpack_uint16(data + p);
+      p += 2;
+    } else {
+      nassertv(_array_size >= 0);
+      blob_size = _array_size;
+    }
+    if (p + blob_size > length) {
+      pack_error = true;
+      return;
+    }
+    value = vector_uchar((const unsigned char *)data + p,
+                         (const unsigned char *)data + p + blob_size);
+    p += blob_size;
     break;
 
   default:
