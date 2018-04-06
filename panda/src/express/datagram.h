@@ -84,6 +84,7 @@ PUBLISHED:
   void assign(const void *data, size_t size);
 
   INLINE string get_message() const;
+  INLINE vector_uchar __bytes__() const;
   INLINE const void *get_data() const;
   INLINE size_t get_length() const;
 

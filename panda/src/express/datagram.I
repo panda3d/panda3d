@@ -317,6 +317,18 @@ get_message() const {
 }
 
 /**
+ * Returns the datagram's data as a bytes object.
+ */
+INLINE vector_uchar Datagram::
+__bytes__() const {
+  if (!_data.empty()) {
+    return vector_uchar(_data.v());
+  } else {
+    return vector_uchar();
+  }
+}
+
+/**
  * Returns a pointer to the beginning of the datagram's data.
  */
 INLINE const void *Datagram::
