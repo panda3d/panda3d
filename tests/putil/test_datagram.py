@@ -1,5 +1,6 @@
 import pytest
 from panda3d import core
+import sys
 
 # Fixtures for generating interesting datagrams (and verification functions) on
 # the fly...
@@ -76,6 +77,7 @@ def datagram_large():
 
     return dg, readback_function
 
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="Requires Python 3")
 def test_datagram_bytes():
     """Tests that we can put and get a bytes object on Datagram."""
     dg = core.Datagram(b'abc\x00')
