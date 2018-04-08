@@ -486,17 +486,27 @@ class build_apps(distutils.core.Command):
         ignore_copy_list += self.exclude_patterns
         ignore_copy_list += freezer_modpaths
         ignore_copy_list += self.extra_prc_files
-        ignore_copy_list = [p3d.GlobPattern(i) for i in ignore_copy_list]
+        ignore_copy_list = [p3d.GlobPattern(p3d.Filename.from_os_specific(i).get_fullpath()) for i in ignore_copy_list]
 
         include_copy_list = [p3d.GlobPattern(i) for i in self.include_patterns]
 
         def check_pattern(src, pattern_list):
             # Normalize file paths across platforms
-            path = p3d.Filename.from_os_specific(os.path.normpath(src)).get_fullpath()
+            fn = p3d.Filename.from_os_specific(os.path.normpath(src))
+            path = fn.get_fullpath()
+            fn.make_absolute()
+            abspath = fn.get_fullpath()
+
             for pattern in pattern_list:
-                #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches(path)))
-                if pattern.matches(path):
-                    return True
+                # If the pattern is absolute, match against the absolute filename.
+                if pattern.pattern[0] == '/':
+                    #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches(abspath)))
+                    if pattern.matches(abspath):
+                        return True
+                else:
+                    #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches(path)))
+                    if pattern.matches(path):
+                        return True
             return False
 
         def check_file(fname):
