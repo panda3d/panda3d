@@ -1642,7 +1642,8 @@ class Freezer:
 
         return target
 
-    def generateRuntimeFromStub(self, target, stub_file, use_console, fields={}):
+    def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
+                                log_append=False):
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
@@ -1735,7 +1736,7 @@ class Freezer:
 
         # Determine the format of the header and module list entries depending
         # on the platform.
-        num_pointers = 11
+        num_pointers = 12
         stub_data = bytearray(stub_file.read())
         bitnesses = self._get_executable_bitnesses(stub_data)
 
@@ -1808,6 +1809,10 @@ class Freezer:
             # A null entry marks the end of the module table.
             blob += struct.pack(entry_layout, 0, 0, 0)
 
+            flags = 0
+            if log_append:
+                flags |= 1
+
             # Compose the header we will be writing to the stub, to tell it
             # where to find the module data blob, as well as other variables.
             header = struct.pack(header_layout,
@@ -1816,7 +1821,7 @@ class Freezer:
                 1, # Version number
                 num_pointers, # Number of pointers that follow
                 0, # Codepage, not yet used
-                0, # Flags, not yet used
+                flags,
                 table_offset, # Module table pointer.
                 # The following variables need to be set before static init
                 # time.  See configPageManager.cxx, where they are read.
@@ -1830,6 +1835,7 @@ class Freezer:
                 field_offsets.get('prc_executable_patterns', 0),
                 field_offsets.get('prc_executable_args_envvar', 0),
                 field_offsets.get('main_dir', 0),
+                field_offsets.get('log_filename', 0),
                 0)
 
             # Now, find the location of the 'blobinfo' symbol in the binary,

@@ -12,6 +12,8 @@ setup(
             'gui_apps': {
                 'asteroids': 'main.py',
             },
+            'log_filename': '$USER_APPDATA/Asteroids/output.log',
+            'log_append': False,
             'plugins': [
                 'pandagl',
                 'p3openal_audio',

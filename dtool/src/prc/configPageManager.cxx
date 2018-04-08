@@ -115,6 +115,7 @@ reload_implicit_pages() {
     const char *prc_executable_patterns;
     const char *prc_executable_args_envvar;
     const char *main_dir;
+    const char *log_filename;
   };
 #ifdef _MSC_VER
   const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");

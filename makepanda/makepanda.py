@@ -6712,12 +6712,12 @@ if PkgSkip("PYTHON") == 0:
     TargetAdd('deploy-stub.exe', input='deploy-stub.obj')
     if GetTarget() == 'windows':
         TargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
-    TargetAdd('deploy-stub.exe', opts=['PYTHON', 'DEPLOYSTUB', 'NOICON'])
+    TargetAdd('deploy-stub.exe', opts=['WINSHELL', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
 
     if GetTarget() == 'windows':
         TargetAdd('deploy-stubw.exe', input='deploy-stub.obj')
         TargetAdd('deploy-stubw.exe', input='frozen_dllmain.obj')
-        TargetAdd('deploy-stubw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
+        TargetAdd('deploy-stubw.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSHELL', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
     elif GetTarget() == 'darwin':
         DefSymbol('MACOS_APP_BUNDLE', 'MACOS_APP_BUNDLE')
         OPTS = OPTS + ['MACOS_APP_BUNDLE']

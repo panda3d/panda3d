@@ -3,8 +3,10 @@
 #include "Python.h"
 #ifdef _WIN32
 #  include "malloc.h"
+#  include <Shlobj.h>
 #else
 #  include <sys/mman.h>
+#  include <pwd.h>
 #endif
 
 #ifdef __FreeBSD__
@@ -18,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <fcntl.h>
 
 #if PY_MAJOR_VERSION >= 3
 #  include <locale.h>
@@ -30,6 +33,11 @@
 /* Leave room for future expansion.  We only read pointer 0, but there are
    other pointers that are being read by configPageManager.cxx. */
 #define MAX_NUM_POINTERS 24
+
+/* Stored in the flags field of the blobinfo structure below. */
+enum Flags {
+  F_log_append = 1,
+};
 
 /* Define an exposed symbol where we store the offset to the module data. */
 #ifdef _MSC_VER
@@ -111,6 +119,206 @@ static void set_main_dir(char *main_dir) {
       blobinfo.pointers[10] = main_dir;
     }
   }
+}
+
+/**
+ * Creates the parent directories of the given path.  Returns 1 on success.
+ */
+#ifdef _WIN32
+static int mkdir_parent(const wchar_t *path) {
+  // Copy the path to a temporary buffer.
+  wchar_t buffer[4096];
+  size_t buflen = wcslen(path);
+  if (buflen + 1 >= _countof(buffer)) {
+    return 0;
+  }
+  wcscpy_s(buffer, _countof(buffer), path);
+
+  // Seek back to find the last path separator.
+  while (buflen-- > 0) {
+    if (buffer[buflen] == '/' || buffer[buflen] == '\\') {
+      buffer[buflen] = 0;
+      break;
+    }
+  }
+  if (buflen == 0) {
+    // There was no path separator.
+    return 0;
+  }
+
+  if (CreateDirectoryW(buffer, NULL) != 0) {
+    // Success!
+    return 1;
+  }
+
+  // Failed.
+  DWORD last_error = GetLastError();
+  if (last_error == ERROR_ALREADY_EXISTS) {
+    // Not really an error: the directory is already there.
+    return 1;
+  }
+
+  if (last_error == ERROR_PATH_NOT_FOUND) {
+    // We need to make the parent directory first.
+    if (mkdir_parent(buffer)) {
+      // Parent successfully created.  Try again to make the child.
+      if (CreateDirectoryW(buffer, NULL) != 0) {
+        // Got it!
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+#else
+static int mkdir_parent(const char *path) {
+  // Copy the path to a temporary buffer.
+  char buffer[4096];
+  size_t buflen = strlen(path);
+  if (buflen + 1 >= sizeof(buffer)) {
+    return 0;
+  }
+  strcpy(buffer, path);
+
+  // Seek back to find the last path separator.
+  while (buflen-- > 0) {
+    if (buffer[buflen] == '/') {
+      buffer[buflen] = 0;
+      break;
+    }
+  }
+  if (buflen == 0) {
+    // There was no path separator.
+    return 0;
+  }
+  if (mkdir(buffer, 0755) == 0) {
+    // Success!
+    return 1;
+  }
+
+  // Failed.
+  if (errno == EEXIST) {
+    // Not really an error: the directory is already there.
+    return 1;
+  }
+
+  if (errno == ENOENT || errno == EACCES) {
+    // We need to make the parent directory first.
+    if (mkdir_parent(buffer)) {
+      // Parent successfully created.  Try again to make the child.
+      if (mkdir(buffer, 0755) == 0) {
+        // Got it!
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+#endif
+
+/**
+ * Redirects the output streams to point to the log file with the given path.
+ *
+ * @param path specifies the location of log file, may start with ~
+ * @param append should be nonzero if it should not truncate the log file.
+ */
+static int setup_logging(const char *path, int append) {
+#ifdef _WIN32
+  // Does it start with a tilde?  Perform tilde expansion if so.
+  wchar_t pathw[MAX_PATH * 2];
+  size_t offset = 0;
+  if (path[0] == '~' && (path[1] == 0 || path[1] == '/' || path[1] == '\\')) {
+    // Strip off the tilde.
+    ++path;
+
+    // Get the home directory path for the current user.
+    if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_PROFILE, NULL, 0, pathw))) {
+      return 0;
+    }
+    offset = wcslen(pathw);
+  }
+
+  // We need to convert the rest of the path from UTF-8 to UTF-16.
+  if (MultiByteToWideChar(CP_UTF8, 0, path, -1, pathw + offset,
+                          (int)(_countof(pathw) - offset)) == 0) {
+    return 0;
+  }
+
+  DWORD access = append ? FILE_APPEND_DATA : (GENERIC_READ | GENERIC_WRITE);
+  int creation = append ? OPEN_ALWAYS : CREATE_ALWAYS;
+  HANDLE handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ,
+                              NULL, creation, FILE_ATTRIBUTE_NORMAL, NULL);
+
+  if (handle == INVALID_HANDLE_VALUE) {
+    // Make the parent directories first.
+    mkdir_parent(pathw);
+    handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ,
+                         NULL, creation, FILE_ATTRIBUTE_NORMAL, NULL);
+  }
+
+  if (handle == INVALID_HANDLE_VALUE) {
+    return 0;
+  }
+
+  if (append) {
+    SetFilePointer(handle, 0, NULL, FILE_END);
+  }
+
+  fflush(stdout);
+  fflush(stderr);
+
+  int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT | (append ? _O_APPEND : 0));
+  SetStdHandle(STD_OUTPUT_HANDLE, handle);
+  _dup2(fd, 1);
+
+  SetStdHandle(STD_ERROR_HANDLE, handle);
+  _dup2(fd, 2);
+
+  _close(fd);
+  return 1;
+#else
+  // Does it start with a tilde?  Perform tilde expansion if so.
+  char buffer[PATH_MAX * 2];
+  size_t offset = 0;
+  if (path[0] == '~' && (path[1] == 0 || path[1] == '/')) {
+    // Strip off the tilde.
+    ++path;
+
+    // Get the home directory path for the current user.
+    const char *home_dir = getenv("HOME");
+    if (home_dir == NULL) {
+      home_dir = getpwuid(getuid())->pw_dir;
+    }
+    offset = strlen(home_dir);
+    assert(offset < sizeof(buffer));
+    strncpy(buffer, home_dir, sizeof(buffer));
+  }
+
+  // Copy over the rest of the path.
+  strcpy(buffer + offset, path);
+
+  mode_t mode = O_CREAT | O_WRONLY | (append ? O_APPEND : O_TRUNC);
+  int fd = open(buffer, mode, 0644);
+  if (fd == -1) {
+    // Make the parent directories first.
+    mkdir_parent(buffer);
+    fd = open(buffer, mode, 0644);
+  }
+
+  if (fd == -1) {
+    perror(buffer);
+    return 0;
+  }
+
+  fflush(stdout);
+  fflush(stderr);
+
+  dup2(fd, 1);
+  dup2(fd, 2);
+
+  close(fd);
+  return 1;
+#endif
 }
 
 /* Main program */
@@ -389,7 +597,9 @@ int main(int argc, char *argv[]) {
 #endif
   int retval;
   struct _frozen *moddef;
+  const char *log_filename;
   void *blob = NULL;
+  log_filename = NULL;
 
   /*
   printf("blob_offset: %d\n", (int)blobinfo.blob_offset);
@@ -418,6 +628,9 @@ int main(int argc, char *argv[]) {
           blobinfo.pointers[i] = (void *)((uintptr_t)blobinfo.pointers[i] + (uintptr_t)blob);
         }
       }
+      if (blobinfo.num_pointers >= 12) {
+        log_filename = blobinfo.pointers[11];
+      }
     } else {
       blobinfo.pointers[0] = blob;
     }
@@ -432,6 +645,10 @@ int main(int argc, char *argv[]) {
       //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
       moddef++;
     }
+  }
+
+  if (log_filename != NULL) {
+    setup_logging(log_filename, (blobinfo.flags & F_log_append) != 0);
   }
 
 #ifdef _WIN32

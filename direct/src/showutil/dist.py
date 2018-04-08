@@ -11,6 +11,7 @@ import shutil
 import struct
 import io
 import imp
+import string
 
 import distutils.core
 import distutils.log
@@ -86,6 +87,8 @@ class build_apps(distutils.core.Command):
         self.extra_prc_files = []
         self.extra_prc_data = ''
         self.default_prc_dir = None
+        self.log_filename = None
+        self.log_append = False
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
         self.file_handlers= {
@@ -382,7 +385,9 @@ class build_apps(distutils.core.Command):
                 'prc_encryption_key': None,
                 'prc_executable_patterns': None,
                 'prc_executable_args_envvar': None,
-            })
+                'main_dir': None,
+                'log_filename': self.expand_path(self.log_filename, platform),
+            }, self.log_append)
             stub_file.close()
 
             # Copy the dependencies.
@@ -817,6 +822,20 @@ class build_apps(distutils.core.Command):
                     deps.append(dep)
 
         return deps
+
+    def expand_path(self, path, platform):
+        "Substitutes variables in the given path string."
+
+        if path is None:
+            return None
+
+        t = string.Template(path)
+        if platform.startswith('win'):
+            return t.substitute(HOME='~', USER_APPDATA='~/AppData/Local')
+        elif platform.startswith('macosx'):
+            return t.substitute(HOME='~', USER_APPDATA='~/Documents')
+        else:
+            return t.substitute(HOME='~', USER_APPDATA='~/.local/share')
 
 
 class bdist_apps(distutils.core.Command):
