@@ -129,8 +129,14 @@ reload_implicit_pages() {
     blobinfo = nullptr;
   }
 
-  if (blobinfo != nullptr && blobinfo->num_pointers >= 11 && blobinfo->main_dir != nullptr) {
-    ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", blobinfo->main_dir);
+  if (blobinfo != nullptr) {
+    if (blobinfo->num_pointers >= 11 && blobinfo->main_dir != nullptr) {
+      ExecutionEnvironment::set_environment_variable("MAIN_DIR", blobinfo->main_dir);
+    } else {
+      // Make sure that py_panda.cxx won't override MAIN_DIR.
+      ExecutionEnvironment::set_environment_variable("MAIN_DIR",
+        ExecutionEnvironment::get_environment_variable("MAIN_DIR"));
+    }
   }
 
   // PRC_PATTERNS lists one or more filename templates separated by spaces.
