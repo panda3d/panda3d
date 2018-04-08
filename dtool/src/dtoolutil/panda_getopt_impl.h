@@ -40,8 +40,8 @@
 extern "C" {
 #endif
 
-extern EXPCL_DTOOL char *optarg;
-extern EXPCL_DTOOL int optind, opterr, optopt;
+extern EXPCL_DTOOL_DTOOLUTIL char *optarg;
+extern EXPCL_DTOOL_DTOOLUTIL int optind, opterr, optopt;
 
 struct option {
   const char *name;
@@ -54,12 +54,12 @@ struct option {
 #define required_argument 1
 #define optional_argument 2
 
-extern EXPCL_DTOOL int
+extern EXPCL_DTOOL_DTOOLUTIL int
 getopt(int argc, char *const argv[], const char *optstring);
-extern EXPCL_DTOOL int
+extern EXPCL_DTOOL_DTOOLUTIL int
 getopt_long(int argc, char *const argv[], const char *optstring,
             const struct option *longopts, int *longindex);
-extern EXPCL_DTOOL int
+extern EXPCL_DTOOL_DTOOLUTIL int
 getopt_long_only(int argc, char *const argv[], const char *optstring,
                  const struct option *longopts, int *longindex);
 

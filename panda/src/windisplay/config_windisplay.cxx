@@ -16,6 +16,10 @@
 #include "winGraphicsWindow.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAWIN)
+  #error Buildsystem error: BUILDING_PANDAWIN not defined
+#endif
+
 Configure(config_windisplay);
 NotifyCategoryDef(windisplay, "display");
 

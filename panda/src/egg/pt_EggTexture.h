@@ -31,9 +31,4 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, ConstPointerTo<EggTexture>
 typedef PointerTo<EggTexture> PT_EggTexture;
 typedef ConstPointerTo<EggTexture> CPT_EggTexture;
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

@@ -7,3 +7,4 @@
 #include "cocoaPandaView.mm"
 #include "cocoaPandaWindow.mm"
 #include "cocoaPandaWindowDelegate.mm"
+#include "cocoaPandaAppDelegate.mm"

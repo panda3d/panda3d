@@ -1,5 +1,6 @@
 import pytest
 from panda3d import core
+import sys
 
 # Fixtures for generating interesting datagrams (and verification functions) on
 # the fly...
@@ -75,6 +76,17 @@ def datagram_large():
         assert dgi.get_remaining_size() == 0
 
     return dg, readback_function
+
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="Requires Python 3")
+def test_datagram_bytes():
+    """Tests that we can put and get a bytes object on Datagram."""
+    dg = core.Datagram(b'abc\x00')
+    dg.append_data(b'\xff123')
+    assert bytes(dg) == b'abc\x00\xff123'
+
+    dgi = core.DatagramIterator(dg)
+    dgi.get_remaining_bytes() == b'abc\x00\xff123'
+
 
 def test_iterator(datagram_small):
     """This tests Datagram/DatagramIterator, and sort of serves as a self-check

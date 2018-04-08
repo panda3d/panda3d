@@ -20,7 +20,7 @@
 /**
  * This is a convenience class to specialize ConfigVariable as a string type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableString : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableString : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableString(const string &name);
   INLINE ConfigVariableString(const string &name, const string &default_value,

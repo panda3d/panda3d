@@ -224,7 +224,7 @@ get_num_vertices_in_patches() const {
 /**
  *
  */
-int SceneGraphAnalyzer::
+size_t SceneGraphAnalyzer::
 get_texture_bytes() const {
   return _texture_bytes;
 }

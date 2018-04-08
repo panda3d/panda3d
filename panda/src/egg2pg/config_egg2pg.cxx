@@ -20,6 +20,10 @@
 #include "configVariableCore.h"
 #include "eggRenderState.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAEGG)
+  #error Buildsystem error: BUILDING_PANDAEGG not defined
+#endif
+
 ConfigureDef(config_egg2pg);
 NotifyCategoryDef(egg2pg, "");
 

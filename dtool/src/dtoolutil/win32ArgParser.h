@@ -30,7 +30,7 @@
  * but it is also supports automatic expansion of glob filenames, e.g.  *.egg
  * is turned into an explicit list of egg files in the directory.
  */
-class EXPCL_DTOOL Win32ArgParser {
+class EXPCL_DTOOL_DTOOLUTIL Win32ArgParser {
 public:
   Win32ArgParser();
   ~Win32ArgParser();

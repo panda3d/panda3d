@@ -13,6 +13,7 @@
 
 #include "geomLinestripsAdjacency.h"
 #include "geomLines.h"
+#include "geomLinesAdjacency.h"
 #include "geomVertexRewriter.h"
 #include "pStatTimer.h"
 #include "bamReader.h"

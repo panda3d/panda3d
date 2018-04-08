@@ -13,14 +13,9 @@
 
 #include "vector_string.h"
 
-#define EXPCL EXPCL_DTOOL
-#define EXPTP EXPTP_DTOOL
+#define EXPCL EXPCL_DTOOL_DTOOLUTIL
+#define EXPTP EXPTP_DTOOL_DTOOLUTIL
 #define TYPE std::string
 #define NAME vector_string
 
 #include "vector_src.cxx"
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif

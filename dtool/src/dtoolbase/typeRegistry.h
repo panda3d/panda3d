@@ -33,7 +33,7 @@ class TypedObject;
  * should be migrated to shared memory as soon as shared memory becomes
  * available.
  */
-class EXPCL_DTOOL TypeRegistry : public MemoryBase {
+class EXPCL_DTOOL_DTOOLBASE TypeRegistry : public MemoryBase {
 public:
   // User code shouldn't generally need to call TypeRegistry::register_type()
   // or record_derivation() directly; instead, use the register_type
@@ -118,7 +118,7 @@ private:
 };
 
 // Helper function to allow for "C" interaction into the type system
-extern "C" EXPCL_DTOOL  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
+extern "C" EXPCL_DTOOL_DTOOLBASE  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
 
 #include "typeHandle.h"
 

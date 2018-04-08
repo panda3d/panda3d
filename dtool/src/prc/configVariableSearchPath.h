@@ -33,7 +33,7 @@
  * variable, created by using the same name to the constructor, will not
  * reflect the local changes.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableSearchPath : public ConfigVariableBase {
+class EXPCL_DTOOL_PRC ConfigVariableSearchPath : public ConfigVariableBase {
 PUBLISHED:
   INLINE ConfigVariableSearchPath(const string &name,
                                   const string &description = string(),

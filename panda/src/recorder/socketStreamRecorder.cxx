@@ -82,8 +82,10 @@ play_frame(DatagramIterator &scan, BamReader *manager) {
 
   int num_packets = scan.get_uint16();
   for (int i = 0; i < num_packets; i++) {
-    string packet = scan.get_string();
-    _data.push_back(Datagram(packet));
+    size_t size = scan.get_uint16();
+    vector_uchar packet(size);
+    scan.extract_bytes(&packet[0], size);
+    _data.push_back(Datagram(move(packet)));
   }
 }
 

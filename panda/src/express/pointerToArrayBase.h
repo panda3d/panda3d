@@ -43,6 +43,7 @@ public:
   INLINE ReferenceCountedVector(TypeHandle type_handle);
   INLINE ReferenceCountedVector(size_type initial_size, TypeHandle type_handle);
   INLINE ReferenceCountedVector(const Element *begin, const Element *end, TypeHandle type_handle);
+  INLINE ReferenceCountedVector(pvector<Element> &&from);
   ALLOC_DELETED_CHAIN(ReferenceCountedVector<Element>);
 
   INLINE size_type size() const;

@@ -36,17 +36,19 @@ BulletConvexHullShape::
 BulletConvexHullShape(const BulletConvexHullShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = copy._shape;
-}
+  _shape = new btConvexHullShape(NULL, 0);
+  _shape->setUserPointer(this);
 
-/**
- *
- */
-void BulletConvexHullShape::
-operator = (const BulletConvexHullShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  _shape = copy._shape;
+#if BT_BULLET_VERSION >= 282
+  for (int i = 0; i < copy._shape->getNumPoints(); ++i) {
+    _shape->addPoint(copy._shape->getUnscaledPoints()[i], false);
+  }
+  _shape->recalcLocalAabb();
+#else
+  for (int i = 0; i < copy._shape->getNumPoints(); ++i) {
+    _shape->addPoint(copy._shape->getUnscaledPoints()[i]);
+  }
+#endif
 }
 
 /**
@@ -116,6 +118,9 @@ add_geom(const Geom *geom, const TransformState *ts) {
   while (!reader.is_at_end()) {
     points.push_back(m.xform_point(reader.get_data3()));
   }
+
+  if (_shape)
+      delete _shape;
 
   // Create shape
   _shape = new btConvexHullShape(NULL, 0);

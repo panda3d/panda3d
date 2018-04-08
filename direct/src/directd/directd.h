@@ -52,7 +52,7 @@ typedef int HANDLE;
  * presented in order chronologically by their intended usage.  The first
  * group will probably provide everthing needed for DirectD.
  */
-class EXPCL_DIRECT DirectD {
+class EXPCL_DIRECT_DIRECTD DirectD {
 PUBLISHED:
   DirectD();
   ~DirectD();

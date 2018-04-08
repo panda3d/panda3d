@@ -41,7 +41,7 @@
 
 #endif // WIN_PIPE_CALLS
 
-class EXPCL_DTOOL PipeStreamBuf : public streambuf {
+class EXPCL_DTOOL_DTOOLUTIL PipeStreamBuf : public streambuf {
 public:
   enum Direction { Input, Output };
 

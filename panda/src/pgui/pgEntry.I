@@ -208,6 +208,7 @@ set_num_lines(int num_lines) {
   nassertv(num_lines >= 1);
   _num_lines = num_lines;
   _text_geom_stale = true;
+  update_text();
 }
 
 /**

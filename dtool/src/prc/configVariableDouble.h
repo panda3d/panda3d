@@ -21,7 +21,7 @@
  * This is a convenience class to specialize ConfigVariable as a floating-
  * point type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableDouble : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableDouble : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableDouble(const string &name);
   INLINE ConfigVariableDouble(const string &name, double default_value,

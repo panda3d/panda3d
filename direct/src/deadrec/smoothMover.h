@@ -38,7 +38,7 @@ static const int max_timestamp_delays = 10;
  * update.  The assumption is that all SmoothMovers in the world will be
  * operating in the same mode together.
  */
-class EXPCL_DIRECT SmoothMover {
+class EXPCL_DIRECT_DEADREC SmoothMover {
 PUBLISHED:
   SmoothMover();
   ~SmoothMover();

@@ -25,6 +25,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_TFORM)
+  #error Buildsystem error: BUILDING_PANDA_TFORM not defined
+#endif
+
 Configure(config_tform);
 NotifyCategoryDef(tform, "");
 

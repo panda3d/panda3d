@@ -27,7 +27,7 @@ class ConfigVariableCore;
  * it may also represent a list of declarations built up by application code
  * and explicitly loaded.
  */
-class EXPCL_DTOOLCONFIG ConfigPage {
+class EXPCL_DTOOL_PRC ConfigPage {
 private:
   ConfigPage(const string &name, bool implicit_load, int page_seq);
   ~ConfigPage();

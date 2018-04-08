@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-EXPCL_DTOOL uint32_t hashword(const uint32_t *k,                   /* the key, an array of uint32_t values */
+EXPCL_DTOOL_DTOOLBASE uint32_t hashword(const uint32_t *k,                   /* the key, an array of uint32_t values */
                                size_t          length,               /* the length of the key, in uint32_ts */
                                uint32_t        initval);
 

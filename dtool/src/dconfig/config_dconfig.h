@@ -23,7 +23,7 @@
 #include "dtoolbase.h"
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(dconfig, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
-NotifyCategoryDecl(microconfig, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
+NotifyCategoryDecl(dconfig, EXPCL_DTOOL_DCONFIG, EXPTP_DTOOL_DCONFIG);
+NotifyCategoryDecl(microconfig, EXPCL_DTOOL_DCONFIG, EXPTP_DTOOL_DCONFIG);
 
 #endif

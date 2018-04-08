@@ -38,9 +38,4 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, ConstPointerToArra
 typedef PointerToArray<unsigned char> PTA_uchar;
 typedef ConstPointerToArray<unsigned char> CPTA_uchar;
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

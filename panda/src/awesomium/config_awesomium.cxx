@@ -18,6 +18,10 @@
 #include "dconfig.h"
 
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAAWESOMIUM)
+  #error Buildsystem error: BUILDING_PANDAAWESOMIUM not defined
+#endif
+
 Configure(config_awesomium);
 NotifyCategoryDef(awesomium, "");
 

@@ -117,16 +117,18 @@ extract_bytes(unsigned char *into, size_t size) {
  * Extracts the indicated number of bytes in the stream and returns them as a
  * string.  Returns empty string at end-of-file.
  */
-string StreamReader::
+vector_uchar StreamReader::
 extract_bytes(size_t size) {
+  vector_uchar buffer;
   if (_in->eof() || _in->fail()) {
-    return string();
+    return buffer;
   }
 
-  char *buffer = (char *)alloca(size);
-  _in->read(buffer, size);
+  buffer.resize(size);
+  _in->read((char *)&buffer[0], size);
   size_t read_bytes = _in->gcount();
-  return string(buffer, read_bytes);
+  buffer.resize(read_bytes);
+  return buffer;
 }
 
 /**

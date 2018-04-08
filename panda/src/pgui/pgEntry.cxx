@@ -864,6 +864,10 @@ update_cursor() {
       ypos = _obscure_text.get_ypos(row, column);
     } else {
       _text.calc_r_c(row, column, _cursor_position);
+      if (_cursor_position > 0 && _text.get_character(_cursor_position - 1) == '\n') {
+        row += 1;
+        column = 0;
+      }
       xpos = _text.get_xpos(row, column);
       ypos = _text.get_ypos(row, column);
     }

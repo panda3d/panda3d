@@ -333,7 +333,7 @@ class ConnectionRepository(
                         continue
                     classDef = getattr(classDef, className)
 
-                if inspect.isclass(classDef):
+                if not inspect.isclass(classDef):
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)

@@ -19,12 +19,13 @@
 #include "numeric_types.h"
 #include "littleEndian.h"
 #include "bigEndian.h"
+#include "vector_uchar.h"
 
 /**
  * A class to read sequential binary data directly from an istream.  Its
  * interface is similar to DatagramIterator by design; see also StreamWriter.
  */
-class EXPCL_DTOOLCONFIG StreamReader {
+class EXPCL_DTOOL_PRC StreamReader {
 public:
   INLINE StreamReader(istream &in);
 PUBLISHED:
@@ -71,7 +72,7 @@ PUBLISHED:
   EXTENSION(BLOCKING PyObject *readlines());
 
 public:
-  BLOCKING string extract_bytes(size_t size);
+  BLOCKING vector_uchar extract_bytes(size_t size);
   BLOCKING string readline();
 
 private:

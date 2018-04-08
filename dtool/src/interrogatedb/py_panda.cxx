@@ -738,7 +738,7 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
 
 Py_hash_t DTOOL_PyObject_HashPointer(PyObject *self) {
   if (self != nullptr && DtoolInstance_Check(self)) {
-    return (Py_hash_t)DtoolInstance_VOID_PTR(self);
+    return (Py_hash_t)(intptr_t)DtoolInstance_VOID_PTR(self);
   }
   return -1;
 }
