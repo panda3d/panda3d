@@ -133,12 +133,14 @@ class ControlManager:
         else:
             assert self.notify.debug("Unkown controls: %s" % name)
 
-    def setSpeeds(self, forwardSpeed, jumpForce,
-            reverseSpeed, rotateSpeed, strafeLeft=0, strafeRight=0):
+    def setSpeeds(self, forwardSpeed, jumpForce, reverseSpeed, rotateSpeed, strafeLeft=0, strafeRight=0):
         assert self.notify.debugCall(id(self))
+
+        if self.currentControls is not None:
+            self.currentControls.setSpeeds(forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
+
         for controls in self.controls.values():
-            controls.setWalkSpeed(
-                forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
+            controls.setWalkSpeed(forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
 
     def delete(self):
         assert self.notify.debugCall(id(self))
@@ -342,4 +344,3 @@ class ControlManager:
 
             inputState.set("turnLeft", False, inputSource=inputState.WASD)
             inputState.set("turnRight", False, inputSource=inputState.WASD)
-
