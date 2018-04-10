@@ -477,6 +477,7 @@ do_remove(AsyncTask *task, bool upon_death) {
     {
       int index = find_task_on_heap(_sleeping, task);
       nassertr(index != -1, false);
+      PT(AsyncTask) hold_task = task;
       _sleeping.erase(_sleeping.begin() + index);
       make_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
       cleanup_task(task, upon_death, false);
@@ -486,6 +487,7 @@ do_remove(AsyncTask *task, bool upon_death) {
   case AsyncTask::S_active:
     {
       // Active, but not being serviced, easy.
+      PT(AsyncTask) hold_task = task;
       int index = find_task_on_heap(_active, task);
       if (index != -1) {
         _active.erase(_active.begin() + index);
@@ -769,7 +771,6 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   }
 
   nassertv(task->_chain == this);
-  PT(AsyncTask) hold_task = task;
 
   task->_state = AsyncTask::S_inactive;
   task->_chain = nullptr;
