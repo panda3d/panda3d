@@ -621,8 +621,8 @@ extract_record(FltRecordReader &) {
 bool FltRecord::
 extract_ancillary(FltRecordReader &reader) {
   if (reader.get_opcode() == FO_comment) {
-    vector_uchar s = reader.get_iterator().get_remaining_bytes();
-    _comment.assign((const char *)s.data(), strnlen((const char *)s.data(), s.size()));
+    DatagramIterator &di = reader.get_iterator();
+    _comment = di.get_fixed_string(di.get_remaining_size());
     return true;
   }
 

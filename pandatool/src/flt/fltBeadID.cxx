@@ -78,8 +78,8 @@ extract_record(FltRecordReader &reader) {
 bool FltBeadID::
 extract_ancillary(FltRecordReader &reader) {
   if (reader.get_opcode() == FO_long_id) {
-    vector_uchar s = reader.get_iterator().get_remaining_bytes();
-    _id.assign((const char *)s.data(), strnlen((const char *)s.data(), s.size()));
+    DatagramIterator &di = reader.get_iterator();
+    _id = di.get_fixed_string(di.get_remaining_size());
     return true;
   }
 
