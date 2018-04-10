@@ -552,6 +552,7 @@ if (COMPILER == "MSVC"):
     PkgDisable("EGL")
     PkgDisable("CARBON")
     PkgDisable("COCOA")
+    DefSymbol("FLEX", "YY_NO_UNISTD_H")
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
         LibDirectory("ALWAYS", SDK["PYTHON"] + "/libs")
@@ -1396,7 +1397,7 @@ def CompileBison(wobj, wsrc, opts):
         CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile+".h")
 
     # Finally, compile the generated source file.
-    CompileCxx(wobj,wdstc,opts)
+    CompileCxx(wobj, wdstc, opts + ["FLEX"])
 
 ########################################################################
 ##
