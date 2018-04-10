@@ -618,7 +618,7 @@ class PEFile(object):
                 name = _unpack_zstring(self.vmem, name_rva)
                 if name == symbol_name:
                     assert ordinal >= 0 and ordinal < expdir.nentries
-                    start = expdir.entries + 8 * ordinal
+                    start = expdir.entries + 4 * ordinal
                     addr, = unpack('<I', self.vmem[start:start+4])
                     return addr
             nptr += 4
