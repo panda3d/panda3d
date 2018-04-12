@@ -524,8 +524,8 @@ open_window() {
     }
     _fb_properties.set_stencil_bits(8);
 
-    _depth_stencil_aspect_mask |= VK_IMAGE_ASPECT_DEPTH_BIT |
-                                  VK_IMAGE_ASPECT_STENCIL_BIT;
+    _depth_stencil_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT |
+                                 VK_IMAGE_ASPECT_STENCIL_BIT;
 
   } else if (_fb_properties.get_depth_bits() > 0) {
     // Vulkan requires support for at least of one of these two formats.
@@ -542,11 +542,11 @@ open_window() {
       _fb_properties.set_depth_bits(24);
     }
 
-    _depth_stencil_aspect_mask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+    _depth_stencil_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
   } else {
     _depth_stencil_format = VK_FORMAT_UNDEFINED;
-    _depth_stencil_aspect_mask |= 0;
+    _depth_stencil_aspect_mask = 0;
   }
 
   // Don't create the swapchain yet if we haven't yet gotten the configure
