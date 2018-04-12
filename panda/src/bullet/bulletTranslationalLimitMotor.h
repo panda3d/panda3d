@@ -28,26 +28,26 @@ class EXPCL_PANDABULLET BulletTranslationalLimitMotor {
 
 PUBLISHED:
   BulletTranslationalLimitMotor(const BulletTranslationalLimitMotor &copy);
-  ~BulletTranslationalLimitMotor();
+  INLINE ~BulletTranslationalLimitMotor();
 
-  INLINE void set_motor_enabled(int axis, bool enable);
-  INLINE void set_low_limit(const LVecBase3 &limit);
-  INLINE void set_high_limit(const LVecBase3 &limit);
-  INLINE void set_target_velocity(const LVecBase3 &velocity);
-  INLINE void set_max_motor_force(const LVecBase3 &force);
-  INLINE void set_damping(PN_stdfloat damping);
-  INLINE void set_softness(PN_stdfloat softness);
-  INLINE void set_restitution(PN_stdfloat restitution);
-  INLINE void set_normal_cfm(const LVecBase3 &cfm);
-  INLINE void set_stop_erp(const LVecBase3 &erp);
-  INLINE void set_stop_cfm(const LVecBase3 &cfm);
+  void set_motor_enabled(int axis, bool enable);
+  void set_low_limit(const LVecBase3 &limit);
+  void set_high_limit(const LVecBase3 &limit);
+  void set_target_velocity(const LVecBase3 &velocity);
+  void set_max_motor_force(const LVecBase3 &force);
+  void set_damping(PN_stdfloat damping);
+  void set_softness(PN_stdfloat softness);
+  void set_restitution(PN_stdfloat restitution);
+  void set_normal_cfm(const LVecBase3 &cfm);
+  void set_stop_erp(const LVecBase3 &erp);
+  void set_stop_cfm(const LVecBase3 &cfm);
 
-  INLINE bool is_limited(int axis) const;
-  INLINE bool get_motor_enabled(int axis) const;
-  INLINE int get_current_limit(int axis) const;
-  INLINE LVector3 get_current_error() const;
-  INLINE LPoint3 get_current_diff() const;
-  INLINE LVector3 get_accumulated_impulse() const;
+  bool is_limited(int axis) const;
+  bool get_motor_enabled(int axis) const;
+  int get_current_limit(int axis) const;
+  LVector3 get_current_error() const;
+  LPoint3 get_current_diff() const;
+  LVector3 get_accumulated_impulse() const;
 
   MAKE_PROPERTY(current_error, get_current_error);
   MAKE_PROPERTY(current_diff, get_current_diff);

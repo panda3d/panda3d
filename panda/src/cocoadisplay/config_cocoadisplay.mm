@@ -12,12 +12,17 @@
  */
 
 #include "config_cocoadisplay.h"
+#include "cocoaGraphicsBuffer.h"
 #include "cocoaGraphicsPipe.h"
 #include "cocoaGraphicsStateGuardian.h"
 #include "cocoaGraphicsWindow.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
 #include "pandaSystem.h"
+
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGL)
+  #error Buildsystem error: BUILDING_PANDAGL not defined
+#endif
 
 Configure(config_cocoadisplay);
 NotifyCategoryDef(cocoadisplay, "display");
@@ -40,6 +45,7 @@ init_libcocoadisplay() {
   }
   initialized = true;
 
+  CocoaGraphicsBuffer::init_type();
   CocoaGraphicsPipe::init_type();
   CocoaGraphicsStateGuardian::init_type();
   CocoaGraphicsWindow::init_type();

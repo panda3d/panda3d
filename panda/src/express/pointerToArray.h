@@ -112,6 +112,8 @@ PUBLISHED:
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
 
+  INLINE size_t count(const Element &) const;
+
 #ifdef HAVE_PYTHON
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
@@ -139,6 +141,7 @@ public:
 
 #ifdef USE_MOVE_SEMANTICS
   INLINE PointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
+  INLINE explicit PointerToArray(pvector<Element> &&from, TypeHandle type_handle = get_type_handle(Element));
 #endif
 
 public:
@@ -214,6 +217,8 @@ public:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
 
+  INLINE size_t count(const Element &) const;
+
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
   operator = (ReferenceCountedVector<Element> *ptr);
@@ -266,6 +271,8 @@ PUBLISHED:
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
 
+  INLINE size_t count(const Element &) const;
+
 #ifdef HAVE_PYTHON
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
@@ -296,6 +303,7 @@ PUBLISHED:
 #ifdef USE_MOVE_SEMANTICS
   INLINE ConstPointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
   INLINE ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT;
+  INLINE explicit ConstPointerToArray(pvector<Element> &&from, TypeHandle type_handle = get_type_handle(Element));
 #endif
 
   // Duplicating the interface of vector.
@@ -340,6 +348,8 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
+
+  INLINE size_t count(const Element &) const;
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &

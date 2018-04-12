@@ -21,7 +21,7 @@
 /**
  * An interval that calls NodePath::hide().
  */
-class EXPCL_DIRECT HideInterval : public CInterval {
+class EXPCL_DIRECT_INTERVAL HideInterval : public CInterval {
 PUBLISHED:
   explicit HideInterval(const NodePath &node, const string &name = string());
 

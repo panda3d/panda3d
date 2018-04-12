@@ -32,14 +32,13 @@ private:
 
 PUBLISHED:
   explicit BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b);
-  INLINE BulletMinkowskiSumShape(const BulletMinkowskiSumShape &copy);
-  INLINE void operator = (const BulletMinkowskiSumShape &copy);
+  BulletMinkowskiSumShape(const BulletMinkowskiSumShape &copy);
   INLINE ~BulletMinkowskiSumShape();
 
-  INLINE void set_transform_a(const TransformState *ts);
-  INLINE void set_transform_b(const TransformState *ts);
-  INLINE CPT(TransformState) get_transform_a() const;
-  INLINE CPT(TransformState) get_transform_b() const;
+  void set_transform_a(const TransformState *ts);
+  void set_transform_b(const TransformState *ts);
+  CPT(TransformState) get_transform_a() const;
+  CPT(TransformState) get_transform_b() const;
 
   INLINE const BulletShape *get_shape_a() const;
   INLINE const BulletShape *get_shape_b() const;

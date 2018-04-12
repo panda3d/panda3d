@@ -107,11 +107,7 @@ open_vfs(const Filename &filename) {
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 4, 0)
     avformat_open_input(&_format_context, "", NULL, NULL);
-#else
-    av_open_input_file(&_format_context, "", NULL, 0, NULL);
-#endif
   if (result < 0) {
     close();
     return false;
@@ -159,11 +155,7 @@ open_subfile(const SubfileInfo &info) {
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 4, 0)
     avformat_open_input(&_format_context, fname.c_str(), NULL, NULL);
-#else
-    av_open_input_file(&_format_context, fname.c_str(), NULL, 0, NULL);
-#endif
   if (result < 0) {
     close();
     return false;
@@ -179,12 +171,7 @@ open_subfile(const SubfileInfo &info) {
 void FfmpegVirtualFile::
 close() {
   if (_format_context != NULL) {
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 17, 0)
     avformat_close_input(&_format_context);
-#else
-    av_close_input_file(_format_context);
-    _format_context = NULL;
-#endif
   }
 
   if (_io_context != NULL) {
@@ -218,9 +205,7 @@ register_protocol() {
   av_register_all();
 
   // And this one.
-#if LIBAVFORMAT_VERSION_INT >= 0x351400
   avformat_network_init();
-#endif
 
   // Let's also register the logging to Panda's notify callback.
   av_log_set_callback(&log_callback);

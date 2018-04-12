@@ -16,6 +16,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGLES)
+  #error Buildsystem error: BUILDING_PANDAGLES not defined
+#endif
+
 ConfigureDef(config_glesgsg);
 NotifyCategoryDef(glesgsg, ":display:gsg");
 

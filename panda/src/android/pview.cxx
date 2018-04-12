@@ -63,12 +63,16 @@ int main(int argc, char **argv) {
     window->enable_keyboard();
     window->setup_trackball();
     framework.get_models().instance_to(window->get_render());
-    // if (argc < 2) { If we have no arguments, get that trusty old triangle
-    // out.  window->load_default_model(framework.get_models()); } else {
-    // window->load_models(framework.get_models(), argc, argv); }
-
-    window->load_model(framework.get_models(), "panda-model.egg");
-    window->load_model(framework.get_models(), "panda-walk4.egg");
+    if (argc < 2) {
+      // If we have no arguments, get that trusty old triangle
+      // out.
+      window->load_default_model(framework.get_models());
+    } else {
+      if (!window->load_models(framework.get_models(), argc, argv)) {
+        framework.close_framework();
+        return 1;
+      }
+    }
 
     window->loop_animations(hierarchy_match_flags);
 

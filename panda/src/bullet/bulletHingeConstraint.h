@@ -69,8 +69,8 @@ PUBLISHED:
   void set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt);
 
   void set_frames(const TransformState *ts_a, const TransformState *ts_b);
-  INLINE CPT(TransformState) get_frame_a() const;
-  INLINE CPT(TransformState) get_frame_b() const;
+  CPT(TransformState) get_frame_a() const;
+  CPT(TransformState) get_frame_b() const;
 
   MAKE_PROPERTY(hinge_angle, get_hinge_angle);
   MAKE_PROPERTY(lower_limit, get_lower_limit);

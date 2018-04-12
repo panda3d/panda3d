@@ -1391,11 +1391,17 @@ AsyncTask::DoneStatus PandaFramework::
 task_igloop(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
-  if (self->_engine != (GraphicsEngine *)NULL) {
-    self->_engine->render_frame();
+  // This exists to work around a crash that happens when the PandaFramework
+  // is destructed because the application is exited during render_frame().
+  // The proper fix is not to instantiate PandaFramework in the global scope
+  // but many C++ applications (including pview) do this anyway.
+  PT(GraphicsEngine) engine = self->_engine;
+  if (engine != nullptr) {
+    engine->render_frame();
+    return AsyncTask::DS_cont;
+  } else {
+    return AsyncTask::DS_done;
   }
-
-  return AsyncTask::DS_cont;
 }
 
 /**

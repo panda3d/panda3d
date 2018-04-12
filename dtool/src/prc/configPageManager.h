@@ -28,7 +28,7 @@ class ConfigPage;
  * A global object that maintains the set of ConfigPages everywhere in the
  * world, and keeps them in sorted order.
  */
-class EXPCL_DTOOLCONFIG ConfigPageManager : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigPageManager : public ConfigFlags {
 protected:
   ConfigPageManager();
   ~ConfigPageManager();

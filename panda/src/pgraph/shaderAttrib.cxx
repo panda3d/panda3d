@@ -25,6 +25,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "nodePath.h"
+#include "paramNodePath.h"
+#include "paramTexture.h"
 #include "shaderBuffer.h"
 
 TypeHandle ShaderAttrib::_type_handle;
@@ -193,7 +195,22 @@ clear_flag(int flag) const {
  *
  */
 CPT(RenderAttrib) ShaderAttrib::
-set_shader_input(ShaderInput input) const {
+set_shader_input(const ShaderInput &input) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  Inputs::iterator i = result->_inputs.find(input.get_name());
+  if (i == result->_inputs.end()) {
+    result->_inputs.insert(Inputs::value_type(input.get_name(), input));
+  } else {
+    i->second = input;
+  }
+  return return_new(result);
+}
+
+/**
+ *
+ */
+CPT(RenderAttrib) ShaderAttrib::
+set_shader_input(ShaderInput &&input) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
   Inputs::iterator i = result->_inputs.find(input.get_name());
   if (i == result->_inputs.end()) {

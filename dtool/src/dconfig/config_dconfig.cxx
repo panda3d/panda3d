@@ -13,5 +13,9 @@
 
 #include "config_dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_DTOOL_DCONFIG)
+  #error Buildsystem error: BUILDING_DTOOL_DCONFIG not defined
+#endif
+
 NotifyCategoryDef(dconfig, "");
 NotifyCategoryDef(microconfig, "dconfig");

@@ -213,6 +213,17 @@ make_patches() const {
 }
 
 /**
+ * Returns a new Geom with each primitive converted into a corresponding
+ * version with adjacency information.
+ */
+INLINE PT(Geom) Geom::
+make_adjacency() const {
+  PT(Geom) new_geom = make_copy();
+  new_geom->make_adjacency_in_place();
+  return new_geom;
+}
+
+/**
  * Returns a sequence number which is guaranteed to change at least every time
  * any of the primitives in the Geom is modified, or the set of primitives is
  * modified.  However, this does not include modifications to the vertex data,
@@ -512,21 +523,16 @@ CData() :
  *
  */
 INLINE Geom::CData::
-CData(const Geom::CData &copy) :
-  _data(copy._data),
-  _primitives(copy._primitives),
-  _primitive_type(copy._primitive_type),
-  _shade_model(copy._shade_model),
-  _geom_rendering(copy._geom_rendering),
-  _modified(copy._modified),
-  _internal_bounds(copy._internal_bounds),
-  _nested_vertices(copy._nested_vertices),
-  _internal_bounds_stale(copy._internal_bounds_stale),
-  _bounds_type(copy._bounds_type),
-  _user_bounds(copy._user_bounds)
+CData(GeomVertexData *data) :
+  _data(data),
+  _primitive_type(PT_none),
+  _shade_model(SM_uniform),
+  _geom_rendering(0),
+  _nested_vertices(0),
+  _internal_bounds_stale(true),
+  _bounds_type(BoundingVolume::BT_default)
 {
 }
-
 
 /**
  *

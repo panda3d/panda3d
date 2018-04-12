@@ -30,7 +30,13 @@
  */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeAndroid : public PNMFileType {
 public:
-  PNMFileTypeAndroid();
+  enum CompressFormat : jint {
+    CF_jpeg = 0,
+    CF_png = 1,
+    CF_webp = 2,
+  };
+
+  PNMFileTypeAndroid(CompressFormat format);
 
   virtual string get_name() const;
 
@@ -41,6 +47,7 @@ public:
 
   virtual PNMReader *make_reader(istream *file, bool owns_file = true,
                                  const string &magic_number = string());
+  virtual PNMWriter *make_writer(ostream *file, bool owns_file = true);
 
 public:
   class Reader : public PNMReader {
@@ -60,29 +67,20 @@ public:
     int32_t _format;
   };
 
-  // The TypedWritable interface follows.
-public:
-  static void register_with_read_factory();
+  class Writer : public PNMWriter {
+  public:
+    Writer(PNMFileType *type, ostream *file, bool owns_file,
+           CompressFormat format);
 
-protected:
-  static TypedWritable *make_PNMFileTypeAndroid(const FactoryParams &params);
+    virtual int write_data(xel *array, xelval *alpha);
+    virtual bool supports_grayscale() const;
 
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    PNMFileType::init_type();
-    register_type(_type_handle, "PNMFileTypeAndroid",
-                  PNMFileType::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  private:
+    CompressFormat _format;
+  };
 
 private:
-  static TypeHandle _type_handle;
+  CompressFormat _format;
 };
 
 #endif  // ANDROID

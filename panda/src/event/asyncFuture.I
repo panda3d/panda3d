@@ -17,7 +17,6 @@
 INLINE AsyncFuture::
 AsyncFuture() :
   _manager(nullptr),
-  _cvar(nullptr),
   _future_state(FS_pending),
   _result(nullptr) {
 }
@@ -28,7 +27,7 @@ AsyncFuture() :
  */
 INLINE bool AsyncFuture::
 done() const {
-  return (FutureState)AtomicAdjust::get(_future_state) != FS_pending;
+  return (FutureState)AtomicAdjust::get(_future_state) >= FS_finished;
 }
 
 /**
@@ -46,6 +45,7 @@ cancelled() const {
  */
 INLINE void AsyncFuture::
 set_done_event(const string &done_event) {
+  nassertv(!done());
   _done_event = done_event;
 }
 
@@ -106,4 +106,100 @@ set_result(TypedReferenceCount *result) {
 INLINE void AsyncFuture::
 set_result(TypedWritableReferenceCount *result) {
   set_result(result, result);
+}
+
+INLINE void AsyncFuture::
+set_result(const EventParameter &result) {
+  set_result(result.get_ptr(), result.get_ptr());
+}
+
+/**
+ * Creates a new future that returns `done()` when all of the contained
+ * futures are done.
+ *
+ * Calling `cancel()` on the returned future will result in all contained
+ * futures that have not yet finished to be cancelled.
+ */
+INLINE AsyncFuture *AsyncFuture::
+gather(Futures futures) {
+  if (futures.empty()) {
+    AsyncFuture *fut = new AsyncFuture;
+    fut->_future_state = (AtomicAdjust::Integer)FS_finished;
+    return fut;
+  } else if (futures.size() == 1) {
+    return futures[0].p();
+  } else {
+    return (AsyncFuture *)new AsyncGatheringFuture(move(futures));
+  }
+}
+
+/**
+ * Tries to atomically lock the future, assuming it is pending.  Returns false
+ * if it is not in the pending state, implying it's either done or about to be
+ * cancelled.
+ */
+INLINE bool AsyncFuture::
+try_lock_pending() {
+  return set_future_state(FS_locked_pending);
+}
+
+/**
+ * Should be called after try_lock_pending() returns true.
+ */
+INLINE void AsyncFuture::
+unlock(FutureState new_state) {
+  nassertv(new_state != FS_locked_pending);
+  FutureState orig_state = (FutureState)AtomicAdjust::set(_future_state, (AtomicAdjust::Integer)new_state);
+  nassertv(orig_state == FS_locked_pending);
+}
+
+/**
+ * Atomically changes the future state from pending to another state.  Returns
+ * true if successful, false if the future was already done.
+ * Note that once a future is in a "done" state (ie. cancelled or finished) it
+ * can never change state again.
+ */
+INLINE bool AsyncFuture::
+set_future_state(FutureState state) {
+  FutureState orig_state = (FutureState)
+    AtomicAdjust::compare_and_exchange(
+      _future_state,
+      (AtomicAdjust::Integer)FS_pending,
+      (AtomicAdjust::Integer)state);
+
+  while (orig_state == FS_locked_pending) {
+    Thread::force_yield();
+    orig_state = (FutureState)AtomicAdjust::compare_and_exchange(
+      _future_state,
+      (AtomicAdjust::Integer)FS_pending,
+      (AtomicAdjust::Integer)state);
+  }
+
+  return orig_state == FS_pending;
+}
+
+/**
+ * Returns the number of futures that were passed to the constructor.
+ */
+INLINE size_t AsyncGatheringFuture::
+get_num_futures() const {
+  return _futures.size();
+}
+
+/**
+ * Returns the nth future that was passed into the constructor.
+ */
+INLINE AsyncFuture *AsyncGatheringFuture::
+get_future(size_t i) const {
+  nassertr(i < _futures.size(), nullptr);
+  return _futures[i].p();
+}
+
+/**
+ * Returns the result of the nth future that was passed into the constructor.
+ */
+INLINE TypedObject *AsyncGatheringFuture::
+get_result(size_t i) const {
+  nassertr(i < _futures.size(), nullptr);
+  return _futures[i]->get_result();
 }

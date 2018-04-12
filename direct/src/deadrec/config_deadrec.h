@@ -18,10 +18,10 @@
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
 
-NotifyCategoryDecl(deadrec, EXPCL_DIRECT, EXPTP_DIRECT);
+NotifyCategoryDecl(deadrec, EXPCL_DIRECT_DEADREC, EXPTP_DIRECT_DEADREC);
 
 extern ConfigVariableBool accept_clock_skew;
 
-extern EXPCL_DIRECT void init_libdeadrec();
+extern EXPCL_DIRECT_DEADREC void init_libdeadrec();
 
 #endif

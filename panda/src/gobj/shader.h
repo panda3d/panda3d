@@ -85,7 +85,7 @@ PUBLISHED:
   };
 
   static PT(Shader) load(const Filename &file, ShaderLanguage lang = SL_none);
-  static PT(Shader) make(const string &body, ShaderLanguage lang = SL_none);
+  static PT(Shader) make(string body, ShaderLanguage lang = SL_none);
   static PT(Shader) load(ShaderLanguage lang,
                          const Filename &vertex, const Filename &fragment,
                          const Filename &geometry = "",
@@ -93,11 +93,11 @@ PUBLISHED:
                          const Filename &tess_evaluation = "");
   static PT(Shader) load_compute(ShaderLanguage lang, const Filename &fn);
   static PT(Shader) make(ShaderLanguage lang,
-                         const string &vertex, const string &fragment,
-                         const string &geometry = "",
-                         const string &tess_control = "",
-                         const string &tess_evaluation = "");
-  static PT(Shader) make_compute(ShaderLanguage lang, const string &body);
+                         string vertex, string fragment,
+                         string geometry = "",
+                         string tess_control = "",
+                         string tess_evaluation = "");
+  static PT(Shader) make_compute(ShaderLanguage lang, string body);
 
   INLINE Filename get_filename(ShaderType type = ST_none) const;
   INLINE void set_filename(ShaderType type, const Filename &filename);
@@ -466,12 +466,9 @@ public:
   class ShaderFile : public ReferenceCount {
   public:
     INLINE ShaderFile() {};
-    INLINE ShaderFile(const string &shared);
-    INLINE ShaderFile(const string &vertex,
-                      const string &fragment,
-                      const string &geometry,
-                      const string &tess_control,
-                      const string &tess_evaluation);
+    INLINE ShaderFile(string shared);
+    INLINE ShaderFile(string vertex, string fragment, string geometry,
+                      string tess_control, string tess_evaluation);
 
     INLINE void write_datagram(Datagram &dg) const;
     INLINE void read_datagram(DatagramIterator &source);

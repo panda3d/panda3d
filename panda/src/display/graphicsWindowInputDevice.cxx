@@ -23,11 +23,6 @@
 
 #include "vector_src.cxx"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 /**
  * Defines a new InputDevice for the window.  Most windows will have exactly
  * one InputDevice: a keyboard/mouse pair.  Some may also add joystick data,

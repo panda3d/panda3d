@@ -12,6 +12,7 @@
  */
 
 #include "physicalNode.h"
+#include "physicsManager.h"
 
 // static stuff.
 TypeHandle PhysicalNode::_type_handle;

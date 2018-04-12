@@ -85,7 +85,7 @@
  * }
  * @endcode
  */
-class EXPCL_DTOOL TypedObject : public MemoryBase {
+class EXPCL_DTOOL_DTOOLBASE TypedObject : public MemoryBase {
 public:
   INLINE TypedObject() DEFAULT_CTOR;
   INLINE TypedObject(const TypedObject &copy) DEFAULT_CTOR;

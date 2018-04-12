@@ -28,6 +28,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PGUI)
+  #error Buildsystem error: BUILDING_PANDA_PGUI not defined
+#endif
+
 Configure(config_pgui);
 NotifyCategoryDef(pgui, "");
 

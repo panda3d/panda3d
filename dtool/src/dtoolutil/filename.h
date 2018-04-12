@@ -36,7 +36,7 @@ class DSearchPath;
  * for file existence and searching a searchpath, as well as the best way to
  * open an fstream for reading or writing.
  */
-class EXPCL_DTOOL Filename {
+class EXPCL_DTOOL_DTOOLUTIL Filename {
 PUBLISHED:
   enum Type {
     // These type values must fit within the bits allocated for F_type, below.

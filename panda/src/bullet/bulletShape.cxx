@@ -21,6 +21,7 @@ TypeHandle BulletShape::_type_handle;
  */
 const char *BulletShape::
 get_name() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return ptr()->getName();
 }
@@ -30,6 +31,7 @@ get_name() const {
  */
 PN_stdfloat BulletShape::
 get_margin() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return ptr()->getMargin();
 }
@@ -39,6 +41,7 @@ get_margin() const {
  */
 void BulletShape::
 set_margin(PN_stdfloat margin) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   ptr()->setMargin(margin);
 }
@@ -48,8 +51,19 @@ set_margin(PN_stdfloat margin) {
  */
 LVecBase3 BulletShape::
 get_local_scale() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVecBase3(ptr()->getLocalScaling());
+}
+
+/**
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
+void BulletShape::
+do_set_local_scale(const LVecBase3 &scale) {
+
+  nassertv(!scale.is_nan());
+  ptr()->setLocalScaling(LVecBase3_to_btVector3(scale));
 }
 
 /**
@@ -57,9 +71,9 @@ get_local_scale() const {
  */
 void BulletShape::
 set_local_scale(const LVecBase3 &scale) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertv(!scale.is_nan());
-  ptr()->setLocalScaling(LVecBase3_to_btVector3(scale));
+  do_set_local_scale(scale);
 }
 
 /**
@@ -67,6 +81,7 @@ set_local_scale(const LVecBase3 &scale) {
  */
 BoundingSphere BulletShape::
 get_shape_bounds() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
 /*
   btTransform tr;
@@ -86,4 +101,74 @@ cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << 
   BoundingSphere bounds(btVector3_to_LPoint3(center), (PN_stdfloat)radius);
 
   return bounds;
+}
+
+/**
+ *
+ */
+bool BulletShape::
+is_polyhedral() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return ptr()->isPolyhedral();
+}
+
+/**
+ *
+ */
+bool BulletShape::
+is_convex() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return ptr()->isConvex();
+}
+
+/**
+ *
+ */
+bool BulletShape::
+is_convex_2d() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return ptr()->isConvex2d();
+}
+
+/**
+ *
+ */
+bool BulletShape::
+is_concave() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return ptr()->isConcave();
+}
+
+/**
+ *
+ */
+bool BulletShape::
+is_infinite() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return ptr()->isInfinite();
+}
+
+/**
+ *
+ */
+bool BulletShape::
+is_non_moving() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return ptr()->isNonMoving();
+}
+
+/**
+ *
+ */
+bool BulletShape::
+is_soft_body() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return ptr()->isSoftBody();
 }

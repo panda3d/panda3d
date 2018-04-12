@@ -33,12 +33,11 @@ private:
 
 PUBLISHED:
   explicit BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
-  INLINE BulletPlaneShape(const BulletPlaneShape &copy);
-  INLINE void operator = (const BulletPlaneShape &copy);
+  BulletPlaneShape(const BulletPlaneShape &copy);
   INLINE ~BulletPlaneShape();
 
-  INLINE LVector3 get_plane_normal() const;
-  INLINE PN_stdfloat get_plane_constant() const;
+  LVector3 get_plane_normal() const;
+  PN_stdfloat get_plane_constant() const;
 
   static BulletPlaneShape *make_from_solid(const CollisionPlane *solid);
 

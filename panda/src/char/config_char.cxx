@@ -21,6 +21,10 @@
 #include "jointVertexTransform.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_CHAR)
+  #error Buildsystem error: BUILDING_PANDA_CHAR not defined
+#endif
+
 Configure(config_char);
 NotifyCategoryDef(char, "");
 

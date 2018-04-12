@@ -26,7 +26,7 @@
  * This class exists to allow association of a Python function or coroutine
  * with the AsyncTaskManager.
  */
-class PythonTask : public AsyncTask {
+class PythonTask FINAL : public AsyncTask {
 PUBLISHED:
   PythonTask(PyObject *function = Py_None, const string &name = string());
   virtual ~PythonTask();
@@ -123,6 +123,7 @@ private:
   PyObject *_future_done;
 
   bool _append_task;
+  bool _ignore_return;
   bool _registered_to_owner;
   mutable bool _retrieved_exception;
 

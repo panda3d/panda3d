@@ -16,7 +16,7 @@
 
 #include "pfstreamBuf.h"
 
-class EXPCL_DTOOL IPipeStream : public istream {
+class EXPCL_DTOOL_DTOOLUTIL IPipeStream : public istream {
 public:
   INLINE IPipeStream(const std::string);
 
@@ -32,7 +32,7 @@ private:
   INLINE IPipeStream();
 };
 
-class EXPCL_DTOOL OPipeStream : public ostream {
+class EXPCL_DTOOL_DTOOLUTIL OPipeStream : public ostream {
 public:
   INLINE OPipeStream(const std::string);
 

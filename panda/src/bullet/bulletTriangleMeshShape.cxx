@@ -36,6 +36,7 @@ BulletTriangleMeshShape() :
 /**
  * The parameters 'compress' and 'bvh' are only used if 'dynamic' is set to
  * FALSE.
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 BulletTriangleMeshShape::
 BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, bool bvh) :
@@ -50,7 +51,7 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
   }
 
   // Assert that mesh has at least one triangle
-  if (mesh->get_num_triangles() == 0) {
+  if (mesh->do_get_num_triangles() == 0) {
     bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << endl;
     mesh->add_triangle(LPoint3::zero(), LPoint3::zero(), LPoint3::zero());
   }
@@ -81,6 +82,30 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
 /**
  *
  */
+BulletTriangleMeshShape::
+BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _dynamic = copy._dynamic;
+  _compress = copy._compress;
+  _bvh = copy._bvh;
+  _mesh = copy._mesh;
+  
+  if (_dynamic) {
+    _gimpact_shape = new btGImpactMeshShape(_mesh->ptr());
+    _gimpact_shape->updateBound();
+    _gimpact_shape->setUserPointer(this);
+    _bvh_shape = NULL;
+  } else {
+    _bvh_shape = new btBvhTriangleMeshShape(_mesh->ptr(), _compress, _bvh);
+    _bvh_shape->setUserPointer(this);
+    _gimpact_shape = NULL;
+  }
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletTriangleMeshShape::
 ptr() const {
 
@@ -100,6 +125,7 @@ ptr() const {
  */
 void BulletTriangleMeshShape::
 refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!aabb_max.is_nan());
   nassertv(!aabb_max.is_nan());

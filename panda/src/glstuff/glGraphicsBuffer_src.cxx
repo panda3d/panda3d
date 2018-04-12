@@ -213,12 +213,20 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
-  if (!_host->begin_frame(FM_parasite, current_thread)) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << get_name() << "'s host is not ready\n";
+  if (_host != nullptr) {
+    if (!_host->begin_frame(FM_parasite, current_thread)) {
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << get_name() << "'s host is not ready\n";
+      }
+      return false;
     }
-    return false;
+  } else {
+    // We don't have a host window, which is possible for CocoaGraphicsBuffer.
+    _gsg->set_current_properties(&get_fb_properties());
+    if (!_gsg->begin_frame(current_thread)) {
+      return false;
+    }
   }
 
   // Figure out the desired size of the  buffer.
@@ -235,7 +243,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       }
     }
     if (_creation_flags & GraphicsPipe::BF_size_track_host) {
-      if (_host->get_size() != _size) {
+      if (_host != nullptr && _host->get_size() != _size) {
         // We also need to rebuild if we need to change size.
         _needs_rebuild = true;
       }
@@ -356,7 +364,7 @@ rebuild_bitplanes() {
 
   // Calculate bitplane size.  This can be larger than the buffer.
   if (_creation_flags & GraphicsPipe::BF_size_track_host) {
-    if (_host->get_size() != _size) {
+    if (_host != nullptr && _host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
     }
@@ -1253,7 +1261,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
     generate_mipmaps();
   }
 
-  _host->end_frame(FM_parasite, current_thread);
+  if (_host != nullptr) {
+    _host->end_frame(FM_parasite, current_thread);
+  } else {
+    glgsg->end_frame(current_thread);
+  }
 
   if (mode == FM_render) {
     trigger_flip();
@@ -1315,8 +1327,11 @@ bool CLP(GraphicsBuffer)::
 open_buffer() {
   report_my_gl_errors();
 
-  // Double check that we have a host
-  nassertr(_host != 0, false);
+  // Double check that we have a valid gsg
+  nassertr(_gsg != nullptr, false);
+  if (!_gsg->is_valid()) {
+    return false;
+  }
 
   // Count total color buffers.
   int totalcolor =
@@ -1491,8 +1506,10 @@ open_buffer() {
   _fb_properties.set_back_buffers(0);
   _fb_properties.set_indexed_color(0);
   _fb_properties.set_rgb_color(1);
-  _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
-  _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
+  if (_host != nullptr) {
+    _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
+    _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
+  }
 
   _is_valid = true;
   _needs_rebuild = true;
@@ -1508,7 +1525,7 @@ open_buffer() {
  */
 GraphicsOutput *CLP(GraphicsBuffer)::
 get_host() {
-  return _host;
+  return (_host != nullptr) ? _host : this;
 }
 
 /**
@@ -1699,7 +1716,7 @@ report_my_errors(int line, const char *file) {
  */
 void CLP(GraphicsBuffer)::
 check_host_valid() {
-  if ((_host == 0)||(!_host->is_valid())) {
+  if (_host != nullptr && !_host->is_valid()) {
     _rb_data_size_bytes = 0;
     if (_rb_context != NULL) {
       // We must delete this object first, because when the GSG destructs, so
@@ -1750,6 +1767,7 @@ resolve_multisamples() {
   }
   glgsg->_glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, fbo);
   glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, _fbo_multisample);
+  glgsg->_current_fbo = fbo;
 
   // If the depth buffer is shared, resolve it only on the last to render FBO.
   bool do_depth_blit = false;

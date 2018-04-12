@@ -40,6 +40,16 @@ ReferenceCountedVector(const Element *begin, const Element *end, TypeHandle type
 }
 
 /**
+ * Creates an array that takes its elements from the given vector.
+ */
+template<class Element>
+INLINE ReferenceCountedVector<Element>::
+ReferenceCountedVector(pvector<Element> &&from) :
+  pvector<Element>(move(from))
+{
+}
+
+/**
  *
  */
 template<class Element>

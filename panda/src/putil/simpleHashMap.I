@@ -41,7 +41,13 @@ SimpleHashMap(const SimpleHashMap &copy) :
 
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
-  memcpy(_table, copy._table, alloc_size);
+
+  for (size_t i = 0; i < _num_entries; ++i) {
+    new(&_table[i]) TableEntry(copy._table[i]);
+  }
+
+  // Copy the index array.
+  memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
 }
 
 /**
@@ -88,7 +94,12 @@ operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
 
     _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
     _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
-    memcpy(_table, copy._table, alloc_size);
+    for (size_t i = 0; i < _num_entries; ++i) {
+      new(&_table[i]) TableEntry(copy._table[i]);
+    }
+
+    // Copy the index array.
+    memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
   }
   return *this;
 }

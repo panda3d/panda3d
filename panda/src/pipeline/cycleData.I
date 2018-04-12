@@ -10,10 +10,3 @@
  * @author drose
  * @date 2002-02-21
  */
-
-/**
- *
- */
-INLINE CycleData::
-CycleData() {
-}

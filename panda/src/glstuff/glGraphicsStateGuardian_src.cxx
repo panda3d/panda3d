@@ -155,7 +155,11 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // drawing GUIs and such.
 static const string default_vshader =
 #ifndef OPENGLES
+#ifdef __APPLE__ // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
@@ -179,7 +183,11 @@ static const string default_vshader =
 
 static const string default_fshader =
 #ifndef OPENGLES
+#ifdef __APPLE__  // Apple's GL 3.2 contexts require at least GLSL 1.50.
+  "#version 150\n"
+#else
   "#version 130\n"
+#endif
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
@@ -644,6 +652,12 @@ reset() {
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_line_strip |
     Geom::GR_flat_last_vertex;
+
+#ifndef OPENGLES
+  if (_supports_geometry_shaders) {
+    _supported_geom_rendering |= Geom::GR_adjacency;
+  }
+#endif
 
   _supports_point_parameters = false;
 
@@ -4536,6 +4550,68 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 /**
+ * Draws a series of disconnected triangles with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_triangles_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_simple_primitives(reader, GL_TRIANGLES_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    int num_vertices = reader->get_num_vertices();
+    _vertices_tri_pcollector.add_level(num_vertices);
+    _primitive_batches_tri_pcollector.add_level(1);
+
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_TRIANGLES_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_TRIANGLES_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_TRIANGLES_ADJACENCY,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else {
+        glDrawArrays(GL_TRIANGLES_ADJACENCY,
+                     reader->get_first_vertex(),
+                     num_vertices);
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
+
+/**
  * Draws a series of triangle strips.
  */
 bool CLP(GraphicsStateGuardian)::
@@ -4660,6 +4736,128 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of triangle strips with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+  report_my_gl_errors();
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_tristrips_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_composite_primitives(reader, GL_TRIANGLE_STRIP_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    if (reader->is_indexed() &&
+        (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
+      // One long line strip, connected by strip cut indices.
+      if (_explicit_primitive_restart) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+      }
+      int num_vertices = reader->get_num_vertices();
+      _vertices_tristrip_pcollector.add_level(num_vertices);
+      _primitive_batches_tristrip_pcollector.add_level(1);
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, num_vertices,
+                                   get_numeric_type(reader->get_index_type()),
+                                   client_pointer, _instance_count);
+        } else {
+          _glDrawRangeElements(GL_TRIANGLE_STRIP_ADJACENCY,
+                               reader->get_min_vertex(),
+                               reader->get_max_vertex(),
+                               num_vertices,
+                               get_numeric_type(reader->get_index_type()),
+                               client_pointer);
+        }
+      } else {
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY,
+                                 reader->get_first_vertex(),
+                                 num_vertices, _instance_count);
+        } else {
+          glDrawArrays(GL_TRIANGLE_STRIP_ADJACENCY,
+                          reader->get_first_vertex(),
+                          num_vertices);
+        }
+      }
+      if (_explicit_primitive_restart) {
+        glDisable(GL_PRIMITIVE_RESTART);
+      }
+    } else {
+      // Send the individual triangle strips, stepping over the degenerate
+      // vertices.
+      CPTA_int ends = reader->get_ends();
+
+      _primitive_batches_tristrip_pcollector.add_level(ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
+
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else {
+            _glDrawRangeElements(GL_TRIANGLE_STRIP_ADJACENCY,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
+          start = ends[i] + 1;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = reader->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else {
+            glDrawArrays(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
+                         ends[i] - start);
+          }
+          start = ends[i] + 1;
+        }
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of triangle fans.
@@ -4881,6 +5079,66 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 /**
+ * Draws a series of disconnected line segments with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_lines_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_simple_primitives(reader, GL_LINES_ADJACENCY);
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    int num_vertices = reader->get_num_vertices();
+    _vertices_other_pcollector.add_level(num_vertices);
+    _primitive_batches_other_pcollector.add_level(1);
+
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_LINES_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_LINES_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_LINES_ADJACENCY,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else {
+        glDrawArrays(GL_LINES_ADJACENCY,
+                     reader->get_first_vertex(),
+                     num_vertices);
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
+
+/**
  * Draws a series of line strips.
  */
 bool CLP(GraphicsStateGuardian)::
@@ -5001,6 +5259,117 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of line strips with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+  report_my_gl_errors();
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_linestrips_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_composite_primitives(reader, GL_LINE_STRIP_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    if (reader->is_indexed() &&
+        (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
+      // One long line strip, connected by strip cut indices.
+      if (_explicit_primitive_restart) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+      }
+
+      int num_vertices = reader->get_num_vertices();
+      _vertices_other_pcollector.add_level(num_vertices);
+      _primitive_batches_other_pcollector.add_level(1);
+
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_LINE_STRIP_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+
+      if (_explicit_primitive_restart) {
+        glDisable(GL_PRIMITIVE_RESTART);
+      }
+    } else {
+      // Send the individual line strips, stepping over the strip-cut indices.
+      CPTA_int ends = reader->get_ends();
+
+      _primitive_batches_other_pcollector.add_level(ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
+
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else {
+            _glDrawRangeElements(GL_LINE_STRIP_ADJACENCY,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
+          start = ends[i] + 1;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = reader->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawArraysInstanced(GL_LINE_STRIP_ADJACENCY, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else {
+            glDrawArrays(GL_LINE_STRIP_ADJACENCY, first_vertex + start, ends[i] - start);
+          }
+          start = ends[i] + 1;
+        }
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of disconnected points.
@@ -6455,6 +6824,15 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     break;
 
+  case Texture::F_depth_component16:
+    component_type = Texture::T_unsigned_short;
+    break;
+
+  case Texture::F_depth_component24:
+  case Texture::F_depth_component32:
+    component_type = Texture::T_float;
+    break;
+
   default:
     if (_current_properties->get_srgb_color()) {
       if (_current_properties->get_alpha_bits()) {
@@ -7543,6 +7921,36 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   report_my_gl_errors();
 }
 #endif  // SUPPORT_FIXED_FUNCTION
+
+/**
+ * Creates a depth buffer for shadow mapping.  A derived GSG can override this
+ * if it knows that a particular buffer type works best for shadow rendering.
+ */
+GraphicsOutput *CLP(GraphicsStateGuardian)::
+make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
+  // We override this to circumvent the fact that GraphicsEngine::make_output
+  // can only be called from the app thread.
+  if (!_supports_framebuffer_object) {
+    return GraphicsStateGuardian::make_shadow_buffer(light, tex, host);
+  }
+
+  bool is_point = light->is_of_type(PointLight::get_class_type());
+
+  // Determine the properties for creating the depth buffer.
+  FrameBufferProperties fbp;
+  fbp.set_depth_bits(shadow_depth_bits);
+
+  WindowProperties props = WindowProperties::size(light->get_shadow_buffer_size());
+  int flags = GraphicsPipe::BF_refuse_window;
+  if (is_point) {
+    flags |= GraphicsPipe::BF_size_square;
+  }
+
+  CLP(GraphicsBuffer) *sbuffer = new CLP(GraphicsBuffer)(get_engine(), get_pipe(), light->get_name(), fbp, props, flags, this, host);
+  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);
+  get_engine()->add_window(sbuffer, light->get_shadow_buffer_sort());
+  return sbuffer;
+}
 
 #ifdef SUPPORT_IMMEDIATE_MODE
 /**
@@ -12314,20 +12722,20 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               if (_supports_clear_texture) {
                 // We can do that with the convenient glClearTexImage
                 // function.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                                 component_type, (void *)clear_data.data());
+                                 component_type, (void *)&clear_data[0]);
                 continue;
               }
             } else {
               if (_supports_clear_buffer) {
                 // For buffer textures we need to clear the underlying
                 // storage.
-                string clear_data = tex->get_clear_data();
+                vector_uchar clear_data = tex->get_clear_data();
 
                 _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
-                                   component_type, (const void *)clear_data.data());
+                                   component_type, (const void *)&clear_data[0]);
                 continue;
               }
             }

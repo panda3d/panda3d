@@ -22,7 +22,7 @@
 /**
  * Uses GCC built-ins to implement atomic adjustments.
  */
-class EXPCL_DTOOL AtomicAdjustGccImpl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustGccImpl {
 public:
 #if __GCC_ATOMIC_LONG_LOCK_FREE >= __GCC_ATOMIC_INT_LOCK_FREE
   // If the long can be more lock-free than int, use it instead.

@@ -123,6 +123,8 @@ public:
     TS_do_flip,
     TS_do_release,
     TS_do_windows,
+    TS_do_compute,
+    TS_do_extract,
     TS_terminate,
     TS_done
   };
@@ -166,10 +168,8 @@ private:
   void do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg,
                DisplayRegion *dr, Thread *current_thread);
 
-  void do_add_window(GraphicsOutput *window,
-                     const GraphicsThreadingModel &threading_model);
-  void do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
-                  const GraphicsThreadingModel &threading_model);
+  void do_add_window(GraphicsOutput *window);
+  void do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe);
   void do_remove_window(GraphicsOutput *window, Thread *current_thread);
   void do_resort_windows();
   void terminate_threads(Thread *current_thread);
@@ -301,6 +301,13 @@ private:
     ConditionVar _cv_start;
     ConditionVar _cv_done;
     ThreadState _thread_state;
+
+    // These are stored for extract_texture_data and dispatch_compute.
+    GraphicsStateGuardian *_gsg;
+    Texture *_texture;
+    const RenderState *_state;
+    LVecBase3i _work_groups;
+    bool _result;
   };
 
   WindowRenderer *get_window_renderer(const string &name, int pipeline_stage);
@@ -308,8 +315,11 @@ private:
   Pipeline *_pipeline;
   Windows _windows;
   bool _windows_sorted;
+
+  // This lock protects the next two fields.
+  Mutex _new_windows_lock;
   unsigned int _window_sort_index;
-  bool _needs_open_windows;
+  pvector<PT(GraphicsOutput)> _new_windows;
 
   WindowRenderer _app;
   typedef pmap<string, PT(RenderThread) > Threads;

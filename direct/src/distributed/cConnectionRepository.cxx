@@ -301,8 +301,8 @@ check_datagram() {
 
     switch (_msg_type) {
 #ifdef HAVE_PYTHON
-    case CLIENT_OBJECT_UPDATE_FIELD:
-    case STATESERVER_OBJECT_UPDATE_FIELD:
+    case CLIENT_OBJECT_SET_FIELD:
+    case STATESERVER_OBJECT_SET_FIELD:
       if (_handle_c_updates) {
         if (_has_owner_view) {
           if (!handle_update_field_owner()) {
@@ -494,7 +494,7 @@ send_message_bundle(unsigned int channel, unsigned int sender_channel) {
     dg.add_int8(1);
     dg.add_uint64(channel);
     dg.add_uint64(sender_channel);
-    dg.add_uint16(STATESERVER_BOUNCE_MESSAGE);
+    //dg.add_uint16(STATESERVER_BOUNCE_MESSAGE);
     // add each bundled message
     BundledMsgVector::const_iterator bmi;
     for (bmi = _bundle_msgs.begin(); bmi != _bundle_msgs.end(); bmi++) {
@@ -708,7 +708,7 @@ handle_update_field() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
       Py_DECREF(dclass_this);
 
       // If in quiet zone mode, throw update away unless distobj has
@@ -799,12 +799,13 @@ handle_update_field_owner() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
+      vector_uchar data = _di.get_remaining_bytes();
       DCPacker packer;
-      packer.set_unpack_data(_di.get_remaining_bytes());
+      packer.set_unpack_data((const char *)data.data(), data.size(), false);
       int field_id = packer.raw_unpack_uint16();
       DCField *field = dclass->get_field_by_index(field_id);
       if (field->is_ownrecv()) {
@@ -841,12 +842,13 @@ handle_update_field_owner() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
+      vector_uchar data = _di.get_remaining_bytes();
       DCPacker packer;
-      packer.set_unpack_data(_di.get_remaining_bytes());
+      packer.set_unpack_data((const char *)data.data(), data.size(), false);
       int field_id = packer.raw_unpack_uint16();
       DCField *field = dclass->get_field_by_index(field_id);
       if (true) {//field->is_broadcast()) {
@@ -899,11 +901,11 @@ describe_message(ostream &out, const string &prefix,
 
     packer.RAW_UNPACK_CHANNEL();  // msg_sender
     msg_type = packer.raw_unpack_uint16();
-    is_update = (msg_type == STATESERVER_OBJECT_UPDATE_FIELD);
+    is_update = (msg_type == STATESERVER_OBJECT_SET_FIELD);
 
   } else {
     msg_type = packer.raw_unpack_uint16();
-    is_update = (msg_type == CLIENT_OBJECT_UPDATE_FIELD);
+    is_update = (msg_type == CLIENT_OBJECT_SET_FIELD);
   }
 
   if (!is_update) {
@@ -974,7 +976,7 @@ describe_message(ostream &out, const string &prefix,
         Py_DECREF(dclass_obj);
         nassertv(dclass_this != NULL);
 
-        dclass = (DCClass *)PyLong_AsLong(dclass_this);
+        dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
         Py_DECREF(dclass_this);
       }
     }

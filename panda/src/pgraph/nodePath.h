@@ -629,7 +629,8 @@ PUBLISHED:
   void set_shader_auto(BitMask32 shader_switch, int priority=0);
   void clear_shader();
 
-  void set_shader_input(ShaderInput input);
+  void set_shader_input(const ShaderInput &input);
+  void set_shader_input(ShaderInput &&input);
 
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);

@@ -53,6 +53,7 @@ get_object() const {
  */
 void BulletGhostNode::
 parents_changed() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   Parents parents = get_parents();
   for (size_t i = 0; i < parents.get_num_parents(); ++i) {
@@ -73,10 +74,10 @@ parents_changed() {
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletGhostNode::
-transform_changed() {
+do_transform_changed() {
 
   if (_sync_disable) return;
 
@@ -96,29 +97,62 @@ transform_changed() {
     if (ts->has_scale()) {
       LVecBase3 scale = ts->get_scale();
       if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
-        for (int i=0; i<get_num_shapes(); i++) {
+        for (int i=0; i < _shapes.size(); i++) {
           PT(BulletShape) shape = _shapes[i];
-          shape->set_local_scale(scale);
+          shape->do_set_local_scale(scale);
         }
       }
     }
   }
 }
 
-/**
- *
- */
 void BulletGhostNode::
-sync_p2b() {
+transform_changed() {
 
-  transform_changed();
+  if (_sync_disable) return;
+
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_transform_changed();
 }
 
 /**
  *
  */
+int BulletGhostNode::
+get_num_overlapping_nodes() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _ghost->getNumOverlappingObjects();
+}
+
+/**
+ *
+ */
+PandaNode *BulletGhostNode::
+get_overlapping_node(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertr(idx >=0 && idx < _ghost->getNumOverlappingObjects(), NULL);
+
+  btCollisionObject *object = _ghost->getOverlappingObject(idx);
+  return (object) ? (PandaNode *)object->getUserPointer() : NULL;
+}
+
+/**
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
 void BulletGhostNode::
-sync_b2p() {
+do_sync_p2b() {
+
+  do_transform_changed();
+}
+
+/**
+ *  Assumes the lock(bullet global lock) is held by the caller
+ */
+void BulletGhostNode::
+do_sync_b2p() {
 
   NodePath np = NodePath::any_path((PandaNode *)this);
   LVecBase3 scale = np.get_net_transform()->get_scale();

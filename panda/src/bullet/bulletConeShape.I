@@ -18,7 +18,8 @@ INLINE BulletConeShape::
 BulletConeShape() :
   _shape(nullptr),
   _radius(0),
-  _height(0) {
+  _height(0),
+  _up(X_up) {
 }
 
 /**
@@ -28,26 +29,6 @@ INLINE BulletConeShape::
 ~BulletConeShape() {
 
   delete _shape;
-}
-
-/**
- *
- */
-INLINE BulletConeShape::
-BulletConeShape(const BulletConeShape &copy) :
-  _shape(copy._shape),
-  _radius(copy._radius),
-  _height(copy._height) {
-}
-
-/**
- *
- */
-INLINE void BulletConeShape::
-operator = (const BulletConeShape &copy) {
-  _shape = copy._shape;
-  _radius = copy._radius;
-  _height = copy._height;
 }
 
 /**

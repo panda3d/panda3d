@@ -81,7 +81,7 @@ PUBLISHED:
   INLINE int get_num_triangles_in_fans() const;
   INLINE int get_num_vertices_in_patches() const;
 
-  INLINE int get_texture_bytes() const;
+  INLINE size_t get_texture_bytes() const;
 
   INLINE int get_num_long_normals() const;
   INLINE int get_num_short_normals() const;
@@ -150,7 +150,7 @@ private:
   int _num_triangles_in_fans;
   int _num_vertices_in_patches;
 
-  int _texture_bytes;
+  size_t _texture_bytes;
 
   int _num_long_normals;
   int _num_short_normals;

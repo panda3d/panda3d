@@ -77,16 +77,10 @@ GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
                     GeomVertexArrayData::UsageHint usage_hint) :
   SimpleLruPage(0),
-  _array_format(array_format)
+  _array_format(array_format),
+  _cycler(CData(usage_hint)),
+  _contexts(nullptr)
 {
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    cdata->_usage_hint = usage_hint;
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-
-  _contexts = NULL;
-
   set_lru_size(0);
   nassertv(_array_format->is_registered());
 }
@@ -99,10 +93,9 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
   CopyOnWriteObject(copy),
   SimpleLruPage(copy),
   _array_format(copy._array_format),
-  _cycler(copy._cycler)
+  _cycler(copy._cycler),
+  _contexts(nullptr)
 {
-  _contexts = NULL;
-
   copy.mark_used_lru();
 
   set_lru_size(get_data_size_bytes());

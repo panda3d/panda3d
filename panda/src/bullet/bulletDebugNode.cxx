@@ -31,8 +31,10 @@ PStatCollector BulletDebugNode::_pstat_debug("App:Bullet:DoPhysics:Debug");
  *
  */
 BulletDebugNode::
-BulletDebugNode(const char *name) : PandaNode(name), _debug_stale(true) {
+BulletDebugNode(const char *name) : PandaNode(name) {
 
+  _debug_stale = false;
+  _debug_world = nullptr;
   _wireframe = true;
   _constraints = true;
   _bounds = false;
@@ -167,7 +169,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   PT(Geom) debug_triangles;
 
   {
-    LightMutexHolder holder(_lock);
+    LightMutexHolder holder(BulletWorld::get_global_lock());
     if (_debug_world == nullptr) {
       return;
     }
@@ -268,8 +270,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  *
  */
 void BulletDebugNode::
-sync_b2p(btDynamicsWorld *world) {
-  LightMutexHolder holder(_lock);
+do_sync_b2p(btDynamicsWorld *world) {
 
   _debug_world = world;
   _debug_stale = true;

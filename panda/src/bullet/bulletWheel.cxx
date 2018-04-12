@@ -34,6 +34,7 @@ BulletWheelRaycastInfo(btWheelInfo::RaycastInfo &info) : _info(info) {
  */
 BulletWheelRaycastInfo BulletWheel::
 get_raycast_info() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return BulletWheelRaycastInfo(_info.m_raycastInfo);
 }
@@ -43,6 +44,7 @@ get_raycast_info() const {
  */
 PN_stdfloat BulletWheel::
 get_suspension_rest_length() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.getSuspensionRestLength();
 }
@@ -52,6 +54,7 @@ get_suspension_rest_length() const {
  */
 void BulletWheel::
 set_suspension_stiffness(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_suspensionStiffness = (btScalar)value;
 }
@@ -61,6 +64,7 @@ set_suspension_stiffness(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_suspension_stiffness() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_suspensionStiffness;
 }
@@ -71,6 +75,7 @@ get_suspension_stiffness() const {
  */
 void BulletWheel::
 set_max_suspension_travel_cm(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_maxSuspensionTravelCm = (btScalar)value;
 }
@@ -80,6 +85,7 @@ set_max_suspension_travel_cm(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_max_suspension_travel_cm() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_maxSuspensionTravelCm;
 }
@@ -89,6 +95,7 @@ get_max_suspension_travel_cm() const {
  */
 void BulletWheel::
 set_friction_slip(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_frictionSlip = (btScalar)value;
 }
@@ -98,6 +105,7 @@ set_friction_slip(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_friction_slip() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_frictionSlip;
 }
@@ -107,6 +115,7 @@ get_friction_slip() const {
  */
 void BulletWheel::
 set_max_suspension_force(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_maxSuspensionForce = (btScalar)value;
 }
@@ -116,6 +125,7 @@ set_max_suspension_force(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_max_suspension_force() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_maxSuspensionForce;
 }
@@ -125,6 +135,7 @@ get_max_suspension_force() const {
  */
 void BulletWheel::
 set_wheels_damping_compression(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_wheelsDampingCompression = (btScalar)value;
 }
@@ -134,6 +145,7 @@ set_wheels_damping_compression(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_wheels_damping_compression() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_wheelsDampingCompression;
 }
@@ -143,6 +155,7 @@ get_wheels_damping_compression() const {
  */
 void BulletWheel::
 set_wheels_damping_relaxation(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_wheelsDampingRelaxation = (btScalar)value;
 }
@@ -152,6 +165,7 @@ set_wheels_damping_relaxation(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_wheels_damping_relaxation() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_wheelsDampingRelaxation;
 }
@@ -164,6 +178,7 @@ get_wheels_damping_relaxation() const {
  */
 void BulletWheel::
 set_roll_influence(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_rollInfluence = (btScalar)value;
 }
@@ -174,6 +189,7 @@ set_roll_influence(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_roll_influence() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_rollInfluence;
 }
@@ -183,6 +199,7 @@ get_roll_influence() const {
  */
 void BulletWheel::
 set_wheel_radius(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_wheelsRadius = (btScalar)value;
 }
@@ -192,6 +209,7 @@ set_wheel_radius(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_wheel_radius() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_wheelsRadius;
 }
@@ -201,6 +219,7 @@ get_wheel_radius() const {
  */
 void BulletWheel::
 set_steering(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_steering = (btScalar)value;
 }
@@ -210,6 +229,7 @@ set_steering(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_steering() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_steering;
 }
@@ -219,6 +239,7 @@ get_steering() const {
  */
 void BulletWheel::
 set_rotation(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_rotation = (btScalar)value;
 }
@@ -228,6 +249,7 @@ set_rotation(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_rotation() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_rotation;
 }
@@ -237,6 +259,7 @@ get_rotation() const {
  */
 void BulletWheel::
 set_delta_rotation(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_deltaRotation = (btScalar)value;
 }
@@ -246,6 +269,7 @@ set_delta_rotation(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_delta_rotation() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_deltaRotation;
 }
@@ -255,6 +279,7 @@ get_delta_rotation() const {
  */
 void BulletWheel::
 set_engine_force(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_engineForce = (btScalar)value;
 }
@@ -264,6 +289,7 @@ set_engine_force(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_engine_force() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_engineForce;
 }
@@ -273,6 +299,7 @@ get_engine_force() const {
  */
 void BulletWheel::
 set_brake(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_brake = (btScalar)value;
 }
@@ -282,6 +309,7 @@ set_brake(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_brake() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_brake;
 }
@@ -291,6 +319,7 @@ get_brake() const {
  */
 void BulletWheel::
 set_skid_info(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_skidInfo = (btScalar)value;
 }
@@ -300,6 +329,7 @@ set_skid_info(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_skid_info() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_skidInfo;
 }
@@ -309,6 +339,7 @@ get_skid_info() const {
  */
 void BulletWheel::
 set_wheels_suspension_force(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_wheelsSuspensionForce = (btScalar)value;
 }
@@ -318,6 +349,7 @@ set_wheels_suspension_force(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_wheels_suspension_force() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_wheelsSuspensionForce;
 }
@@ -327,6 +359,7 @@ get_wheels_suspension_force() const {
  */
 void BulletWheel::
 set_suspension_relative_velocity(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_suspensionRelativeVelocity = (btScalar)value;
 }
@@ -336,6 +369,7 @@ set_suspension_relative_velocity(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_suspension_relative_velocity() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_suspensionRelativeVelocity;
 }
@@ -345,6 +379,7 @@ get_suspension_relative_velocity() const {
  */
 void BulletWheel::
 set_clipped_inv_connection_point_cs(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_clippedInvContactDotSuspension = (btScalar)value;
 }
@@ -354,6 +389,7 @@ set_clipped_inv_connection_point_cs(PN_stdfloat value) {
  */
 PN_stdfloat BulletWheel::
 get_clipped_inv_connection_point_cs() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_info.m_clippedInvContactDotSuspension;
 }
@@ -363,6 +399,7 @@ get_clipped_inv_connection_point_cs() const {
  */
 void BulletWheel::
 set_chassis_connection_point_cs(const LPoint3 &pos) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!pos.is_nan());
   _info.m_chassisConnectionPointCS = LVecBase3_to_btVector3(pos);
@@ -373,6 +410,7 @@ set_chassis_connection_point_cs(const LPoint3 &pos) {
  */
 LPoint3 BulletWheel::
 get_chassis_connection_point_cs() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LPoint3(_info.m_chassisConnectionPointCS);
 }
@@ -383,6 +421,7 @@ get_chassis_connection_point_cs() const {
  */
 void BulletWheel::
 set_wheel_direction_cs(const LVector3 &dir) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!dir.is_nan());
   _info.m_wheelDirectionCS = LVecBase3_to_btVector3(dir);
@@ -393,6 +432,7 @@ set_wheel_direction_cs(const LVector3 &dir) {
  */
 LVector3 BulletWheel::
 get_wheel_direction_cs() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_info.m_wheelDirectionCS);
 }
@@ -402,6 +442,7 @@ get_wheel_direction_cs() const {
  */
 void BulletWheel::
 set_wheel_axle_cs(const LVector3 &axle) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!axle.is_nan());
   _info.m_wheelAxleCS = LVecBase3_to_btVector3(axle);
@@ -412,6 +453,7 @@ set_wheel_axle_cs(const LVector3 &axle) {
  */
 LVector3 BulletWheel::
 get_wheel_axle_cs() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_info.m_wheelAxleCS);
 }
@@ -421,6 +463,7 @@ get_wheel_axle_cs() const {
  */
 void BulletWheel::
 set_world_transform(const LMatrix4 &mat) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!mat.is_nan());
   _info.m_worldTransform = LMatrix4_to_btTrans(mat);
@@ -431,6 +474,7 @@ set_world_transform(const LMatrix4 &mat) {
  */
 LMatrix4 BulletWheel::
 get_world_transform() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btTrans_to_LMatrix4(_info.m_worldTransform);
 }
@@ -440,6 +484,7 @@ get_world_transform() const {
  */
 void BulletWheel::
 set_front_wheel(bool value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_bIsFrontWheel = value;
 }
@@ -449,6 +494,7 @@ set_front_wheel(bool value) {
  */
 bool BulletWheel::
 is_front_wheel() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _info.m_bIsFrontWheel;
 }
@@ -458,6 +504,7 @@ is_front_wheel() const {
  */
 void BulletWheel::
 set_node(PandaNode *node) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _info.m_clientInfo = (void *)node;
 }
@@ -468,6 +515,87 @@ set_node(PandaNode *node) {
  */
 PandaNode *BulletWheel::
 get_node() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (_info.m_clientInfo == NULL) ? NULL : (PandaNode *)_info.m_clientInfo;
+}
+
+/**
+ *
+ */
+bool BulletWheelRaycastInfo::
+is_in_contact() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _info.m_isInContact;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletWheelRaycastInfo::
+get_suspension_length() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _info.m_suspensionLength;
+}
+
+/**
+ *
+ */
+LPoint3 BulletWheelRaycastInfo::
+get_contact_point_ws() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LPoint3(_info.m_contactPointWS);
+}
+
+/**
+ *
+ */
+LPoint3 BulletWheelRaycastInfo::
+get_hard_point_ws() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LPoint3(_info.m_hardPointWS);
+}
+
+/**
+ *
+ */
+LVector3 BulletWheelRaycastInfo::
+get_contact_normal_ws() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVector3(_info.m_contactNormalWS);
+}
+
+/**
+ *
+ */
+LVector3 BulletWheelRaycastInfo::
+get_wheel_direction_ws() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVector3(_info.m_wheelDirectionWS);
+}
+
+/**
+ *
+ */
+LVector3 BulletWheelRaycastInfo::
+get_wheel_axle_ws() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVector3(_info.m_wheelAxleWS);
+}
+
+/**
+ *
+ */
+PandaNode *BulletWheelRaycastInfo::
+get_ground_object() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _info.m_groundObject ? (PandaNode *)_info.m_groundObject : NULL;
 }

@@ -41,9 +41,11 @@ BulletBodyNode(const char *name) : PandaNode(name) {
  */
 BulletBodyNode::
 BulletBodyNode(const BulletBodyNode &copy) :
-  PandaNode(copy),
-  _shapes(copy._shapes)
+  PandaNode(copy)
 {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shapes = copy._shapes;
   if (copy._shape && copy._shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
     // btCompoundShape does not define a copy constructor.  Manually copy.
     btCompoundShape *shape = new btCompoundShape;
@@ -148,16 +150,168 @@ safe_to_flatten_below() const {
  *
  */
 void BulletBodyNode::
-output(ostream &out) const {
+do_output(ostream &out) const {
 
   PandaNode::output(out);
 
-  out << " (" << get_num_shapes() << " shapes)";
+  out << " (" << _shapes.size() << " shapes)";
 
-  out << (is_active() ? " active" : " inactive");
+  out << (get_object()->isActive() ? " active" : " inactive");
 
-  if (is_static()) out << " static";
-  if (is_kinematic()) out << " kinematic";
+  if (get_object()->isStaticObject()) out << " static";
+  if (get_object()->isKinematicObject()) out << " kinematic";
+}
+
+/**
+ *
+ */
+void BulletBodyNode::
+output(ostream &out) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_output(out);
+}
+
+/**
+ *
+ */
+void BulletBodyNode::
+set_collision_flag(int flag, bool value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  int flags = get_object()->getCollisionFlags();
+
+  if (value == true) {
+    flags |= flag;
+  }
+  else {
+    flags &= ~(flag);
+  }
+
+  get_object()->setCollisionFlags(flags);
+}
+
+/**
+ *
+ */
+bool BulletBodyNode::
+get_collision_flag(int flag) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (get_object()->getCollisionFlags() & flag) ? true : false;
+}
+
+/**
+ *
+ */
+bool BulletBodyNode::
+is_static() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->isStaticObject();
+}
+
+/**
+ *
+ */
+bool BulletBodyNode::
+is_kinematic() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->isKinematicObject();
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletBodyNode::
+get_restitution() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->getRestitution();
+}
+
+/**
+ *
+ */
+void BulletBodyNode::
+set_restitution(PN_stdfloat restitution) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->setRestitution(restitution);
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletBodyNode::
+get_friction() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->getFriction();
+}
+
+/**
+ *
+ */
+void BulletBodyNode::
+set_friction(PN_stdfloat friction) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->setFriction(friction);
+}
+
+#if BT_BULLET_VERSION >= 281
+/**
+ *
+ */
+PN_stdfloat BulletBodyNode::
+get_rolling_friction() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->getRollingFriction();
+}
+
+/**
+ *
+ */
+void BulletBodyNode::
+set_rolling_friction(PN_stdfloat friction) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->setRollingFriction(friction);
+}
+#endif
+
+/**
+ *
+ */
+bool BulletBodyNode::
+has_anisotropic_friction() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return get_object()->hasAnisotropicFriction();
+}
+
+/**
+ *
+ */
+int BulletBodyNode::
+get_num_shapes() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _shapes.size();
+}
+
+/**
+ *
+ */
+BulletShape *BulletBodyNode::
+get_shape(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertr(idx >= 0 && idx < (int)_shapes.size(), NULL);
+  return _shapes[idx];
 }
 
 /**
@@ -165,6 +319,16 @@ output(ostream &out) const {
  */
 void BulletBodyNode::
 add_shape(BulletShape *bullet_shape, const TransformState *ts) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_add_shape(bullet_shape, ts);
+}
+
+/**
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
+void BulletBodyNode::
+do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
   nassertv(get_object());
   nassertv(ts);
@@ -246,7 +410,7 @@ add_shape(BulletShape *bullet_shape, const TransformState *ts) {
   // Restore the local scaling again
   np.set_scale(scale);
 
-  shape_changed();
+  do_shape_changed();
 }
 
 /**
@@ -254,6 +418,7 @@ add_shape(BulletShape *bullet_shape, const TransformState *ts) {
  */
 void BulletBodyNode::
 remove_shape(BulletShape *shape) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(get_object());
 
@@ -312,7 +477,7 @@ remove_shape(BulletShape *shape) {
       compound->removeChildShape(shape->ptr());
     }
 
-    shape_changed();
+    do_shape_changed();
   }
 }
 
@@ -333,6 +498,7 @@ is_identity(btTransform &trans) {
  */
 LPoint3 BulletBodyNode::
 get_shape_pos(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertr(idx >= 0 && idx < (int)_shapes.size(), LPoint3::zero());
 
@@ -352,14 +518,17 @@ get_shape_pos(int idx) const {
  */
 LMatrix4 BulletBodyNode::
 get_shape_mat(int idx) const {
-  return get_shape_transform(idx)->get_mat();
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return do_get_shape_transform(idx)->get_mat();
 }
 
 /**
  *
  */
 CPT(TransformState) BulletBodyNode::
-get_shape_transform(int idx) const {
+do_get_shape_transform(int idx) const {
+
   nassertr(idx >= 0 && idx < (int)_shapes.size(), TransformState::make_identity());
 
   btCollisionShape *root = get_object()->getCollisionShape();
@@ -387,12 +556,24 @@ get_shape_transform(int idx) const {
 }
 
 /**
+ *
+ */
+CPT(TransformState) BulletBodyNode::
+get_shape_transform(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return do_get_shape_transform(idx);
+}
+
+
+/**
  * Hook which will be called whenever the total shape of a body changed.  Used
  * for example to update the mass properties (inertia) of a rigid body.  The
  * default implementation does nothing.
+ * Assumes the lock(bullet global lock) is held
  */
 void BulletBodyNode::
-shape_changed() {
+do_shape_changed() {
 
 }
 
@@ -401,6 +582,7 @@ shape_changed() {
  */
 void BulletBodyNode::
 set_deactivation_time(PN_stdfloat dt) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   get_object()->setDeactivationTime(dt);
 }
@@ -410,6 +592,7 @@ set_deactivation_time(PN_stdfloat dt) {
  */
 PN_stdfloat BulletBodyNode::
 get_deactivation_time() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return get_object()->getDeactivationTime();
 }
@@ -419,6 +602,7 @@ get_deactivation_time() const {
  */
 bool BulletBodyNode::
 is_active() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return get_object()->isActive();
 }
@@ -428,6 +612,7 @@ is_active() const {
  */
 void BulletBodyNode::
 set_active(bool active, bool force) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   if (active) {
     get_object()->activate(force);
@@ -457,10 +642,12 @@ force_active(bool active) {
  */
 void BulletBodyNode::
 set_deactivation_enabled(bool enabled) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   // Don't change the state if it's currently active and we enable
   // deactivation.
-  if (enabled != is_deactivation_enabled()) {
+  bool is_enabled = get_object()->getActivationState() != DISABLE_DEACTIVATION;
+  if (enabled != is_enabled) {
 
     // It's OK to set to ACTIVE_TAG even if we don't mean to activate it; it
     // will be disabled right away if the deactivation timer has run out.
@@ -474,6 +661,7 @@ set_deactivation_enabled(bool enabled) {
  */
 bool BulletBodyNode::
 is_deactivation_enabled() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (get_object()->getActivationState() != DISABLE_DEACTIVATION);
 }
@@ -483,6 +671,7 @@ is_deactivation_enabled() const {
  */
 bool BulletBodyNode::
 check_collision_with(PandaNode *node) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btCollisionObject *obj = BulletWorld::get_collision_object(node);
 
@@ -499,6 +688,7 @@ check_collision_with(PandaNode *node) {
  */
 LVecBase3 BulletBodyNode::
 get_anisotropic_friction() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVecBase3(get_object()->getAnisotropicFriction());
 }
@@ -508,6 +698,7 @@ get_anisotropic_friction() const {
  */
 void BulletBodyNode::
 set_anisotropic_friction(const LVecBase3 &friction) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!friction.is_nan());
   get_object()->setAnisotropicFriction(LVecBase3_to_btVector3(friction));
@@ -518,6 +709,7 @@ set_anisotropic_friction(const LVecBase3 &friction) {
  */
 bool BulletBodyNode::
 has_contact_response() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return get_object()->hasContactResponse();
 }
@@ -527,7 +719,8 @@ has_contact_response() const {
  */
 PN_stdfloat BulletBodyNode::
 get_contact_processing_threshold() const {
-
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+  
   return get_object()->getContactProcessingThreshold();
 }
 
@@ -537,6 +730,7 @@ get_contact_processing_threshold() const {
  */
 void BulletBodyNode::
 set_contact_processing_threshold(PN_stdfloat threshold) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   get_object()->setContactProcessingThreshold(threshold);
 }
@@ -546,6 +740,7 @@ set_contact_processing_threshold(PN_stdfloat threshold) {
  */
 PN_stdfloat BulletBodyNode::
 get_ccd_swept_sphere_radius() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return get_object()->getCcdSweptSphereRadius();
 }
@@ -555,6 +750,7 @@ get_ccd_swept_sphere_radius() const {
  */
 void BulletBodyNode::
 set_ccd_swept_sphere_radius(PN_stdfloat radius) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return get_object()->setCcdSweptSphereRadius(radius);
 }
@@ -564,6 +760,7 @@ set_ccd_swept_sphere_radius(PN_stdfloat radius) {
  */
 PN_stdfloat BulletBodyNode::
 get_ccd_motion_threshold() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return get_object()->getCcdMotionThreshold();
 }
@@ -573,6 +770,7 @@ get_ccd_motion_threshold() const {
  */
 void BulletBodyNode::
 set_ccd_motion_threshold(PN_stdfloat threshold) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return get_object()->setCcdMotionThreshold(threshold);
 }
@@ -582,6 +780,7 @@ set_ccd_motion_threshold(PN_stdfloat threshold) {
  */
 void BulletBodyNode::
 add_shapes_from_collision_solids(CollisionNode *cnode) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   PT(BulletTriangleMesh) mesh = NULL;
 
@@ -594,7 +793,7 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       CPT(CollisionSphere) sphere = DCAST(CollisionSphere, solid);
       CPT(TransformState) ts = TransformState::make_pos(sphere->get_center());
 
-      add_shape(BulletSphereShape::make_from_solid(sphere), ts);
+      do_add_shape(BulletSphereShape::make_from_solid(sphere), ts);
     }
 
     // CollisionBox
@@ -602,14 +801,14 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       CPT(CollisionBox) box = DCAST(CollisionBox, solid);
       CPT(TransformState) ts = TransformState::make_pos(box->get_center());
 
-      add_shape(BulletBoxShape::make_from_solid(box), ts);
+      do_add_shape(BulletBoxShape::make_from_solid(box), ts);
     }
 
     // CollisionPlane
     else if (CollisionPlane::get_class_type() == type) {
       CPT(CollisionPlane) plane = DCAST(CollisionPlane, solid);
 
-      add_shape(BulletPlaneShape::make_from_solid(plane));
+      do_add_shape(BulletPlaneShape::make_from_solid(plane));
     }
 
     // CollisionGeom
@@ -625,13 +824,13 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
         LPoint3 p2 = polygon->get_point(i-1);
         LPoint3 p3 = polygon->get_point(i);
 
-        mesh->add_triangle(p1, p2, p3, true);
+        mesh->do_add_triangle(p1, p2, p3, true);
       }
     }
   }
 
-  if (mesh && mesh->get_num_triangles() > 0) {
-    add_shape(new BulletTriangleMeshShape(mesh, true));
+  if (mesh && mesh->do_get_num_triangles() > 0) {
+    do_add_shape(new BulletTriangleMeshShape(mesh, true));
   }
 }
 
@@ -651,6 +850,7 @@ set_transform_dirty() {
  */
 BoundingSphere BulletBodyNode::
 get_shape_bounds() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
 /*
   btTransform tr;

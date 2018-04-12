@@ -23,6 +23,10 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 
+#ifdef ANDROID
+typedef struct _JNIEnv JNIEnv;
+#endif
+
 class Mutex;
 class ReMutex;
 class MutexDebug;
@@ -89,7 +93,7 @@ PUBLISHED:
   BLOCKING INLINE void join();
   INLINE void preempt();
 
-  INLINE AsyncTask *get_current_task() const;
+  INLINE TypedReferenceCount *get_current_task() const;
 
   INLINE void set_python_index(int index);
 
@@ -128,6 +132,10 @@ public:
   INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
   INLINE PStatsCallback *get_pstats_callback() const;
 
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+#endif
+
 private:
   static void init_main_thread();
   static void init_external_thread();
@@ -142,7 +150,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AsyncTask *_current_task;
+  AtomicAdjust::Pointer _current_task;
 
   int _python_index;
 

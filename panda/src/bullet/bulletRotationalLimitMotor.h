@@ -28,27 +28,27 @@ class EXPCL_PANDABULLET BulletRotationalLimitMotor {
 
 PUBLISHED:
   BulletRotationalLimitMotor(const BulletRotationalLimitMotor &copy);
-  ~BulletRotationalLimitMotor();
+  INLINE ~BulletRotationalLimitMotor();
 
-  INLINE void set_motor_enabled(bool enable);
-  INLINE void set_low_limit(PN_stdfloat limit);
-  INLINE void set_high_limit(PN_stdfloat limit);
-  INLINE void set_target_velocity(PN_stdfloat velocity);
-  INLINE void set_max_motor_force(PN_stdfloat force);
-  INLINE void set_max_limit_force(PN_stdfloat force);
-  INLINE void set_damping(PN_stdfloat damping);
-  INLINE void set_softness(PN_stdfloat softness);
-  INLINE void set_bounce(PN_stdfloat bounce);
-  INLINE void set_normal_cfm(PN_stdfloat cfm);
-  INLINE void set_stop_cfm(PN_stdfloat cfm);
-  INLINE void set_stop_erp(PN_stdfloat erp);
+  void set_motor_enabled(bool enable);
+  void set_low_limit(PN_stdfloat limit);
+  void set_high_limit(PN_stdfloat limit);
+  void set_target_velocity(PN_stdfloat velocity);
+  void set_max_motor_force(PN_stdfloat force);
+  void set_max_limit_force(PN_stdfloat force);
+  void set_damping(PN_stdfloat damping);
+  void set_softness(PN_stdfloat softness);
+  void set_bounce(PN_stdfloat bounce);
+  void set_normal_cfm(PN_stdfloat cfm);
+  void set_stop_cfm(PN_stdfloat cfm);
+  void set_stop_erp(PN_stdfloat erp);
 
-  INLINE bool is_limited() const;
-  INLINE bool get_motor_enabled() const;
-  INLINE int get_current_limit() const;
-  INLINE PN_stdfloat get_current_error() const;
-  INLINE PN_stdfloat get_current_position() const;
-  INLINE PN_stdfloat get_accumulated_impulse() const;
+  bool is_limited() const;
+  bool get_motor_enabled() const;
+  int get_current_limit() const;
+  PN_stdfloat get_current_error() const;
+  PN_stdfloat get_current_position() const;
+  PN_stdfloat get_accumulated_impulse() const;
 
   MAKE_PROPERTY(limited, is_limited);
   MAKE_PROPERTY(motor_enabled, get_motor_enabled, set_motor_enabled);

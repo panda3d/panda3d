@@ -371,16 +371,24 @@ public:
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
+  virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,
+                                  bool force);
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
                               bool force);
+  virtual bool draw_tristrips_adj(const GeomPrimitivePipelineReader *reader,
+                                  bool force);
   virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader,
                             bool force);
   virtual bool draw_patches(const GeomPrimitivePipelineReader *reader,
                             bool force);
   virtual bool draw_lines(const GeomPrimitivePipelineReader *reader,
                           bool force);
+  virtual bool draw_lines_adj(const GeomPrimitivePipelineReader *reader,
+                              bool force);
   virtual bool draw_linestrips(const GeomPrimitivePipelineReader *reader,
                                bool force);
+  virtual bool draw_linestrips_adj(const GeomPrimitivePipelineReader *reader,
+                                   bool force);
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader,
                            bool force);
   virtual void end_draw_primitives();
@@ -424,7 +432,7 @@ public:
 
   PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=NULL);
   PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
-  PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
+  virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
 
   virtual void ensure_generated_shader(const RenderState *state);
 

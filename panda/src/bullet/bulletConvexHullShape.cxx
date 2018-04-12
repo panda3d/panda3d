@@ -32,6 +32,28 @@ BulletConvexHullShape() {
 /**
  *
  */
+BulletConvexHullShape::
+BulletConvexHullShape(const BulletConvexHullShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = new btConvexHullShape(NULL, 0);
+  _shape->setUserPointer(this);
+
+#if BT_BULLET_VERSION >= 282
+  for (int i = 0; i < copy._shape->getNumPoints(); ++i) {
+    _shape->addPoint(copy._shape->getUnscaledPoints()[i], false);
+  }
+  _shape->recalcLocalAabb();
+#else
+  for (int i = 0; i < copy._shape->getNumPoints(); ++i) {
+    _shape->addPoint(copy._shape->getUnscaledPoints()[i]);
+  }
+#endif
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletConvexHullShape::
 ptr() const {
 
@@ -43,6 +65,7 @@ ptr() const {
  */
 void BulletConvexHullShape::
 add_point(const LPoint3 &p) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _shape->addPoint(LVecBase3_to_btVector3(p));
 }
@@ -52,6 +75,10 @@ add_point(const LPoint3 &p) {
  */
 void BulletConvexHullShape::
 add_array(const PTA_LVecBase3 &points) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  if (_shape)
+      delete _shape;
 
   _shape = new btConvexHullShape(NULL, 0);
   _shape->setUserPointer(this);
@@ -75,6 +102,7 @@ add_array(const PTA_LVecBase3 &points) {
  */
 void BulletConvexHullShape::
 add_geom(const Geom *geom, const TransformState *ts) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(geom);
   nassertv(ts);
@@ -90,6 +118,9 @@ add_geom(const Geom *geom, const TransformState *ts) {
   while (!reader.is_at_end()) {
     points.push_back(m.xform_point(reader.get_data3()));
   }
+
+  if (_shape)
+      delete _shape;
 
   // Create shape
   _shape = new btConvexHullShape(NULL, 0);

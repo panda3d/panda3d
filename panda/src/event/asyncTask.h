@@ -104,6 +104,7 @@ protected:
   DoneStatus unlock_and_do_task();
 
   virtual bool cancel() FINAL;
+  virtual bool is_task() const FINAL {return true;}
 
   virtual bool is_runnable();
   virtual DoneStatus do_task();

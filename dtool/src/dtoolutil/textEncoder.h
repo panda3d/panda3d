@@ -30,7 +30,7 @@ class StringDecoder;
  * This class is also a base class of TextNode, which inherits this
  * functionality.
  */
-class EXPCL_DTOOL TextEncoder {
+class EXPCL_DTOOL_DTOOLUTIL TextEncoder {
 PUBLISHED:
   enum Encoding {
     E_iso8859,
@@ -112,9 +112,9 @@ private:
   static Encoding _default_encoding;
 };
 
-EXPCL_DTOOL ostream &
+EXPCL_DTOOL_DTOOLUTIL ostream &
 operator << (ostream &out, TextEncoder::Encoding encoding);
-EXPCL_DTOOL istream &
+EXPCL_DTOOL_DTOOLUTIL istream &
 operator >> (istream &in, TextEncoder::Encoding &encoding);
 
 // We'll define the output operator for wstring here, too.  Presumably this
@@ -122,7 +122,7 @@ operator >> (istream &in, TextEncoder::Encoding &encoding);
 
 // This function is declared inline to minimize the risk of link conflicts
 // should another third-party module also define the same output operator.
-INLINE EXPCL_DTOOL ostream &
+INLINE EXPCL_DTOOL_DTOOLUTIL ostream &
 operator << (ostream &out, const wstring &str);
 
 #include "textEncoder.I"

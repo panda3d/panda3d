@@ -66,7 +66,7 @@
  * that seems to cause problems when including header files for C++-based
  * system libraries (such as are found on OSX).
  */
-class EXPCL_DTOOL MemoryBase {
+class EXPCL_DTOOL_DTOOLBASE MemoryBase {
 public:
   ALLOC_MEMORY_BASE;
 };

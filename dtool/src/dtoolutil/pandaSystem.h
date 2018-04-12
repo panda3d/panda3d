@@ -23,7 +23,7 @@
  * Panda.  Application developers can use this class to query the runtime
  * version or capabilities of the current Panda environment.
  */
-class EXPCL_DTOOL PandaSystem {
+class EXPCL_DTOOL_DTOOLUTIL PandaSystem {
 protected:
   PandaSystem();
   ~PandaSystem();

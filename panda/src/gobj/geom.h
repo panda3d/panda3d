@@ -106,6 +106,7 @@ PUBLISHED:
   INLINE PT(Geom) make_points() const;
   INLINE PT(Geom) make_lines() const;
   INLINE PT(Geom) make_patches() const;
+  INLINE PT(Geom) make_adjacency() const;
 
   void decompose_in_place();
   void doubleside_in_place();
@@ -115,6 +116,7 @@ PUBLISHED:
   void make_points_in_place();
   void make_lines_in_place();
   void make_patches_in_place();
+  void make_adjacency_in_place();
 
   virtual bool copy_primitives_from(const Geom *other);
 
@@ -196,7 +198,7 @@ private:
 
   void reset_geom_rendering(CData *cdata);
 
-  void combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
+  void combine_primitives(GeomPrimitive *a_prim, CPT(GeomPrimitive) b_prim,
                           Thread *current_thread);
 
 private:
@@ -302,7 +304,8 @@ private:
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
-    INLINE CData(const CData &copy);
+    INLINE CData(GeomVertexData *data);
+
     ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;

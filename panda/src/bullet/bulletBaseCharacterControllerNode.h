@@ -43,8 +43,8 @@ public:
   virtual btPairCachingGhostObject *get_ghost() const = 0;
   virtual btCharacterControllerInterface *get_character() const = 0;
 
-  virtual void sync_p2b(PN_stdfloat dt, int num_substeps) = 0;
-  virtual void sync_b2p() = 0;
+  virtual void do_sync_p2b(PN_stdfloat dt, int num_substeps) = 0;
+  virtual void do_sync_b2p() = 0;
 
 public:
   static TypeHandle get_class_type() {

@@ -84,6 +84,29 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
   }
 #endif
 
+#if PY_MAJOR_VERSION < 3
+  // The old, deprecated buffer interface, as used by eg. the array module.
+  const void *buffer;
+  Py_ssize_t buffer_len;
+  if (!PyUnicode_CheckExact(image) &&
+      PyObject_AsReadBuffer(image, &buffer, &buffer_len) == 0) {
+    if (compression == Texture::CM_off) {
+      int component_width = _this->get_component_width();
+      if (buffer_len % component_width != 0) {
+        PyErr_Format(PyExc_ValueError,
+                    "byte buffer is not a multiple of %d bytes",
+                    component_width);
+        return;
+      }
+    }
+
+    PTA_uchar data = PTA_uchar::empty_array(buffer_len, Texture::get_class_type());
+    memcpy(data.p(), buffer, buffer_len);
+    _this->set_ram_image(MOVE(data), compression, page_size);
+    return;
+  }
+#endif
+
   Dtool_Raise_ArgTypeError(image, 0, "Texture.set_ram_image", "CPTA_uchar or buffer");
 }
 

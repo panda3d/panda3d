@@ -2390,11 +2390,28 @@ draw_triangles(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
+
+/**
+ * Draws a series of disconnected triangles with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_triangles_adj(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
 /**
  * Draws a series of triangle strips.
  */
 bool GraphicsStateGuardian::
 draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of triangle strips with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_tristrips_adj(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
@@ -2424,10 +2441,26 @@ draw_lines(const GeomPrimitivePipelineReader *, bool) {
 }
 
 /**
+ * Draws a series of disconnected line segments with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_lines_adj(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
  * Draws a series of line strips.
  */
 bool GraphicsStateGuardian::
 draw_linestrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of line strips with adjacency information.
+ */
+bool GraphicsStateGuardian::
+draw_linestrips_adj(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
@@ -3250,9 +3283,10 @@ async_reload_texture(TextureContext *tc) {
 PT(Texture) GraphicsStateGuardian::
 get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
   PandaNode *node = light_np.node();
+  bool is_point = node->is_of_type(PointLight::get_class_type());
   nassertr(node->is_of_type(DirectionalLight::get_class_type()) ||
-           node->is_of_type(PointLight::get_class_type()) ||
-           node->is_of_type(Spotlight::get_class_type()), NULL);
+           node->is_of_type(Spotlight::get_class_type()) ||
+           is_point, nullptr);
 
   LightLensNode *light = (LightLensNode *)node;
   if (light == nullptr || !light->_shadow_caster) {
@@ -3265,20 +3299,49 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
     }
   }
 
+  // The light's shadow map should have been created by set_shadow_caster().
+  nassertr(light->_shadow_map != nullptr, nullptr);
+
   // See if we already have a buffer.  If not, create one.
-  if (light->_sbuffers.count(this) == 0) {
-    if (host == (GraphicsOutputBase *)NULL) {
-      host = _current_display_region->get_window();
-    }
-    nassertr(host != NULL, NULL);
-
-    // Nope, the light doesn't have a buffer for our GSG. Make one.
-    return make_shadow_buffer(light_np, host);
-
-  } else {
+  if (light->_sbuffers.count(this) != 0) {
     // There's already a buffer - use that.
-    return light->_sbuffers[this]->get_texture();
+    return light->_shadow_map;
   }
+
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Constructing shadow buffer for light '" << light->get_name()
+      << "', size=" << light->_sb_size[0] << "x" << light->_sb_size[1]
+      << ", sort=" << light->_sb_sort << "\n";
+  }
+
+  if (host == nullptr) {
+    nassertr(_current_display_region != nullptr, nullptr);
+    host = _current_display_region->get_window();
+  }
+  nassertr(host != nullptr, nullptr);
+
+  // Nope, the light doesn't have a buffer for our GSG. Make one.
+  GraphicsOutput *sbuffer = make_shadow_buffer(light, light->_shadow_map,
+                                               DCAST(GraphicsOutput, host));
+
+  // Assign display region(s) to the buffer and camera
+  if (is_point) {
+    for (int i = 0; i < 6; ++i) {
+      PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
+      dr->set_lens_index(i);
+      dr->set_target_tex_page(i);
+      dr->set_camera(light_np);
+      dr->set_clear_depth_active(true);
+    }
+  } else {
+    PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
+    dr->set_camera(light_np);
+    dr->set_clear_depth_active(true);
+  }
+
+  light->_sbuffers[this] = sbuffer;
+  return light->_shadow_map;
 }
 
 /**
@@ -3318,101 +3381,33 @@ get_dummy_shadow_map(Texture::TextureType texture_type) const {
 }
 
 /**
- * Creates a depth buffer for shadow mapping.  This is a convenience function
- * for the ShaderGenerator; putting this directly in the ShaderGenerator would
- * cause circular dependency issues.  Returns the depth texture.
+ * Creates a depth buffer for shadow mapping.  A derived GSG can override this
+ * if it knows that a particular buffer type works best for shadow rendering.
  */
-PT(Texture) GraphicsStateGuardian::
-make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
-  // Make sure everything is valid.
-  PandaNode *node = light_np.node();
-  nassertr(node->is_of_type(DirectionalLight::get_class_type()) ||
-           node->is_of_type(PointLight::get_class_type()) ||
-           node->is_of_type(Spotlight::get_class_type()), NULL);
-
-  LightLensNode *light = (LightLensNode *)node;
-  if (light == NULL || !light->_shadow_caster) {
-    return NULL;
-  }
-
+GraphicsOutput *GraphicsStateGuardian::
+make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
   bool is_point = light->is_of_type(PointLight::get_class_type());
-
-  nassertr(light->_sbuffers.count(this) == 0, NULL);
-
-  if (display_cat.is_debug()) {
-    display_cat.debug()
-      << "Constructing shadow buffer for light '" << light->get_name()
-      << "', size=" << light->_sb_size[0] << "x" << light->_sb_size[1]
-      << ", sort=" << light->_sb_sort << "\n";
-  }
 
   // Determine the properties for creating the depth buffer.
   FrameBufferProperties fbp;
   fbp.set_depth_bits(shadow_depth_bits);
 
-  WindowProperties props = WindowProperties::size(light->_sb_size[0], light->_sb_size[1]);
+  WindowProperties props = WindowProperties::size(light->_sb_size);
   int flags = GraphicsPipe::BF_refuse_window;
   if (is_point) {
     flags |= GraphicsPipe::BF_size_square;
   }
 
-  // Create the buffer
-  PT(GraphicsOutput) sbuffer = get_engine()->make_output(get_pipe(), light->get_name(),
-      light->_sb_sort, fbp, props, flags, this, DCAST(GraphicsOutput, host));
-  nassertr(sbuffer != NULL, NULL);
+  // Create the buffer.  This is a bit tricky because make_output() can only
+  // be called from the app thread, but it won't cause issues as long as the
+  // pipe can precertify the buffer, which it can in most cases.
+  GraphicsOutput *sbuffer = get_engine()->make_output(get_pipe(),
+    light->get_name(), light->_sb_sort, fbp, props, flags, this, host);
 
-  // Create a texture and fill it in with some data to workaround an OpenGL
-  // error
-  PT(Texture) tex = new Texture(light->get_name());
-  if (is_point) {
-    if (light->_sb_size[0] != light->_sb_size[1]) {
-      display_cat.error()
-        << "PointLight shadow buffers must have an equal width and height!\n";
-    }
-    tex->setup_cube_map(light->_sb_size[0], Texture::T_unsigned_byte, Texture::F_depth_component);
-  } else {
-    tex->setup_2d_texture(light->_sb_size[0], light->_sb_size[1], Texture::T_unsigned_byte, Texture::F_depth_component);
+  if (sbuffer != nullptr) {
+    sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);
   }
-  tex->make_ram_image();
-  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);
-
-  // Set the wrap mode
-  if (is_point) {
-    tex->set_wrap_u(SamplerState::WM_clamp);
-    tex->set_wrap_v(SamplerState::WM_clamp);
-  } else {
-    tex->set_wrap_u(SamplerState::WM_border_color);
-    tex->set_wrap_v(SamplerState::WM_border_color);
-    tex->set_border_color(LVecBase4(1, 1, 1, 1));
-  }
-
-  // Note: cube map shadow filtering doesn't seem to work in Cg.
-  if (get_supports_shadow_filter() && !is_point) {
-    // If we have the ARB_shadow extension, enable shadow filtering.
-    tex->set_minfilter(SamplerState::FT_shadow);
-    tex->set_magfilter(SamplerState::FT_shadow);
-  } else {
-    tex->set_minfilter(SamplerState::FT_linear);
-    tex->set_magfilter(SamplerState::FT_linear);
-  }
-
-  // Assign display region(s) to the buffer and camera
-  if (is_point) {
-    for (int i = 0; i < 6; ++i) {
-      PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
-      dr->set_lens_index(i);
-      dr->set_target_tex_page(i);
-      dr->set_camera(light_np);
-      dr->set_clear_depth_active(true);
-    }
-  } else {
-    PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
-    dr->set_camera(light_np);
-    dr->set_clear_depth_active(true);
-  }
-  light->_sbuffers[this] = sbuffer;
-
-  return tex;
+  return sbuffer;
 }
 
 /**

@@ -22,6 +22,10 @@
 #include "pandaSystem.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_MILES_AUDIO)
+  #error Buildsystem error: BUILDING_MILES_AUDIO not defined
+#endif
+
 ConfigureDef(config_milesAudio);
 NotifyCategoryDef(milesAudio, ":audio");
 

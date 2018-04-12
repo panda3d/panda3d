@@ -30,6 +30,10 @@
 
 #include "pset.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_DIRECTD)
+  #error Buildsystem error: BUILDING_DIRECT_DIRECTD not defined
+#endif
+
 namespace {
   // ...This section is part of the old stuff from the original
   // implementation.  The new stuff that uses job objects doesn't need this

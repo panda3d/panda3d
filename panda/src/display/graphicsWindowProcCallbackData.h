@@ -32,7 +32,7 @@ public:
   INLINE GraphicsWindow* get_graphics_window() const;
 
 #ifdef WIN32
-  INLINE void set_hwnd(int hwnd);
+  INLINE void set_hwnd(uintptr_t hwnd);
   INLINE void set_msg(int msg);
   INLINE void set_wparam(int wparam);
   INLINE void set_lparam(int lparam);
@@ -42,7 +42,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 #ifdef WIN32
-  INLINE int get_hwnd() const;
+  INLINE uintptr_t get_hwnd() const;
   INLINE int get_msg() const;
   INLINE int get_wparam() const;
   INLINE int get_lparam() const;
@@ -55,7 +55,7 @@ PUBLISHED:
 private:
   GraphicsWindow* _graphicsWindow;
 #ifdef WIN32
-  int _hwnd;
+  uintptr_t _hwnd;
   int _msg;
   int _wparam;
   int _lparam;

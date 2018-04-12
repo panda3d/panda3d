@@ -391,7 +391,7 @@ Datagram DCField::
 client_format_update(DOID_TYPE do_id, PyObject *args) const {
   DCPacker packer;
 
-  packer.raw_pack_uint16(CLIENT_OBJECT_UPDATE_FIELD);
+  packer.raw_pack_uint16(CLIENT_OBJECT_SET_FIELD);
   packer.raw_pack_uint32(do_id);
   packer.raw_pack_uint16(_number);
 
@@ -417,7 +417,7 @@ ai_format_update(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyOb
   packer.raw_pack_uint8(1);
   packer.RAW_PACK_CHANNEL(to_id);
   packer.RAW_PACK_CHANNEL(from_id);
-  packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
+  packer.raw_pack_uint16(STATESERVER_OBJECT_SET_FIELD);
   packer.raw_pack_uint32(do_id);
   packer.raw_pack_uint16(_number);
 
