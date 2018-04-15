@@ -262,7 +262,7 @@ function(add_python_module module)
       endif()
     endforeach(arg)
 
-    if(NOT link_keyword)
+    if(NOT link_targets)
       set(link_targets ${targets})
     endif()
 
