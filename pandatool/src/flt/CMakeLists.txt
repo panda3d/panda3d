@@ -82,4 +82,4 @@ set(P3FLT_SOURCES
 
 composite_sources(p3flt P3FLT_SOURCES)
 add_library(p3flt STATIC ${P3FLT_HEADERS} ${P3FLT_SOURCES})
-target_link_libraries(p3flt p3pandatoolbase p3mathutil)
+target_link_libraries(p3flt p3pandatoolbase panda)

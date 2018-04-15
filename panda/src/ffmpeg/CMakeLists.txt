@@ -20,7 +20,7 @@ if(HAVE_FFMPEG)
   composite_sources(p3ffmpeg P3FFMPEG_SOURCES)
   add_library(p3ffmpeg ${P3FFMPEG_HEADERS} ${P3FFMPEG_SOURCES})
   set_target_properties(p3ffmpeg PROPERTIES DEFINE_SYMBOL BUILDING_FFMPEG)
-  target_link_libraries(p3ffmpeg p3movies)
+  target_link_libraries(p3ffmpeg panda)
   target_use_packages(p3ffmpeg FFMPEG SWSCALE SWRESAMPLE)
 
   install(TARGETS p3ffmpeg DESTINATION lib)

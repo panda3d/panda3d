@@ -40,7 +40,7 @@ set(P3PARTICLESYSTEM_SOURCES
 composite_sources(p3particlesystem P3PARTICLESYSTEM_SOURCES)
 add_library(p3particlesystem ${P3PARTICLESYSTEM_HEADERS} ${P3PARTICLESYSTEM_SOURCES})
 set_target_properties(p3particlesystem PROPERTIES DEFINE_SYMBOL BUILDING_PANDAPHYSICS)
-target_link_libraries(p3particlesystem p3pgraph p3physics)
+target_link_libraries(p3particlesystem p3physics panda)
 target_interrogate(p3particlesystem ALL)
 
 install(TARGETS p3particlesystem DESTINATION lib)

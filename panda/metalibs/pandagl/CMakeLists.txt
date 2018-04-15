@@ -7,7 +7,6 @@ if(HAVE_GL)
     HAVE_WGL, HAVE_COCOA, HAVE_CARBON, or HAVE_GLX must be defined.")
   endif()
 
-  add_definitions(-DBUILDING_PANDAGL)
   set(PANDAGL_LINK_TARGETS p3glgsg)
 
   if(HAVE_GLX)
@@ -27,6 +26,7 @@ if(HAVE_GL)
 
   add_library(pandagl pandagl.cxx)
   target_link_libraries(pandagl ${PANDAGL_LINK_TARGETS})
+  set_target_properties(pandagl PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
 
   install(TARGETS pandagl DESTINATION lib)
 endif()

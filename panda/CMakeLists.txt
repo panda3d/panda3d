@@ -96,10 +96,10 @@ if(HAVE_PYTHON)
   add_python_module(core ${CORE_MODULE_COMPONENTS} LINK panda)
 
   if(HAVE_EGG)
-    add_python_module(egg p3egg p3egg2pg IMPORT panda3d.core)
+    add_python_module(egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core)
   endif()
 
-  add_python_module(physics p3physics p3particlesystem IMPORT panda3d.core)
+  add_python_module(physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
 
   if(HAVE_ODE)
     add_python_module(ode p3ode IMPORT panda3d.core)

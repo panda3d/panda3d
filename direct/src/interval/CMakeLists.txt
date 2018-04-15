@@ -38,7 +38,7 @@ set(P3INTERVAL_SOURCES
 composite_sources(p3interval P3INTERVAL_SOURCES)
 add_library(p3interval ${P3INTERVAL_HEADERS} ${P3INTERVAL_SOURCES})
 set_target_properties(p3interval PROPERTIES DEFINE_SYMBOL BUILDING_DIRECT_INTERVAL)
-target_link_libraries(p3interval p3directbase p3pstatclient p3pgraph p3chan p3dconfig p3prc)
+target_link_libraries(p3interval p3directbase panda)
 target_interrogate(p3interval ALL)
 
 install(TARGETS p3interval DESTINATION lib)

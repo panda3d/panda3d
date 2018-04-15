@@ -16,7 +16,7 @@ set(P3PANDATOOLBASE_SOURCES
 
 composite_sources(p3pandatoolbase P3PANDATOOLBASE_SOURCES)
 add_library(p3pandatoolbase STATIC ${P3PANDATOOLBASE_HEADERS} ${P3PANDATOOLBASE_SOURCES})
-target_link_libraries(p3pandatoolbase p3pandabase p3putil)
+target_link_libraries(p3pandatoolbase panda)
 
 # This is only needed for binaries in the pandatool package. It is not useful
 # for user applications, so it is not installed.

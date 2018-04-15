@@ -11,7 +11,7 @@ set(P3FRAMEWORK_SOURCES
 )
 
 
-set(P3FRAMEWORK_LINK_TARGETS p3char p3pgui p3recorder p3collide p3pnmimagetypes)
+set(P3FRAMEWORK_LINK_TARGETS panda)
 if(NOT BUILD_SHARED_LIBS)
   # If we're statically linking, we need to explicitly link with
   # at least one of the available renderers.

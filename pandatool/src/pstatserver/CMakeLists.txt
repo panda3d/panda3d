@@ -19,7 +19,7 @@ if(HAVE_NET)
 
   composite_sources(p3pstatserver P3PSTATSERVER_SOURCES)
   add_library(p3pstatserver STATIC ${P3PSTATSERVER_HEADERS} ${P3PSTATSERVER_SOURCES})
-  target_link_libraries(p3pstatserver p3pandatoolbase p3pstatclient p3linmath)
+  target_link_libraries(p3pstatserver p3pandatoolbase panda)
 
   # This is only needed for binaries in the pandatool package. It is not useful
   # for user applications, so it is not installed.
