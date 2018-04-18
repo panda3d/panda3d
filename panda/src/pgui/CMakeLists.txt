@@ -40,8 +40,8 @@ set(P3PGUI_SOURCES
 )
 
 composite_sources(p3pgui P3PGUI_SOURCES)
-add_library(p3pgui ${P3PGUI_HEADERS} ${P3PGUI_SOURCES})
-set_target_properties(p3pgui PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PGUI)
+add_component_library(p3pgui SYMBOL BUILDING_PANDA_PGUI
+  ${P3PGUI_HEADERS} ${P3PGUI_SOURCES})
 target_link_libraries(p3pgui p3tform)
 target_interrogate(p3pgui ALL)
 

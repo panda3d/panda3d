@@ -11,8 +11,8 @@ if(HAVE_PYTHON)
       cConnectionRepository.cxx
       cDistributedSmoothNodeBase.cxx)
 
-  add_library(p3distributed ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_SOURCES})
-  set_target_properties(p3distributed PROPERTIES DEFINE_SYMBOL BUILDING_DIRECT_DISTRIBUTED)
+  add_component_library(p3distributed SYMBOL BUILDING_DIRECT_DISTRIBUTED
+    ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_SOURCES})
   target_compile_definitions(p3distributed PUBLIC WITHIN_PANDA)
   target_link_libraries(p3distributed p3directbase p3dcparser panda)
   target_use_packages(p3distributed PYTHON)

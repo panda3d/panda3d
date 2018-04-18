@@ -168,8 +168,8 @@ set(P3GOBJ_IGATEEXT
 )
 
 composite_sources(p3gobj P3GOBJ_SOURCES)
-add_library(p3gobj ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
-set_target_properties(p3gobj PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_GOBJ)
+add_component_library(p3gobj SYMBOL BUILDING_PANDA_GOBJ
+  ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
 target_link_libraries(p3gobj p3gsgbase p3pnmimage)
 target_use_packages(p3gobj ZLIB SQUISH CG)
 target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})

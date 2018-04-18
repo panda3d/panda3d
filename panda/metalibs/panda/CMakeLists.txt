@@ -19,8 +19,7 @@ if(LINK_IN_PHYSX)
   )
 endif()
 
-add_library(panda panda.cxx)
+add_metalib(panda panda.cxx COMPONENTS ${PANDA_LINK_TARGETS})
 set_target_properties(panda PROPERTIES DEFINE_SYMBOL BUILDING_LIBPANDA)
-target_link_libraries(panda ${PANDA_LINK_TARGETS})
 
 install(TARGETS panda DESTINATION lib)

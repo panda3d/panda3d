@@ -25,8 +25,8 @@ if(WANT_NATIVE_NET)
       socket_udp_outgoing.cxx)
 
   composite_sources(p3nativenet P3NATIVENET_SOURCES)
-  add_library(p3nativenet ${P3NATIVENET_HEADERS} ${P3NATIVENET_SOURCES})
-  set_target_properties(p3nativenet PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_NATIVENET)
+  add_component_library(p3nativenet SYMBOL BUILDING_PANDA_NATIVENET
+    ${P3NATIVENET_HEADERS} ${P3NATIVENET_SOURCES})
   target_link_libraries(p3nativenet p3express p3pandabase p3downloader)
   target_interrogate(p3nativenet ALL)
 

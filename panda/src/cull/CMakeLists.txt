@@ -21,8 +21,8 @@ set(P3CULL_SOURCES
 )
 
 composite_sources(p3cull P3CULL_SOURCES)
-add_library(p3cull ${P3CULL_HEADERS} ${P3CULL_SOURCES})
-set_target_properties(p3cull PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_CULL)
+add_component_library(p3cull SYMBOL BUILDING_PANDA_CULL
+  ${P3CULL_HEADERS} ${P3CULL_SOURCES})
 target_link_libraries(p3cull p3pgraph)
 target_interrogate(p3cull ALL)
 

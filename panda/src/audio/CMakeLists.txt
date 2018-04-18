@@ -18,8 +18,8 @@ if(HAVE_AUDIO)
       nullAudioSound.cxx)
 
   composite_sources(p3audio P3AUDIO_SOURCES)
-  add_library(p3audio ${P3AUDIO_HEADERS} ${P3AUDIO_SOURCES})
-  set_target_properties(p3audio PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_AUDIO)
+  add_component_library(p3audio SYMBOL BUILDING_PANDA_AUDIO
+    ${P3AUDIO_HEADERS} ${P3AUDIO_SOURCES})
   target_link_libraries(p3audio p3putil p3event p3movies p3linmath)
   target_interrogate(p3audio ALL)
 

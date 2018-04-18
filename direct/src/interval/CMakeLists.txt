@@ -36,8 +36,8 @@ set(P3INTERVAL_SOURCES
     waitInterval.cxx)
 
 composite_sources(p3interval P3INTERVAL_SOURCES)
-add_library(p3interval ${P3INTERVAL_HEADERS} ${P3INTERVAL_SOURCES})
-set_target_properties(p3interval PROPERTIES DEFINE_SYMBOL BUILDING_DIRECT_INTERVAL)
+add_component_library(p3interval SYMBOL BUILDING_DIRECT_INTERVAL
+  ${P3INTERVAL_HEADERS} ${P3INTERVAL_SOURCES})
 target_link_libraries(p3interval p3directbase panda)
 target_interrogate(p3interval ALL)
 

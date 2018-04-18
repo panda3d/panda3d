@@ -27,8 +27,8 @@ set(P3TFORM_SOURCES
 )
 
 composite_sources(p3tform P3TFORM_SOURCES)
-add_library(p3tform ${P3TFORM_HEADERS} ${P3TFORM_SOURCES})
-set_target_properties(p3tform PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_TFORM)
+add_component_library(p3tform SYMBOL BUILDING_PANDA_TFORM
+  ${P3TFORM_HEADERS} ${P3TFORM_SOURCES})
 target_link_libraries(p3tform p3device p3grutil)
 target_interrogate(p3tform ALL)
 

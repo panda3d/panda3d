@@ -217,8 +217,8 @@ set(P3PGRAPH_IGATEEXT
 )
 
 composite_sources(p3pgraph P3PGRAPH_SOURCES)
-add_library(p3pgraph ${P3PGRAPH_HEADERS} ${P3PGRAPH_SOURCES})
-set_target_properties(p3pgraph PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PGRAPH)
+add_component_library(p3pgraph SYMBOL BUILDING_PANDA_PGRAPH
+  ${P3PGRAPH_HEADERS} ${P3PGRAPH_SOURCES})
 target_link_libraries(p3pgraph p3gobj p3event p3gsgbase p3putil p3linmath p3downloader)
 target_interrogate(p3pgraph ALL EXTENSIONS ${P3PGRAPH_IGATEEXT})
 

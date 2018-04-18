@@ -99,8 +99,8 @@ if(HAVE_EGG)
     lexer.cxx)
 
   composite_sources(p3egg P3EGG_SOURCES)
-  add_library(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} ${P3EGG_PARSER_SOURCES})
-  set_target_properties(p3egg PROPERTIES DEFINE_SYMBOL BUILDING_PANDAEGG)
+  add_component_library(p3egg SYMBOL BUILDING_PANDAEGG
+    ${P3EGG_HEADERS} ${P3EGG_SOURCES} ${P3EGG_PARSER_SOURCES})
   target_link_libraries(p3egg panda)
   target_interrogate(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} EXTENSIONS ${P3EGG_IGATEEXT})
 

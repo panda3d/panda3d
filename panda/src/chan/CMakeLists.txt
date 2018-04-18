@@ -53,8 +53,8 @@ set(P3CHAN_SOURCES
 )
 
 composite_sources(p3chan P3CHAN_SOURCES)
-add_library(p3chan ${P3CHAN_HEADERS} ${P3CHAN_SOURCES})
-set_target_properties(p3chan PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_CHAN)
+add_component_library(p3chan SYMBOL BUILDING_PANDA_CHAN
+  ${P3CHAN_HEADERS} ${P3CHAN_SOURCES})
 target_link_libraries(p3chan p3pgraph)
 target_interrogate(p3chan ALL)
 

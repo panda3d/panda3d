@@ -45,8 +45,8 @@ set(P3PGRAPHNODES_SOURCES
 )
 
 composite_sources(p3pgraphnodes P3PGRAPHNODES_SOURCES)
-add_library(p3pgraphnodes ${P3PGRAPHNODES_HEADERS} ${P3PGRAPHNODES_SOURCES})
-set_target_properties(p3pgraphnodes PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PGRAPHNODES)
+add_component_library(p3pgraphnodes SYMBOL BUILDING_PANDA_PGRAPHNODES
+  ${P3PGRAPHNODES_HEADERS} ${P3PGRAPHNODES_SOURCES})
 target_link_libraries(p3pgraphnodes p3pgraph)
 target_interrogate(p3pgraphnodes ALL)
 

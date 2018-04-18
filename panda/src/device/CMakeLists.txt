@@ -27,8 +27,8 @@ set(P3DEVICE_SOURCES
 )
 
 composite_sources(p3device P3DEVICE_SOURCES)
-add_library(p3device ${P3DEVICE_HEADERS} ${P3DEVICE_SOURCES})
-set_target_properties(p3device PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_DEVICE)
+add_component_library(p3device SYMBOL BUILDING_PANDA_DEVICE
+  ${P3DEVICE_HEADERS} ${P3DEVICE_SOURCES})
 target_link_libraries(p3device p3dgraph p3display)
 target_interrogate(p3device ALL)
 

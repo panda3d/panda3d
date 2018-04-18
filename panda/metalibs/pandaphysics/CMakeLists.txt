@@ -1,4 +1,3 @@
-add_library(pandaphysics pandaphysics.cxx)
-target_link_libraries(pandaphysics p3physics p3particlesystem)
+add_metalib(pandaphysics pandaphysics.cxx COMPONENTS p3physics p3particlesystem)
 
 install(TARGETS pandaphysics DESTINATION lib)

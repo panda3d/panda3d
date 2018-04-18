@@ -144,8 +144,8 @@ set(P3EXPRESS_IGATEEXT
 
 composite_sources(p3express P3EXPRESS_SOURCES)
 
-add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
-set_target_properties(p3express PROPERTIES DEFINE_SYMBOL BUILDING_PANDAEXPRESS)
+add_component_library(p3express SYMBOL BUILDING_PANDAEXPRESS
+  ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
 
 # p3express needs to include from p3interrogatedb for py_panda.h and extension.h
 target_include_directories(p3express PUBLIC

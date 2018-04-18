@@ -21,8 +21,8 @@ if(HAVE_GLX)
   )
 
   composite_sources(p3glxdisplay P3GLXDISPLAY_SOURCES)
-  add_library(p3glxdisplay ${P3GLXDISPLAY_HEADERS} ${P3GLXDISPLAY_SOURCES})
-  set_target_properties(p3glxdisplay PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
+  add_component_library(p3glxdisplay SYMBOL BUILDING_PANDAGL
+    ${P3GLXDISPLAY_HEADERS} ${P3GLXDISPLAY_SOURCES})
   target_link_libraries(p3glxdisplay p3glgsg p3x11display)
 
   install(TARGETS p3glxdisplay DESTINATION lib)

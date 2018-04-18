@@ -11,8 +11,8 @@ set(P3GSGBASE_SOURCES
 )
 
 composite_sources(p3gsgbase P3GSGBASE_SOURCES)
-add_library(p3gsgbase ${P3GSGBASE_HEADERS} ${P3GSGBASE_SOURCES})
-set_target_properties(p3gsgbase PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_GSGBASE)
+add_component_library(p3gsgbase SYMBOL BUILDING_PANDA_GSGBASE
+  ${P3GSGBASE_HEADERS} ${P3GSGBASE_SOURCES})
 target_link_libraries(p3gsgbase p3putil p3linmath)
 target_interrogate(p3gsgbase ALL)
 

@@ -16,8 +16,12 @@ add_subdirectory(src/interval)
 #add_subdirectory(src/motiontrail)
 add_subdirectory(src/showbase)
 
+# TODO: p3direct needs a source file!
+add_metalib(p3direct COMPONENTS p3dcparser p3deadrec p3distributed p3interval p3showbase)
+set_property(TARGET p3direct PROPERTY LINKER_LANGUAGE "CXX")
+
 if(HAVE_PYTHON)
-  add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase IMPORT panda3d.core)
+  add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase LINK p3direct IMPORT panda3d.core)
 
   # Make an __init__.py pointing at the source directory so users can run
   # Panda3D code straight from their build path:

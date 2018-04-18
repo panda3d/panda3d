@@ -17,8 +17,8 @@ set(P3RECORDER_SOURCES
 )
 
 composite_sources(p3recorder P3RECORDER_SOURCES)
-add_library(p3recorder ${P3RECORDER_HEADERS} ${P3RECORDER_SOURCES})
-set_target_properties(p3recorder PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_RECORDER)
+add_component_library(p3recorder SYMBOL BUILDING_PANDA_RECORDER
+  ${P3RECORDER_HEADERS} ${P3RECORDER_SOURCES})
 target_link_libraries(p3recorder p3dgraph p3downloader)
 target_interrogate(p3recorder ALL)
 

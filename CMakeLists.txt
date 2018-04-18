@@ -44,6 +44,7 @@ include(dtool/Config.cmake)
 # Include global modules
 include(AddBisonTarget)     # Defines add_bison_target function
 include(AddFlexTarget)      # Defines add_flex_target function
+include(BuildMetalib)       # Defines add_component_library AND add_metalib
 include(CompositeSources)   # Defines composite_sources function
 include(Interrogate)        # Defines target_interrogate AND add_python_module
 include(RunPzip)            # Defines run_pzip function

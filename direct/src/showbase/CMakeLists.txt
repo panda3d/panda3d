@@ -1,5 +1,5 @@
-add_library(p3showbase showBase.cxx showBase.h)
-set_target_properties(p3showbase PROPERTIES DEFINE_SYMBOL BUILDING_DIRECT_SHOWBASE)
+add_component_library(p3showbase SYMBOL BUILDING_DIRECT_SHOWBASE
+  showBase.cxx showBase.h)
 target_link_libraries(p3showbase p3directbase panda)
 target_interrogate(p3showbase ALL)
 

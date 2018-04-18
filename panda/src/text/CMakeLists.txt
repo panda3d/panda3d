@@ -33,8 +33,8 @@ set(P3TEXT_SOURCES
 )
 
 composite_sources(p3text P3TEXT_SOURCES)
-add_library(p3text ${P3TEXT_HEADERS} ${P3TEXT_SOURCES})
-set_target_properties(p3text PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_TEXT)
+add_component_library(p3text SYMBOL BUILDING_PANDA_TEXT
+  ${P3TEXT_HEADERS} ${P3TEXT_SOURCES})
 target_link_libraries(p3text p3parametrics)
 if(HAVE_FREETYPE)
   target_link_libraries(p3text p3pnmtext)

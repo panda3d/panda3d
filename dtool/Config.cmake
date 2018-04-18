@@ -60,6 +60,11 @@ option(BUILD_SHARED_LIBS
 Utilities/tools/binaries/etc are then dynamically linked to the
 libraries instead of being statically linked." ON)
 
+option(BUILD_METALIBS
+  "Should we build 'metalibs' -- fewer, larger libraries that contain the bulk
+of the code instead of many smaller components.  Note that turning this off
+will still result in the 'metalibs' being built, but they will instead be many
+smaller stub libraries and not 'meta' libraries." ON)
 
 # The character used to separate components of an OS-specific
 # directory name depends on the platform (it is '/' on Unix, '\' on

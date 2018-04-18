@@ -24,8 +24,7 @@ if(HAVE_GL)
     set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3osxdisplay)
   endif()
 
-  add_library(pandagl pandagl.cxx)
-  target_link_libraries(pandagl ${PANDAGL_LINK_TARGETS})
+  add_metalib(pandagl pandagl.cxx COMPONENTS ${PANDAGL_LINK_TARGETS})
   set_target_properties(pandagl PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
 
   install(TARGETS pandagl DESTINATION lib)

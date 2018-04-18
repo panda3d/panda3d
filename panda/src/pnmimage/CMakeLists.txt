@@ -35,8 +35,8 @@ if(HAVE_SSE2)
 endif()
 
 composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
-add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES} convert_srgb_sse2.cxx)
-set_target_properties(p3pnmimage PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PNMIMAGE)
+add_component_library(p3pnmimage SYMBOL BUILDING_PANDA_PNMIMAGE
+  ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES} convert_srgb_sse2.cxx)
 target_link_libraries(p3pnmimage p3mathutil)
 target_interrogate(p3pnmimage ALL EXTENSIONS ${P3PNMIMAGE_IGATEEXT})
 

@@ -15,8 +15,8 @@ if(HAVE_FREETYPE)
   )
 
   composite_sources(p3pnmtext P3PNMTEXT_SOURCES)
-  add_library(p3pnmtext ${P3PNMTEXT_HEADERS} ${P3PNMTEXT_SOURCES})
-  set_target_properties(p3pnmtext PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_PNMTEXT)
+  add_component_library(p3pnmtext SYMBOL BUILDING_PANDA_PNMTEXT
+    ${P3PNMTEXT_HEADERS} ${P3PNMTEXT_SOURCES})
   target_link_libraries(p3pnmtext p3parametrics p3pnmimage)
   target_use_packages(p3pnmtext FREETYPE)
   target_interrogate(p3pnmtext ALL)

@@ -19,8 +19,8 @@ set(P3CHAR_SOURCES
 )
 
 composite_sources(p3char P3CHAR_SOURCES)
-add_library(p3char ${P3CHAR_HEADERS} ${P3CHAR_SOURCES})
-set_target_properties(p3char PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_CHAR)
+add_component_library(p3char SYMBOL BUILDING_PANDA_CHAR
+  ${P3CHAR_HEADERS} ${P3CHAR_SOURCES})
 target_link_libraries(p3char p3chan)
 target_interrogate(p3char ALL)
 
