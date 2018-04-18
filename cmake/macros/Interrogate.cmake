@@ -192,7 +192,7 @@ function(interrogate_sources target output database language_flags)
   # in the same way that they are passed to the compiler so that Interrogate
   # will preprocess each file in the same way.
   set(define_flags)
-  get_target_property(target_defines "${target}" COMPILE_DEFINITIONS)
+  get_target_property(target_defines "${target}" INTERFACE_COMPILE_DEFINITIONS)
   if(target_defines)
     foreach(target_define ${target_defines})
       list(APPEND define_flags "-D${target_define}")

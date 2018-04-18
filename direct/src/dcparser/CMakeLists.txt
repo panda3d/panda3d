@@ -48,7 +48,7 @@ set(P3DCPARSER_PARSER_SOURCES
 composite_sources(p3dcparser P3DCPARSER_SOURCES)
 add_library(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES}
   ${P3DCPARSER_PARSER_SOURCES})
-set_target_properties(p3dcparser PROPERTIES COMPILE_DEFINITIONS WITHIN_PANDA)
+target_compile_definitions(p3dcparser PUBLIC WITHIN_PANDA)
 target_link_libraries(p3dcparser p3directbase panda)
 target_use_packages(p3dcparser PYTHON)
 target_interrogate(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES})
