@@ -57,7 +57,7 @@ set(P3PGRAPH_HEADERS
   modelNode.I modelNode.h
   modelPool.I modelPool.h
   modelRoot.I modelRoot.h
-  nodePath.I nodePath.h nodePath.cxx
+  nodePath.I nodePath.h
   nodePathCollection.I nodePathCollection.h
   nodePathComponent.I nodePathComponent.h
   occluderEffect.I occluderEffect.h
@@ -157,6 +157,7 @@ set(P3PGRAPH_SOURCES
   modelNode.cxx
   modelPool.cxx
   modelRoot.cxx
+  nodePath.cxx
   nodePathCollection.cxx
   nodePathComponent.cxx
   occluderEffect.cxx
