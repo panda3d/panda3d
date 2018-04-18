@@ -56,7 +56,7 @@ endif()
 
 # Are we building with static or dynamic linking?
 option(BUILD_SHARED_LIBS
-  "Causes subpackes to be built separately -- setup for dynamic linking.
+  "Causes subpackages to be built separately -- setup for dynamic linking.
 Utilities/tools/binaries/etc are then dynamically linked to the
 libraries instead of being statically linked." ON)
 
