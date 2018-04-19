@@ -292,7 +292,7 @@ function(add_python_module module)
       add_library(${module} STATIC "${module}_module.cxx" ${sources})
     endif()
     target_link_libraries(${module}
-      ${link_targets} ${PYTHON_LIBRARIES} p3interrogatedb)
+      ${link_targets} ${PYTHON_LIBRARIES} p3dtool)
 
     set_target_properties(${module} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"

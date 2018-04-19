@@ -6,8 +6,8 @@ set(P3DCONFIG_SOURCES
 
 composite_sources(p3dconfig P3DCONFIG_SOURCES)
 
-add_library(p3dconfig ${P3DCONFIG_HEADERS} ${P3DCONFIG_SOURCES})
-set_target_properties(p3dconfig PROPERTIES DEFINE_SYMBOL BUILDING_DTOOL_DCONFIG)
+add_component_library(p3dconfig SYMBOL BUILDING_DTOOL_DCONFIG
+  ${P3DCONFIG_HEADERS} ${P3DCONFIG_SOURCES})
 target_link_libraries(p3dconfig p3prc)
 
 install(TARGETS p3dconfig DESTINATION lib)

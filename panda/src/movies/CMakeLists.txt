@@ -44,7 +44,7 @@ set(P3MOVIES_SOURCES
 composite_sources(p3movies P3MOVIES_SOURCES)
 add_component_library(p3movies SYMBOL BUILDING_PANDA_MOVIES
   ${P3MOVIES_HEADERS} ${P3MOVIES_SOURCES})
-target_link_libraries(p3movies p3pandabase p3express p3pstatclient p3gobj p3dconfig p3prc)
+target_link_libraries(p3movies p3pstatclient p3gobj p3express p3pandabase)
 target_interrogate(p3movies ALL)
 
 install(TARGETS p3movies DESTINATION lib)

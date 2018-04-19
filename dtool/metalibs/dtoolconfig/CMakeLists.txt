@@ -1,4 +1,10 @@
-add_definitions(-DBUILDING_DTOOLCONFIG)
+# First, dtoolconfig:
+
+set(DTOOLCONFIG_LINK_TARGETS p3prc p3dconfig p3interrogatedb)
+add_metalib(p3dtoolconfig dtoolconfig.cxx COMPONENTS ${DTOOLCONFIG_LINK_TARGETS})
+install(TARGETS p3dtoolconfig DESTINATION lib)
+
+# Next, panda3d.interrogatedb:
 
 if(BUILD_SHARED_LIBS)
   set(libtype MODULE)
@@ -7,21 +13,15 @@ else()
 endif()
 
 if(HAVE_PYTHON)
-  add_library(p3dtoolconfig ${libtype} dtoolconfig.cxx pydtool.cxx)
-else()
-  add_library(p3dtoolconfig ${libtype} dtoolconfig.cxx)
-endif()
+  add_library(interrogatedb ${libtype} pydtool.cxx)
+  target_use_packages(interrogatedb PYTHON)
+  target_link_libraries(interrogatedb p3dtoolconfig)
 
-target_use_packages(p3dtoolconfig PYTHON)
-target_link_libraries(p3dtoolconfig p3prc p3dconfig p3interrogatedb)
-set_target_properties(p3dtoolconfig PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
-  PREFIX ""
-  OUTPUT_NAME "interrogatedb"
-)
+  set_target_properties(interrogatedb PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
+    PREFIX ""
+    OUTPUT_NAME "interrogatedb"
+  )
 
-if(HAVE_PYTHON)
-  install(TARGETS p3dtoolconfig DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
-else()
-  install(TARGETS p3dtoolconfig DESTINATION lib)
+  install(TARGETS interrogatedb DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
 endif()

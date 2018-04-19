@@ -20,7 +20,9 @@ function(target_link_libraries target)
   endif()
 
   foreach(library ${ARGN})
-    if(library MATCHES "^[A-Za-z0-9]+$")
+    # This is a quick and dirty regex to tell targets apart from other stuff.
+    # It just checks if it's alphanumeric and starts with p3/panda.
+    if(library MATCHES "^(p3|panda)[A-Za-z0-9]*$")
       # We need to add "library"'s include directories to "target"
       # (and transitively to INTERFACE_INCLUDE_DIRECTORIES so further
       # dependencies will work)

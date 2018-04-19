@@ -150,7 +150,7 @@ add_component_library(p3express SYMBOL BUILDING_PANDAEXPRESS
 # p3express needs to include from p3interrogatedb for py_panda.h and extension.h
 target_include_directories(p3express PUBLIC
   $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
-target_link_libraries(p3express p3pandabase p3dtool p3prc p3dconfig)
+target_link_libraries(p3express p3pandabase p3dtoolconfig p3dtool)
 target_use_packages(p3express TAR ZLIB)
 target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
 
