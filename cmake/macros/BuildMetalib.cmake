@@ -30,7 +30,7 @@ function(target_link_libraries target)
 
       # Also build with the same BUILDING_ macros, because these will all end
       # up in the same library.
-      set(compile_definitions "$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>")
+      set(compile_definitions "$<$<BOOL:$<TARGET_PROPERTY:${library},IS_COMPONENT>>:$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>>")
       set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
 
       # Libraries are only linked transitively if they aren't components.
