@@ -10,11 +10,11 @@ set(P3CHAR_HEADERS
 )
 set(P3CHAR_SOURCES
   character.cxx
-  characterJoint.cxx characterJointBundle.cxx 
+  characterJoint.cxx characterJointBundle.cxx
   characterJointEffect.cxx
   characterSlider.cxx
   characterVertexSlider.cxx
-  config_char.cxx 
+  config_char.cxx
   jointVertexTransform.cxx
 )
 

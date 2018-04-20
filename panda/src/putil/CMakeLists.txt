@@ -61,7 +61,7 @@ set(P3PUTIL_HEADERS
   vector_typedWritable.h
   vector_ushort.h vector_writable.h
   writableConfigurable.h
-  writableParam.I writableParam.h 
+  writableParam.I writableParam.h
 )
 
 set(P3PUTIL_SOURCES

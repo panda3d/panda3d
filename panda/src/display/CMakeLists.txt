@@ -49,9 +49,9 @@ set(P3DISPLAY_SOURCES
   graphicsBuffer.cxx
   graphicsPipe.cxx
   graphicsPipeSelection.cxx
-  graphicsStateGuardian.cxx 
+  graphicsStateGuardian.cxx
   graphicsThreadingModel.cxx
-  graphicsWindow.cxx graphicsWindowInputDevice.cxx 
+  graphicsWindow.cxx graphicsWindowInputDevice.cxx
   graphicsWindowProc.cxx
   graphicsWindowProcCallbackData.cxx
   graphicsDevice.cxx
@@ -97,7 +97,7 @@ install(FILES ${P3DISPLAY_HEADERS} DESTINATION include/panda3d)
 
 if(OSX_PLATFORM AND HAVE_P3D_PLUGIN)
   # We build a static library of just these files, so the plugin can
-  # link with it in direct/src/plugin, without pulling in the rest of 
+  # link with it in direct/src/plugin, without pulling in the rest of
   # Panda.
   add_library(p3subprocbuffer
     subprocessWindowBuffer.h

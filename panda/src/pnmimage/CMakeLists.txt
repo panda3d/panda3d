@@ -3,8 +3,8 @@ set(P3PNMIMAGE_HEADERS
   pfmFile.I pfmFile.h
   pnmbitio.h
   pnmBrush.h pnmBrush.I
-  pnmFileType.h pnmFileTypeRegistry.h pnmImage.I 
-  pnmImage.h pnmImageHeader.I pnmImageHeader.h 
+  pnmFileType.h pnmFileTypeRegistry.h pnmImage.I
+  pnmImage.h pnmImageHeader.I pnmImageHeader.h
   pnmPainter.h pnmPainter.I
   pnmReader.I
   pnmReader.h pnmWriter.I pnmWriter.h pnmimage_base.h
@@ -18,8 +18,8 @@ set(P3PNMIMAGE_SOURCES
   pnm-image-filter.cxx
   pnmbitio.cxx
   pnmBrush.cxx
-  pnmFileType.cxx 
-  pnmFileTypeRegistry.cxx pnmImage.cxx pnmImageHeader.cxx 
+  pnmFileType.cxx
+  pnmFileTypeRegistry.cxx pnmImage.cxx pnmImageHeader.cxx
   pnmPainter.cxx
   pnmReader.cxx pnmWriter.cxx pnmimage_base.cxx
   ppmcmap.cxx

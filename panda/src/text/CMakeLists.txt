@@ -15,6 +15,7 @@ set(P3TEXT_HEADERS
   textProperties.I textProperties.h
   textPropertiesManager.I textPropertiesManager.h
 )
+
 set(P3TEXT_SOURCES
   config_text.cxx
   default_font.cxx

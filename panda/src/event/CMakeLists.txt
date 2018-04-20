@@ -15,7 +15,7 @@ set(P3EVENT_HEADERS
     event.I event.h eventHandler.h eventHandler.I
     eventParameter.I eventParameter.h
     eventQueue.I eventQueue.h eventReceiver.h
-    pt_Event.h throw_event.I throw_event.h 
+    pt_Event.h throw_event.I throw_event.h
 )
 
 set(P3EVENT_SOURCES
@@ -31,7 +31,7 @@ set(P3EVENT_SOURCES
     genericAsyncTask.cxx
     pointerEvent.cxx
     pointerEventList.cxx
-    config_event.cxx event.cxx eventHandler.cxx 
+    config_event.cxx event.cxx eventHandler.cxx
     eventParameter.cxx eventQueue.cxx eventReceiver.cxx
     pt_Event.cxx
 )

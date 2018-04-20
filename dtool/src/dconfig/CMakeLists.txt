@@ -1,8 +1,8 @@
 set(P3DCONFIG_HEADERS
-	config_dconfig.h dconfig.I dconfig.h)
+  config_dconfig.h dconfig.I dconfig.h)
 
 set(P3DCONFIG_SOURCES
-	config_dconfig.cxx dconfig.cxx)
+  config_dconfig.cxx dconfig.cxx)
 
 composite_sources(p3dconfig P3DCONFIG_SOURCES)
 
