@@ -50,7 +50,7 @@ before_install:
 - makepanda/selfdestruct.py --yes
 
 install:
-- ${PYTHON_INTERP:-python3.4} -m virtualenv venv && source venv/bin/activate
+- virtualenv --python=${PYTHON_INTERP:-python3.4} venv && source venv/bin/activate
 - pip install pytest
 
 before_script:
