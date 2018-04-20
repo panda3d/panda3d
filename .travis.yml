@@ -1,30 +1,29 @@
 language: cpp
 sudo: false
+
+# Build matrix:
+python:
+- "2.7"
+- "3.5"
+compiler:
+- gcc
+- clang
+env:
+- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=0
+- BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=0
+- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30
+- BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=30
+
+# Remove some combinations from the build matrix, to be nice to Travis:
 matrix:
-  include:
-    - compiler: clang
-      env: BUILDSYSTEM=makepanda PYTHONV=python3 FLAGS=--installer
-    - compiler: clang
-      env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--override=STDFLOAT_DOUBLE=1
-    - compiler: gcc
-      env: BUILDSYSTEM=makepanda PYTHONV=python2.7 FLAGS=--optimize=4
-      before_install:
-        - export CC=gcc-4.7
-        - export CXX=g++-4.7
-    - compiler: gcc
-      env: BUILDSYSTEM=cmake PYTHONV=python2.7 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
-      before_install:
-        - export CC=gcc-4.7
-        - export CXX=g++-4.7
-    - compiler: clang
-      env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS='-DWANT_PYTHON_VERSION=3 -DCOMPOSITE_SOURCE_LIMIT=0' # Disable unity builds to catch missing #include directives
-    - compiler: gcc
-      env: BUILDSYSTEM=cmake PYTHONV=python3 FLAGS='-DWANT_PYTHON_VERSION=3 -DCOMPOSITE_SOURCE_LIMIT=0' # Disable unity builds to catch missing #include directives
-      before_install:
-        - export CC=gcc-4.7
-        - export CXX=g++-4.7
-    - compiler: clang
-      env: BUILDSYSTEM=cmake PYTHONV=python2.7 FLAGS=-DCOMPOSITE_SOURCE_LIMIT=0 # Disable unity builds to catch missing #include directives
+  exclude:
+  - python: "2.7"
+    compiler: gcc
+  - python: "2.7"
+    env: BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=0
+  - python: "2.7"
+    env: BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30
+
 addons:
   apt:
     sources:
@@ -34,6 +33,10 @@ addons:
     - g++-4.7
     - bison
     - flex
+    - libavcodec-dev
+    - libavformat-dev
+    - libavresample-dev
+    - libavutil-dev
     - libfreetype6-dev
     - libgl1-mesa-dev
     - libjpeg-dev
@@ -41,6 +44,7 @@ addons:
     - libopenal-dev
     - libpng-dev
     - libssl-dev
+    - libswscale-dev
     - libvorbis-dev
     - libx11-dev
     - libxcursor-dev
@@ -51,18 +55,32 @@ addons:
     - python-virtualenv
     - zlib1g-dev
     - fakeroot
-script:
+
+# clean up remnants of makepanda
+before_install:
+- mv makepanda/test_imports.py .
+- makepanda/selfdestruct.py --yes
+
 install:
-    - virtualenv --python=$PYTHONV venv && source venv/bin/activate
-    - $PYTHONV -m pip install pytest
+- virtualenv venv && source venv/bin/activate
+- pip install pytest
+
+before_script:
+- mkdir built
+- cd built
+
 script:
-    - '[[ "$BUILDSYSTEM" != "makepanda" ]] || ( $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py )'
-    - '[[ "$BUILDSYSTEM" != "cmake" ]] || ( mkdir built && cd built && mv ../makepanda/test_imports.py . && ../makepanda/selfdestruct.py --yes && cmake -DHAVE_GTK2=NO $FLAGS .. && make -j4 && $PYTHONV test_imports.py && cd .. )'
-    - LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV -m pytest tests
+- cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT .. 
+- make -j4
+
+after_script:
+- ../test_imports.py
+- pytest ../tests
+
 notifications:
   irc:
     channels:
-      - "chat.freenode.net#panda3d"
+    - "chat.freenode.net#panda3d"
     on_success: change
     on_failure: always
     use_notice: true
