@@ -2,27 +2,15 @@ language: cpp
 sudo: false
 
 # Build matrix:
-python:
-- "2.7"
-- "3.5"
 compiler:
 - gcc
 - clang
 env:
-- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=0
 - BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=0
-- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30
+- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=0
 - BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=30
-
-# Remove some combinations from the build matrix, to be nice to Travis:
-matrix:
-  exclude:
-  - python: "2.7"
-    compiler: gcc
-  - python: "2.7"
-    env: BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=0
-  - python: "2.7"
-    env: BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30
+- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30
+- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30 PYTHON_INTERP=python2.7
 
 addons:
   apt:
@@ -56,13 +44,13 @@ addons:
     - zlib1g-dev
     - fakeroot
 
-# clean up remnants of makepanda
 before_install:
+# clean up remnants of makepanda
 - mv makepanda/test_imports.py .
 - makepanda/selfdestruct.py --yes
 
 install:
-- virtualenv venv && source venv/bin/activate
+- ${PYTHON_INTERP:-python3.5} -m virtualenv venv && source venv/bin/activate
 - pip install pytest
 
 before_script:
@@ -74,7 +62,7 @@ script:
 - make -j4
 
 after_script:
-- ../test_imports.py
+- python ../test_imports.py
 - pytest ../tests
 
 notifications:
