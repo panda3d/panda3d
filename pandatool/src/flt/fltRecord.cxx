@@ -621,7 +621,8 @@ extract_record(FltRecordReader &) {
 bool FltRecord::
 extract_ancillary(FltRecordReader &reader) {
   if (reader.get_opcode() == FO_comment) {
-    _comment = reader.get_iterator().get_remaining_bytes();
+    DatagramIterator &di = reader.get_iterator();
+    _comment = di.get_fixed_string(di.get_remaining_size());
     return true;
   }
 
@@ -735,7 +736,7 @@ build_record(FltRecordWriter &) const {
 FltError FltRecord::
 write_ancillary(FltRecordWriter &writer) const {
   if (!_comment.empty()) {
-    Datagram dc(_comment);
+    Datagram dc(_comment.data(), _comment.size());
     FltError result = writer.write_record(FO_comment, dc);
     if (result != FE_ok) {
       return result;

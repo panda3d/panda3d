@@ -464,10 +464,10 @@ PUBLISHED:
   MAKE_PROPERTY(keep_ram_image, get_keep_ram_image, set_keep_ram_image);
   MAKE_PROPERTY(cacheable, is_cacheable);
 
-  INLINE bool compress_ram_image(CompressionMode compression = CM_on,
-                                 QualityLevel quality_level = QL_default,
-                                 GraphicsStateGuardianBase *gsg = NULL);
-  INLINE bool uncompress_ram_image();
+  BLOCKING INLINE bool compress_ram_image(CompressionMode compression = CM_on,
+                                          QualityLevel quality_level = QL_default,
+                                          GraphicsStateGuardianBase *gsg = NULL);
+  BLOCKING INLINE bool uncompress_ram_image();
 
   INLINE int get_num_ram_mipmap_images() const;
   INLINE bool has_ram_mipmap_image(int n) const;

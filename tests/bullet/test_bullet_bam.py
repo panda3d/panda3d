@@ -88,8 +88,8 @@ def test_minkowski_sum_shape():
     assert type(shape) is type(shape2)
     assert shape.margin == shape2.margin
     assert shape.name == shape2.name
-    assert shape.transform_a.compare_to(shape2.transform_a, True) == 0
-    assert shape.transform_b.compare_to(shape2.transform_b, True) == 0
+    assert shape.transform_a.mat.compare_to(shape2.transform_a.mat) == 0
+    assert shape.transform_b.mat.compare_to(shape2.transform_b.mat) == 0
     assert type(shape.shape_a) == type(shape2.shape_a)
     assert type(shape.shape_b) == type(shape2.shape_b)
 

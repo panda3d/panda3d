@@ -422,14 +422,13 @@ skip_bytes(size_t size) {
  * Returns the remaining bytes in the datagram as a string, but does not
  * extract them from the iterator.
  */
-INLINE string DatagramIterator::
+INLINE vector_uchar DatagramIterator::
 get_remaining_bytes() const {
-  nassertr(_datagram != (const Datagram *)NULL, "");
-  nassertr(_current_index <= _datagram->get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL, vector_uchar());
+  nassertr(_current_index <= _datagram->get_length(), vector_uchar());
 
-  const char *ptr = (const char *)_datagram->get_data();
-  size_t remaining_size = _datagram->get_length() - _current_index;
-  return string(ptr + _current_index, remaining_size);
+  const unsigned char *ptr = (const unsigned char *)_datagram->get_data();
+  return vector_uchar(ptr + _current_index, ptr + _datagram->get_length());
 }
 
 /**

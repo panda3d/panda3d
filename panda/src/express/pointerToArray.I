@@ -92,6 +92,19 @@ PointerToArray(PointerToArray<Element> &&from) NOEXCEPT :
 }
 #endif  // USE_MOVE_SEMANTICS
 
+#ifdef USE_MOVE_SEMANTICS
+/**
+ * Initializes the PTA from a vector.
+ */
+template<class Element>
+INLINE PointerToArray<Element>::
+PointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(move(from))),
+  _type_handle(type_handle)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
 /**
  *
  */
@@ -706,6 +719,19 @@ INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT :
   PointerToArrayBase<Element>(move(from)),
   _type_handle(from._type_handle)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
+#ifdef USE_MOVE_SEMANTICS
+/**
+ * Initializes the PTA from a vector.
+ */
+template<class Element>
+INLINE ConstPointerToArray<Element>::
+ConstPointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(move(from))),
+  _type_handle(type_handle)
 {
 }
 #endif  // USE_MOVE_SEMANTICS

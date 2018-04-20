@@ -55,8 +55,8 @@ PUBLISHED:
   string as_hex() const;
   bool set_from_hex(const string &text);
 
-  string as_bin() const;
-  bool set_from_bin(const string &text);
+  vector_uchar as_bin() const;
+  bool set_from_bin(const vector_uchar &text);
 
   INLINE void write_datagram(Datagram &destination) const;
   INLINE void read_datagram(DatagramIterator &source);

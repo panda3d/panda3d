@@ -1767,6 +1767,7 @@ resolve_multisamples() {
   }
   glgsg->_glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, fbo);
   glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, _fbo_multisample);
+  glgsg->_current_fbo = fbo;
 
   // If the depth buffer is shared, resolve it only on the last to render FBO.
   bool do_depth_blit = false;

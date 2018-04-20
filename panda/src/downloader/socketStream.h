@@ -21,6 +21,7 @@
 #include "pdeque.h"
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
+#include "vector_uchar.h"
 
 // At the present, this module is not compiled if OpenSSL is not available,
 // since the only current use for it is to implement OpenSSL-defined
@@ -54,7 +55,7 @@ private:
 
   istream *_istream;
   size_t _data_expected;
-  string _data_so_far;
+  vector_uchar _data_so_far;
   int _tcp_header_size;
 
 #ifdef SIMULATE_NETWORK_DELAY
