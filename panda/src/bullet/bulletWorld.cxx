@@ -1052,7 +1052,7 @@ BulletPersistentManifold *BulletWorld::
 get_manifold(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx < get_num_manifolds(), NULL);
+  nassertr(idx < _dispatcher->getNumManifolds(), NULL);
 
   btPersistentManifold *ptr = _dispatcher->getManifoldByIndexInternal(idx);
   return (ptr) ? new BulletPersistentManifold(ptr) : NULL;
