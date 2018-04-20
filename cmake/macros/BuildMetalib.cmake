@@ -41,9 +41,14 @@ function(target_link_libraries target)
       # care of this at configuration time.
       if(TARGET "${library}")
         get_target_property(is_component "${library}" IS_COMPONENT)
-        if(NOT is_component)
-          set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
-        endif()
+      else()
+        # This is a safe assumption, since we define all component libraries
+        # before the metalib they appear in:
+        set(is_component OFF)
+      endif()
+
+      if(NOT is_component)
+        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
       endif()
     else()
       # This is a file path to an out-of-tree library - this needs to be
@@ -133,6 +138,11 @@ function(add_metalib target_name)
   set(includes)
   set(libs)
   foreach(component ${components})
+    if(NOT TARGET "${component}")
+      message(FATAL_ERROR
+        "Missing component library ${component} referenced by metalib ${target_name}!
+        (Component library targets must be created BEFORE add_metalib.)")
+    endif()
     get_target_property(is_component "${component}" IS_COMPONENT)
     if(NOT is_component)
       message(FATAL_ERROR
