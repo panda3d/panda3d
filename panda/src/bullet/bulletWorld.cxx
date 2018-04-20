@@ -1186,7 +1186,12 @@ tick_callback(btDynamicsWorld *world, btScalar timestep) {
   CallbackObject *obj = w->_tick_callback_obj;
   if (obj) {
     BulletTickCallbackData cbdata(timestep);
+    // Release the global lock that we are holding during the tick callback
+    // and allow interactions with bullet world in the user callback
+    get_global_lock().release();
     obj->do_callback(&cbdata);
+    // Acquire the global lock again and protect the execution
+    get_global_lock().acquire();
   }
 }
 
