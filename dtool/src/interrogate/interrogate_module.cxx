@@ -153,7 +153,7 @@ int write_python_table_native(ostream &out) {
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef py_" << library_name << "_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
-      << "  \"" << library_name << "\",\n"
+      << "  \"" << module_name << "\",\n"
       << "  NULL,\n"
       << "  -1,\n"
       << "  NULL,\n"
