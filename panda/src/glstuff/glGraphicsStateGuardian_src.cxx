@@ -12647,7 +12647,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
 
   // Determine the number of images to upload.
-  int num_levels = 1;
+  int num_levels = mipmap_bias + 1;
   if (uses_mipmaps) {
     num_levels = tex->get_expected_num_mipmap_levels();
   }
