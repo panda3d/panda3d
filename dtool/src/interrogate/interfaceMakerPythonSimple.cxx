@@ -95,7 +95,7 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_simple_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
-      << "  \"" << def->library_name << "\",\n"
+      << "  \"" << def->module_name << "\",\n"
       << "  NULL,\n"
       << "  -1,\n"
       << "  python_simple_funcs,\n"
