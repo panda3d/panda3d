@@ -13,7 +13,7 @@ import io
 import imp
 import string
 
-import distutils.core
+import setuptools
 import distutils.log
 
 from . import FreezeTool
@@ -64,7 +64,7 @@ macosx_binary_magics = (
     b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA')
 
 
-class build_apps(distutils.core.Command):
+class build_apps(setuptools.Command):
     description = 'build Panda3D applications'
     user_options = [
         ('build-base=', None, 'directory to build applications in'),
@@ -844,7 +844,7 @@ class build_apps(distutils.core.Command):
             return t.substitute(HOME='~', USER_APPDATA='~/.local/share')
 
 
-class bdist_apps(distutils.core.Command):
+class bdist_apps(setuptools.Command):
     DEFAULT_INSTALLERS = {
         'manylinux1_x86_64': ['gztar'],
         'manylinux1_i386': ['gztar'],
