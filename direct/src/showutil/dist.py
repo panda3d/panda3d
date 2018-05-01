@@ -175,7 +175,13 @@ class build_apps(distutils.core.Command):
         self.announce('Gathering wheels for platform: {}'.format(platform), distutils.log.INFO)
 
         whldir = os.path.join(self.build_base, '__whl_cache__')
-        abi_tag = pip.pep425tags.get_abi_tag()
+
+        #TODO find a better way to get abi tag than from internal/private pip APIs
+        if hasattr(pip, 'pep425tags'):
+            abi_tag = pip.pep425tags.get_abi_tag()
+        else:
+            from pip._internal import pep425tags
+            abi_tag = pep425tags.get_abi_tag()
 
         if 'u' in abi_tag and (platform.startswith('win') or platform.startswith('macosx')):
             abi_tag = abi_tag.replace('u', '')
@@ -196,7 +202,7 @@ class build_apps(distutils.core.Command):
         for index in self.pypi_extra_indexes:
             pip_args += ['--extra-index-url', index]
 
-        pip.main(args=pip_args)
+        subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
 
         wheelpaths = [os.path.join(whldir,i) for i in os.listdir(whldir) if platform in i]
         return wheelpaths
