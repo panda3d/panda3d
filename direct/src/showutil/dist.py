@@ -882,14 +882,14 @@ class bdist_apps(setuptools.Command):
             for installer in installers:
                 self.announce('\nBuilding {} for platform: {}'.format(installer, platform), distutils.log.INFO)
 
-                if installer in ('zip', 'gztar'):
+                if installer in ('zip', 'gztar', 'bztar', 'xztar'):
                     base_dir = self.distribution.get_name()
                     temp_dir = os.path.join(build_base, base_dir)
                     if (os.path.exists(temp_dir)):
                         shutil.rmtree(temp_dir)
                     shutil.copytree(build_dir, temp_dir)
 
-                    distutils.archive_util.make_archive(basename, installer, root_dir=build_base, base_dir=base_dir)
+                    shutil.make_archive(basename, installer, root_dir=build_base, base_dir=base_dir)
 
                     shutil.rmtree(temp_dir)
                 else:
