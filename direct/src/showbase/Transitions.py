@@ -23,7 +23,9 @@ class Transitions:
                  scale=3.0,
                  pos=Vec3(0, 0, 0)):
         self.transitionIval = None
+        self.__transitionFuture = None
         self.letterboxIval = None
+        self.__letterboxFuture = None
         self.iris = None
         self.fade = None
         self.letterbox = None
@@ -151,11 +153,17 @@ class Transitions:
             self.noTransitions()
             self.loadFade()
             self.fade.detachNode()
+            fut = AsyncFuture()
+            fut.setResult(None)
+            return fut
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
             self.transitionIval = self.getFadeInIval(t, finishIval)
+            self.transitionIval.append(Func(self.__finishTransition))
+            self.__transitionFuture = AsyncFuture()
             self.transitionIval.start()
+            return self.__transitionFuture
 
     def fadeOut(self, t=0.5, finishIval=None):
         """
@@ -181,8 +189,16 @@ class Transitions:
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
-            self.transitionIval = self.getFadeOutIval(t,finishIval)
+            self.transitionIval = self.getFadeOutIval(t, finishIval)
+            self.transitionIval.append(Func(self.__finishTransition))
+            self.__transitionFuture = AsyncFuture()
             self.transitionIval.start()
+            return self.__transitionFuture
+
+        # Immediately done, so return a dummy future.
+        fut = AsyncFuture()
+        fut.setResult(None)
+        return fut
 
     def fadeOutActive(self):
         return self.fade and self.fade.getColor()[3] > 0
@@ -226,6 +242,9 @@ class Transitions:
         if self.transitionIval:
             self.transitionIval.pause()
             self.transitionIval = None
+        if self.__transitionFuture:
+            self.__transitionFuture.cancel()
+            self.__transitionFuture = None
         if self.fade:
             # Make sure to reset the color, since fadeOutActive() is looking at it
             self.fade.setColor(self.alphaOff)
@@ -256,6 +275,9 @@ class Transitions:
         self.loadIris()
         if (t == 0):
             self.iris.detachNode()
+            fut = AsyncFuture()
+            fut.setResult(None)
+            return fut
         else:
             self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
 
@@ -264,11 +286,14 @@ class Transitions:
                                                    scale = scale,
                                                    startScale = 0.01),
                                  Func(self.iris.detachNode),
+                                 Func(self.__finishTransition),
                                  name = self.irisTaskName,
                                  )
+            self.__transitionFuture = AsyncFuture()
             if finishIval:
                 self.transitionIval.append(finishIval)
             self.transitionIval.start()
+            return self.__transitionFuture
 
     def irisOut(self, t=0.5, finishIval=None):
         """
@@ -284,6 +309,9 @@ class Transitions:
         if (t == 0):
             self.iris.detachNode()
             self.fadeOut(0)
+            fut = AsyncFuture()
+            fut.setResult(None)
+            return fut
         else:
             self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
 
@@ -294,11 +322,14 @@ class Transitions:
                                  Func(self.iris.detachNode),
                                  # Use the fade to cover up the hole that the iris would leave
                                  Func(self.fadeOut, 0),
+                                 Func(self.__finishTransition),
                                  name = self.irisTaskName,
                                  )
+            self.__transitionFuture = AsyncFuture()
             if finishIval:
                 self.transitionIval.append(finishIval)
             self.transitionIval.start()
+            return self.__transitionFuture
 
     def noIris(self):
         """
@@ -321,6 +352,11 @@ class Transitions:
         self.noIris()
         # Letterbox is not really a transition, it is a screen overlay
         # self.noLetterbox()
+
+    def __finishTransition(self):
+        if self.__transitionFuture:
+            self.__transitionFuture.setResult(None)
+            self.__transitionFuture = None
 
     ##################################################
     # Letterbox
@@ -394,8 +430,16 @@ class Transitions:
         if self.letterboxIval:
             self.letterboxIval.pause()
             self.letterboxIval = None
+        if self.__letterboxFuture:
+            self.__letterboxFuture.cancel()
+            self.__letterboxFuture = None
         if self.letterbox:
             self.letterbox.stash()
+
+    def __finishLetterbox(self):
+        if self.__letterboxFuture:
+            self.__letterboxFuture.setResult(None)
+            self.__letterboxFuture = None
 
     def letterboxOn(self, t=0.25, finishIval=None):
         """
@@ -407,7 +451,11 @@ class Transitions:
         if (t == 0):
             self.letterboxBottom.setPos(0, 0, -1)
             self.letterboxTop.setPos(0, 0, 0.8)
+            fut = AsyncFuture()
+            fut.setResult(None)
+            return fut
         else:
+            self.__letterboxFuture = AsyncFuture()
             self.letterboxIval = Sequence(Parallel(
                 LerpPosInterval(self.letterboxBottom,
                                 t,
@@ -420,11 +468,13 @@ class Transitions:
                                 # startPos = Vec3(0, 0, 1),
                                 ),
                 ),
+                                          Func(self.__finishLetterbox),
                                           name = self.letterboxTaskName,
                                           )
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()
+            return self.__letterboxFuture
 
     def letterboxOff(self, t=0.25, finishIval=None):
         """
@@ -435,7 +485,11 @@ class Transitions:
         self.letterbox.unstash()
         if (t == 0):
             self.letterbox.stash()
+            fut = AsyncFuture()
+            fut.setResult(None)
+            return fut
         else:
+            self.__letterboxFuture = AsyncFuture()
             self.letterboxIval = Sequence(Parallel(
                 LerpPosInterval(self.letterboxBottom,
                                 t,
@@ -449,9 +503,11 @@ class Transitions:
                                 ),
                 ),
                                           Func(self.letterbox.stash),
+                                          Func(self.__finishLetterbox),
                                           Func(messenger.send,'letterboxOff'),
                                           name = self.letterboxTaskName,
                                           )
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()
+            return self.__letterboxFuture
