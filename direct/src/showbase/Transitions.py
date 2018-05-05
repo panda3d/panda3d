@@ -94,7 +94,9 @@ class Transitions:
         """
         #self.noTransitions() masad: this creates a one frame pop, is it necessary?
         self.loadFade()
-        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, DGG.FADE_SORT_INDEX),
+
+        parent = aspect2d if self.fadeModel else render2d
+        transitionIval = Sequence(Func(self.fade.reparentTo, parent, DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
@@ -115,7 +117,8 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        transitionIval = Sequence(Func(self.fade.reparentTo,aspect2d,DGG.FADE_SORT_INDEX),
+        parent = aspect2d if self.fadeModel else render2d
+        transitionIval = Sequence(Func(self.fade.reparentTo, parent, DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
@@ -167,7 +170,9 @@ class Transitions:
             # Fade out immediately with no lerp
             self.noTransitions()
             self.loadFade()
-            self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+
+            parent = aspect2d if self.fadeModel else render2d
+            self.fade.reparentTo(parent, DGG.FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
         elif ConfigVariableBool('no-loading-screen', False):
             if finishIval:
@@ -191,7 +196,9 @@ class Transitions:
         #print "transitiosn: fadeScreen"
         self.noTransitions()
         self.loadFade()
-        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+
+        parent = aspect2d if self.fadeModel else render2d
+        self.fade.reparentTo(parent, DGG.FADE_SORT_INDEX)
         self.fade.setColor(self.alphaOn[0],
                            self.alphaOn[1],
                            self.alphaOn[2],
@@ -206,7 +213,9 @@ class Transitions:
         #print "transitiosn: fadeScreenColor"
         self.noTransitions()
         self.loadFade()
-        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+
+        parent = aspect2d if self.fadeModel else render2d
+        self.fade.reparentTo(parent, DGG.FADE_SORT_INDEX)
         self.fade.setColor(color)
 
     def noFade(self):
@@ -250,8 +259,9 @@ class Transitions:
         else:
             self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
 
+            scale = 0.18 * max(base.a2dRight, base.a2dTop)
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
-                                                   scale = 0.18,
+                                                   scale = scale,
                                                    startScale = 0.01),
                                  Func(self.iris.detachNode),
                                  name = self.irisTaskName,
@@ -277,9 +287,10 @@ class Transitions:
         else:
             self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
 
+            scale = 0.18 * max(base.a2dRight, base.a2dTop)
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
                                                    scale = 0.01,
-                                                   startScale = 0.18),
+                                                   startScale = scale),
                                  Func(self.iris.detachNode),
                                  # Use the fade to cover up the hole that the iris would leave
                                  Func(self.fadeOut, 0),
