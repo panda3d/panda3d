@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 SAMPLES_TO_BUILD = [
     'asteroids',
@@ -13,7 +14,7 @@ def main():
 
         # This will raise a CalledProcessError if the build fails, which will cause
         # this script to fail
-        subprocess.check_call(['python', 'setup.py', 'bdist_apps'])
+        subprocess.check_call([sys.executable, 'setup.py', 'bdist_apps'])
 
 if __name__ == '__main__':
     main()
