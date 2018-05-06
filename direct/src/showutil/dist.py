@@ -139,6 +139,7 @@ class build_apps(setuptools.Command):
             key: _parse_list(value)
             for key, value in _parse_dict(self.exclude_modules).items()
         }
+        self.platforms = _parse_list(self.platforms)
         self.plugins = _parse_list(self.plugins)
         self.extra_prc_files = _parse_list(self.extra_prc_files)
 
