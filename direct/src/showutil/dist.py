@@ -1064,10 +1064,3 @@ class bdist_apps(setuptools.Command):
                     shutil.rmtree(temp_dir)
                 else:
                     self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
-
-
-def setup(**attrs):
-    commandClasses = attrs.setdefault("cmdclass", {})
-    commandClasses['build_apps'] = build_apps
-    commandClasses['bdist_apps'] = bdist_apps
-    distutils.core.setup(**attrs)
