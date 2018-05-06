@@ -211,6 +211,8 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
     oscmd("echo '"+prefix+"/share/panda3d' >    "+destdir+PPATH+"/panda3d.pth")
     oscmd("echo '"+libdir+"/panda3d'>>   "+destdir+PPATH+"/panda3d.pth")
+    if os.path.isdir(outputdir+"/panda3d.dist-info"):
+        oscmd("cp -R "+outputdir+"/panda3d.dist-info "+destdir+PPATH)
     if (sys.platform.startswith("freebsd")):
         oscmd("echo '"+libdir+"/panda3d'>    "+destdir+"/usr/local/libdata/ldconfig/panda3d")
     else:
