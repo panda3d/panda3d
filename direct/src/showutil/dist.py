@@ -131,8 +131,14 @@ class build_apps(setuptools.Command):
         self.rename_paths = _parse_dict(self.rename_paths)
         self.include_patterns = _parse_list(self.include_patterns)
         self.exclude_patterns = _parse_list(self.exclude_patterns)
-        self.include_modules = _parse_dict(self.include_modules)
-        self.exclude_modules = _parse_dict(self.exclude_modules)
+        self.include_modules = {
+            key: _parse_list(value)
+            for key, value in _parse_dict(self.include_modules).items()
+        }
+        self.exclude_modules = {
+            key: _parse_list(value)
+            for key, value in _parse_dict(self.exclude_modules).items()
+        }
         self.plugins = _parse_list(self.plugins)
         self.extra_prc_files = _parse_list(self.extra_prc_files)
 
