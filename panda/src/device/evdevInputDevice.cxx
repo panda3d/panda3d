@@ -23,6 +23,14 @@
 #include <fcntl.h>
 #include <linux/input.h>
 
+#ifndef BTN_DPAD_UP
+#define BTN_DPAD_UP 0x220
+#define BTN_DPAD_DOWN 0x221
+#define BTN_DPAD_LEFT 0x222
+#define BTN_DPAD_RIGHT 0x223
+#endif
+
+
 // Android introduces these in API level 21.
 #ifndef BTN_TRIGGER_HAPPY
 #define BTN_TRIGGER_HAPPY 0x2c0
