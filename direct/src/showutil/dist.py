@@ -1028,7 +1028,10 @@ class bdist_apps(setuptools.Command):
     def finalize_options(self):
         # We need to massage the inputs a bit in case they came from a
         # setup.cfg file.
-        self.installers = _parse_dict(self.installers)
+        self.installers = {
+            key: _parse_list(value)
+            for key, value in _parse_dict(self.installers).items()
+        }
 
     def run(self):
         build_cmd = self.get_finalized_command('build_apps')
