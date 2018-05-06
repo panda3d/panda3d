@@ -29,7 +29,7 @@
  * since this will help reduce fragmentation problems in the dynamic heap.
  * Also, memory allocated from here will exhibit less wasted space.
  */
-class EXPCL_DTOOL NeverFreeMemory {
+class EXPCL_DTOOL_DTOOLBASE NeverFreeMemory {
 private:
   NeverFreeMemory();
 

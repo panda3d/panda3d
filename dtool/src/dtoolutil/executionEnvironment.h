@@ -26,7 +26,7 @@
  * at the time of execution.  This is encapsulated to support accessing these
  * things during static init time, which seems to be risky at best.
  */
-class EXPCL_DTOOL ExecutionEnvironment {
+class EXPCL_DTOOL_DTOOLUTIL ExecutionEnvironment {
 private:
   ExecutionEnvironment();
 

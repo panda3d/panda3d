@@ -40,7 +40,7 @@ get_calibrated_clock(double rtc) const {
  *
  * Returns true on success, false on failure.
  */
-bool OpenALAudioSound::
+INLINE bool OpenALAudioSound::
 require_sound_data() {
   if (_sd==0) {
     _sd = _manager->get_sound_data(_movie, _desired_mode);
@@ -55,11 +55,48 @@ require_sound_data() {
 /**
  * Checks if the sound data record is present and releasable, and if so,
  * releases it.
+ *
+ * The sound data is "releasable" if it's from an ordinary, local file.  Remote
+ * streams cannot necessarily be reopened if lost, so we'll hold onto them if
+ * so.  The `force` argument overrides this, indicating we don't intend to
+ * reacquire the sound data.
  */
-void OpenALAudioSound::
-release_sound_data() {
-  if ((_sd!=0) && (!_movie->get_filename().empty())) {
+INLINE void OpenALAudioSound::
+release_sound_data(bool force) {
+  if (!has_sound_data()) return;
+
+  if (force || !_movie->get_filename().empty()) {
     _manager->decrement_client_count(_sd);
     _sd = 0;
   }
+}
+
+/**
+ * Checks if the sound has NOT been cleaned up yet.
+ */
+INLINE bool OpenALAudioSound::
+is_valid() const {
+  return _manager != NULL;
+}
+
+/**
+ * Checks if the sound is playing.  This is per the OpenALAudioManager's
+ * definition of "playing" -- as in, "will be called upon every update"
+ *
+ * This is mainly intended for use in asserts.
+ */
+INLINE bool OpenALAudioSound::
+is_playing() const {
+  // Manager only gives us a _source if we need it (to talk to OpenAL), so:
+  return _source != 0;
+}
+
+/**
+ * Checks if the sound has its SoundData structure open at the moment.
+ *
+ * This is mainly intended for use in asserts.
+ */
+INLINE bool OpenALAudioSound::
+has_sound_data() const {
+  return _sd != NULL;
 }

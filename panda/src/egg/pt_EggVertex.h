@@ -31,9 +31,4 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, ConstPointerTo<EggVertex>)
 typedef PointerTo<EggVertex> PT_EggVertex;
 typedef ConstPointerTo<EggVertex> CPT_EggVertex;
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

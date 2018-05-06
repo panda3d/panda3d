@@ -20,6 +20,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PIPELINE)
+  #error Buildsystem error: BUILDING_PANDA_PIPELINE not defined
+#endif
+
 ConfigureDef(config_pipeline);
 NotifyCategoryDef(pipeline, "");
 NotifyCategoryDef(thread, "");

@@ -344,7 +344,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
     case TextureStage::M_modulate_gloss:
       if (shader_attrib->auto_gloss_on()) {
-        info._flags = ShaderKey::TF_map_glow;
+        info._flags = ShaderKey::TF_map_gloss;
       } else {
         info._mode = TextureStage::M_modulate;
         info._flags = ShaderKey::TF_has_rgb;

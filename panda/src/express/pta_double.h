@@ -34,9 +34,4 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, ConstPointerToArra
 typedef PointerToArray<double> PTA_double;
 typedef ConstPointerToArray<double> CPTA_double;
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

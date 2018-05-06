@@ -122,6 +122,11 @@ typedef ios::seekdir ios_seekdir;
 // Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+#include <tr1/tuple>
+
+using std::tr1::tuple;
+using std::tr1::tie;
+
 typedef decltype(nullptr) nullptr_t;
 
 template<class T> struct remove_reference      {typedef T type;};
@@ -257,7 +262,7 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #endif
 
 
-#if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
+#ifndef LINK_ALL_STATIC
 // This macro must be used to export an instantiated template class from a
 // DLL.  If the template class name itself contains commas, it may be
 // necessary to first define a macro for the class name, to allow proper macro
@@ -282,8 +287,8 @@ class ReferenceCount;
 // We need a pointer to a global MemoryHook object, to manage all malloc and
 // free requests from Panda.  See the comments in MemoryHook itself.
 class MemoryHook;
-EXPCL_DTOOL extern MemoryHook *memory_hook;
-EXPCL_DTOOL void init_memory_hook();
+EXPCL_DTOOL_DTOOLBASE extern MemoryHook *memory_hook;
+EXPCL_DTOOL_DTOOLBASE void init_memory_hook();
 
 // Now redefine some handy macros to hook into the above MemoryHook object.
 #ifndef USE_MEMORY_NOWRAPPERS
@@ -303,8 +308,8 @@ EXPCL_DTOOL void init_memory_hook();
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
 // We need another forward-reference function to allow low-level code to
 // cooperatively yield the timeslice, in SIMPLE_THREADS mode.
-extern EXPCL_DTOOL void (*global_thread_yield)();
-extern EXPCL_DTOOL void (*global_thread_consider_yield)();
+extern EXPCL_DTOOL_DTOOLBASE void (*global_thread_yield)();
+extern EXPCL_DTOOL_DTOOLBASE void (*global_thread_consider_yield)();
 
 INLINE void thread_yield() {
   (*global_thread_yield)();
@@ -324,8 +329,8 @@ INLINE void thread_consider_yield() {
 
 #if defined(USE_TAU) && defined(WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
-extern EXPCL_DTOOL bool __tau_shutdown;
-class EXPCL_DTOOL TauProfile {
+extern EXPCL_DTOOL_DTOOLBASE bool __tau_shutdown;
+class EXPCL_DTOOL_DTOOLBASE TauProfile {
 public:
   TauProfile(void *&tautimer, char *name, char *type, int group, char *group_name) {
     Tau_profile_c_timer(&tautimer, name, type, group, group_name);

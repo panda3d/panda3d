@@ -194,9 +194,9 @@ output(ostream &out) const {
 /**
  * Returns a special zero-valued TypeHandle that is used to indicate no type.
  */
-INLINE TypeHandle TypeHandle::
+CONSTEXPR TypeHandle TypeHandle::
 none() {
-  return _none;
+  return TypeHandle(0);
 }
 
 /**
@@ -213,9 +213,15 @@ operator bool () const {
  *
  * See TypeRegistry::find_type_by_id().
  */
-INLINE TypeHandle TypeHandle::
+CONSTEXPR TypeHandle TypeHandle::
 from_index(int index) {
-  TypeHandle handle;
-  handle._index = index;
-  return handle;
+  return TypeHandle(index);
+}
+
+/**
+ * Private constructor for initializing a TypeHandle from an index, used by
+ * none() and by from_index().
+ */
+CONSTEXPR TypeHandle::
+TypeHandle(int index) : _index(index) {
 }

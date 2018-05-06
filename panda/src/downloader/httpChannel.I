@@ -427,6 +427,23 @@ get_max_updates_per_second() const {
 }
 
 /**
+ * Specifies the Content-Type header, useful for applications that require
+ * different types of content, such as JSON.
+ */
+INLINE void HTTPChannel::
+set_content_type(string content_type) {
+  _content_type = content_type;
+}
+
+/**
+ * Returns the value of the Content-Type header.
+ */
+INLINE string HTTPChannel::
+get_content_type() const {
+  return _content_type;
+}
+
+/**
  * This may be called immediately after a call to get_document() or some
  * related function to specify the expected size of the document we are
  * retrieving, if we happen to know.  This is used as the return value to

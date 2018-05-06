@@ -86,21 +86,21 @@ BulletTriangleMeshShape::
 BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _bvh_shape = copy._bvh_shape;
-  _gimpact_shape = copy._gimpact_shape;
+  _dynamic = copy._dynamic;
+  _compress = copy._compress;
+  _bvh = copy._bvh;
   _mesh = copy._mesh;
-}
-
-/**
- *
- */
-void BulletTriangleMeshShape::
-operator = (const BulletTriangleMeshShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  _bvh_shape = copy._bvh_shape;
-  _gimpact_shape = copy._gimpact_shape;
-  _mesh = copy._mesh;
+  
+  if (_dynamic) {
+    _gimpact_shape = new btGImpactMeshShape(_mesh->ptr());
+    _gimpact_shape->updateBound();
+    _gimpact_shape->setUserPointer(this);
+    _bvh_shape = NULL;
+  } else {
+    _bvh_shape = new btBvhTriangleMeshShape(_mesh->ptr(), _compress, _bvh);
+    _bvh_shape->setUserPointer(this);
+    _gimpact_shape = NULL;
+  }
 }
 
 /**

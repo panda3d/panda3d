@@ -40,21 +40,14 @@ BulletMinkowskiSumShape::
 BulletMinkowskiSumShape(const BulletMinkowskiSumShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = copy._shape;
   _shape_a = copy._shape_a;
   _shape_b = copy._shape_b;
-}
+  
+  const btConvexShape *ptr_a = (const btConvexShape *)_shape_a->ptr();
+  const btConvexShape *ptr_b = (const btConvexShape *)_shape_b->ptr();
 
-/**
- *
- */
-void BulletMinkowskiSumShape::
-operator = (const BulletMinkowskiSumShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  _shape = copy._shape;
-  _shape_a = copy._shape_a;
-  _shape_b = copy._shape_b;
+  _shape = new btMinkowskiSumShape(ptr_a, ptr_b);
+  _shape->setUserPointer(this);
 }
 
 /**

@@ -224,12 +224,24 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   bool any_changed = false;
 
   for (size_t i = 0; i < _elements.size(); ++i) {
-    CPPInstance *elem_rep =
-      _elements[i]->substitute_decl(subst, current_scope, global_scope)
-      ->as_instance();
+    // We don't just do substitute_decl on the instance, which could lead to
+    // an infinite recursion.
+    CPPInstance *element = _elements[i];
+    CPPExpression *value = element->_initializer->
+      substitute_decl(subst, current_scope, global_scope)->as_expression();
 
-    if (elem_rep != _elements[i]) {
-      rep->_elements[i] = elem_rep;
+    if (is_scoped()) {
+      // For a strong enum, we consider the elements to be of this type.
+      if (value != element->_initializer) {
+        rep->_elements[i] = new CPPInstance(rep, element->_ident);
+        rep->_elements[i]->_initializer = value;
+        any_changed = true;
+      }
+    } else if (value != element->_initializer ||
+               rep->get_underlying_type() != get_underlying_type()) {
+      // In an unscoped enum, the elements are integers.
+      rep->_elements[i] = new CPPInstance(rep->get_underlying_type(), element->_ident);
+      rep->_elements[i]->_initializer = value;
       any_changed = true;
     }
   }

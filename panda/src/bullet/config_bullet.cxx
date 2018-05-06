@@ -56,6 +56,10 @@ extern ContactDestroyedCallback gContactDestroyedCallback;
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDABULLET)
+  #error Buildsystem error: BUILDING_PANDABULLET not defined
+#endif
+
 Configure(config_bullet);
 NotifyCategoryDef(bullet, "");
 

@@ -27,6 +27,10 @@
 #include "dconfig.h"
 #include "config_express.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_TEXT)
+  #error Buildsystem error: BUILDING_PANDA_TEXT not defined
+#endif
+
 Configure(config_text);
 NotifyCategoryDef(text, "");
 

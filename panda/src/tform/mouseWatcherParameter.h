@@ -74,7 +74,7 @@ PUBLISHED:
 
 public:
   ButtonHandle _button;
-  short _keycode;
+  int _keycode;
   wstring _candidate_string;
   size_t _highlight_start;
   size_t _highlight_end;

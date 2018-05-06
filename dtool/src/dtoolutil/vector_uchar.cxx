@@ -13,14 +13,9 @@
 
 #include "vector_uchar.h"
 
-#define EXPCL EXPCL_DTOOL
-#define EXPTP EXPTP_DTOOL
+#define EXPCL EXPCL_DTOOL_DTOOLUTIL
+#define EXPTP EXPTP_DTOOL_DTOOLUTIL
 #define TYPE unsigned char
 #define NAME vector_uchar
 
 #include "vector_src.cxx"
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif

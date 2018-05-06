@@ -26,7 +26,7 @@
  * primarily intended as a convenience to eliminate the overhead of writing
  * bytes to a Datagram and then writing the Datagram to a stream.
  */
-class EXPCL_DTOOLCONFIG StreamWriter {
+class EXPCL_DTOOL_PRC StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);
 PUBLISHED:

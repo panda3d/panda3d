@@ -141,6 +141,7 @@ public:
 
 #ifdef USE_MOVE_SEMANTICS
   INLINE PointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
+  INLINE explicit PointerToArray(pvector<Element> &&from, TypeHandle type_handle = get_type_handle(Element));
 #endif
 
 public:
@@ -302,6 +303,7 @@ PUBLISHED:
 #ifdef USE_MOVE_SEMANTICS
   INLINE ConstPointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
   INLINE ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT;
+  INLINE explicit ConstPointerToArray(pvector<Element> &&from, TypeHandle type_handle = get_type_handle(Element));
 #endif
 
   // Duplicating the interface of vector.

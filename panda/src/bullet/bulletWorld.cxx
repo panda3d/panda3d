@@ -82,7 +82,8 @@ BulletWorld() {
   _world->getPairCache()->setInternalGhostPairCallback(&_ghost_cb);
 
   // Filter callback
-  switch (bullet_filter_algorithm) {
+  _filter_algorithm = bullet_filter_algorithm;
+  switch (_filter_algorithm) {
     case FA_mask:
       _filter_cb = &_filter_cb1;
       break;
@@ -1051,7 +1052,7 @@ BulletPersistentManifold *BulletWorld::
 get_manifold(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx < get_num_manifolds(), NULL);
+  nassertr(idx < _dispatcher->getNumManifolds(), NULL);
 
   btPersistentManifold *ptr = _dispatcher->getManifoldByIndexInternal(idx);
   return (ptr) ? new BulletPersistentManifold(ptr) : NULL;
@@ -1086,7 +1087,7 @@ void BulletWorld::
 set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable) {
   LightMutexHolder holder(get_global_lock());
 
-  if (bullet_filter_algorithm != FA_groups_mask) {
+  if (_filter_algorithm != FA_groups_mask) {
     bullet_cat.warning() << "filter algorithm is not 'groups-mask'" << endl;
   }
 
@@ -1102,6 +1103,24 @@ get_group_collision_flag(unsigned int group1, unsigned int group2) const {
   LightMutexHolder holder(get_global_lock());
 
   return _filter_cb2._collide[group1].get_bit(group2);
+}
+
+/**
+ *
+ */
+void BulletWorld::
+set_force_update_all_aabbs(bool force) {
+  LightMutexHolder holder(get_global_lock());
+  _world->setForceUpdateAllAabbs(force);
+}
+
+/**
+ *
+ */
+bool BulletWorld::
+get_force_update_all_aabbs() const {
+  LightMutexHolder holder(get_global_lock());
+  return _world->getForceUpdateAllAabbs();
 }
 
 /**
@@ -1167,7 +1186,12 @@ tick_callback(btDynamicsWorld *world, btScalar timestep) {
   CallbackObject *obj = w->_tick_callback_obj;
   if (obj) {
     BulletTickCallbackData cbdata(timestep);
+    // Release the global lock that we are holding during the tick callback
+    // and allow interactions with bullet world in the user callback
+    get_global_lock().release();
     obj->do_callback(&cbdata);
+    // Acquire the global lock again and protect the execution
+    get_global_lock().acquire();
   }
 }
 
@@ -1180,7 +1204,7 @@ set_filter_callback(CallbackObject *obj) {
 
   nassertv(obj != NULL);
 
-  if (bullet_filter_algorithm != FA_callback) {
+  if (_filter_algorithm != FA_callback) {
     bullet_cat.warning() << "filter algorithm is not 'callback'" << endl;
   }
 

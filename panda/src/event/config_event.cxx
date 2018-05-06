@@ -27,6 +27,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_EVENT)
+  #error Buildsystem error: BUILDING_PANDA_EVENT not defined
+#endif
+
 Configure(config_event);
 NotifyCategoryDef(event, "");
 NotifyCategoryDef(task, "");

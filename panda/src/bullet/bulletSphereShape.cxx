@@ -32,19 +32,10 @@ BulletSphereShape::
 BulletSphereShape(const BulletSphereShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = copy._shape;
   _radius = copy._radius;
-}
 
-/**
- *
- */
-void BulletSphereShape::
-operator = (const BulletSphereShape &copy) {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  _shape = copy._shape;
-  _radius = copy._radius;
+  _shape = new btSphereShape(_radius);
+  _shape->setUserPointer(this);
 }
 
 

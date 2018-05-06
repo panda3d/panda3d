@@ -94,6 +94,9 @@ PythonTask::
     PyErr_Restore(_exception, _exc_value, _exc_traceback);
     PyErr_Print();
     PyErr_Restore(nullptr, nullptr, nullptr);
+    _exception = nullptr;
+    _exc_value = nullptr;
+    _exc_traceback = nullptr;
   }
 #endif
 

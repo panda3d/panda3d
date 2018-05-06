@@ -34,6 +34,10 @@ TOGGLEKEYS g_StartupToggleKeys = {sizeof(TOGGLEKEYS), 0};
 FILTERKEYS g_StartupFilterKeys = {sizeof(FILTERKEYS), 0};
 #endif
 
+#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_SHOWBASE)
+  #error Buildsystem error: BUILDING_DIRECT_SHOWBASE not defined
+#endif
+
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
 }

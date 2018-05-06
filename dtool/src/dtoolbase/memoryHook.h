@@ -34,7 +34,7 @@ class DeletedBufferChain;
  * employed for classes which inherit from MemoryBase; otherwise, use the
  * PANDA_MALLOC macros.)
  */
-class EXPCL_DTOOL MemoryHook {
+class EXPCL_DTOOL_DTOOLBASE MemoryHook {
 public:
   MemoryHook();
   MemoryHook(const MemoryHook &copy);
