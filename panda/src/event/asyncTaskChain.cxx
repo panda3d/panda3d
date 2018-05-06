@@ -51,7 +51,8 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _needs_cleanup(false),
   _current_frame(0),
   _time_in_frame(0.0),
-  _block_till_next_frame(false)
+  _block_till_next_frame(false),
+  _next_implicit_sort(0)
 {
 }
 
@@ -417,6 +418,9 @@ do_add(AsyncTask *task) {
   double now = _manager->_clock->get_frame_time();
   task->_start_time = now;
   task->_start_frame = _manager->_clock->get_frame_count();
+
+  // Remember the order in which tasks were added to the chain.
+  task->_implicit_sort = _next_implicit_sort++;
 
   _manager->add_task_by_name(task);
 

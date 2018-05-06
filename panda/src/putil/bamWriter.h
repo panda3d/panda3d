@@ -140,8 +140,9 @@ private:
     int _object_id;
     UpdateSeq _written_seq;
     UpdateSeq _modified;
+    const ReferenceCount *_refcount;
 
-    StoreState(int object_id) : _object_id(object_id) {}
+    StoreState(int object_id) : _object_id(object_id), _refcount(nullptr) {}
   };
   typedef phash_map<const TypedWritable *, StoreState, pointer_hash> StateMap;
   StateMap _state_map;
