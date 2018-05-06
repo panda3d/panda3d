@@ -138,35 +138,45 @@ get_datagram(Datagram &data) {
     return true;
   }
 
-  streamsize num_bytes = (streamsize)num_bytes_32;
+  size_t num_bytes = (size_t)num_bytes_32;
   if (num_bytes_32 == (uint32_t)-1) {
     // Another special case for a value larger than 32 bits.
-    num_bytes = reader.get_uint64();
-  }
+    uint64_t num_bytes_64 = reader.get_uint64();
 
-  // Make sure we have a reasonable datagram size for putting into memory.
-  nassertr(num_bytes == (size_t)num_bytes, false);
+    if (_in->fail() || _in->eof()) {
+      _error = true;
+      return false;
+    }
+
+    num_bytes = (size_t)num_bytes_64;
+
+    // Make sure we have a reasonable datagram size for putting into memory.
+    if (num_bytes_64 != (uint64_t)num_bytes) {
+      _error = true;
+      return false;
+    }
+  }
 
   // Now, read the datagram itself. We construct an empty datagram, use
   // pad_bytes to make it big enough, and read *directly* into the datagram's
   // internal buffer. Doing this saves us a copy operation.
   data = Datagram();
 
-  streamsize bytes_read = 0;
+  size_t bytes_read = 0;
   while (bytes_read < num_bytes) {
-    streamsize bytes_left = num_bytes - bytes_read;
+    size_t bytes_left = num_bytes - bytes_read;
 
     // Hold up a second - datagrams >4MB are pretty large by bam/network
     // standards. Let's take it 4MB at a time just in case the length is
     // corrupt, so we don't allocate potentially a few GBs of RAM only to
     // find a truncated file.
-    bytes_left = min(bytes_left, (streamsize)4*1024*1024);
+    bytes_left = min(bytes_left, (size_t)4*1024*1024);
 
     PTA_uchar buffer = data.modify_array();
     buffer.resize(buffer.size() + bytes_left);
     unsigned char *ptr = &buffer.p()[bytes_read];
 
-    _in->read((char *)ptr, bytes_left);
+    _in->read((char *)ptr, (streamsize)bytes_left);
     if (_in->fail() || _in->eof()) {
       _error = true;
       return false;
