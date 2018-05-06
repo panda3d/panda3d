@@ -368,7 +368,7 @@ SectionGroup "Python support"
         SetOutPath $INSTDIR\pandac\input
         File /r "${BUILT}\pandac\input\*"
         SetOutPath $INSTDIR\Pmw
-        File /r /x CVS "${BUILT}\Pmw\*"
+        File /nonfatal /r /x CVS "${BUILT}\Pmw\*"
 
         !ifdef REGVIEW
         SetRegView ${REGVIEW}
