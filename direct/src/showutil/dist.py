@@ -884,7 +884,6 @@ class bdist_apps(setuptools.Command):
             build_dir = os.path.join(build_base, platform)
             basename = '{}_{}'.format(self.distribution.get_fullname(), platform)
             installers = self.installers.get(platform, self.DEFAULT_INSTALLERS.get(platform, ['zip']))
-            print(installers)
 
             for installer in installers:
                 self.announce('\nBuilding {} for platform: {}'.format(installer, platform), distutils.log.INFO)
