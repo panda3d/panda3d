@@ -23,12 +23,12 @@
  * An interval that lerps one or more properties (like pos, hpr, etc.) on a
  * NodePath over time.
  */
-class EXPCL_DIRECT CLerpNodePathInterval : public CLerpInterval {
+class EXPCL_DIRECT_INTERVAL CLerpNodePathInterval : public CLerpInterval {
 PUBLISHED:
-  CLerpNodePathInterval(const string &name, double duration,
-                        BlendType blend_type, bool bake_in_start,
-                        bool fluid,
-                        const NodePath &node, const NodePath &other);
+  explicit CLerpNodePathInterval(const string &name, double duration,
+                                 BlendType blend_type, bool bake_in_start,
+                                 bool fluid,
+                                 const NodePath &node, const NodePath &other);
 
   INLINE const NodePath &get_node() const;
   INLINE const NodePath &get_other() const;

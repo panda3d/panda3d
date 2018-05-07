@@ -12,6 +12,7 @@
  */
 
 #include "physicalNode.h"
+#include "physicsManager.h"
 
 // static stuff.
 TypeHandle PhysicalNode::_type_handle;
@@ -77,10 +78,23 @@ add_physicals_from(const PhysicalNode &other) {
  */
 void PhysicalNode::
 set_physical(size_t index, Physical *physical) {
-  nassertv(index <= _physicals.size());
+  nassertv(index < _physicals.size());
 
-  _physicals[index]->_physical_node = (PhysicalNode *) NULL;
+  _physicals[index]->_physical_node = nullptr;
   _physicals[index] = physical;
+  physical->_physical_node = this;
+}
+
+/**
+ * insert operation
+ */
+void PhysicalNode::
+insert_physical(size_t index, Physical *physical) {
+  if (index > _physicals.size()) {
+    index = _physicals.size();
+  }
+
+  _physicals.insert(_physicals.begin() + index, physical);
   physical->_physical_node = this;
 }
 

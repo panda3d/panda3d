@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-EXPCL_DTOOL void pdtoa(double value, char *buffer);
+EXPCL_DTOOL_DTOOLBASE void pdtoa(double value, char *buffer);
 
 #ifdef __cplusplus
 };  /* end of extern "C" */

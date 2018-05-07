@@ -71,11 +71,7 @@ is_on(NotifySeverity severity) const {
 INLINE bool NotifyCategory::
 is_spam() const {
   // Instruct the compiler to optimize for the usual case.
-#ifdef __GNUC__
-  return __builtin_expect(is_on(NS_spam), 0);
-#else
-  return is_on(NS_spam);
-#endif
+  return UNLIKELY(is_on(NS_spam));
 }
 
 /**
@@ -84,11 +80,7 @@ is_spam() const {
 INLINE bool NotifyCategory::
 is_debug() const {
   // Instruct the compiler to optimize for the usual case.
-#ifdef __GNUC__
-  return __builtin_expect(is_on(NS_debug), 0);
-#else
-  return is_on(NS_debug);
-#endif
+  return UNLIKELY(is_on(NS_debug));
 }
 #else
 /**

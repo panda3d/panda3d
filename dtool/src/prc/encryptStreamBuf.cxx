@@ -146,14 +146,15 @@ open_read(istream *source, bool owns_source, const string &password) {
   int iv_length = EVP_CIPHER_iv_length(cipher);
   _read_block_size = EVP_CIPHER_block_size(cipher);
 
-  string iv = sr.extract_bytes(iv_length);
+  unsigned char *iv = (unsigned char *)alloca(iv_length);
+  iv_length = (int)sr.extract_bytes(iv, iv_length);
 
   _read_ctx = EVP_CIPHER_CTX_new();
   nassertv(_read_ctx != NULL);
 
   // Initialize the context
   int result;
-  result = EVP_DecryptInit(_read_ctx, cipher, NULL, (unsigned char *)iv.data());
+  result = EVP_DecryptInit(_read_ctx, cipher, NULL, (unsigned char *)iv);
   nassertv(result > 0);
 
   result = EVP_CIPHER_CTX_set_key_length(_read_ctx, key_length);
@@ -170,7 +171,7 @@ open_read(istream *source, bool owns_source, const string &password) {
   unsigned char *key = (unsigned char *)alloca(key_length);
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
-                           (unsigned char *)iv.data(), iv.length(),
+                           iv, iv_length,
                            count * iteration_count_factor + 1,
                            key_length, key);
   nassertv(result > 0);

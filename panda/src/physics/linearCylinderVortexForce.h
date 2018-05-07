@@ -25,11 +25,11 @@
  */
 class EXPCL_PANDAPHYSICS LinearCylinderVortexForce : public LinearForce {
 PUBLISHED:
-  LinearCylinderVortexForce(PN_stdfloat radius = 1.0f,
-                      PN_stdfloat length = 0.0f,
-                      PN_stdfloat coef = 1.0f,
-                      PN_stdfloat a = 1.0f,
-                      bool md = false);
+  explicit LinearCylinderVortexForce(PN_stdfloat radius = 1.0f,
+                                     PN_stdfloat length = 0.0f,
+                                     PN_stdfloat coef = 1.0f,
+                                     PN_stdfloat a = 1.0f,
+                                     bool md = false);
   LinearCylinderVortexForce(const LinearCylinderVortexForce &copy);
   virtual ~LinearCylinderVortexForce();
 

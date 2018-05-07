@@ -16,6 +16,15 @@
  */
 INLINE StateMunger::
 StateMunger(GraphicsStateGuardianBase *gsg) :
-  GeomMunger(gsg)
+  GeomMunger(gsg),
+  _should_munge_state(false)
 {
+}
+
+/**
+ * Returns true if this munger has something interesting to do to the state.
+ */
+INLINE bool StateMunger::
+should_munge_state() const {
+  return _should_munge_state;
 }

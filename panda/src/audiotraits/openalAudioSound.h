@@ -116,12 +116,14 @@ private:
   int  read_stream_data(int bytelen, unsigned char *data);
   void pull_used_buffers();
   void push_fresh_buffers();
-  INLINE void require_sound_data();
-  INLINE void release_sound_data();
+  INLINE bool require_sound_data();
+  INLINE void release_sound_data(bool force);
+
+  INLINE bool is_valid() const;
+  INLINE bool is_playing() const;
+  INLINE bool has_sound_data() const;
 
 private:
-
-  void do_stop();
 
   PT(MovieAudio) _movie;
   OpenALAudioManager::SoundData *_sd;

@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggPoint : public EggPrimitive {
 PUBLISHED:
-  INLINE EggPoint(const string &name = "");
+  INLINE explicit EggPoint(const string &name = "");
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);
 

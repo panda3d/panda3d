@@ -46,13 +46,7 @@ make_cow_copy() {
  *
  */
 Geom::
-Geom(const GeomVertexData *data) {
-  // Let's ensure the vertex data gets set on all stages at once.
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    cdata->_data = (GeomVertexData *)data;
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
+Geom(const GeomVertexData *data) : _cycler(CData((GeomVertexData *)data)) {
 }
 
 /**
@@ -294,10 +288,10 @@ make_nonindexed(bool composite_only) {
  * away other changes you might have recently made in an upstream thread.
  */
 void Geom::
-set_primitive(int i, const GeomPrimitive *primitive) {
+set_primitive(size_t i, const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  nassertv(i < cdata->_primitives.size());
   nassertv(primitive->check_valid(cdata->_data.get_read_pointer(current_thread)));
 
   // All primitives within a particular Geom must have the same fundamental
@@ -327,7 +321,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
 }
 
 /**
- * Adds a new GeomPrimitive structure to the Geom object.  This specifies a
+ * Inserts a new GeomPrimitive structure to the Geom object.  This specifies a
  * particular subset of vertices that are used to define geometric primitives
  * of the indicated type.
  *
@@ -335,7 +329,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
  * away other changes you might have recently made in an upstream thread.
  */
 void Geom::
-add_primitive(const GeomPrimitive *primitive) {
+insert_primitive(size_t i, const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
 
@@ -348,9 +342,13 @@ add_primitive(const GeomPrimitive *primitive) {
 
   // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
-  nassertv_always(compat != (GeomPrimitive *)NULL);
+  nassertv_always(compat != nullptr);
 
-  cdata->_primitives.push_back((GeomPrimitive *)compat.p());
+  if (i >= cdata->_primitives.size()) {
+    cdata->_primitives.push_back((GeomPrimitive *)compat.p());
+  } else {
+    cdata->_primitives.insert(cdata->_primitives.begin() + i, (GeomPrimitive *)compat.p());
+  }
   PrimitiveType new_primitive_type = compat->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
@@ -374,10 +372,10 @@ add_primitive(const GeomPrimitive *primitive) {
  * away other changes you might have recently made in an upstream thread.
  */
 void Geom::
-remove_primitive(int i) {
+remove_primitive(size_t i) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  nassertv(i < cdata->_primitives.size());
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
   if (cdata->_primitives.empty()) {
     cdata->_primitive_type = PT_none;
@@ -627,7 +625,7 @@ unify_in_place(int max_indices, bool preserve_order) {
     } else {
       // We have already encountered another primitive of this type.  Combine
       // them.
-      combine_primitives((*npi).second, primitive, current_thread);
+      combine_primitives((*npi).second, move(primitive), current_thread);
     }
   }
 
@@ -827,6 +825,42 @@ make_patches_in_place() {
       all_is_valid = false;
     }
 #endif
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+  reset_geom_rendering(cdata);
+  clear_cache_stage(current_thread);
+
+  nassertv(all_is_valid);
+}
+
+/**
+ * Replaces the GeomPrimitives within this Geom with corresponding versions
+ * with adjacency information.  See GeomPrimitive::make_adjacency().
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
+ */
+void Geom::
+make_adjacency_in_place() {
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer(current_thread)->make_adjacency();
+    if (new_prim != nullptr) {
+      (*pi) = (GeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+      if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+        all_is_valid = false;
+      }
+#endif
+    }
   }
 
   cdata->_modified = Geom::get_next_modified();
@@ -1487,31 +1521,29 @@ reset_geom_rendering(Geom::CData *cdata) {
  * is modified to append the vertices from b_prim, which is unmodified.
  */
 void Geom::
-combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
+combine_primitives(GeomPrimitive *a_prim, CPT(GeomPrimitive) b_prim,
                    Thread *current_thread) {
   nassertv(a_prim != b_prim);
   nassertv(a_prim->get_type() == b_prim->get_type());
 
-  CPT(GeomPrimitive) b_prim2 = b_prim;
-
-  if (a_prim->get_index_type() != b_prim2->get_index_type()) {
-    GeomPrimitive::NumericType index_type = max(a_prim->get_index_type(), b_prim2->get_index_type());
+  if (a_prim->get_index_type() != b_prim->get_index_type()) {
+    GeomPrimitive::NumericType index_type = max(a_prim->get_index_type(), b_prim->get_index_type());
     a_prim->set_index_type(index_type);
-    if (b_prim2->get_index_type() != index_type) {
-      PT(GeomPrimitive) b_prim_copy = b_prim2->make_copy();
+    if (b_prim->get_index_type() != index_type) {
+      PT(GeomPrimitive) b_prim_copy = b_prim->make_copy();
       b_prim_copy->set_index_type(index_type);
-      b_prim2 = b_prim_copy;
+      b_prim = b_prim_copy;
     }
   }
 
-  if (!b_prim2->is_indexed()) {
-    PT(GeomPrimitive) b_prim_copy = b_prim2->make_copy();
+  if (!b_prim->is_indexed()) {
+    PT(GeomPrimitive) b_prim_copy = b_prim->make_copy();
     b_prim_copy->make_indexed();
-    b_prim2 = b_prim_copy;
+    b_prim = b_prim_copy;
   }
 
   PT(GeomVertexArrayData) a_vertices = a_prim->modify_vertices();
-  CPT(GeomVertexArrayData) b_vertices = b_prim2->get_vertices();
+  CPT(GeomVertexArrayData) b_vertices = b_prim->get_vertices();
 
   if (a_prim->requires_unused_vertices()) {
     GeomVertexReader index(b_vertices, 0);
@@ -1532,7 +1564,7 @@ combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
   if (a_prim->is_composite()) {
     // Also copy the ends array.
     PTA_int a_ends = a_prim->modify_ends();
-    CPTA_int b_ends = b_prim2->get_ends();
+    CPTA_int b_ends = b_prim->get_ends();
     for (size_t i = 0; i < b_ends.size(); ++i) {
       a_ends.push_back(b_ends[i] + orig_a_vertices);
     }

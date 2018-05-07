@@ -209,9 +209,4 @@ typedef ParamMatrix3f ParamMatrix3;
 typedef ParamMatrix4f ParamMatrix4;
 #endif
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

@@ -28,14 +28,13 @@
  * header followed by a number of datagrams.
  */
 class EXPCL_PANDA_PUTIL DatagramOutputFile : public DatagramSink {
-public:
+PUBLISHED:
   INLINE DatagramOutputFile();
   INLINE ~DatagramOutputFile();
 
   bool open(const FileReference *file);
   INLINE bool open(const Filename &filename);
   bool open(ostream &out, const Filename &filename = Filename());
-  INLINE ostream &get_stream();
 
   void close();
 
@@ -46,9 +45,15 @@ public:
   virtual bool is_error();
   virtual void flush();
 
+public:
   virtual const Filename &get_filename();
   virtual const FileReference *get_file();
   virtual streampos get_file_pos();
+
+  INLINE ostream &get_stream();
+
+PUBLISHED:
+  MAKE_PROPERTY(stream, get_stream);
 
 private:
   bool _wrote_first_datagram;

@@ -32,8 +32,10 @@ private:
   INLINE ShaderBuffer() DEFAULT_CTOR;
 
 PUBLISHED:
-  INLINE ShaderBuffer(const string &name, uint64_t size, UsageHint usage_hint);
-  INLINE ShaderBuffer(const string &name, pvector<unsigned char> initial_data, UsageHint usage_hint);
+  ~ShaderBuffer();
+
+  INLINE explicit ShaderBuffer(const string &name, uint64_t size, UsageHint usage_hint);
+  INLINE explicit ShaderBuffer(const string &name, pvector<unsigned char> initial_data, UsageHint usage_hint);
 
 public:
   INLINE uint64_t get_data_size_bytes() const;

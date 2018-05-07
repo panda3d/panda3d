@@ -154,9 +154,10 @@ PUBLISHED:
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
 
   // Control the "relative scale that sets the distance factor" units for 3D
-  // spacialized audio.  Default is 1.0 Fmod uses meters internally, so give a
-  // float in Units-per meter Don't know what Miles uses.  Default is 1.0
-  // which is adjust in panda to be feet.
+  // spacialized audio. This is a float in units-per-meter. Default value is
+  // 1.0, which means that Panda units are understood as meters; for e.g.
+  // feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+  // moment.
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_distance_factor() const;
 

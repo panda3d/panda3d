@@ -25,9 +25,9 @@
  * traditional searchpath-style string, e.g.  a list of directory names
  * delimited by spaces or colons, but it can also be built up explicitly.
  */
-class EXPCL_DTOOL DSearchPath {
+class EXPCL_DTOOL_DTOOLUTIL DSearchPath {
 PUBLISHED:
-  class EXPCL_DTOOL Results {
+  class EXPCL_DTOOL_DTOOLUTIL Results {
   PUBLISHED:
     Results();
     Results(const Results &copy);

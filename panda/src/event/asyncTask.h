@@ -15,8 +15,8 @@
 #define ASYNCTASK_H
 
 #include "pandabase.h"
-
-#include "asyncTaskBase.h"
+#include "asyncFuture.h"
+#include "namable.h"
 #include "pmutex.h"
 #include "conditionVar.h"
 #include "pStatCollector.h"
@@ -29,7 +29,7 @@ class AsyncTaskChain;
  * Normally, you would subclass from this class, and override do_task(), to
  * define the functionality you wish to have the task perform.
  */
-class EXPCL_PANDA_EVENT AsyncTask : public AsyncTaskBase {
+class EXPCL_PANDA_EVENT AsyncTask : public AsyncFuture, public Namable {
 public:
   AsyncTask(const string &name = string());
   ALLOC_DELETED_CHAIN(AsyncTask);
@@ -45,6 +45,7 @@ PUBLISHED:
     DS_exit,      // stop the enclosing sequence
     DS_pause,     // pause, then exit (useful within a sequence)
     DS_interrupt, // interrupt the task manager, but run task again
+    DS_await,     // await a different task's completion
   };
 
   enum State {
@@ -54,13 +55,14 @@ PUBLISHED:
     S_servicing_removed,  // Still servicing, but wants removal from manager.
     S_sleeping,
     S_active_nested,      // active within a sequence.
+    S_awaiting,           // Waiting for a dependent task to complete
   };
 
   INLINE State get_state() const;
   INLINE bool is_alive() const;
   INLINE AsyncTaskManager *get_manager() const;
 
-  void remove();
+  bool remove();
 
   INLINE void set_delay(double delay);
   INLINE void clear_delay();
@@ -90,7 +92,6 @@ PUBLISHED:
   INLINE int get_priority() const;
 
   INLINE void set_done_event(const string &done_event);
-  INLINE const string &get_done_event() const;
 
   INLINE double get_dt() const;
   INLINE double get_max_dt() const;
@@ -101,6 +102,9 @@ PUBLISHED:
 protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
+
+  virtual bool cancel() FINAL;
+  virtual bool is_task() const FINAL {return true;}
 
   virtual bool is_runnable();
   virtual DoneStatus do_task();
@@ -115,11 +119,10 @@ protected:
   double _wake_time;
   int _sort;
   int _priority;
-  string _done_event;
+  unsigned int _implicit_sort;
 
   State _state;
   Thread *_servicing_thread;
-  AsyncTaskManager *_manager;
   AsyncTaskChain *_chain;
 
   double _start_time;
@@ -135,14 +138,16 @@ protected:
   static PStatCollector _show_code_pcollector;
   PStatCollector _task_pcollector;
 
+  friend class PythonTask;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    AsyncTaskBase::init_type();
+    AsyncFuture::init_type();
     register_type(_type_handle, "AsyncTask",
-                  AsyncTaskBase::get_class_type());
+                  AsyncFuture::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -152,6 +157,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskManager;
   friend class AsyncTaskChain;
   friend class AsyncTaskSequence;

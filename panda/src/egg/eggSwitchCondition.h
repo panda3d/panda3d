@@ -60,8 +60,8 @@ private:
  */
 class EXPCL_PANDAEGG EggSwitchConditionDistance : public EggSwitchCondition {
 PUBLISHED:
-  EggSwitchConditionDistance(double switch_in, double switch_out,
-                             const LPoint3d &center, double fade = 0.0);
+  explicit EggSwitchConditionDistance(double switch_in, double switch_out,
+                                      const LPoint3d &center, double fade = 0.0);
 
   virtual EggSwitchCondition *make_copy() const;
   virtual void write(ostream &out, int indent_level) const;

@@ -172,9 +172,4 @@ typedef BitMask64 BitMaskNative;
 #error No definition for NATIVE_WORDSIZE--should be defined in dtoolbase.h.
 #endif  // NATIVE_WORDSIZE
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

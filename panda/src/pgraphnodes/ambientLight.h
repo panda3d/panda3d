@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES AmbientLight : public LightNode {
 PUBLISHED:
-  AmbientLight(const string &name);
+  explicit AmbientLight(const string &name);
 
 protected:
   AmbientLight(const AmbientLight &copy);

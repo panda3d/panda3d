@@ -19,21 +19,3 @@ INLINE BulletHingeConstraint::
 
   delete _constraint;
 }
-
-/**
- *
- */
-INLINE CPT(TransformState) BulletHingeConstraint::
-get_frame_a() const {
-
-  return btTrans_to_TransformState(_constraint->getAFrame());
-}
-
-/**
- *
- */
-INLINE CPT(TransformState) BulletHingeConstraint::
-get_frame_b() const {
-
-  return btTrans_to_TransformState(_constraint->getBFrame());
-}

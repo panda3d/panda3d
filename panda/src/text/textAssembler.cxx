@@ -1411,9 +1411,8 @@ assemble_row(TextAssembler::TextRow &row,
 
   bool underscore = false;
   PN_stdfloat underscore_start = 0.0f;
-  const TextProperties *underscore_properties = NULL;
-
-  const ComputedProperties *prev_cprops;
+  const TextProperties *underscore_properties = nullptr;
+  const ComputedProperties *prev_cprops = nullptr;
 
 #ifdef HAVE_HARFBUZZ
   hb_buffer_t *harfbuff = nullptr;
@@ -1627,10 +1626,11 @@ assemble_row(TextAssembler::TextRow &row,
       }
 
       if (first_glyph != (TextGlyph *)NULL) {
-        assert(!first_glyph->is_whitespace());
         advance = first_glyph->get_advance() * advance_scale;
-        swap(placement._glyph, first_glyph);
-        placed_glyphs.push_back(placement);
+        if (!first_glyph->is_whitespace()) {
+          swap(placement._glyph, first_glyph);
+          placed_glyphs.push_back(placement);
+        }
       }
 
       // Check if there is a second glyph to create a hacky ligature or some
@@ -1697,6 +1697,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
       break;
     }
   }
+  hb_buffer_set_content_type(buf, HB_BUFFER_CONTENT_TYPE_UNICODE);
   hb_buffer_set_direction(buf, direction);
   hb_buffer_guess_segment_properties(buf);
 

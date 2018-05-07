@@ -13,6 +13,7 @@
 
 #include "nodePath_ext.h"
 #include "typedWritable_ext.h"
+#include "shaderInput_ext.h"
 #include "shaderAttrib.h"
 
 #ifdef HAVE_PYTHON
@@ -25,35 +26,8 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3d;
 #else
 extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 #endif
-extern struct Dtool_PyTypedObject Dtool_Texture;
 extern struct Dtool_PyTypedObject Dtool_NodePath;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_float;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_double;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_int;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_UnalignedLVecBase4f;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LVecBase3f;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LVecBase2f;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_UnalignedLMatrix4f;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LMatrix3f;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_UnalignedLVecBase4d;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LVecBase3d;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LVecBase2d;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_UnalignedLMatrix4d;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LMatrix3d;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_UnalignedLVecBase4i;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LVecBase3i;
-extern struct Dtool_PyTypedObject Dtool_PointerToArray_LVecBase2i;
-extern struct Dtool_PyTypedObject Dtool_LVecBase4f;
-extern struct Dtool_PyTypedObject Dtool_LVecBase3f;
-extern struct Dtool_PyTypedObject Dtool_LVecBase2f;
-extern struct Dtool_PyTypedObject Dtool_LVecBase4d;
-extern struct Dtool_PyTypedObject Dtool_LVecBase3d;
-extern struct Dtool_PyTypedObject Dtool_LVecBase2d;
-extern struct Dtool_PyTypedObject Dtool_LVecBase4i;
-extern struct Dtool_PyTypedObject Dtool_LVecBase3i;
-extern struct Dtool_PyTypedObject Dtool_LVecBase2i;
-extern struct Dtool_PyTypedObject Dtool_ShaderBuffer;
-extern struct Dtool_PyTypedObject Dtool_ParamValueBase;
+extern struct Dtool_PyTypedObject Dtool_PandaNode;
 #endif  // CPPPARSER
 
 /**
@@ -140,14 +114,14 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
       // It's OK if there's no bamWriter.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_writer, &Dtool_BamWriter, (void **)&writer);
+      DtoolInstance_GetPointer(py_writer, writer, Dtool_BamWriter);
       Py_DECREF(py_writer);
     }
   }
 
   // We have a non-empty NodePath.
 
-  string bam_stream;
+  vector_uchar bam_stream;
   if (!_this->encode_to_bam_stream(bam_stream, writer)) {
     ostringstream stream;
     stream << "Could not bamify " << _this;
@@ -157,7 +131,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   }
 
   // Start by getting this class object.
-  PyObject *this_class = PyObject_Type(self);
+  PyObject *this_class = (PyObject *)Py_TYPE(self);
   if (this_class == NULL) {
     return NULL;
   }
@@ -170,29 +144,50 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream_persist");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream_persist()");
-      Py_DECREF(this_class);
       return NULL;
     }
 
   } else {
     // The traditional pickle support: call the non-persistent version of this
     // function.
-
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream()");
-      Py_DECREF(this_class);
       return NULL;
     }
   }
 
-#if PY_MAJOR_VERSION >= 3
-  PyObject *result = Py_BuildValue("(O(y#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#else
-  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#endif
-  Py_DECREF(func);
-  Py_DECREF(this_class);
+  // PyTuple_SET_ITEM conveniently borrows the reference it is passed.
+  PyObject *args = PyTuple_New(1);
+  PyTuple_SET_ITEM(args, 0, Dtool_WrapValue(bam_stream));
+
+  PyObject *tuple = PyTuple_New(2);
+  PyTuple_SET_ITEM(tuple, 0, func);
+  PyTuple_SET_ITEM(tuple, 1, args);
+  return tuple;
+}
+
+/**
+ * Returns the associated node's tags.
+ */
+PyObject *Extension<NodePath>::
+get_tags() const {
+  // An empty NodePath returns None
+  if (_this->is_empty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  // Just call PandaNode.tags rather than defining a whole new interface.
+  PT(PandaNode) node = _this->node();
+  PyObject *py_node = DTool_CreatePyInstanceTyped
+    ((void *)node.p(), Dtool_PandaNode, true, false, node->get_type_index());
+
+  // DTool_CreatePyInstanceTyped() steals a C++ reference.
+  node.cheat() = nullptr;
+
+  PyObject *result = PyObject_GetAttrString(py_node, "tags");
+  Py_DECREF(py_node);
   return result;
 }
 
@@ -217,15 +212,15 @@ find_net_python_tag(PyObject *key) const {
  * This wrapper is defined as a global function to suit pickle's needs.
  */
 NodePath
-py_decode_NodePath_from_bam_stream(const string &data) {
-  return py_decode_NodePath_from_bam_stream_persist(NULL, data);
+py_decode_NodePath_from_bam_stream(vector_uchar data) {
+  return py_decode_NodePath_from_bam_stream_persist(nullptr, move(data));
 }
 
 /**
  * This wrapper is defined as a global function to suit pickle's needs.
  */
 NodePath
-py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data) {
+py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar data) {
   BamReader *reader = NULL;
   if (unpickler != NULL) {
     PyObject *py_reader = PyObject_GetAttrString(unpickler, "bamReader");
@@ -233,12 +228,34 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &da
       // It's OK if there's no bamReader.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_reader, &Dtool_BamReader, (void **)&reader);
+      DtoolInstance_GetPointer(py_reader, reader, Dtool_BamReader);
       Py_DECREF(py_reader);
     }
   }
 
-  return NodePath::decode_from_bam_stream(data, reader);
+  return NodePath::decode_from_bam_stream(move(data), reader);
+}
+
+/**
+ * Sets a single shader input.
+ */
+void Extension<NodePath>::
+set_shader_input(CPT_InternalName name, PyObject *value, int priority) {
+  PT(PandaNode) node = _this->node();
+  CPT(RenderAttrib) prev_attrib = node->get_attrib(ShaderAttrib::get_class_slot());
+  PT(ShaderAttrib) attrib;
+  if (prev_attrib == nullptr) {
+    attrib = new ShaderAttrib();
+  } else {
+    attrib = new ShaderAttrib(*(const ShaderAttrib *)prev_attrib.p());
+  }
+
+  ShaderInput &input = attrib->_inputs[name];
+  invoke_extension(&input).__init__(move(name), value, priority);
+
+  if (!_PyErr_OCCURRED()) {
+    node->set_attrib(ShaderAttrib::return_new(attrib));
+  }
 }
 
 /**
@@ -278,153 +295,13 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
     }
 
     CPT_InternalName name(string(buffer, length));
-    ShaderInput input(nullptr, 0);
-
-    if (PyTuple_CheckExact(value)) {
-      // A tuple is interpreted as a vector.
-      Py_ssize_t size = PyTuple_GET_SIZE(value);
-      if (size > 4) {
-        Dtool_Raise_TypeError("NodePath.set_shader_inputs tuple input should not have more than 4 scalars");
-        return;
-      }
-      // If any of them is a float, we are storing it as a float vector.
-      bool is_float = false;
-      for (Py_ssize_t i = 0; i < size; ++i) {
-        if (PyFloat_CheckExact(PyTuple_GET_ITEM(value, i))) {
-          is_float = true;
-          break;
-        }
-      }
-      if (is_float) {
-        LVecBase4 vec(0);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-          vec[i] = (PN_stdfloat)PyFloat_AsDouble(PyTuple_GET_ITEM(value, i));
-        }
-        input = ShaderInput(move(name), vec);
-      } else {
-        LVecBase4i vec(0);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-          vec[i] = (int)PyLong_AsLong(PyTuple_GET_ITEM(value, i));
-        }
-        input = ShaderInput(move(name), vec);
-      }
-
-    } else if (DtoolCanThisBeAPandaInstance(value)) {
-      Dtool_PyInstDef *inst = (Dtool_PyInstDef *)value;
-      void *ptr;
-
-      if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_Texture))) {
-        input = ShaderInput(move(name), (Texture *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_NodePath))) {
-        input = ShaderInput(move(name), *(const NodePath *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_float))) {
-        input = ShaderInput(move(name), *(const PTA_float *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_double))) {
-        input = ShaderInput(move(name), *(const PTA_double *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_int))) {
-        input = ShaderInput(move(name), *(const PTA_int *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4f))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase4f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3f))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase3f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2f))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase2f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLMatrix4f))) {
-        input = ShaderInput(move(name), *(const PTA_LMatrix4f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LMatrix3f))) {
-        input = ShaderInput(move(name), *(const PTA_LMatrix3f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4d))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase4d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3d))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase3d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2d))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase2d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLMatrix4d))) {
-        input = ShaderInput(move(name), *(const PTA_LMatrix4d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LMatrix3d))) {
-        input = ShaderInput(move(name), *(const PTA_LMatrix3d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_UnalignedLVecBase4i))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase4i *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase3i))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase3i *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_PointerToArray_LVecBase2i))) {
-        input = ShaderInput(move(name), *(const PTA_LVecBase2i *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4f))) {
-        input = ShaderInput(move(name), *(const LVecBase4f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3f))) {
-        input = ShaderInput(move(name), *(const LVecBase3f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2f))) {
-        input = ShaderInput(move(name), *(const LVecBase2f *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4d))) {
-        input = ShaderInput(move(name), *(const LVecBase4d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3d))) {
-        input = ShaderInput(move(name), *(const LVecBase3d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2d))) {
-        input = ShaderInput(move(name), *(const LVecBase2d *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase4i))) {
-        input = ShaderInput(move(name), *(const LVecBase4i *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase3i))) {
-        input = ShaderInput(move(name), *(const LVecBase3i *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_LVecBase2i))) {
-        input = ShaderInput(move(name), *(const LVecBase2i *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_ShaderBuffer))) {
-        input = ShaderInput(move(name), (ShaderBuffer *)ptr);
-
-      } else if ((ptr = inst->_My_Type->_Dtool_UpcastInterface(value, &Dtool_ParamValueBase))) {
-        input = ShaderInput(move(name), (ParamValueBase *)ptr);
-
-      } else {
-        Dtool_Raise_TypeError("unknown type passed to NodePath.set_shader_inputs");
-        return;
-      }
-
-    } else if (PyFloat_Check(value)) {
-      input = ShaderInput(move(name), LVecBase4(PyFloat_AS_DOUBLE(value), 0, 0, 0));
-
-#if PY_MAJOR_VERSION < 3
-    } else if (PyInt_Check(value)) {
-      input = ShaderInput(move(name), LVecBase4i((int)PyInt_AS_LONG(value), 0, 0, 0));
-#endif
-
-    } else if (PyLong_Check(value)) {
-      input = ShaderInput(move(name), LVecBase4i((int)PyLong_AsLong(value), 0, 0, 0));
-
-    } else {
-      Dtool_Raise_TypeError("unknown type passed to NodePath.set_shader_inputs");
-      return;
-    }
-
-    attrib->_inputs[input.get_name()] = move(input);
+    ShaderInput &input = attrib->_inputs[name];
+    invoke_extension(&input).__init__(move(name), value);
   }
 
-  node->set_attrib(ShaderAttrib::return_new(attrib));
+  if (!_PyErr_OCCURRED()) {
+    node->set_attrib(ShaderAttrib::return_new(attrib));
+  }
 }
 
 /**

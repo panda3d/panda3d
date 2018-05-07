@@ -28,14 +28,14 @@
  * and/or ConfigDeclaration, more or less duplicating the interface presented
  * there.
  */
-class EXPCL_DTOOLCONFIG ConfigVariable : public ConfigVariableBase {
+class EXPCL_DTOOL_PRC ConfigVariable : public ConfigVariableBase {
 protected:
   INLINE ConfigVariable(const string &name, ValueType type);
   INLINE ConfigVariable(const string &name, ValueType type,
                         const string &description, int flags);
 
 PUBLISHED:
-  INLINE ConfigVariable(const string &name);
+  INLINE explicit ConfigVariable(const string &name);
   INLINE ~ConfigVariable();
 
   INLINE const string &get_string_value() const;

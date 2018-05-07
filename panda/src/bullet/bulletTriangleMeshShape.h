@@ -31,9 +31,8 @@ private:
   INLINE BulletTriangleMeshShape();
 
 PUBLISHED:
-  BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
-  INLINE BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
-  INLINE void operator = (const BulletTriangleMeshShape &copy);
+  explicit BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
+  BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
   INLINE ~BulletTriangleMeshShape();
 
   void refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max);
@@ -52,6 +51,9 @@ private:
   btGImpactMeshShape *_gimpact_shape;
 
   PT(BulletTriangleMesh) _mesh;
+
+  // Stored temporarily during bam read.
+  PN_stdfloat _margin;
 
   bool _dynamic : 1;
   bool _compress : 1;

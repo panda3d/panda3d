@@ -29,7 +29,7 @@
  * a package level; further nested categories can be created within a package
  * if a finer grain of control is required.
  */
-class EXPCL_DTOOLCONFIG NotifyCategory : public MemoryBase, public ConfigFlags {
+class EXPCL_DTOOL_PRC NotifyCategory : public MemoryBase, public ConfigFlags {
 private:
   NotifyCategory(const string &fullname, const string &basename,
                  NotifyCategory *parent);

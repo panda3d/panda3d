@@ -72,8 +72,8 @@ PUBLISHED:
   };
 
   DownloadDb();
-  DownloadDb(Ramfile &server_file, Filename &client_file);
-  DownloadDb(Filename &server_file, Filename &client_file);
+  explicit DownloadDb(Ramfile &server_file, Filename &client_file);
+  explicit DownloadDb(Filename &server_file, Filename &client_file);
   ~DownloadDb();
 
   void output(ostream &out) const;
@@ -171,10 +171,10 @@ public:
     bool multifile_exists(string mfname) const;
     PT(MultifileRecord) get_multifile_record_named(string mfname) const;
     void add_multifile_record(PT(MultifileRecord) mfr);
-    int parse_header(const string &data);
-    int parse_record_header(const string &data);
-    PT(MultifileRecord) parse_mfr(const string &data);
-    PT(FileRecord) parse_fr(const string &data);
+    int parse_header(Datagram dg);
+    int parse_record_header(Datagram dg);
+    PT(MultifileRecord) parse_mfr(Datagram dg);
+    PT(FileRecord) parse_fr(Datagram dg);
     bool read(StreamReader &sr, bool want_server_info);
     bool write(StreamWriter &sw, bool want_server_info);
     Filename _filename;

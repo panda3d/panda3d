@@ -103,7 +103,7 @@ fail_anim(PartBundle *part) {
  */
 AnimControl::
 ~AnimControl() {
-  get_part()->set_control_effect(this, 0.0f);
+  get_part()->control_removed(this);
 }
 
 /**

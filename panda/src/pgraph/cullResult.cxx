@@ -105,6 +105,8 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   static const LColor flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
   static const LColor flash_dual_color(0.92, 0.01f, 0.01f, 1.0f);
 
+  nassertv(object->_draw_callback != nullptr || object->_geom != nullptr);
+
   bool force = !traverser->get_effective_incomplete_render();
   Thread *current_thread = traverser->get_current_thread();
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
@@ -124,6 +126,29 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     }
 
     object->_state = object->_state->compose(get_rescale_normal_state(mode));
+  }
+
+  // Check for a special wireframe setting.
+  const RenderModeAttrib *rmode;
+  if (object->_state->get_attrib(rmode)) {
+    if (rmode->get_mode() == RenderModeAttrib::M_filled_wireframe) {
+      CullableObject *wireframe_part = new CullableObject(*object);
+      wireframe_part->_state = get_wireframe_overlay_state(rmode);
+
+      if (wireframe_part->munge_geom
+          (_gsg, _gsg->get_geom_munger(wireframe_part->_state, current_thread),
+           traverser, force)) {
+        int wireframe_bin_index = bin_manager->find_bin("fixed");
+        CullBin *bin = get_bin(wireframe_bin_index);
+        nassertv(bin != (CullBin *)NULL);
+        check_flash_bin(wireframe_part->_state, bin_manager, wireframe_bin_index);
+        bin->add_object(wireframe_part, current_thread);
+      } else {
+        delete wireframe_part;
+      }
+
+      object->_state = object->_state->compose(get_wireframe_filled_state());
+    }
   }
 
   // Check to see if there's a special transparency setting.
@@ -211,29 +236,6 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     default:
       // Other kinds of transparency need no special handling.
       break;
-    }
-  }
-
-  // Check for a special wireframe setting.
-  const RenderModeAttrib *rmode;
-  if (object->_state->get_attrib(rmode)) {
-    if (rmode->get_mode() == RenderModeAttrib::M_filled_wireframe) {
-      CullableObject *wireframe_part = new CullableObject(*object);
-      wireframe_part->_state = get_wireframe_overlay_state(rmode);
-
-      if (wireframe_part->munge_geom
-          (_gsg, _gsg->get_geom_munger(wireframe_part->_state, current_thread),
-           traverser, force)) {
-        int wireframe_bin_index = bin_manager->find_bin("fixed");
-        CullBin *bin = get_bin(wireframe_bin_index);
-        nassertv(bin != (CullBin *)NULL);
-        check_flash_bin(wireframe_part->_state, bin_manager, wireframe_bin_index);
-        bin->add_object(wireframe_part, current_thread);
-      } else {
-        delete wireframe_part;
-      }
-
-      object->_state = object->_state->compose(get_wireframe_filled_state());
     }
   }
 

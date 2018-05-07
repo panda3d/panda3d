@@ -24,12 +24,12 @@
  * A constraint interval that will constrain the position and orientation of
  * one node to the position and orientation of another.
  */
-class EXPCL_DIRECT CConstrainPosHprInterval : public CConstraintInterval {
+class EXPCL_DIRECT_INTERVAL CConstrainPosHprInterval : public CConstraintInterval {
 PUBLISHED:
-  CConstrainPosHprInterval(const string &name, double duration,
-                           const NodePath &node, const NodePath &target,
-                           bool wrt, const LVecBase3 posOffset=LVector3::zero(),
-                           const LVecBase3 hprOffset=LVector3::zero());
+  explicit CConstrainPosHprInterval(const string &name, double duration,
+                                    const NodePath &node, const NodePath &target,
+                                    bool wrt, const LVecBase3 posOffset=LVector3::zero(),
+                                    const LVecBase3 hprOffset=LVector3::zero());
 
   INLINE const NodePath &get_node() const;
   INLINE const NodePath &get_target() const;

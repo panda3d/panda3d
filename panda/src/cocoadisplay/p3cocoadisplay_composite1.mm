@@ -1,4 +1,5 @@
 #include "config_cocoadisplay.mm"
+#include "cocoaGraphicsBuffer.mm"
 #include "cocoaGraphicsPipe.mm"
 #include "cocoaGraphicsStateGuardian.mm"
 #include "cocoaGraphicsWindow.mm"
@@ -6,3 +7,4 @@
 #include "cocoaPandaView.mm"
 #include "cocoaPandaWindow.mm"
 #include "cocoaPandaWindowDelegate.mm"
+#include "cocoaPandaAppDelegate.mm"

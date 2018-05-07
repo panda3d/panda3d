@@ -106,7 +106,8 @@ WavAudioCursor(WavAudio *src, istream *stream) :
   nassertv(stream != NULL);
 
   // Beginning of "RIFF" chunk.
-  if (_reader.extract_bytes(4) != "RIFF") {
+  unsigned char magic[4];
+  if (_reader.extract_bytes(magic, 4) != 4 || memcmp(magic, "RIFF", 4) != 0) {
     movies_cat.error()
       << ".wav file is not a valid RIFF file.\n";
     return;
@@ -114,7 +115,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
 
   unsigned int chunk_size = _reader.get_uint32();
 
-  if (_reader.extract_bytes(4) != "WAVE") {
+  if (_reader.extract_bytes(magic, 4) != 4 || memcmp(magic, "WAVE", 4) != 0) {
     movies_cat.error()
       << ".wav file is a RIFF file but does not start with a WAVE chunk.\n";
     return;
@@ -126,10 +127,10 @@ WavAudioCursor(WavAudio *src, istream *stream) :
 
   while ((!have_fmt || !have_data) && _stream->good() && (bytes_read + 8) < chunk_size) {
 
-    string subchunk_id = _reader.extract_bytes(4);
+    _reader.extract_bytes(magic, 4);
     unsigned int subchunk_size = _reader.get_uint32();
 
-    if (subchunk_id == "fmt ") {
+    if (memcmp(magic, "fmt ", 4) == 0) {
       // The format chunk specifies information about the storage.
       nassertv(subchunk_size >= 16);
       have_fmt = true;
@@ -202,7 +203,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
         _reader.skip_bytes(subchunk_size - read_bytes);
       }
 
-    } else if (subchunk_id == "data") {
+    } else if (memcmp(magic, "data", 4) == 0) {
       // The data chunk contains the actual sammples.
       if (!have_fmt) {
         movies_cat.error()

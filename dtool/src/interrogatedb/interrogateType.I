@@ -293,6 +293,14 @@ is_union() const {
  *
  */
 INLINE bool InterrogateType::
+is_final() const {
+  return (_flags & F_final) != 0;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateType::
 is_fully_defined() const {
   return (_flags & F_fully_defined) != 0;
 }

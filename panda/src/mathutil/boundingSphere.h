@@ -25,7 +25,7 @@
 class EXPCL_PANDA_MATHUTIL BoundingSphere : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingSphere();
-  INLINE_MATHUTIL BoundingSphere(const LPoint3 &center, PN_stdfloat radius);
+  INLINE_MATHUTIL explicit BoundingSphere(const LPoint3 &center, PN_stdfloat radius);
   ALLOC_DELETED_CHAIN(BoundingSphere);
 
 public:

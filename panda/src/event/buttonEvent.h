@@ -86,7 +86,7 @@ public:
 
   INLINE ButtonEvent();
   INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE ButtonEvent(short keycode, double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE ButtonEvent(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start,
                      size_t highlight_end, size_t cursor_pos);
   INLINE ButtonEvent(const ButtonEvent &copy);
@@ -109,7 +109,7 @@ public:
 
   // _keycode will be filled in if type is T_keystroke.  It will be the
   // Unicode character that was typed.
-  short _keycode;
+  int _keycode;
 
   // _candidate_string will be filled in if type is T_candidate.
   wstring _candidate_string;

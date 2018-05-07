@@ -18,13 +18,3 @@ INLINE const CharacterJoint *JointVertexTransform::
 get_joint() const {
   return _joint;
 }
-
-/**
- * Recomputes _matrix if it needs it.
- */
-INLINE void JointVertexTransform::
-check_matrix() const {
-  if (_matrix_stale) {
-    ((JointVertexTransform *)this)->compute_matrix();
-  }
-}

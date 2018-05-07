@@ -34,7 +34,8 @@
  */
 class EXPCL_PANDA_EVENT EventParameter {
 PUBLISHED:
-  INLINE EventParameter();
+  INLINE EventParameter() DEFAULT_CTOR;
+  INLINE EventParameter(nullptr_t) {};
   INLINE EventParameter(const TypedWritableReferenceCount *ptr);
   INLINE EventParameter(const TypedReferenceCount *ptr);
   INLINE EventParameter(int value);
@@ -84,10 +85,5 @@ typedef ParamString EventStoreString;
 typedef ParamWstring EventStoreWstring;
 
 #include "eventParameter.I"
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

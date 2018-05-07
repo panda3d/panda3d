@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES PointLight : public LightLensNode {
 PUBLISHED:
-  PointLight(const string &name);
+  explicit PointLight(const string &name);
 
 protected:
   PointLight(const PointLight &copy);
@@ -63,6 +63,8 @@ public:
                     int light_id);
 
 private:
+  virtual void setup_shadow_map();
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:

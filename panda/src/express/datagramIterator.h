@@ -62,10 +62,10 @@ PUBLISHED:
   wstring get_wstring();
 
   INLINE void skip_bytes(size_t size);
-  string extract_bytes(size_t size);
+  vector_uchar extract_bytes(size_t size);
   size_t extract_bytes(unsigned char *into, size_t size);
 
-  INLINE string get_remaining_bytes() const;
+  INLINE vector_uchar get_remaining_bytes() const;
   INLINE size_t get_remaining_size() const;
 
   INLINE const Datagram &get_datagram() const;

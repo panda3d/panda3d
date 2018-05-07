@@ -26,7 +26,7 @@
  * at the time of execution.  This is encapsulated to support accessing these
  * things during static init time, which seems to be risky at best.
  */
-class EXPCL_DTOOL ExecutionEnvironment {
+class EXPCL_DTOOL_DTOOLUTIL ExecutionEnvironment {
 private:
   ExecutionEnvironment();
 
@@ -50,6 +50,10 @@ PUBLISHED:
   INLINE static void set_dtool_name(const string &name);
 
   static Filename get_cwd();
+
+PUBLISHED:
+  MAKE_MAP_PROPERTY(environment_variables, has_environment_variable,
+                    get_environment_variable, set_environment_variable);
 
   MAKE_SEQ_PROPERTY(args, get_num_args, get_arg);
   MAKE_PROPERTY(binary_name, get_binary_name, set_binary_name);

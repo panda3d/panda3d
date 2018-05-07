@@ -21,9 +21,9 @@
  * This interval does absolutely nothing, and is mainly useful for marking
  * time between other intervals within a sequence.
  */
-class EXPCL_DIRECT WaitInterval : public CInterval {
+class EXPCL_DIRECT_INTERVAL WaitInterval : public CInterval {
 PUBLISHED:
-  INLINE WaitInterval(double duration);
+  INLINE explicit WaitInterval(double duration);
 
   virtual void priv_step(double t);
 

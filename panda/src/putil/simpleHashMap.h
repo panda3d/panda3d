@@ -19,6 +19,52 @@
 #include "config_util.h"
 
 /**
+ * Entry in the SimpleHashMap.
+ */
+template<class Key, class Value>
+class SimpleKeyValuePair {
+public:
+  INLINE SimpleKeyValuePair(const Key &key, const Value &data) :
+    _key(key),
+    _data(data) {}
+
+  Key _key;
+
+  ALWAYS_INLINE const Value &get_data() const {
+    return _data;
+  }
+  ALWAYS_INLINE Value &modify_data() {
+    return _data;
+  }
+  ALWAYS_INLINE void set_data(const Value &data) {
+    _data = data;
+  }
+  ALWAYS_INLINE void set_data(Value &&data) {
+    _data = move(data);
+  }
+
+private:
+  Value _data;
+};
+
+/**
+ * Specialisation of SimpleKeyValuePair to not waste memory for nullptr_t
+ * values.  This allows effectively using SimpleHashMap as a set.
+ */
+template<class Key>
+class SimpleKeyValuePair<Key, nullptr_t> {
+public:
+  INLINE SimpleKeyValuePair(const Key &key, nullptr_t data) :
+    _key(key) {}
+
+  Key _key;
+
+  ALWAYS_INLINE_CONSTEXPR static nullptr_t get_data() { return nullptr; }
+  ALWAYS_INLINE_CONSTEXPR static nullptr_t modify_data() { return nullptr; }
+  ALWAYS_INLINE static void set_data(nullptr_t) {}
+};
+
+/**
  * This template class implements an unordered map of keys to data,
  * implemented as a hashtable.  It is similar to STL's hash_map, but
  * (a) it has a simpler interface (we don't mess around with iterators),
@@ -28,6 +74,8 @@
  * (d) it allows for efficient iteration over the entries,
  * (e) permits removal and resizing during forward iteration, and
  * (f) it has a constexpr constructor.
+ *
+ * It can also be used as a set, by using nullptr_t as Value typename.
  */
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class SimpleHashMap {
@@ -38,8 +86,12 @@ class SimpleHashMap {
 public:
 #ifndef CPPPARSER
   CONSTEXPR SimpleHashMap(const Compare &comp = Compare());
+  INLINE SimpleHashMap(const SimpleHashMap &copy);
   INLINE SimpleHashMap(SimpleHashMap &&from) NOEXCEPT;
   INLINE ~SimpleHashMap();
+
+  INLINE SimpleHashMap &operator = (const SimpleHashMap &copy);
+  INLINE SimpleHashMap &operator = (SimpleHashMap &&from) NOEXCEPT;
 
   INLINE void swap(SimpleHashMap &other);
 
@@ -55,6 +107,7 @@ public:
   INLINE const Value &get_data(size_t n) const;
   INLINE Value &modify_data(size_t n);
   INLINE void set_data(size_t n, const Value &data);
+  INLINE void set_data(size_t n, Value &&data);
   void remove_element(size_t n);
 
   INLINE size_t get_num_entries() const;
@@ -67,8 +120,6 @@ public:
   INLINE bool consider_shrink_table();
 
 private:
-  class TableEntry;
-
   INLINE size_t get_hash(const Key &key) const;
   INLINE size_t next_hash(size_t hash) const;
 
@@ -82,23 +133,8 @@ private:
   INLINE bool consider_expand_table();
   void resize_table(size_t new_size);
 
-  class TableEntry {
-  public:
-    INLINE TableEntry(const Key &key, const Value &data) :
-      _key(key),
-      _data(data) {}
-    INLINE TableEntry(const TableEntry &copy) :
-      _key(copy._key),
-      _data(copy._data) {}
-#ifdef USE_MOVE_SEMANTICS
-    INLINE TableEntry(TableEntry &&from) NOEXCEPT :
-      _key(move(from._key)),
-      _data(move(from._data)) {}
-#endif
-    Key _key;
-    Value _data;
-  };
-
+public:
+  typedef SimpleKeyValuePair<Key, Value> TableEntry;
   TableEntry *_table;
   DeletedBufferChain *_deleted_chain;
   size_t _table_size;

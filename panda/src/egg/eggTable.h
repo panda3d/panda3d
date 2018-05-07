@@ -32,7 +32,7 @@ PUBLISHED:
     TT_bundle,
   };
 
-  INLINE EggTable(const string &name = "");
+  INLINE explicit EggTable(const string &name = "");
   INLINE EggTable(const EggTable &copy);
   INLINE EggTable &operator = (const EggTable &copy);
 

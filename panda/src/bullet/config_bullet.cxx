@@ -56,6 +56,10 @@ extern ContactDestroyedCallback gContactDestroyedCallback;
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDABULLET)
+  #error Buildsystem error: BUILDING_PANDABULLET not defined
+#endif
+
 Configure(config_bullet);
 NotifyCategoryDef(bullet, "");
 
@@ -188,6 +192,13 @@ init_libbullet() {
   BulletSphereShape::register_with_read_factory();
   BulletTriangleMesh::register_with_read_factory();
   BulletTriangleMeshShape::register_with_read_factory();
+  BulletCylinderShape::register_with_read_factory();
+  BulletCapsuleShape::register_with_read_factory();
+  BulletConeShape::register_with_read_factory();
+  BulletHeightfieldShape::register_with_read_factory();
+  BulletConvexPointCloudShape::register_with_read_factory();
+  BulletMinkowskiSumShape::register_with_read_factory();
+  BulletMultiSphereShape::register_with_read_factory();
 
   // Custom contact callbacks
   gContactAddedCallback = contact_added_callback;

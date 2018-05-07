@@ -92,6 +92,7 @@ overflow(int ch) {
  */
 void AndroidLogStream::AndroidLogStreamBuf::
 write_char(char c) {
+  nout.put(c);
   if (c == '\n') {
     // Write a line to the log file.
     __android_log_write(_priority, _tag.c_str(), _data.c_str());

@@ -41,6 +41,11 @@ inline namespace std {
 
 struct timeval;
 
+#ifdef __cplusplus
+#define NULL 0L
+#else
+#define NULL ((void *)0)
+#endif
 typedef decltype(nullptr) nullptr_t;
 
 // One day, we might extend interrogate to be able to parse this,

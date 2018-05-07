@@ -37,11 +37,57 @@ BulletTriangleMesh()
 }
 
 /**
+ * Returns the number of vertices in this triangle mesh.
+ */
+size_t BulletTriangleMesh::
+get_num_vertices() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _vertices.size();
+}
+
+/**
+ * Returns the vertex at the given vertex index.
+ */
+LPoint3 BulletTriangleMesh::
+get_vertex(size_t index) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertr(index < _vertices.size(), LPoint3::zero());
+  const btVector3 &vertex = _vertices[index];
+  return LPoint3(vertex[0], vertex[1], vertex[2]);
+}
+
+/**
+ * Returns the vertex indices making up the given triangle index.
+ */
+LVecBase3i BulletTriangleMesh::
+get_triangle(size_t index) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  index *= 3;
+  nassertr(index + 2 < _indices.size(), LVecBase3i::zero());
+  return LVecBase3i(_indices[index], _indices[index + 1], _indices[index + 2]);
+}
+
+/**
+ * Returns the number of triangles in this triangle mesh.
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
+size_t BulletTriangleMesh::
+do_get_num_triangles() const {
+
+  return _indices.size() / 3;
+}
+
+/**
  * Returns the number of triangles in this triangle mesh.
  */
-int BulletTriangleMesh::
+size_t BulletTriangleMesh::
 get_num_triangles() const {
-  return _indices.size() / 3;
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return do_get_num_triangles();
 }
 
 /**
@@ -51,6 +97,8 @@ get_num_triangles() const {
  */
 void BulletTriangleMesh::
 preallocate(int num_verts, int num_indices) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
   _vertices.reserve(num_verts);
   _indices.reserve(num_indices);
 
@@ -66,9 +114,11 @@ preallocate(int num_verts, int num_indices) {
  * add duplicate vertices if they already exist in the triangle mesh, within
  * the tolerance specified by set_welding_distance().  This comes at a
  * significant performance cost, especially for large meshes.
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletTriangleMesh::
-add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
+do_add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
+
   nassertv(!p0.is_nan());
   nassertv(!p1.is_nan());
   nassertv(!p2.is_nan());
@@ -97,6 +147,21 @@ add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remov
 }
 
 /**
+ * Adds a triangle with the indicated coordinates.
+ *
+ * If remove_duplicate_vertices is true, it will make sure that it does not
+ * add duplicate vertices if they already exist in the triangle mesh, within
+ * the tolerance specified by set_welding_distance().  This comes at a
+ * significant performance cost, especially for large meshes.
+ */
+void BulletTriangleMesh::
+add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_add_triangle(p0, p1, p2, remove_duplicate_vertices);
+}
+
+/**
  * Sets the square of the distance at which vertices will be merged
  * together when adding geometry with remove_duplicate_vertices set to true.
  *
@@ -105,6 +170,8 @@ add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remov
  */
 void BulletTriangleMesh::
 set_welding_distance(PN_stdfloat distance) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
   _welding_distance = distance;
 }
 
@@ -114,6 +181,8 @@ set_welding_distance(PN_stdfloat distance) {
  */
 PN_stdfloat BulletTriangleMesh::
 get_welding_distance() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
   return _welding_distance;
 }
 
@@ -129,6 +198,8 @@ get_welding_distance() const {
  */
 void BulletTriangleMesh::
 add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState *ts) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
   nassertv(geom);
   nassertv(ts);
 
@@ -241,6 +312,8 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
  */
 void BulletTriangleMesh::
 add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_duplicate_vertices) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
   btIndexedMesh &mesh = _mesh.getIndexedMeshArray()[0];
 
   _indices.reserve(_indices.size() + indices.size());
@@ -279,7 +352,9 @@ add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_dupli
  */
 void BulletTriangleMesh::
 output(ostream &out) const {
-  out << get_type() << ", " << get_num_triangles() << " triangles";
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  out << get_type() << ", " << _indices.size() / 3 << " triangles";
 }
 
 /**

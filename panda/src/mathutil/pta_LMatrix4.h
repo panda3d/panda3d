@@ -70,9 +70,4 @@ typedef PTA_LMatrix4d PTAMat4d;
 typedef CPTA_LMatrix4d CPTAMat4d;
 #endif  // CPPPARSER
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

@@ -75,8 +75,8 @@ InterfaceMaker::MakeSeq::
 MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
   _name(name),
   _imake_seq(imake_seq),
-  _length_getter(NULL),
-  _element_getter(NULL)
+  _length_getter(nullptr),
+  _element_getter(nullptr)
 {
 }
 
@@ -86,12 +86,12 @@ MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
 InterfaceMaker::Property::
 Property(const InterrogateElement &ielement) :
   _ielement(ielement),
-  _length_function(NULL),
-  _getter(NULL),
-  _setter(NULL),
-  _has_function(NULL),
-  _clear_function(NULL),
-  _deleter(NULL),
+  _length_function(nullptr),
+  _has_function(nullptr),
+  _clear_function(nullptr),
+  _deleter(nullptr),
+  _inserter(nullptr),
+  _getkey_function(nullptr),
   _has_this(false)
 {
 }
@@ -616,7 +616,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
 
           // If *any* of the variants of this function has a "this" pointer,
           // the entire set of functions is deemed to have a "this" pointer.
-          if (remap->_has_this) {
+          if (remap->_has_this || (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
             func->_has_this = true;
           }
 

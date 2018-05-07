@@ -16,6 +16,10 @@
 #include "geomParticleRenderer.h"
 #include "geomNode.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAPHYSICS)
+  #error Buildsystem error: BUILDING_PANDAPHYSICS not defined
+#endif
+
 ConfigureDef(config_particlesystem);
 NotifyCategoryDef(particlesystem, "");
 

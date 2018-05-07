@@ -897,7 +897,7 @@ class Actor(DirectObject, NodePath):
         return ((toFrame+1)-fromFrame) / animControl.getFrameRate()
 
     def getNumFrames(self, animName=None, partName=None):
-        lodName = next(iter(self.__animControlDict))
+        #lodName = next(iter(self.__animControlDict))
         controls = self.getAnimControls(animName, partName)
         if len(controls) == 0:
             return None
@@ -1103,8 +1103,8 @@ class Actor(DirectObject, NodePath):
         # Get a handle to the joint.
         joint = bundle.findChild(jointName)
 
-        if node == None:
-            node = self.attachNewNode(jointName)
+        if node is None:
+            node = partDef.partBundleNP.attachNewNode(jointName)
 
         if (joint):
             if localTransform:

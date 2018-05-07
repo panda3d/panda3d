@@ -348,12 +348,12 @@ has_dirty_prev_transform() const {
 INLINE string PandaNode::
 get_tag(const string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  TagData::const_iterator ti;
-  ti = cdata->_tag_data.find(key);
-  if (ti != cdata->_tag_data.end()) {
-    return (*ti).second;
+  int index = cdata->_tag_data.find(key);
+  if (index >= 0) {
+    return cdata->_tag_data.get_data((size_t)index);
+  } else {
+    return string();
   }
-  return string();
 }
 
 /**
@@ -364,9 +364,25 @@ get_tag(const string &key, Thread *current_thread) const {
 INLINE bool PandaNode::
 has_tag(const string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  TagData::const_iterator ti;
-  ti = cdata->_tag_data.find(key);
-  return (ti != cdata->_tag_data.end());
+  return cdata->_tag_data.find(key) >= 0;
+}
+
+/**
+ * Returns the number of tags applied to this node.
+ */
+INLINE size_t PandaNode::
+get_num_tags() const {
+  CDReader cdata(_cycler);
+  return cdata->_tag_data.size();
+}
+
+/**
+ * Returns the key of the nth tag applied to this node.
+ */
+INLINE string PandaNode::
+get_tag_key(size_t i) const {
+  CDReader cdata(_cycler);
+  return cdata->_tag_data.get_key(i);
 }
 
 /**
@@ -376,7 +392,7 @@ has_tag(const string &key, Thread *current_thread) const {
 INLINE bool PandaNode::
 has_tags() const {
   CDReader cdata(_cycler);
-  if (!cdata->_tag_data.empty()) {
+  if (!cdata->_tag_data.is_empty()) {
     return true;
   }
 #ifdef HAVE_PYTHON
@@ -1448,12 +1464,12 @@ get_prev_transform() const {
  */
 INLINE string PandaNodePipelineReader::
 get_tag(const string &key) const {
-  PandaNode::TagData::const_iterator ti;
-  ti = _cdata->_tag_data.find(key);
-  if (ti != _cdata->_tag_data.end()) {
-    return (*ti).second;
+  int index = _cdata->_tag_data.find(key);
+  if (index >= 0) {
+    return _cdata->_tag_data.get_data((size_t)index);
+  } else {
+    return string();
   }
-  return string();
 }
 
 /**
@@ -1463,9 +1479,7 @@ get_tag(const string &key) const {
  */
 INLINE bool PandaNodePipelineReader::
 has_tag(const string &key) const {
-  PandaNode::TagData::const_iterator ti;
-  ti = _cdata->_tag_data.find(key);
-  return (ti != _cdata->_tag_data.end());
+  return _cdata->_tag_data.find(key) >= 0;
 }
 
 /**

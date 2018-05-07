@@ -96,7 +96,7 @@ protected:
   typedef pvector< PT(AsyncTask) > TaskHeap;
 
   void do_add(AsyncTask *task);
-  bool do_remove(AsyncTask *task);
+  bool do_remove(AsyncTask *task, bool upon_death=false);
   void do_wait_for_tasks();
   void do_cleanup();
 
@@ -146,7 +146,12 @@ protected:
       if (a->get_priority() != b->get_priority()) {
         return a->get_priority() < b->get_priority();
       }
-      return a->get_start_time() > b->get_start_time();
+      if (a->get_start_time() != b->get_start_time()) {
+        return a->get_start_time() > b->get_start_time();
+      }
+      // Failing any other ordering criteria, we sort the tasks based on the
+      // order in which they were added to the task chain.
+      return a->_implicit_sort > b->_implicit_sort;
     }
   };
 
@@ -172,6 +177,7 @@ protected:
   bool _frame_sync;
   int _num_busy_threads;
   int _num_tasks;
+  int _num_awaiting_tasks;
   TaskHeap _active;
   TaskHeap _this_active;
   TaskHeap _next_active;
@@ -184,6 +190,8 @@ protected:
   int _current_frame;
   double _time_in_frame;
   bool _block_till_next_frame;
+
+  unsigned int _next_implicit_sort;
 
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;
@@ -205,6 +213,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskChainThread;
   friend class AsyncTask;
   friend class AsyncTaskManager;

@@ -91,12 +91,16 @@ PUBLISHED:
   void clear_tag_states();
   bool has_tag_state(const string &tag_state) const;
   CPT(RenderState) get_tag_state(const string &tag_state) const;
+  MAKE_MAP_PROPERTY(tag_states, has_tag_state, get_tag_state,
+                    set_tag_state, clear_tag_state);
 
   void set_aux_scene_data(const NodePath &node_path, AuxSceneData *data);
   bool clear_aux_scene_data(const NodePath &node_path);
   AuxSceneData *get_aux_scene_data(const NodePath &node_path) const;
   void list_aux_scene_data(ostream &out) const;
   int cleanup_aux_scene_data(Thread *current_thread = Thread::get_current_thread());
+  MAKE_MAP_PROPERTY(aux_scene_data, get_aux_scene_data, get_aux_scene_data,
+                    set_aux_scene_data, clear_aux_scene_data);
 
 private:
   void add_display_region(DisplayRegion *display_region);

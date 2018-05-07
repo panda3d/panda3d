@@ -22,6 +22,10 @@
 #include "cullBinManager.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_CULL)
+  #error Buildsystem error: BUILDING_PANDA_CULL not defined
+#endif
+
 ConfigureDef(config_cull);
 NotifyCategoryDef(cull, "");
 

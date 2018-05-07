@@ -3074,7 +3074,7 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
-  _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  determine_target_shader();
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
@@ -4438,7 +4438,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     set_texture_stage_state(i, D3DTSS_RESULTARG, D3DTA_CURRENT);
   }
 
-  if (stage->uses_color()) {
+  if (stage->uses_color() || stage->involves_color_scale()) {
     // Set up the constant color for this stage.
 
     D3DCOLOR constant_color;
@@ -4936,7 +4936,7 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
          buffer_start, stride);
 
-  } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
+  } else if ((((uintptr_t)buffer_end ^ (uintptr_t)buffer_start) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
          buffer_start, stride);
@@ -4978,7 +4978,7 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,
        index_data, index_type, buffer, stride);
 
-  } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
+  } else if ((((uintptr_t)buffer_end ^ (uintptr_t)buffer_start) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawIndexedPrimitiveUP
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,

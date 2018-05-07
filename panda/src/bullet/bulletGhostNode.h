@@ -29,14 +29,13 @@ class BulletShape;
  *
  */
 class EXPCL_PANDABULLET BulletGhostNode : public BulletBodyNode {
-
 PUBLISHED:
-  BulletGhostNode(const char *name="ghost");
+  explicit BulletGhostNode(const char *name="ghost");
   INLINE ~BulletGhostNode();
 
   // Overlapping
-  INLINE int get_num_overlapping_nodes() const;
-  INLINE PandaNode *get_overlapping_node(int idx) const;
+  int get_num_overlapping_nodes() const;
+  PandaNode *get_overlapping_node(int idx) const;
   MAKE_SEQ(get_overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
   
   MAKE_SEQ_PROPERTY(overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
@@ -44,8 +43,8 @@ PUBLISHED:
 public:
   virtual btCollisionObject *get_object() const;
 
-  void sync_p2b();
-  void sync_b2p();
+  void do_sync_p2b();
+  void do_sync_b2p();
 
 protected:
   virtual void parents_changed();
@@ -57,6 +56,8 @@ private:
   bool _sync_local;
 
   btPairCachingGhostObject *_ghost;
+
+  void do_transform_changed();
 
 public:
   static TypeHandle get_class_type() {

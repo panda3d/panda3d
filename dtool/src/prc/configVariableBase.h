@@ -42,7 +42,7 @@
  * and/or ConfigDeclaration, more or less duplicating the interface presented
  * there.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableBase : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigVariableBase : public ConfigFlags {
 protected:
   INLINE ConfigVariableBase(const string &name, ValueType type);
   ConfigVariableBase(const string &name, ValueType type,

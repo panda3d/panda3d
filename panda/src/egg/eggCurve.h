@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDAEGG EggCurve : public EggPrimitive {
 PUBLISHED:
-  INLINE EggCurve(const string &name = "");
+  INLINE explicit EggCurve(const string &name = "");
   INLINE EggCurve(const EggCurve &copy);
   INLINE EggCurve &operator = (const EggCurve &copy);
 

@@ -36,9 +36,9 @@ class ClockObject;
  * channel or window.  If this is done, it creates a DisplayRegion for itself
  * and renders itself in the upper-right-hand corner.
  */
-class EXPCL_PANDA SceneGraphAnalyzerMeter : public TextNode {
+class EXPCL_PANDA_GRUTIL SceneGraphAnalyzerMeter : public TextNode {
 PUBLISHED:
-  SceneGraphAnalyzerMeter(const string &name, PandaNode *node);
+  explicit SceneGraphAnalyzerMeter(const string &name, PandaNode *node);
   virtual ~SceneGraphAnalyzerMeter();
 
   void setup_window(GraphicsOutput *window);

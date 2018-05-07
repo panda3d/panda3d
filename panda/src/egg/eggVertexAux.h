@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDAEGG EggVertexAux : public EggNamedObject {
 PUBLISHED:
-  EggVertexAux(const string &name, const LVecBase4d &aux);
+  explicit EggVertexAux(const string &name, const LVecBase4d &aux);
   EggVertexAux(const EggVertexAux &copy);
   EggVertexAux &operator = (const EggVertexAux &copy);
   virtual ~EggVertexAux();

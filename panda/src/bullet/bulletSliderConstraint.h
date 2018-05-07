@@ -28,16 +28,15 @@ class BulletRigidBodyNode;
  *
  */
 class EXPCL_PANDABULLET BulletSliderConstraint : public BulletConstraint {
-
 PUBLISHED:
-  BulletSliderConstraint(const BulletRigidBodyNode *node_a,
-                         const TransformState *frame_a,
-                         bool useFrame_a);
-  BulletSliderConstraint(const BulletRigidBodyNode *node_a,
-                         const BulletRigidBodyNode *node_b,
-                         const TransformState *frame_a,
-                         const TransformState *frame_b,
-                         bool use_frame_a);
+  explicit BulletSliderConstraint(const BulletRigidBodyNode *node_a,
+                                  const TransformState *frame_a,
+                                  bool useFrame_a);
+  explicit BulletSliderConstraint(const BulletRigidBodyNode *node_a,
+                                  const BulletRigidBodyNode *node_b,
+                                  const TransformState *frame_a,
+                                  const TransformState *frame_b,
+                                  bool use_frame_a);
   INLINE ~BulletSliderConstraint();
 
   PN_stdfloat get_linear_pos() const;
@@ -71,8 +70,8 @@ PUBLISHED:
 
   // Frames
   void set_frames(const TransformState *ts_a, const TransformState *ts_b);
-  INLINE CPT(TransformState) get_frame_a() const;
-  INLINE CPT(TransformState) get_frame_b() const;
+  CPT(TransformState) get_frame_a() const;
+  CPT(TransformState) get_frame_b() const;
 
   MAKE_PROPERTY(linear_pos, get_linear_pos);
   MAKE_PROPERTY(angular_pos, get_angular_pos);

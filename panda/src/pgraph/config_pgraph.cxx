@@ -92,6 +92,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PGRAPH)
+  #error Buildsystem error: BUILDING_PANDA_PGRAPH not defined
+#endif
+
 ConfigureDef(config_pgraph);
 NotifyCategoryDef(pgraph, "");
 NotifyCategoryDef(loader, "");
@@ -227,7 +231,7 @@ ConfigVariableBool uniquify_states
           "are pointerwise equal.  This may improve caching performance, "
           "but also adds additional overhead to maintain the cache, "
           "including the need to check for a composition cycle in "
-          "the cache."));
+          "the cache.  It is highly recommended to keep this on."));
 
 ConfigVariableBool uniquify_attribs
 ("uniquify-attribs", true,

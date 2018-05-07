@@ -59,6 +59,8 @@ class DirectEntry(DirectFrame):
             # Text used for the PGEntry text node
             # NOTE: This overrides the DirectFrame text option
             ('initialText',     '',               DGG.INITOPT),
+            # Enable or disable text overflow scrolling
+            ('overflow',        0,                self.setOverflowMode),
             # Command to be called on hitting Enter
             ('command',        None,              None),
             ('extraArgs',      [],                None),
@@ -158,6 +160,9 @@ class DirectEntry(DirectFrame):
 
     def setCursorKeysActive(self):
         PGEntry.setCursorKeysActive(self.guiItem, self['cursorKeys'])
+
+    def setOverflowMode(self):
+        PGEntry.set_overflow_mode(self.guiItem, self['overflow'])
 
     def setObscureMode(self):
         PGEntry.setObscureMode(self.guiItem, self['obscured'])
@@ -297,11 +302,17 @@ class DirectEntry(DirectFrame):
             else:
                 return self.guiItem.getText()
 
+    def getCursorPosition(self):
+        return self.guiItem.getCursorPosition()
+
     def setCursorPosition(self, pos):
         if (pos < 0):
             self.guiItem.setCursorPosition(self.guiItem.getNumCharacters() + pos)
         else:
             self.guiItem.setCursorPosition(pos)
+
+    def getNumCharacters(self):
+        return self.guiItem.getNumCharacters()
 
     def enterText(self, text):
         """ sets the entry's text, and moves the cursor to the end """

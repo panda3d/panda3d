@@ -17,6 +17,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PNMIMAGE)
+  #error Buildsystem error: BUILDING_PANDA_PNMIMAGE not defined
+#endif
+
 Configure(config_pnmimage);
 NotifyCategoryDef(pnmimage, "");
 

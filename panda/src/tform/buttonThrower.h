@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_TFORM ButtonThrower : public DataNode {
 PUBLISHED:
-  ButtonThrower(const string &name);
+  explicit ButtonThrower(const string &name);
   ~ButtonThrower();
 
   INLINE void set_button_down_event(const string &button_down_event);

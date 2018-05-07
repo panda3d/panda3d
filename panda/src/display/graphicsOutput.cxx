@@ -115,7 +115,6 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _sbs_left_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   _sbs_right_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   _delete_flag = false;
-  _trigger_copy = false;
 
   if (_fb_properties.is_single_buffered()) {
     _draw_buffer_type = RenderBuffer::T_front;
@@ -227,14 +226,20 @@ clear_render_textures() {
  * You can specify a bitplane to attach the texture to.  the legal choices
  * are:
  *
- * * RTP_depth * RTP_depth_stencil * RTP_color * RTP_aux_rgba_0 *
- * RTP_aux_rgba_1 * RTP_aux_rgba_2 * RTP_aux_rgba_3
+ * - RTP_depth
+ * - RTP_depth_stencil
+ * - RTP_color
+ * - RTP_aux_rgba_0
+ * - RTP_aux_rgba_1
+ * - RTP_aux_rgba_2
+ * - RTP_aux_rgba_3
  *
  * If you do not specify a bitplane to attach the texture to, this routine
  * will use a default based on the texture's format:
  *
- * * F_depth_component attaches to RTP_depth * F_depth_stencil attaches to
- * RTP_depth_stencil * all other formats attach to RTP_color.
+ * - F_depth_component attaches to RTP_depth
+ * - F_depth_stencil attaches to RTP_depth_stencil
+ * - all other formats attach to RTP_color.
  *
  * The texture's format will be changed to match the format of the bitplane to
  * which it is attached.  For example, if you pass in an F_rgba texture and
@@ -270,12 +275,21 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
 
   // Choose a default bitplane.
   if (plane == RTP_COUNT) {
-    if (tex->get_format() == Texture::F_depth_stencil) {
+    switch (tex->get_format()) {
+    case Texture::F_depth_stencil:
       plane = RTP_depth_stencil;
-    } else if (tex->get_format() == Texture::F_depth_component) {
+      break;
+
+    case Texture::F_depth_component:
+    case Texture::F_depth_component16:
+    case Texture::F_depth_component24:
+    case Texture::F_depth_component32:
       plane = RTP_depth;
-    } else {
+      break;
+
+    default:
       plane = RTP_color;
+      break;
     }
   }
 
@@ -283,32 +297,41 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // bitplane, while we're at it).
 
   if (plane == RTP_depth) {
-    tex->set_format(Texture::F_depth_component);
+    _fb_properties.setup_depth_texture(tex);
     tex->set_match_framebuffer_format(true);
+
   } else if (plane == RTP_depth_stencil) {
     tex->set_format(Texture::F_depth_stencil);
-    tex->set_component_type(Texture::T_unsigned_int_24_8);
+    if (_fb_properties.get_float_depth()) {
+      tex->set_component_type(Texture::T_float);
+    } else {
+      tex->set_component_type(Texture::T_unsigned_int_24_8);
+    }
     tex->set_match_framebuffer_format(true);
-  } else if ((plane == RTP_color)||
-             (plane == RTP_aux_rgba_0)||
-             (plane == RTP_aux_rgba_1)||
-             (plane == RTP_aux_rgba_2)||
-             (plane == RTP_aux_rgba_3)) {
-    tex->set_format(Texture::F_rgba);
+
+  } else if (plane == RTP_color ||
+             plane == RTP_aux_rgba_0 ||
+             plane == RTP_aux_rgba_1 ||
+             plane == RTP_aux_rgba_2 ||
+             plane == RTP_aux_rgba_3) {
+    _fb_properties.setup_color_texture(tex);
     tex->set_match_framebuffer_format(true);
-  } else if  ((plane == RTP_aux_hrgba_0)||
-              (plane == RTP_aux_hrgba_1)||
-              (plane == RTP_aux_hrgba_2)||
-              (plane == RTP_aux_hrgba_3)) {
+
+  } else if (plane == RTP_aux_hrgba_0 ||
+             plane == RTP_aux_hrgba_1 ||
+             plane == RTP_aux_hrgba_2 ||
+             plane == RTP_aux_hrgba_3) {
     tex->set_format(Texture::F_rgba16);
     tex->set_match_framebuffer_format(true);
-  } else if ((plane == RTP_aux_float_0)||
-              (plane == RTP_aux_float_1)||
-              (plane == RTP_aux_float_2)||
-              (plane == RTP_aux_float_3)) {
+
+  } else if (plane == RTP_aux_float_0 ||
+             plane == RTP_aux_float_1 ||
+             plane == RTP_aux_float_2 ||
+             plane == RTP_aux_float_3) {
     tex->set_format(Texture::F_rgba32);
     tex->set_component_type(Texture::T_float);
     tex->set_match_framebuffer_format(true);
+
   } else {
     display_cat.error() <<
       "add_render_texture: invalid bitplane specified.\n";
@@ -1420,7 +1443,10 @@ copy_to_textures() {
       }
     }
   }
-  _trigger_copy = false;
+  if (_trigger_copy != nullptr) {
+    _trigger_copy->set_result(nullptr);
+    _trigger_copy = nullptr;
+  }
 
   return okflag;
 }

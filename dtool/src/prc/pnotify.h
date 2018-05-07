@@ -36,7 +36,7 @@ class EmscriptenLogStream;
  * independently enabled or disabled, so that error messages may be squelched
  * or respected according to the wishes of the user.
  */
-class EXPCL_DTOOLCONFIG Notify {
+class EXPCL_DTOOL_PRC Notify {
 PUBLISHED:
   Notify();
   ~Notify();

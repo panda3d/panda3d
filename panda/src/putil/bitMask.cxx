@@ -13,11 +13,6 @@
 
 #include "bitMask.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class BitMask<uint16_t, 16>;
 template class BitMask<uint32_t, 32>;
 template class BitMask<uint64_t, 64>;

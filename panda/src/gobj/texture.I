@@ -279,12 +279,12 @@ clear_clear_color() {
  * Returns the raw image data for a single pixel if it were set to the clear
  * color.
  */
-INLINE string Texture::
+INLINE vector_uchar Texture::
 get_clear_data() const {
   CDReader cdata(_cycler);
-  unsigned char data[16];
-  size_t size = do_get_clear_data(cdata, data);
-  return string((char *)data, size);
+  vector_uchar data(16);
+  data.resize(do_get_clear_data(cdata, &data[0]));
+  return data;
 }
 
 /**
@@ -2322,6 +2322,61 @@ get_unsigned_short(const unsigned char *&p) {
   v.uc[0] = (*p++);
   v.uc[1] = (*p++);
   return (double)v.us / 65535.0;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
+ * unsigned ints.
+ */
+INLINE double Texture::
+get_unsigned_int(const unsigned char *&p) {
+  union {
+    unsigned int ui;
+    uchar uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)v.ui / 4294967295.0;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
+ * floats.
+ */
+INLINE double Texture::
+get_float(const unsigned char *&p) {
+  double v = *((float *)p);
+  p += 4;
+  return v;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
+ * half-floats.
+ */
+INLINE double Texture::
+get_half_float(const unsigned char *&p) {
+  union {
+    uint32_t ui;
+    float uf;
+  } v;
+  uint16_t in = *(uint16_t *)p;
+  p += 2;
+  uint32_t t1 = in & 0x7fff; // Non-sign bits
+  uint32_t t2 = in & 0x8000; // Sign bit
+  uint32_t t3 = in & 0x7c00; // Exponent
+  t1 <<= 13; // Align mantissa on MSB
+  t2 <<= 16; // Shift sign bit into position
+  t1 += 0x38000000; // Adjust bias
+  t1 = (t3 == 0 ? 0 : t1); // Denormals-as-zero
+  t1 |= t2; // Re-insert sign bit
+  v.ui = t1;
+  return v.uf;
 }
 
 /**

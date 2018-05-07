@@ -28,6 +28,8 @@ into an existing Python installation is using the following command:
 pip install --pre --extra-index-url https://archive.panda3d.org/ panda3d
 ```
 
+If this command fails, please make sure your version of pip is up-to-date.
+
 If you prefer to install the full SDK with all tools, the latest development
 builds can be obtained from this page:
 
@@ -41,21 +43,26 @@ Building Panda3D
 Windows
 -------
 
-We currently build using the Microsoft Visual C++ 2010 compiler.  You do not
-need Microsoft Visual Studio to build Panda3D, though - the relevant compilers
-are included as part of the Windows 7.1 SDK.
+We currently build using the Microsoft Visual C++ 2015 compiler.  You will
+also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
+and if you intend to target Windows XP, you will also need the
+[Windows 7.1 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=8279).
 
 You will also need to have the third-party dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
-depending on whether you are on a 32-bit or 64-bit system:
-https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win32.zip
-https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-win64.zip
+depending on whether you are on a 32-bit or 64-bit system, or you can
+[click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
+building them from source.
+
+http://rdb.name/thirdparty-vc14-x64.7z
+http://rdb.name/thirdparty-vc14.7z
 
 After acquiring these dependencies, you may simply build Panda3D from the
-command prompt using the following command:
+command prompt using the following command.  (Add the `--windows-sdk=10`
+option if you don't need to support Windows XP.)
 
 ```bash
-makepanda\makepanda.bat --everything --installer --no-eigen
+makepanda\makepanda.bat --everything --installer --no-eigen --threads=2
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to
@@ -156,13 +163,24 @@ python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --n
 If successful, this will produce a .pkg file in the root of the source
 directory which you can install using `pkg install`.
 
+Running Tests
+=============
+
+Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation)
+and run the `pytest` command.  If you have not installed Panda3D, you will
+need to configure your enviroment by pointing the `PYTHONPATH` variable at
+the `built` directory.  On Linux, you will also need to point the
+`LD_LIBRARY_PATH` variable at the `built/lib` directory.
+
+As a convenience, you can alternatively pass the `--tests` option to makepanda.
+
 Reporting Issues
 ================
 
 If you encounter any bugs when using Panda3D, please report them in the bug
 tracker.  This is hosted at:
 
-  https://bugs.launchpad.net/panda3d
+  https://github.com/panda3d/panda3d/issues
 
 Make sure to first use the search function to see if the bug has already been
 reported.  When filling out a bug report, make sure that you include as much

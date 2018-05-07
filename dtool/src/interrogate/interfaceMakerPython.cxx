@@ -51,7 +51,7 @@ test_assert(ostream &out, int indent_level) const {
     indent(out, indent_level)
       << "Notify *notify = Notify::ptr();\n";
     indent(out, indent_level)
-      << "if (notify->has_assert_failed()) {\n";
+      << "if (UNLIKELY(notify->has_assert_failed())) {\n";
     indent(out, indent_level + 2)
       << "PyErr_SetString(PyExc_AssertionError, notify->get_assert_error_message().c_str());\n";
     indent(out, indent_level + 2)

@@ -67,7 +67,7 @@ PUBLISHED:
     S_per_vertex
   };
 
-  INLINE EggPrimitive(const string &name = "");
+  INLINE explicit EggPrimitive(const string &name = "");
   INLINE EggPrimitive(const EggPrimitive &copy);
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
   INLINE ~EggPrimitive();
@@ -181,13 +181,14 @@ PUBLISHED:
 
   // These are shorthands if you don't want to use the iterators.
   INLINE size_t get_num_vertices() const;
-  INLINE void set_vertex(size_t index, EggVertex *vertex);
   INLINE EggVertex *get_vertex(size_t index) const;
+  INLINE void set_vertex(size_t index, EggVertex *vertex);
+  INLINE void insert_vertex(size_t index, EggVertex *vertex);
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE EggVertexPool *get_pool() const;
 
-  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex, set_vertex, remove_vertex);
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex, set_vertex, remove_vertex, insert_vertex);
   MAKE_PROPERTY(pool, get_pool);
 
   virtual void write(ostream &out, int indent_level) const=0;

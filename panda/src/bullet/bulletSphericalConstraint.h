@@ -32,14 +32,13 @@ class BulletRigidBodyNode;
  * socket" joint.
  */
 class EXPCL_PANDABULLET BulletSphericalConstraint : public BulletConstraint {
-
 PUBLISHED:
-  BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
-                            const LPoint3 &pivot_a);
-  BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
-                            const BulletRigidBodyNode *node_b,
-                            const LPoint3 &pivot_a,
-                            const LPoint3 &pivot_b);
+  explicit BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
+                                     const LPoint3 &pivot_a);
+  explicit BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
+                                     const BulletRigidBodyNode *node_b,
+                                     const LPoint3 &pivot_a,
+                                     const LPoint3 &pivot_b);
   INLINE ~BulletSphericalConstraint();
 
   // Pivots

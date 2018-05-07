@@ -24,8 +24,8 @@
  */
 class EXPCL_PANDAPHYSICS LinearControlForce : public LinearForce {
 PUBLISHED:
-  LinearControlForce(const PhysicsObject *po = 0, PN_stdfloat a = 1.0f,
-    bool mass = false);
+  explicit LinearControlForce(const PhysicsObject *po = 0, PN_stdfloat a = 1.0f,
+                              bool mass = false);
   LinearControlForce(const LinearControlForce &copy);
   virtual ~LinearControlForce();
 

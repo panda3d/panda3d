@@ -19,11 +19,6 @@
 #include "bamWriter.h"
 #include "config_chan.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class MovingPart<ACScalarSwitchType>;
 
 TypeHandle MovingPartScalar::_type_handle;

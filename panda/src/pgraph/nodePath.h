@@ -629,10 +629,14 @@ PUBLISHED:
   void set_shader_auto(BitMask32 shader_switch, int priority=0);
   void clear_shader();
 
-  void set_shader_input(ShaderInput input);
-  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
+  void set_shader_input(const ShaderInput &input);
+  void set_shader_input(ShaderInput &&input);
+
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+
+public:
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, ShaderBuffer *buf, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0);
@@ -654,11 +658,13 @@ PUBLISHED:
   INLINE void set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority=0);
   INLINE void set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority=0);
-  INLINE void set_shader_input(CPT_InternalName id, int n1, int n2=0, int n3=0,
+PUBLISHED:
+  INLINE void set_shader_input(CPT_InternalName id, int n1, int n2, int n3=0,
                                                     int n4=0, int priority=0);
-  INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
+  INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2,
                                PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
+  EXTENSION(void set_shader_input(CPT_InternalName, PyObject *, int priority=0));
   EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
 
   void clear_shader_input(CPT_InternalName id);
@@ -908,7 +914,11 @@ PUBLISHED:
   INLINE bool has_net_tag(const string &key) const;
   NodePath find_net_tag(const string &key) const;
 
+  MAKE_MAP_PROPERTY(net_tags, has_net_tag, get_net_tag);
+
+  EXTENSION(INLINE PyObject *get_tags() const);
   EXTENSION(INLINE PyObject *get_tag_keys() const);
+  MAKE_PROPERTY(tags, get_tags);
 
   EXTENSION(PyObject *get_python_tags());
   EXTENSION(INLINE void set_python_tag(PyObject *keys, PyObject *value));
@@ -932,9 +942,9 @@ PUBLISHED:
   BLOCKING bool write_bam_file(const Filename &filename) const;
   BLOCKING bool write_bam_stream(ostream &out) const;
 
-  INLINE string encode_to_bam_stream() const;
-  bool encode_to_bam_stream(string &data, BamWriter *writer = NULL) const;
-  static NodePath decode_from_bam_stream(const string &data, BamReader *reader = NULL);
+  INLINE vector_uchar encode_to_bam_stream() const;
+  bool encode_to_bam_stream(vector_uchar &data, BamWriter *writer = nullptr) const;
+  static NodePath decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 private:
   static NodePathComponent *

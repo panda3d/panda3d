@@ -82,6 +82,18 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     _get_component = Texture::get_unsigned_short;
     break;
 
+  case Texture::T_unsigned_int:
+    _get_component = Texture::get_unsigned_int;
+    break;
+
+  case Texture::T_float:
+    _get_component = Texture::get_float;
+    break;
+
+  case Texture::T_half_float:
+    _get_component = Texture::get_half_float;
+    break;
+
   default:
     // Not supported.
     _image.clear();
@@ -123,7 +135,6 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     break;
 
   case Texture::F_rgb:
-  case Texture::F_srgb:
   case Texture::F_rgb5:
   case Texture::F_rgb8:
   case Texture::F_rgb12:
@@ -135,7 +146,6 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     break;
 
   case Texture::F_rgba:
-  case Texture::F_srgb_alpha:
   case Texture::F_rgbm:
   case Texture::F_rgba4:
   case Texture::F_rgba5:
@@ -146,6 +156,25 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   case Texture::F_rgb10_a2:
     _get_texel = get_texel_rgba;
     break;
+
+  case Texture::F_srgb:
+    if (_component_type == Texture::T_unsigned_byte) {
+      _get_texel = get_texel_srgb;
+    } else {
+      gobj_cat.error()
+        << "sRGB texture should have component type T_unsigned_byte\n";
+    }
+    break;
+
+  case Texture::F_srgb_alpha:
+    if (_component_type == Texture::T_unsigned_byte) {
+      _get_texel = get_texel_srgba;
+    } else {
+      gobj_cat.error()
+        << "sRGB texture should have component type T_unsigned_byte\n";
+    }
+    break;
+
   default:
     // Not supported.
     gobj_cat.error() << "Unsupported texture peeker format: "
@@ -568,5 +597,29 @@ get_texel_rgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_com
   color[2] = (*get_component)(p);
   color[1] = (*get_component)(p);
   color[0] = (*get_component)(p);
+  color[3] = (*get_component)(p);
+}
+
+/**
+ * Gets the color of the texel at byte p, given that the texture is in format
+ * F_srgb or similar.
+ */
+void TexturePeeker::
+get_texel_srgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
+  color[2] = decode_sRGB_float(*p++);
+  color[1] = decode_sRGB_float(*p++);
+  color[0] = decode_sRGB_float(*p++);
+  color[3] = 1.0f;
+}
+
+/**
+ * Gets the color of the texel at byte p, given that the texture is in format
+ * F_srgb_alpha or similar.
+ */
+void TexturePeeker::
+get_texel_srgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
+  color[2] = decode_sRGB_float(*p++);
+  color[1] = decode_sRGB_float(*p++);
+  color[0] = decode_sRGB_float(*p++);
   color[3] = (*get_component)(p);
 }

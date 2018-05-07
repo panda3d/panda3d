@@ -53,10 +53,10 @@ class SocketStream;
  * the C++ layer, while server messages that are not understood by the C++
  * layer are returned up to the Python layer for processing.
  */
-class EXPCL_DIRECT CConnectionRepository {
+class EXPCL_DIRECT_DISTRIBUTED CConnectionRepository {
 PUBLISHED:
-  CConnectionRepository(bool has_owner_view = false,
-                        bool threaded_net = false);
+  explicit CConnectionRepository(bool has_owner_view = false,
+                                 bool threaded_net = false);
   ~CConnectionRepository();
 
 /*

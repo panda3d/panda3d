@@ -80,12 +80,6 @@ using namespace std;
 #define nassertv(condition) assert(condition)
 #define nassertv_always(condition) assert(condition)
 
-// Panda defines these export symbols for building DLL's.  Outside of Panda,
-// we assume we're not putting this code in a DLL, so we define them to
-// nothing.
-#define EXPCL_DIRECT
-#define EXPTP_DIRECT
-
 // Panda defines a special Filename class.  We'll use an ordinary string
 // instead.
 typedef string Filename;

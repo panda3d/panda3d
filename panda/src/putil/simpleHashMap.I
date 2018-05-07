@@ -30,6 +30,31 @@ SimpleHashMap(const Compare &comp) :
  */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
+SimpleHashMap(const SimpleHashMap &copy) :
+  _table_size(copy._table_size),
+  _num_entries(copy._num_entries),
+  _comp(copy._comp) {
+
+  // We allocate enough bytes for _table_size elements of TableEntry, plus
+  // _table_size * 4 more ints at the end (for the index array).
+  size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+
+  _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+
+  for (size_t i = 0; i < _num_entries; ++i) {
+    new(&_table[i]) TableEntry(copy._table[i]);
+  }
+
+  // Copy the index array.
+  memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare>::
 SimpleHashMap(SimpleHashMap &&from) NOEXCEPT :
   _table(from._table),
   _deleted_chain(from._deleted_chain),
@@ -37,7 +62,10 @@ SimpleHashMap(SimpleHashMap &&from) NOEXCEPT :
   _num_entries(from._num_entries),
   _comp(move(from._comp))
 {
+  from._table = nullptr;
+  from._deleted_chain = nullptr;
   from._table_size = 0;
+  from._num_entries = 0;
 }
 
 /**
@@ -47,6 +75,53 @@ template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
 ~SimpleHashMap() {
   clear();
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
+operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
+  if (this != &copy) {
+    _table_size = copy._table_size;
+    _num_entries = copy._num_entries;
+    _comp = copy._comp;
+
+    // We allocate enough bytes for _table_size elements of TableEntry, plus
+    // _table_size * 4 more ints at the end (for the index array).
+    size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+
+    _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+    _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+    for (size_t i = 0; i < _num_entries; ++i) {
+      new(&_table[i]) TableEntry(copy._table[i]);
+    }
+
+    // Copy the index array.
+    memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
+  }
+  return *this;
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
+operator = (SimpleHashMap<Key, Value, Compare> &&from) NOEXCEPT {
+  if (this != &from) {
+    _table = from._table;
+    _deleted_chain = from._deleted_chain;
+    _table_size = from._table_size;
+    _num_entries = from._num_entries;
+    _comp = move(from._comp);
+
+    from._table = nullptr;
+    from._deleted_chain = nullptr;
+    from._table_size = 0;
+    from._num_entries = 0;
+  }
 }
 
 /**
@@ -128,7 +203,7 @@ store(const Key &key, const Value &data) {
   }
   if (is_element(index, key)) {
     // This element is already in the map; replace the data at that key.
-    _table[index]._data = data;
+    set_data(index, data);
 #ifdef _DEBUG
     nassertr(validate(), index);
 #endif
@@ -151,7 +226,7 @@ store(const Key &key, const Value &data) {
       return index;
     }
     if (is_element(index, key)) {
-      _table[index]._data = data;
+      set_data(index, data);
 #ifdef _DEBUG
       nassertr(validate(), index);
 #endif
@@ -200,8 +275,7 @@ remove(const Key &key) {
 
     // Swap it with the last one, so that we don't get any gaps in the table
     // of entries.
-    _table[index]._key = move(_table[last]._key);
-    _table[index]._data = move(_table[last]._data);
+    _table[index] = move(_table[last]);
     index_array[(size_t)other_slot] = index;
   }
 
@@ -311,8 +385,8 @@ get_key(size_t n) const {
 template<class Key, class Value, class Compare>
 INLINE const Value &SimpleHashMap<Key, Value, Compare>::
 get_data(size_t n) const {
-  nassertr(n < _num_entries, _table[n]._data);
-  return _table[n]._data;
+  nassertr(n < _num_entries, _table[n].get_data());
+  return _table[n].get_data();
 }
 
 /**
@@ -323,8 +397,8 @@ get_data(size_t n) const {
 template<class Key, class Value, class Compare>
 INLINE Value &SimpleHashMap<Key, Value, Compare>::
 modify_data(size_t n) {
-  nassertr(n < _num_entries, _table[n]._data);
-  return _table[n]._data;
+  nassertr(n < _num_entries, _table[n].modify_data());
+  return _table[n].modify_data();
 }
 
 /**
@@ -336,7 +410,19 @@ template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 set_data(size_t n, const Value &data) {
   nassertv(n < _num_entries);
-  _table[n]._data = data;
+  _table[n].set_data(data);
+}
+
+/**
+ * Changes the data for the nth entry of the table.
+ *
+ * @param n should be in the range 0 <= n < size().
+ */
+template<class Key, class Value, class Compare>
+INLINE void SimpleHashMap<Key, Value, Compare>::
+set_data(size_t n, Value &&data) {
+  nassertv(n < _num_entries);
+  _table[n].set_data(move(data));
 }
 
 /**

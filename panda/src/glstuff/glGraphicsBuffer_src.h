@@ -86,8 +86,6 @@ protected:
 
   void report_my_errors(int line, const char *file);
 
-private:
-
   void bind_slot(int layer, bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
   void bind_slot_multisample(bool rb_resize, Texture **attach,

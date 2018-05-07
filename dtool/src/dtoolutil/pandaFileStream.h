@@ -26,10 +26,10 @@
  * simple-threading implementation (using this interface will block only the
  * current thread, rather than the entire process, on I/O waits).
  */
-class EXPCL_DTOOL IFileStream : public istream {
+class EXPCL_DTOOL_DTOOLUTIL IFileStream : public istream {
 PUBLISHED:
   INLINE IFileStream();
-  INLINE IFileStream(const char *filename, ios::openmode mode = ios::in);
+  INLINE explicit IFileStream(const char *filename, ios::openmode mode = ios::in);
   INLINE ~IFileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::in);
@@ -54,10 +54,10 @@ private:
  * simple-threading implementation (using this interface will block only the
  * current thread, rather than the entire process, on I/O waits).
  */
-class EXPCL_DTOOL OFileStream : public ostream {
+class EXPCL_DTOOL_DTOOLUTIL OFileStream : public ostream {
 PUBLISHED:
   INLINE OFileStream();
-  INLINE OFileStream(const char *filename, ios::openmode mode = ios::out);
+  INLINE explicit OFileStream(const char *filename, ios::openmode mode = ios::out);
   INLINE ~OFileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::out);
@@ -83,10 +83,10 @@ private:
  * will block only the current thread, rather than the entire process, on I/O
  * waits).
  */
-class EXPCL_DTOOL FileStream : public iostream {
+class EXPCL_DTOOL_DTOOLUTIL FileStream : public iostream {
 PUBLISHED:
   INLINE FileStream();
-  INLINE FileStream(const char *filename, ios::openmode mode = ios::in);
+  INLINE explicit FileStream(const char *filename, ios::openmode mode = ios::in);
   INLINE ~FileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::in);

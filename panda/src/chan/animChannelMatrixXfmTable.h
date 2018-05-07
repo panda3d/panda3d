@@ -34,7 +34,7 @@ protected:
   AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy);
 
 PUBLISHED:
-  AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
+  explicit AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
   virtual ~AnimChannelMatrixXfmTable();
 
 public:

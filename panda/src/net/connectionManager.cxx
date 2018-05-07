@@ -26,7 +26,7 @@
 #elif defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>  // For gethostname()
 #include <Iphlpapi.h> // For GetAdaptersAddresses()
-#elif defined(ANDROID)
+#elif defined(__ANDROID__)
 #include <net/if.h>
 #else
 #include <net/if.h>
@@ -538,7 +538,7 @@ scan_interfaces() {
     PANDA_FREE_ARRAY(addresses);
   }
 
-#elif defined(ANDROID)
+#elif defined(__ANDROID__)
   // TODO: implementation using netlink_socket?
 
 #elif defined(__EMSCRIPTEN__)

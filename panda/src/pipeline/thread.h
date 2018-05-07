@@ -23,12 +23,16 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 
+#ifdef ANDROID
+typedef struct _JNIEnv JNIEnv;
+#endif
+
 class Mutex;
 class ReMutex;
 class MutexDebug;
 class ConditionVarDebug;
 class ConditionVarFullDebug;
-class AsyncTaskBase;
+class AsyncTask;
 
 /**
  * A thread; that is, a lightweight process.  This is an abstract base class;
@@ -89,7 +93,7 @@ PUBLISHED:
   BLOCKING INLINE void join();
   INLINE void preempt();
 
-  INLINE AsyncTaskBase *get_current_task() const;
+  INLINE TypedReferenceCount *get_current_task() const;
 
   INLINE void set_python_index(int index);
 
@@ -128,6 +132,10 @@ public:
   INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
   INLINE PStatsCallback *get_pstats_callback() const;
 
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+#endif
+
 private:
   static void init_main_thread();
   static void init_external_thread();
@@ -142,7 +150,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AsyncTaskBase *_current_task;
+  AtomicAdjust::Pointer _current_task;
 
   int _python_index;
 
@@ -184,7 +192,7 @@ private:
   friend class ThreadPosixImpl;
   friend class ThreadSimpleImpl;
   friend class MainThread;
-  friend class AsyncTaskBase;
+  friend class AsyncTask;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

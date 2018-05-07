@@ -31,16 +31,15 @@ class BulletRigidBodyNode;
  *
  */
 class EXPCL_PANDABULLET BulletGenericConstraint : public BulletConstraint {
-
 PUBLISHED:
-  BulletGenericConstraint(const BulletRigidBodyNode *node_a,
-                          const TransformState *frame_a,
-                          bool use_frame_a);
-  BulletGenericConstraint(const BulletRigidBodyNode *node_a,
-                          const BulletRigidBodyNode *node_b,
-                          const TransformState *frame_a,
-                          const TransformState *frame_b,
-                          bool use_frame_a);
+  explicit BulletGenericConstraint(const BulletRigidBodyNode *node_a,
+                                   const TransformState *frame_a,
+                                   bool use_frame_a);
+  explicit BulletGenericConstraint(const BulletRigidBodyNode *node_a,
+                                   const BulletRigidBodyNode *node_b,
+                                   const TransformState *frame_a,
+                                   const TransformState *frame_b,
+                                   bool use_frame_a);
   INLINE ~BulletGenericConstraint();
 
   // Geometry
@@ -58,8 +57,8 @@ PUBLISHED:
 
   // Frames
   void set_frames(const TransformState *ts_a, const TransformState *ts_b);
-  INLINE CPT(TransformState) get_frame_a() const;
-  INLINE CPT(TransformState) get_frame_b() const;
+  CPT(TransformState) get_frame_a() const;
+  CPT(TransformState) get_frame_b() const;
 
   MAKE_PROPERTY(translational_limit_motor, get_translational_limit_motor);
   MAKE_PROPERTY(frame_a, get_frame_a);

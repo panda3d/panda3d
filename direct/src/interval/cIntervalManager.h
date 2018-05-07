@@ -36,7 +36,7 @@ class EventQueue;
  * It is also possible to create multiple IntervalManager objects for special
  * needs.
  */
-class EXPCL_DIRECT CIntervalManager {
+class EXPCL_DIRECT_INTERVAL CIntervalManager {
 PUBLISHED:
   CIntervalManager();
   ~CIntervalManager();

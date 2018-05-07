@@ -28,7 +28,7 @@
  *
  * A ConfigVariableList cannot be modified locally.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableList : public ConfigVariableBase {
+class EXPCL_DTOOL_PRC ConfigVariableList : public ConfigVariableBase {
 PUBLISHED:
   INLINE ConfigVariableList(const string &name,
                             const string &description = string(),

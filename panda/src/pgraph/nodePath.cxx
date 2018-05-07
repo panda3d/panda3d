@@ -70,6 +70,7 @@
 #include "modelNode.h"
 #include "bam.h"
 #include "bamWriter.h"
+#include "datagramBuffer.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 7000,
 // need to increase stack size.
@@ -3261,7 +3262,7 @@ get_shader() const {
  *
  */
 void NodePath::
-set_shader_input(ShaderInput inp) {
+set_shader_input(const ShaderInput &inp) {
   nassertv_always(!is_empty());
 
   PandaNode *pnode = node();
@@ -3274,6 +3275,26 @@ set_shader_input(ShaderInput inp) {
     // Create a new ShaderAttrib for this node.
     CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
     pnode->set_attrib(sa->set_shader_input(inp));
+  }
+}
+
+/**
+ *
+ */
+void NodePath::
+set_shader_input(ShaderInput &&inp) {
+  nassertv_always(!is_empty());
+
+  PandaNode *pnode = node();
+  const RenderAttrib *attrib =
+    pnode->get_attrib(ShaderAttrib::get_class_slot());
+  if (attrib != nullptr) {
+    const ShaderAttrib *sa = (const ShaderAttrib *)attrib;
+    pnode->set_attrib(sa->set_shader_input(move(inp)));
+  } else {
+    // Create a new ShaderAttrib for this node.
+    CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
+    pnode->set_attrib(sa->set_shader_input(move(inp)));
   }
 }
 
@@ -5576,28 +5597,24 @@ write_bam_stream(ostream &out) const {
  * calls this function.
  */
 bool NodePath::
-encode_to_bam_stream(string &data, BamWriter *writer) const {
+encode_to_bam_stream(vector_uchar &data, BamWriter *writer) const {
   data.clear();
   ostringstream stream;
 
-  DatagramOutputFile dout;
-  if (!dout.open(stream)) {
-    return false;
-  }
-
+  DatagramBuffer buffer;
   BamWriter local_writer;
   bool used_local_writer = false;
   if (writer == NULL) {
     // Create our own writer.
 
-    if (!dout.write_header(_bam_header)) {
+    if (!buffer.write_header(_bam_header)) {
       return false;
     }
     writer = &local_writer;
     used_local_writer = true;
   }
 
-  writer->set_target(&dout);
+  writer->set_target(&buffer);
 
   int num_nodes = get_num_nodes();
   if (used_local_writer && num_nodes > 1) {
@@ -5615,7 +5632,7 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
   dg.add_uint8(_error_type);
   dg.add_int32(num_nodes);
 
-  if (!dout.put_datagram(dg)) {
+  if (!buffer.put_datagram(dg)) {
     writer->set_target(NULL);
     return false;
   }
@@ -5631,7 +5648,7 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
   }
   writer->set_target(NULL);
 
-  data = stream.str();
+  buffer.swap_data(data);
   return true;
 }
 
@@ -5640,22 +5657,17 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
  * extracts and returns the NodePath on that string.  Returns NULL on error.
  */
 NodePath NodePath::
-decode_from_bam_stream(const string &data, BamReader *reader) {
+decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   NodePath result;
 
-  istringstream stream(data);
-
-  DatagramInputFile din;
-  if (!din.open(stream)) {
-    return NodePath::fail();
-  }
+  DatagramBuffer buffer(move(data));
 
   BamReader local_reader;
   if (reader == NULL) {
     // Create a local reader.
 
     string head;
-    if (!din.read_header(head, _bam_header.size())) {
+    if (!buffer.read_header(head, _bam_header.size())) {
       return NodePath::fail();
     }
 
@@ -5666,11 +5678,11 @@ decode_from_bam_stream(const string &data, BamReader *reader) {
     reader = &local_reader;
   }
 
-  reader->set_source(&din);
+  reader->set_source(&buffer);
 
   // One initial datagram to encode the error type, and the number of nodes.
   Datagram dg;
-  if (!din.get_datagram(dg)) {
+  if (!buffer.get_datagram(dg)) {
     return NodePath::fail();
   }
 

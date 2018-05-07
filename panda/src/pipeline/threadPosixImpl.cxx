@@ -24,6 +24,8 @@
 #ifdef ANDROID
 #include "config_express.h"
 #include <jni.h>
+
+static JavaVM *java_vm = nullptr;
 #endif
 
 pthread_key_t ThreadPosixImpl::_pt_ptr_index = 0;
@@ -183,6 +185,53 @@ get_unique_id() const {
   return strm.str();
 }
 
+#ifdef ANDROID
+/**
+ * Attaches the thread to the Java virtual machine.  If this returns true, a
+ * JNIEnv pointer can be acquired using get_jni_env().
+ */
+bool ThreadPosixImpl::
+attach_java_vm() {
+  JNIEnv *env;
+  string thread_name = _parent_obj->get_name();
+  JavaVMAttachArgs args;
+  args.version = JNI_VERSION_1_2;
+  args.name = thread_name.c_str();
+  args.group = nullptr;
+  if (java_vm->AttachCurrentThread(&env, &args) != 0) {
+    thread_cat.error()
+      << "Failed to attach Java VM to thread "
+      << _parent_obj->get_name() << "!\n";
+    _jni_env = nullptr;
+    return false;
+  }
+  _jni_env = env;
+  return true;
+}
+
+/**
+ * Binds the Panda thread to the current thread, assuming that the current
+ * thread is already a valid attached Java thread.  Called by JNI_OnLoad.
+ */
+void ThreadPosixImpl::
+bind_java_thread() {
+  Thread *thread = Thread::get_current_thread();
+  nassertv(thread != nullptr);
+
+  // Get the JNIEnv for this Java thread, and store it on the corresponding
+  // Panda thread object.
+  JNIEnv *env;
+  if (java_vm->GetEnv((void **)&env, JNI_VERSION_1_4) == JNI_OK) {
+    nassertv(thread->_impl._jni_env == nullptr || thread->_impl._jni_env == env);
+    thread->_impl._jni_env = env;
+  } else {
+    thread_cat->error()
+      << "Called bind_java_thread() on thread "
+      << *thread << ", which is not attached to Java VM!\n";
+  }
+}
+#endif  // ANDROID
+
 /**
  * The entry point of each thread.
  */
@@ -209,14 +258,7 @@ root_func(void *data) {
 
 #ifdef ANDROID
     // Attach the Java VM to allow calling Java functions in this thread.
-    JavaVM *jvm = get_java_vm();
-    JNIEnv *env;
-    if (jvm == NULL || jvm->AttachCurrentThread(&env, NULL) != 0) {
-      thread_cat.error()
-        << "Failed to attach Java VM to thread "
-        << self->_parent_obj->get_name() << "!\n";
-      env = NULL;
-    }
+    self->attach_java_vm();
 #endif
 
     self->_parent_obj->thread_main();
@@ -238,8 +280,10 @@ root_func(void *data) {
     }
 
 #ifdef ANDROID
-    if (env != NULL) {
-      jvm->DetachCurrentThread();
+    // We cannot let the thread end without detaching it.
+    if (self->_jni_env != nullptr) {
+      java_vm->DetachCurrentThread();
+      self->_jni_env = nullptr;
     }
 #endif
 
@@ -275,5 +319,18 @@ init_pt_ptr_index() {
   result = pthread_setspecific(_pt_ptr_index, main_thread_obj);
   nassertv(result == 0);
 }
+
+#ifdef ANDROID
+/**
+ * Called by Java when loading this library from the Java virtual machine.
+ */
+jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
+  // Store the JVM pointer globally.
+  java_vm = jvm;
+
+  ThreadPosixImpl::bind_java_thread();
+  return JNI_VERSION_1_4;
+}
+#endif  // ANDROID
 
 #endif  // THREAD_POSIX_IMPL

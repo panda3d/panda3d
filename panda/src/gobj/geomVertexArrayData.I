@@ -229,8 +229,20 @@ mark_used() {
  *
  */
 INLINE GeomVertexArrayData::CData::
-CData() :
-  _usage_hint(UH_unspecified),
+CData(UsageHint usage_hint) :
+  _usage_hint(usage_hint),
+  _rw_lock("GeomVertexArrayData::CData::_rw_lock")
+{
+}
+
+/**
+ *
+ */
+INLINE GeomVertexArrayData::CData::
+CData(GeomVertexArrayData::CData &&from) NOEXCEPT :
+  _usage_hint(move(from._usage_hint)),
+  _buffer(move(from._buffer)),
+  _modified(move(from._modified)),
   _rw_lock("GeomVertexArrayData::CData::_rw_lock")
 {
 }

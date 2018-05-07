@@ -62,7 +62,7 @@
 
 static const char *const stb_extensions[] = {
   // Expose the extensions that we don't already expose through other loaders.
-#ifndef HAVE_JPEG
+#if !defined(HAVE_JPEG) && !defined(ANDROID)
   "jpg", "jpeg",
 #endif
 #ifndef HAVE_PNG

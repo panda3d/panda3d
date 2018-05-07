@@ -26,11 +26,11 @@
  * primarily intended as a convenience to eliminate the overhead of writing
  * bytes to a Datagram and then writing the Datagram to a stream.
  */
-class EXPCL_DTOOLCONFIG StreamWriter {
+class EXPCL_DTOOL_PRC StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);
 PUBLISHED:
-  INLINE StreamWriter(ostream *out, bool owns_stream);
+  INLINE explicit StreamWriter(ostream *out, bool owns_stream);
   INLINE StreamWriter(const StreamWriter &copy);
   INLINE void operator = (const StreamWriter &copy);
   INLINE ~StreamWriter();

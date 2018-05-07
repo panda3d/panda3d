@@ -23,13 +23,8 @@ ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
-  _texture((const TextureAttrib *)state->get_attrib(TextureAttrib::get_class_slot())),
-  _tex_gen((const TexGenAttrib *)state->get_attrib(TexGenAttrib::get_class_slot()))
-{
-  // Set a callback to unregister ourselves when either the Texture or the
-  // TexGen object gets deleted.
-  _texture.set_callback(this);
-  _tex_gen.set_callback(this);
+  _texture(nullptr),
+  _tex_gen(nullptr) {
 
   _flags = 0;
 
@@ -37,6 +32,15 @@ CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
     _flags |= F_interleaved_arrays;
   } else if (gl_parallel_arrays) {
     _flags |= F_parallel_arrays;
+  }
+
+  if ((_flags & F_parallel_arrays) == 0) {
+    // Set a callback to unregister ourselves when either the Texture or the
+    // TexGen object gets deleted.
+    _texture = (const TextureAttrib *)state->get_attrib(TextureAttrib::get_class_slot());
+    _tex_gen = (const TexGenAttrib *)state->get_attrib(TexGenAttrib::get_class_slot());
+    _texture.set_callback(this);
+    _tex_gen.set_callback(this);
   }
 }
 

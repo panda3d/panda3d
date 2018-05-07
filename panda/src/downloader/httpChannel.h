@@ -143,6 +143,9 @@ PUBLISHED:
   INLINE void set_max_updates_per_second(double max_updates_per_second);
   INLINE double get_max_updates_per_second() const;
 
+  INLINE void set_content_type(string content_type);
+  INLINE string get_content_type() const;
+
   INLINE void set_expected_file_size(size_t file_size);
   streamsize get_file_size() const;
   INLINE bool is_file_size_known() const;
@@ -336,6 +339,7 @@ private:
   string request_path;
   string _header;
   string _body;
+  string _content_type;
   bool _want_ssl;
   bool _proxy_serves_document;
   bool _proxy_tunnel_now;

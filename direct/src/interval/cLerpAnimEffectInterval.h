@@ -29,10 +29,10 @@
  * CLerpAnimEffectInterval to adjust the degree to which each animation
  * affects the actor.
  */
-class EXPCL_DIRECT CLerpAnimEffectInterval : public CLerpInterval {
+class EXPCL_DIRECT_INTERVAL CLerpAnimEffectInterval : public CLerpInterval {
 PUBLISHED:
-  INLINE CLerpAnimEffectInterval(const string &name, double duration,
-                                 BlendType blend_type);
+  INLINE explicit CLerpAnimEffectInterval(const string &name, double duration,
+                                          BlendType blend_type);
 
   INLINE void add_control(AnimControl *control, const string &name,
                           float begin_effect, float end_effect);

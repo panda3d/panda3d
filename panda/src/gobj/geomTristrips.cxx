@@ -18,6 +18,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "graphicsStateGuardianBase.h"
+#include "geomTristripsAdjacency.h"
 
 TypeHandle GeomTristrips::_type_handle;
 
@@ -78,6 +79,143 @@ get_geom_rendering() const {
   } else {
     return GR_triangle_strip;
   }
+}
+
+/**
+ * Adds adjacency information to this primitive.  May return null if this type
+ * of geometry does not support adjacency information.
+ */
+CPT(GeomPrimitive) GeomTristrips::
+make_adjacency() const {
+  Thread *current_thread = Thread::get_current_thread();
+  PT(GeomTristripsAdjacency) adj = new GeomTristripsAdjacency(get_usage_hint());
+  CPTA_int ends = get_ends();
+
+  GeomPrimitivePipelineReader from(this, current_thread);
+  int num_vertices = from.get_num_vertices();
+  const int num_unused = 2;
+
+  // First, build a map of each triangle's halfedges to its opposing vertices.
+  map<pair<int, int>, int> edge_map;
+
+  int vi = -num_unused;
+  int li = 0;
+  while (li < (int)ends.size()) {
+    // Skip unused vertices between tristrips.
+    vi += num_unused;
+    int end = ends[li];
+    nassertr(vi + 2 <= end, nullptr);
+
+    int v0 = from.get_vertex(vi++);
+    int v1 = from.get_vertex(vi++);
+    int v2 = from.get_vertex(vi);
+    edge_map[make_pair(v0, v1)] = v2;
+
+    while (true) {
+      v2 = from.get_vertex(vi++);
+      edge_map[make_pair(v2, v0)] = v1;
+
+      if (vi >= end) {
+        // Edge at the end of the strip
+        edge_map[make_pair(v1, v2)] = v0;
+        break;
+      }
+
+      v0 = v1;
+      v1 = v2;
+      v2 = from.get_vertex(vi++);
+      edge_map[make_pair(v0, v2)] = v1;
+
+      if (vi >= end) {
+        // Edge at the end of the strip
+        edge_map[make_pair(v2, v1)] = v0;
+        break;
+      }
+
+      v0 = v1;
+      v1 = v2;
+    }
+    ++li;
+  }
+  nassertr(vi == num_vertices, nullptr);
+
+  // Now build up the new vertex data.  For each edge, we insert the
+  // appropriate connecting vertex.
+  vi = -num_unused;
+  li = 0;
+  while (li < (int)ends.size()) {
+    // Skip unused vertices between tristrips.
+    vi += num_unused;
+    int end = ends[li];
+    nassertr(vi + 2 <= end, nullptr);
+
+    int v0 = from.get_vertex(vi++);
+    int v1 = from.get_vertex(vi++);
+    int v2;
+    adj->add_vertex(v0);
+
+    // Get the third vertex of the triangle adjoining this edge.
+    auto it = edge_map.find(make_pair(v1, v0));
+    if (it != edge_map.end()) {
+      adj->add_vertex(it->second);
+    } else {
+      // Um, no adjoining triangle?  Just repeat the vertex, I guess.
+      adj->add_vertex(v0);
+    }
+    adj->add_vertex(v1);
+
+    while (true) {
+      v2 = from.get_vertex(vi++);
+      it = edge_map.find(make_pair(v0, v2));
+      if (it != edge_map.end()) {
+        adj->add_vertex(it->second);
+      } else {
+        adj->add_vertex(v1);
+      }
+      adj->add_vertex(v2);
+
+      if (vi >= end) {
+        // Edge at the end of the strip
+        it = edge_map.find(make_pair(v2, v1));
+        if (it != edge_map.end()) {
+          adj->add_vertex(it->second);
+        } else {
+          adj->add_vertex(v2);
+        }
+        break;
+      }
+
+      v0 = v1;
+      v1 = v2;
+      v2 = from.get_vertex(vi++);
+      it = edge_map.find(make_pair(v2, v0));
+      if (it != edge_map.end()) {
+        adj->add_vertex(it->second);
+      } else {
+        adj->add_vertex(v1);
+      }
+      adj->add_vertex(v2);
+
+      if (vi >= end) {
+        // Edge at the end of the strip
+        it = edge_map.find(make_pair(v1, v2));
+        if (it != edge_map.end()) {
+          adj->add_vertex(it->second);
+        } else {
+          adj->add_vertex(v1);
+        }
+        break;
+      }
+
+      v0 = v1;
+      v1 = v2;
+    }
+    adj->close_primitive();
+    ++li;
+  }
+  nassertr(vi == num_vertices, nullptr);
+
+  return adj.p();
 }
 
 /**

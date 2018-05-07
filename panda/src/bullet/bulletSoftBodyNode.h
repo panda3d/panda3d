@@ -43,12 +43,12 @@ PUBLISHED:
   INLINE ~BulletSoftBodyNodeElement();
   INLINE static BulletSoftBodyNodeElement empty();
 
-  INLINE LPoint3 get_pos() const;
-  INLINE LVector3 get_velocity() const;
-  INLINE LVector3 get_normal() const;
-  INLINE PN_stdfloat get_inv_mass() const;
-  INLINE PN_stdfloat get_area() const;
-  INLINE int is_attached() const;
+  LPoint3 get_pos() const;
+  LVector3 get_velocity() const;
+  LVector3 get_normal() const;
+  PN_stdfloat get_inv_mass() const;
+  PN_stdfloat get_area() const;
+  int is_attached() const;
 
   MAKE_PROPERTY(pos, get_pos);
   MAKE_PROPERTY(velocity, get_velocity);
@@ -221,8 +221,8 @@ PUBLISHED:
 public:
   virtual btCollisionObject *get_object() const;
 
-  void sync_p2b();
-  void sync_b2p();
+  void do_sync_p2b();
+  void do_sync_b2p();
 
 protected:
   virtual void transform_changed();
@@ -239,6 +239,9 @@ private:
 
   static int get_point_index(LVecBase3 p, PTA_LVecBase3 points);
   static int next_line(const char *buffer);
+
+  BoundingBox do_get_aabb() const;
+  int do_get_closest_node_index(LVecBase3 point, bool local);
 
 public:
   static TypeHandle get_class_type() {

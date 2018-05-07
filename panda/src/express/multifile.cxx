@@ -2402,7 +2402,7 @@ check_signatures() {
     nassertv(stream != NULL);
     StreamReader reader(*stream);
     size_t sig_size = reader.get_uint32();
-    string sig_string = reader.extract_bytes(sig_size);
+    vector_uchar sig_data = reader.extract_bytes(sig_size);
 
     size_t num_certs = reader.get_uint32();
 
@@ -2470,9 +2470,7 @@ check_signatures() {
 
       // Now check that the signature matches the hash.
       int verify_result =
-        EVP_VerifyFinal(md_ctx,
-                        (unsigned char *)sig_string.data(),
-                        sig_string.size(), pkey);
+        EVP_VerifyFinal(md_ctx, sig_data.data(), sig_data.size(), pkey);
       if (verify_result == 1) {
         // The signature matches; save the certificate and its chain.
         _signatures.push_back(chain);

@@ -356,8 +356,9 @@ assert_failure(const char *expression, int line,
 #ifdef ANDROID
   // Write to Android log system.
   __android_log_assert("assert", "Panda3D", "Assertion failed: %s", message.c_str());
+#endif
 
-#elif defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
   // Write to JavaScript console.
   emscripten_log(EM_LOG_CONSOLE | EM_LOG_ERROR | EM_LOG_C_STACK,
                  "Assertion failed: %s", message.c_str());

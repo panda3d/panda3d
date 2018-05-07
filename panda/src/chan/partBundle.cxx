@@ -540,6 +540,25 @@ control_activated(AnimControl *control) {
 }
 
 /**
+ * Called by the AnimControl when it destructs.  This needs to remove the
+ * AnimControl pointer from all pipeline stages.
+ */
+void PartBundle::
+control_removed(AnimControl *control) {
+  nassertv(control->get_part() == this);
+
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    ChannelBlend::iterator cbi = cdata->_blend.find(control);
+    if (cbi != cdata->_blend.end()) {
+      cdata->_blend.erase(cbi);
+      cdata->_anim_changed = true;
+    }
+  }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
+}
+
+/**
  * The internal implementation of bind_anim(), this receives a pointer to an
  * uninitialized AnimControl and fills it in if the bind is successful.
  * Returns true if successful, false otherwise.

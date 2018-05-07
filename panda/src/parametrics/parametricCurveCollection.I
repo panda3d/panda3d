@@ -37,6 +37,15 @@ get_curve(int index) const {
 }
 
 /**
+ * Adds a new ParametricCurve to the collection at the indicated index.
+ * @deprecated Use insert_curve(index, curve) instead.
+ */
+INLINE void ParametricCurveCollection::
+add_curve(ParametricCurve *curve, int index) {
+  insert_curve(max(index, 0), curve);
+}
+
+/**
  * Returns the maximum T value associated with the *last* curve in the
  * collection.  Normally, this will be either the XYZ or HPR curve, or a
  * timewarp curve.

@@ -31,76 +31,14 @@ static RuntimeTypeMap runtime_type_map;
 static RuntimeTypeSet runtime_type_set;
 static NamedTypeMap named_type_map;
 
-#if PY_MAJOR_VERSION < 3
-/**
- * Given a long or int, returns a size_t, or raises an OverflowError if it is
- * out of range.
- */
-size_t PyLongOrInt_AsSize_t(PyObject *vv) {
-  if (PyInt_Check(vv)) {
-    long value = PyInt_AS_LONG(vv);
-    if (value < 0) {
-      PyErr_SetString(PyExc_OverflowError,
-                      "can't convert negative value to size_t");
-      return (size_t)-1;
-    }
-    return (size_t)value;
-  }
-
-  if (!PyLong_Check(vv)) {
-    Dtool_Raise_TypeError("a long or int was expected");
-    return (size_t)-1;
-  }
-
-  size_t bytes;
-  int one = 1;
-  int res = _PyLong_AsByteArray((PyLongObject *)vv, (unsigned char *)&bytes,
-                                SIZEOF_SIZE_T, (int)*(unsigned char*)&one, 0);
-
-  if (res < 0) {
-    return (size_t)res;
-  } else {
-    return bytes;
-  }
-}
-#endif
-
-#if PY_VERSION_HEX < 0x03060000
-INLINE static PyObject *_PyObject_CallNoArg(PyObject *func) {
-  PyObject *args = PyTuple_New(0);
-  PyObject *result = PyObject_Call(func, args, NULL);
-  Py_DECREF(args);
-  return result;
-}
-#endif
-
-/**
- * Given a valid (non-NULL) PyObject, does a simple check to see if it might
- * be an instance of a Panda type.  It does this using a signature that is
- * encoded on each instance.
- */
-bool DtoolCanThisBeAPandaInstance(PyObject *self) {
-  // simple sanity check for the class type..size.. will stop basic foobars..
-  // It is arguably better to use something like this:
-  // PyType_IsSubtype(Py_TYPE(self), &Dtool_DTOOL_SUPER_BASE._PyType) ...but
-  // probably not as fast.
-  if (Py_TYPE(self)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef)) {
-    Dtool_PyInstDef *pyself = (Dtool_PyInstDef *) self;
-    if (pyself->_signature == PY_PANDA_SIGNATURE) {
-      return true;
-    }
-  }
-  return false;
-}
-
 /**
 
  */
 void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer) {
-  if (DtoolCanThisBeAPandaInstance(self)) {
-    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, classdef);
+  if (DtoolInstance_Check(self)) {
+    *answer = DtoolInstance_UPCAST(self, *classdef);
   } else {
-    *answer = NULL;
+    *answer = nullptr;
   }
 }
 
@@ -110,12 +48,12 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *c
  * was of the wrong type, raises an AttributeError.
  */
 bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer) {
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
+  if (self == nullptr || !DtoolInstance_Check(self) || DtoolInstance_VOID_PTR(self) == nullptr) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
 
-  *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
+  *answer = DtoolInstance_UPCAST(self, classdef);
   return true;
 }
 
@@ -130,12 +68,12 @@ bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef
 bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                             void **answer, const char *method_name) {
 
-  if (self == NULL || !DtoolCanThisBeAPandaInstance(self) || ((Dtool_PyInstDef *)self)->_ptr_to_object == NULL) {
+  if (self == nullptr || !DtoolInstance_Check(self) || DtoolInstance_VOID_PTR(self) == nullptr) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
     return false;
   }
 
-  if (((Dtool_PyInstDef *)self)->_is_const) {
+  if (DtoolInstance_IS_CONST(self)) {
     // All overloads of this function are non-const.
     PyErr_Format(PyExc_TypeError,
                  "Cannot call %s() on a const object.",
@@ -143,7 +81,7 @@ bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject 
     return false;
   }
 
-  *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
+  *answer = DtoolInstance_UPCAST(self, classdef);
   return true;
 }
 
@@ -173,19 +111,19 @@ void *
 DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
                                int param, const string &function_name, bool const_ok,
                                bool report_errors) {
-  // if (PyErr_Occurred()) { return NULL; }
-  if (self == NULL) {
+  // if (PyErr_Occurred()) { return nullptr; }
+  if (self == nullptr) {
     if (report_errors) {
-      return Dtool_Raise_TypeError("self is NULL");
+      return Dtool_Raise_TypeError("self is nullptr");
     }
-    return NULL;
+    return nullptr;
   }
 
-  if (DtoolCanThisBeAPandaInstance(self)) {
-    void *result = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, classdef);
+  if (DtoolInstance_Check(self)) {
+    void *result = DtoolInstance_UPCAST(self, *classdef);
 
-    if (result != NULL) {
-      if (const_ok || !((Dtool_PyInstDef *)self)->_is_const) {
+    if (result != nullptr) {
+      if (const_ok || !DtoolInstance_IS_CONST(self)) {
         return result;
       }
 
@@ -194,7 +132,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
                             "%s() argument %d may not be const",
                             function_name.c_str(), param);
       }
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -202,17 +140,14 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
     return Dtool_Raise_ArgTypeError(self, param, function_name.c_str(), classdef->_PyType.tp_name);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void *DTOOL_Call_GetPointerThis(PyObject *self) {
-  if (self != NULL) {
-    if (DtoolCanThisBeAPandaInstance(self)) {
-      Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-      return pyself->_ptr_to_object;
-    }
+  if (self != nullptr && DtoolInstance_Check(self)) {
+    return DtoolInstance_VOID_PTR(self);
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -329,11 +264,11 @@ PyObject *_Dtool_Raise_BadArgumentsError() {
  * NULL, otherwise Py_None.
  */
 PyObject *_Dtool_Return_None() {
-  if (_PyErr_OCCURRED()) {
+  if (UNLIKELY(_PyErr_OCCURRED())) {
     return NULL;
   }
 #ifndef NDEBUG
-  if (Notify::ptr()->has_assert_failed()) {
+  if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
     return Dtool_Raise_AssertionError();
   }
 #endif
@@ -346,11 +281,11 @@ PyObject *_Dtool_Return_None() {
  * NULL, otherwise the given boolean value as a PyObject *.
  */
 PyObject *Dtool_Return_Bool(bool value) {
-  if (_PyErr_OCCURRED()) {
+  if (UNLIKELY(_PyErr_OCCURRED())) {
     return NULL;
   }
 #ifndef NDEBUG
-  if (Notify::ptr()->has_assert_failed()) {
+  if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
     return Dtool_Raise_AssertionError();
   }
 #endif
@@ -365,11 +300,11 @@ PyObject *Dtool_Return_Bool(bool value) {
  * increased.
  */
 PyObject *_Dtool_Return(PyObject *value) {
-  if (_PyErr_OCCURRED()) {
+  if (UNLIKELY(_PyErr_OCCURRED())) {
     return NULL;
   }
 #ifndef NDEBUG
-  if (Notify::ptr()->has_assert_failed()) {
+  if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
     return Dtool_Raise_AssertionError();
   }
 #endif
@@ -621,9 +556,41 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
       return Dtool_Raise_TypeError("PyType_Ready(Dtool_SequenceWrapper)");
     }
 
+    if (PyType_Ready(&Dtool_MutableSequenceWrapper_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MutableSequenceWrapper)");
+    }
+
+    if (PyType_Ready(&Dtool_MappingWrapper_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper)");
+    }
+
+    if (PyType_Ready(&Dtool_MutableMappingWrapper_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MutableMappingWrapper)");
+    }
+
+    if (PyType_Ready(&Dtool_MappingWrapper_Keys_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Keys)");
+    }
+
+    if (PyType_Ready(&Dtool_MappingWrapper_Values_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Values)");
+    }
+
+    if (PyType_Ready(&Dtool_MappingWrapper_Items_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Items)");
+    }
+
+    if (PyType_Ready(&Dtool_GeneratorWrapper_Type) < 0) {
+      return Dtool_Raise_TypeError("PyType_Ready(Dtool_GeneratorWrapper)");
+    }
+
     if (PyType_Ready(&Dtool_StaticProperty_Type) < 0) {
       return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
     }
+
+#ifdef Py_TRACE_REFS
+    _Py_AddToAllObjects((PyObject *)&Dtool_EmptyTuple, 0);
+#endif
 
     // Initialize the base class of everything.
     Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(NULL);
@@ -723,7 +690,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
   PyObject *to_in = NULL;
   if (PyArg_UnpackTuple(args, "Dtool_BorrowThisReference", 2, 2, &to_in, &from_in)) {
 
-    if (DtoolCanThisBeAPandaInstance(from_in) && DtoolCanThisBeAPandaInstance(to_in)) {
+    if (DtoolInstance_Check(from_in) && DtoolInstance_Check(to_in)) {
       Dtool_PyInstDef *from = (Dtool_PyInstDef *) from_in;
       Dtool_PyInstDef *to = (Dtool_PyInstDef *) to_in;
 
@@ -768,9 +735,8 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
 }
 
 Py_hash_t DTOOL_PyObject_HashPointer(PyObject *self) {
-  if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
-    Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-    return (Py_hash_t) pyself->_ptr_to_object;
+  if (self != nullptr && DtoolInstance_Check(self)) {
+    return (Py_hash_t)(intptr_t)DtoolInstance_VOID_PTR(self);
   }
   return -1;
 }
@@ -943,14 +909,14 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
                       const char *keyword) {
 
   if (PyTuple_GET_SIZE(args) == 1) {
-    if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {
+    if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
   } else if (PyTuple_GET_SIZE(args) == 0) {
     PyObject *key;
     Py_ssize_t ppos = 0;
-    if (kwds != NULL && ((PyDictObject *)kwds)->ma_used == 1 &&
+    if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
         PyDict_Next(kwds, &ppos, &key, result)) {
       // We got the item, we just need to make sure that it had the right key.
 #if PY_VERSION_HEX >= 0x03060000
@@ -971,7 +937,7 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
  */
 bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds) {
   if (PyTuple_GET_SIZE(args) == 1 &&
-      (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0)) {
+      (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0)) {
     *result = PyTuple_GET_ITEM(args, 0);
     return true;
   }
@@ -989,12 +955,12 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
                               const char *keyword) {
 
   if (PyTuple_GET_SIZE(args) == 1) {
-    if (kwds == NULL || ((PyDictObject *)kwds)->ma_used == 0) {
+    if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
   } else if (PyTuple_GET_SIZE(args) == 0) {
-    if (kwds != NULL && ((PyDictObject *)kwds)->ma_used == 1) {
+    if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1) {
       PyObject *key;
       Py_ssize_t ppos = 0;
       if (!PyDict_Next(kwds, &ppos, &key, result)) {
@@ -1021,7 +987,7 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
  * Variant of Dtool_ExtractOptionalArg that does not accept a keyword argument.
  */
 bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds) {
-  if (kwds != NULL && ((PyDictObject *)kwds)->ma_used != 0) {
+  if (kwds != nullptr && PyDict_GET_SIZE(kwds) != 0) {
     return false;
   }
   if (PyTuple_GET_SIZE(args) == 1) {
@@ -1030,240 +996,5 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds)
   }
   return (PyTuple_GET_SIZE(args) == 0);
 }
-
-/**
- * This class is returned from properties that require a settable interface,
- * ie. something.children[i] = 3.
- */
-static void Dtool_SequenceWrapper_dealloc(PyObject *self) {
-  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
-  nassertv(wrap);
-  Py_XDECREF(wrap->_base);
-}
-
-static Py_ssize_t Dtool_SequenceWrapper_length(PyObject *self) {
-  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
-  nassertr(wrap, -1);
-  nassertr(wrap->_len_func, -1);
-  return wrap->_len_func(wrap->_base);
-}
-
-static PyObject *Dtool_SequenceWrapper_getitem(PyObject *self, Py_ssize_t index) {
-  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
-  nassertr(wrap, NULL);
-  nassertr(wrap->_getitem_func, NULL);
-  return wrap->_getitem_func(wrap->_base, index);
-}
-
-static int Dtool_SequenceWrapper_setitem(PyObject *self, Py_ssize_t index, PyObject *value) {
-  Dtool_SequenceWrapper *wrap = (Dtool_SequenceWrapper *)self;
-  nassertr(wrap, -1);
-  nassertr(wrap->_setitem_func, -1);
-  return wrap->_setitem_func(wrap->_base, index, value);
-}
-
-static PySequenceMethods Dtool_SequenceWrapper_SequenceMethods = {
-  Dtool_SequenceWrapper_length,
-  0, // sq_concat
-  0, // sq_repeat
-  Dtool_SequenceWrapper_getitem,
-  0, // sq_slice
-  Dtool_SequenceWrapper_setitem,
-  0, // sq_ass_slice
-  0, // sq_contains
-  0, // sq_inplace_concat
-  0, // sq_inplace_repeat
-};
-
-PyTypeObject Dtool_SequenceWrapper_Type = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  "sequence wrapper",
-  sizeof(Dtool_SequenceWrapper),
-  0, // tp_itemsize
-  Dtool_SequenceWrapper_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-#if PY_MAJOR_VERSION >= 3
-  0, // tp_reserved
-#else
-  0, // tp_compare
-#endif
-  0, // tp_repr
-  0, // tp_as_number
-  &Dtool_SequenceWrapper_SequenceMethods,
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
-  PyObject_GenericGetAttr,
-  PyObject_GenericSetAttr,
-  0, // tp_as_buffer
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
-  0, // tp_weaklistoffset
-  0, // tp_iter
-  0, // tp_iternext
-  0, // tp_methods
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
-  0, // tp_dictoffset
-  0, // tp_init
-  PyType_GenericAlloc,
-  0, // tp_new
-  PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
-#if PY_VERSION_HEX >= 0x02060000
-  0, // tp_version_tag
-#endif
-#if PY_VERSION_HEX >= 0x03040000
-  0, // tp_finalize
-#endif
-};
-
-/**
- * This is a variant of the Python getset mechanism that permits static
- * properties.
- */
-PyObject *
-Dtool_NewStaticProperty(PyTypeObject *type, const PyGetSetDef *getset) {
-  PyGetSetDescrObject *descr;
-  descr = (PyGetSetDescrObject *)PyType_GenericAlloc(&Dtool_StaticProperty_Type, 0);
-  if (descr != nullptr) {
-    Py_XINCREF(type);
-    descr->d_getset = (PyGetSetDef *)getset;
-#if PY_MAJOR_VERSION >= 3
-    descr->d_common.d_type = type;
-    descr->d_common.d_name = PyUnicode_InternFromString(getset->name);
-#if PY_VERSION_HEX >= 0x03030000
-    descr->d_common.d_qualname = nullptr;
-#endif
-#else
-    descr->d_type = type;
-    descr->d_name = PyString_InternFromString(getset->name);
-#endif
-  }
-  return (PyObject *)descr;
-}
-
-static void
-Dtool_StaticProperty_dealloc(PyDescrObject *descr) {
-  _PyObject_GC_UNTRACK(descr);
-  Py_XDECREF(descr->d_type);
-  Py_XDECREF(descr->d_name);
-//#if PY_MAJOR_VERSION >= 3
-//  Py_XDECREF(descr->d_qualname);
-//#endif
-  PyObject_GC_Del(descr);
-}
-
-static PyObject *
-Dtool_StaticProperty_repr(PyDescrObject *descr, const char *format) {
-#if PY_MAJOR_VERSION >= 3
-  return PyUnicode_FromFormat("<attribute '%V' of '%s'>", descr->d_name, "?", descr->d_type->tp_name);
-#else
-  return PyString_FromFormat("<attribute '%V' of '%s'>", descr->d_name, "?", descr->d_type->tp_name);
-#endif
-}
-
-static int
-Dtool_StaticProperty_traverse(PyObject *self, visitproc visit, void *arg) {
-  PyDescrObject *descr = (PyDescrObject *)self;
-  Py_VISIT(descr->d_type);
-  return 0;
-}
-
-static PyObject *
-Dtool_StaticProperty_get(PyGetSetDescrObject *descr, PyObject *obj, PyObject *type) {
-  if (descr->d_getset->get != nullptr) {
-    return descr->d_getset->get(obj, descr->d_getset->closure);
-  } else {
-    return PyErr_Format(PyExc_AttributeError,
-                        "attribute '%V' of type '%.100s' is not readable",
-                        ((PyDescrObject *)descr)->d_name, "?",
-                        ((PyDescrObject *)descr)->d_type->tp_name);
-  }
-}
-
-static int
-Dtool_StaticProperty_set(PyGetSetDescrObject *descr, PyObject *obj, PyObject *value) {
-  if (descr->d_getset->set != nullptr) {
-    return descr->d_getset->set(obj, value, descr->d_getset->closure);
-  } else {
-    PyErr_Format(PyExc_AttributeError,
-                 "attribute '%V' of type '%.100s' is not writable",
-                 ((PyDescrObject *)descr)->d_name, "?",
-                 ((PyDescrObject *)descr)->d_type->tp_name);
-    return -1;
-  }
-}
-
-PyTypeObject Dtool_StaticProperty_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  "getset_descriptor",
-  sizeof(PyGetSetDescrObject),
-  0, // tp_itemsize
-  (destructor)Dtool_StaticProperty_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_reserved
-  (reprfunc)Dtool_StaticProperty_repr,
-  0, // tp_as_number
-  0, // tp_as_sequence
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
-  PyObject_GenericGetAttr,
-  0, // tp_setattro
-  0, // tp_as_buffer
-  Py_TPFLAGS_DEFAULT,
-  0, // tp_doc
-  Dtool_StaticProperty_traverse,
-  0, // tp_clear
-  0, // tp_richcompare
-  0, // tp_weaklistoffset
-  0, // tp_iter
-  0, // tp_iternext
-  0, // tp_methods
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  (descrgetfunc)Dtool_StaticProperty_get,
-  (descrsetfunc)Dtool_StaticProperty_set,
-  0, // tp_dictoffset
-  0, // tp_init
-  0, // tp_alloc
-  0, // tp_new
-  0, // tp_del
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
-#if PY_VERSION_HEX >= 0x02060000
-  0, // tp_version_tag
-#endif
-#if PY_VERSION_HEX >= 0x03040000
-  0, // tp_finalize
-#endif
-};
 
 #endif  // HAVE_PYTHON

@@ -543,7 +543,6 @@ read_environment_variables() {
  */
 void ExecutionEnvironment::
 read_args() {
-#ifndef ANDROID
   // First, we need to fill in _dtool_name.  This contains the full path to
   // the p3dtool library.
 
@@ -581,7 +580,7 @@ read_args() {
   }
 #endif
 
-#if defined(IS_FREEBSD) || defined(IS_LINUX)
+#if defined(IS_FREEBSD) || (defined(IS_LINUX) && !defined(__ANDROID__))
   // FreeBSD and Linux have a function to get the origin of a loaded library.
 
   char origin[PATH_MAX + 1];
@@ -835,8 +834,6 @@ read_args() {
     }
   }
 #endif  // _WIN32
-
-#endif  // ANDROID
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;

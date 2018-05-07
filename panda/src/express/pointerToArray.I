@@ -92,6 +92,19 @@ PointerToArray(PointerToArray<Element> &&from) NOEXCEPT :
 }
 #endif  // USE_MOVE_SEMANTICS
 
+#ifdef USE_MOVE_SEMANTICS
+/**
+ * Initializes the PTA from a vector.
+ */
+template<class Element>
+INLINE PointerToArray<Element>::
+PointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(move(from))),
+  _type_handle(type_handle)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
 /**
  *
  */
@@ -582,6 +595,19 @@ node_unref() const {
 }
 
 /**
+ * Counts the frequency at which the given element occurs in the vector.
+ */
+template<class Element>
+INLINE size_t PointerToArray<Element>::
+count(const Element &value) const {
+  if ((this->_void_ptr) != nullptr) {
+    return std::count(begin(), end(), value);
+  } else {
+    return 0;
+  }
+}
+
+/**
  *
  */
 template<class Element>
@@ -693,6 +719,19 @@ INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT :
   PointerToArrayBase<Element>(move(from)),
   _type_handle(from._type_handle)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
+#ifdef USE_MOVE_SEMANTICS
+/**
+ * Initializes the PTA from a vector.
+ */
+template<class Element>
+INLINE ConstPointerToArray<Element>::
+ConstPointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(move(from))),
+  _type_handle(type_handle)
 {
 }
 #endif  // USE_MOVE_SEMANTICS
@@ -1004,6 +1043,19 @@ INLINE bool ConstPointerToArray<Element>::
 node_unref() const {
   nassertr((this->_void_ptr) != NULL, true);
   return ((To *)(this->_void_ptr))->node_unref();
+}
+
+/**
+ * Counts the frequency at which the given element occurs in the vector.
+ */
+template<class Element>
+INLINE size_t ConstPointerToArray<Element>::
+count(const Element &value) const {
+  if ((this->_void_ptr) != nullptr) {
+    return std::count(begin(), end(), value);
+  } else {
+    return 0;
+  }
 }
 
 /**

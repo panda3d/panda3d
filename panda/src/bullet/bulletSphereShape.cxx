@@ -19,11 +19,25 @@ TypeHandle BulletSphereShape::_type_handle;
  *
  */
 BulletSphereShape::
-BulletSphereShape(PN_stdfloat radius) {
+BulletSphereShape(PN_stdfloat radius) : _radius(radius) {
 
   _shape = new btSphereShape(radius);
   _shape->setUserPointer(this);
 }
+
+/**
+ *
+ */
+BulletSphereShape::
+BulletSphereShape(const BulletSphereShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _radius = copy._radius;
+
+  _shape = new btSphereShape(_radius);
+  _shape->setUserPointer(this);
+}
+
 
 /**
  *
@@ -57,8 +71,10 @@ register_with_read_factory() {
  */
 void BulletSphereShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletShape::write_datagram(manager, dg);
+
   dg.add_stdfloat(get_margin());
-  dg.add_stdfloat(get_radius());
+  dg.add_stdfloat(_radius);
 }
 
 /**
@@ -84,11 +100,13 @@ make_from_bam(const FactoryParams &params) {
  */
 void BulletSphereShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  nassertv(_shape == NULL);
+  BulletShape::fillin(scan, manager);
+  nassertv(_shape == nullptr);
 
   PN_stdfloat margin = scan.get_stdfloat();
+  _radius = scan.get_stdfloat();
 
-  _shape = new btSphereShape(scan.get_stdfloat());
+  _shape = new btSphereShape(_radius);
   _shape->setUserPointer(this);
   _shape->setMargin(margin);
 }

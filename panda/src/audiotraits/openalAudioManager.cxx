@@ -97,7 +97,7 @@ OpenALAudioManager() {
   _is_valid = true;
 
   // Init 3D attributes
-  _distance_factor = 3.28;
+  _distance_factor = 1;
   _drop_off_factor = 1;
 
   _position[0] = 0;
@@ -443,6 +443,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());
+    delete[] data;
     int err = alGetError();
     if (err != AL_NO_ERROR) {
       audio_error("could not fill OpenAL buffer object with data");
@@ -469,6 +470,12 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
   }
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, sound, positional, mode);
+
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
 
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
@@ -499,6 +506,12 @@ get_sound(const string &file_name, bool positional, int mode) {
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
 
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
+
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
   return res;
@@ -511,7 +524,7 @@ get_sound(const string &file_name, bool positional, int mode) {
 void OpenALAudioManager::
 uncache_sound(const string& file_name) {
   ReMutexHolder holder(_lock);
-  assert(is_valid());
+  nassertv(is_valid());
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -715,12 +728,11 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
   *uz = _forward_up[4];
 }
 
-
 /**
- * Set units per foot WARNING: OpenAL has no distance factor but we use this
- * as a scale on the min/max distances of sounds to preserve FMOD
- * compatibility.  Also, adjusts the speed of sound to compensate for unit
- * difference.  OpenAL's default speed of sound is 343.3 m/s == 1126.3 ft/s
+ * Set value in units per meter
+ * WARNING: OpenAL has no distance factor but we use this as a scale
+ *          on the min/max distances of sounds to preserve FMOD compatibility.
+ *          Also adjusts the speed of sound to compensate for unit difference.
  */
 void OpenALAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
@@ -732,7 +744,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
   alGetError(); // clear errors
 
   if (_distance_factor>0) {
-    alSpeedOfSound(1126.3*_distance_factor);
+    alSpeedOfSound(343.3*_distance_factor);
     al_audio_errcheck("alSpeedOfSound()");
     // resets the doppler factor to the correct setting in case it was set to
     // 0.0 by a distance_factor<=0.0
@@ -752,7 +764,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
 }
 
 /**
- * Sets units per foot
+ * Get value in units per meter
  */
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_distance_factor() const {
@@ -898,7 +910,7 @@ reduce_sounds_playing_to(unsigned int count) {
   int limit = _sounds_playing.size() - count;
   while (limit-- > 0) {
     SoundsPlaying::iterator sound = _sounds_playing.begin();
-    assert(sound != _sounds_playing.end());
+    nassertv(sound != _sounds_playing.end());
     // When the user stops a sound, there is still a PT in the user's hand.
     // When we stop a sound here, however, this can remove the last PT.  This
     // can cause an ugly recursion where stop calls the destructor, and the
@@ -1040,7 +1052,7 @@ OpenALAudioManager::SoundData::
   if (_sample != 0) {
     if (_manager->_is_valid) {
       _manager->make_current();
-      alDeleteBuffers(1,&_sample);
+      _manager->delete_buffer(_sample);
     }
     _sample = 0;
   }
@@ -1099,8 +1111,8 @@ discard_excess_cache(int sample_limit) {
 
   while (((int)_expiring_samples.size()) > sample_limit) {
     SoundData *sd = (SoundData*)(_expiring_samples.front());
-    assert(sd->_client_count == 0);
-    assert(sd->_expire == _expiring_samples.begin());
+    nassertv(sd->_client_count == 0);
+    nassertv(sd->_expire == _expiring_samples.begin());
     _expiring_samples.pop_front();
     _sample_cache.erase(_sample_cache.find(sd->_movie->get_filename()));
     audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
@@ -1109,10 +1121,49 @@ discard_excess_cache(int sample_limit) {
 
   while (((int)_expiring_streams.size()) > stream_limit) {
     SoundData *sd = (SoundData*)(_expiring_streams.front());
-    assert(sd->_client_count == 0);
-    assert(sd->_expire == _expiring_streams.begin());
+    nassertv(sd->_client_count == 0);
+    nassertv(sd->_expire == _expiring_streams.begin());
     _expiring_streams.pop_front();
     audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
     delete sd;
   }
+}
+
+/**
+ * Deletes an OpenAL buffer.  This is a special function because some
+ * implementations of OpenAL (e.g. Apple's) don't unlock the buffers
+ * immediately, due to needing to coordinate with another thread.  If this is
+ * the case, the alDeleteBuffers call will error back with AL_INVALID_OPERATION
+ * as if trying to delete an actively-used buffer, which will tell us to wait a
+ * bit and try again.
+ */
+void OpenALAudioManager::
+delete_buffer(ALuint buffer) {
+  ReMutexHolder holder(_lock);
+  int tries = 0;
+  ALuint error;
+
+  // Keep trying until we succeed (or give up).
+  while (true) {
+    alDeleteBuffers(1, &buffer);
+    error = alGetError();
+
+    if (error == AL_NO_ERROR) {
+      // Success!  This will happen right away 99% of the time.
+      return;
+    } else if (error != AL_INVALID_OPERATION) {
+      // We weren't expecting that.  This should be reported.
+      break;
+    } else if (tries >= openal_buffer_delete_retries.get_value()) {
+      // We ran out of retries.  Give up.
+      break;
+    } else {
+      // Make another try after (delay * 2^n) seconds.
+      Thread::sleep(openal_buffer_delete_delay.get_value() * (1 << tries));
+      tries++;
+    }
+  }
+
+  // If we got here, one of the breaks above happened, indicating an error.
+  audio_error("failed to delete a buffer: " << alGetString(error) );
 }

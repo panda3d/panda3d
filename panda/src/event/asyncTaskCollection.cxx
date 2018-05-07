@@ -63,14 +63,15 @@ add_task(AsyncTask *task) {
  */
 bool AsyncTaskCollection::
 remove_task(AsyncTask *task) {
-  int task_index = -1;
-  for (int i = 0; task_index == -1 && i < (int)_tasks.size(); i++) {
+  size_t task_index = (size_t)-1;
+  for (size_t i = 0; i < _tasks.size(); ++i) {
     if (_tasks[i] == task) {
       task_index = i;
+      break;
     }
   }
 
-  if (task_index == -1) {
+  if (task_index == (size_t)-1) {
     // The indicated task was not a member of the collection.
     return false;
   }
@@ -129,12 +130,12 @@ void AsyncTaskCollection::
 remove_duplicate_tasks() {
   AsyncTasks new_tasks;
 
-  int num_tasks = get_num_tasks();
-  for (int i = 0; i < num_tasks; i++) {
+  size_t num_tasks = get_num_tasks();
+  for (size_t i = 0; i < num_tasks; i++) {
     PT(AsyncTask) task = get_task(i);
     bool duplicated = false;
 
-    for (int j = 0; j < i && !duplicated; j++) {
+    for (size_t j = 0; j < i && !duplicated; j++) {
       duplicated = (task == get_task(j));
     }
 
@@ -152,7 +153,7 @@ remove_duplicate_tasks() {
  */
 bool AsyncTaskCollection::
 has_task(AsyncTask *task) const {
-  for (int i = 0; i < get_num_tasks(); i++) {
+  for (size_t i = 0; i < get_num_tasks(); i++) {
     if (task == get_task(i)) {
       return true;
     }
@@ -174,8 +175,8 @@ clear() {
  */
 AsyncTask *AsyncTaskCollection::
 find_task(const string &name) const {
-  int num_tasks = get_num_tasks();
-  for (int i = 0; i < num_tasks; i++) {
+  size_t num_tasks = get_num_tasks();
+  for (size_t i = 0; i < num_tasks; ++i) {
     AsyncTask *task = get_task(i);
     if (task->get_name() == name) {
       return task;
@@ -187,7 +188,7 @@ find_task(const string &name) const {
 /**
  * Returns the number of AsyncTasks in the collection.
  */
-int AsyncTaskCollection::
+size_t AsyncTaskCollection::
 get_num_tasks() const {
   return _tasks.size();
 }
@@ -196,8 +197,8 @@ get_num_tasks() const {
  * Returns the nth AsyncTask in the collection.
  */
 AsyncTask *AsyncTaskCollection::
-get_task(int index) const {
-  nassertr(index >= 0 && index < (int)_tasks.size(), NULL);
+get_task(size_t index) const {
+  nassertr(index < _tasks.size(), nullptr);
 
   return _tasks[index];
 }
@@ -206,7 +207,7 @@ get_task(int index) const {
  * Removes the nth AsyncTask from the collection.
  */
 void AsyncTaskCollection::
-remove_task(int index) {
+remove_task(size_t index) {
   // If the pointer to our internal array is shared by any other
   // AsyncTaskCollections, we have to copy the array now so we won't
   // inadvertently modify any of our brethren AsyncTaskCollection objects.
@@ -217,7 +218,7 @@ remove_task(int index) {
     _tasks.v() = old_tasks.v();
   }
 
-  nassertv(index >= 0 && index < (int)_tasks.size());
+  nassertv(index < _tasks.size());
   _tasks.erase(_tasks.begin() + index);
 }
 
@@ -226,9 +227,8 @@ remove_task(int index) {
  * get_task(), but it may be a more convenient way to access it.
  */
 AsyncTask *AsyncTaskCollection::
-operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_tasks.size(), NULL);
-
+operator [] (size_t index) const {
+  nassertr(index < _tasks.size(), nullptr);
   return _tasks[index];
 }
 
@@ -236,7 +236,7 @@ operator [] (int index) const {
  * Returns the number of tasks in the collection.  This is the same thing as
  * get_num_tasks().
  */
-int AsyncTaskCollection::
+size_t AsyncTaskCollection::
 size() const {
   return _tasks.size();
 }
@@ -260,7 +260,7 @@ output(ostream &out) const {
  */
 void AsyncTaskCollection::
 write(ostream &out, int indent_level) const {
-  for (int i = 0; i < get_num_tasks(); i++) {
+  for (size_t i = 0; i < get_num_tasks(); i++) {
     indent(out, indent_level) << *get_task(i) << "\n";
   }
 }

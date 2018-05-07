@@ -33,6 +33,7 @@ public:
   ~PNMFileTypeRegistry();
 
   void register_type(PNMFileType *type);
+  void unregister_type(PNMFileType *type);
 
 PUBLISHED:
   int get_num_types() const;

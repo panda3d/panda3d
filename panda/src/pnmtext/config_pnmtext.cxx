@@ -16,6 +16,10 @@
 #include "dconfig.h"
 #include "freetypeFace.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PNMTEXT)
+  #error Buildsystem error: BUILDING_PANDA_PNMTEXT not defined
+#endif
+
 Configure(config_pnmtext);
 NotifyCategoryDef(pnmtext, "");
 

@@ -253,9 +253,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const TransformState *, Empty, indirect_equals_hash<const TransformState *> > States;
+  typedef SimpleHashMap<const TransformState *, nullptr_t, indirect_equals_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;

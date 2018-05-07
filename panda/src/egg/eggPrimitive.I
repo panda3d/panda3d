@@ -373,6 +373,17 @@ set_vertex(size_t index, EggVertex *vertex) {
 }
 
 /**
+ * Inserts a vertex at the given position.
+ */
+INLINE void EggPrimitive::
+insert_vertex(size_t index, EggVertex *vertex) {
+  if (index > _vertices.size()) {
+    index = _vertices.size();
+  }
+  _vertices.insert(_vertices.begin() + index, vertex);
+}
+
+/**
  * Returns a particular index based on its index number.
  */
 INLINE EggVertex *EggPrimitive::
@@ -380,7 +391,6 @@ get_vertex(size_t index) const {
   nassertr(index < size(), NULL);
   return *(begin() + index);
 }
-
 
 /**
  * Returns the vertex pool associated with the vertices of the primitive, or

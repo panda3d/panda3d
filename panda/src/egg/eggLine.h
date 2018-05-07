@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggLine : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE EggLine(const string &name = "");
+  INLINE explicit EggLine(const string &name = "");
   INLINE EggLine(const EggLine &copy);
   INLINE EggLine &operator = (const EggLine &copy);
   virtual ~EggLine();

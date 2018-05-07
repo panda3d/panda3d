@@ -49,7 +49,9 @@ class EXPCL_PANDA_PIPELINE CycleData
 #endif  // DO_PIPELINING
 {
 public:
-  INLINE CycleData();
+  INLINE CycleData() DEFAULT_CTOR;
+  INLINE CycleData(CycleData &&from) DEFAULT_CTOR;
+  INLINE CycleData(const CycleData &copy) DEFAULT_CTOR;
   virtual ~CycleData();
 
   virtual CycleData *make_copy() const=0;

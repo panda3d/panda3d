@@ -307,25 +307,20 @@ find_tasks_matching(const GlobPattern &pattern) const {
  */
 bool AsyncTaskManager::
 remove(AsyncTask *task) {
-  // We pass this up to the multi-task remove() flavor.  Do we care about the
-  // tiny cost of creating an AsyncTaskCollection here?  Probably not.
-  AsyncTaskCollection tasks;
-  tasks.add_task(task);
-  return remove(tasks) != 0;
+  return task->remove();
 }
 
 /**
  * Removes all of the tasks in the AsyncTaskCollection.  Returns the number of
  * tasks removed.
  */
-int AsyncTaskManager::
+size_t AsyncTaskManager::
 remove(const AsyncTaskCollection &tasks) {
   MutexHolder holder(_lock);
-  int num_removed = 0;
+  size_t num_removed = 0;
 
-  int num_tasks = tasks.get_num_tasks();
-  int i;
-  for (i = 0; i < num_tasks; ++i) {
+  size_t num_tasks = tasks.get_num_tasks();
+  for (size_t i = 0; i < num_tasks; ++i) {
     PT(AsyncTask) task = tasks.get_task(i);
 
     if (task->_manager != this) {
@@ -337,10 +332,7 @@ remove(const AsyncTaskCollection &tasks) {
         task_cat.debug()
           << "Removing " << *task << "\n";
       }
-      if (task->_chain->do_remove(task)) {
-        _lock.release();
-        task->upon_death(this, false);
-        _lock.acquire();
+      if (task->_chain->do_remove(task, true)) {
         ++num_removed;
       } else {
         if (task_cat.is_debug()) {

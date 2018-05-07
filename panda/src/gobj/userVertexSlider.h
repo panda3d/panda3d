@@ -30,8 +30,8 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ UserVertexSlider : public VertexSlider {
 PUBLISHED:
-  UserVertexSlider(const string &name);
-  UserVertexSlider(const InternalName *name);
+  explicit UserVertexSlider(const string &name);
+  explicit UserVertexSlider(const InternalName *name);
 
   INLINE void set_slider(PN_stdfloat slider);
   virtual PN_stdfloat get_slider() const;

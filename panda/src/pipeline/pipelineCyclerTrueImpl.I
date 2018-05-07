@@ -393,7 +393,7 @@ cycle_2() {
   _data[1]._cdata = _data[0]._cdata;
 
   // No longer dirty.
-  _dirty = false;
+  _dirty = 0;
   return last_val;
 }
 
@@ -423,7 +423,7 @@ cycle_3() {
 
   if (_data[2]._cdata == _data[1]._cdata) {
     // No longer dirty.
-    _dirty = false;
+    _dirty = 0;
   }
 
   return last_val;
