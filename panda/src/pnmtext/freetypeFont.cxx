@@ -16,7 +16,7 @@
 #ifdef HAVE_FREETYPE
 
 #include "config_pnmtext.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "nurbsCurveEvaluator.h"

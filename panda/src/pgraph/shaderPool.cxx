@@ -12,7 +12,7 @@
  */
 
 #include "shaderPool.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "loader.h"

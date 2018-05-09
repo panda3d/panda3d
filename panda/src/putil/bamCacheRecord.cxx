@@ -17,7 +17,7 @@
 #include "virtualFileSystem.h"
 #include "virtualFile.h"
 #include "indent.h"
-#include "config_util.h" // util_cat
+#include "config_putil.h" // util_cat
 
 TypeHandle BamCacheRecord::_type_handle;
 

@@ -14,7 +14,7 @@
  *   get_supports_cg_profile)
  */
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "displayRegion.h"
 #include "renderBuffer.h"
 #include "geom.h"

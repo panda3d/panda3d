@@ -13,7 +13,7 @@
 
 #include "autoTextureScale.h"
 #include "string_utils.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 ostream &
 operator << (ostream &out, AutoTextureScale ats) {

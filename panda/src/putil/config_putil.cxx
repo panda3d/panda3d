@@ -6,12 +6,12 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_util.cxx
+ * @file config_putil.cxx
  * @author cary
  * @date 2000-01-04
  */
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "animInterface.h"
 #include "bamCacheIndex.h"
 #include "bamCacheRecord.h"
@@ -51,7 +51,7 @@
   #error Buildsystem error: BUILDING_PANDA_PUTIL not defined
 #endif
 
-ConfigureDef(config_util);
+ConfigureDef(config_putil);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
@@ -88,7 +88,7 @@ ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode
  PRC_DESC("Set this to specify how textures should be written into Bam files."
           "See the panda source or documentation for available options."));
 
-ConfigureFn(config_util) {
+ConfigureFn(config_putil) {
   init_libputil();
 }
 

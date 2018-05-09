@@ -20,7 +20,7 @@
 #include "dconfig.h"
 #include "configVariableFilename.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 NotifyCategoryDeclNoExport(txafile);
 NotifyCategoryDef(txafile, "");

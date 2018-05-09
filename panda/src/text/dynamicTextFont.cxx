@@ -28,7 +28,7 @@
 #endif
 
 #include "config_text.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "geomVertexData.h"

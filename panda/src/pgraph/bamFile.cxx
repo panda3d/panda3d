@@ -16,7 +16,7 @@
 
 #include "bam.h"
 #include "bamCacheRecord.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "filename.h"
