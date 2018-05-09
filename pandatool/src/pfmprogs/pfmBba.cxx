@@ -12,7 +12,7 @@
  */
 
 #include "pfmBba.h"
-#include "config_pfm.h"
+#include "config_pfmprogs.h"
 #include "pfmFile.h"
 
 /**
