@@ -20,7 +20,7 @@
 
 // Panda headers.
 #include "config_audio.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
 #include "filename.h"

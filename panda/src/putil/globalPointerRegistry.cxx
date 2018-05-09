@@ -12,7 +12,7 @@
  */
 
 #include "globalPointerRegistry.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 // In general, we use the util_cat->info() syntax in this file (instead of
 // util_cat.info()), because much of this work is done at static init time,

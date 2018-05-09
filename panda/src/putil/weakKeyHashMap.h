@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 #include "pvector.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "weakPointerTo.h"
 
 /**

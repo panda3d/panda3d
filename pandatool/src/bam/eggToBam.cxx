@@ -13,7 +13,7 @@
 
 #include "eggToBam.h"
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamFile.h"
 #include "load_egg_file.h"
 #include "config_egg2pg.h"

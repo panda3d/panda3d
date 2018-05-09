@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_util.h
+ * @file config_putil.h
  * @author cary
  * @date 2000-01-04
  */
@@ -24,7 +24,7 @@
 
 class DSearchPath;
 
-ConfigureDecl(config_util, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
+ConfigureDecl(config_putil, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 NotifyCategoryDecl(util, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 NotifyCategoryDecl(bam, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 

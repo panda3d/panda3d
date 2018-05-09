@@ -12,7 +12,7 @@
  */
 
 #include "config_android.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "virtualFileMountAndroidAsset.h"
 #include "virtualFileSystem.h"
 #include "filename.h"

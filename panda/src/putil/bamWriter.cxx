@@ -15,7 +15,7 @@
 #include "pnotify.h"
 
 #include "typedWritable.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bam.h"
 #include "bamWriter.h"
 #include "bamReader.h"
