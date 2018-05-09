@@ -13,7 +13,7 @@
 
 #include "pStatFrameData.h"
 #include "pStatClientVersion.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include "datagram.h"
 #include "datagramIterator.h"

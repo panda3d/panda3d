@@ -17,7 +17,7 @@
 #include "pandabase.h"
 #include "pStatTimer.h"
 #include "pStatCollector.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #include "timerQueryContext.h"
 
 class Thread;

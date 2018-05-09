@@ -2322,8 +2322,8 @@
 				<File RelativePath="..\panda\src\pstatclient\pStatCollectorForward.h"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatClientControlMessage.h"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatServerControlMessage.h"></File>
-				<File RelativePath="..\panda\src\pstatclient\config_pstats.h"></File>
-				<File RelativePath="..\panda\src\pstatclient\config_pstats.cxx"></File>
+				<File RelativePath="..\panda\src\pstatclient\config_pstatclient.h"></File>
+				<File RelativePath="..\panda\src\pstatclient\config_pstatclient.cxx"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatClient.cxx"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatFrameData.I"></File>
 				<File RelativePath="..\panda\src\pstatclient\test_client.cxx"></File>
