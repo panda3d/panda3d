@@ -14,7 +14,7 @@
 #include "pandatoolbase.h"
 #include "gtkStats.h"
 #include "gtkStatsServer.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 GtkWidget *main_window;
 static GtkStatsServer *server = NULL;

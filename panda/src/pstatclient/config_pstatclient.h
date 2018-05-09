@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_pstats.h
+ * @file config_pstatclient.h
  * @author drose
  * @date 2000-07-09
  */
@@ -25,7 +25,7 @@
 
 // Configure variables for pstats package.
 
-ConfigureDecl(config_pstats, EXPCL_PANDA_PSTATCLIENT, EXPTP_PANDA_PSTATCLIENT);
+ConfigureDecl(config_pstatclient, EXPCL_PANDA_PSTATCLIENT, EXPTP_PANDA_PSTATCLIENT);
 NotifyCategoryDecl(pstats, EXPCL_PANDA_PSTATCLIENT, EXPTP_PANDA_PSTATCLIENT);
 
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableString pstats_name;
