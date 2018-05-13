@@ -504,6 +504,14 @@ class build_apps(setuptools.Command):
             if use_wheels:
                 search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
 
+                # If the .whl containing this file has a .libs directory, add
+                # it to the path.  This is an auditwheel/numpy convention.
+                if '.whl' + os.sep in source_path:
+                    whl, wf = source_path.split('.whl' + os.path.sep)
+                    whl += '.whl'
+                    rootdir = wf.split(os.path.sep, 1)[0]
+                    search_path.append(os.path.join(whl, rootdir, '.libs'))
+
             target_path = os.path.join(builddir, basename)
             self.copy_with_dependencies(source_path, target_path, search_path)
 
