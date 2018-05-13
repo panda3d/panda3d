@@ -112,11 +112,18 @@ class DataResource(object):
         self.data = None
         self.code_page = 0
 
-    def get_data(self):
-        if self.code_page:
-            return self.data.encode('cp%d' % self.code_page)
+    @property
+    def encoding(self):
+        if self.code_page == 0:
+            return 'ascii'
         else:
-            return self.data
+            return 'cp%d' % (self.code_page)
+
+    def get_data(self):
+        return self.data
+
+    def get_text(self, errors='strict'):
+        return self.data.decode(self.encoding, errors)
 
 
 class IconGroupResource(object):
@@ -479,10 +486,6 @@ class ResourceTable(object):
             entry = IconGroupResource()
             entry.unpack_from(data)
         else:
-            if code_page != 0:
-                # Decode the data using the provided code page.
-                data = data.decode("cp%d" % code_page)
-
             entry = DataResource()
             entry.data = data
             entry.code_page = code_page
