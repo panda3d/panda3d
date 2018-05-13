@@ -9,7 +9,6 @@ import subprocess
 import zipfile
 import shutil
 import struct
-import io
 import imp
 import string
 
@@ -62,6 +61,13 @@ macosx_binary_magics = (
     b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE',
     b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA',
     b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA')
+
+# Some dependencies need data directories to be extracted.  Key is a module
+# (or package) name that triggers it to be included, the value is a dict
+# mapping source directories (use / slashes) to target directories.
+PACKAGE_DATA_DIRS = {
+    'matplotlib': {'matplotlib/mpl-data': 'mpl-data'},
+}
 
 
 class build_apps(setuptools.Command):
@@ -519,6 +525,30 @@ class build_apps(setuptools.Command):
             target_path = os.path.join(builddir, basename)
             self.copy_with_dependencies(source_path, target_path, search_path)
 
+        # Extract any other data files from dependency packages.
+        for module, paths in PACKAGE_DATA_DIRS.items():
+            if module not in freezer_modules:
+                pass
+
+            self.announce('Copying data files for module: {}'.format(module), distutils.log.INFO)
+
+            # OK, find out in which .whl this occurs.
+            for whl in wheelpaths:
+                whlfile = self._get_zip_file(whl)
+                filenames = whlfile.namelist()
+                for source_dir, target_dir in paths.items():
+                    # Relocate the target dir to the build directory.
+                    target_dir = target_dir.replace('/', os.sep)
+                    target_dir = os.path.join(builddir, target_dir)
+
+                    for wf in filenames:
+                        if wf.lower().startswith(source_dir.lower() + '/'):
+                            wf = wf.replace('/', os.sep)
+                            relpath = wf[len(source_dir) + 1:]
+                            source_path = os.path.join(whl, wf)
+                            target_path = os.path.join(target_dir, relpath)
+                            self.copy(source_path, target_path)
+
         # Copy Game Files
         self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
         ignore_copy_list = [
@@ -658,10 +688,8 @@ class build_apps(setuptools.Command):
         self.warn("could not find dependency {0} (referenced by {1})".format(name, referenced_by))
         self.exclude_dependencies.append(name.lower())
 
-    def copy_with_dependencies(self, source_path, target_path, search_path):
-        """ Copies source_path to target_path.  It also scans source_path for
-        any dependencies, which are located along the given search_path and
-        copied to the same directory as target_path.
+    def copy(self, source_path, target_path):
+        """ Copies source_path to target_path.
 
         source_path may be located inside a .whl file. """
 
@@ -670,6 +698,11 @@ class build_apps(setuptools.Command):
         except ValueError:
             # No relative path (e.g., files on different drives in Windows), just print absolute paths instead
             self.announce('copying {0} -> {1}'.format(source_path, target_path))
+
+        # Make the directory if it does not yet exist.
+        target_dir = os.path.dirname(target_path)
+        if not os.path.isdir(target_dir):
+            os.makedirs(target_dir)
 
         # Copy the file, and open it for analysis.
         if '.whl' in source_path:
@@ -680,14 +713,20 @@ class build_apps(setuptools.Command):
             data = whlfile.read(wf.replace(os.path.sep, '/'))
             with open(target_path, 'wb') as f:
                 f.write(data)
-            # Wrap the data in a BytesIO, since we need to be able to seek in
-            # the file; the stream returned by whlfile.open won't let us seek.
-            fp = io.BytesIO(data)
         else:
             # Regular file, copy it
             shutil.copyfile(source_path, target_path)
-            fp = open(target_path, 'rb')
 
+    def copy_with_dependencies(self, source_path, target_path, search_path):
+        """ Copies source_path to target_path.  It also scans source_path for
+        any dependencies, which are located along the given search_path and
+        copied to the same directory as target_path.
+
+        source_path may be located inside a .whl file. """
+
+        self.copy(source_path, target_path)
+
+        fp = open(target_path, 'rb')
         target_dir = os.path.dirname(target_path)
         base = os.path.basename(target_path)
         self.copy_dependencies(fp, target_dir, search_path, base)
