@@ -195,6 +195,10 @@ class build_apps(setuptools.Command):
         if 'u' in abi_tag and (platform.startswith('win') or platform.startswith('macosx')):
             abi_tag = abi_tag.replace('u', '')
 
+        # For these distributions, we need to append 'u' on Linux
+        if abi_tag in ('cp26m', 'cp27m', 'cp32m') and not platform.startswith('win') and not platform.startswith('macosx'):
+            abi_tag += 'u'
+
         pip_version = pip.__version__.split('.')
         if int(pip_version[0]) < 9:
             raise RuntimeError("pip 9.0 or greater is required, but found {}".format(pip.__version__))
