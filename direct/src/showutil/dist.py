@@ -185,10 +185,12 @@ class build_apps(setuptools.Command):
 
         #TODO find a better way to get abi tag than from internal/private pip APIs
         if hasattr(pip, 'pep425tags'):
-            abi_tag = pip.pep425tags.get_abi_tag()
+            pep425tags = pip.pep425tags
+            wheel = pip.wheel
         else:
-            from pip._internal import pep425tags
-            abi_tag = pep425tags.get_abi_tag()
+            from pip._internal import pep425tags, wheel
+
+        abi_tag = pep425tags.get_abi_tag()
 
         if 'u' in abi_tag and (platform.startswith('win') or platform.startswith('macosx')):
             abi_tag = abi_tag.replace('u', '')
@@ -211,7 +213,18 @@ class build_apps(setuptools.Command):
 
         subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
 
-        wheelpaths = [os.path.join(whldir,i) for i in os.listdir(whldir) if platform in i]
+        # Now figure out which of the downloaded wheels are relevant to us.
+        tags = pep425tags.get_supported(platform=platform, abi=abi_tag)
+        wheelpaths = []
+        for filename in os.listdir(whldir):
+            try:
+                whl = wheel.Wheel(filename)
+            except wheel.InvalidWheelFilename:
+                continue
+
+            if whl.supported(tags):
+                wheelpaths.append(os.path.join(whldir, filename))
+
         return wheelpaths
 
     def bundle_macos_app(self, builddir):
@@ -278,7 +291,7 @@ class build_apps(setuptools.Command):
             wheelpaths = self.download_wheels(platform)
 
             for whl in wheelpaths:
-                if 'panda3d-' in whl:
+                if os.path.basename(whl).startswith('panda3d-'):
                     p3dwhlfn = whl
                     p3dwhl = self._get_zip_file(p3dwhlfn)
                     break
