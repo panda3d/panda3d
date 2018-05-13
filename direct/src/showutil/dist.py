@@ -87,6 +87,21 @@ import __builtin__
 __builtin__.__import__ = __import__
 __builtin__.__file__ = sys.executable
 del __builtin__
+
+# Set the TCL_LIBRARY directory to the location of the Tcl/Tk/Tix files.
+import os
+tcl_dir = os.path.join(os.path.dirname(sys.executable), 'tcl')
+if os.path.isdir(tcl_dir):
+    for dir in os.listdir(tcl_dir):
+        sub_dir = os.path.join(tcl_dir, dir)
+        if os.path.isdir(sub_dir):
+            if dir.startswith('tcl'):
+                os.environ['TCL_LIBRARY'] = sub_dir
+            if dir.startswith('tk'):
+                os.environ['TK_LIBRARY'] = sub_dir
+            if dir.startswith('tix'):
+                os.environ['TIX_LIBRARY'] = sub_dir
+del os
 """
 
 # site.py for Python 3.
@@ -114,6 +129,21 @@ def find_spec(fullname, path=None, target=None):
     return spec
 
 FrozenImporter.find_spec = find_spec
+
+# Set the TCL_LIBRARY directory to the location of the Tcl/Tk/Tix files.
+import os
+tcl_dir = os.path.join(os.path.dirname(sys.executable), 'tcl')
+if os.path.isdir(tcl_dir):
+    for dir in os.listdir(tcl_dir):
+        sub_dir = os.path.join(tcl_dir, dir)
+        if os.path.isdir(sub_dir):
+            if dir.startswith('tcl'):
+                os.environ['TCL_LIBRARY'] = sub_dir
+            if dir.startswith('tk'):
+                os.environ['TK_LIBRARY'] = sub_dir
+            if dir.startswith('tix'):
+                os.environ['TIX_LIBRARY'] = sub_dir
+del os
 """
 
 SITE_PY = SITE_PY3 if sys.version_info >= (3,) else SITE_PY2
@@ -574,6 +604,23 @@ class build_apps(setuptools.Command):
 
             target_path = os.path.join(builddir, basename)
             self.copy_with_dependencies(source_path, target_path, search_path)
+
+        # Copy over the tcl directory.
+        #TODO: get this to work on non-Windows platforms.
+        if sys.platform == "win32" and platform.startswith('win'):
+            tcl_dir = os.path.join(sys.prefix, 'tcl')
+            tkinter_name = 'tkinter' if sys.version_info >= (3, 0) else 'Tkinter'
+
+            if os.path.isdir(tcl_dir) and tkinter_name in freezer_modules:
+                self.announce('Copying Tcl files', distutils.log.INFO)
+                os.makedirs(os.path.join(builddir, 'tcl'))
+
+                for dir in os.listdir(tcl_dir):
+                    sub_dir = os.path.join(tcl_dir, dir)
+                    if os.path.isdir(sub_dir):
+                        target_dir = os.path.join(builddir, 'tcl', dir)
+                        self.announce('copying {0} -> {1}'.format(sub_dir, target_dir))
+                        shutil.copytree(sub_dir, target_dir)
 
         # Extract any other data files from dependency packages.
         for module, paths in PACKAGE_DATA_DIRS.items():
