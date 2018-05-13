@@ -75,7 +75,14 @@ hiddenImports = {
     'xml.etree.cElementTree': ['xml.etree.ElementTree'],
     'datetime': ['_strptime'],
     'keyring.backends': ['keyring.backends.*'],
+    'matplotlib.font_manager': ['encodings.mac_roman'],
 }
+
+if sys.version_info >= (3,):
+    hiddenImports['matplotlib.backends._backend_tk'] = ['tkinter']
+else:
+    hiddenImports['matplotlib.backends._backend_tk'] = ['Tkinter']
+
 
 # These are missing modules that we've reported already this session.
 reportedMissing = {}
