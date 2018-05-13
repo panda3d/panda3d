@@ -84,6 +84,10 @@ else:
     hiddenImports['matplotlib.backends._backend_tk'] = ['Tkinter']
 
 
+# These are overrides for specific modules.
+overrideModules = {
+}
+
 # These are missing modules that we've reported already this session.
 reportedMissing = {}
 
@@ -2245,9 +2249,16 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             m = self.load_package(fqname, pathname)
             self.msgout(2, "load_module ->", m)
             return m
+
         if type == imp.PY_SOURCE:
-            newline = b'\n' if 'b' in mode else '\n'
-            co = compile(fp.read()+newline, pathname, 'exec')
+            if fqname in overrideModules:
+                # This module has a custom override.
+                code = overrideModules[fqname]
+            else:
+                code = fp.read()
+
+            code += b'\n' if isinstance(code, bytes) else '\n'
+            co = compile(code, pathname, 'exec')
         elif type == imp.PY_COMPILED:
             try:
                 marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
@@ -2257,6 +2268,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             co = marshal.loads(marshal_data)
         else:
             co = None
+
         m = self.add_module(fqname)
         m.__file__ = pathname
         if co:
@@ -2282,6 +2294,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             fullname = name
         if fullname in self.excludes:
             raise ImportError(name)
+
+        # If we have a custom override for this module, we know we have it.
+        if fullname in overrideModules:
+            return (None, '', ('.py', 'r', imp.PY_SOURCE))
 
         # If no search path is given, look for a built-in module.
         if path is None:
