@@ -86,6 +86,29 @@ else:
 
 # These are overrides for specific modules.
 overrideModules = {
+    # Used by the warnings module, among others, to get line numbers.  Since
+    # we set __file__, this would cause it to try and extract Python code
+    # lines from the main executable, which we don't want.
+    'linecache': """__all__ = ["getline", "clearcache", "checkcache"]
+
+def getline(filename, lineno, module_globals=None):
+    return ''
+
+def clearcache():
+    pass
+
+def getlines(filename, module_globals=None):
+    return []
+
+def checkcache(filename=None):
+    pass
+
+def updatecache(filename, module_globals=None):
+    pass
+
+def lazycache(filename, module_globals):
+    pass
+""",
 }
 
 # These are missing modules that we've reported already this session.

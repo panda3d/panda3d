@@ -69,6 +69,55 @@ PACKAGE_DATA_DIRS = {
     'matplotlib': {'matplotlib/mpl-data': 'mpl-data'},
 }
 
+# site.py for Python 2.
+SITE_PY2 = u"""
+import sys
+
+# Override __import__ to set __file__ for frozen modules.
+prev_import = __import__
+def __import__(*args, **kwargs):
+    mod = prev_import(*args, **kwargs)
+    if mod:
+        mod.__file__ = sys.executable
+    return mod
+
+# Add our custom __import__ version to the global scope, as well as a builtin
+# definition for __file__ so that it is available in the module itself.
+import __builtin__
+__builtin__.__import__ = __import__
+__builtin__.__file__ = sys.executable
+del __builtin__
+"""
+
+# site.py for Python 3.
+SITE_PY3 = u"""
+import sys
+from _frozen_importlib import _imp, FrozenImporter
+
+if sys.platform == 'win32':
+    # Make sure the preferred encoding is something we actually support.
+    import _bootlocale
+    enc = _bootlocale.getpreferredencoding().lower()
+    if enc != 'utf-8' and not _imp.is_frozen('encodings.%s' % (enc)):
+        def getpreferredencoding(do_setlocale=True):
+            return 'mbcs'
+        _bootlocale.getpreferredencoding = getpreferredencoding
+
+# Alter FrozenImporter to give a __file__ property to frozen modules.
+_find_spec = FrozenImporter.find_spec
+
+def find_spec(fullname, path=None, target=None):
+    spec = _find_spec(fullname, path=path, target=target)
+    if spec:
+        spec.has_location = True
+        spec.origin = sys.executable
+    return spec
+
+FrozenImporter.find_spec = find_spec
+"""
+
+SITE_PY = SITE_PY3 if sys.version_info >= (3,) else SITE_PY2
+
 
 class build_apps(setuptools.Command):
     description = 'build Panda3D applications'
@@ -387,6 +436,7 @@ class build_apps(setuptools.Command):
         def create_runtime(appname, mainscript, use_console):
             freezer = FreezeTool.Freezer(platform=platform, path=path)
             freezer.addModule('__main__', filename=mainscript)
+            freezer.addModule('site', filename='site.py', text=SITE_PY)
             for incmod in self.include_modules.get(appname, []) + self.include_modules.get('*', []):
                 freezer.addModule(incmod)
             for exmod in self.exclude_modules.get(appname, []) + self.exclude_modules.get('*', []):
