@@ -237,7 +237,7 @@ endfunction(interrogate_sources)
 # Python module when it's initialized.
 #
 function(add_python_module module)
-  if(INTERROGATE_PYTHON_INTERFACE)
+  if(HAVE_PYTHON AND INTERROGATE_PYTHON_INTERFACE)
     set(targets)
     set(link_targets)
     set(import_flags)
@@ -286,11 +286,7 @@ function(add_python_module module)
       COMMENT "Generating module ${module}"
     )
 
-    if(BUILD_SHARED_LIBS)
-      add_library(${module} MODULE "${module}_module.cxx" ${sources})
-    else()
-      add_library(${module} STATIC "${module}_module.cxx" ${sources})
-    endif()
+    add_library(${module} ${MODULE_TYPE} "${module}_module.cxx" ${sources})
     target_link_libraries(${module}
       ${link_targets} ${PYTHON_LIBRARIES} p3dtool)
 

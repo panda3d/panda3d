@@ -6,12 +6,6 @@ install(TARGETS p3dtoolconfig DESTINATION lib)
 
 # Next, panda3d.interrogatedb:
 
-if(BUILD_SHARED_LIBS)
-  set(libtype MODULE)
-else()
-  set(libtype STATIC)
-endif()
-
 if(HAVE_PYTHON AND INTERROGATE_PYTHON_INTERFACE)
   set(INTERROGATEDB_IGATE
     ../../src/interrogatedb/interrogate_interface.h
@@ -33,7 +27,7 @@ if(HAVE_PYTHON AND INTERROGATE_PYTHON_INTERFACE)
     COMMENT "Interrogating interrogatedb"
   )
 
-  add_library(interrogatedb ${libtype}
+  add_library(interrogatedb ${MODULE_TYPE}
     "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx")
   target_use_packages(interrogatedb PYTHON)
   target_link_libraries(interrogatedb p3dtoolconfig)
