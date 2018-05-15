@@ -1,5 +1,5 @@
 set(P3PSTATCLIENT_HEADERS
-    config_pstats.h pStatClient.I pStatClient.h
+    config_pstatclient.h pStatClient.I pStatClient.h
     pStatClientImpl.I pStatClientImpl.h
     pStatClientVersion.I
     pStatClientVersion.h pStatClientControlMessage.h
@@ -10,7 +10,7 @@ set(P3PSTATCLIENT_HEADERS
     pStatTimer.I pStatTimer.h)
 
 set(P3PSTATCLIENT_SOURCES
-    config_pstats.cxx pStatClient.cxx pStatClientImpl.cxx
+    config_pstatclient.cxx pStatClient.cxx pStatClientImpl.cxx
     pStatClientVersion.cxx
     pStatClientControlMessage.cxx
     pStatCollector.cxx
@@ -28,3 +28,4 @@ target_interrogate(p3pstatclient ALL)
 
 install(TARGETS p3pstatclient DESTINATION lib)
 install(FILES ${P3PSTATCLIENT_HEADERS} DESTINATION include/panda3d)
+install(FILES config_pstats.h DESTINATION include/panda3d)

@@ -23,7 +23,7 @@ set(P3PUTIL_HEADERS
   copyOnWriteObject.h copyOnWriteObject.I
   copyOnWritePointer.h copyOnWritePointer.I
   compareTo.I compareTo.h
-  config_util.N config_util.h configurable.h
+  config_putil.N config_putil.h configurable.h
   cPointerCallbackObject.h cPointerCallbackObject.I
   datagramBuffer.I datagramBuffer.h
   datagramInputFile.I datagramInputFile.h
@@ -83,7 +83,7 @@ set(P3PUTIL_SOURCES
   colorSpace.cxx
   copyOnWriteObject.cxx
   copyOnWritePointer.cxx
-  config_util.cxx configurable.cxx
+  config_putil.cxx configurable.cxx
   cPointerCallbackObject.cxx
   datagramBuffer.cxx
   datagramInputFile.cxx datagramOutputFile.cxx
@@ -131,6 +131,7 @@ target_interrogate(p3putil ALL EXTENSIONS ${P3PUTIL_IGATEEXT})
 
 install(TARGETS p3putil DESTINATION lib)
 install(FILES ${P3PUTIL_HEADERS} DESTINATION include/panda3d)
+install(FILES config_util.h DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_bamRead
