@@ -19,7 +19,7 @@
 #include "mayaToEggConverter.h"
 #include "eggData.h"
 #include "load_egg_file.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_chan.h"
 #include "config_gobj.h"
 #include "textNode.h"

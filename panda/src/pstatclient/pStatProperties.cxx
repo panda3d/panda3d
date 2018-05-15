@@ -14,7 +14,7 @@
 #include "pStatProperties.h"
 #include "pStatCollectorDef.h"
 #include "pStatClient.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #include "configVariableBool.h"
 #include "configVariableColor.h"
 #include "configVariableDouble.h"

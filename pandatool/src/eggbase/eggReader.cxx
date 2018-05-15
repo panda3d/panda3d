@@ -14,7 +14,7 @@
 #include "eggReader.h"
 
 #include "pnmImage.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "eggTextureCollection.h"
 #include "eggGroup.h"
 #include "eggGroupNode.h"

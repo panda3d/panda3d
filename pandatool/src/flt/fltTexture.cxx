@@ -16,7 +16,7 @@
 #include "fltRecordWriter.h"
 #include "fltHeader.h"
 #include "pathReplace.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 TypeHandle FltTexture::_type_handle;
 

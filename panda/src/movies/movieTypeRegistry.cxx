@@ -14,7 +14,7 @@
 #include "movieTypeRegistry.h"
 #include "string_utils.h"
 #include "config_movies.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "load_dso.h"
 
 MovieTypeRegistry *MovieTypeRegistry::_global_ptr = NULL;

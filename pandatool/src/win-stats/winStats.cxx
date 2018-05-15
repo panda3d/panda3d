@@ -14,7 +14,7 @@
 #include "pandatoolbase.h"
 
 #include "winStatsServer.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include <windows.h>
 

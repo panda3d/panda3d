@@ -17,7 +17,7 @@
 #include "bam.h"
 #include "bamReader.h"
 #include "datagramIterator.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "pipelineCyclerBase.h"
 
 TypeHandle BamReaderAuxData::_type_handle;

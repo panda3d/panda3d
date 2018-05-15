@@ -2672,15 +2672,18 @@ class ShowBase(DirectObject.DirectObject):
           output file name (e.g. if sd = 4, movie_0001.png)
         - source is the Window, Buffer, DisplayRegion, or Texture from which
           to save the resulting images.  The default is the main window.
+
+        The task is returned, so that it can be awaited.
         """
         globalClock.setMode(ClockObject.MNonRealTime)
         globalClock.setDt(1.0/float(fps))
-        t = taskMgr.add(self._movieTask, namePrefix + '_task')
+        t = self.taskMgr.add(self._movieTask, namePrefix + '_task')
         t.frameIndex = 0  # Frame 0 is not captured.
         t.numFrames = int(duration * fps)
         t.source = source
         t.outputString = namePrefix + '_%0' + repr(sd) + 'd.' + format
         t.setUponDeath(lambda state: globalClock.setMode(ClockObject.MNormal))
+        return t
 
     def _movieTask(self, state):
         if state.frameIndex != 0:

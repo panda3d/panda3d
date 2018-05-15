@@ -15,7 +15,7 @@
 #include "pnotify.h"
 
 #include "typedWritable.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bam.h"
 #include "bamWriter.h"
 #include "bamReader.h"
@@ -94,6 +94,10 @@ BamWriter::
   for (si = _state_map.begin(); si != _state_map.end(); ++si) {
     TypedWritable *object = (TypedWritable *)(*si).first;
     object->remove_bam_writer(this);
+
+    if ((*si).second._refcount != nullptr) {
+      unref_delete((*si).second._refcount);
+    }
   }
 }
 
@@ -529,6 +533,9 @@ object_destructs(TypedWritable *object) {
     // we're in trouble when we do write it out.
     nassertv(!(*si).second._written_seq.is_initial());
 
+    // This cannot be called if we are still holding a reference to it.
+    nassertv((*si).second._refcount == nullptr);
+
     int object_id = (*si).second._object_id;
     _freed_object_ids.push_back(object_id);
 
@@ -606,14 +613,24 @@ enqueue_object(const TypedWritable *object) {
     // No, it hasn't, so assign it the next number in sequence arbitrarily.
     object_id = _next_object_id;
 
-    bool inserted =
-      _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id))).second;
+    StateMap::iterator si;
+    bool inserted;
+    tie(si, inserted) =
+      _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id)));
     nassertr(inserted, false);
 
     // Store ourselves on the TypedWritable so that we get notified when it
     // destructs.
     (const_cast<TypedWritable*>(object))->add_bam_writer(this);
     _next_object_id++;
+
+    // Increase the reference count if this inherits from ReferenceCount,
+    // until we get a chance to write this object for the first time.
+    const ReferenceCount *rc = ((TypedWritable *)object)->as_reference_count();
+    if (rc != nullptr) {
+      rc->ref();
+      (*si).second._refcount = rc;
+    }
 
   } else {
     // Yes, it has; get the object ID.
@@ -702,6 +719,15 @@ flush_queue() {
 
       (*si).second._written_seq = _writing_seq;
       (*si).second._modified = object->get_bam_modified();
+
+      // Now release any reference we hold to it, so that it may destruct.
+      const ReferenceCount *rc = (*si).second._refcount;
+      if (rc != nullptr) {
+        // We need to assign this pointer to null before deleting the object,
+        // since that may end up calling object_destructs.
+        (*si).second._refcount = nullptr;
+        unref_delete(rc);
+      }
 
     } else {
       // On subsequent times when we write a particular object, we write

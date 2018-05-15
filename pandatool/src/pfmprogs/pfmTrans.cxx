@@ -12,7 +12,7 @@
  */
 
 #include "pfmTrans.h"
-#include "config_pfm.h"
+#include "config_pfmprogs.h"
 #include "pfmFile.h"
 #include "pfmVizzer.h"
 #include "texture.h"

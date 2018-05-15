@@ -11,7 +11,7 @@
 #include "config_display.h"
 #include "config_pgraph.h"
 #ifdef DO_PSTATS
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #endif
 
 // By including checkPandaVersion.h, we guarantee that runtime attempts to

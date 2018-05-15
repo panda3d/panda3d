@@ -18,7 +18,7 @@
 #include "py_panda.h"
 #include "pythonThread.h"
 #include "callbackData.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 TypeHandle PythonCallbackObject::_type_handle;
 

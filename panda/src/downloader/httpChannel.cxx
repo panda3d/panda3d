@@ -100,6 +100,7 @@ HTTPChannel(HTTPClient *client) :
   _response_type = RT_none;
   _http_version = _client->get_http_version();
   _http_version_string = _client->get_http_version_string();
+  _content_type = "application/x-www-form-urlencoded";
   _state = S_new;
   _done_state = S_new;
   _started_download = false;
@@ -3624,7 +3625,7 @@ make_header() {
 
   if (!_body.empty()) {
     stream
-      << "Content-Type: application/x-www-form-urlencoded\r\n"
+      << "Content-Type: " << _content_type << "\r\n"
       << "Content-Length: " << _body.length() << "\r\n";
   }
 
