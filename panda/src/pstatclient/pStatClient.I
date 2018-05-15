@@ -60,14 +60,11 @@ get_thread_sync_name(int index) const {
 /**
  * Returns the Panda Thread object associated with the indicated PStatThread.
  */
-INLINE Thread *PStatClient::
+INLINE PT(Thread) PStatClient::
 get_thread_object(int index) const {
   nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), NULL);
   InternalThread *thread = get_thread_ptr(index);
-  if (thread->_thread.was_deleted()) {
-    return NULL;
-  }
-  return thread->_thread;
+  return thread->_thread.lock();
 }
 
 /**

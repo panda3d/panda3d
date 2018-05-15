@@ -74,23 +74,30 @@ was_deleted() const {
 }
 
 /**
- * Returns the NodePath held within this object.
+ * Returns the NodePath held within this object, or an empty NodePath with the
+ * error flag set if the object was deleted.
  */
 INLINE NodePath WeakNodePath::
 get_node_path() const {
-  nassertr_always(!was_deleted(), NodePath::fail());
   NodePath result;
-  result._head = _head;
+  result._head = _head.lock();
+  if (!_head.is_null() && result._head == nullptr) {
+    result._error_type = NodePath::ET_fail;
+  }
   return result;
 }
 
 /**
- * Returns the PandaNode held within this object.
+ * Returns the PandaNode held within this object, or nullptr if the object was
+ * deleted.
  */
-INLINE PandaNode *WeakNodePath::
+INLINE PT(PandaNode) WeakNodePath::
 node() const {
-  nassertr_always(!is_empty(), (PandaNode *)NULL);
-  return _head->get_node();
+  if (auto head = _head.lock()) {
+    return head->get_node();
+  } else {
+    return nullptr;
+  }
 }
 
 /**
@@ -190,10 +197,9 @@ compare_to(const WeakNodePath &other) const {
  */
 INLINE int WeakNodePath::
 get_key() const {
-  if (is_empty() || was_deleted()) {
-    return _backup_key;
+  if (auto head = _head.lock()) {
+    _backup_key = head->get_key();
   }
-  ((WeakNodePath *)this)->_backup_key = _head->get_key();
   return _backup_key;
 }
 

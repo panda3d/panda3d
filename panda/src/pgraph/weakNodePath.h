@@ -42,7 +42,7 @@ public:
   INLINE bool was_deleted() const;
 
   INLINE NodePath get_node_path() const;
-  INLINE PandaNode *node() const;
+  INLINE PT(PandaNode) node() const;
 
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
@@ -60,7 +60,7 @@ public:
 
 private:
   WPT(NodePathComponent) _head;
-  int _backup_key;
+  mutable int _backup_key;
 };
 
 INLINE ostream &operator << (ostream &out, const WeakNodePath &node_path);

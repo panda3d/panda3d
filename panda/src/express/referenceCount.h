@@ -60,8 +60,8 @@ public:
   INLINE bool has_weak_list() const;
   INLINE WeakReferenceList *get_weak_list() const;
 
-  INLINE void weak_ref(WeakPointerToVoid *ptv);
-  INLINE void weak_unref(WeakPointerToVoid *ptv);
+  INLINE WeakReferenceList *weak_ref();
+  INLINE void weak_unref();
 
 protected:
   bool do_test_ref_count_integrity() const;

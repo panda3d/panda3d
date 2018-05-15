@@ -38,7 +38,7 @@ private:
 PUBLISHED:
   static CPT(RenderEffect) make(Character *character);
 
-  INLINE Character *get_character() const;
+  INLINE PT(Character) get_character() const;
 
 public:
   virtual bool safe_to_transform() const;

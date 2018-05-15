@@ -23,11 +23,7 @@ CharacterJointEffect() {
  * Returns the Character that will get update() called on it when this node's
  * relative transform is queried, or NULL if there is no such character.
  */
-INLINE Character *CharacterJointEffect::
+INLINE PT(Character) CharacterJointEffect::
 get_character() const {
-  if (_character.is_valid_pointer()) {
-    return _character;
-  } else {
-    return NULL;
-  }
+  return _character.lock();
 }

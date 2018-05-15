@@ -337,7 +337,7 @@ remove_element(size_t n) {
       clear_element(i);
       --_num_entries;
     } else {
-      size_t wants_index = get_hash(_table[i]._key);
+      size_t wants_index = get_hash(_table[i]._key.get_orig());
       if (wants_index != i) {
         // This one was a hash conflict; try to put it where it belongs.  We
         // can't just put it in n, since maybe it belongs somewhere after n.

@@ -27,18 +27,15 @@ protected:
   INLINE WeakPointerToVoid();
 
 public:
-  INLINE void mark_deleted();
-
-  INLINE void set_callback(WeakPointerCallback *callback);
-  INLINE WeakPointerCallback *get_callback() const;
+  INLINE void add_callback(WeakPointerCallback *callback) const;
+  INLINE void remove_callback(WeakPointerCallback *callback) const;
 
 PUBLISHED:
   INLINE bool was_deleted() const;
   INLINE bool is_valid_pointer() const;
 
 protected:
-  bool _ptr_was_deleted;
-  WeakPointerCallback *_callback;
+  mutable WeakReferenceList *_weak_ref;
 };
 
 #include "weakPointerToVoid.I"

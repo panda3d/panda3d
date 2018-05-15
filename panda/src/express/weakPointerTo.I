@@ -73,6 +73,26 @@ operator T * () const {
 }
 
 /**
+ * A thread-safe way to access the underlying pointer; will silently return
+ * null if the underlying pointer was deleted or null.
+ */
+template<class T>
+INLINE PointerTo<T> WeakPointerTo<T>::
+lock() const {
+  WeakReferenceList *weak_ref = this->_weak_ref;
+  if (weak_ref != nullptr) {
+    PointerTo<T> ptr;
+    weak_ref->_lock.acquire();
+    if (!weak_ref->was_deleted()) {
+      ptr = (To *)WeakPointerToBase<T>::_void_ptr;
+    }
+    weak_ref->_lock.release();
+    return ptr;
+  }
+  return nullptr;
+}
+
+/**
  * Returns an ordinary pointer instead of a WeakPointerTo.  Useful to work
  * around compiler problems, particularly for implicit upcasts.
  */
@@ -205,6 +225,26 @@ INLINE WeakConstPointerTo<T>::
 operator const T * () const {
   nassertr(!this->was_deleted(), (To *)NULL);
   return (To *)WeakPointerToBase<T>::_void_ptr;
+}
+
+/**
+ * A thread-safe way to access the underlying pointer; will silently return
+ * null if the underlying pointer was deleted or null.
+ */
+template<class T>
+INLINE ConstPointerTo<T> WeakConstPointerTo<T>::
+lock() const {
+  WeakReferenceList *weak_ref = this->_weak_ref;
+  if (weak_ref != nullptr) {
+    ConstPointerTo<T> ptr;
+    weak_ref->_lock.acquire();
+    if (!weak_ref->was_deleted()) {
+      ptr = (const To *)WeakPointerToBase<T>::_void_ptr;
+    }
+    weak_ref->_lock.release();
+    return ptr;
+  }
+  return nullptr;
 }
 
 /**
