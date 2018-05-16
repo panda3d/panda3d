@@ -3,7 +3,7 @@
 
 import sys
 
-xfrom direct.showbase.ShowBase import ShowBase
+from direct.showbase.ShowBase import ShowBase
 from direct.showbase.InputStateGlobal import inputState
 
 from panda3d.core import AmbientLight
