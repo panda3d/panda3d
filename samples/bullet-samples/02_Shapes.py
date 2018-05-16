@@ -1,10 +1,9 @@
-
 #from panda3d.core import load_prc_file_data
-#load_prc_file_data('', 'load-display tinydisplay')
 #load_prc_file_data('', 'bullet-enable-contact-events true')
 
 import sys
-from direct.showbase.ShowBase import ShowBase
+
+xfrom direct.showbase.ShowBase import ShowBase
 from direct.showbase.InputStateGlobal import inputState
 
 from panda3d.core import AmbientLight

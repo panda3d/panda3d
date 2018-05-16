@@ -1,11 +1,9 @@
-
 #from panda3d.core import load_prc_file_data
-#load_prc_file_data('', 'load-display tinydisplay')
 #load_prc_file_data('', 'bullet-solver-iterations 20')
 
-from panda3d.core import get_model_path
 
 import sys
+
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.InputStateGlobal import inputState
 
@@ -16,6 +14,7 @@ from panda3d.core import LVector4
 from panda3d.core import LPoint3
 from panda3d.core import TransformState
 from panda3d.core import BitMask32
+from panda3d.core import get_model_path
 
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape

@@ -1,7 +1,5 @@
-
 from panda3d.core import load_prc_file_data
 load_prc_file_data('', 'bullet-filter-algorithm callback')
-#load_prc_file_data('', 'load-display tinydisplay')
 
 import sys
 from direct.showbase.ShowBase import ShowBase

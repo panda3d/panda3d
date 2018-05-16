@@ -1,8 +1,5 @@
-
-#from panda3d.core import load_prc_file_data
-#load_prc_file_data('', 'load-display tinydisplay')
-
 import sys
+
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.InputStateGlobal import inputState
 from direct.interval.MetaInterval import Sequence

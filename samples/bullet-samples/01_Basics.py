@@ -1,14 +1,13 @@
-
 #from panda3d.core import load_prc_file_data
-#load_prc_file_data('', 'load-display tinydisplay')
-
 #load_prc_file_data('', 'bullet-additional-damping true')
 #load_prc_file_data('', 'bullet-additional-damping-linear-factor 0.005')
 #load_prc_file_data('', 'bullet-additional-damping-angular-factor 0.01')
 #load_prc_file_data('', 'bullet-additional-damping-linear-threshold 0.01')
 #load_prc_file_data('', 'bullet-additional-damping-angular-threshold 0.01')
 
+
 import sys
+
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.InputStateGlobal import inputState
 

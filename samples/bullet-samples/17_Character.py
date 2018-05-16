@@ -1,5 +1,5 @@
-
 import sys
+
 from direct.actor.Actor import Actor
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.InputStateGlobal import inputState
