@@ -233,9 +233,6 @@
    to compile them out.  */
 #cmakedefine NOTIFY_DEBUG
 
-/* Define if we are linking PANDAPHYSX in with PANDA. */
-#cmakedefine LINK_IN_PHYSX
-
 /* The compiled-in character(s) to expect to separate different
    components of a path list (e.g. $PRC_PATH). */
 #define DEFAULT_PATHSEP "@DEFAULT_PATHSEP@"
