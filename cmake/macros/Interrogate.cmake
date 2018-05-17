@@ -237,76 +237,74 @@ endfunction(interrogate_sources)
 # Python module when it's initialized.
 #
 function(add_python_module module)
-  if(INTERROGATE_PYTHON_INTERFACE)
-    set(targets)
-    set(link_targets)
-    set(import_flags)
-    set(infiles)
-    set(sources)
-
-    set(link_keyword OFF)
-    set(import_keyword OFF)
-    foreach(arg ${ARGN})
-      if(arg STREQUAL "LINK")
-        set(link_keyword ON)
-        set(import_keyword OFF)
-      elseif(arg STREQUAL "IMPORT")
-        set(link_keyword OFF)
-        set(import_keyword ON)
-      elseif(link_keyword)
-        list(APPEND link_targets "${arg}")
-      elseif(import_keyword)
-        list(APPEND import_flags "-import" "${arg}")
-      else()
-        list(APPEND targets "${arg}")
-      endif()
-    endforeach(arg)
-
-    if(NOT link_targets)
-      set(link_targets ${targets})
-    endif()
-
-    foreach(target ${targets})
-      interrogate_sources(${target} "${target}_igate.cxx" "${target}.in"
-        "-python-native;-module;panda3d.${module}")
-      get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
-      list(APPEND infiles "${target}.in")
-      list(APPEND sources "${target}_igate.cxx" ${target_extensions})
-    endforeach(target)
-
-    add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
-      COMMAND interrogate_module
-        -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
-        -module ${module} -library ${module}
-        ${import_flags}
-        ${INTERROGATE_MODULE_OPTIONS}
-        ${IMOD_FLAGS} ${infiles}
-      DEPENDS interrogate_module ${infiles}
-      COMMENT "Generating module ${module}"
-    )
-
-    if(BUILD_SHARED_LIBS)
-      add_library(${module} MODULE "${module}_module.cxx" ${sources})
-    else()
-      add_library(${module} STATIC "${module}_module.cxx" ${sources})
-    endif()
-    target_link_libraries(${module}
-      ${link_targets} ${PYTHON_LIBRARIES} p3dtool)
-
-    set_target_properties(${module} PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
-      PREFIX ""
-    )
-    if(WIN32 AND NOT CYGWIN)
-      set_target_properties(${module} PROPERTIES SUFFIX ".pyd")
-    endif()
-
-    install(TARGETS ${module} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
-
-    list(APPEND ALL_INTERROGATE_MODULES "${module}")
-    set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
+  if(NOT HAVE_PYTHON OR NOT INTERROGATE_PYTHON_INTERFACE)
+    return()
   endif()
+
+  set(targets)
+  set(link_targets)
+  set(import_flags)
+  set(infiles)
+  set(sources)
+
+  set(link_keyword OFF)
+  set(import_keyword OFF)
+  foreach(arg ${ARGN})
+    if(arg STREQUAL "LINK")
+      set(link_keyword ON)
+      set(import_keyword OFF)
+    elseif(arg STREQUAL "IMPORT")
+      set(link_keyword OFF)
+      set(import_keyword ON)
+    elseif(link_keyword)
+      list(APPEND link_targets "${arg}")
+    elseif(import_keyword)
+      list(APPEND import_flags "-import" "${arg}")
+    else()
+      list(APPEND targets "${arg}")
+    endif()
+  endforeach(arg)
+
+  if(NOT link_targets)
+    set(link_targets ${targets})
+  endif()
+
+  foreach(target ${targets})
+    interrogate_sources(${target} "${target}_igate.cxx" "${target}.in"
+      "-python-native;-module;panda3d.${module}")
+    get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
+    list(APPEND infiles "${target}.in")
+    list(APPEND sources "${target}_igate.cxx" ${target_extensions})
+  endforeach(target)
+
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
+    COMMAND interrogate_module
+      -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
+      -module ${module} -library ${module}
+      ${import_flags}
+      ${INTERROGATE_MODULE_OPTIONS}
+      ${IMOD_FLAGS} ${infiles}
+    DEPENDS interrogate_module ${infiles}
+    COMMENT "Generating module ${module}"
+  )
+
+  add_library(${module} ${MODULE_TYPE} "${module}_module.cxx" ${sources})
+  target_link_libraries(${module}
+    ${link_targets} ${PYTHON_LIBRARIES} p3dtool)
+
+  set_target_properties(${module} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
+    PREFIX ""
+  )
+  if(WIN32 AND NOT CYGWIN)
+    set_target_properties(${module} PROPERTIES SUFFIX ".pyd")
+  endif()
+
+  install(TARGETS ${module} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+
+  list(APPEND ALL_INTERROGATE_MODULES "${module}")
+  set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
 endfunction(add_python_module)
 
 

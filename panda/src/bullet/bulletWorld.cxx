@@ -1052,7 +1052,7 @@ BulletPersistentManifold *BulletWorld::
 get_manifold(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx < get_num_manifolds(), NULL);
+  nassertr(idx < _dispatcher->getNumManifolds(), NULL);
 
   btPersistentManifold *ptr = _dispatcher->getManifoldByIndexInternal(idx);
   return (ptr) ? new BulletPersistentManifold(ptr) : NULL;
@@ -1186,7 +1186,12 @@ tick_callback(btDynamicsWorld *world, btScalar timestep) {
   CallbackObject *obj = w->_tick_callback_obj;
   if (obj) {
     BulletTickCallbackData cbdata(timestep);
+    // Release the global lock that we are holding during the tick callback
+    // and allow interactions with bullet world in the user callback
+    get_global_lock().release();
     obj->do_callback(&cbdata);
+    // Acquire the global lock again and protect the execution
+    get_global_lock().acquire();
   }
 }
 

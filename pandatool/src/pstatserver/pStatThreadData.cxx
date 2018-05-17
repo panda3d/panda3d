@@ -15,7 +15,7 @@
 
 #include "pStatFrameData.h"
 #include "pStatCollectorDef.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 
 PStatFrameData PStatThreadData::_null_frame;

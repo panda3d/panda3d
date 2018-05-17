@@ -14,7 +14,7 @@
 #include "pStatServer.h"
 #include "pStatReader.h"
 #include "thread.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 /**
  *

@@ -12,7 +12,7 @@
  */
 
 #include "loaderOptions.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "indent.h"
 
 /**
@@ -25,7 +25,7 @@ LoaderOptions(int flags) :
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
-  // Shadowing the variables in config_util for static init ordering issues.
+  // Shadowing the variables in config_putil for static init ordering issues.
   static ConfigVariableBool *preload_textures;
   static ConfigVariableBool *preload_simple_textures;
   static ConfigVariableBool *compressed_textures;

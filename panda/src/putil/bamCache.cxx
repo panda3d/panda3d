@@ -18,7 +18,7 @@
 #include "hashVal.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bam.h"
 #include "typeRegistry.h"
 #include "string_utils.h"

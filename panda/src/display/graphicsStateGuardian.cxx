@@ -58,7 +58,7 @@
 #include "colorScaleAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "fogAttrib.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include <algorithm>
 #include <limits.h>

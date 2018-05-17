@@ -146,7 +146,12 @@ protected:
       if (a->get_priority() != b->get_priority()) {
         return a->get_priority() < b->get_priority();
       }
-      return a->get_start_time() > b->get_start_time();
+      if (a->get_start_time() != b->get_start_time()) {
+        return a->get_start_time() > b->get_start_time();
+      }
+      // Failing any other ordering criteria, we sort the tasks based on the
+      // order in which they were added to the task chain.
+      return a->_implicit_sort > b->_implicit_sort;
     }
   };
 
@@ -185,6 +190,8 @@ protected:
   int _current_frame;
   double _time_in_frame;
   bool _block_till_next_frame;
+
+  unsigned int _next_implicit_sort;
 
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;

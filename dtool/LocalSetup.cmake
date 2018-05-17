@@ -180,10 +180,15 @@ check_cxx_compiler_flag(-msse2 HAVE_SSE2)
 #$[cdefine __USE_LARGEFILE64]
 
 # Set LINK_ALL_STATIC if we're building everything as static libraries.
+# Also set the library type used for "modules" appropriately.
 if(BUILD_SHARED_LIBS)
   set(LINK_ALL_STATIC OFF)
+  set(MODULE_TYPE "MODULE"
+    CACHE INTERNAL "" FORCE)
 else()
   set(LINK_ALL_STATIC ON)
+  set(MODULE_TYPE "STATIC"
+    CACHE INTERNAL "" FORCE)
 endif()
 
 # Now go through all the packages and report whether we have them.

@@ -122,6 +122,11 @@ typedef ios::seekdir ios_seekdir;
 // Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
+#include <tr1/tuple>
+
+using std::tr1::tuple;
+using std::tr1::tie;
+
 typedef decltype(nullptr) nullptr_t;
 
 template<class T> struct remove_reference      {typedef T type;};

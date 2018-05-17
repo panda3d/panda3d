@@ -13,7 +13,7 @@
 
 #include "ptsToBam.h"
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "geomPoints.h"
 #include "bamFile.h"
 #include "pandaNode.h"

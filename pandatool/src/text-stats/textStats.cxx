@@ -15,7 +15,7 @@
 #include "textMonitor.h"
 
 #include "pStatServer.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include <signal.h>
 

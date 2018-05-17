@@ -418,7 +418,7 @@ mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
 #
 
 # Is Python installed, and should Python interfaces be generated?
-set(WANT_PYTHON_VERSION "2.7"
+set(WANT_PYTHON_VERSION ""
   CACHE STRING "Which Python version to seek out for building Panda3D against.")
 
 find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)

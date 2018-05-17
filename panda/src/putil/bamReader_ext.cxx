@@ -12,7 +12,7 @@
  */
 
 #include "bamReader_ext.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "pythonThread.h"
 
 #ifdef HAVE_PYTHON

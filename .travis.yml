@@ -61,7 +61,7 @@ script:
 - cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT .. 
 - make -j4
 
-after_script:
+- export PYTHONPATH=$PWD
 - python ../test_imports.py
 - pytest ../tests
 

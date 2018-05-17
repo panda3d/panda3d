@@ -129,7 +129,7 @@ is_mouse_button(ButtonHandle button) {
 
 /**
  * This is intended to be called only once, by the static initialization
- * performed in config_util.cxx.
+ * performed in config_putil.cxx.
  */
 void MouseButton::
 init_mouse_buttons() {

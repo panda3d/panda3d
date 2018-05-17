@@ -11,14 +11,6 @@ if(HAVE_FREETYPE)
   list(APPEND PANDA_LINK_TARGETS p3pnmtext)
 endif()
 
-if(LINK_IN_PHYSX)
-  add_definitions(-DBUILDING_PANDAPHYSX)
-  set(PANDA_LINK_TARGETS
-    ${PANDA_LINK_TARGETS}
-    p3physx
-  )
-endif()
-
 add_metalib(panda panda.cxx COMPONENTS ${PANDA_LINK_TARGETS})
 set_target_properties(panda PROPERTIES DEFINE_SYMBOL BUILDING_LIBPANDA)
 

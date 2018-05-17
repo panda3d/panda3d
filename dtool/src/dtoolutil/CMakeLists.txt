@@ -1,10 +1,4 @@
-configure_file(pandaVersion.h.in pandaVersion.h)
-configure_file(checkPandaVersion.h.in checkPandaVersion.h)
-configure_file(checkPandaVersion.cxx.in checkPandaVersion.cxx)
-
 set(P3DTOOLUTIL_HEADERS
-  ${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.h
-  ${CMAKE_CURRENT_BINARY_DIR}/pandaVersion.h
   config_dtoolutil.h
   dSearchPath.I dSearchPath.h
   executionEnvironment.I executionEnvironment.h filename.I
@@ -40,7 +34,6 @@ if(APPLE)
 endif()
 
 set(P3DTOOLUTIL_SOURCES
-  ${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.cxx
   config_dtoolutil.cxx
   dSearchPath.cxx
   executionEnvironment.cxx filename.cxx
@@ -76,7 +69,6 @@ composite_sources(p3dtoolutil P3DTOOLUTIL_SOURCES)
 add_component_library(p3dtoolutil SYMBOL BUILDING_DTOOL_DTOOLUTIL
   ${P3DTOOLUTIL_HEADERS} ${P3DTOOLUTIL_SOURCES})
 set_target_properties(p3dtoolutil PROPERTIES COMPILE_FLAGS ${P3DTOOLUTIL_EXTRA_FLAGS})
-target_include_directories(p3dtoolutil PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 # The extensions need py_panda.h and extension.h from interrogatedb
 target_include_directories(p3dtoolutil PUBLIC
   $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)

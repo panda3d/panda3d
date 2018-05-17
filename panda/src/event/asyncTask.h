@@ -119,6 +119,7 @@ protected:
   double _wake_time;
   int _sort;
   int _priority;
+  unsigned int _implicit_sort;
 
   State _state;
   Thread *_servicing_thread;
