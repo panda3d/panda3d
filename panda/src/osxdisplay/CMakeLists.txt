@@ -13,8 +13,8 @@ set(P3OSXDISPLAY_SOURCES
     osxGraphicsBuffer.cxx)
 
 composite_sources(p3osxdisplay P3OSXDISPLAY_SOURCES)
-add_library(p3osxdisplay ${P3OSXDISPLAY_HEADERS} ${P3OSXDISPLAY_SOURCES})
-set_target_properties(p3osxdisplay PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
+add_component_library(p3osxdisplay ${P3OSXDISPLAY_HEADERS} ${P3OSXDISPLAY_SOURCES})
+set_target_properties(p3osxdisplay PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL COMPILE_FLAGS "-ObjC++")
 target_link_libraries(p3osxdisplay p3display p3putil p3glgsg)
 
 # Frameworks:
@@ -26,5 +26,3 @@ find_library(COCOA_LIBRARY Cocoa)
 target_link_libraries(p3osxdisplay
   ${APPLICATIONSERVICES_LIBRARY} ${CARBON_LIBRARY} ${AGL_LIBRARY}
   ${CORESERVICES_LIBRARY} ${COCOA_LIBRARY})
-
-install(TARGETS p3osxdisplay DESTINATION lib)

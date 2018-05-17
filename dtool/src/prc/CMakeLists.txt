@@ -77,6 +77,7 @@ target_include_directories(p3prc PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(p3prc PUBLIC
   $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
 target_link_libraries(p3prc p3dtool ${_OPENSSL_LIBRARIES})
+target_use_packages(p3prc OPENSSL)
 target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
 
 install(TARGETS p3prc DESTINATION lib)

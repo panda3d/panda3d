@@ -35,6 +35,8 @@ set(P3DTOOLUTIL_HEADERS
 if(APPLE)
   set(P3DTOOLUTIL_HEADERS ${P3DTOOLUTIL_HEADERS}
     filename_assist.mm filename_assist.h)
+  set(P3DTOOLUTIL_EXTRA_FLAGS "-ObjC++")
+  set_source_files_properties(filename_assist.mm filename_assist.h PROPERTIES WRAP_EXCLUDE YES)
 endif()
 
 set(P3DTOOLUTIL_SOURCES
@@ -73,6 +75,7 @@ composite_sources(p3dtoolutil P3DTOOLUTIL_SOURCES)
 
 add_component_library(p3dtoolutil SYMBOL BUILDING_DTOOL_DTOOLUTIL
   ${P3DTOOLUTIL_HEADERS} ${P3DTOOLUTIL_SOURCES})
+set_target_properties(p3dtoolutil PROPERTIES COMPILE_FLAGS ${P3DTOOLUTIL_EXTRA_FLAGS})
 target_include_directories(p3dtoolutil PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 # The extensions need py_panda.h and extension.h from interrogatedb
 target_include_directories(p3dtoolutil PUBLIC
