@@ -30,7 +30,7 @@
  * associated NodePath.
  */
 class EXPCL_PANDA_PGRAPH WeakNodePath {
-public:
+PUBLISHED:
   INLINE WeakNodePath(const NodePath &node_path);
   INLINE WeakNodePath(const WeakNodePath &copy);
   INLINE ~WeakNodePath();
@@ -38,6 +38,9 @@ public:
   INLINE void operator = (const NodePath &node_path);
   INLINE void operator = (const WeakNodePath &copy);
 
+  INLINE void clear();
+
+  INLINE operator bool () const;
   INLINE bool is_empty() const;
   INLINE bool was_deleted() const;
 
@@ -61,6 +64,8 @@ public:
 private:
   WPT(NodePathComponent) _head;
   mutable int _backup_key;
+
+  friend class NodePath;
 };
 
 INLINE ostream &operator << (ostream &out, const WeakNodePath &node_path);

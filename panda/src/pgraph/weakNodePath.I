@@ -57,6 +57,24 @@ operator = (const WeakNodePath &copy) {
 }
 
 /**
+ * Sets this NodePath to the empty NodePath.  It will no longer point to any
+ * node.
+ */
+INLINE void WeakNodePath::
+clear() {
+  _head.clear();
+  _backup_key = 0;
+}
+
+/**
+ * Returns true if this NodePath points to a valid, non-null node.
+ */
+INLINE WeakNodePath::
+operator bool () const {
+  return _head.is_valid_pointer();
+}
+
+/**
  * Returns true if the NodePath contains no nodes, or if it has been deleted.
  */
 INLINE bool WeakNodePath::
