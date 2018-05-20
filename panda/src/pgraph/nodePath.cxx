@@ -71,6 +71,7 @@
 #include "bam.h"
 #include "bamWriter.h"
 #include "datagramBuffer.h"
+#include "weakNodePath.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 7000,
 // need to increase stack size.
@@ -5162,6 +5163,55 @@ get_stashed_ancestor(Thread *current_thread) const {
   }
 
   return not_found();
+}
+
+/**
+ * Returns true if the two paths are equivalent; that is, if they contain the
+ * same list of nodes in the same order.
+ */
+bool NodePath::
+operator == (const WeakNodePath &other) const {
+  return _head == other._head;
+}
+
+/**
+ * Returns true if the two paths are not equivalent.
+ */
+bool NodePath::
+operator != (const WeakNodePath &other) const {
+  return _head != other._head;
+}
+
+/**
+ * Returns true if this NodePath sorts before the other one, false otherwise.
+ * The sorting order of two nonequivalent NodePaths is consistent but
+ * undefined, and is useful only for storing NodePaths in a sorted container
+ * like an STL set.
+ */
+bool NodePath::
+operator < (const WeakNodePath &other) const {
+  return _head < other._head;
+}
+
+/**
+ * Returns a number less than zero if this NodePath sorts before the other
+ * one, greater than zero if it sorts after, or zero if they are equivalent.
+ *
+ * Two NodePaths are considered equivalent if they consist of exactly the same
+ * list of nodes in the same order.  Otherwise, they are different; different
+ * NodePaths will be ranked in a consistent but undefined ordering; the
+ * ordering is useful only for placing the NodePaths in a sorted container
+ * like an STL set.
+ */
+int NodePath::
+compare_to(const WeakNodePath &other) const {
+  // Nowadays, the NodePathComponents at the head are pointerwise equivalent
+  // if and only if the NodePaths are equivalent.  So we only have to compare
+  // pointers.
+  if (_head != other._head) {
+    return _head < other._head ? -1 : 1;
+  }
+  return 0;
 }
 
 /**

@@ -79,3 +79,19 @@ def test_nodepath_transform_composition():
     leg2 = node1.get_transform().compose(node3.get_transform())
     relative_transform = leg1.get_inverse().compose(leg2)
     assert np1.get_transform(np2) == relative_transform
+
+
+def test_weak_nodepath_comparison():
+    from panda3d.core import NodePath, WeakNodePath
+
+    path = NodePath("node")
+    weak = WeakNodePath(path)
+
+    assert path == weak
+    assert weak == path
+    assert weak <= path
+    assert path <= weak
+
+    assert hash(path) == hash(weak)
+    assert weak.get_node_path() == path
+    assert weak.node() == path.node()

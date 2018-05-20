@@ -63,6 +63,7 @@ class SamplerState;
 class Shader;
 class ShaderBuffer;
 class ShaderInput;
+class WeakNodePath;
 
 //
 // A NodePath is the fundamental unit of high-level interaction with the scene
@@ -878,6 +879,11 @@ PUBLISHED:
   INLINE bool operator != (const NodePath &other) const;
   INLINE bool operator < (const NodePath &other) const;
   INLINE int compare_to(const NodePath &other) const;
+
+  bool operator == (const WeakNodePath &other) const;
+  bool operator != (const WeakNodePath &other) const;
+  bool operator < (const WeakNodePath &other) const;
+  int compare_to(const WeakNodePath &other) const;
 
   // Miscellaneous
   bool verify_complete(Thread *current_thread = Thread::get_current_thread()) const;
