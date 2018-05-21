@@ -2601,7 +2601,6 @@ write_module_class(ostream &out, Object *obj) {
       // compare_to function, which is mapped to the tp_compare slot, which
       // Python 3 no longer has.  So, we'll write code to fall back to that if
       // no matching comparison operator was found.
-      out << "#if PY_MAJOR_VERSION >= 3\n";
       out << "  // All is not lost; we still have the compare_to function to fall back onto.\n";
       out << "  int cmpval = " << slots["tp_compare"]._wrapper_name << "(self, arg);\n";
       out << "  if (cmpval == -1 && _PyErr_OCCURRED()) {\n";
@@ -2625,7 +2624,6 @@ write_module_class(ostream &out, Object *obj) {
       out << "  case Py_GE:\n";
       out << "    return PyBool_FromLong(cmpval >= 0);\n";
       out << "  }\n";
-      out << "#endif\n\n";
     }
 
     out << "  Py_INCREF(Py_NotImplemented);\n";
