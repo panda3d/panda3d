@@ -66,7 +66,6 @@ import direct.distributed.AsyncRequest
 import direct.distributed.CRCache
 import direct.distributed.CRDataCache
 import direct.distributed.CachedDOData
-import direct.distributed.CartesianGridBase
 import direct.distributed.ClientRepository
 import direct.distributed.ClientRepositoryBase
 import direct.distributed.ClockDelta
@@ -74,8 +73,6 @@ import direct.distributed.ConnectionRepository
 import direct.distributed.DistributedCamera
 import direct.distributed.DistributedCameraAI
 import direct.distributed.DistributedCameraOV
-import direct.distributed.DistributedCartesianGrid
-import direct.distributed.DistributedCartesianGridAI
 import direct.distributed.DistributedNode
 import direct.distributed.DistributedNodeAI
 import direct.distributed.DistributedNodeUD
@@ -92,8 +89,6 @@ import direct.distributed.DistributedSmoothNodeBase
 import direct.distributed.DoCollectionManager
 import direct.distributed.DoHierarchy
 import direct.distributed.DoInterestManager
-import direct.distributed.GridChild
-import direct.distributed.GridParent
 import direct.distributed.InterestWatcher
 import direct.distributed.MsgTypes
 import direct.distributed.MsgTypesCMU
