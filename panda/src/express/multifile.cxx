@@ -137,25 +137,6 @@ Multifile::
 }
 
 /**
- * Don't try to copy Multifiles.
- */
-Multifile::
-Multifile(const Multifile &copy) :
-  _read_filew(_read_file),
-  _read_write_filew(_read_write_file)
-{
-  nassertv(false);
-}
-
-/**
- * Don't try to copy Multifiles.
- */
-void Multifile::
-operator = (const Multifile &copy) {
-  nassertv(false);
-}
-
-/**
  * Opens the named Multifile on disk for reading.  The Multifile index is read
  * in, and the list of subfiles becomes available; individual subfiles may
  * then be extracted or read, but the list of subfiles may not be modified.

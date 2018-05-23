@@ -31,19 +31,3 @@ INLINE CyclerHolder::
   _cycler->release();
 #endif
 }
-
-/**
- * Do not attempt to copy CyclerHolders.
- */
-INLINE CyclerHolder::
-CyclerHolder(const CyclerHolder &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy CyclerHolders.
- */
-INLINE void CyclerHolder::
-operator = (const CyclerHolder &copy) {
-  nassertv(false);
-}

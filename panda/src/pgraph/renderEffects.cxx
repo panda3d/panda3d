@@ -49,22 +49,6 @@ RenderEffects() : _lock("RenderEffects") {
 }
 
 /**
- * RenderEffects are not meant to be copied.
- */
-RenderEffects::
-RenderEffects(const RenderEffects &) {
-  nassertv(false);
-}
-
-/**
- * RenderEffects are not meant to be copied.
- */
-void RenderEffects::
-operator = (const RenderEffects &) {
-  nassertv(false);
-}
-
-/**
  * The destructor is responsible for removing the RenderEffects from the
  * global set if it is there.
  */

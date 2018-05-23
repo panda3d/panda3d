@@ -62,19 +62,3 @@ INLINE LightReMutexHolder::
   _mutex->release();
 #endif
 }
-
-/**
- * Do not attempt to copy LightReMutexHolders.
- */
-INLINE LightReMutexHolder::
-LightReMutexHolder(const LightReMutexHolder &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy LightReMutexHolders.
- */
-INLINE void LightReMutexHolder::
-operator = (const LightReMutexHolder &copy) {
-  nassertv(false);
-}

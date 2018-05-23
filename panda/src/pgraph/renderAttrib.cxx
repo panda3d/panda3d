@@ -38,22 +38,6 @@ RenderAttrib() {
 }
 
 /**
- * RenderAttribs are not meant to be copied.
- */
-RenderAttrib::
-RenderAttrib(const RenderAttrib &) {
-  nassertv(false);
-}
-
-/**
- * RenderAttribs are not meant to be copied.
- */
-void RenderAttrib::
-operator = (const RenderAttrib &) {
-  nassertv(false);
-}
-
-/**
  * The destructor is responsible for removing the RenderAttrib from the global
  * set if it is there.
  */

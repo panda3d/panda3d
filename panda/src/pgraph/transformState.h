@@ -55,13 +55,12 @@ class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount 
 protected:
   TransformState();
 
-private:
-  TransformState(const TransformState &copy);
-  void operator = (const TransformState &copy);
-
 public:
+  TransformState(const TransformState &copy) = delete;
   virtual ~TransformState();
   ALLOC_DELETED_CHAIN(TransformState);
+
+  TransformState &operator = (const TransformState &copy) = delete;
 
 PUBLISHED:
   INLINE bool operator != (const TransformState &other) const;

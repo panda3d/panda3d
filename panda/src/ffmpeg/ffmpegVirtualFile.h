@@ -34,12 +34,11 @@ struct AVFormatContext;
 class EXPCL_FFMPEG FfmpegVirtualFile {
 public:
   FfmpegVirtualFile();
+  FfmpegVirtualFile(const FfmpegVirtualFile &copy) = delete;
   ~FfmpegVirtualFile();
-private:
-  FfmpegVirtualFile(const FfmpegVirtualFile &copy);
-  void operator = (const FfmpegVirtualFile &copy);
 
-public:
+  FfmpegVirtualFile &operator = (const FfmpegVirtualFile &copy) = delete;
+
   bool open_vfs(const Filename &filename);
   bool open_subfile(const SubfileInfo &info);
   void close();

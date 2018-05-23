@@ -36,10 +36,10 @@ public:
   INLINE explicit LightReMutex(const char *name);
 PUBLISHED:
   INLINE explicit LightReMutex(const string &name);
-  INLINE ~LightReMutex();
-private:
-  INLINE LightReMutex(const LightReMutex &copy);
-  INLINE void operator = (const LightReMutex &copy);
+  LightReMutex(const LightReMutex &copy) = delete;
+  ~LightReMutex() = default;
+
+  LightReMutex &operator = (const LightReMutex &copy) = delete;
 };
 
 #include "lightReMutex.I"

@@ -64,19 +64,3 @@ INLINE MutexHolder::
   _mutex->release();
 #endif
 }
-
-/**
- * Do not attempt to copy MutexHolders.
- */
-INLINE MutexHolder::
-MutexHolder(const MutexHolder &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy MutexHolders.
- */
-INLINE void MutexHolder::
-operator = (const MutexHolder &copy) {
-  nassertv(false);
-}

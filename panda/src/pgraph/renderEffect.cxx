@@ -36,22 +36,6 @@ RenderEffect() {
 }
 
 /**
- * RenderEffects are not meant to be copied.
- */
-RenderEffect::
-RenderEffect(const RenderEffect &) {
-  nassertv(false);
-}
-
-/**
- * RenderEffects are not meant to be copied.
- */
-void RenderEffect::
-operator = (const RenderEffect &) {
-  nassertv(false);
-}
-
-/**
  * The destructor is responsible for removing the RenderEffect from the global
  * set if it is there.
  */

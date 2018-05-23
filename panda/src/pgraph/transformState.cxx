@@ -69,22 +69,6 @@ TransformState() : _lock("TransformState") {
 }
 
 /**
- * TransformStates are not meant to be copied.
- */
-TransformState::
-TransformState(const TransformState &) {
-  nassertv(false);
-}
-
-/**
- * TransformStates are not meant to be copied.
- */
-void TransformState::
-operator = (const TransformState &) {
-  nassertv(false);
-}
-
-/**
  * The destructor is responsible for removing the TransformState from the
  * global set if it is there.
  */

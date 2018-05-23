@@ -34,9 +34,7 @@ class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
   explicit MovieTexture(const string &name);
   explicit MovieTexture(MovieVideo *video);
-private:
-  MovieTexture(const MovieTexture &copy);
-PUBLISHED:
+  MovieTexture(const MovieTexture &copy) = delete;
   virtual ~MovieTexture();
 
   INLINE double get_video_length() const;

@@ -30,10 +30,8 @@ class GraphicsPipe;
 class EXPCL_PANDA_DISPLAY GraphicsDevice : public TypedReferenceCount {
 public:
   GraphicsDevice(GraphicsPipe *pipe);
-
-private:
-  GraphicsDevice(const GraphicsDevice &copy);
-  void operator = (const GraphicsDevice &copy);
+  GraphicsDevice(const GraphicsDevice &copy) = delete;
+  GraphicsDevice &operator = (const GraphicsDevice &copy) = delete;
 
 PUBLISHED:
   virtual ~GraphicsDevice();

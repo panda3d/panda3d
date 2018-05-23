@@ -568,22 +568,6 @@ DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread) :
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE DisplayRegionPipelineReader::
-DisplayRegionPipelineReader(const DisplayRegionPipelineReader &) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void DisplayRegionPipelineReader::
-operator = (const DisplayRegionPipelineReader &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE DisplayRegionPipelineReader::

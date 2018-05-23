@@ -25,10 +25,10 @@
 class EXPCL_PANDA_PIPELINE CyclerHolder {
 public:
   INLINE CyclerHolder(PipelineCyclerBase &cycler);
+  CyclerHolder(const CyclerHolder &copy) = delete;
   INLINE ~CyclerHolder();
-private:
-  INLINE CyclerHolder(const CyclerHolder &copy);
-  INLINE void operator = (const CyclerHolder &copy);
+
+  CyclerHolder &operator = (const CyclerHolder &copy) = delete;
 
 private:
 #ifdef DO_PIPELINING

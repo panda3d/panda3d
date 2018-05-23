@@ -48,7 +48,7 @@ PUBLISHED:
   LightMutex(const LightMutex &copy) = delete;
   ~LightMutex() = default;
 
-  void operator = (const LightMutex &copy) = delete;
+  LightMutex &operator = (const LightMutex &copy) = delete;
 };
 
 #include "lightMutex.I"

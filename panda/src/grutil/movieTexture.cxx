@@ -93,17 +93,6 @@ make_copy() const {
 }
 
 /**
- * Use MovieTexture::make_copy() to make a duplicate copy of an existing
- * MovieTexture.
- */
-MovieTexture::
-MovieTexture(const MovieTexture &copy) :
-  Texture(copy)
-{
-  nassertv(false);
-}
-
-/**
  * xxx
  */
 MovieTexture::

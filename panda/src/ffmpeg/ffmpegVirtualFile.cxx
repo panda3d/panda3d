@@ -48,22 +48,6 @@ FfmpegVirtualFile::
 }
 
 /**
- * These objects are not meant to be copied.
- */
-FfmpegVirtualFile::
-FfmpegVirtualFile(const FfmpegVirtualFile &copy) {
-  nassertv(false);
-}
-
-/**
- * These objects are not meant to be copied.
- */
-void FfmpegVirtualFile::
-operator = (const FfmpegVirtualFile &copy) {
-  nassertv(false);
-}
-
-/**
  * Opens the movie file via Panda's VFS.  Returns true on success, false on
  * failure.  If successful, use get_format_context() to get the open file
  * handle.

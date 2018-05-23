@@ -48,12 +48,12 @@ class PandaNode;
 class EXPCL_PANDA_PGRAPH RenderEffect : public TypedWritableReferenceCount {
 protected:
   RenderEffect();
-private:
-  RenderEffect(const RenderEffect &copy);
-  void operator = (const RenderEffect &copy);
 
 public:
+  RenderEffect(const RenderEffect &copy) = delete;
   virtual ~RenderEffect();
+
+  RenderEffect &operator = (const RenderEffect &copy) = delete;
 
   virtual bool safe_to_transform() const;
   virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;

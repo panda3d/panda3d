@@ -30,10 +30,10 @@
 class EXPCL_PANDA_PIPELINE Semaphore {
 PUBLISHED:
   INLINE explicit Semaphore(int initial_count = 1);
-  INLINE ~Semaphore();
-private:
-  INLINE Semaphore(const Semaphore &copy);
-  INLINE void operator = (const Semaphore &copy);
+  Semaphore(const Semaphore &copy) = delete;
+  ~Semaphore() = default;
+
+  Semaphore &operator = (const Semaphore &copy) = delete;
 
 PUBLISHED:
   BLOCKING INLINE void acquire();

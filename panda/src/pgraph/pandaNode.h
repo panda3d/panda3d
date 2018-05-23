@@ -71,8 +71,8 @@ PUBLISHED:
 
 protected:
   PandaNode(const PandaNode &copy);
-private:
-  void operator = (const PandaNode &copy);
+
+  PandaNode &operator = (const PandaNode &copy) = delete;
 
 public:
   virtual PandaNode *dupe_for_flatten() const;

@@ -50,11 +50,12 @@ protected:
 
 private:
   RenderState(const RenderState &copy);
-  void operator = (const RenderState &copy);
 
 public:
   virtual ~RenderState();
   ALLOC_DELETED_CHAIN(RenderState);
+
+  RenderState &operator = (const RenderState &copy) = delete;
 
   typedef RenderAttribRegistry::SlotMask SlotMask;
 

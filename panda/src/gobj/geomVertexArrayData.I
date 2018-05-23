@@ -372,23 +372,6 @@ GeomVertexArrayDataHandle(GeomVertexArrayData *object,
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE GeomVertexArrayDataHandle::
-GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy)
-  : _current_thread(copy._current_thread) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomVertexArrayDataHandle::
-operator = (const GeomVertexArrayDataHandle &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE GeomVertexArrayDataHandle::

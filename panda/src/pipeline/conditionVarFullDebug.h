@@ -32,10 +32,10 @@
 class EXPCL_PANDA_PIPELINE ConditionVarFullDebug {
 public:
   explicit ConditionVarFullDebug(MutexDebug &mutex);
+  ConditionVarFullDebug(const ConditionVarFullDebug &copy) = delete;
   virtual ~ConditionVarFullDebug();
-private:
-  INLINE ConditionVarFullDebug(const ConditionVarFullDebug &copy);
-  INLINE void operator = (const ConditionVarFullDebug &copy);
+
+  ConditionVarFullDebug &operator = (const ConditionVarFullDebug &copy) = delete;
 
 PUBLISHED:
   INLINE MutexDebug &get_mutex() const;
