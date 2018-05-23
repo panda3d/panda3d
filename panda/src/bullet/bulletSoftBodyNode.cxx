@@ -134,7 +134,7 @@ BulletSoftBodyNodeElement BulletSoftBodyNode::
 get_node(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >=0 && idx < get_num_nodes(), BulletSoftBodyNodeElement::empty());
+  nassertr(idx >= 0 && idx < _soft->m_nodes.size(), BulletSoftBodyNodeElement::empty());
   return BulletSoftBodyNodeElement(_soft->m_nodes[idx]);
 }
 
