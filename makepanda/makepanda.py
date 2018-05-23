@@ -315,9 +315,7 @@ def parseopts(args):
         usage("Invalid SHA-1 hash given for --git-commit option!")
 
     if GetTarget() == 'windows':
-        show_warning = False
         if not MSVC_VERSION:
-            show_warning = True
             print("No MSVC version specified. Defaulting to 14 (Visual Studio 2015).")
             MSVC_VERSION = (14, 0)
         else:
@@ -325,22 +323,19 @@ def parseopts(args):
                 MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
                 if (len(MSVC_VERSION) == 1):
                     MSVC_VERSION += (0,)
-                if MSVC_VERSION < (14, 0):
-                    show_warning = True
             except:
                 usage("Invalid setting for --msvc-version")
 
-        if show_warning:
-            warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
+        if MSVC_VERSION < (14, 0):
+            warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
             print("=========================================================================")
-            print(warn_prefix + "Support for MSVC versions before 2015 will soon be discontinued.")
-            print(warn_prefix + "If you wish to keep using MSVC 2010, make your voice heard at:")
+            print(warn_prefix + "Support for MSVC versions before 2015 has been discontinued.")
+            print(warn_prefix + "For more information, or any questions, please visit:")
             print(warn_prefix + "  https://github.com/panda3d/panda3d/issues/288")
-            if MSVC_VERSION >= (14, 0):
-                print(warn_prefix + "To squelch this warning, pass --msvc-version {0}.{1}".format(*MSVC_VERSION))
             print("=========================================================================")
             sys.stdout.flush()
             time.sleep(1.0)
+            sys.exit(1)
 
         if not WINDOWS_SDK:
             print("No Windows SDK version specified. Defaulting to '7.1'.")
