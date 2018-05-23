@@ -61,13 +61,12 @@ operator = (const CycleDataLockedReader<CycleDataType> &copy) {
   _cycler->increment_read(_pointer);
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class CycleDataType>
 INLINE CycleDataLockedReader<CycleDataType>::
-CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT :
+CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) noexcept :
   _cycler(from._cycler),
   _current_thread(from._current_thread),
   _pointer(from._pointer)
@@ -80,7 +79,7 @@ CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT :
  */
 template<class CycleDataType>
 INLINE void CycleDataLockedReader<CycleDataType>::
-operator = (CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT {
+operator = (CycleDataLockedReader<CycleDataType> &&from) noexcept {
   nassertv(_pointer == (CycleDataType *)NULL);
   nassertv(_current_thread == from._current_thread);
 
@@ -89,7 +88,6 @@ operator = (CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT {
 
   from._pointer = NULL;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

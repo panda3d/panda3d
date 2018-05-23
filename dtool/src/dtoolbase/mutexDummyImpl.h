@@ -23,11 +23,10 @@
  */
 class EXPCL_DTOOL_DTOOLBASE MutexDummyImpl {
 public:
-  CONSTEXPR MutexDummyImpl() DEFAULT_CTOR;
+  constexpr MutexDummyImpl() = default;
+  MutexDummyImpl(const MutexDummyImpl &copy) = delete;
 
-private:
-  MutexDummyImpl(const MutexDummyImpl &copy) DELETED;
-  MutexDummyImpl &operator = (const MutexDummyImpl &copy) DELETED_ASSIGN;
+  MutexDummyImpl &operator = (const MutexDummyImpl &copy) = delete;
 
 public:
   ALWAYS_INLINE void lock();

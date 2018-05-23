@@ -52,7 +52,7 @@ class GeomMunger;
  * standard and/or user-defined columns in your custom GeomVertexFormat
  * constructions.
  */
-class EXPCL_PANDA_GOBJ GeomVertexFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexFormat final : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();
   GeomVertexFormat(const GeomVertexArrayFormat *array_format);

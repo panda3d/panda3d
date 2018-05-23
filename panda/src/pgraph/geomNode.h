@@ -164,12 +164,10 @@ public:
     INLINE Geoms();
     INLINE Geoms(const CData *cdata);
     INLINE Geoms(const Geoms &copy);
-    INLINE void operator = (const Geoms &copy);
+    INLINE Geoms(Geoms &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Geoms(Geoms &&from) NOEXCEPT;
-    INLINE void operator = (Geoms &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Geoms &copy);
+    INLINE void operator = (Geoms &&from) noexcept;
 
     INLINE int get_num_geoms() const;
     INLINE CPT(Geom) get_geom(int n) const;

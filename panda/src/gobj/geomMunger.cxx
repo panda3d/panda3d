@@ -147,12 +147,9 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   // Record the new result in the cache.
   if (entry == (Geom::CacheEntry *)NULL) {
     // Create a new entry for the result.
-#ifdef USE_MOVE_SEMANTICS
     // We don't need the key anymore, move the pointers into the CacheEntry.
     entry = new Geom::CacheEntry(orig_geom, move(key));
-#else
-    entry = new Geom::CacheEntry(orig_geom, key);
-#endif
+
     {
       LightMutexHolder holder(orig_geom->_cache_lock);
       bool inserted = orig_geom->_cache.insert(Geom::Cache::value_type(&entry->_key, entry)).second;

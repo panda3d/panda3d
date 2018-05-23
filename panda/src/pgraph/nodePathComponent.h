@@ -39,7 +39,7 @@
  * graph, and the NodePathComponents are stored in the nodes themselves to
  * allow the nodes to keep these up to date as the scene graph is manipulated.
  */
-class EXPCL_PANDA_PGRAPH NodePathComponent FINAL : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH NodePathComponent final : public ReferenceCount {
 private:
   NodePathComponent(PandaNode *node, NodePathComponent *next,
                     int pipeline_stage, Thread *current_thread);

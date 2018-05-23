@@ -130,13 +130,12 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                                             force_to_0, _current_thread);
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(CycleDataWriter<CycleDataType> &&from) NOEXCEPT :
+CycleDataWriter(CycleDataWriter<CycleDataType> &&from) noexcept :
   _cycler(from._cycler),
   _current_thread(from._current_thread),
   _pointer(from._pointer)
@@ -149,7 +148,7 @@ CycleDataWriter(CycleDataWriter<CycleDataType> &&from) NOEXCEPT :
  */
 template<class CycleDataType>
 INLINE void CycleDataWriter<CycleDataType>::
-operator = (CycleDataWriter<CycleDataType> &&from) NOEXCEPT {
+operator = (CycleDataWriter<CycleDataType> &&from) noexcept {
   nassertv(_pointer == (CycleDataType *)NULL);
   nassertv(_current_thread == from._current_thread);
 
@@ -158,7 +157,6 @@ operator = (CycleDataWriter<CycleDataType> &&from) NOEXCEPT {
 
   from._pointer = NULL;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

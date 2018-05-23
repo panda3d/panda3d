@@ -14,8 +14,8 @@
 /**
  *
  */
-CONSTEXPR MutexPosixImpl::
-MutexPosixImpl() NOEXCEPT : _lock(PTHREAD_MUTEX_INITIALIZER) {
+constexpr MutexPosixImpl::
+MutexPosixImpl() noexcept : _lock(PTHREAD_MUTEX_INITIALIZER) {
 }
 
 /**
@@ -63,8 +63,8 @@ unlock() {
  *
  */
 #ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-CONSTEXPR ReMutexPosixImpl::
-ReMutexPosixImpl() NOEXCEPT : _lock(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP) {
+constexpr ReMutexPosixImpl::
+ReMutexPosixImpl() noexcept : _lock(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP) {
 }
 #else
 INLINE ReMutexPosixImpl::

@@ -30,10 +30,10 @@ class Thread;
 class EXPCL_PANDA_PIPELINE LightReMutexDirect {
 protected:
   INLINE LightReMutexDirect();
-  INLINE ~LightReMutexDirect();
-private:
-  INLINE LightReMutexDirect(const LightReMutexDirect &copy);
-  INLINE void operator = (const LightReMutexDirect &copy);
+  LightReMutexDirect(const LightReMutexDirect &copy) = delete;
+  ~LightReMutexDirect() = default;
+
+  void operator = (const LightReMutexDirect &copy) = delete;
 
 public:
   INLINE void lock();

@@ -12,36 +12,6 @@
  */
 
 /**
- *
- */
-INLINE MutexDirect::
-MutexDirect() {
-}
-
-/**
- *
- */
-INLINE MutexDirect::
-~MutexDirect() {
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE MutexDirect::
-MutexDirect(const MutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE void MutexDirect::
-operator = (const MutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
  * Alias for acquire() to match C++11 semantics.
  * @see acquire()
  */

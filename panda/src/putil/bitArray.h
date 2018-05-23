@@ -54,10 +54,10 @@ PUBLISHED:
   INLINE static BitArray bit(int index);
   INLINE static BitArray range(int low_bit, int size);
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
+  constexpr static bool has_max_num_bits();
+  constexpr static int get_max_num_bits();
 
-  CONSTEXPR static int get_num_bits_per_word();
+  constexpr static int get_num_bits_per_word();
   INLINE size_t get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);

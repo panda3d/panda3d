@@ -36,16 +36,16 @@
  */
 class EXPCL_PANDA_PUTIL UpdateSeq {
 private:
-  CONSTEXPR UpdateSeq(unsigned int seq);
+  constexpr UpdateSeq(unsigned int seq);
 
 PUBLISHED:
-  CONSTEXPR UpdateSeq();
-  CONSTEXPR static UpdateSeq initial();
-  CONSTEXPR static UpdateSeq old();
-  CONSTEXPR static UpdateSeq fresh();
+  constexpr UpdateSeq();
+  constexpr static UpdateSeq initial();
+  constexpr static UpdateSeq old();
+  constexpr static UpdateSeq fresh();
 
   INLINE UpdateSeq(const UpdateSeq &copy);
-  CONSTEXPR UpdateSeq(const UpdateSeq &&from) NOEXCEPT;
+  constexpr UpdateSeq(const UpdateSeq &&from) noexcept;
   INLINE UpdateSeq &operator = (const UpdateSeq &copy);
 
   INLINE void clear();

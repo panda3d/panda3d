@@ -27,33 +27,6 @@ ReMutexDirect()
 }
 
 /**
- *
- */
-INLINE ReMutexDirect::
-~ReMutexDirect() {
-}
-
-/**
- * Do not attempt to copy reMutexes.
- */
-INLINE ReMutexDirect::
-ReMutexDirect(const ReMutexDirect &copy)
-#ifndef HAVE_REMUTEXTRUEIMPL
-  : _cvar_impl(_lock_impl)
-#endif
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy reMutexes.
- */
-INLINE void ReMutexDirect::
-operator = (const ReMutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
  * Alias for acquire() to match C++11 semantics.
  * @see acquire()
  */

@@ -32,7 +32,7 @@ get_slot(TypeHandle type_handle) const {
  *
  * This number will not change during the lifetime of the application.
  */
-CONSTEXPR int RenderAttribRegistry::
+constexpr int RenderAttribRegistry::
 get_max_slots() {
   return _max_slots;
 }

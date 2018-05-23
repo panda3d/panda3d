@@ -255,13 +255,12 @@ operator = (const GeomNode::Geoms &copy) {
   _geoms = copy._geoms;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE GeomNode::Geoms::
-Geoms(GeomNode::Geoms &&from) NOEXCEPT :
-  _geoms(move(from._geoms))
+Geoms(GeomNode::Geoms &&from) noexcept :
+  _geoms(std::move(from._geoms))
 {
 }
 
@@ -269,10 +268,9 @@ Geoms(GeomNode::Geoms &&from) NOEXCEPT :
  *
  */
 INLINE void GeomNode::Geoms::
-operator = (GeomNode::Geoms &&from) NOEXCEPT {
-  _geoms = move(from._geoms);
+operator = (GeomNode::Geoms &&from) noexcept {
+  _geoms = std::move(from._geoms);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of geoms of the node.

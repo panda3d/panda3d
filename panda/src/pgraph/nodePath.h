@@ -177,13 +177,12 @@ PUBLISHED:
                     Thread *current_thread = Thread::get_current_thread());
 
   INLINE NodePath(const NodePath &copy);
-  INLINE void operator = (const NodePath &copy);
-  INLINE void clear();
+  INLINE NodePath(NodePath &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE NodePath(NodePath &&from) NOEXCEPT;
-  INLINE void operator = (NodePath &&from) NOEXCEPT;
-#endif
+  INLINE void operator = (const NodePath &copy);
+  INLINE void operator = (NodePath &&from) noexcept;
+
+  INLINE void clear();
 
   EXTENSION(NodePath __copy__() const);
   EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);

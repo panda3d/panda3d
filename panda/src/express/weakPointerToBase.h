@@ -31,13 +31,13 @@ protected:
   INLINE WeakPointerToBase(To *ptr);
   INLINE WeakPointerToBase(const PointerToBase<T> &copy);
   INLINE WeakPointerToBase(const WeakPointerToBase<T> &copy);
-  INLINE WeakPointerToBase(WeakPointerToBase<T> &&from) NOEXCEPT;
+  INLINE WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept;
   INLINE ~WeakPointerToBase();
 
   void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
   INLINE void reassign(const WeakPointerToBase<To> &copy);
-  INLINE void reassign(WeakPointerToBase<To> &&from) NOEXCEPT;
+  INLINE void reassign(WeakPointerToBase<To> &&from) noexcept;
 
   INLINE void update_type(To *ptr);
 

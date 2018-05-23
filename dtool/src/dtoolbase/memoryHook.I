@@ -38,7 +38,7 @@ dec_heap(size_t size) {
  * Returns the global memory alignment.  This is the number of bytes at which
  * each allocated memory pointer will be aligned.
  */
-CONSTEXPR size_t MemoryHook::
+constexpr size_t MemoryHook::
 get_memory_alignment() {
   return MEMORY_HOOK_ALIGNMENT;
 }

@@ -5412,7 +5412,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
   bool found_any = false;
   node()->calc_tight_bounds(min_point, max_point, found_any,
-                            MOVE(transform), current_thread);
+                            move(transform), current_thread);
 
   return found_any;
 }

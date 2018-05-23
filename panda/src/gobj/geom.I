@@ -443,17 +443,15 @@ CacheKey(const CacheKey &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Geom::CacheKey::
-CacheKey(CacheKey &&from) NOEXCEPT :
+CacheKey(CacheKey &&from) noexcept :
   _source_data(move(from._source_data)),
   _modifier(move(from._modifier))
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Provides a unique ordering within the map.
@@ -493,17 +491,15 @@ CacheEntry(Geom *source, const Geom::CacheKey &key) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Geom::CacheEntry::
-CacheEntry(Geom *source, Geom::CacheKey &&key) NOEXCEPT :
+CacheEntry(Geom *source, Geom::CacheKey &&key) noexcept :
   _source(source),
   _key(move(key))
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

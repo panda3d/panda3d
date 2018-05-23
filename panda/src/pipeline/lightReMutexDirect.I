@@ -27,33 +27,6 @@ LightReMutexDirect()
 }
 
 /**
- *
- */
-INLINE LightReMutexDirect::
-~LightReMutexDirect() {
-}
-
-/**
- * Do not attempt to copy lightReMutexes.
- */
-INLINE LightReMutexDirect::
-LightReMutexDirect(const LightReMutexDirect &copy)
-#ifndef HAVE_REMUTEXIMPL
-  : _cvar_impl(_lock_impl)
-#endif
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy lightReMutexes.
- */
-INLINE void LightReMutexDirect::
-operator = (const LightReMutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
  * Alias for acquire() to match C++11 semantics.
  * @see acquire()
  */

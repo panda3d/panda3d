@@ -35,7 +35,7 @@ class FactoryParams;
  * composition of one or more other names, or by giving it a source string
  * directly.
  */
-class EXPCL_PANDA_GOBJ InternalName FINAL : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ InternalName final : public TypedWritableReferenceCount {
 private:
   InternalName(InternalName *parent, const string &basename);
 
@@ -198,25 +198,22 @@ class CPT_InternalName : public ConstPointerTo<InternalName> {
 public:
   INLINE CPT_InternalName(const To *ptr = (const To *)NULL);
   INLINE CPT_InternalName(const PointerTo<InternalName> &copy);
+  INLINE CPT_InternalName(PointerTo<InternalName> &&from) noexcept;
   INLINE CPT_InternalName(const ConstPointerTo<InternalName> &copy);
+  INLINE CPT_InternalName(ConstPointerTo<InternalName> &&from) noexcept;
   INLINE CPT_InternalName(const string &name);
 
   template<int N>
   INLINE CPT_InternalName(const char (&literal)[N]);
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE CPT_InternalName(PointerTo<InternalName> &&from) NOEXCEPT;
-  INLINE CPT_InternalName(ConstPointerTo<InternalName> &&from) NOEXCEPT;
-  INLINE CPT_InternalName &operator = (PointerTo<InternalName> &&from) NOEXCEPT;
-  INLINE CPT_InternalName &operator = (ConstPointerTo<InternalName> &&from) NOEXCEPT;
-#endif  // USE_MOVE_SEMANTICS
-
   INLINE CPT_InternalName &operator = (const To *ptr);
   INLINE CPT_InternalName &operator = (const PointerTo<InternalName> &copy);
   INLINE CPT_InternalName &operator = (const ConstPointerTo<InternalName> &copy);
+  INLINE CPT_InternalName &operator = (PointerTo<InternalName> &&from) noexcept;
+  INLINE CPT_InternalName &operator = (ConstPointerTo<InternalName> &&from) noexcept;
 };
 
-INLINE void swap(CPT_InternalName &one, CPT_InternalName &two) NOEXCEPT {
+INLINE void swap(CPT_InternalName &one, CPT_InternalName &two) noexcept {
   one.swap(two);
 }
 #endif  // CPPPARSER

@@ -239,7 +239,7 @@ CData(UsageHint usage_hint) :
  *
  */
 INLINE GeomVertexArrayData::CData::
-CData(GeomVertexArrayData::CData &&from) NOEXCEPT :
+CData(GeomVertexArrayData::CData &&from) noexcept :
   _usage_hint(move(from._usage_hint)),
   _buffer(move(from._buffer)),
   _modified(move(from._modified)),

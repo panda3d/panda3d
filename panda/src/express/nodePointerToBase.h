@@ -36,11 +36,9 @@ protected:
   INLINE NodePointerToBase(To *ptr);
   INLINE NodePointerToBase(const NodePointerToBase<T> &copy);
   INLINE ~NodePointerToBase();
+  INLINE NodePointerToBase(NodePointerToBase<T> &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT;
-  INLINE void reassign(NodePointerToBase<To> &&from) NOEXCEPT;
-#endif
+  INLINE void reassign(NodePointerToBase<To> &&from) noexcept;
 
   void reassign(To *ptr);
   INLINE void reassign(const NodePointerToBase<To> &copy);

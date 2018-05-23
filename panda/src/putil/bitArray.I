@@ -87,7 +87,7 @@ range(int low_bit, int size) {
  * bits.  This method is defined so generic programming algorithms can use
  * BitMask or BitArray interchangeably.
  */
-CONSTEXPR bool BitArray::
+constexpr bool BitArray::
 has_max_num_bits() {
   return false;
 }
@@ -101,7 +101,7 @@ has_max_num_bits() {
  * number of bits.  This method is defined so generic programming algorithms
  * can use BitMask or BitArray interchangeably.
  */
-CONSTEXPR int BitArray::
+constexpr int BitArray::
 get_max_num_bits() {
   return INT_MAX;
 }
@@ -111,7 +111,7 @@ get_max_num_bits() {
  * only in that it limits the maximum number of bits that may be queried or
  * set at once by extract() and store().
  */
-CONSTEXPR int BitArray::
+constexpr int BitArray::
 get_num_bits_per_word() {
   return num_bits_per_word;
 }

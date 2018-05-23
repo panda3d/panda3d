@@ -29,11 +29,11 @@ class Thread;
  */
 class EXPCL_PANDA_PIPELINE MutexDirect {
 protected:
-  INLINE MutexDirect();
-  INLINE ~MutexDirect();
-private:
-  INLINE MutexDirect(const MutexDirect &copy);
-  INLINE void operator = (const MutexDirect &copy);
+  MutexDirect() = default;
+  MutexDirect(const MutexDirect &copy) = delete;
+  ~MutexDirect() = default;
+
+  void operator = (const MutexDirect &copy) = delete;
 
 public:
   INLINE void lock();

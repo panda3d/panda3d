@@ -36,7 +36,7 @@
  */
 class EXPCL_PANDA_PIPELINE MutexSimpleImpl : public BlockerSimple {
 public:
-  CONSTEXPR MutexSimpleImpl() DEFAULT_CTOR;
+  constexpr MutexSimpleImpl() = default;
 
   INLINE void lock();
   INLINE bool try_lock();

@@ -138,11 +138,8 @@ public:
   INLINE PointerToArray(size_type n, const Element &value, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE PointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
+  INLINE PointerToArray(PointerToArray<Element> &&from) noexcept;
   INLINE explicit PointerToArray(pvector<Element> &&from, TypeHandle type_handle = get_type_handle(Element));
-#endif
 
 public:
   // Duplicating the interface of vector.  The following member functions are
@@ -224,11 +221,8 @@ public:
   operator = (ReferenceCountedVector<Element> *ptr);
   INLINE PointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
-
-#ifdef USE_MOVE_SEMANTICS
   INLINE PointerToArray<Element> &
-  operator = (PointerToArray<Element> &&from) NOEXCEPT;
-#endif
+  operator = (PointerToArray<Element> &&from) noexcept;
 
   INLINE void clear();
 
@@ -299,12 +293,9 @@ PUBLISHED:
   INLINE ConstPointerToArray(const Element *begin, const Element *end, TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE ConstPointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
-  INLINE ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT;
+  INLINE ConstPointerToArray(PointerToArray<Element> &&from) noexcept;
+  INLINE ConstPointerToArray(ConstPointerToArray<Element> &&from) noexcept;
   INLINE explicit ConstPointerToArray(pvector<Element> &&from, TypeHandle type_handle = get_type_handle(Element));
-#endif
 
   // Duplicating the interface of vector.
 
@@ -358,13 +349,10 @@ PUBLISHED:
   operator = (const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray<Element> &
   operator = (const ConstPointerToArray<Element> &copy);
-
-#ifdef USE_MOVE_SEMANTICS
   INLINE ConstPointerToArray<Element> &
-  operator = (PointerToArray<Element> &&from) NOEXCEPT;
+  operator = (PointerToArray<Element> &&from) noexcept;
   INLINE ConstPointerToArray<Element> &
-  operator = (ConstPointerToArray<Element> &&from) NOEXCEPT;
-#endif
+  operator = (ConstPointerToArray<Element> &&from) noexcept;
 
   INLINE void clear();
 

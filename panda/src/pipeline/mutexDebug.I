@@ -12,22 +12,6 @@
  */
 
 /**
- * Do not attempt to copy mutexes.
- */
-INLINE MutexDebug::
-MutexDebug(const MutexDebug &copy) : _cvar_impl(*get_global_lock()) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE void MutexDebug::
-operator = (const MutexDebug &copy) {
-  nassertv(false);
-}
-
-/**
  * Alias for acquire() to match C++11 semantics.
  * @see acquire()
  */

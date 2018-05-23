@@ -128,7 +128,7 @@ INLINE DoubleBitMask<BMType>::
  * programming algorithms can use DoubleBitMask or BitArray interchangeably.
  */
 template<class BMType>
-CONSTEXPR bool DoubleBitMask<BMType>::
+constexpr bool DoubleBitMask<BMType>::
 has_max_num_bits() {
   return true;
 }
@@ -143,7 +143,7 @@ has_max_num_bits() {
  * can use DoubleBitMask or BitArray interchangeably.
  */
 template<class BMType>
-CONSTEXPR int DoubleBitMask<BMType>::
+constexpr int DoubleBitMask<BMType>::
 get_max_num_bits() {
   return num_bits;
 }
@@ -152,7 +152,7 @@ get_max_num_bits() {
  * Returns the number of bits available to set in the doubleBitMask.
  */
 template<class BMType>
-CONSTEXPR int DoubleBitMask<BMType>::
+constexpr int DoubleBitMask<BMType>::
 get_num_bits() {
   return num_bits;
 }

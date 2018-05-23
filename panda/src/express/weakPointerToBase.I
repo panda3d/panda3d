@@ -63,7 +63,7 @@ WeakPointerToBase(const WeakPointerToBase<T> &copy) {
  */
 template<class T>
 INLINE WeakPointerToBase<T>::
-WeakPointerToBase(WeakPointerToBase<T> &&from) NOEXCEPT {
+WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept {
   // Protect against self-move-assignment.
   if (from._void_ptr != this->_void_ptr) {
     WeakReferenceList *old_ref = (To *)this->_weak_ref;
@@ -163,7 +163,7 @@ reassign(const WeakPointerToBase<To> &copy) {
  */
 template<class T>
 INLINE void WeakPointerToBase<T>::
-reassign(WeakPointerToBase<To> &&from) NOEXCEPT {
+reassign(WeakPointerToBase<To> &&from) noexcept {
   // Protect against self-move-assignment.
   if (from._void_ptr != this->_void_ptr) {
     WeakReferenceList *old_ref = (WeakReferenceList *)this->_weak_ref;

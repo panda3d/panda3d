@@ -14,7 +14,7 @@
 /**
  *
  */
-CONSTEXPR MutexSpinlockImpl::
+constexpr MutexSpinlockImpl::
 MutexSpinlockImpl() : _lock(0) {
 }
 

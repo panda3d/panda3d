@@ -50,9 +50,7 @@ public:
   INLINE const Value &get_data(size_t n) const;
   INLINE Value &modify_data(size_t n);
   INLINE void set_data(size_t n, const Value &data);
-#ifdef USE_MOVE_SEMANTICS
   INLINE void set_data(size_t n, Value &&data);
-#endif
   void remove_element(size_t n);
 
   INLINE size_t get_num_entries() const;
@@ -82,11 +80,10 @@ private:
     INLINE TableEntry(const TableEntry &copy) :
       _key(copy._key),
       _data(copy._data) {}
-#ifdef USE_MOVE_SEMANTICS
-    INLINE TableEntry(TableEntry &&from) NOEXCEPT :
-      _key(move(from._key)),
-      _data(move(from._data)) {}
-#endif
+    INLINE TableEntry(TableEntry &&from) noexcept :
+      _key(std::move(from._key)),
+      _data(std::move(from._data)) {}
+
     WCPT(Key) _key;
     Value _data;
   };

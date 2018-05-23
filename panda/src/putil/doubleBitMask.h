@@ -49,10 +49,10 @@ PUBLISHED:
 
   INLINE ~DoubleBitMask();
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
+  constexpr static bool has_max_num_bits();
+  constexpr static int get_max_num_bits();
 
-  CONSTEXPR static int get_num_bits();
+  constexpr static int get_num_bits();
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);

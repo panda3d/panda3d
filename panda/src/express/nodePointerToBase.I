@@ -38,13 +38,12 @@ INLINE NodePointerToBase<T>::
   reassign((To *)NULL);
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class T>
 INLINE NodePointerToBase<T>::
-NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT {
+NodePointerToBase(NodePointerToBase<T> &&from) noexcept {
   _void_ptr = from._void_ptr;
   from._void_ptr = (void *)NULL;
 }
@@ -57,7 +56,7 @@ NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT {
  */
 template<class T>
 INLINE void NodePointerToBase<T>::
-reassign(NodePointerToBase<T> &&from) NOEXCEPT {
+reassign(NodePointerToBase<T> &&from) noexcept {
   To *old_ptr = (To *)this->_void_ptr;
 
   this->_void_ptr = from._void_ptr;
@@ -68,7 +67,6 @@ reassign(NodePointerToBase<T> &&from) NOEXCEPT {
     node_unref_delete(old_ptr);
   }
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * This is the main work of the NodePointerTo family.  When the pointer is

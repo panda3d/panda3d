@@ -15,7 +15,7 @@
  *
  */
 template<class Key, class Value, class Compare>
-CONSTEXPR SimpleHashMap<Key, Value, Compare>::
+constexpr SimpleHashMap<Key, Value, Compare>::
 SimpleHashMap(const Compare &comp) :
   _table(nullptr),
   _deleted_chain(nullptr),
@@ -55,7 +55,7 @@ SimpleHashMap(const SimpleHashMap &copy) :
  */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
-SimpleHashMap(SimpleHashMap &&from) NOEXCEPT :
+SimpleHashMap(SimpleHashMap &&from) noexcept :
   _table(from._table),
   _deleted_chain(from._deleted_chain),
   _table_size(from._table_size),
@@ -109,7 +109,7 @@ operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
  */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
-operator = (SimpleHashMap<Key, Value, Compare> &&from) NOEXCEPT {
+operator = (SimpleHashMap<Key, Value, Compare> &&from) noexcept {
   if (this != &from) {
     _table = from._table;
     _deleted_chain = from._deleted_chain;
@@ -360,7 +360,7 @@ operator [] (const Key &key) {
  * Returns the total number of entries in the table.  Same as get_num_entries.
  */
 template<class Key, class Value, class Compare>
-CONSTEXPR size_t SimpleHashMap<Key, Value, Compare>::
+constexpr size_t SimpleHashMap<Key, Value, Compare>::
 size() const {
   return _num_entries;
 }

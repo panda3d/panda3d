@@ -519,16 +519,14 @@ CacheKey(const CacheKey &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE GeomVertexData::CacheKey::
-CacheKey(CacheKey &&from) NOEXCEPT :
-  _modifier(move(from._modifier))
+CacheKey(CacheKey &&from) noexcept :
+  _modifier(std::move(from._modifier))
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Provides a unique ordering within the set.
@@ -558,17 +556,15 @@ CacheEntry(GeomVertexData *source, const CacheKey &key) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE GeomVertexData::CacheEntry::
-CacheEntry(GeomVertexData *source, CacheKey &&key) NOEXCEPT :
+CacheEntry(GeomVertexData *source, CacheKey &&key) noexcept :
   _source(source),
-  _key(move(key))
+  _key(std::move(key))
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

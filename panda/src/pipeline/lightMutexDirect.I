@@ -12,36 +12,6 @@
  */
 
 /**
- *
- */
-INLINE LightMutexDirect::
-LightMutexDirect() {
-}
-
-/**
- *
- */
-INLINE LightMutexDirect::
-~LightMutexDirect() {
-}
-
-/**
- * Do not attempt to copy lightMutexes.
- */
-INLINE LightMutexDirect::
-LightMutexDirect(const LightMutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy lightMutexes.
- */
-INLINE void LightMutexDirect::
-operator = (const LightMutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
  * Alias for acquire() to match C++11 semantics.
  * @see acquire()
  */
