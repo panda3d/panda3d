@@ -35,6 +35,11 @@ private:
   INLINE MutexDirect(const MutexDirect &copy);
   INLINE void operator = (const MutexDirect &copy);
 
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
+
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
   BLOCKING INLINE bool try_acquire() const;
@@ -49,7 +54,7 @@ PUBLISHED:
   void output(ostream &out) const;
 
 private:
-  MutexTrueImpl _impl;
+  mutable MutexTrueImpl _impl;
 
   friend class ConditionVarDirect;
   friend class ConditionVarFullDirect;

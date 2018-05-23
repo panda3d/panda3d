@@ -30,9 +30,9 @@ private:
   MutexDummyImpl &operator = (const MutexDummyImpl &copy) DELETED_ASSIGN;
 
 public:
-  ALWAYS_INLINE void acquire();
-  ALWAYS_INLINE bool try_acquire();
-  ALWAYS_INLINE void release();
+  ALWAYS_INLINE void lock();
+  ALWAYS_INLINE bool try_lock();
+  ALWAYS_INLINE void unlock();
 };
 
 #include "mutexDummyImpl.I"

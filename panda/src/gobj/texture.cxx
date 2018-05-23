@@ -5239,14 +5239,14 @@ unlocked_ensure_ram_image(bool allow_compression) {
 
   PT(Texture) tex = do_make_copy(cdata);
   _cycler.release_read(cdata);
-  _lock.release();
+  _lock.unlock();
 
   // Perform the actual reload in a copy of the texture, while our own mutex
   // is left unlocked.
   CDWriter cdata_tex(tex->_cycler, true);
   tex->do_reload_ram_image(cdata_tex, allow_compression);
 
-  _lock.acquire();
+  _lock.lock();
 
   CData *cdataw = _cycler.write_upstream(false, current_thread);
 

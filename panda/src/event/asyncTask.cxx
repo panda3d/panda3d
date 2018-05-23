@@ -415,7 +415,7 @@ unlock_and_do_task() {
 #endif  // __GNUC__
 
   // It's important to release the lock while the task is being serviced.
-  _manager->_lock.release();
+  _manager->_lock.unlock();
 
   double start = clock->get_real_time();
   _task_pcollector.start();
@@ -424,7 +424,7 @@ unlock_and_do_task() {
   double end = clock->get_real_time();
 
   // Now reacquire the lock (so we can return with the lock held).
-  _manager->_lock.acquire();
+  _manager->_lock.lock();
 
   _dt = end - start;
   _max_dt = max(_dt, _max_dt);

@@ -42,6 +42,36 @@ operator = (const MutexDirect &copy) {
 }
 
 /**
+ * Alias for acquire() to match C++11 semantics.
+ * @see acquire()
+ */
+INLINE void MutexDirect::
+lock() {
+  TAU_PROFILE("void MutexDirect::acquire()", " ", TAU_USER);
+  _impl.lock();
+}
+
+/**
+ * Alias for try_acquire() to match C++11 semantics.
+ * @see try_acquire()
+ */
+INLINE bool MutexDirect::
+try_lock() {
+  TAU_PROFILE("void MutexDirect::try_acquire()", " ", TAU_USER);
+  return _impl.try_lock();
+}
+
+/**
+ * Alias for release() to match C++11 semantics.
+ * @see release()
+ */
+INLINE void MutexDirect::
+unlock() {
+  TAU_PROFILE("void MutexDirect::unlock()", " ", TAU_USER);
+  _impl.unlock();
+}
+
+/**
  * Grabs the mutex if it is available.  If it is not available, blocks until
  * it becomes available, then grabs it.  In either case, the function does not
  * return until the mutex is held; you should then call unlock().
@@ -54,7 +84,7 @@ operator = (const MutexDirect &copy) {
 INLINE void MutexDirect::
 acquire() const {
   TAU_PROFILE("void MutexDirect::acquire()", " ", TAU_USER);
-  ((MutexDirect *)this)->_impl.acquire();
+  _impl.lock();
 }
 
 /**
@@ -64,7 +94,7 @@ acquire() const {
 INLINE bool MutexDirect::
 try_acquire() const {
   TAU_PROFILE("void MutexDirect::acquire(bool)", " ", TAU_USER);
-  return ((MutexDirect *)this)->_impl.try_acquire();
+  return _impl.try_lock();
 }
 
 /**
@@ -77,7 +107,7 @@ try_acquire() const {
 INLINE void MutexDirect::
 release() const {
   TAU_PROFILE("void MutexDirect::release()", " ", TAU_USER);
-  ((MutexDirect *)this)->_impl.release();
+  _impl.unlock();
 }
 
 /**

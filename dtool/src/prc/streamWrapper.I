@@ -36,7 +36,7 @@ StreamWrapperBase() {
  */
 INLINE void StreamWrapperBase::
 acquire() {
-  _lock.acquire();
+  _lock.lock();
 #ifdef SIMPLE_THREADS
   while (_lock_flag) {
     thread_yield();
@@ -55,7 +55,7 @@ release() {
   assert(_lock_flag);
   _lock_flag = false;
 #endif
-  _lock.release();
+  _lock.unlock();
 }
 
 /**

@@ -36,9 +36,9 @@ private:
   MutexSpinlockImpl &operator = (const MutexSpinlockImpl &copy) DELETED_ASSIGN;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   void do_lock();

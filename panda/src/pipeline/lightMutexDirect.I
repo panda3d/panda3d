@@ -42,6 +42,36 @@ operator = (const LightMutexDirect &copy) {
 }
 
 /**
+ * Alias for acquire() to match C++11 semantics.
+ * @see acquire()
+ */
+INLINE void LightMutexDirect::
+lock() {
+  TAU_PROFILE("void LightMutexDirect::acquire()", " ", TAU_USER);
+  _impl.lock();
+}
+
+/**
+ * Alias for try_acquire() to match C++11 semantics.
+ * @see try_acquire()
+ */
+INLINE bool LightMutexDirect::
+try_lock() {
+  TAU_PROFILE("void LightMutexDirect::try_acquire()", " ", TAU_USER);
+  return _impl.try_lock();
+}
+
+/**
+ * Alias for release() to match C++11 semantics.
+ * @see release()
+ */
+INLINE void LightMutexDirect::
+unlock() {
+  TAU_PROFILE("void LightMutexDirect::unlock()", " ", TAU_USER);
+  _impl.unlock();
+}
+
+/**
  * Grabs the lightMutex if it is available.  If it is not available, blocks
  * until it becomes available, then grabs it.  In either case, the function
  * does not return until the lightMutex is held; you should then call
@@ -55,7 +85,7 @@ operator = (const LightMutexDirect &copy) {
 INLINE void LightMutexDirect::
 acquire() const {
   TAU_PROFILE("void LightMutexDirect::acquire()", " ", TAU_USER);
-  ((LightMutexDirect *)this)->_impl.acquire();
+  _impl.lock();
 }
 
 /**
@@ -68,7 +98,7 @@ acquire() const {
 INLINE void LightMutexDirect::
 release() const {
   TAU_PROFILE("void LightMutexDirect::release()", " ", TAU_USER);
-  ((LightMutexDirect *)this)->_impl.release();
+  _impl.unlock();
 }
 
 /**

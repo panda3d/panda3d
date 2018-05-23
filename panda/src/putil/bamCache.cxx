@@ -311,7 +311,7 @@ emergency_read_only() {
 void BamCache::
 consider_flush_index() {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (!_lock.try_acquire()) {
+  if (!_lock.try_lock()) {
     // If we can't grab the lock, no big deal.  We don't want to hold up
     // the frame waiting for a cache operation.  We can try again later.
     return;
@@ -326,7 +326,7 @@ consider_flush_index() {
   }
 
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  _lock.release();
+  _lock.unlock();
 #endif
 }
 

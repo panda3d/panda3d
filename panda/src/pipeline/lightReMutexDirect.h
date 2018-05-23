@@ -35,6 +35,11 @@ private:
   INLINE LightReMutexDirect(const LightReMutexDirect &copy);
   INLINE void operator = (const LightReMutexDirect &copy);
 
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
+
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
   BLOCKING INLINE void acquire(Thread *current_thread) const;
@@ -51,13 +56,13 @@ PUBLISHED:
   void output(ostream &out) const;
 
 private:
-#if defined(HAVE_REMUTEXIMPL) && !defined(DO_PSTATS)
-  ReMutexImpl _impl;
+#ifdef HAVE_REMUTEXTRUEIMPL
+  mutable ReMutexImpl _impl;
 
 #else
   // If we don't have a reentrant mutex, use the one we hand-rolled in
   // ReMutexDirect.
-  ReMutexDirect _impl;
+  mutable ReMutexDirect _impl;
 #endif  // HAVE_REMUTEXIMPL
 };
 

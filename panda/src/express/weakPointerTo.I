@@ -82,11 +82,11 @@ lock() const {
   WeakReferenceList *weak_ref = this->_weak_ref;
   if (weak_ref != nullptr) {
     PointerTo<T> ptr;
-    weak_ref->_lock.acquire();
+    weak_ref->_lock.lock();
     if (!weak_ref->was_deleted()) {
       ptr = (To *)WeakPointerToBase<T>::_void_ptr;
     }
-    weak_ref->_lock.release();
+    weak_ref->_lock.unlock();
     return ptr;
   }
   return nullptr;
@@ -237,11 +237,11 @@ lock() const {
   WeakReferenceList *weak_ref = this->_weak_ref;
   if (weak_ref != nullptr) {
     ConstPointerTo<T> ptr;
-    weak_ref->_lock.acquire();
+    weak_ref->_lock.lock();
     if (!weak_ref->was_deleted()) {
       ptr = (const To *)WeakPointerToBase<T>::_void_ptr;
     }
-    weak_ref->_lock.release();
+    weak_ref->_lock.unlock();
     return ptr;
   }
   return nullptr;

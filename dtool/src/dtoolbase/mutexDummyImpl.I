@@ -15,14 +15,14 @@
  *
  */
 ALWAYS_INLINE void MutexDummyImpl::
-acquire() {
+lock() {
 }
 
 /**
  *
  */
 ALWAYS_INLINE bool MutexDummyImpl::
-try_acquire() {
+try_lock() {
   return true;
 }
 
@@ -30,5 +30,5 @@ try_acquire() {
  *
  */
 ALWAYS_INLINE void MutexDummyImpl::
-release() {
+unlock() {
 }

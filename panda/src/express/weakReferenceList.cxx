@@ -41,7 +41,7 @@ WeakReferenceList::
 void WeakReferenceList::
 add_callback(WeakPointerCallback *callback, void *data) {
   nassertv(callback != nullptr);
-  _lock.acquire();
+  _lock.lock();
   // We need to check again whether the object is deleted after grabbing the
   // lock, despite having already done this in weakPointerTo.I, since it may
   // have been deleted in the meantime.
@@ -49,7 +49,7 @@ add_callback(WeakPointerCallback *callback, void *data) {
   if (!deleted) {
     _callbacks.insert(make_pair(callback, data));
   }
-  _lock.release();
+  _lock.unlock();
 
   if (deleted) {
     callback->wp_callback(data);
@@ -65,9 +65,9 @@ add_callback(WeakPointerCallback *callback, void *data) {
 void WeakReferenceList::
 remove_callback(WeakPointerCallback *callback) {
   nassertv(callback != nullptr);
-  _lock.acquire();
+  _lock.lock();
   _callbacks.erase(callback);
-  _lock.release();
+  _lock.unlock();
 }
 
 /**
@@ -76,7 +76,7 @@ remove_callback(WeakPointerCallback *callback) {
  */
 void WeakReferenceList::
 mark_deleted() {
-  _lock.acquire();
+  _lock.lock();
   Callbacks::iterator ci;
   for (ci = _callbacks.begin(); ci != _callbacks.end(); ++ci) {
     (*ci).first->wp_callback((*ci).second);
@@ -86,7 +86,7 @@ mark_deleted() {
   // Decrement the special offset added to the weak pointer count to indicate
   // that it can be deleted when all the weak references have gone.
   AtomicAdjust::Integer result = AtomicAdjust::add(_count, -_alive_offset);
-  _lock.release();
+  _lock.unlock();
   if (result == 0) {
     // There are no weak references remaining either, so delete this.
     delete this;

@@ -36,9 +36,9 @@ private:
   MutexWin32Impl &operator = (const MutexWin32Impl &copy) DELETED_ASSIGN;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   CRITICAL_SECTION _lock;

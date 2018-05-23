@@ -35,6 +35,11 @@ private:
   INLINE ReMutexDirect(const ReMutexDirect &copy);
   INLINE void operator = (const ReMutexDirect &copy);
 
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
+
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
   BLOCKING INLINE void acquire(Thread *current_thread) const;
@@ -54,16 +59,16 @@ PUBLISHED:
 
 private:
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ReMutexImpl _impl;
+  mutable ReMutexImpl _impl;
 
 #else
   // If we don't have a reentrant mutex, we have to hand-roll one.
-  INLINE void do_acquire();
-  void do_acquire(Thread *current_thread);
-  INLINE bool do_try_acquire();
-  bool do_try_acquire(Thread *current_thread);
+  INLINE void do_lock();
+  void do_lock(Thread *current_thread);
+  INLINE bool do_try_lock();
+  bool do_try_lock(Thread *current_thread);
   void do_elevate_lock();
-  void do_release();
+  void do_unlock();
 
   Thread *_locking_thread;
   int _lock_count;

@@ -22,8 +22,8 @@ MutexSpinlockImpl() : _lock(0) {
  *
  */
 INLINE void MutexSpinlockImpl::
-acquire() {
-  if (!try_acquire()) {
+lock() {
+  if (!try_lock()) {
     do_lock();
   }
 }
@@ -32,7 +32,7 @@ acquire() {
  *
  */
 INLINE bool MutexSpinlockImpl::
-try_acquire() {
+try_lock() {
   return (AtomicAdjust::compare_and_exchange(_lock, 0, 1) == 0);
 }
 
@@ -40,6 +40,6 @@ try_acquire() {
  *
  */
 INLINE void MutexSpinlockImpl::
-release() {
+unlock() {
   AtomicAdjust::set(_lock, 0);
 }

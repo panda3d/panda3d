@@ -33,8 +33,8 @@ output(ostream &out) const {
  * mutex).
  */
 void ReMutexDirect::
-do_acquire(Thread *current_thread) {
-  _lock_impl.acquire();
+do_lock(Thread *current_thread) {
+  _lock_impl.lock();
 
   if (_locking_thread == (Thread *)NULL) {
     // The mutex is not already locked by anyone.  Lock it.
@@ -61,7 +61,7 @@ do_acquire(Thread *current_thread) {
     nassertd(_lock_count == 1) {
     }
   }
-  _lock_impl.release();
+  _lock_impl.unlock();
 }
 #endif  // !HAVE_REMUTEXTRUEIMPL
 
@@ -73,9 +73,9 @@ do_acquire(Thread *current_thread) {
  * mutex).
  */
 bool ReMutexDirect::
-do_try_acquire(Thread *current_thread) {
+do_try_lock(Thread *current_thread) {
   bool acquired = true;
-  _lock_impl.acquire();
+  _lock_impl.lock();
 
   if (_locking_thread == (Thread *)NULL) {
     // The mutex is not already locked by anyone.  Lock it.
@@ -94,7 +94,7 @@ do_try_acquire(Thread *current_thread) {
     // The mutex is locked by some other thread.  Return false.
     acquired = false;
   }
-  _lock_impl.release();
+  _lock_impl.unlock();
 
   return acquired;
 }
@@ -109,16 +109,16 @@ do_try_acquire(Thread *current_thread) {
  */
 void ReMutexDirect::
 do_elevate_lock() {
-  _lock_impl.acquire();
+  _lock_impl.lock();
 
 #ifdef _DEBUG
   nassertd(_locking_thread == Thread::get_current_thread()) {
-    _lock_impl.release();
+    _lock_impl.unlock();
     return;
   }
 #elif !defined(NDEBUG)
   nassertd(_locking_thread != (Thread *)NULL) {
-    _lock_impl.release();
+    _lock_impl.unlock();
     return;
   }
 #endif  // NDEBUG
@@ -129,7 +129,7 @@ do_elevate_lock() {
   nassertd(_lock_count > 0) {
   }
 
-  _lock_impl.release();
+  _lock_impl.unlock();
 }
 #endif  // !HAVE_REMUTEXTRUEIMPL
 
@@ -141,8 +141,8 @@ do_elevate_lock() {
  * mutex).
  */
 void ReMutexDirect::
-do_release() {
-  _lock_impl.acquire();
+do_unlock() {
+  _lock_impl.lock();
 
 #ifdef _DEBUG
   if (_locking_thread != Thread::get_current_thread()) {
@@ -150,7 +150,7 @@ do_release() {
     ostr << *_locking_thread << " attempted to release "
          << *this << " which it does not own";
     nassert_raise(ostr.str());
-    _lock_impl.release();
+    _lock_impl.unlock();
     return;
   }
 #endif  // _DEBUG
@@ -164,7 +164,7 @@ do_release() {
     _locking_thread = (Thread *)NULL;
     _cvar_impl.notify();
   }
-  _lock_impl.release();
+  _lock_impl.unlock();
 }
 #endif  // !HAVE_REMUTEXTRUEIMPL
 

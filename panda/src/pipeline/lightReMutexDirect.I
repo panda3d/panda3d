@@ -54,6 +54,36 @@ operator = (const LightReMutexDirect &copy) {
 }
 
 /**
+ * Alias for acquire() to match C++11 semantics.
+ * @see acquire()
+ */
+INLINE void LightReMutexDirect::
+lock() {
+  TAU_PROFILE("void LightReMutexDirect::acquire()", " ", TAU_USER);
+  _impl.lock();
+}
+
+/**
+ * Alias for try_acquire() to match C++11 semantics.
+ * @see try_acquire()
+ */
+INLINE bool LightReMutexDirect::
+try_lock() {
+  TAU_PROFILE("void LightReMutexDirect::try_acquire()", " ", TAU_USER);
+  return _impl.try_lock();
+}
+
+/**
+ * Alias for release() to match C++11 semantics.
+ * @see release()
+ */
+INLINE void LightReMutexDirect::
+unlock() {
+  TAU_PROFILE("void LightReMutexDirect::unlock()", " ", TAU_USER);
+  _impl.unlock();
+}
+
+/**
  * Grabs the lightReMutex if it is available.  If it is not available, blocks
  * until it becomes available, then grabs it.  In either case, the function
  * does not return until the lightReMutex is held; you should then call
@@ -67,7 +97,11 @@ operator = (const LightReMutexDirect &copy) {
 INLINE void LightReMutexDirect::
 acquire() const {
   TAU_PROFILE("void LightReMutexDirect::acquire()", " ", TAU_USER);
-  ((LightReMutexDirect *)this)->_impl.acquire();
+#ifdef HAVE_REMUTEXTRUEIMPL
+  _impl.lock();
+#else
+  _impl.do_lock(Thread::get_current_thread());
+#endif
 }
 
 /**
@@ -77,10 +111,10 @@ acquire() const {
 INLINE void LightReMutexDirect::
 acquire(Thread *current_thread) const {
   TAU_PROFILE("void LightReMutexDirect::acquire(Thread *)", " ", TAU_USER);
-#ifdef HAVE_REMUTEXIMPL
-  ((LightReMutexDirect *)this)->_impl.acquire();
+#ifdef HAVE_REMUTEXTRUEIMPL
+  _impl.lock();
 #else
-  ((LightReMutexDirect *)this)->_impl.do_lock(current_thread);
+  _impl.do_lock(current_thread);
 #endif  // HAVE_REMUTEXIMPL
 }
 
@@ -97,10 +131,10 @@ acquire(Thread *current_thread) const {
 INLINE void LightReMutexDirect::
 elevate_lock() const {
   TAU_PROFILE("void LightReMutexDirect::elevate_lock()", " ", TAU_USER);
-#ifdef HAVE_REMUTEXIMPL
-  ((LightReMutexDirect *)this)->_impl.acquire();
+#ifdef HAVE_REMUTEXTRUEIMPL
+  _impl.lock();
 #else
-  ((LightReMutexDirect *)this)->_impl.do_elevate_lock();
+  _impl.do_elevate_lock();
 #endif  // HAVE_REMUTEXIMPL
 }
 
@@ -114,7 +148,11 @@ elevate_lock() const {
 INLINE void LightReMutexDirect::
 release() const {
   TAU_PROFILE("void LightReMutexDirect::release()", " ", TAU_USER);
-  ((LightReMutexDirect *)this)->_impl.release();
+#ifdef HAVE_REMUTEXTRUEIMPL
+  _impl.unlock();
+#else
+  _impl.do_unlock(Thread::get_current_thread());
+#endif
 }
 
 /**

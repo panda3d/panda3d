@@ -32,8 +32,8 @@ INLINE MutexPosixImpl::
  *
  */
 INLINE void MutexPosixImpl::
-acquire() {
-  TAU_PROFILE("void MutexPosixImpl::acquire", " ", TAU_USER);
+lock() {
+  TAU_PROFILE("void MutexPosixImpl::lock", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
   assert(result == 0);
 }
@@ -42,8 +42,8 @@ acquire() {
  *
  */
 INLINE bool MutexPosixImpl::
-try_acquire() {
-  TAU_PROFILE("bool MutexPosixImpl::try_acquire", " ", TAU_USER);
+try_lock() {
+  TAU_PROFILE("bool MutexPosixImpl::try_lock", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
   assert(result == 0 || result == EBUSY);
   return (result == 0);
@@ -53,18 +53,10 @@ try_acquire() {
  *
  */
 INLINE void MutexPosixImpl::
-release() {
-  TAU_PROFILE("void MutexPosixImpl::release", " ", TAU_USER);
+unlock() {
+  TAU_PROFILE("void MutexPosixImpl::unlock", " ", TAU_USER);
   int result = pthread_mutex_unlock(&_lock);
   assert(result == 0);
-}
-
-/**
- * Returns the underlying Posix lock handle.
- */
-INLINE pthread_mutex_t *MutexPosixImpl::
-get_posix_lock() {
-  return &_lock;
 }
 
 /**
@@ -101,8 +93,8 @@ INLINE ReMutexPosixImpl::
  *
  */
 INLINE void ReMutexPosixImpl::
-acquire() {
-  TAU_PROFILE("void ReMutexPosixImpl::acquire", " ", TAU_USER);
+lock() {
+  TAU_PROFILE("void ReMutexPosixImpl::lock", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
   assert(result == 0);
 }
@@ -111,8 +103,8 @@ acquire() {
  *
  */
 INLINE bool ReMutexPosixImpl::
-try_acquire() {
-  TAU_PROFILE("bool ReMutexPosixImpl::try_acquire", " ", TAU_USER);
+try_lock() {
+  TAU_PROFILE("bool ReMutexPosixImpl::try_lock", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
   assert(result == 0 || result == EBUSY);
   return (result == 0);
@@ -122,16 +114,8 @@ try_acquire() {
  *
  */
 INLINE void ReMutexPosixImpl::
-release() {
-  TAU_PROFILE("void ReMutexPosixImpl::release", " ", TAU_USER);
+unlock() {
+  TAU_PROFILE("void ReMutexPosixImpl::unlock", " ", TAU_USER);
   int result = pthread_mutex_unlock(&_lock);
   assert(result == 0);
-}
-
-/**
- * Returns the underlying Posix lock handle.
- */
-INLINE pthread_mutex_t *ReMutexPosixImpl::
-get_posix_lock() {
-  return &_lock;
 }

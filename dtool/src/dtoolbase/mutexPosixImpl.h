@@ -36,11 +36,9 @@ private:
   MutexPosixImpl &operator = (const MutexPosixImpl &copy) DELETED_ASSIGN;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
-
-  INLINE pthread_mutex_t *get_posix_lock();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   pthread_mutex_t _lock;
@@ -64,11 +62,9 @@ private:
   ReMutexPosixImpl &operator = (const ReMutexPosixImpl &copy) DELETED;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
-
-  INLINE pthread_mutex_t *get_posix_lock();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   pthread_mutex_t _lock;
