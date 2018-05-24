@@ -19,6 +19,13 @@
 
 #ifdef __cplusplus
 
+// By including checkPandaVersion.h, we guarantee that runtime attempts to
+// load any DLL will fail if they inadvertently link with the wrong version of
+// dtool, which, transitively, means all DLLs must be from the same
+// (ABI-compatible) version of Panda.
+
+#include "checkPandaVersion.h"
+
 #ifdef USE_TAU
 // Tau provides this destructive version of stdbool.h that we must mask.
 #define __PDT_STDBOOL_H_
