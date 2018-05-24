@@ -98,6 +98,8 @@ PUBLISHED:
 
   EXTENSION(PointerToArray(PyObject *self, PyObject *source));
 
+  INLINE void clear();
+
   INLINE size_type size() const;
   INLINE void push_back(const Element &x);
   INLINE void pop_back();
@@ -156,6 +158,8 @@ public:
   INLINE size_type size() const;
   INLINE size_type max_size() const;
   INLINE bool empty() const;
+
+  INLINE void clear();
 
   // Functions specific to vectors.
   INLINE void reserve(size_type n);
@@ -216,6 +220,9 @@ public:
 
   INLINE size_t count(const Element &) const;
 
+#endif  // CPPPARSER
+
+public:
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
   operator = (ReferenceCountedVector<Element> *ptr);
@@ -224,18 +231,14 @@ public:
   INLINE PointerToArray<Element> &
   operator = (PointerToArray<Element> &&from) noexcept;
 
-  INLINE void clear();
-
 private:
   TypeHandle _type_handle;
 
-private:
   // This static empty array is kept around just so we can return something
   // meaningful when begin() or end() is called and we have a NULL pointer.
   // It might not be shared properly between different .so's, since it's a
   // static member of a template class, but we don't really care.
   static pvector<Element> _empty_array;
-#endif  // CPPPARSER
 
   friend class ConstPointerToArray<Element>;
 };
@@ -255,6 +258,8 @@ public:
 PUBLISHED:
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
+
+  INLINE void clear();
 
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE size_type size() const;
@@ -311,6 +316,8 @@ PUBLISHED:
   INLINE size_type max_size() const;
   INLINE bool empty() const;
 
+  INLINE void clear();
+
   // Functions specific to vectors.
   INLINE size_type capacity() const;
   INLINE reference front() const;
@@ -342,6 +349,9 @@ PUBLISHED:
 
   INLINE size_t count(const Element &) const;
 
+#endif  // CPPPARSER
+
+public:
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &
   operator = (ReferenceCountedVector<Element> *ptr);
@@ -354,18 +364,14 @@ PUBLISHED:
   INLINE ConstPointerToArray<Element> &
   operator = (ConstPointerToArray<Element> &&from) noexcept;
 
-  INLINE void clear();
-
 private:
   TypeHandle _type_handle;
 
-private:
   // This static empty array is kept around just so we can return something
   // meangful when begin() or end() is called and we have a NULL pointer.  It
   // might not be shared properly between different .so's, since it's a static
   // member of a template class, but we don't really care.
   static pvector<Element> _empty_array;
-#endif  // CPPPARSER
 
   friend class PointerToArray<Element>;
 };
