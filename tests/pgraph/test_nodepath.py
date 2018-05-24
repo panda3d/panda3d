@@ -91,6 +91,14 @@ def test_weak_nodepath_comparison():
     assert weak == path
     assert weak <= path
     assert path <= weak
+    assert weak >= path
+    assert path >= weak
+    assert not (path != weak)
+    assert not (weak != path)
+    assert not (weak > path)
+    assert not (path > weak)
+    assert not (weak < path)
+    assert not (path < weak)
 
     assert hash(path) == hash(weak)
     assert weak.get_node_path() == path

@@ -63,11 +63,11 @@ def test_updateseq_fresh():
 
     old = UpdateSeq.old()
     assert not (seq == old)
-    assert not (seq >= old)
-    assert not (seq > old)
+    assert not (seq <= old)
+    assert not (seq < old)
     assert seq != old
-    assert seq <= old
-    assert seq < old
+    assert seq >= old
+    assert seq > old
 
 
 def test_updateseq_old():
