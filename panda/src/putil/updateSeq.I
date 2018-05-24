@@ -87,7 +87,7 @@ is_fresh() const {
 INLINE bool UpdateSeq::
 is_special() const {
   // This relies on the assumption that (~0 + 1) == 0.
-  return ((AtomicAdjust::get(_seq) + 1) <= 2);
+  return (((unsigned int)AtomicAdjust::get(_seq) + 1u) <= 2u);
 }
 
 /**
