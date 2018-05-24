@@ -120,40 +120,11 @@ INLINE DoubleBitMask<BMType>::
 }
 
 /**
- * Returns true if there is a maximum number of bits that may be stored in
- * this structure, false otherwise.  If this returns true, the number may be
- * queried in get_max_num_bits().
- *
- * This method always returns true.  This method is defined so generic
- * programming algorithms can use DoubleBitMask or BitArray interchangeably.
- */
-template<class BMType>
-constexpr bool DoubleBitMask<BMType>::
-has_max_num_bits() {
-  return true;
-}
-
-/**
- * If get_max_num_bits() returned true, this method may be called to return
- * the maximum number of bits that may be stored in this structure.  It is an
- * error to call this if get_max_num_bits() return false.
- *
- * It is never an error to call this method.  This returns the same thing as
- * get_num_bits().  This method is defined so generic programming algorithms
- * can use DoubleBitMask or BitArray interchangeably.
- */
-template<class BMType>
-constexpr int DoubleBitMask<BMType>::
-get_max_num_bits() {
-  return num_bits;
-}
-
-/**
  * Returns the number of bits available to set in the doubleBitMask.
  */
 template<class BMType>
 constexpr int DoubleBitMask<BMType>::
-get_num_bits() {
+get_num_bits() const {
   return num_bits;
 }
 

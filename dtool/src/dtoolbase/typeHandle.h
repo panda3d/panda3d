@@ -129,7 +129,7 @@ PUBLISHED:
 
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;
-  constexpr static TypeHandle none();
+  constexpr static TypeHandle none() { return TypeHandle(0); }
   INLINE operator bool () const;
 
   MAKE_PROPERTY(index, get_index);
@@ -142,7 +142,7 @@ public:
   void *reallocate_array(void *ptr, size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void deallocate_array(void *ptr);
 
-  constexpr static TypeHandle from_index(int index);
+  constexpr static TypeHandle from_index(int index) { return TypeHandle(index); }
 
 private:
   constexpr TypeHandle(int index);

@@ -26,30 +26,6 @@ UpdateSeq() : _seq((unsigned int)SC_initial) {
 }
 
 /**
- * Returns an UpdateSeq in the 'initial' state.
- */
-constexpr UpdateSeq UpdateSeq::
-initial() {
-  return UpdateSeq((unsigned int)SC_initial);
-}
-
-/**
- * Returns an UpdateSeq in the 'old' state.
- */
-constexpr UpdateSeq UpdateSeq::
-old() {
-  return UpdateSeq((unsigned int)SC_old);
-}
-
-/**
- * Returns an UpdateSeq in the 'fresh' state.
- */
-constexpr UpdateSeq UpdateSeq::
-fresh() {
-  return UpdateSeq((unsigned int)SC_fresh);
-}
-
-/**
  *
  */
 INLINE UpdateSeq::
