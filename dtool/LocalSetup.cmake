@@ -206,18 +206,6 @@ else()
   message("- Did not find gtk+-2")
 endif()
 
-if(HAVE_WX)
-  message("+ WxWidgets")
-else()
-  message("- Did not find WxWidgets")
-endif()
-
-if(HAVE_FLTK)
-  message("+ FLTK")
-else()
-  message("- Did not find FLTK")
-endif()
-
 if(HAVE_GL)
   message("+ OpenGL")
 else()
