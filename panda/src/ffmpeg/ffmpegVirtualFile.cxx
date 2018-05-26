@@ -209,7 +209,7 @@ read_packet(void *opaque, uint8_t *buf, int size) {
   streampos remaining = self->_start + (streampos)self->_size - in->tellg();
   if (remaining < ssize) {
     if (remaining <= 0) {
-      return 0;
+      return AVERROR_EOF;
     }
 
     ssize = remaining;
