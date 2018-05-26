@@ -53,6 +53,25 @@ Datagram(vector_uchar data) :
 }
 
 /**
+ * Constructs a datagram from an existing datagram.
+ */
+INLINE Datagram::
+Datagram(const Datagram &copy) :
+  _data(copy._data),
+  _stdfloat_double(copy._stdfloat_double)
+{
+}
+
+/**
+ * Assigns another datagram's data to the datagram.
+ */
+INLINE void Datagram::
+operator = (const Datagram &copy) {
+  _data = copy._data;
+  _stdfloat_double = copy._stdfloat_double;
+}
+
+/**
  * Adds a boolean value to the datagram.
  */
 INLINE void Datagram::
