@@ -17,6 +17,7 @@
 #include "pandabase.h"
 #include "pointerToVoid.h"
 #include "weakPointerCallback.h"
+#include "weakReferenceList.h"
 
 /**
  * This is the specialization of PointerToVoid for weak pointers.  It needs an
