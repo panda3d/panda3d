@@ -297,6 +297,51 @@ operator >= (To *other) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
+operator == (nullptr_t) const {
+  return _void_ptr == nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator != (nullptr_t) const {
+  return _void_ptr != nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator > (nullptr_t) const {
+  return _void_ptr != nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator <= (nullptr_t) const {
+  return _void_ptr == nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator >= (nullptr_t) const {
+  return true;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
 operator == (const WeakPointerToBase<To> &other) const {
   return (To *)_void_ptr == (To *)other._void_ptr;
 }
@@ -390,6 +435,15 @@ template<class T>
 INLINE bool WeakPointerToBase<T>::
 operator < (const To *other) const {
   return (To *)_void_ptr < other;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator < (nullptr_t) const {
+  return false;
 }
 
 /**
