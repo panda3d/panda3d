@@ -96,8 +96,8 @@ def test_iterator(datagram_small):
     dgi = core.DatagramIterator(dg)
     verify(dgi)
 
+
 # This tests the copy constructor:
-@pytest.mark.xfail
 def test_copy(datagram_small):
     dg, verify = datagram_small
 
@@ -105,7 +105,7 @@ def test_copy(datagram_small):
     dgi = core.DatagramIterator(dg2)
     verify(dgi)
 
-@pytest.mark.xfail
+
 def test_assign(datagram_small):
     dg, verify = datagram_small
 
