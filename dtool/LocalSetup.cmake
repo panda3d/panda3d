@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) { fs.open(\"file\", std::fstream::out, 0644); r
 check_cxx_source_compiles("
 #include <unistd.h>
 int main(int argc, char *argv[]) { lockf(0, F_LOCK, 0); return 0; }
-" HAVE_LOCKF)
+" PHAVE_LOCKF)
 
 # Check if we have a wchar_t type.
 check_type_size(wchar_t HAVE_WCHAR_T)

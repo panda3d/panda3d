@@ -262,7 +262,7 @@
 #cmakedefine HAVE_OPEN_MASK
 
 /* Define if we have a lockf() function. */
-#cmakedefine HAVE_LOCKF
+#cmakedefine PHAVE_LOCKF
 
 /* Define if some header file defines wchar_t. */
 #cmakedefine HAVE_WCHAR_T
