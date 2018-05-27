@@ -2268,7 +2268,7 @@ DTOOL_CONFIG=[
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
     ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
     ("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
-    ("PHAVE_LOCKF",                     '1',                      '1'),
+    ("PHAVE_LOCKF",                    '1',                      '1'),
     ("HAVE_WCHAR_T",                   '1',                      '1'),
     ("HAVE_WSTRING",                   '1',                      '1'),
     ("SIMPLE_STRUCT_POINTERS",         '1',                      'UNDEF'),
