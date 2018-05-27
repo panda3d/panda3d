@@ -27,3 +27,13 @@ INLINE PT(Character) CharacterJointEffect::
 get_character() const {
   return _character.lock();
 }
+
+/**
+ * Returns true if this CharacterJointEffect contains the given Character.
+ * This exists because it is faster to check than get_character() and can even
+ * be called while the Character is destructing.
+ */
+INLINE bool CharacterJointEffect::
+matches_character(Character *character) const {
+  return _character == character;
+}

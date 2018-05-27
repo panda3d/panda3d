@@ -41,6 +41,8 @@ PUBLISHED:
   INLINE PT(Character) get_character() const;
 
 public:
+  INLINE bool matches_character(Character *character) const;
+
   virtual bool safe_to_transform() const;
   virtual bool safe_to_combine() const;
   virtual void output(ostream &out) const;
