@@ -56,7 +56,7 @@ extern EXPCL_DTOOL_DTOOLBASE int @PANDA_VERSION_SYMBOL@;
 template<typename T>
 class CheckPandaVersion {
 public:
-  int check() { return @PANDA_VERSION_SYMBOL@; }
+  int check_version() { return @PANDA_VERSION_SYMBOL@; }
 };
 
 template class CheckPandaVersion<void>;
