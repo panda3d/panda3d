@@ -40,7 +40,7 @@ PUBLISHED:
   INLINE Datagram();
   INLINE Datagram(const void *data, size_t size);
   INLINE explicit Datagram(vector_uchar data);
-  INLINE Datagram(const Datagram &copy);
+  INLINE Datagram(const Datagram &copy) = default;
   INLINE void operator = (const Datagram &copy);
 
   virtual ~Datagram();
