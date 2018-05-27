@@ -48,7 +48,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(__ANDROID__) && !defined(HAVE_LOCKF)
+#if defined(__ANDROID__) && !defined(PHAVE_LOCKF)
 // Needed for flock.
 #include <sys/file.h>
 #endif
@@ -2752,7 +2752,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 
   orig_contents = string();
 
-#ifdef HAVE_LOCKF
+#ifdef PHAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
 #else
   if (flock(fd, LOCK_EX) != 0) {
@@ -2868,7 +2868,7 @@ atomic_read_contents(string &contents) const {
 
   contents = string();
 
-#ifdef HAVE_LOCKF
+#ifdef PHAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
 #else
   if (flock(fd, LOCK_EX) != 0) {
