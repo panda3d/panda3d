@@ -84,7 +84,7 @@ open_vfs(const Filename &filename) {
   // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
-                                   &read_packet, 0, &seek);
+                                   &read_packet, nullptr, &seek);
 
   _format_context = avformat_alloc_context();
   _format_context->pb = _io_context;
@@ -132,7 +132,7 @@ open_subfile(const SubfileInfo &info) {
   // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
-                                   &read_packet, 0, &seek);
+                                   &read_packet, nullptr, &seek);
 
   _format_context = avformat_alloc_context();
   _format_context->pb = _io_context;

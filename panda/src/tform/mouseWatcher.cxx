@@ -397,7 +397,7 @@ discard_excess_trail_log() {
  */
 PT(GeomNode) MouseWatcher::
 get_trail_node() {
-  if (_trail_node == 0) {
+  if (_trail_node == nullptr) {
     _trail_node = new GeomNode("Mouse Trail Node");
     update_trail_node();
   }
@@ -412,7 +412,7 @@ get_trail_node() {
  */
 void MouseWatcher::
 clear_trail_node() {
-  _trail_node = 0;
+  _trail_node = nullptr;
 }
 
 /**
@@ -420,7 +420,7 @@ clear_trail_node() {
  */
 void MouseWatcher::
 update_trail_node() {
-  if (_trail_node == 0) {
+  if (_trail_node == nullptr) {
     return;
   }
   _trail_node->remove_all_geoms();
@@ -898,7 +898,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 
   if (!event.empty()) {
     throw_event(event, EventParameter(region), EventParameter(button_name));
-    if (_eh != (EventHandler*)0L)
+    if (_eh != nullptr)
       throw_event_directly(*_eh, event, EventParameter(region),
                            EventParameter(button_name));
   }

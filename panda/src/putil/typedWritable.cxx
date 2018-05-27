@@ -19,7 +19,7 @@
 #include "bam.h"
 
 TypeHandle TypedWritable::_type_handle;
-TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
+TypedWritable* const TypedWritable::Null = nullptr;
 
 /**
  *

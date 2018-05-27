@@ -142,7 +142,7 @@ open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
   next_window_index++;
   string name = stream.str();
 
-  _window = 0;
+  _window = nullptr;
   GraphicsOutput *winout =
     engine->make_output(pipe, name, 0, fbprops,
                         props, flags, gsg, nullptr);

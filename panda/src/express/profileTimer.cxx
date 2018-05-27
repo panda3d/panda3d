@@ -24,7 +24,7 @@ ProfileTimer* ProfileTimer::_head;
 
 ProfileTimer::
 ProfileTimer(const char* name, int maxEntries) :
-  _entries(0),
+  _entries(nullptr),
   _autoTimerCount(0) {
   // Keep a list of the ProfileTimers, so we can print them:
   _next=_head;

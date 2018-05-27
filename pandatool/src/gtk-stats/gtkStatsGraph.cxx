@@ -48,8 +48,8 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
   GdkDisplay *display = gdk_drawable_get_display(parent_window->window);
   _hand_cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
 
-  _pixmap = 0;
-  _pixmap_gc = 0;
+  _pixmap = nullptr;
+  _pixmap_gc = nullptr;
 
   _pixmap_xsize = 0;
   _pixmap_ysize = 0;

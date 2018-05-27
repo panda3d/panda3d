@@ -22,9 +22,9 @@
 
 TypeHandle BamReaderAuxData::_type_handle;
 
-WritableFactory *BamReader::_factory = (WritableFactory*)0L;
-BamReader *const BamReader::Null = (BamReader*)0L;
-WritableFactory *const BamReader::NullFactory = (WritableFactory*)0L;
+WritableFactory *BamReader::_factory = nullptr;
+BamReader *const BamReader::Null = nullptr;
+WritableFactory *const BamReader::NullFactory = nullptr;
 
 BamReader::NewTypes BamReader::_new_types;
 

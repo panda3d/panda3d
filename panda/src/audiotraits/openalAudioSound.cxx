@@ -109,7 +109,7 @@ cleanup() {
     release_sound_data(true);
   }
   _manager->release_sound(this);
-  _manager = 0;
+  _manager = nullptr;
 }
 
 /**

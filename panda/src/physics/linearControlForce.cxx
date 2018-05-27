@@ -60,7 +60,7 @@ make_copy() {
  */
 LVector3 LinearControlForce::
 get_child_vector(const PhysicsObject *po) {
-  if (_physics_object != 0 && po == _physics_object) {
+  if (_physics_object != nullptr && po == _physics_object) {
     return _fvec;
   } else {
     return LVector3::zero();

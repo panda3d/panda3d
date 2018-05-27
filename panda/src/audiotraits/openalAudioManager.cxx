@@ -402,7 +402,7 @@ get_sound_data(MovieAudio *movie, int mode) {
   }
 
   PT(MovieAudioCursor) stream = movie->open();
-  if (stream == 0) {
+  if (stream == nullptr) {
     audio_error("Cannot open file: "<<path);
     return nullptr;
   }
@@ -1033,7 +1033,7 @@ cleanup() {
  */
 OpenALAudioManager::SoundData::
 SoundData() :
-  _manager(0),
+  _manager(nullptr),
   _sample(0),
   _stream(nullptr),
   _length(0.0),

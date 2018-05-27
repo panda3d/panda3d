@@ -505,7 +505,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 
   if (spec._func == SMF_first) {
     spec._part[1] = SMO_INVALID;
-    spec._arg[1] = 0;
+    spec._arg[1] = nullptr;
   }
   if (spec._func == SMF_compose) {
     if (spec._part[1] == SMO_identity) {
@@ -1299,7 +1299,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     ShaderTexSpec bind;
     bind._id = p._id;
-    bind._name = 0;
+    bind._name = nullptr;
     bind._stage = atoi(pieces[1].c_str());
     bind._part = STO_stage_i;
     switch (p._type) {

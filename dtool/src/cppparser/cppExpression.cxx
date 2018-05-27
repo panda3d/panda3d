@@ -553,7 +553,7 @@ evaluate() const {
 
   switch (_type) {
   case T_nullptr:
-    return Result((void *)0);
+    return Result(nullptr);
 
   case T_boolean:
     return Result((int)_u._boolean);

@@ -288,7 +288,7 @@ make_output(GraphicsPipe *pipe,
   if ((x_size == 0)&&(y_size == 0)) {
     flags |= GraphicsPipe::BF_size_track_host;
   }
-  if (host != 0) {
+  if (host != nullptr) {
     host = host->get_host();
   }
 
@@ -306,13 +306,13 @@ make_output(GraphicsPipe *pipe,
       }
     }
   } else {
-    if ((host->get_gsg()==0)||
+    if ((host->get_gsg()==nullptr)||
         (!host->is_valid())||
         (!host->get_gsg()->is_valid())||
         (host->get_gsg()->needs_reset())) {
       open_windows();
     }
-    if ((host->get_gsg()==0)||
+    if ((host->get_gsg()==nullptr)||
         (!host->is_valid())||
         (!host->get_gsg()->is_valid())||
         (host->get_gsg()->needs_reset())) {
@@ -356,7 +356,7 @@ make_output(GraphicsPipe *pipe,
   // Determine if a parasite buffer meets the user's specs.
 
   bool can_use_parasite = false;
-  if ((host != 0)&&
+  if ((host != nullptr)&&
       ((flags&GraphicsPipe::BF_require_window)==0)&&
       ((flags&GraphicsPipe::BF_require_callback_window)==0)&&
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&

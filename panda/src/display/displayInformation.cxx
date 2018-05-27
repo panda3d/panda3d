@@ -148,8 +148,8 @@ DisplayInformation() {
   _num_cpu_cores = 0;
   _num_logical_cpus = 0;
 
-  _get_memory_information_function = 0;
-  _update_cpu_frequency_function = 0;
+  _get_memory_information_function = nullptr;
+  _update_cpu_frequency_function = nullptr;
 
   _os_version_major = -1;
   _os_version_minor = -1;

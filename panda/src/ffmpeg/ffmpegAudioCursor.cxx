@@ -46,14 +46,14 @@ FfmpegAudioCursor::
 FfmpegAudioCursor(FfmpegAudio *src) :
   MovieAudioCursor(src),
   _filename(src->_filename),
-  _packet(0),
-  _packet_data(0),
-  _format_ctx(0),
-  _audio_ctx(0),
-  _resample_ctx(0),
-  _buffer(0),
-  _buffer_alloc(0),
-  _frame(0)
+  _packet(nullptr),
+  _packet_data(nullptr),
+  _format_ctx(nullptr),
+  _audio_ctx(nullptr),
+  _resample_ctx(nullptr),
+  _buffer(nullptr),
+  _buffer_alloc(nullptr),
+  _frame(nullptr)
 {
   if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
@@ -102,7 +102,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _audio_channels = codecpar->channels;
 
   AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
-  if (pAudioCodec == 0) {
+  if (pAudioCodec == nullptr) {
     cleanup();
     return;
   }
@@ -176,7 +176,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _buffer_alloc = new int16_t[_buffer_size + 64];
 
   // Allocate enough space for 1024 samples per channel.
-  if ((_packet == 0)||(_buffer_alloc == 0)) {
+  if ((_packet == nullptr)||(_buffer_alloc == nullptr)) {
     cleanup();
     return;
   }
@@ -233,7 +233,7 @@ cleanup() {
 
   if (_buffer_alloc) {
     delete[] _buffer_alloc;
-    _buffer_alloc = 0;
+    _buffer_alloc = nullptr;
     _buffer = nullptr;
   }
 
@@ -287,9 +287,9 @@ fetch_packet() {
     av_free_packet(_packet);
 #endif
   }
-  _packet->data = 0;
+  _packet->data = nullptr;
   _packet_size = 0;
-  _packet_data = 0;
+  _packet_data = nullptr;
 }
 
 /**
@@ -444,7 +444,7 @@ seek(double t) {
   double ts = _packet->dts * _audio_timebase;
   if (t > ts) {
     int skip = (int)((t-ts) * _audio_rate);
-    read_samples(skip, 0);
+    read_samples(skip, nullptr);
   }
   _last_seek = t;
   _samples_read = 0;
@@ -469,7 +469,7 @@ read_samples(int n, int16_t *data) {
     int available = _buffer_tail - _buffer_head;
     int ncopy = (desired > available) ? available : desired;
     if (ncopy) {
-      if (data != 0) {
+      if (data != nullptr) {
         memcpy(data, _buffer + _buffer_head, ncopy * 2);
         data += ncopy;
       }

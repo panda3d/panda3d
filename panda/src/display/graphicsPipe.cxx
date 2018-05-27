@@ -60,7 +60,7 @@ union cpuid_info {
  */
 static inline uint32_t get_cpuid_max(uint32_t leaf) {
 #if defined(__GNUC__) && !defined(__APPLE__)
-  return __get_cpuid_max(leaf, 0);
+  return __get_cpuid_max(leaf, nullptr);
 #elif defined(_MSC_VER)
   uint32_t p[4] = {0};
   __cpuid((int *)p, leaf);

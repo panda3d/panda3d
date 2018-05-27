@@ -29,13 +29,13 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                          glxGraphicsStateGuardian *share_with) :
   PosixGraphicsStateGuardian(engine, pipe)
 {
-  _share_context=0;
-  _context=0;
-  _display=0;
+  _share_context=nullptr;
+  _context=nullptr;
+  _display=nullptr;
   _screen=0;
-  _visual=0;
-  _visuals=0;
-  _fbconfig=0;
+  _visual=nullptr;
+  _visuals=nullptr;
+  _fbconfig=nullptr;
   _context_has_pbuffer = false;
   _context_has_pixmap = false;
   _slow = false;
@@ -224,9 +224,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   _display = display;
   _screen = screen;
-  _context = 0;
-  _fbconfig = 0;
-  _visual = 0;
+  _context = nullptr;
+  _fbconfig = nullptr;
+  _visual = nullptr;
   if (_visuals != nullptr) {
     XFree(_visuals);
     _visuals = nullptr;
@@ -297,7 +297,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   GLXFBConfig *configs =
     _glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
 
-  if (configs != 0) {
+  if (configs != nullptr) {
     bool context_has_pbuffer, context_has_pixmap, slow;
     int quality, i;
     for (i = 0; i < num_configs; ++i) {
@@ -391,10 +391,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
     // This really shouldn't happen, so I'm not too careful about cleanup.
     glxdisplay_cat.error()
       << "Could not create FBConfig context!\n";
-    _fbconfig = 0;
-    _context = 0;
-    _visual = 0;
-    _visuals = 0;
+    _fbconfig = nullptr;
+    _context = nullptr;
+    _visual = nullptr;
+    _visuals = nullptr;
   }
 
   glxdisplay_cat.warning()
@@ -744,8 +744,8 @@ choose_temp_visual(const FrameBufferProperties &properties) {
     _visuals = nullptr;
   }
   int nvisuals = 0;
-  _visuals = XGetVisualInfo(_display, 0, 0, &nvisuals);
-  if (_visuals != 0) {
+  _visuals = XGetVisualInfo(_display, 0, nullptr, &nvisuals);
+  if (_visuals != nullptr) {
     for (int i = 0; i < nvisuals; i++) {
       FrameBufferProperties fbprops;
       get_properties(fbprops, _visuals + i);

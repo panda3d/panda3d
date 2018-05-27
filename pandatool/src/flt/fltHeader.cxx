@@ -467,7 +467,7 @@ get_num_vertices() const {
  */
 FltVertex *FltHeader::
 get_vertex(int n) const {
-  nassertr(n >= 0 && n < (int)_vertices.size(), 0);
+  nassertr(n >= 0 && n < (int)_vertices.size(), nullptr);
   return _vertices[n];
 }
 

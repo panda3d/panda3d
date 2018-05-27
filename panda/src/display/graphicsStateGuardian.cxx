@@ -525,7 +525,7 @@ set_scene(SceneSetup *scene_setup) {
   set_coordinate_system(_current_lens->get_coordinate_system());
 
   _projection_mat = calc_projection_mat(_current_lens);
-  if (_projection_mat == 0) {
+  if (_projection_mat == nullptr) {
     return false;
   }
   _projection_mat_inv = _projection_mat->get_inverse();
@@ -940,7 +940,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_texpad_x: {
     Texture *tex = _target_shader->get_shader_input_texture(name);
-    nassertr(tex != 0, &LMatrix4::zeros_mat());
+    nassertr(tex != nullptr, &LMatrix4::zeros_mat());
     int sx = tex->get_x_size() - tex->get_pad_x_size();
     int sy = tex->get_y_size() - tex->get_pad_y_size();
     int sz = tex->get_z_size() - tex->get_pad_z_size();
@@ -952,7 +952,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_texpix_x: {
     Texture *tex = _target_shader->get_shader_input_texture(name);
-    nassertr(tex != 0, &LMatrix4::zeros_mat());
+    nassertr(tex != nullptr, &LMatrix4::zeros_mat());
     double px = 1.0 / tex->get_x_size();
     double py = 1.0 / tex->get_y_size();
     double pz = 1.0 / tex->get_z_size();

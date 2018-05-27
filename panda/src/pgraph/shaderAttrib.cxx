@@ -39,7 +39,7 @@ int ShaderAttrib::_attrib_slot;
 CPT(RenderAttrib) ShaderAttrib::
 make_off() {
   static CPT(RenderAttrib) _off_attrib;
-  if (_off_attrib == 0) {
+  if (_off_attrib == nullptr) {
     ShaderAttrib *attrib = new ShaderAttrib;
     attrib->_has_shader = true;
     _off_attrib = return_new(attrib);
@@ -53,7 +53,7 @@ make_off() {
 CPT(RenderAttrib) ShaderAttrib::
 make(const Shader *shader, int priority) {
   static CPT(RenderAttrib) _null_attrib;
-  if (_null_attrib == 0) {
+  if (_null_attrib == nullptr) {
     ShaderAttrib *attrib = new ShaderAttrib;
     _null_attrib = return_new(attrib);
   }

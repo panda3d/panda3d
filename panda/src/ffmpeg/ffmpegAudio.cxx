@@ -41,7 +41,7 @@ FfmpegAudio::
 PT(MovieAudioCursor) FfmpegAudio::
 open() {
   PT(FfmpegAudioCursor) result = new FfmpegAudioCursor(this);
-  if (result->_format_ctx == 0) {
+  if (result->_format_ctx == nullptr) {
     ffmpeg_cat.error() << "Could not open " << _filename << "\n";
     return nullptr;
   } else {

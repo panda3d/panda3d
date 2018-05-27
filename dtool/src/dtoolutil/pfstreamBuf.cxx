@@ -89,8 +89,8 @@ int PipeStreamBuf::sync(void) {
 
 int PipeStreamBuf::underflow(void) {
   assert(_dir == Input);
-  if ((eback() == (char*)0L) || (gptr() == (char*)0L) ||
-      (egptr() == (char*)0L)) {
+  if ((eback() == nullptr) || (gptr() == nullptr) ||
+      (egptr() == nullptr)) {
     // must be new-style iostream library
     char* buf = new char[4096];
     char* ebuf = &(buf[4096]);

@@ -219,12 +219,12 @@ do_read_one(Texture::CData *cdata_tex,
   PT(MovieVideoCursor) alpha;
 
   color = MovieVideo::get(fullpath)->open();
-  if (color == 0) {
+  if (color == nullptr) {
     return false;
   }
   if (!alpha_fullpath.empty()) {
     alpha = MovieVideo::get(alpha_fullpath)->open();
-    if (alpha == 0) {
+    if (alpha == nullptr) {
       return false;
     }
   }
@@ -326,7 +326,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
     // compute a new one.
     double offset;
     int true_loop_count = 1;
-    if (cdata->_synchronize != 0) {
+    if (cdata->_synchronize != nullptr) {
       offset = cdata->_synchronize->get_time();
     } else {
       // Calculate the cursor position modulo the length of the movie.
@@ -634,7 +634,7 @@ synchronize_to(AudioSound *s) {
 void MovieTexture::
 unsynchronize() {
   CDWriter cdata(_cycler);
-  cdata->_synchronize = 0;
+  cdata->_synchronize = nullptr;
 }
 
 

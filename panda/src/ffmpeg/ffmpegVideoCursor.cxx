@@ -89,7 +89,7 @@ init_from(FfmpegVideo *source) {
   _frame_out = avcodec_alloc_frame();
 #endif
 
-  if ((_frame == 0)||(_frame_out == 0)) {
+  if ((_frame == nullptr)||(_frame_out == nullptr)) {
     cleanup();
     return;
   }
@@ -622,7 +622,7 @@ cleanup() {
   }
 
   if (_frame_out) {
-    _frame_out->data[0] = 0;
+    _frame_out->data[0] = nullptr;
     av_free(_frame_out);
     _frame_out = nullptr;
   }
@@ -819,7 +819,7 @@ do_fetch_packet(int default_frame) {
     av_free_packet(_packet);
 #endif
   }
-  _packet->data = 0;
+  _packet->data = nullptr;
 
   if (!_eof_known && default_frame != 0) {
     _eof_frame = _packet_frame;

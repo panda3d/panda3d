@@ -144,7 +144,7 @@ open_window() {
 
   // GSG CreationInitialization
   glxGraphicsStateGuardian *glxgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, nullptr);
     glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), false, false);
