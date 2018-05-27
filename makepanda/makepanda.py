@@ -2618,7 +2618,7 @@ extern EXPCL_DTOOL_DTOOLBASE int panda_version_$VERSION1_$VERSION2;
 template<typename T>
 class CheckPandaVersion {
 public:
-  int check() { return panda_version_$VERSION1_$VERSION2; }
+  int check_version() { return panda_version_$VERSION1_$VERSION2; }
 };
 template class CheckPandaVersion<void>;
 # endif
