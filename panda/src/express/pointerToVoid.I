@@ -14,8 +14,8 @@
 /**
  *
  */
-CONSTEXPR PointerToVoid::
-PointerToVoid() NOEXCEPT : _void_ptr(nullptr) {
+constexpr PointerToVoid::
+PointerToVoid() noexcept : _void_ptr(nullptr) {
 }
 
 /**
@@ -30,7 +30,7 @@ PointerToVoid() NOEXCEPT : _void_ptr(nullptr) {
  * Returns true if the PointerTo is a NULL pointer, false otherwise.  (Direct
  * comparison to a NULL pointer also works.)
  */
-CONSTEXPR bool PointerToVoid::
+constexpr bool PointerToVoid::
 is_null() const {
   return _void_ptr == nullptr;
 }
@@ -82,7 +82,7 @@ operator != (const PointerToVoid &other) const {
  * For internal use only.  Use the global swap() function instead.
  */
 INLINE void PointerToVoid::
-swap(PointerToVoid &other) NOEXCEPT {
+swap(PointerToVoid &other) noexcept {
   AtomicAdjust::Pointer temp = _void_ptr;
   _void_ptr = other._void_ptr;
   other._void_ptr = temp;

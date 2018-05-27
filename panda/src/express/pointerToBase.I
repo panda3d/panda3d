@@ -51,13 +51,12 @@ INLINE PointerToBase<T>::
   }
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class T>
 INLINE PointerToBase<T>::
-PointerToBase(PointerToBase<T> &&from) NOEXCEPT {
+PointerToBase(PointerToBase<T> &&from) noexcept {
   _void_ptr = from._void_ptr;
   from._void_ptr = (void *)NULL;
 }
@@ -70,7 +69,7 @@ PointerToBase(PointerToBase<T> &&from) NOEXCEPT {
  */
 template<class T>
 INLINE void PointerToBase<T>::
-reassign(PointerToBase<T> &&from) NOEXCEPT {
+reassign(PointerToBase<T> &&from) noexcept {
   // Protect against self-move-assignment.
   if (from._void_ptr != this->_void_ptr) {
     To *old_ptr = (To *)this->_void_ptr;
@@ -84,7 +83,6 @@ reassign(PointerToBase<T> &&from) NOEXCEPT {
     }
   }
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * This is the main work of the PointerTo family.  When the pointer is

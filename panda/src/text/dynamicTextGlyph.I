@@ -40,25 +40,6 @@ DynamicTextGlyph(int character, PN_stdfloat advance) :
 }
 
 /**
- * Copying DynamicTextGlyph objects is not allowed.
- */
-INLINE DynamicTextGlyph::
-DynamicTextGlyph(const DynamicTextGlyph &) :
-  TextGlyph(0)
-{
-  nassertv(false);
-}
-
-/**
- * Copying DynamicTextGlyph objects is not allowed.
- */
-INLINE void DynamicTextGlyph::
-operator = (const DynamicTextGlyph &) {
-  nassertv(false);
-}
-
-
-/**
  * Returns the DynamicTextPage that this glyph is on.
  */
 INLINE DynamicTextPage *DynamicTextGlyph::

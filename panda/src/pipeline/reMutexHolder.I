@@ -61,19 +61,3 @@ INLINE ReMutexHolder::
   _mutex->release();
 #endif
 }
-
-/**
- * Do not attempt to copy ReMutexHolders.
- */
-INLINE ReMutexHolder::
-ReMutexHolder(const ReMutexHolder &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy ReMutexHolders.
- */
-INLINE void ReMutexHolder::
-operator = (const ReMutexHolder &copy) {
-  nassertv(false);
-}

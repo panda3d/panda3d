@@ -51,12 +51,12 @@ class RenderState;
 class EXPCL_PANDA_PGRAPH RenderAttrib : public TypedWritableReferenceCount {
 protected:
   RenderAttrib();
-private:
-  RenderAttrib(const RenderAttrib &copy);
-  void operator = (const RenderAttrib &copy);
 
 public:
+  RenderAttrib(const RenderAttrib &copy) = delete;
   virtual ~RenderAttrib();
+
+  RenderAttrib &operator = (const RenderAttrib &copy) = delete;
 
 PUBLISHED:
   INLINE CPT(RenderAttrib) compose(const RenderAttrib *other) const;
@@ -72,7 +72,7 @@ PUBLISHED:
   INLINE size_t get_hash() const;
   INLINE CPT(RenderAttrib) get_unique() const;
 
-  virtual bool unref() const FINAL;
+  virtual bool unref() const final;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;

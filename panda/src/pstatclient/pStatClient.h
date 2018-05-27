@@ -73,7 +73,7 @@ PUBLISHED:
   MAKE_SEQ(get_threads, get_num_threads, get_thread);
   INLINE string get_thread_name(int index) const;
   INLINE string get_thread_sync_name(int index) const;
-  INLINE Thread *get_thread_object(int index) const;
+  INLINE PT(Thread) get_thread_object(int index) const;
 
   PStatThread get_main_thread() const;
   PStatThread get_current_thread() const;

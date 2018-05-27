@@ -36,7 +36,7 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(LVecBase4)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LVecBase4)() = default;
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
@@ -62,7 +62,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size() { return 4; }
+  constexpr static int size() { return 4; }
 
   INLINE_LINMATH bool is_nan() const;
 
@@ -100,7 +100,7 @@ PUBLISHED:
   INLINE_LINMATH void add_w(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components() { return 4; }
+  constexpr static int get_num_components() { return 4; }
   INLINE_LINMATH void extract_data(float*){};
 
 public:
@@ -228,7 +228,7 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() = default;
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
@@ -238,10 +238,10 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size() { return 4; }
+  constexpr static int size() { return 4; }
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components() { return 4; }
+  constexpr static int get_num_components() { return 4; }
 
   INLINE_LINMATH bool operator == (const FLOATNAME(UnalignedLVecBase4) &other) const;
   INLINE_LINMATH bool operator != (const FLOATNAME(UnalignedLVecBase4) &other) const;

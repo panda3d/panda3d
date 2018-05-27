@@ -50,7 +50,7 @@ GeomVertexReader(const GeomVertexData *vertex_data,
   _current_thread(current_thread)
 {
   initialize();
-  set_column(MOVE(name));
+  set_column(std::move(name));
 }
 
 /**

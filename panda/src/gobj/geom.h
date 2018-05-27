@@ -256,9 +256,8 @@ public:
     INLINE CacheKey(const GeomVertexData *source_data,
                     const GeomMunger *modifier);
     INLINE CacheKey(const CacheKey &copy);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheKey(CacheKey &&from) NOEXCEPT;
-#endif
+    INLINE CacheKey(CacheKey &&from) noexcept;
+
     INLINE bool operator < (const CacheKey &other) const;
 
     CPT(GeomVertexData) _source_data;
@@ -271,9 +270,8 @@ public:
                       const GeomVertexData *source_data,
                       const GeomMunger *modifier);
     INLINE CacheEntry(Geom *source, const CacheKey &key);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheEntry(Geom *source, CacheKey &&key) NOEXCEPT;
-#endif
+    INLINE CacheEntry(Geom *source, CacheKey &&key) noexcept;
+
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
@@ -406,13 +404,12 @@ class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
   INLINE GeomPipelineReader(Thread *current_thread);
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
-private:
-  GeomPipelineReader(const GeomPipelineReader &copy) DELETED;
-  GeomPipelineReader &operator = (const GeomPipelineReader &copy) DELETED_ASSIGN;
-
-public:
+  GeomPipelineReader(const GeomPipelineReader &copy) = delete;
   INLINE ~GeomPipelineReader();
+
   ALLOC_DELETED_CHAIN(GeomPipelineReader);
+
+  GeomPipelineReader &operator = (const GeomPipelineReader &copy) = delete;
 
   INLINE void set_object(const Geom *object);
   INLINE const Geom *get_object() const;

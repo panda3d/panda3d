@@ -30,10 +30,15 @@
 class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
   MutexDebug(const string &name, bool allow_recursion, bool lightweight);
+  MutexDebug(const MutexDebug &copy) = delete;
   virtual ~MutexDebug();
-private:
-  INLINE MutexDebug(const MutexDebug &copy);
-  INLINE void operator = (const MutexDebug &copy);
+
+  void operator = (const MutexDebug &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire(Thread *current_thread = Thread::get_current_thread()) const;
@@ -52,9 +57,9 @@ public:
   static void decrement_pstats();
 
 private:
-  void do_acquire(Thread *current_thread);
-  bool do_try_acquire(Thread *current_thread);
-  void do_release();
+  void do_lock(Thread *current_thread);
+  bool do_try_lock(Thread *current_thread);
+  void do_unlock();
   bool do_debug_is_locked() const;
 
   void report_deadlock(Thread *current_thread);

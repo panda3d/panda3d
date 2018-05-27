@@ -84,12 +84,12 @@ output(ostream &out) const {
  */
 void MutexDebug::
 output_with_holder(ostream &out) const {
-  _global_lock->acquire();
+  _global_lock->lock();
   output(out);
   if (_locking_thread != (Thread *)NULL) {
     out << " (held by " << *_locking_thread << ")\n";
   }
-  _global_lock->release();
+  _global_lock->unlock();
 }
 
 /**
@@ -99,9 +99,9 @@ output_with_holder(ostream &out) const {
  */
 void MutexDebug::
 increment_pstats() {
-  _global_lock->acquire();
+  _global_lock->lock();
   ++_pstats_count;
-  _global_lock->release();
+  _global_lock->unlock();
 }
 
 /**
@@ -110,16 +110,16 @@ increment_pstats() {
  */
 void MutexDebug::
 decrement_pstats() {
-  _global_lock->acquire();
+  _global_lock->lock();
   --_pstats_count;
-  _global_lock->release();
+  _global_lock->unlock();
 }
 
 /**
  * The private implementation of acquire() assumes that _lock_impl is held.
  */
 void MutexDebug::
-do_acquire(Thread *current_thread) {
+do_lock(Thread *current_thread) {
   // If this assertion is triggered, you tried to lock a recently-destructed
   // mutex.
   nassertd(_lock_count != -100) {
@@ -235,7 +235,7 @@ do_acquire(Thread *current_thread) {
  * held.
  */
 bool MutexDebug::
-do_try_acquire(Thread *current_thread) {
+do_try_lock(Thread *current_thread) {
   // If this assertion is triggered, you tried to lock a recently-destructed
   // mutex.
   nassertd(_lock_count != -100) {
@@ -301,7 +301,7 @@ do_try_acquire(Thread *current_thread) {
  * The private implementation of acquire() assumes that _lock_impl is held.
  */
 void MutexDebug::
-do_release() {
+do_unlock() {
   // If this assertion is triggered, you tried to release a recently-
   // destructed mutex.
   nassertd(_lock_count != -100) {

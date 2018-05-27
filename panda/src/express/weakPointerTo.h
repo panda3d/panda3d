@@ -41,6 +41,7 @@ public:
   INLINE operator T *() const;
 
 PUBLISHED:
+  INLINE PointerTo<T> lock() const;
   INLINE To *p() const;
   INLINE To *get_orig() const;
 
@@ -77,6 +78,7 @@ public:
   INLINE operator const T *() const;
 
 PUBLISHED:
+  INLINE ConstPointerTo<T> lock() const;
   INLINE const To *p() const;
   INLINE const To *get_orig() const;
 

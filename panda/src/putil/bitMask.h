@@ -45,10 +45,10 @@ PUBLISHED:
   INLINE static BitMask<WType, nbits> bit(int index);
   INLINE static BitMask<WType, nbits> range(int low_bit, int size);
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
+  constexpr static bool has_max_num_bits() { return true; }
+  constexpr static int get_max_num_bits() { return num_bits; }
 
-  CONSTEXPR static int get_num_bits();
+  constexpr int get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);

@@ -112,9 +112,9 @@ ReferenceCount::
   nassertv(_ref_count == 0 || _ref_count == local_ref_count);
 
   // Tell our weak reference holders that we're going away now.
-  if (_weak_list != (WeakReferenceList *)NULL) {
-    delete (WeakReferenceList *)_weak_list;
-    _weak_list = (WeakReferenceList *)NULL;
+  if (_weak_list != nullptr) {
+    ((WeakReferenceList *)_weak_list)->mark_deleted();
+    _weak_list = nullptr;
   }
 
 #ifndef NDEBUG
@@ -253,6 +253,9 @@ has_weak_list() const {
  * Returns the WeakReferenceList associated with this ReferenceCount object.
  * If there has never been a WeakReferenceList associated with this object,
  * creates one now.
+ *
+ * The returned object will be deleted automatically when all weak and strong
+ * references to the object have gone.
  */
 INLINE WeakReferenceList *ReferenceCount::
 get_weak_list() const {
@@ -264,14 +267,21 @@ get_weak_list() const {
 
 /**
  * Adds the indicated PointerToVoid as a weak reference to this object.
+ * Returns an object that will persist as long as any reference (strong or
+ * weak) exists, for calling unref() or checking whether the object still
+ * exists.
  */
-INLINE void ReferenceCount::
-weak_ref(WeakPointerToVoid *ptv) {
+INLINE WeakReferenceList *ReferenceCount::
+weak_ref() {
   TAU_PROFILE("void ReferenceCount::weak_ref()", " ", TAU_USER);
 #ifdef _DEBUG
-  nassertv(test_ref_count_integrity());
+  nassertr(test_ref_count_integrity(), nullptr);
+#else
+  nassertr(_ref_count != deleted_ref_count, nullptr);
 #endif
-  get_weak_list()->add_reference(ptv);
+  WeakReferenceList *weak_ref = get_weak_list();
+  weak_ref->ref();
+  return weak_ref;
 }
 
 /**
@@ -279,13 +289,36 @@ weak_ref(WeakPointerToVoid *ptv) {
  * must have previously been added via a call to weak_ref().
  */
 INLINE void ReferenceCount::
-weak_unref(WeakPointerToVoid *ptv) {
+weak_unref() {
   TAU_PROFILE("void ReferenceCount::weak_unref()", " ", TAU_USER);
 #ifdef _DEBUG
   nassertv(test_ref_count_integrity());
 #endif
-  nassertv(has_weak_list());
-  ((WeakReferenceList *)_weak_list)->clear_reference(ptv);
+  WeakReferenceList *weak_list = (WeakReferenceList *)_weak_list;
+  nassertv(weak_list != nullptr);
+  bool nonzero = weak_list->unref();
+  nassertv(nonzero);
+}
+
+/**
+ * Atomically increases the reference count of this object if it is not zero.
+ * Do not use this.  This exists only to implement a special case for weak
+ * pointers.
+ * @return true if the reference count was incremented, false if it was zero.
+ */
+INLINE bool ReferenceCount::
+ref_if_nonzero() const {
+#ifdef _DEBUG
+  test_ref_count_integrity();
+#endif
+  AtomicAdjust::Integer ref_count;
+  do {
+    ref_count = AtomicAdjust::get(_ref_count);
+    if (ref_count <= 0) {
+      return false;
+    }
+  } while (ref_count != AtomicAdjust::compare_and_exchange(_ref_count, ref_count, ref_count + 1));
+  return true;
 }
 
 /**

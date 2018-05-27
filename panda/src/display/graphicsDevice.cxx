@@ -38,22 +38,6 @@ GraphicsDevice(GraphicsPipe *pipe) {
  *
  */
 GraphicsDevice::
-GraphicsDevice(const GraphicsDevice &) {
-  nassertv(false);
-}
-
-/**
- *
- */
-void GraphicsDevice::
-operator = (const GraphicsDevice &) {
-  nassertv(false);
-}
-
-/**
- *
- */
-GraphicsDevice::
 ~GraphicsDevice() {
   // And we shouldn't have a GraphicsPipe pointer anymore.  nassertv(_pipe ==
   // (GraphicsPipe *)NULL);

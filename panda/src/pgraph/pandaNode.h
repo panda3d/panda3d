@@ -71,8 +71,8 @@ PUBLISHED:
 
 protected:
   PandaNode(const PandaNode &copy);
-private:
-  void operator = (const PandaNode &copy);
+
+  PandaNode &operator = (const PandaNode &copy) = delete;
 
 public:
   virtual PandaNode *dupe_for_flatten() const;
@@ -710,12 +710,10 @@ PUBLISHED:
     INLINE Children();
     INLINE Children(const CData *cdata);
     INLINE Children(const Children &copy);
-    INLINE void operator = (const Children &copy);
+    INLINE Children(Children &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Children(Children &&from) NOEXCEPT;
-    INLINE void operator = (Children &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Children &copy);
+    INLINE void operator = (Children &&from) noexcept;
 
     INLINE size_t get_num_children() const;
     INLINE PandaNode *get_child(size_t n) const;
@@ -735,12 +733,10 @@ PUBLISHED:
     INLINE Stashed();
     INLINE Stashed(const CData *cdata);
     INLINE Stashed(const Stashed &copy);
-    INLINE void operator = (const Stashed &copy);
+    INLINE Stashed(Stashed &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Stashed(Stashed &&from) NOEXCEPT;
-    INLINE void operator = (Stashed &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Stashed &copy);
+    INLINE void operator = (Stashed &&from) noexcept;
 
     INLINE size_t get_num_stashed() const;
     INLINE PandaNode *get_stashed(size_t n) const;
@@ -760,12 +756,10 @@ PUBLISHED:
     INLINE Parents();
     INLINE Parents(const CData *cdata);
     INLINE Parents(const Parents &copy);
-    INLINE void operator = (const Parents &copy);
+    INLINE Parents(Parents &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Parents(Parents &&from) NOEXCEPT;
-    INLINE void operator = (Parents &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Parents &copy);
+    INLINE void operator = (Parents &&from) noexcept;
 
     INLINE size_t get_num_parents() const;
     INLINE PandaNode *get_parent(size_t n) const;

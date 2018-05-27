@@ -31,11 +31,9 @@ public:
   typedef TYPENAME NodePointerToBase<T>::To To;
   INLINE NodePointerTo(To *ptr = (To *)NULL);
   INLINE NodePointerTo(const NodePointerTo<T> &copy);
+  INLINE NodePointerTo(NodePointerTo<T> &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE NodePointerTo(NodePointerTo<T> &&from) NOEXCEPT;
-  INLINE NodePointerTo<T> &operator = (NodePointerTo<T> &&from) NOEXCEPT;
-#endif
+  INLINE NodePointerTo<T> &operator = (NodePointerTo<T> &&from) noexcept;
 
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
@@ -65,13 +63,11 @@ public:
   INLINE NodeConstPointerTo(const To *ptr = (const To *)NULL);
   INLINE NodeConstPointerTo(const NodePointerTo<T> &copy);
   INLINE NodeConstPointerTo(const NodeConstPointerTo<T> &copy);
+  INLINE NodeConstPointerTo(NodePointerTo<T> &&from) noexcept;
+  INLINE NodeConstPointerTo(NodeConstPointerTo<T> &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE NodeConstPointerTo(NodePointerTo<T> &&from) NOEXCEPT;
-  INLINE NodeConstPointerTo(NodeConstPointerTo<T> &&from) NOEXCEPT;
-  INLINE NodeConstPointerTo<T> &operator = (NodePointerTo<T> &&from) NOEXCEPT;
-  INLINE NodeConstPointerTo<T> &operator = (NodeConstPointerTo<T> &&from) NOEXCEPT;
-#endif
+  INLINE NodeConstPointerTo<T> &operator = (NodePointerTo<T> &&from) noexcept;
+  INLINE NodeConstPointerTo<T> &operator = (NodeConstPointerTo<T> &&from) noexcept;
 
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
@@ -86,12 +82,12 @@ public:
 };
 
 template <class T>
-void swap(NodePointerTo<T> &one, NodePointerTo<T> &two) NOEXCEPT {
+void swap(NodePointerTo<T> &one, NodePointerTo<T> &two) noexcept {
   one.swap(two);
 }
 
 template <class T>
-void swap(NodeConstPointerTo<T> &one, NodeConstPointerTo<T> &two) NOEXCEPT {
+void swap(NodeConstPointerTo<T> &one, NodeConstPointerTo<T> &two) noexcept {
   one.swap(two);
 }
 

@@ -43,11 +43,11 @@ allocate(size_t size, TypeHandle type_handle) {
 
   ObjectNode *obj;
 
-  _lock.acquire();
+  _lock.lock();
   if (_deleted_chain != (ObjectNode *)NULL) {
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
-    _lock.release();
+    _lock.unlock();
 
 #ifdef USE_DELETEDCHAINFLAG
     assert(obj->_flag == (AtomicAdjust::Integer)DCF_deleted);
@@ -64,7 +64,7 @@ allocate(size_t size, TypeHandle type_handle) {
 
     return ptr;
   }
-  _lock.release();
+  _lock.unlock();
 
   // If we get here, the deleted_chain is empty; we have to allocate a new
   // object from the system pool.
@@ -126,12 +126,12 @@ deallocate(void *ptr, TypeHandle type_handle) {
   assert(orig_flag == (AtomicAdjust::Integer)DCF_alive);
 #endif  // USE_DELETEDCHAINFLAG
 
-  _lock.acquire();
+  _lock.lock();
 
   obj->_next = _deleted_chain;
   _deleted_chain = obj;
 
-  _lock.release();
+  _lock.unlock();
 
 #else  // USE_DELETED_CHAIN
   PANDA_FREE_SINGLE(ptr);

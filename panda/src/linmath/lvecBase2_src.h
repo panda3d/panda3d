@@ -30,7 +30,7 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(LVecBase2)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LVecBase2)() = default;
   INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE x, FLOATTYPE y);
   ALLOC_DELETED_CHAIN(FLOATNAME(LVecBase2));
@@ -50,7 +50,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size() { return 2; }
+  constexpr static int size() { return 2; }
 
   INLINE_LINMATH bool is_nan() const;
 
@@ -74,7 +74,7 @@ PUBLISHED:
   INLINE_LINMATH void add_y(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components() { return 2; }
+  constexpr static int get_num_components() { return 2; }
 
 public:
   INLINE_LINMATH iterator begin();

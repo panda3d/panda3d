@@ -48,7 +48,7 @@ GeomVertexWriter(GeomVertexData *vertex_data, CPT_InternalName name,
   _current_thread(current_thread)
 {
   initialize();
-  set_column(MOVE(name));
+  set_column(std::move(name));
 }
 
 /**

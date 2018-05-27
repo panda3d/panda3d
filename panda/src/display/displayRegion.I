@@ -479,13 +479,8 @@ INLINE void DisplayRegion::
 set_cull_result(PT(CullResult) cull_result, PT(SceneSetup) scene_setup,
                 Thread *current_thread) {
   CDCullWriter cdata(_cycler_cull, true, current_thread);
-#ifdef USE_MOVE_SEMANTICS
   cdata->_cull_result = move(cull_result);
   cdata->_scene_setup = move(scene_setup);
-#else
-  swap(cdata->_cull_result, cull_result);
-  swap(cdata->_scene_setup, scene_setup);
-#endif
 }
 
 /**
@@ -570,22 +565,6 @@ DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread) :
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
 #endif // _DEBUG
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE DisplayRegionPipelineReader::
-DisplayRegionPipelineReader(const DisplayRegionPipelineReader &) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void DisplayRegionPipelineReader::
-operator = (const DisplayRegionPipelineReader &) {
-  nassertv(false);
 }
 
 /**

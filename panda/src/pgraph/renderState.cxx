@@ -106,14 +106,6 @@ RenderState(const RenderState &copy) :
 }
 
 /**
- * RenderStates are not meant to be copied.
- */
-void RenderState::
-operator = (const RenderState &) {
-  nassertv(false);
-}
-
-/**
  * The destructor is responsible for removing the RenderState from the global
  * set if it is there.
  */

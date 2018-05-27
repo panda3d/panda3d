@@ -52,9 +52,8 @@ class DisplayInformation;
 class EXPCL_PANDA_DISPLAY GraphicsPipe : public TypedReferenceCount {
 protected:
   GraphicsPipe();
-private:
-  GraphicsPipe(const GraphicsPipe &copy) DELETED;
-  GraphicsPipe &operator = (const GraphicsPipe &copy) DELETED_ASSIGN;
+  GraphicsPipe(const GraphicsPipe &copy) = delete;
+  GraphicsPipe &operator = (const GraphicsPipe &copy) = delete;
 
 PUBLISHED:
   virtual ~GraphicsPipe();

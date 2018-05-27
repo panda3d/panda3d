@@ -122,16 +122,6 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
 /**
  *
  */
-PipeOcclusionCullTraverser::
-PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
-  CullTraverser(copy)
-{
-  nassertv(false);
-}
-
-/**
- *
- */
 void PipeOcclusionCullTraverser::
 set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
           bool dr_incomplete_render) {

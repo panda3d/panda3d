@@ -52,7 +52,9 @@ public:
 
   bool heap_trim(size_t pad);
 
-  CONSTEXPR static size_t get_memory_alignment();
+  constexpr static size_t get_memory_alignment() {
+    return MEMORY_HOOK_ALIGNMENT;
+  }
 
   virtual void *mmap_alloc(size_t size, bool allow_exec);
   virtual void mmap_free(void *ptr, size_t size);

@@ -176,15 +176,6 @@ PandaNode(const PandaNode &copy) :
 }
 
 /**
- * Do not call the copy assignment operator at all.  Use make_copy() or
- * copy_subgraph() to make a copy of a node.
- */
-void PandaNode::
-operator = (const PandaNode &copy) {
-  nassertv(false);
-}
-
-/**
  * This is similar to make_copy(), but it makes a copy for the specific
  * purpose of flatten.  Typically, this will be a new PandaNode with a new
  * pointer, but all of the internal data will always be shared with the

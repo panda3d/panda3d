@@ -37,11 +37,10 @@ typedef struct evp_pkey_st EVP_PKEY;
 class EXPCL_PANDAEXPRESS Multifile : public ReferenceCount {
 PUBLISHED:
   Multifile();
+  Multifile(const Multifile &copy) = delete;
   ~Multifile();
 
-private:
-  Multifile(const Multifile &copy);
-  void operator = (const Multifile &copy);
+  Multifile &operator = (const Multifile &copy) = delete;
 
 PUBLISHED:
   BLOCKING bool open_read(const Filename &multifile_name, const streampos &offset = 0);

@@ -122,9 +122,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
   o._owns_obj = owns_obj;
 
   // Ensure that we have the mutex while we fiddle with the list of outputs.
-  _lock.acquire();
+  _lock.lock();
   _outputs.push_back(o);
-  _lock.release();
+  _lock.unlock();
 }
 
 
@@ -133,9 +133,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
  */
 void MultiplexStreamBuf::
 flush() {
-  _lock.acquire();
+  _lock.lock();
   write_chars("", 0, true);
-  _lock.release();
+  _lock.unlock();
 }
 
 /**
@@ -144,7 +144,7 @@ flush() {
  */
 int MultiplexStreamBuf::
 overflow(int ch) {
-  _lock.acquire();
+  _lock.lock();
 
   streamsize n = pptr() - pbase();
 
@@ -159,7 +159,7 @@ overflow(int ch) {
     write_chars(&c, 1, false);
   }
 
-  _lock.release();
+  _lock.unlock();
   return 0;
 }
 
@@ -169,7 +169,7 @@ overflow(int ch) {
  */
 int MultiplexStreamBuf::
 sync() {
-  _lock.acquire();
+  _lock.lock();
 
   streamsize n = pptr() - pbase();
 
@@ -181,7 +181,7 @@ sync() {
   write_chars(pbase(), n, false);
   pbump(-n);
 
-  _lock.release();
+  _lock.unlock();
   return 0;  // Return 0 for success, EOF to indicate write full.
 }
 

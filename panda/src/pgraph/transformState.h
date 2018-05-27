@@ -51,17 +51,16 @@ class FactoryParams;
  * directly.  Instead, call one of the make() functions to create one for you.
  * And instead of modifying a TransformState object, create a new one.
  */
-class EXPCL_PANDA_PGRAPH TransformState FINAL : public NodeCachedReferenceCount {
+class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount {
 protected:
   TransformState();
 
-private:
-  TransformState(const TransformState &copy);
-  void operator = (const TransformState &copy);
-
 public:
+  TransformState(const TransformState &copy) = delete;
   virtual ~TransformState();
   ALLOC_DELETED_CHAIN(TransformState);
+
+  TransformState &operator = (const TransformState &copy) = delete;
 
 PUBLISHED:
   INLINE bool operator != (const TransformState &other) const;

@@ -44,7 +44,7 @@ class BamReader;
  * "normal", "texcoord", and "color"; other kinds of data may be piggybacked
  * into the data record simply by choosing a unique name.
  */
-class EXPCL_PANDA_GOBJ GeomVertexArrayFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexArrayFormat final : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexArrayFormat();
   GeomVertexArrayFormat(const GeomVertexArrayFormat &copy);

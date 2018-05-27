@@ -40,8 +40,12 @@ PUBLISHED:
   INLINE Datagram();
   INLINE Datagram(const void *data, size_t size);
   INLINE explicit Datagram(vector_uchar data);
-
+  Datagram(const Datagram &copy) = default;
+  Datagram(Datagram &&from) noexcept = default;
   virtual ~Datagram();
+
+  Datagram &operator = (const Datagram &copy) = default;
+  Datagram &operator = (Datagram &&from) noexcept = default;
 
   virtual void clear();
   void dump_hex(ostream &out, unsigned int indent=0) const;

@@ -200,9 +200,9 @@ add(AsyncTask *task) {
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
 
-    _lock.release();
+    _lock.unlock();
     task->upon_birth(this);
-    _lock.acquire();
+    _lock.lock();
     nassertv(task->_manager == NULL &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));

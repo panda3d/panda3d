@@ -79,20 +79,17 @@ PointerToArray(const Element *begin, const Element *end, TypeHandle type_handle)
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class Element>
 INLINE PointerToArray<Element>::
-PointerToArray(PointerToArray<Element> &&from) NOEXCEPT :
+PointerToArray(PointerToArray<Element> &&from) noexcept :
   PointerToArrayBase<Element>(move(from)),
   _type_handle(from._type_handle)
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  * Initializes the PTA from a vector.
  */
@@ -103,7 +100,6 @@ PointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
   _type_handle(type_handle)
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
@@ -628,18 +624,16 @@ operator = (const PointerToArray<Element> &copy) {
   return *this;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
-operator = (PointerToArray<Element> &&from) NOEXCEPT {
+operator = (PointerToArray<Element> &&from) noexcept {
   _type_handle = from._type_handle;
   ((PointerToArray<Element> *)this)->reassign(move(from));
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * To empty the PTA, use the clear() method, since assignment to NULL is
@@ -697,33 +691,28 @@ ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class Element>
 INLINE ConstPointerToArray<Element>::
-ConstPointerToArray(PointerToArray<Element> &&from) NOEXCEPT :
+ConstPointerToArray(PointerToArray<Element> &&from) noexcept :
   PointerToArrayBase<Element>(move(from)),
   _type_handle(from._type_handle)
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class Element>
 INLINE ConstPointerToArray<Element>::
-ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT :
+ConstPointerToArray(ConstPointerToArray<Element> &&from) noexcept :
   PointerToArrayBase<Element>(move(from)),
   _type_handle(from._type_handle)
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  * Initializes the PTA from a vector.
  */
@@ -734,7 +723,6 @@ ConstPointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
   _type_handle(type_handle)
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
@@ -1090,31 +1078,27 @@ operator = (const ConstPointerToArray<Element> &copy) {
   return *this;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
-operator = (PointerToArray<Element> &&from) NOEXCEPT {
+operator = (PointerToArray<Element> &&from) noexcept {
   _type_handle = from._type_handle;
   ((ConstPointerToArray<Element> *)this)->reassign(move(from));
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
-operator = (ConstPointerToArray<Element> &&from) NOEXCEPT {
+operator = (ConstPointerToArray<Element> &&from) noexcept {
   _type_handle = from._type_handle;
   ((ConstPointerToArray<Element> *)this)->reassign(move(from));
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * To empty the PTA, use the clear() method, since assignment to NULL is

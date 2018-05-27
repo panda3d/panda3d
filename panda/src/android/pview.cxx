@@ -21,12 +21,6 @@
 #include "bamCache.h"
 #include "virtualFileSystem.h"
 
-// By including checkPandaVersion.h, we guarantee that runtime attempts to run
-// pview will fail if it inadvertently links with the wrong version of
-// libdtool.so.dll.
-
-#include "checkPandaVersion.h"
-
 int main(int argc, char **argv) {
   PandaFramework framework;
   framework.open_framework(argc, argv);

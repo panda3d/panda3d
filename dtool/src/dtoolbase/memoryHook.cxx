@@ -223,9 +223,9 @@ MemoryHook(const MemoryHook &copy) :
   _total_mmap_size(copy._total_mmap_size),
   _max_heap_size(copy._max_heap_size) {
 
-  copy._lock.acquire();
+  copy._lock.lock();
   _deleted_chains = copy._deleted_chains;
-  copy._lock.release();
+  copy._lock.unlock();
 }
 
 /**
@@ -249,9 +249,9 @@ heap_alloc_single(size_t size) {
   size_t inflated_size = inflate_size(size);
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   void *alloc = call_malloc(inflated_size);
-  _lock.release();
+  _lock.unlock();
 #else
   void *alloc = call_malloc(inflated_size);
 #endif
@@ -259,9 +259,9 @@ heap_alloc_single(size_t size) {
   while (alloc == (void *)NULL) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-    _lock.acquire();
+    _lock.lock();
     alloc = call_malloc(inflated_size);
-    _lock.release();
+    _lock.unlock();
 #else
     alloc = call_malloc(inflated_size);
 #endif
@@ -305,9 +305,9 @@ heap_free_single(void *ptr) {
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   call_free(alloc);
-  _lock.release();
+  _lock.unlock();
 #else
   call_free(alloc);
 #endif
@@ -326,9 +326,9 @@ heap_alloc_array(size_t size) {
   size_t inflated_size = inflate_size(size);
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   void *alloc = call_malloc(inflated_size);
-  _lock.release();
+  _lock.unlock();
 #else
   void *alloc = call_malloc(inflated_size);
 #endif
@@ -336,9 +336,9 @@ heap_alloc_array(size_t size) {
   while (alloc == (void *)NULL) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-    _lock.acquire();
+    _lock.lock();
     alloc = call_malloc(inflated_size);
-    _lock.release();
+    _lock.unlock();
 #else
     alloc = call_malloc(inflated_size);
 #endif
@@ -380,9 +380,9 @@ heap_realloc_array(void *ptr, size_t size) {
 
   void *alloc1 = alloc;
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   alloc1 = call_realloc(alloc1, inflated_size);
-  _lock.release();
+  _lock.unlock();
 #else
   alloc1 = call_realloc(alloc1, inflated_size);
 #endif
@@ -394,9 +394,9 @@ heap_realloc_array(void *ptr, size_t size) {
     alloc1 = alloc;
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-    _lock.acquire();
+    _lock.lock();
     alloc1 = call_realloc(alloc1, inflated_size);
-    _lock.release();
+    _lock.unlock();
 #else
     alloc1 = call_realloc(alloc1, inflated_size);
 #endif
@@ -453,9 +453,9 @@ heap_free_array(void *ptr) {
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   call_free(alloc);
-  _lock.release();
+  _lock.unlock();
 #else
   call_free(alloc);
 #endif
@@ -478,11 +478,11 @@ heap_trim(size_t pad) {
   // Since malloc_trim() isn't standard C, we can't be sure it exists on a
   // given platform.  But if we're using dlmalloc, we know we have
   // dlmalloc_trim.
-  _lock.acquire();
+  _lock.lock();
   if (dlmalloc_trim(pad)) {
     trimmed = true;
   }
-  _lock.release();
+  _lock.unlock();
 #endif
 
 #ifdef WIN32
@@ -596,7 +596,7 @@ DeletedBufferChain *MemoryHook::
 get_deleted_chain(size_t buffer_size) {
   DeletedBufferChain *chain;
 
-  _lock.acquire();
+  _lock.lock();
   DeletedChains::iterator dci = _deleted_chains.find(buffer_size);
   if (dci != _deleted_chains.end()) {
     chain = (*dci).second;
@@ -606,7 +606,7 @@ get_deleted_chain(size_t buffer_size) {
     _deleted_chains.insert(DeletedChains::value_type(buffer_size, chain));
   }
 
-  _lock.release();
+  _lock.unlock();
   return chain;
 }
 

@@ -46,31 +46,3 @@ LightMutex(const string &)
 #endif  // DEBUG_THREADS
 {
 }
-
-/**
- *
- */
-INLINE LightMutex::
-~LightMutex() {
-}
-
-/**
- * Do not attempt to copy lightMutexes.
- */
-INLINE LightMutex::
-#ifdef DEBUG_THREADS
-LightMutex(const LightMutex &copy) : MutexDebug(string(), false, true)
-#else
-  LightMutex(const LightMutex &copy)
-#endif  // DEBUG_THREADS
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy lightMutexes.
- */
-INLINE void LightMutex::
-operator = (const LightMutex &copy) {
-  nassertv(false);
-}

@@ -163,25 +163,6 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
  *
  */
 GraphicsOutput::
-GraphicsOutput(const GraphicsOutput &) :
-  _cull_window_pcollector(_cull_pcollector, "Invalid"),
-  _draw_window_pcollector(_draw_pcollector, "Invalid")
-{
-  nassertv(false);
-}
-
-/**
- *
- */
-void GraphicsOutput::
-operator = (const GraphicsOutput &) {
-  nassertv(false);
-}
-
-/**
- *
- */
-GraphicsOutput::
 ~GraphicsOutput() {
   // The window should be closed by the time we destruct.
   nassertv(!is_valid());

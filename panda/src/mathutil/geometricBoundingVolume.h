@@ -51,8 +51,8 @@ PUBLISHED:
   virtual void xform(const LMatrix4 &mat)=0;
 
 public:
-  virtual GeometricBoundingVolume *as_geometric_bounding_volume() FINAL;
-  virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const FINAL;
+  virtual GeometricBoundingVolume *as_geometric_bounding_volume() final;
+  virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const final;
 
 protected:
   // Some virtual functions to implement fundamental bounding operations on

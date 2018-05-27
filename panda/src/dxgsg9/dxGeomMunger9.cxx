@@ -28,6 +28,9 @@ DXGeomMunger9::
     unref_delete(_filtered_texture);
     _reffed_filtered_texture = false;
   }
+
+  _texture.remove_callback(this);
+  _tex_gen.remove_callback(this);
 }
 
 /**

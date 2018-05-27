@@ -73,10 +73,7 @@ public:
 protected:
   INLINE PointerToArrayBase(ReferenceCountedVector<Element> *ptr);
   INLINE PointerToArrayBase(const PointerToArrayBase<Element> &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE PointerToArrayBase(PointerToArrayBase<Element> &&from) NOEXCEPT;
-#endif
+  INLINE PointerToArrayBase(PointerToArrayBase<Element> &&from) noexcept;
 
 PUBLISHED:
   INLINE ~PointerToArrayBase();

@@ -36,16 +36,16 @@
  */
 class EXPCL_PANDA_PUTIL UpdateSeq {
 private:
-  CONSTEXPR UpdateSeq(unsigned int seq);
+  constexpr UpdateSeq(unsigned int seq);
 
 PUBLISHED:
-  CONSTEXPR UpdateSeq();
-  CONSTEXPR static UpdateSeq initial();
-  CONSTEXPR static UpdateSeq old();
-  CONSTEXPR static UpdateSeq fresh();
+  constexpr UpdateSeq();
+  constexpr static UpdateSeq initial() { return UpdateSeq(SC_initial); }
+  constexpr static UpdateSeq old() { return UpdateSeq(SC_old); }
+  constexpr static UpdateSeq fresh() { return UpdateSeq(SC_fresh); }
 
   INLINE UpdateSeq(const UpdateSeq &copy);
-  CONSTEXPR UpdateSeq(const UpdateSeq &&from) NOEXCEPT;
+  constexpr UpdateSeq(const UpdateSeq &&from) noexcept;
   INLINE UpdateSeq &operator = (const UpdateSeq &copy);
 
   INLINE void clear();
@@ -76,7 +76,7 @@ private:
   INLINE static bool priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b);
 
 private:
-  enum SpecialCases {
+  enum SpecialCases : unsigned int {
     SC_initial = 0,
     SC_old = 1,
     SC_fresh = ~(unsigned int)0,

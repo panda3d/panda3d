@@ -20,16 +20,14 @@ ParamNodePath(const NodePath &node_path) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  * Creates a new ParamNodePath storing the given node path object.
  */
 INLINE ParamNodePath::
-ParamNodePath(NodePath &&node_path) NOEXCEPT :
-  _node_path(move(node_path))
+ParamNodePath(NodePath &&node_path) noexcept :
+  _node_path(std::move(node_path))
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns NodePath::get_class_type().

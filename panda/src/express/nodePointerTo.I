@@ -33,14 +33,13 @@ NodePointerTo(const NodePointerTo<T> &copy) :
 }
 #endif  // CPPPARSER
 
-#ifdef USE_MOVE_SEMANTICS
 #ifndef CPPPARSER
 /**
  *
  */
 template<class T>
 INLINE NodePointerTo<T>::
-NodePointerTo(NodePointerTo<T> &&from) NOEXCEPT :
+NodePointerTo(NodePointerTo<T> &&from) noexcept :
   NodePointerToBase<T>((NodePointerToBase<T> &&)from)
 {
 }
@@ -52,12 +51,11 @@ NodePointerTo(NodePointerTo<T> &&from) NOEXCEPT :
  */
 template<class T>
 INLINE NodePointerTo<T> &NodePointerTo<T>::
-operator = (NodePointerTo<T> &&from) NOEXCEPT {
+operator = (NodePointerTo<T> &&from) noexcept {
   this->reassign(move(from));
   return *this;
 }
 #endif  // CPPPARSER
-#endif  // USE_MOVE_SEMANTICS
 
 #ifndef CPPPARSER
 /**
@@ -167,14 +165,13 @@ NodeConstPointerTo(const NodeConstPointerTo<T> &copy) :
 }
 #endif  // CPPPARSER
 
-#ifdef USE_MOVE_SEMANTICS
 #ifndef CPPPARSER
 /**
  *
  */
 template<class T>
 INLINE NodeConstPointerTo<T>::
-NodeConstPointerTo(NodePointerTo<T> &&from) NOEXCEPT :
+NodeConstPointerTo(NodePointerTo<T> &&from) noexcept :
   NodePointerToBase<T>((NodePointerToBase<T> &&)from)
 {
 }
@@ -186,7 +183,7 @@ NodeConstPointerTo(NodePointerTo<T> &&from) NOEXCEPT :
  */
 template<class T>
 INLINE NodeConstPointerTo<T>::
-NodeConstPointerTo(NodeConstPointerTo<T> &&from) NOEXCEPT :
+NodeConstPointerTo(NodeConstPointerTo<T> &&from) noexcept :
   NodePointerToBase<T>((NodePointerToBase<T> &&)from)
 {
 }
@@ -198,7 +195,7 @@ NodeConstPointerTo(NodeConstPointerTo<T> &&from) NOEXCEPT :
  */
 template<class T>
 INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
-operator = (NodePointerTo<T> &&from) NOEXCEPT {
+operator = (NodePointerTo<T> &&from) noexcept {
   this->reassign(move(from));
   return *this;
 }
@@ -210,12 +207,11 @@ operator = (NodePointerTo<T> &&from) NOEXCEPT {
  */
 template<class T>
 INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
-operator = (NodeConstPointerTo<T> &&from) NOEXCEPT {
+operator = (NodeConstPointerTo<T> &&from) noexcept {
   this->reassign(move(from));
   return *this;
 }
 #endif  // CPPPARSER
-#endif  // USE_MOVE_SEMANTICS
 
 #ifndef CPPPARSER
 /**

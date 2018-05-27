@@ -1222,7 +1222,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           *(idx_ptr++) = i + 3;
           i += 4;
 
-          glyphs.push_back(MOVE(quad._glyph));
+          glyphs.push_back(move(quad._glyph));
         }
       } else {
         // 16-bit index case.
@@ -1278,7 +1278,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           *(idx_ptr++) = i + 3;
           i += 4;
 
-          glyphs.push_back(MOVE(quad._glyph));
+          glyphs.push_back(move(quad._glyph));
         }
       }
     }
@@ -1796,7 +1796,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
   // LVecBase4(0), RenderState::make_empty());
 
   GlyphPlacement placement;
-  placement._glyph = MOVE(glyph);
+  placement._glyph = move(glyph);
   placement._xpos = 0;
   placement._ypos = 0;
   placement._scale = 1;
@@ -2453,7 +2453,7 @@ assign_quad_to(QuadMap &quad_map, const RenderState *state,
     quad._dimensions += LVecBase4(offset[0], -offset[1], offset[0], -offset[1]);
     quad._glyph = _glyph;
 
-    quad_map[state->compose(_glyph->get_state())].push_back(MOVE(quad));
+    quad_map[state->compose(_glyph->get_state())].push_back(move(quad));
   }
 }
 

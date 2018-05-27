@@ -35,7 +35,7 @@ public:
 
   INLINE static void inc(TVOLATILE Integer &var);
   INLINE static bool dec(TVOLATILE Integer &var);
-  INLINE static void add(TVOLATILE Integer &var, Integer delta);
+  INLINE static Integer add(TVOLATILE Integer &var, Integer delta);
   INLINE static Integer set(TVOLATILE Integer &var, Integer new_value);
   INLINE static Integer get(const TVOLATILE Integer &var);
 

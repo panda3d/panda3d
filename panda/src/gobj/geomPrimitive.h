@@ -351,13 +351,12 @@ private:
 class EXPCL_PANDA_GOBJ GeomPrimitivePipelineReader : public GeomEnums {
 public:
   INLINE GeomPrimitivePipelineReader(CPT(GeomPrimitive) object, Thread *current_thread);
-private:
-  GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy) DELETED;
-  GeomPrimitivePipelineReader &operator = (const GeomPrimitivePipelineReader &copy) DELETED_ASSIGN;
-
-public:
+  GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy) = delete;
   INLINE ~GeomPrimitivePipelineReader();
+
   ALLOC_DELETED_CHAIN(GeomPrimitivePipelineReader);
+
+  GeomPrimitivePipelineReader &operator = (const GeomPrimitivePipelineReader &copy) = delete;
 
   INLINE const GeomPrimitive *get_object() const;
   INLINE Thread *get_current_thread() const;

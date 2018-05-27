@@ -58,11 +58,8 @@ public:
   INLINE Filename(const string &filename);
   INLINE Filename(const wstring &filename);
   INLINE Filename(const Filename &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Filename(string &&filename) NOEXCEPT;
-  INLINE Filename(Filename &&from) NOEXCEPT;
-#endif
+  INLINE Filename(string &&filename) noexcept;
+  INLINE Filename(Filename &&from) noexcept;
 
 PUBLISHED:
   INLINE Filename();
@@ -106,11 +103,8 @@ PUBLISHED:
   INLINE Filename &operator = (const wstring &filename);
   INLINE Filename &operator = (const char *filename);
   INLINE Filename &operator = (const Filename &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Filename &operator = (string &&filename) NOEXCEPT;
-  INLINE Filename &operator = (Filename &&from) NOEXCEPT;
-#endif
+  INLINE Filename &operator = (string &&filename) noexcept;
+  INLINE Filename &operator = (Filename &&from) noexcept;
 
   // And retrieval is by any of the classic string operations.
   INLINE operator const string & () const;

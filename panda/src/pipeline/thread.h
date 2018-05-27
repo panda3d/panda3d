@@ -46,15 +46,14 @@ class AsyncTask;
 class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
   Thread(const string &name, const string &sync_name);
+  Thread(const Thread &copy) = delete;
 
 PUBLISHED:
   virtual ~Thread();
 
-private:
-  INLINE Thread(const Thread &copy);
-  INLINE void operator = (const Thread &copy);
-
 protected:
+  Thread &operator = (const Thread &copy) = delete;
+
   virtual void thread_main()=0;
 
 PUBLISHED:
