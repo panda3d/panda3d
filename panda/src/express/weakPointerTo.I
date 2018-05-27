@@ -75,6 +75,9 @@ operator T * () const {
 /**
  * A thread-safe way to access the underlying pointer; will silently return
  * null if the underlying pointer was deleted or null.
+ * Note that this may return null even if was_deleted() still returns true,
+ * which can occur if the object has reached reference count 0 and is about to
+ * be destroyed.
  */
 template<class T>
 INLINE PointerTo<T> WeakPointerTo<T>::
@@ -84,7 +87,13 @@ lock() const {
     PointerTo<T> ptr;
     weak_ref->_lock.lock();
     if (!weak_ref->was_deleted()) {
-      ptr = (To *)WeakPointerToBase<T>::_void_ptr;
+      // We also need to check that the reference count is not zero (which can
+      // happen if the object is currently being destructed), since that could
+      // cause double deletion.
+      To *plain_ptr = (To *)WeakPointerToBase<T>::_void_ptr;
+      if (plain_ptr != nullptr && plain_ptr->ref_if_nonzero()) {
+        ptr.cheat() = plain_ptr;
+      }
     }
     weak_ref->_lock.unlock();
     return ptr;
@@ -239,7 +248,13 @@ lock() const {
     ConstPointerTo<T> ptr;
     weak_ref->_lock.lock();
     if (!weak_ref->was_deleted()) {
-      ptr = (const To *)WeakPointerToBase<T>::_void_ptr;
+      // We also need to check that the reference count is not zero (which can
+      // happen if the object is currently being destructed), since that could
+      // cause double deletion.
+      const To *plain_ptr = (const To *)WeakPointerToBase<T>::_void_ptr;
+      if (plain_ptr != nullptr && plain_ptr->ref_if_nonzero()) {
+        ptr.cheat() = plain_ptr;
+      }
     }
     weak_ref->_lock.unlock();
     return ptr;

@@ -301,6 +301,27 @@ weak_unref() {
 }
 
 /**
+ * Atomically increases the reference count of this object if it is not zero.
+ * Do not use this.  This exists only to implement a special case for weak
+ * pointers.
+ * @return true if the reference count was incremented, false if it was zero.
+ */
+INLINE bool ReferenceCount::
+ref_if_nonzero() const {
+#ifdef _DEBUG
+  test_ref_count_integrity();
+#endif
+  AtomicAdjust::Integer ref_count;
+  do {
+    ref_count = AtomicAdjust::get(_ref_count);
+    if (ref_count <= 0) {
+      return false;
+    }
+  } while (ref_count != AtomicAdjust::compare_and_exchange(_ref_count, ref_count, ref_count + 1));
+  return true;
+}
+
+/**
  * This global helper function will unref the given ReferenceCount object, and
  * if the reference count reaches zero, automatically delete it.  It can't be
  * a member function because it's usually a bad idea to delete an object from

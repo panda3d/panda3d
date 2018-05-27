@@ -63,6 +63,8 @@ public:
   INLINE WeakReferenceList *weak_ref();
   INLINE void weak_unref();
 
+  INLINE bool ref_if_nonzero() const;
+
 protected:
   bool do_test_ref_count_integrity() const;
   bool do_test_ref_count_nonzero() const;
